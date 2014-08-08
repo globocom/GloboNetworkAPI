@@ -1,0 +1,21 @@
+-> Todos os testes:
+./manage.py test
+
+-> Mostrar teste atual enquanto executa:
+./manage.py test -- --verbose
+
+-> Apenas os marcados com @me:
+./manage.py test -- -mme
+
+-> Apenas os marcados com @bug:
+./manage.py test -- -mbug
+
+-> Executar apenas um pacote (ex: Ambiente):
+./manage.py test -- networkapi/ambiente
+
+-> Executar apenas um módulo do pacote (ex: Ambiente.EnvironmentVIP):
+./manage.py test -- networkapi/ambiente/test/test_EnvironmentVIP.py
+
+-> Verbose pode ser combinado com os outros:
+./manage.py test -- networkapi/ambiente --verbose
+./manage.py test -- -mme --verbose

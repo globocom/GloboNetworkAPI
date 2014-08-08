@@ -1,0 +1,78 @@
+# Layer 3 groups
+
+- fields: {nome: L3Group_For_Env100 }
+  model: ambiente.grupol3
+  pk: 100
+  
+- fields: {nome: L3Group_For_Env101 }
+  model: ambiente.grupol3
+  pk: 101  
+  
+# Data center divisions
+  
+- fields: {nome: DCDivision_For_Env100 }
+  model: ambiente.divisaodc
+  pk: 100
+  
+- fields: {nome: DCDivision_For_Env101 }
+  model: ambiente.divisaodc
+  pk: 101  
+  
+# Logic environment
+
+- fields: {nome: LogicEnvironment_For_Env100 }
+  model: ambiente.ambientelogico
+  pk: 100
+  
+- fields: {nome: LogicEnvironment_For_Env101 }
+  model: ambiente.ambientelogico
+  pk: 101
+
+
+# Environments
+
+- fields: {grupo_l3: 100, ambiente_logico: 100, divisao_dc: 100, link: link}
+  model: ambiente.ambiente
+  pk: 100
+  
+# Environment to inserts
+
+- fields: {grupo_l3: 101, ambiente_logico: 101, divisao_dc: 101, link: link2}
+  model: ambiente.ambiente
+  pk: 101
+  
+
+# Blocks
+
+- fields: {content: 'content1', order: '0', environment: 100}
+  model: blockrules.blockrules
+  pk: 1
+
+# Rules
+
+- fields: { environment: 100, name: 'name1' }
+  model: blockrules.rule
+  pk: 1
+
+- fields: { environment: 100, name: 'name2' }
+  model: blockrules.rule
+  pk: 2
+  
+- fields: { environment: 100, name: 'name3' }
+  model: blockrules.rule
+  pk: 3
+  
+# Rule Content
+
+- fields: { content: 'content1', order: '0', rule: '1'}
+  model: blockrules.rulecontent
+  pk: 1
+  
+- fields: { content: 'content2', order: '1', rule: '1'}
+  model: blockrules.rulecontent
+  pk: 2
+  
+- fields: { content: 'content3', order: '2', rule: '1'}
+  model: blockrules.rulecontent
+  pk: 3
+  

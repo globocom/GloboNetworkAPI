@@ -1,0 +1,14 @@
+#### test: test_criacao_vip_com_sucesso
+- fields: {descricao: IP_VIP_1, oct1: 1, oct2: 0, oct3: 16, oct4: 172, vlan: 1}
+  model: ip.ip
+  pk: 10000
+# - fields: {descricao: IP_VIP_1-1, oct1: 2, oct2: 0, oct3: 16, oct4: 172, vlan: 1}
+  # model: ip.ip
+  # pk: 10001
+# - fields: {descricao: IP_VIP_1-2, oct1: 3, oct2: 0, oct3: 16, oct4: 172, vlan: 1}
+  # model: ip.ip
+  # pk: 10002
+- fields: {ip: 10000, equipamento: 1}
+  model: ip.ipequipamento
+  pk: 10000
+

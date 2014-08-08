@@ -1,0 +1,94 @@
+#### test: test_alteracao_maxcon_vip_nao_validado
+- fields: {descricao: IP_VIP_1, oct1: 1, oct2: 0, oct3: 16, oct4: 172, vlan: 1}
+  model: ip.ip
+  pk: 10000
+# - fields: {descricao: IP_VIP_1-1, oct1: 2, oct2: 0, oct3: 16, oct4: 172, vlan: 1}
+  # model: ip.ip
+  # pk: 10001
+# - fields: {descricao: IP_VIP_1-2, oct1: 3, oct2: 0, oct3: 16, oct4: 172, vlan: 1}
+  # model: ip.ip
+  # pk: 10002
+- fields: {ip: 10000, equipamento: 1}
+  model: ip.ipequipamento
+  pk: 10000
+  
+# vip criado e validado
+- fields: 
+    healthcheck_expect: 6
+    ip: 10000
+    validado: true
+    vip_criado: true
+    variaveis: |
+      finalidade = Homologacao
+      cliente = Usuario Interno
+      ambiente = Homologacao BE-CITTA
+      metodo_bal = least-conn
+      persistencia = (nenhum)
+      healthcheck_type = HTTP
+      timeout = 5
+      nome_servico = stgdynamo criado e validado
+      host = STG-DYNAMO.GSAT3.BE.GLOBOI.COM
+      healthcheck = GET /healthcheck/ HTTP/1.0
+      maxcon = 100
+      -reals_name.1 = riovlb92
+      -reals_ip.1 = 10.11.69.61
+      -reals_priority.1=1
+      -reals_name.2 = riovlb93
+      -reals_ip.2 = 10.11.69.69
+      -reals_priority.2=1
+      -portas_servico.1 = 8180
+  model: requisicaovips.requisicaovips
+  pk: 10000
+
+# vip não validado
+- fields: 
+    healthcheck_expect: 6
+    ip: 10000
+    validado: false
+    vip_criado: false
+    variaveis: |
+      finalidade = Homologacao
+      cliente = Usuario Interno
+      ambiente = Homologacao BE-CITTA
+      metodo_bal = least-conn
+      persistencia = (nenhum)
+      healthcheck_type = HTTP
+      timeout = 5
+      nome_servico = stgdynamo nao validado
+      host = STG-DYNAMO.GSAT3.BE.GLOBOI.COM
+      healthcheck = GET /healthcheck/ HTTP/1.0
+      maxcon = 200
+      -reals_name.1 = riovlb92
+      -reals_ip.1 = 10.11.69.61
+      -reals_name.2 = riovlb93
+      -reals_ip.2 = 10.11.69.69
+      -portas_servico.1 = 8180
+  model: requisicaovips.requisicaovips
+  pk: 10001
+
+# vip validado, mas não criado
+- fields: 
+    healthcheck_expect: 6
+    ip: 10000
+    validado: true
+    vip_criado: false
+    variaveis: |
+      finalidade = Homologacao
+      cliente = Usuario Interno
+      ambiente = Homologacao BE-CITTA
+      metodo_bal = least-conn
+      persistencia = (nenhum)
+      healthcheck_type = HTTP
+      timeout = 5
+      nome_servico = stgdynamo nao criado
+      host = STG-DYNAMO.GSAT3.BE.GLOBOI.COM
+      healthcheck = GET /healthcheck/ HTTP/1.0
+      maxcon = 200
+      -reals_name.1 = riovlb92
+      -reals_ip.1 = 10.11.69.61
+      -reals_name.2 = riovlb93
+      -reals_ip.2 = 10.11.69.69
+      -portas_servico.1 = 8180
+  model: requisicaovips.requisicaovips
+  pk: 10002
+

@@ -1,0 +1,60 @@
+# User
+
+- fields: {ativo: true, email: test@tglobo.com, nome: TEST, pwd: 25d55ad283aa400af464c76d713c07ad, user: TEST}
+  model: usuario.usuario
+  pk: 1
+- fields: {ativo: true, email: no_permission@globo.com, nome: NO_PERMISSION, pwd: 25d55ad283aa400af464c76d713c07ad, user: NO_PERMISSION}
+  model: usuario.usuario
+  pk: 2
+- fields: {ativo: true, email: no_write_permission@globo.com, nome: NO_WRITE_PERMISSION, pwd: 25d55ad283aa400af464c76d713c07ad, user: NO_WRITE_PERMISSION}
+  model: usuario.usuario
+  pk: 3
+- fields: {ativo: true, email: no_read_permission@globo.com, nome: NO_READ_PERMISSION, pwd: 25d55ad283aa400af464c76d713c07ad, user: NO_READ_PERMISSION}
+  model: usuario.usuario
+  pk: 4
+- fields: {ativo: false, email: no_active@globo.com, nome: NO_ACTIVE, pwd: 25d55ad283aa400af464c76d713c07ad, user: NO_ACTIVE}
+  model: usuario.usuario
+  pk: 5
+- fields: {ativo: true, email: alter@globo.com, nome: ALTER, pwd: 25d55ad283aa400af464c76d713c07ad, user: ALTER}
+  model: usuario.usuario
+  pk: 6
+- fields: {ativo: true, email: remove@globo.com, nome: REMOVE, pwd: 25d55ad283aa400af464c76d713c07ad, user: REMOVE}
+  model: usuario.usuario
+  pk: 7
+- fields: {ativo: true, email: change_pass@globo.com, nome: CHANGE_PASS, pwd: 25d55ad283aa400af464c76d713c07ad, user: CHANGE_PASS}
+  model: usuario.usuario
+  pk: 8
+- fields: {ativo: true, email: user_group_associate@globo.com, nome: USER_GROUP_ASSOCIATE, pwd: 25d55ad283aa400af464c76d713c07ad, user: USER_GROUP_ASSOCIATE}
+  model: usuario.usuario
+  pk: 9
+- fields: {ativo: true, email: user_group_dissociate@globo.com, nome: USER_GROUP_DISSOCIATE, pwd: 25d55ad283aa400af464c76d713c07ad, user: USER_GROUP_DISSOCIATE}
+  model: usuario.usuario
+  pk: 10
+  
+- fields: {ativo: true, email: user_ldap@globo.com, nome: USER_LDAP_name, pwd: 25d55ad283aa400af464c76d713c07ad, user: 25d55ad283aa400af464c76d713c07ad, user_ldap: USER_LDAP}
+  model: usuario.usuario
+  pk: 11
+
+# User Group
+
+- fields: {ugrupo: 1, usuario: 1}
+  model: usuario.usuariogrupo
+  pk: 1
+- fields: {ugrupo: 2, usuario: 2}
+  model: usuario.usuariogrupo
+  pk: 2
+- fields: {ugrupo: 3, usuario: 3}
+  model: usuario.usuariogrupo
+  pk: 3
+- fields: {ugrupo: 4, usuario: 4}
+  model: usuario.usuariogrupo
+  pk: 4
+- fields: {ugrupo: 1, usuario: 5}
+  model: usuario.usuariogrupo
+  pk: 5
+- fields: {ugrupo: 1, usuario: 6}
+  model: usuario.usuariogrupo
+  pk: 6
+- fields: {ugrupo: 7, usuario: 10}
+  model: usuario.usuariogrupo
+  pk: 7

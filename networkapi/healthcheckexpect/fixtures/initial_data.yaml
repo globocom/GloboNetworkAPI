@@ -1,0 +1,12 @@
+- fields: {ambiente: 1, expect_string: transparente.gif, match_list: conteudourlads01}
+  model: healthcheckexpect.healthcheckexpect
+  pk: 1
+  
+- fields: {ambiente: 1, expect_string: expect_for_vip_one, match_list: test_vip_one}
+  model: healthcheckexpect.healthcheckexpect
+  pk: 2
+
+- fields: {ambiente: 29, expect_string: expect_for_vip_one, match_list: test_vip_one}
+  model: healthcheckexpect.healthcheckexpect
+  pk: 3
+  
