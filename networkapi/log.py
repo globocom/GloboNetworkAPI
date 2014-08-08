@@ -105,7 +105,7 @@ class Log(object):
     _LOG_LEVEL = logging.DEBUG
     
     # Define o formato do log padrão
-    _LOG_FORMAT = '%(asctime)s %(module_name)-12s %(levelname)-8s %(message)s'
+    _LOG_FORMAT = '%(asctime)s %(filename)-12s %(levelname)-8s %(message)s'
     
     _USE_STDOUT = True
     
