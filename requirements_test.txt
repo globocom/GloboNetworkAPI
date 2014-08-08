@@ -1,12 +1,19 @@
-#Libs
-#
-django-pytest==0.2.0
-pytest==2.2.4
-PyYAML==3.10
-pytest-cov==1.6
 #
 #Passos para rodar os testes
 #- Criar um banco de dados no MySQL
 #- Editar o script de criação de banco mudando o nome do banco para o nome do novo banco criado
 #- Importar o script de criação de banco mais atual no workbench ( pasta networkapi/docs/scripts/ )
 #- Rodar os testes de acordo com os exemplos em examples_testrun.txt
+
+django-pytest==0.2.0
+pytest==2.2.4
+PyYAML==3.10
+pytest-cov==1.6
+autopep8==1.0.3
+pep8==1.5.7
+Jinja2==2.7.3
+MarkupSafe==0.23
+Pygments==1.6
+Sphinx==1.2.2
+docutils==0.12
+sphinx-rtd-theme==0.1.6
