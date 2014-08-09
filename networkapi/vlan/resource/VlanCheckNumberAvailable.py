@@ -33,17 +33,20 @@ class VlanCheckNumberAvailable(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid env ID
             if not is_valid_int_greater_zero_param(id_env):
-                self.log.error(u'The id_env parameter is not a valid value: %s.', id_env)
+                self.log.error(
+                    u'The id_env parameter is not a valid value: %s.', id_env)
                 raise InvalidValueError(None, 'env_id', id_env)
 
             # Valid num Vlan
             if not is_valid_int_greater_zero_param(num_vlan):
-                self.log.error(u'The num_vlan parameter is not a valid value: %s.', num_vlan)
+                self.log.error(
+                    u'The num_vlan parameter is not a valid value: %s.', num_vlan)
                 raise InvalidValueError(None, 'num_vlan', id_env)
             else:
                 num_vlan = int(num_vlan)
@@ -57,7 +60,8 @@ class VlanCheckNumberAvailable(RestResource):
             vlan = Vlan()
             vlan.ambiente = environment
 
-            # Check if environment has min/max num_vlan value or use the value that was configured in settings
+            # Check if environment has min/max num_vlan value or use the value
+            # that was configured in settings
             if (vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1) or (vlan.ambiente.min_num_vlan_2 and vlan.ambiente.max_num_vlan_2):
                 min_num_01 = vlan.ambiente.min_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.min_num_vlan_2
                 max_num_01 = vlan.ambiente.max_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.max_num_vlan_2
@@ -70,9 +74,11 @@ class VlanCheckNumberAvailable(RestResource):
                 max_num_02 = MAX_VLAN_NUMBER_02
 
             has_numbers_availables = False
-            availables_numbers = vlan.calculate_vlan_number(min_num_01, max_num_01, True)
+            availables_numbers = vlan.calculate_vlan_number(
+                min_num_01, max_num_01, True)
             if num_vlan not in availables_numbers:
-                availables_numbers = vlan.calculate_vlan_number(min_num_02, max_num_02, True)
+                availables_numbers = vlan.calculate_vlan_number(
+                    min_num_02, max_num_02, True)
                 if num_vlan in availables_numbers:
                     has_numbers_availables = True
             else:

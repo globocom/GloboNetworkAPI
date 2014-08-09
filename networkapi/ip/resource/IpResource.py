@@ -24,15 +24,16 @@ from networkapi.distributedlock import distributedlock, LOCK_IP_EQUIPMENT
 from django.db.utils import IntegrityError
 from networkapi.requisicaovips.models import ServerPoolMember
 
+
 def insert_ip(ip_map, user):
     '''Insere um IP e o relacionamento entre o IP e o equipamento.
-        
+
     @param ip_map: Map com as chaves: id_equipamento, id_vlan e descricao
     @param user: Usuário autenticado na API.
-    
+
     @return Em caso de erro retorna a tupla: (código da mensagem de erro, argumento01, argumento02, ...)
             Em caso de sucesso retorna a tupla: (0, <mapa com os dados do IP>)
-            
+
     @raise VlanNotFoundError: VLAN não cadastrada.
     @raise VlanError: Falha ao pesquisar a VLAN. 
     @raise EquipamentoNotFoundError: Equipamento não cadastrado.
@@ -40,32 +41,34 @@ def insert_ip(ip_map, user):
     @raise IpNotAvailableError: Não existe um IP disponível para a VLAN.
     @raise IpError: Falha ao inserir no banco de dados.
     @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
-             
+
     '''
     log = Log('insert_ip')
-    
+
     equip_id = ip_map.get('id_equipamento')
     if not is_valid_int_greater_zero_param(equip_id):
-        log.error(u'The equip_id parameter is not a valid value: %s.', equip_id)
+        log.error(
+            u'The equip_id parameter is not a valid value: %s.', equip_id)
         raise InvalidValueError(None, 'equip_id', equip_id)
     else:
         equip_id = int(equip_id)
-    
-    if not has_perm(user, 
-                    AdminPermission.IPS, 
-                    AdminPermission.WRITE_OPERATION, 
+
+    if not has_perm(user,
+                    AdminPermission.IPS,
+                    AdminPermission.WRITE_OPERATION,
                     None,
                     equip_id,
                     AdminPermission.EQUIP_WRITE_OPERATION):
-        raise UserNotAuthorizedError(None, u'Usuário não tem permissão para executar a operação.')
-    
+        raise UserNotAuthorizedError(
+            None, u'Usuário não tem permissão para executar a operação.')
+
     vlan_id = ip_map.get('id_vlan')
     if not is_valid_int_greater_zero_param(vlan_id):
         log.error(u'The vlan_id parameter is not a valid value: %s.', vlan_id)
         raise InvalidValueError(None, 'vlan_id', vlan_id)
     else:
         vlan_id = int(vlan_id)
-    
+
     desc_ip = ip_map.get('descricao')
     if desc_ip is not None:
         if not is_valid_string_maxsize(desc_ip, 100) or not is_valid_string_minsize(desc_ip, 3):
@@ -74,9 +77,9 @@ def insert_ip(ip_map, user):
 
     ip = Ip()
     ip.descricao = desc_ip
-    
+
     ip.create(user, equip_id, vlan_id, False)
-    
+
     ip_map = dict()
     ip_map['id'] = ip.id
     ip_map['id_redeipv4'] = ip.networkipv4.id
@@ -85,18 +88,19 @@ def insert_ip(ip_map, user):
     ip_map['oct2'] = ip.oct2
     ip_map['oct1'] = ip.oct1
     ip_map['descricao'] = ip.descricao
-    
+
     return 0, ip_map
+
 
 def insert_ip_equipment(ip_id, equip_id, user):
     '''Insere o relacionamento entre o IP e o equipamento.
-    
+
     @param ip_id: Identificador do IP.
     @param equip_id: Identificador do equipamento.
     @param user: Usuário autenticado.   
-    
+
     @return: O ip_equipamento criado.
-    
+
     @raise IpError: Falha ao inserir.
     @raise EquipamentoNotFoundError: Equipamento não cadastrado.  
     @raise IpNotFoundError: Ip não cadastrado.
@@ -104,43 +108,45 @@ def insert_ip_equipment(ip_id, equip_id, user):
     @raise EquipamentoError: Falha ao pesquisar o equipamento.
     @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.
     '''
-    if not has_perm(user, 
-                    AdminPermission.IPS, 
-                    AdminPermission.WRITE_OPERATION, 
+    if not has_perm(user,
+                    AdminPermission.IPS,
+                    AdminPermission.WRITE_OPERATION,
                     None,
                     equip_id,
                     AdminPermission.EQUIP_WRITE_OPERATION):
-        raise UserNotAuthorizedError(None, u'Usuário não tem permissão para executar a operação.')
+        raise UserNotAuthorizedError(
+            None, u'Usuário não tem permissão para executar a operação.')
 
-    ip_equipment = IpEquipamento() 
+    ip_equipment = IpEquipamento()
     ip_equipment.create(user, ip_id, equip_id)
-    
+
     return ip_equipment
 
 
 def remove_ip_equipment(ip_id, equipment_id, user):
     ''' Remove o relacionamento entre um ip e um equipamento.
-    
+
     @param ip_id: Identificador do IP.
     @param equipment_id: Identificador do equipamento.
     @param user: Usuário autenticado.
-    
+
     @return: Nothing.
-    
+
     @raise IpEquipmentNotFoundError: Relacionamento não cadastrado. 
     @raise IpEquipCantDissociateFromVip: Equip is the last balancer in a created Vip Request, the relationship cannot be removed.
     @raise EquipamentoNotFoundError: Equipamento não cadastrado.
     @raise IpError, GrupoError: Falha na pesquisa dos dados ou na operação de remover.
     @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
     '''
-    if not has_perm(user, 
-                    AdminPermission.IPS, 
-                    AdminPermission.WRITE_OPERATION, 
-                    None, 
-                    equipment_id, 
+    if not has_perm(user,
+                    AdminPermission.IPS,
+                    AdminPermission.WRITE_OPERATION,
+                    None,
+                    equipment_id,
                     AdminPermission.EQUIP_WRITE_OPERATION):
-        raise UserNotAuthorizedError(None, u'Usuário não tem permissão para executar a operação.')
-    
+        raise UserNotAuthorizedError(
+            None, u'Usuário não tem permissão para executar a operação.')
+
     IpEquipamento().remove(user, ip_id, equipment_id)
     return
 
@@ -150,33 +156,35 @@ class IpResource(RestResource):
 
     def handle_put(self, request, user, *args, **kwargs):
         '''Trata as requisições de PUT para inserir o relacionamento entre IP e Equipamento.
-        
+
         URL: ip/<id_ip>/equipamento/<id_equipamento>/$
         '''
         try:
-            
+
             ip_id = kwargs.get('id_ip')
             equip_id = kwargs.get('id_equipamento')
-            
+
             if not is_valid_int_greater_zero_param(ip_id):
-                self.log.error(u'The ip_id parameter is not a valid value: %s.', ip_id)
+                self.log.error(
+                    u'The ip_id parameter is not a valid value: %s.', ip_id)
                 raise InvalidValueError(None, 'ip_id', ip_id)
-             
+
             if not is_valid_int_greater_zero_param(equip_id):
-                self.log.error(u'The equip_id parameter is not a valid value: %s.', equip_id)
+                self.log.error(
+                    u'The equip_id parameter is not a valid value: %s.', equip_id)
                 raise InvalidValueError(None, 'equip_id', equip_id)
-            
+
             Ip.get_by_pk(ip_id)
-            
-            with distributedlock(LOCK_IP_EQUIPMENT % (ip_id, equip_id) ):
-                
+
+            with distributedlock(LOCK_IP_EQUIPMENT % (ip_id, equip_id)):
+
                 ip_equipment = insert_ip_equipment(ip_id, equip_id, user)
-                
+
                 ipequipamento_map = dict()
                 ipequipamento_map['id'] = ip_equipment.id
                 map = dict()
                 map['ip_equipamento'] = ipequipamento_map
-                
+
                 return self.response(dumps_networkapi(map))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -190,32 +198,31 @@ class IpResource(RestResource):
             return self.not_authorized()
         except (IpError, EquipamentoError, GrupoError):
             return self.response_error(1)
-        
-        
+
     def handle_post(self, request, user, *args, **kwargs):
         '''Trata as requisições de POST para inserir um IP e associá-lo a um equipamento.
-        
+
         URL: ip/
         '''
-        
+
         try:
             xml_map, attrs_map = loads(request.raw_post_data)
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
-        
+
         networkapi_map = xml_map.get('networkapi')
         if networkapi_map is None:
             return self.response_error(3, u'Não existe valor para a tag networkapi do XML de requisição.')
-        
+
         ip_map = networkapi_map.get('ip')
         if ip_map is None:
             return self.response_error(3, u'Não existe valor para a tag ip do XML de requisição.')
-        
+
         try:
             response = insert_ip(ip_map, user)
             if response[0] == 0:
-                return self.response(dumps_networkapi({'ip':response[1]}))
+                return self.response(dumps_networkapi({'ip': response[1]}))
             else:
                 return self.response_error(response[0])
         except InvalidValueError, e:
@@ -234,55 +241,57 @@ class IpResource(RestResource):
             return self.response_error(1, e)
         except Exception, e:
             return self.response_error(1, e)
-        
+
     def handle_delete(self, request, user, *args, **kwargs):
         '''Treat DELETE requests to remove IP and Equipment relationship.
-        
+
         URL: ip/<id_ip>/equipamento/<id_equipamento>/$
         '''
         try:
-            
+
             ip_id = kwargs.get('id_ip')
             equip_id = kwargs.get('id_equipamento')
-        
+
             if not is_valid_int_greater_zero_param(ip_id):
-                self.log.error(u'The ip_id parameter is not a valid value: %s.', ip_id)
+                self.log.error(
+                    u'The ip_id parameter is not a valid value: %s.', ip_id)
                 raise InvalidValueError(None, 'ip_id', ip_id)
-             
+
             if not is_valid_int_greater_zero_param(equip_id):
-                self.log.error(u'The equip_id parameter is not a valid value: %s.', equip_id)
+                self.log.error(
+                    u'The equip_id parameter is not a valid value: %s.', equip_id)
                 raise InvalidValueError(None, 'equip_id', equip_id)
-            
+
             Ip.get_by_pk(ip_id)
             Equipamento.get_by_pk(equip_id)
-            
-            with distributedlock(LOCK_IP_EQUIPMENT % (ip_id, equip_id) ):
-            
+
+            with distributedlock(LOCK_IP_EQUIPMENT % (ip_id, equip_id)):
+
                 ipv4 = Ip.get_by_pk(ip_id)
                 # Delete vlan's cache
                 destroy_cache_function([ipv4])
-                
-                #delete equipment's cache
-                destroy_cache_function([equip_id], True) 
-                
-                if ServerPoolMember.objects.filter(ip = ipv4).count() != 0:
+
+                # delete equipment's cache
+                destroy_cache_function([equip_id], True)
+
+                if ServerPoolMember.objects.filter(ip=ipv4).count() != 0:
                     # IP associated with VIP
                     return self.response_error(354, ip_id)
-                
+
                 remove_ip_equipment(ip_id, equip_id, user)
-                
+
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-        except EquipamentoNotFoundError,e:
-            return self.response_error(117,e.message)
+        except EquipamentoNotFoundError, e:
+            return self.response_error(117, e.message)
         except IpEquipmentNotFoundError:
             return self.response_error(118, ip_id, equip_id)
         except IpNotFoundError:
             return self.response_error(119)
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319,"ip",'ipv4', ip_id)
+            return self.response_error(319, "ip", 'ipv4', ip_id)
         except IpEquipCantDissociateFromVip, e:
             return self.response_error(352, e.cause['ip'], e.cause['equip_name'], e.cause['vip_id'])
         except UserNotAuthorizedError:
@@ -294,10 +303,10 @@ class IpResource(RestResource):
                 return self.response_error(354, ip_id)
             else:
                 return self.response_error(1)
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to verify that the IP belongs to environment.
-        
+
         URLs:  /ip/x1.x2.x3.x4/ambiente/<id_amb>
         URLs:  /ip/<ip>/ambiente/<id_amb>
         """
@@ -307,32 +316,35 @@ class IpResource(RestResource):
         try:
 
             # User permission
-            if not has_perm(user, AdminPermission.IPS,AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.IPS, AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-            
+
             environment_id = kwargs.get('id_amb')
-            
+
             # Valid Environment ID
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'The id_environment parameter is not a valid value: %s.', environment_id)
+                self.log.error(
+                    u'The id_environment parameter is not a valid value: %s.', environment_id)
                 raise InvalidValueError(None, 'id_environment', environment_id)
-            
+
             ip = kwargs.get('ip')
-            
+
             # Valid IP
             if not is_valid_ipv4(ip):
                 self.log.error(u'Parameter ip is invalid. Value: %s.', ip)
                 raise InvalidValueError(None, 'ip', ip)
-            
+
             # Find Environment by ID to check if it exist
             Ambiente.get_by_pk(environment_id)
-            
+
             # Existing IP
             octs = str(IPAddress(ip, 4).exploded).split('.')
-            ip = Ip.get_by_octs_and_environment(octs[0], octs[1], octs[2], octs[3], environment_id)
-            
-            #Build dictionary return
+            ip = Ip.get_by_octs_and_environment(
+                octs[0], octs[1], octs[2], octs[3], environment_id)
+
+            # Build dictionary return
             ip_map = dict()
             ip_map['id'] = ip.id
             ip_map['id_vlan'] = ip.networkipv4.vlan.id
@@ -341,8 +353,8 @@ class IpResource(RestResource):
             ip_map['oct2'] = ip.oct2
             ip_map['oct1'] = ip.oct1
             ip_map['descricao'] = ip.descricao
-            
-            return self.response(dumps_networkapi({'ip':ip_map}))
+
+            return self.response(dumps_networkapi({'ip': ip_map}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -352,4 +364,3 @@ class IpResource(RestResource):
             return self.response_error(112)
         except (IpError, GrupoError):
             return self.response_error(1)
-            

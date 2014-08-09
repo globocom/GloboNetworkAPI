@@ -13,6 +13,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.roteiro.models import Roteiro, RoteiroError
 from django.forms.models import model_to_dict
 
+
 class ScriptGetAllResource(RestResource):
 
     log = Log('ScriptGetAllResource')
@@ -23,19 +24,20 @@ class ScriptGetAllResource(RestResource):
         URL: script/all
         """
         try:
-            
+
             self.log.info("GET to list all the Script")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             script_list = []
             for script in Roteiro.objects.all():
                 script_list.append(model_to_dict(script))
 
-            return self.response(dumps_networkapi({'script':script_list}))
+            return self.response(dumps_networkapi({'script': script_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

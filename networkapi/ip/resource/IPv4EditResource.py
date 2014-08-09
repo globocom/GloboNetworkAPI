@@ -19,8 +19,9 @@ from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_max
     is_valid_int_param, is_valid_string_minsize
 from networkapi.distributedlock import distributedlock, LOCK_IPV4
 
+
 class IPv4EditResource(RestResource):
-    
+
     log = Log('IPv4EditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
@@ -54,57 +55,60 @@ class IPv4EditResource(RestResource):
 
             # Valid id_ip
             if not is_valid_int_greater_zero_param(id_ip):
-                self.log.error(u'Parameter id_ip is invalid. Value: %s.', id_ip)
+                self.log.error(
+                    u'Parameter id_ip is invalid. Value: %s.', id_ip)
                 raise InvalidValueError(None, 'id_ip', id_ip)
-                        
+
             if not is_valid_string_maxsize(ip4, 15):
                 self.log.error(u'Parameter ip4 is invalid. Value: %s.', ip4)
                 raise InvalidValueError(None, 'ip4', description)
-            
+
             # Valid description
             if description is not None:
-                if not is_valid_string_maxsize(description,100) or not is_valid_string_minsize(description,3):
-                    self.log.error(u'Parameter description is invalid. Value: %s.', description)
+                if not is_valid_string_maxsize(description, 100) or not is_valid_string_minsize(description, 3):
+                    self.log.error(
+                        u'Parameter description is invalid. Value: %s.', description)
                     raise InvalidValueError(None, 'description', description)
 
             # User permission
             if not has_perm(user, AdminPermission.IPS, AdminPermission.WRITE_OPERATION):
-                raise UserNotAuthorizedError(None, u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(
+                    None, u'User does not have permission to perform the operation.')
 
-            ## Business Rules
+            # Business Rules
 
             # New IP
-            
+
             ip = Ip()
-            
-            ip =  ip.get_by_pk(id_ip)
-            
+
+            ip = ip.get_by_pk(id_ip)
+
             with distributedlock(LOCK_IPV4 % id_ip):
-                    
-                #se Houver erro no ip informado para retorna-lo na mensagem
+
+                # se Houver erro no ip informado para retorna-lo na mensagem
                 ip_error = ip4
-                
-                #verificação se foi passado algo errado no ip
+
+                # verificação se foi passado algo errado no ip
                 ip4 = ip4.split(".")
                 for oct in ip4:
                     if not is_valid_int_param(oct):
                         raise InvalidValueError(None, 'ip4', ip_error)
-                
-                #Ip passado de forma invalida
+
+                # Ip passado de forma invalida
                 if len(ip4) is not 4:
                     raise IndexError
-                
+
                 ip.descricao = description
                 ip.oct1 = ip4[0]
                 ip.oct2 = ip4[1]
                 ip.oct3 = ip4[2]
                 ip.oct4 = ip4[3]
-    
+
                 # Persist
                 ip.edit_ipv4(user)
-    
+
                 return self.response(dumps_networkapi({}))
-        
+
         except UserNotAuthorizedError:
             return self.not_authorized()
         except IndexError:

@@ -27,7 +27,9 @@ from django.forms.models import model_to_dict
 
 from networkapi.distributedlock import distributedlock, LOCK_OPTIONS_VIP
 
+
 class OptionVipResource(RestResource):
+
     '''Class that receives requests related to the table 'OptionVip'.'''
 
     log = Log('OptionVipResource')
@@ -44,7 +46,8 @@ class OptionVipResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -104,7 +107,8 @@ class OptionVipResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -121,24 +125,25 @@ class OptionVipResource(RestResource):
 
             # Valid Option VIP ID
             if not is_valid_int_greater_zero_param(id_option_vip):
-                self.log.error(u'The id_option_vip parameter is not a valid value: %s.', id_option_vip)
+                self.log.error(
+                    u'The id_option_vip parameter is not a valid value: %s.', id_option_vip)
                 raise InvalidValueError(None, 'id_option_vip', id_option_vip)
 
             # Find Option VIP by ID to check if it exist
             option_vip = OptionVip.get_by_pk(id_option_vip)
-            
+
             with distributedlock(LOCK_OPTIONS_VIP % id_option_vip):
 
                 # Valid Option Vip
                 option_vip.valid_option_vip(optionvip_map)
-    
+
                 try:
                     # Update Option Vip
                     option_vip.save(user)
                 except Exception, e:
                     self.log.error(u'Failed to update the option vip.')
                     raise OptionVipError(e, u'Failed to update the option vip')
-    
+
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
@@ -171,17 +176,19 @@ class OptionVipResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid Option VIP ID
             if not is_valid_int_greater_zero_param(id_option_vip):
-                self.log.error(u'The id_option_vip parameter is not a valid value: %s.', id_option_vip)
+                self.log.error(
+                    u'The id_option_vip parameter is not a valid value: %s.', id_option_vip)
                 raise InvalidValueError(None, 'id_option_vip', id_option_vip)
 
             # Find Option VIP by ID to check if it exist
             option_vip = OptionVip.get_by_pk(id_option_vip)
-            
+
             with distributedlock(LOCK_OPTIONS_VIP % id_option_vip):
 
                 try:
@@ -190,7 +197,7 @@ class OptionVipResource(RestResource):
                 except Exception, e:
                     self.log.error(u'Failed to delete the option vip.')
                     raise OptionVipError(e, u'Failed to delete the option vip')
-    
+
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
@@ -219,21 +226,24 @@ class OptionVipResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid Option VIP ID
             if not is_valid_int_greater_zero_param(id_option_vip):
-                self.log.error(u'The id_option_vip parameter is not a valid value: %s.', id_option_vip)
+                self.log.error(
+                    u'The id_option_vip parameter is not a valid value: %s.', id_option_vip)
                 raise InvalidValueError(None, 'id_option_vip', id_option_vip)
 
             try:
 
                 # Find Option VIP by ID to check if it exist
-                option_vip = OptionVip.objects.get(id = id_option_vip)
+                option_vip = OptionVip.objects.get(id=id_option_vip)
 
             except ObjectDoesNotExist, e:
-                self.log.error(u'There is no option vip with pk = %s.', id_option_vip)
+                self.log.error(
+                    u'There is no option vip with pk = %s.', id_option_vip)
                 return self.response_error(289)
 
             option_map = dict()

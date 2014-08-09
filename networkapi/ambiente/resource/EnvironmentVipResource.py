@@ -18,39 +18,42 @@ from networkapi.grupo.models import GrupoError
 from django.forms.models import model_to_dict
 from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT_VIP
 
+
 class EnvironmentVipResource(RestResource):
+
     '''Class that receives requests related to the table 'EnvironmentVip'.'''
-    
+
     log = Log('EnvironmentVipResource')
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests list all Environment VIP.
-        
+
         URL: environmentvip/all/
         """
-        
+
         try:
-            
+
             self.log.info("List all Environment VIP")
-            
-            ## Commons Validations
-            
+
+            # Commons Validations
+
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-            
-            ## Business Rules
-            
-            evips = EnvironmentVip.objects.all() 
-            
+
+            # Business Rules
+
+            evips = EnvironmentVip.objects.all()
+
             evip_list = []
-            
+
             for evip in evips:
                 evip_list.append(model_to_dict(evip))
-                
+
             return self.response(dumps_networkapi({'environment_vip': evip_list}))
-        
+
         except (EnvironmentVipError, GrupoError), e:
             self.log.error(e)
             return self.response_error(1)
@@ -70,8 +73,9 @@ class EnvironmentVipResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
-                raise UserNotAuthorizedError(None)            
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(None)
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -96,12 +100,13 @@ class EnvironmentVipResource(RestResource):
                 environment_vip.save(user)
             except Exception, e:
                 self.log.error(u'Failed to save the environment vip.')
-                raise EnvironmentVipError(e, u'Failed to save the environment vip')
+                raise EnvironmentVipError(
+                    e, u'Failed to save the environment vip')
 
             environment_map = dict()
             environment_map['id'] = environment_vip.id
 
-            return self.response(dumps_networkapi({'environment_vip':environment_map}))
+            return self.response(dumps_networkapi({'environment_vip': environment_map}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -123,15 +128,16 @@ class EnvironmentVipResource(RestResource):
         """
 
         try:
-            
+
             self.log.info("Change Environment VIP")
 
             id_environment_vip = kwargs.get('id_environment_vip')
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
-                raise UserNotAuthorizedError(None)            
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(None)
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -147,24 +153,27 @@ class EnvironmentVipResource(RestResource):
 
             # Valid Environment VIP ID
             if not is_valid_int_greater_zero_param(id_environment_vip):
-                self.log.error(u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
-                raise InvalidValueError(None, 'id_environment_vip', id_environment_vip)
+                self.log.error(
+                    u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
+                raise InvalidValueError(
+                    None, 'id_environment_vip', id_environment_vip)
 
             # Find Environment VIP by ID to check if it exist
             environment_vip = EnvironmentVip.get_by_pk(id_environment_vip)
-            
+
             with distributedlock(LOCK_ENVIRONMENT_VIP % id_environment_vip):
 
                 # Valid Environment Vip
                 environment_vip.valid_environment_vip(environmentvip_map)
-    
+
                 try:
                     # Update Environment Vip
                     environment_vip.save(user)
                 except Exception, e:
                     self.log.error(u'Failed to update the environment vip.')
-                    raise EnvironmentVipError(e, u'Failed to update the environment vip')
-    
+                    raise EnvironmentVipError(
+                        e, u'Failed to update the environment vip')
+
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
@@ -183,7 +192,6 @@ class EnvironmentVipResource(RestResource):
         except EnvironmentVipError:
             return self.response_error(1)
 
-
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests PUT to delete Environment VIP.
 
@@ -198,34 +206,40 @@ class EnvironmentVipResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid Environment VIP ID
             if not is_valid_int_greater_zero_param(id_environment_vip):
-                self.log.error(u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
-                raise InvalidValueError(None, 'id_environment_vip', id_environment_vip)
+                self.log.error(
+                    u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
+                raise InvalidValueError(
+                    None, 'id_environment_vip', id_environment_vip)
 
             # Find Environment VIP by ID to check if it exist
             environment_vip = EnvironmentVip.get_by_pk(id_environment_vip)
 
             with distributedlock(LOCK_ENVIRONMENT_VIP % id_environment_vip):
 
-                # Find networkIPv4 by Environment VIP to check if is greater than zero 
-                if len(NetworkIPv4.objects.filter(ambient_vip = environment_vip.id)) > 0:
+                # Find networkIPv4 by Environment VIP to check if is greater
+                # than zero
+                if len(NetworkIPv4.objects.filter(ambient_vip=environment_vip.id)) > 0:
                     return self.response_error(284)
-    
-                # Find networkIPv6 by Environment VIP to check if is greater than zero
-                if len(NetworkIPv6.objects.filter(ambient_vip = environment_vip.id)) > 0:
+
+                # Find networkIPv6 by Environment VIP to check if is greater
+                # than zero
+                if len(NetworkIPv6.objects.filter(ambient_vip=environment_vip.id)) > 0:
                     return self.response_error(285)
-    
+
                 try:
                     # Delete Environment Vip
                     environment_vip.delete(user)
                 except Exception, e:
                     self.log.error(u'Failed to delete the environment vip.')
-                    raise EnvironmentVipError(e, u'Failed to delete the environment vip')
-    
+                    raise EnvironmentVipError(
+                        e, u'Failed to delete the environment vip')
+
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:

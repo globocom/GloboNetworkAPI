@@ -12,9 +12,10 @@ from networkapi.test import BasicTestCase, AttrTest, CodeError, ConsultationTest
 from networkapi.test.functions import valid_content, valid_response, valid_get_all, string_generator, valid_get_filtered
 import httplib
 
+
 class EquipmentAccessConfigTest(BasicTestCase):
 
-    #Constants
+    # Constants
     fixtures = ['networkapi/tipoacesso/fixtures/initial_data.yaml']
     XML_KEY = "equipamento_acesso"
     ID_VALID = 1
@@ -26,14 +27,13 @@ class EquipmentAccessConfigTest(BasicTestCase):
 
     EQUIPMENT_NAME_VALID = "Balanceador de Teste"
 
-    #Urls
+    # Urls
     URL_SAVE = "/equipamentoacesso/"
     URL_ALTER = "/equipamentoacesso/edit/"
     URL_REMOVE = "/equipamentoacesso/%s/%s/"
     URL_GET_ALL = "/equipamentoacesso/"
     URL_GET_BY_EQUIP_NAME = "/equipamentoacesso/name/"
     URL_GET_BY_EQUIP_ACCESS_ID = "/equipamentoacesso/id/%s/"
-
 
     def mock_valid(self):
         mock = {}
@@ -65,8 +65,9 @@ class EquipmentAccessConfigTest(BasicTestCase):
         assert mock["pass"] == obj["password"]
         assert mock["enable_pass"] == obj["enable_pass"]
 
-    def process_alter_attr_invalid(self,idt, mock, code_error = None):
-        response = self.client_autenticado().postXML(self.URL_ALTER, {self.XML_KEY:mock})
+    def process_alter_attr_invalid(self, idt, mock, code_error=None):
+        response = self.client_autenticado().postXML(
+            self.URL_ALTER, {self.XML_KEY: mock})
         if code_error is not None:
             self._attr_invalid(response, code_error)
         else:
@@ -79,26 +80,27 @@ class EquipmentAccessConsultationTest(EquipmentAccessConfigTest, ConsultationTes
         response = self.get_all()
         valid_response(response)
         content = valid_content(response, self.XML_KEY, True)
-        valid_get_all(content, self.OBJ) 
+        valid_get_all(content, self.OBJ)
 
     def test_get_all_no_permission(self):
         response = self.get_all(CLIENT_TYPES.NO_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
-        
+
     def test_get_all_no_read_permission(self):
         response = self.get_all(CLIENT_TYPES.NO_READ_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
 
 class EquipmentAccessConsultationEquipmentTest(EquipmentAccessConfigTest, AttrTest):
-    
+
     CODE_ERROR_NOT_FOUND = CodeError.EQUIPMENT_NOT_FOUND
-    
+
     def test_get_by_equipment(self):
         equip_access_map = dict()
         equip_access_map['name'] = self.EQUIPMENT_NAME_VALID
-        
-        response = self.client_autenticado().postXML(self.URL_GET_BY_EQUIP_NAME, {self.XML_KEY:equip_access_map})
+
+        response = self.client_autenticado().postXML(
+            self.URL_GET_BY_EQUIP_NAME, {self.XML_KEY: equip_access_map})
         valid_response(response)
         content = valid_content(response, self.XML_KEY, True)
         query = Q(equipamento__nome=self.EQUIPMENT_NAME_VALID)
@@ -107,95 +109,106 @@ class EquipmentAccessConsultationEquipmentTest(EquipmentAccessConfigTest, AttrTe
     def test_get_by_equipment_no_permission(self):
         equip_access_map = dict()
         equip_access_map['name'] = self.EQUIPMENT_NAME_VALID
-        
-        response = self.client_no_permission().postXML(self.URL_GET_BY_EQUIP_NAME, {self.XML_KEY:equip_access_map})
+
+        response = self.client_no_permission().postXML(
+            self.URL_GET_BY_EQUIP_NAME, {self.XML_KEY: equip_access_map})
         valid_response(response, httplib.PAYMENT_REQUIRED)
-        
+
     def test_get_by_equipment_no_read_permission(self):
         equip_access_map = dict()
         equip_access_map['name'] = self.EQUIPMENT_NAME_VALID
-        
-        response = self.client_no_read_permission().postXML(self.URL_GET_BY_EQUIP_NAME, {self.XML_KEY:equip_access_map})
+
+        response = self.client_no_read_permission().postXML(
+            self.URL_GET_BY_EQUIP_NAME, {self.XML_KEY: equip_access_map})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
 
 class EquipmentAccessConsultationEquipmentAccessTest(EquipmentAccessConfigTest, AttrTest):
-    
+
     CODE_ERROR_NOT_FOUND = CodeError.EQUIPMENT_ACCESS_NOT_FOUND
 
     def test_get_by_equipment_access(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_VALID )
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_VALID)
         valid_response(response)
         content = valid_content(response, self.XML_KEY, True)
-        
+
         query = Q(equipamento__id=self.ID_VALID)
         valid_get_filtered(content, self.OBJ, query)
-        
+
     def test_get_by_equipment_access_no_permission(self):
-        response = self.client_no_permission().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_VALID )
+        response = self.client_no_permission().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
-        
+
     def test_get_by_equipment_access_no_read_permission(self):
-        response = self.client_no_read_permission().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_VALID )
+        response = self.client_no_read_permission().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_equipment_access_nonexistent(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_NONEXISTENT)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.ID_NONEXISTENT)
         self._not_found(response)
 
     def test_get_by_equipment_access_negative(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.NEGATIVE_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.NEGATIVE_ATTR)
         self._attr_invalid(response)
-    
+
     def test_get_by_equipment_access_letter(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.LETTER_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.LETTER_ATTR)
         self._attr_invalid(response)
-    
+
     def test_get_by_equipment_access_zero(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.ZERO_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.ZERO_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_equipment_access_empty(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP_ACCESS_ID % self.EMPTY_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP_ACCESS_ID % self.EMPTY_ATTR)
         self._attr_invalid(response)
 
 
-class EquipmentAccessTest(EquipmentAccessConfigTest): 
-    
+class EquipmentAccessTest(EquipmentAccessConfigTest):
+
     def test_save_valid(self):
         mock = self.mock_valid()
-        response = self.save({ self.XML_KEY : mock })
+        response = self.save({self.XML_KEY: mock})
         valid_response(response)
         valid_content(response, self.XML_KEY)
-        
+
     def test_save_no_permission(self):
         mock = self.mock_valid()
-        response = self.save({ self.XML_KEY : mock }, CLIENT_TYPES.NO_PERMISSION)
+        response = self.save({self.XML_KEY: mock}, CLIENT_TYPES.NO_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_save_no_write_permission(self):
         mock = self.mock_valid()
-        response = self.save({ self.XML_KEY : mock }, CLIENT_TYPES.NO_WRITE_PERMISSION)
+        response = self.save(
+            {self.XML_KEY: mock}, CLIENT_TYPES.NO_WRITE_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
-
 
     def test_alter_valid(self):
         mock = self.mock_valid_alter()
-        response = self.client_autenticado().postXML(self.URL_ALTER, {self.XML_KEY:mock})
+        response = self.client_autenticado().postXML(
+            self.URL_ALTER, {self.XML_KEY: mock})
         valid_response(response)
-        tpa = EquipamentoAcesso.get_by_pk(self.ID_ALTER_VALID)        
+        tpa = EquipamentoAcesso.get_by_pk(self.ID_ALTER_VALID)
         self.valid_attr(mock, model_to_dict(tpa))
-    
 
     def test_alter_no_permission(self):
         mock = self.mock_valid_alter()
-        response = self.client_no_permission().postXML(self.URL_ALTER, {self.XML_KEY:mock})
+        response = self.client_no_permission().postXML(
+            self.URL_ALTER, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
-    
 
     def test_alter_no_write_permission(self):
         mock = self.mock_valid_alter()
-        response = self.client_no_write_permission().postXML(self.URL_ALTER, {self.XML_KEY:mock})
+        response = self.client_no_write_permission().postXML(
+            self.URL_ALTER, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
 
@@ -224,22 +237,22 @@ class EquipmentAccessAttrEquipmentTest(EquipmentAccessConfigTest, AttrTest):
 
 
 class EquipmentAccessAttrAccessTest(EquipmentAccessConfigTest, AttrTest):
-    
+
     KEY_ATTR = "id_tipo_acesso"
     CODE_ERROR_NOT_FOUND = CodeError.ACCESS_TYPE_NOT_FOUND
-      
+
     def test_save_nonexistent(self):
         self.save_attr_nonexistent()
-    
+
     def test_save_negative(self):
         self.save_attr_negative()
-        
+
     def test_save_letter(self):
         self.save_attr_letter()
-        
+
     def test_save_zero(self):
         self.save_attr_zero()
-    
+
     def test_save_empty(self):
         self.save_attr_empty()
 
@@ -250,33 +263,33 @@ class EquipmentAccessAttrAccessTest(EquipmentAccessConfigTest, AttrTest):
 class EquipmentAccessAttrFqdnTest(EquipmentAccessConfigTest, AttrTest):
 
     KEY_ATTR = "fqdn"
-    
+
     def test_save_maxsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(101)
         self.process_save_attr_invalid(mock)
-    
+
     def test_save_minsize(self):
         mock = self.mock_valid()
         mock[self.KEY_ATTR] = string_generator(3)
         self.process_save_attr_invalid(mock)
-        
+
     def test_save_empty(self):
         self.save_attr_empty()
 
     def test_save_none(self):
         self.save_attr_none()
 
-    def test_alter_maxsize(self):    
+    def test_alter_maxsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(101)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-    
-    def test_alter_minsize(self):    
+
+    def test_alter_minsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(3)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-    
+
     def test_alter_empty(self):
         self.alter_attr_empty(self.ID_ALTER_VALID)
 
@@ -292,28 +305,28 @@ class EquipmentAccessAttrUserTest(EquipmentAccessConfigTest, AttrTest):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(21)
         self.process_save_attr_invalid(mock)
-    
+
     def test_save_minsize(self):
         mock = self.mock_valid()
         mock[self.KEY_ATTR] = string_generator(2)
         self.process_save_attr_invalid(mock)
-        
+
     def test_save_empty(self):
         self.save_attr_empty()
 
     def test_save_none(self):
         self.save_attr_none()
-    
-    def test_alter_maxsize(self):    
+
+    def test_alter_maxsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(21)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-    
-    def test_alter_minsize(self):    
+
+    def test_alter_minsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(2)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-        
+
     def test_alter_empty(self):
         self.alter_attr_empty(self.ID_ALTER_VALID)
 
@@ -324,33 +337,33 @@ class EquipmentAccessAttrUserTest(EquipmentAccessConfigTest, AttrTest):
 class EquipmentAccessAttrPassTest(EquipmentAccessConfigTest, AttrTest):
 
     KEY_ATTR = "pass"
-    
+
     def test_save_maxsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(151)
         self.process_save_attr_invalid(mock)
-    
+
     def test_save_minsize(self):
         mock = self.mock_valid()
         mock[self.KEY_ATTR] = string_generator(2)
         self.process_save_attr_invalid(mock)
-        
+
     def test_save_empty(self):
         self.save_attr_empty()
 
     def test_save_none(self):
         self.save_attr_none()
 
-    def test_alter_maxsize(self):    
+    def test_alter_maxsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(151)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-    
-    def test_alter_minsize(self):    
+
+    def test_alter_minsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(2)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-        
+
     def test_alter_empty(self):
         self.alter_attr_empty(self.ID_ALTER_VALID)
 
@@ -366,28 +379,28 @@ class EquipmentAccessAttrEnablePassTest(EquipmentAccessConfigTest, AttrTest):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(151)
         self.process_save_attr_invalid(mock)
-    
+
     def test_save_minsize(self):
         mock = self.mock_valid()
         mock[self.KEY_ATTR] = string_generator(2)
         self.process_save_attr_invalid(mock)
-        
+
     def test_save_empty(self):
         self.save_attr_empty()
 
     def test_save_none(self):
         self.save_attr_none()
 
-    def test_alter_maxsize(self):    
+    def test_alter_maxsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(151)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-    
-    def test_alter_minsize(self):    
+
+    def test_alter_minsize(self):
         mock = self.mock_valid_alter()
         mock[self.KEY_ATTR] = string_generator(2)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
-        
+
     def test_alter_empty(self):
         self.alter_attr_empty(self.ID_ALTER_VALID)
 
@@ -396,63 +409,78 @@ class EquipmentAccessAttrEnablePassTest(EquipmentAccessConfigTest, AttrTest):
 
 
 class EquipmentAccessRemoveTest(EquipmentAccessConfigTest, RemoveTest):
-    
+
     def test_remove_valid(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.ID_ACCESS))
         valid_response(response)
 
     def test_remove_no_permission(self):
-        response = self.client_no_permission().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.ID_ACCESS ))
+        response = self.client_no_permission().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.ID_ACCESS))
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_remove_no_write_permission(self):
-        response = self.client_no_write_permission().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.ID_ACCESS ))
+        response = self.client_no_write_permission().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.ID_ACCESS))
         valid_response(response, httplib.PAYMENT_REQUIRED)
-    
+
     def test_remove_equipment_nonexistent(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_NONEXISTENT, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_NONEXISTENT, self.ID_ACCESS))
         self._not_found(response, CodeError.EQUIPMENT_NOT_FOUND)
-    
+
     def test_remove_equipment_negative(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.NEGATIVE_ATTR, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.NEGATIVE_ATTR, self.ID_ACCESS))
         self._attr_invalid(response)
 
     def test_remove_equipment_letter(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.LETTER_ATTR, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.LETTER_ATTR, self.ID_ACCESS))
         self._attr_invalid(response)
 
     def test_remove_equipment_zero(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ZERO_ATTR, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ZERO_ATTR, self.ID_ACCESS))
         self._attr_invalid(response)
 
     def test_remove_equipment_empty(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.EMPTY_ATTR, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.EMPTY_ATTR, self.ID_ACCESS))
         self._attr_invalid(response)
-    
+
     def test_remove_equipment_none(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.NONE_ATTR, self.ID_ACCESS ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.NONE_ATTR, self.ID_ACCESS))
         self._attr_invalid(response)
-    
+
     def test_remove_access_nonexistent(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.ID_NONEXISTENT ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.ID_NONEXISTENT))
         self._not_found(response, CodeError.ACCESS_TYPE_NOT_FOUND)
 
     def test_remove_access_negative(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.NEGATIVE_ATTR ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.NEGATIVE_ATTR))
         self._attr_invalid(response)
 
     def test_remove_access_letter(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.LETTER_ATTR ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.LETTER_ATTR))
         self._attr_invalid(response)
 
     def test_remove_access_zero(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.ZERO_ATTR ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.ZERO_ATTR))
         self._attr_invalid(response)
 
     def test_remove_access_empty(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.EMPTY_ATTR ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.EMPTY_ATTR))
         self._attr_invalid(response)
-    
+
     def test_remove_access_none(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % ( self.ID_EQUIPMENT, self.NONE_ATTR ))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % (self.ID_EQUIPMENT, self.NONE_ATTR))
         self._attr_invalid(response)

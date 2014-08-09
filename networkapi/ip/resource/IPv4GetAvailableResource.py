@@ -16,8 +16,9 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
 
+
 class IPv4GetAvailableResource(RestResource):
-    
+
     log = Log('IPv4GetAvailableResource')
 
     def handle_get(self, request, user, *args, **kwargs):
@@ -32,31 +33,33 @@ class IPv4GetAvailableResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.IPS, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-            
-            ## Business Validations
-            
+
+            # Business Validations
+
             # Valid id access
             id_network = kwargs.get('id_rede')
-            
+
             if not is_valid_int_greater_zero_param(id_network):
-                self.log.error(u'Parameter id_rede is invalid. Value: %s.', id_network)
+                self.log.error(
+                    u'Parameter id_rede is invalid. Value: %s.', id_network)
                 raise InvalidValueError(None, 'id_rede', id_network)
-            
-            ## Business Rules
-            
-            ip = Ip.get_available_ip( id_network)
-            
+
+            # Business Rules
+
+            ip = Ip.get_available_ip(id_network)
+
             list_ip = []
             list_ip.append(ip)
             network_map = dict()
             map_aux = dict()
             map_aux['ip'] = list_ip
-                        
+
             network_map['ip'] = map_aux
 
-            ## Business Rules
+            # Business Rules
 
             return self.response(dumps_networkapi(network_map))
 

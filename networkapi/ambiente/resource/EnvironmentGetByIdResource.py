@@ -21,33 +21,34 @@ class EnvironmentGetByIdResource(RestResource):
     log = Log('EnvironmentGetByIdResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        
         """Handle GET requests to get Environment by id.
 
             URLs: /environment/id/<environment_id>/,
         """
-        
+
         try:
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()
-        
+
             environment_list = []
-        
+
             environment_id = kwargs.get('environment_id')
-            
+
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'Parameter environment_id is invalid. Value: %s.', environment_id)
+                self.log.error(
+                    u'Parameter environment_id is invalid. Value: %s.', environment_id)
                 raise InvalidValueError(None, 'environment_id', environment_id)
-            
-            environment_list.append(get_environment_map(Ambiente().get_by_pk(environment_id)))
-        
-            return self.response(dumps_networkapi({'ambiente':environment_list}))
+
+            environment_list.append(
+                get_environment_map(Ambiente().get_by_pk(environment_id)))
+
+            return self.response(dumps_networkapi({'ambiente': environment_list}))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except AmbienteNotFoundError:
             return self.response_error(112)
         except (AmbienteError, GrupoError):
             return self.response_error(1)
-    
+
 if __name__ == '__main__':
     pass

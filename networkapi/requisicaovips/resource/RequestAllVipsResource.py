@@ -18,23 +18,23 @@ from networkapi.rest import RestResource
 class RequestAllVipsResource(RestResource):
 
     log = Log('RequestAllVipsResource')
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """
         Handles GET requests to list all the VIPs.
-        
+
         URL: vip/all/
         """
-        
+
         try:
             if not has_perm(user,
                             AdminPermission.VIPS_REQUEST,
                             AdminPermission.READ_OPERATION):
                 return self.not_authorized()
-            
+
             request_vips = RequisicaoVips.get_all()
             vips = {}
-            
+
             for vip in request_vips:
                 request_vip_map = vip.variables_to_map()
                 request_vip_map['id'] = vip.id
@@ -42,11 +42,12 @@ class RequestAllVipsResource(RestResource):
                 request_vip_map['vip_criado'] = vip.vip_criado
                 request_vip_map['id_ip'] = vip.ip_id
                 request_vip_map['id_ipv6'] = vip.ipv6_id
-                request_vip_map['id_healthcheck_expect'] = vip.healthcheck_expect_id
+                request_vip_map[
+                    'id_healthcheck_expect'] = vip.healthcheck_expect_id
                 vips['vip_%s' % (vip.id)] = request_vip_map
-            
+
             return self.response(dumps_networkapi(vips))
-            
+
         except (RequisicaoVipsNotFoundError):
             return self.response_error(152)
         except (RequisicaoVipsError, GrupoError):

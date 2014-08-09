@@ -15,6 +15,7 @@ from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is
 from networkapi.exception import InvalidValueError
 from django.forms.models import model_to_dict
 
+
 class AuthenticateResource(RestResource):
 
     log = Log('AuthenticateResource')
@@ -24,14 +25,15 @@ class AuthenticateResource(RestResource):
 
         URL: authenticate/
         """
-        
+
         try:
 
             self.log.info("Authenticate user")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.AUTHENTICATE, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -53,45 +55,47 @@ class AuthenticateResource(RestResource):
 
             # Username can NOT be less 3 and greater than 45
             if not is_valid_string_minsize(username, 3) or not is_valid_string_maxsize(username, 45):
-                self.log.error(u'Parameter username is invalid. Value: %s.', username)
+                self.log.error(
+                    u'Parameter username is invalid. Value: %s.', username)
                 raise InvalidValueError(None, 'username', username)
-            
+
             if not is_valid_boolean_param(is_ldap_user):
-                self.log.error(u'Parameter is_ldap_user is invalid. Value: %s.', is_ldap_user)
+                self.log.error(
+                    u'Parameter is_ldap_user is invalid. Value: %s.', is_ldap_user)
                 raise InvalidValueError(None, 'is_ldap_user', is_ldap_user)
             else:
                 is_ldap_user = convert_string_or_int_to_boolean(is_ldap_user)
-            
+
             if is_ldap_user:
                 user = Usuario().get_by_ldap_user(username, True)
                 password = user.pwd
             else:
                 # Password can NOT be less 3 and greater than 45
                 if not is_valid_string_minsize(password, 3) or not is_valid_string_maxsize(password, 45):
-                    self.log.error(u'Parameter password is invalid. Value: %s.', '****')
+                    self.log.error(
+                        u'Parameter password is invalid. Value: %s.', '****')
                     raise InvalidValueError(None, 'password', '****')
 
                 # Find user by username, password to check if it exist
                 user = Usuario().get_enabled_user(username.upper(), password)
-            
-                
+
             # Valid user
-            if user is None: 
+            if user is None:
                 return self.response(dumps_networkapi({}))
 
             perms = {}
             for ugroup in user.grupos.all():
 
                 for perm in ugroup.permissaoadministrativa_set.all():
-                    
+
                     function = perm.permission.function
 
                     if perms.has_key(function):
-                        
+
                         write = False
                         read = False
 
-                        if perms.get(function).get('write') == True or perm.escrita == True :
+                        if perms.get(function).get('write') == True or perm.escrita == True:
                             write = True
 
                         if perms.get(function).get('read') == True or perm.leitura == True:
@@ -100,10 +104,12 @@ class AuthenticateResource(RestResource):
                         perms[function] = {'write': write, 'read': read}
 
                     else:
-                        perms[function] = {'write': perm.escrita, 'read': perm.leitura}
+                        perms[function] = {
+                            'write': perm.escrita, 'read': perm.leitura}
 
             user_map = {}
-            user_dict = model_to_dict(user, fields=['id', 'user', 'nome', 'email', 'ativo', 'user_ldap' ])
+            user_dict = model_to_dict(
+                user, fields=['id', 'user', 'nome', 'email', 'ativo', 'user_ldap'])
             user_dict['pwd'] = password
             user_dict['permission'] = perms
             user_map['user'] = user_dict

@@ -23,13 +23,14 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 from networkapi.exception import InvalidValueError
 
+
 class HealthcheckExpectResource(RestResource):
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """Trata as requisições GET para consulta de HealthCheckExpects.
-        
+
         Lista as informações dos HealthCheckExpect's de um determinado ambiente.
-        
+
         URL:  /healthcheckexpect/ambiente/<id_amb>/
         """
         try:
@@ -39,27 +40,31 @@ class HealthcheckExpectResource(RestResource):
                 return self.not_authorized()
 
             map_list = []
-            
+
             environment_id = kwargs.get('id_amb')
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'The environment_id parameter is not a valid value: %s.', environment_id)
+                self.log.error(
+                    u'The environment_id parameter is not a valid value: %s.', environment_id)
                 raise InvalidValueError(None, 'environment_id', environment_id)
-            
+
             environment = Ambiente().get_by_pk(environment_id)
-            
+
             healthcheckexpects = HealthcheckExpect().search(environment_id)
-            
+
             for healthcheckexpect in healthcheckexpects:
                 healthcheckexpect_map = dict()
                 healthcheckexpect_map['id'] = healthcheckexpect.id
-                healthcheckexpect_map['expect_string'] = healthcheckexpect.expect_string
-                healthcheckexpect_map['match_list'] = healthcheckexpect.match_list
-                healthcheckexpect_map['id_ambiente'] = healthcheckexpect.ambiente_id
-                
+                healthcheckexpect_map[
+                    'expect_string'] = healthcheckexpect.expect_string
+                healthcheckexpect_map[
+                    'match_list'] = healthcheckexpect.match_list
+                healthcheckexpect_map[
+                    'id_ambiente'] = healthcheckexpect.ambiente_id
+
                 map_list.append(healthcheckexpect_map)
-        
-            return self.response(dumps_networkapi({'healthcheck_expect':map_list}))
-        
+
+            return self.response(dumps_networkapi({'healthcheck_expect': map_list}))
+
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except AmbienteNotFoundError:

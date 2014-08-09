@@ -23,7 +23,9 @@ from networkapi.exception import InvalidValueError, EnvironmentVipError, Environ
 from django.forms.models import model_to_dict
 from networkapi.grupo.models import GrupoError
 
+
 class EnvironmentVipSearchResource(RestResource):
+
     '''Class that receives requests related to the table 'EnvironmentVip'.'''
 
     log = Log('EnvironmentVipSearchResource')
@@ -40,7 +42,8 @@ class EnvironmentVipSearchResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -61,9 +64,10 @@ class EnvironmentVipSearchResource(RestResource):
             cliente = environmentvip_map.get('cliente_txt')
             ambiente_p44 = environmentvip_map.get('ambiente_p44_txt')
 
-            # Valid Parameters is none 
+            # Valid Parameters is none
             if id_environment_vip is None and finalidade is None and cliente is None and ambiente_p44 is None:
-                self.log.error(u'At least one of the parameters have to be informed to query')
+                self.log.error(
+                    u'At least one of the parameters have to be informed to query')
                 return self.response_error(287)
 
             # New Queryset by Environment Vip
@@ -73,12 +77,15 @@ class EnvironmentVipSearchResource(RestResource):
 
                 # Valid Environment VIP ID
                 if not is_valid_int_greater_zero_param(id_environment_vip):
-                    self.log.error(u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
-                    raise InvalidValueError(None, 'id_environment_vip', id_environment_vip)
+                    self.log.error(
+                        u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
+                    raise InvalidValueError(
+                        None, 'id_environment_vip', id_environment_vip)
 
-                queryset = queryset.filter(id = id_environment_vip)
+                queryset = queryset.filter(id=id_environment_vip)
 
-                # Checks if there Vip Environment and all other  parameters are null
+                # Checks if there Vip Environment and all other  parameters are
+                # null
                 if len(queryset) == 0 and finalidade is None and cliente is None and ambiente_p44 is None:
                     raise EnvironmentVipNotFoundError(None)
 
@@ -97,29 +104,35 @@ class EnvironmentVipSearchResource(RestResource):
 
                         # finalidade_txt can NOT be greater than 50
                         if not is_valid_string_maxsize(finalidade, 50, True) or not is_valid_text(finalidade):
-                            self.log.error(u'Parameter finalidade_txt is invalid. Value: %s.', finalidade)
-                            raise InvalidValueError(None, 'finalidade_txt', finalidade)
+                            self.log.error(
+                                u'Parameter finalidade_txt is invalid. Value: %s.', finalidade)
+                            raise InvalidValueError(
+                                None, 'finalidade_txt', finalidade)
 
-                        queryset = queryset.filter(finalidade_txt = finalidade)
+                        queryset = queryset.filter(finalidade_txt=finalidade)
 
                     if cliente is not None:
 
                         # cliente_txt can NOT be greater than 50
                         if not is_valid_string_maxsize(cliente, 50, True) or not is_valid_text(cliente):
-                            self.log.error(u'Parameter cliente_txt is invalid. Value: %s.', cliente)
-                            raise InvalidValueError(None, 'cliente_txt', cliente)
+                            self.log.error(
+                                u'Parameter cliente_txt is invalid. Value: %s.', cliente)
+                            raise InvalidValueError(
+                                None, 'cliente_txt', cliente)
 
-                        queryset = queryset.filter(cliente_txt = cliente)
+                        queryset = queryset.filter(cliente_txt=cliente)
 
                     if ambiente_p44 is not None:
 
                         # ambiente_p44_txt can NOT be greater than 50
                         if not is_valid_string_maxsize(ambiente_p44, 50, True) or not is_valid_text(ambiente_p44):
-                            self.log.error(u'Parameter ambiente_p44_txt is invalid. Value: %s.', ambiente_p44)
-                            raise InvalidValueError(None, 'ambiente_p44_txt', ambiente_p44)
+                            self.log.error(
+                                u'Parameter ambiente_p44_txt is invalid. Value: %s.', ambiente_p44)
+                            raise InvalidValueError(
+                                None, 'ambiente_p44_txt', ambiente_p44)
 
-                        queryset = queryset.filter(ambiente_p44_txt = ambiente_p44)
-
+                        queryset = queryset.filter(
+                            ambiente_p44_txt=ambiente_p44)
 
             evips = []
             for evip in queryset:
@@ -130,7 +143,7 @@ class EnvironmentVipSearchResource(RestResource):
                 request_evip_map['ambiente_p44_txt'] = evip.ambiente_p44_txt
                 evips.append(request_evip_map)
 
-            return self.response(dumps_networkapi({'environment_vip':evips}))
+            return self.response(dumps_networkapi({'environment_vip': evips}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -150,31 +163,33 @@ class EnvironmentVipSearchResource(RestResource):
 
         except Exception, e:
             return self.response_error(1)
-        
+
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests list all Environment VIP Availables.
-        
+
         URL: environmentvip/search/id_vlan
         """
         try:
-            
+
             id_vlan = int(kwargs['id_vlan'])
-            
+
             self.log.info("List all Environment VIP availables")
-            
-            ## Commons Validations
-            
+
+            # Commons Validations
+
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-            
-            ## Business Rules
+
+            # Business Rules
             evips = EnvironmentVip.objects.all()
-            evip_list = EnvironmentVip.available_evips(EnvironmentVip(), evips, id_vlan)
+            evip_list = EnvironmentVip.available_evips(
+                EnvironmentVip(), evips, id_vlan)
 
             return self.response(dumps_networkapi({'environment_vip': evip_list}))
-        
+
         except (EnvironmentVipError, GrupoError), e:
             self.log.error(e)
             return self.response_error(1)

@@ -21,7 +21,9 @@ from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is
 
 from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError
 
+
 class EnvironmentVipGetAmbienteP44TxtResource(RestResource):
+
     '''Class that receives requests related to the table 'EnvironmentVip'.'''
 
     log = Log('EnvironmentVipGetAmbienteP44TxtResource')
@@ -34,11 +36,13 @@ class EnvironmentVipGetAmbienteP44TxtResource(RestResource):
 
         try:
 
-            self.log.info("Search ambiente_p44_txt Environment VIP by finalidade_txt and cliente_txt")
+            self.log.info(
+                "Search ambiente_p44_txt Environment VIP by finalidade_txt and cliente_txt")
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -56,24 +60,27 @@ class EnvironmentVipGetAmbienteP44TxtResource(RestResource):
             # Get XML data
             finalidade = environmentvip_map.get('finalidade_txt')
             cliente_txt = environmentvip_map.get('cliente_txt')
-            
+
             # finalidade_txt can NOT be greater than 50
             if not is_valid_string_maxsize(finalidade, 50, True) or not is_valid_string_minsize(finalidade, 3, True) or not is_valid_text(finalidade):
-                self.log.error(u'Parameter finalidade_txt is invalid. Value: %s.', finalidade)
+                self.log.error(
+                    u'Parameter finalidade_txt is invalid. Value: %s.', finalidade)
                 raise InvalidValueError(None, 'finalidade_txt', finalidade)
 
             # cliente_txt can NOT be greater than 50
             if not is_valid_string_maxsize(cliente_txt, 50, True) or not is_valid_string_minsize(cliente_txt, 3, True) or not is_valid_text(cliente_txt):
-                self.log.error(u'Parameter cliente_txt is invalid. Value: %s.', cliente_txt)
+                self.log.error(
+                    u'Parameter cliente_txt is invalid. Value: %s.', cliente_txt)
                 raise InvalidValueError(None, 'cliente_txt', cliente_txt)
-            
+
             environmentVip = EnvironmentVip()
-            
-            evip_values = environmentVip.list_all_ambientep44_by_finality_and_cliente(finalidade,cliente_txt)
-           
+
+            evip_values = environmentVip.list_all_ambientep44_by_finality_and_cliente(
+                finalidade, cliente_txt)
+
             evips = dict()
             evips_list = []
-            
+
             for evip in evip_values:
                 evips['id'] = evip.id
                 evips['finalidade_txt'] = finalidade
@@ -82,7 +89,7 @@ class EnvironmentVipGetAmbienteP44TxtResource(RestResource):
                 evips_list.append(evips)
                 evips = dict()
 
-            return self.response(dumps_networkapi({'ambiente_p44':evips_list}))
+            return self.response(dumps_networkapi({'ambiente_p44': evips_list}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)

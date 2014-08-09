@@ -34,14 +34,15 @@ class CreateVipResource(RestResource):
 
         try:
 
-            # # Commons Validations
+            # Commons Validations
 
             # User permission
             if not has_perm(user, AdminPermission.VIP_CREATE_SCRIPT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            # # Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -80,61 +81,61 @@ class CreateVipResource(RestResource):
     def __create_vip(self, vip_id, user):
 
                 # Valid vip ID
-            if not is_valid_int_greater_zero_param(vip_id):
-                self.log.error(u'Parameter id_vip is invalid. Value: %s.', vip_id)
-                raise InvalidValueError(None, 'id_vip', vip_id)
+        if not is_valid_int_greater_zero_param(vip_id):
+            self.log.error(u'Parameter id_vip is invalid. Value: %s.', vip_id)
+            raise InvalidValueError(None, 'id_vip', vip_id)
 
-            # Vip must exists in database
-            vip = RequisicaoVips.get_by_pk(vip_id)
+        # Vip must exists in database
+        vip = RequisicaoVips.get_by_pk(vip_id)
 
-            with distributedlock(LOCK_VIP % vip_id):
+        with distributedlock(LOCK_VIP % vip_id):
 
-                # Equipment permissions
-                if vip.ip is not None:
-                    for ip_equipment in vip.ip.ipequipamento_set.all():
-                        if not has_perm(user, AdminPermission.VIP_CREATE_SCRIPT, AdminPermission.WRITE_OPERATION, None, ip_equipment.equipamento_id, AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION):
-                            return self.not_authorized()
+            # Equipment permissions
+            if vip.ip is not None:
+                for ip_equipment in vip.ip.ipequipamento_set.all():
+                    if not has_perm(user, AdminPermission.VIP_CREATE_SCRIPT, AdminPermission.WRITE_OPERATION, None, ip_equipment.equipamento_id, AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION):
+                        return self.not_authorized()
 
-                if vip.ipv6 is not None:
-                    for ip_equipment in vip.ipv6.ipv6equipament_set.all():
-                        if not has_perm(user, AdminPermission.VIP_CREATE_SCRIPT, AdminPermission.WRITE_OPERATION, None, ip_equipment.equipamento_id, AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION):
-                            return self.not_authorized()
+            if vip.ipv6 is not None:
+                for ip_equipment in vip.ipv6.ipv6equipament_set.all():
+                    if not has_perm(user, AdminPermission.VIP_CREATE_SCRIPT, AdminPermission.WRITE_OPERATION, None, ip_equipment.equipamento_id, AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION):
+                        return self.not_authorized()
 
-                # Must be validated
-                if not vip.validado:
-                    return self.response_error(191, vip_id)
+            # Must be validated
+            if not vip.validado:
+                return self.response_error(191, vip_id)
 
-                # Must be created
-                if vip.vip_criado:
-                    return self.response_error(192, vip_id)
+            # Must be created
+            if vip.vip_criado:
+                return self.response_error(192, vip_id)
 
-                # # Business Rules
+            # Business Rules
 
-                # Make command
-                command = VIP_CREATE % (vip.id)
+            # Make command
+            command = VIP_CREATE % (vip.id)
 
-                # Execute command
-                code, stdout, stderr = exec_script(command)
-                if code == 0:
+            # Execute command
+            code, stdout, stderr = exec_script(command)
+            if code == 0:
 
-                    success_map = dict()
-                    success_map['codigo'] = '%04d' % code
-                    success_map['descricao'] = {'stdout': stdout, 'stderr': stderr}
+                success_map = dict()
+                success_map['codigo'] = '%04d' % code
+                success_map['descricao'] = {'stdout': stdout, 'stderr': stderr}
 
-                    vip.rule_applied = vip.rule
-                    vip.filter_applied = vip.l7_filter
+                vip.rule_applied = vip.rule
+                vip.filter_applied = vip.l7_filter
 
-                    vip.vip_criado = 1
-                    vip.save(user)
+                vip.vip_criado = 1
+                vip.save(user)
 
-                    map = dict()
-                    map['sucesso'] = success_map
+                map = dict()
+                map['sucesso'] = success_map
 
-                else:
-                    return self.response_error(2, stdout + stderr)
+            else:
+                return self.response_error(2, stdout + stderr)
 
-                # Return XML
-                return self.response(dumps_networkapi(map))
+            # Return XML
+            return self.response(dumps_networkapi(map))
 
     def handle_put(self, request, user, *args, **kwargs):
         """Trata as requisições de PUT para atualizar/criar uma requisição de VIP.

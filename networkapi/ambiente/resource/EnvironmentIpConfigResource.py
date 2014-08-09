@@ -31,13 +31,13 @@ class EnvironmentIpConfigResource(RestResource):
 
         try:
 
-            # # Commons Validations
+            # Commons Validations
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
                 return self.not_authorized()
 
-            # # Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -75,7 +75,7 @@ class EnvironmentIpConfigResource(RestResource):
 
             config.save(user)
 
-            # # Make return xml
+            # Make return xml
             conf_env_map = dict()
             conf_env_map['id_config_do_ambiente'] = config.id
 

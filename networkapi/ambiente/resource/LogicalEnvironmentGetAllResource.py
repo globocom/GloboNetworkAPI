@@ -13,6 +13,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.ambiente.models import AmbienteLogico, AmbienteError
 from django.forms.models import model_to_dict
 
+
 class LogicalEnvironmentGetAllResource(RestResource):
 
     log = Log('LogicalEnvironmentGetAllResource')
@@ -23,20 +24,20 @@ class LogicalEnvironmentGetAllResource(RestResource):
         URL: logicalenvironment/all
         """
         try:
-            
+
             self.log.info("GET to list all the Logical Environment")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             logical_environment_list = []
             for group in AmbienteLogico.objects.all():
                 logical_environment_list.append(model_to_dict(group))
 
-            return self.response(dumps_networkapi({'logical_environment':logical_environment_list}))
-
+            return self.response(dumps_networkapi({'logical_environment': logical_environment_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

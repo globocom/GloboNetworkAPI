@@ -35,6 +35,7 @@ from networkapi.filter.models import CannotDissociateFilterError
 from networkapi.exception import InvalidValueError
 from networkapi.vlan.models import Vlan
 
+
 def get_environment_map(environment):
     environment_map = dict()
     environment_map['id'] = environment.id
@@ -46,8 +47,8 @@ def get_environment_map(environment):
     environment_map['id_grupo_l3'] = environment.grupo_l3.id
     environment_map['nome_grupo_l3'] = environment.grupo_l3.nome
     environment_map['ambiente_rede'] = environment.divisao_dc.nome + ' - ' + \
-                                        environment.ambiente_logico.nome + ' - ' + \
-                                        environment.grupo_l3.nome
+        environment.ambiente_logico.nome + ' - ' + \
+        environment.grupo_l3.nome
 
     if environment.filter is not None:
         environment_map['id_filter'] = environment.filter.id
@@ -57,6 +58,7 @@ def get_environment_map(environment):
 
 
 class AmbienteResource(RestResource):
+
     '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
 
     log = Log('AmbienteResource')
@@ -84,23 +86,27 @@ class AmbienteResource(RestResource):
 
             if division_id is not None:
                 if not is_valid_int_greater_zero_param(division_id):
-                    self.log.error(u'The division_id parameter is not a valid value: %s.', division_id)
+                    self.log.error(
+                        u'The division_id parameter is not a valid value: %s.', division_id)
                     raise InvalidValueError(None, 'division_id', division_id)
                 else:
                     division_dc = DivisaoDc.get_by_pk(division_id)
 
             if environment_logical_id is not None:
                 if not is_valid_int_greater_zero_param(environment_logical_id):
-                    self.log.error(u'The environment_logical_id parameter is not a valid value: %s.', environment_logical_id)
-                    raise InvalidValueError(None, 'environment_logical_id', environment_logical_id)
+                    self.log.error(
+                        u'The environment_logical_id parameter is not a valid value: %s.', environment_logical_id)
+                    raise InvalidValueError(
+                        None, 'environment_logical_id', environment_logical_id)
                 else:
                     loc_env = AmbienteLogico.get_by_pk(environment_logical_id)
 
-            environments = Ambiente().search(division_id, environment_logical_id)
+            environments = Ambiente().search(
+                division_id, environment_logical_id)
             for environment in environments:
                 environment_list.append(get_environment_map(environment))
 
-            return self.response(dumps_networkapi({'ambiente':environment_list}))
+            return self.response(dumps_networkapi({'ambiente': environment_list}))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except DivisaoDcNotFoundError:
@@ -121,8 +127,8 @@ class AmbienteResource(RestResource):
         try:
 
             if not has_perm(user,
-                        AdminPermission.ENVIRONMENT_MANAGEMENT,
-                        AdminPermission.WRITE_OPERATION):
+                            AdminPermission.ENVIRONMENT_MANAGEMENT,
+                            AdminPermission.WRITE_OPERATION):
                 return self.not_authorized()
 
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -144,46 +150,52 @@ class AmbienteResource(RestResource):
 
             l3_group_id = environment_map.get('id_grupo_l3')
             if not is_valid_int_greater_zero_param(l3_group_id):
-                self.log.error(u'The l3_group_id parameter is not a valid value: %s.', l3_group_id)
+                self.log.error(
+                    u'The l3_group_id parameter is not a valid value: %s.', l3_group_id)
                 raise InvalidValueError(None, 'l3_group_id', l3_group_id)
             else:
                 l3_group_id = int(l3_group_id)
 
             logic_environment_id = environment_map.get('id_ambiente_logico')
             if not is_valid_int_greater_zero_param(logic_environment_id):
-                self.log.error(u'The logic_environment_id parameter is not a valid value: %s.', logic_environment_id)
-                raise InvalidValueError(None, 'logic_environment_id', logic_environment_id)
+                self.log.error(
+                    u'The logic_environment_id parameter is not a valid value: %s.', logic_environment_id)
+                raise InvalidValueError(
+                    None, 'logic_environment_id', logic_environment_id)
             else:
                 logic_environment_id = int(logic_environment_id)
 
-
             dc_division_id = environment_map.get('id_divisao')
             if not is_valid_int_greater_zero_param(dc_division_id):
-                self.log.error(u'The dc_division_id parameter is not a valid value: %s.', dc_division_id)
+                self.log.error(
+                    u'The dc_division_id parameter is not a valid value: %s.', dc_division_id)
                 raise InvalidValueError(None, 'dc_division_id', dc_division_id)
             else:
                 dc_division_id = int(dc_division_id)
 
-
             filter_id = environment_map.get('id_filter')
             if filter_id is not None:
                 if not is_valid_int_greater_zero_param(filter_id):
-                    self.log.error(u'Parameter filter_id is invalid. Value: %s.', filter_id)
+                    self.log.error(
+                        u'Parameter filter_id is invalid. Value: %s.', filter_id)
                     raise InvalidValueError(None, 'filter_id', filter_id)
 
             acl_path = environment_map.get('acl_path')
             if not is_valid_string_maxsize(acl_path, 250, False):
-                self.log.error(u'Parameter acl_path is invalid. Value: %s', acl_path)
+                self.log.error(
+                    u'Parameter acl_path is invalid. Value: %s', acl_path)
                 raise InvalidValueError(None, 'acl_path', acl_path)
 
             ipv4_template = environment_map.get('ipv4_template')
             if not is_valid_string_maxsize(ipv4_template, 250, False):
-                self.log.error(u'Parameter ipv4_template is invalid. Value: %s', ipv4_template)
+                self.log.error(
+                    u'Parameter ipv4_template is invalid. Value: %s', ipv4_template)
                 raise InvalidValueError(None, 'ipv4_template', ipv4_template)
 
             ipv6_template = environment_map.get('ipv6_template')
             if not is_valid_string_maxsize(ipv6_template, 250, False):
-                self.log.error(u'Parameter ipv6_template is invalid. Value: %s', ipv6_template)
+                self.log.error(
+                    u'Parameter ipv6_template is invalid. Value: %s', ipv6_template)
                 raise InvalidValueError(None, 'ipv6_template', ipv6_template)
 
             max_num_vlan_1 = environment_map.get('max_num_vlan_1')
@@ -192,19 +204,25 @@ class AmbienteResource(RestResource):
             min_num_vlan_2 = environment_map.get('min_num_vlan_2')
             # validate  max_num_vlan_1 and min_num_vlan_1
             if (max_num_vlan_1 != None and min_num_vlan_1 == None) or (min_num_vlan_1 != None and max_num_vlan_1 == None):
-                self.log.error(u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
-                raise InvalidValueError(None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
+                self.log.error(
+                    u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
+                raise InvalidValueError(
+                    None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
 
             if max_num_vlan_1 != None and min_num_vlan_1 != None:
                 max_num_vlan_1 = int(max_num_vlan_1)
                 min_num_vlan_1 = int(min_num_vlan_1)
 
                 if max_num_vlan_1 < 1 or min_num_vlan_1 < 1:
-                    self.log.error(u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
-                    raise InvalidValueError(None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
                 if max_num_vlan_1 <= min_num_vlan_1:
-                    self.log.error(u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
-                    raise InvalidValueError(None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
             else:
                 max_num_vlan_1 = max_num_vlan_2
                 min_num_vlan_1 = min_num_vlan_2
@@ -212,8 +230,10 @@ class AmbienteResource(RestResource):
 
             # validate  max_num_vlan_2 and min_num_vlan_2
             if (max_num_vlan_2 != None and min_num_vlan_2 == None) or (min_num_vlan_2 != None and max_num_vlan_2 == None):
-                    self.log.error(u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
-                    raise InvalidValueError(None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
+                self.log.error(
+                    u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
+                raise InvalidValueError(
+                    None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
 
             if max_num_vlan_2 != None and min_num_vlan_2 != None:
                 max_num_vlan_2 = int(max_num_vlan_2)
@@ -223,12 +243,16 @@ class AmbienteResource(RestResource):
                 min_num_vlan_1 = int(min_num_vlan_1)
 
                 if max_num_vlan_2 < 1 or min_num_vlan_2 < 1:
-                    self.log.error(u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
-                    raise InvalidValueError(None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
 
                 if max_num_vlan_2 <= min_num_vlan_2:
-                    self.log.error(u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
-                    raise InvalidValueError(None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
             else:
                 max_num_vlan_2 = max_num_vlan_1
                 min_num_vlan_2 = min_num_vlan_1
@@ -257,7 +281,7 @@ class AmbienteResource(RestResource):
 
             environment.create(user)
 
-            # # IP Config
+            # IP Config
             ip_config = kwargs.get('ip_config')
 
             # If ip config is set
@@ -283,7 +307,7 @@ class AmbienteResource(RestResource):
             environment_map = dict()
             environment_map['id'] = environment.id
 
-            return self.response(dumps_networkapi({'ambiente':environment_map}))
+            return self.response(dumps_networkapi({'ambiente': environment_map}))
 
         except GrupoError:
             return self.response_error(1)
@@ -329,7 +353,8 @@ class AmbienteResource(RestResource):
 
             environment_id = kwargs.get('id_ambiente')
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'The environment_id parameter is not a valid value: %s.', environment_id)
+                self.log.error(
+                    u'The environment_id parameter is not a valid value: %s.', environment_id)
                 raise InvalidValueError(None, 'environment_id', environment_id)
 
             if not has_perm(user,
@@ -351,7 +376,8 @@ class AmbienteResource(RestResource):
 
             l3_group_id = environment_map.get('id_grupo_l3')
             if not is_valid_int_greater_zero_param(l3_group_id):
-                self.log.error(u'The l3_group_id parameter is not a valid value: %s.', l3_group_id)
+                self.log.error(
+                    u'The l3_group_id parameter is not a valid value: %s.', l3_group_id)
                 raise InvalidValueError(None, 'l3_group_id', l3_group_id)
             else:
                 l3_group_id = int(l3_group_id)
@@ -360,8 +386,10 @@ class AmbienteResource(RestResource):
 
             logic_environment_id = environment_map.get('id_ambiente_logico')
             if not is_valid_int_greater_zero_param(logic_environment_id):
-                self.log.error(u'The logic_environment_id parameter is not a valid value: %s.', logic_environment_id)
-                raise InvalidValueError(None, 'logic_environment_id', logic_environment_id)
+                self.log.error(
+                    u'The logic_environment_id parameter is not a valid value: %s.', logic_environment_id)
+                raise InvalidValueError(
+                    None, 'logic_environment_id', logic_environment_id)
             else:
                 logic_environment_id = int(logic_environment_id)
 
@@ -369,7 +397,8 @@ class AmbienteResource(RestResource):
 
             dc_division_id = environment_map.get('id_divisao')
             if not is_valid_int_greater_zero_param(dc_division_id):
-                self.log.error(u'The dc_division_id parameter is not a valid value: %s.', dc_division_id)
+                self.log.error(
+                    u'The dc_division_id parameter is not a valid value: %s.', dc_division_id)
                 raise InvalidValueError(None, 'dc_division_id', dc_division_id)
             else:
                 dc_division_id = int(dc_division_id)
@@ -384,7 +413,8 @@ class AmbienteResource(RestResource):
             filter_id = environment_map.get('id_filter')
             if filter_id is not None:
                 if not is_valid_int_greater_zero_param(filter_id):
-                    self.log.error(u'Parameter filter_id is invalid. Value: %s.', filter_id)
+                    self.log.error(
+                        u'Parameter filter_id is invalid. Value: %s.', filter_id)
                     raise InvalidValueError(None, 'filter_id', filter_id)
 
                 filter_id = int(filter_id)
@@ -393,17 +423,20 @@ class AmbienteResource(RestResource):
 
             acl_path = environment_map.get('acl_path')
             if not is_valid_string_maxsize(acl_path, 250, False):
-                self.log.error(u'Parameter acl_path is invalid. Value: %s', acl_path)
+                self.log.error(
+                    u'Parameter acl_path is invalid. Value: %s', acl_path)
                 raise InvalidValueError(None, 'acl_path', acl_path)
 
             ipv4_template = environment_map.get('ipv4_template')
             if not is_valid_string_maxsize(ipv4_template, 250, False):
-                self.log.error(u'Parameter ipv4_template is invalid. Value: %s', ipv4_template)
+                self.log.error(
+                    u'Parameter ipv4_template is invalid. Value: %s', ipv4_template)
                 raise InvalidValueError(None, 'ipv4_template', ipv4_template)
 
             ipv6_template = environment_map.get('ipv6_template')
             if not is_valid_string_maxsize(ipv6_template, 250, False):
-                self.log.error(u'Parameter ipv6_template is invalid. Value: %s', ipv6_template)
+                self.log.error(
+                    u'Parameter ipv6_template is invalid. Value: %s', ipv6_template)
                 raise InvalidValueError(None, 'ipv6_template', ipv6_template)
 
             max_num_vlan_1 = environment_map.get('max_num_vlan_1')
@@ -412,19 +445,25 @@ class AmbienteResource(RestResource):
             min_num_vlan_2 = environment_map.get('min_num_vlan_2')
             # validate  max_num_vlan_1 and min_num_vlan_1
             if (max_num_vlan_1 != None and min_num_vlan_1 == None) or (min_num_vlan_1 != None and max_num_vlan_1 == None):
-                self.log.error(u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
-                raise InvalidValueError(None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
+                self.log.error(
+                    u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
+                raise InvalidValueError(
+                    None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
 
             if max_num_vlan_1 != None and min_num_vlan_1 != None:
                 max_num_vlan_1 = int(max_num_vlan_1)
                 min_num_vlan_1 = int(min_num_vlan_1)
 
                 if max_num_vlan_1 < 1 or min_num_vlan_1 < 1:
-                    self.log.error(u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
-                    raise InvalidValueError(None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
                 if max_num_vlan_1 <= min_num_vlan_1:
-                    self.log.error(u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
-                    raise InvalidValueError(None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
             else:
                 max_num_vlan_1 = max_num_vlan_2
                 min_num_vlan_1 = min_num_vlan_2
@@ -432,8 +471,10 @@ class AmbienteResource(RestResource):
 
             # validate  max_num_vlan_2 and min_num_vlan_2
             if (max_num_vlan_2 != None and min_num_vlan_2 == None) or (min_num_vlan_2 != None and max_num_vlan_2 == None):
-                    self.log.error(u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
-                    raise InvalidValueError(None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
+                self.log.error(
+                    u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
+                raise InvalidValueError(
+                    None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
 
             if max_num_vlan_2 != None and min_num_vlan_2 != None:
                 max_num_vlan_2 = int(max_num_vlan_2)
@@ -443,17 +484,20 @@ class AmbienteResource(RestResource):
                 min_num_vlan_1 = int(min_num_vlan_1)
 
                 if max_num_vlan_2 < 1 or min_num_vlan_2 < 1:
-                    self.log.error(u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
-                    raise InvalidValueError(None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
 
                 if max_num_vlan_2 <= min_num_vlan_2:
-                    self.log.error(u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
-                    raise InvalidValueError(None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
+                    self.log.error(
+                        u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
+                    raise InvalidValueError(
+                        None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
             else:
                 max_num_vlan_2 = max_num_vlan_1
                 min_num_vlan_2 = min_num_vlan_1
             # validate  max_num_vlan_2 and min_num_vlan_2
-
 
             with distributedlock(LOCK_ENVIRONMENT % environment_id):
 
@@ -524,7 +568,8 @@ class AmbienteResource(RestResource):
 
             # Valid ID Environment
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'The environment_id parameter is not a valid value: %s.', environment_id)
+                self.log.error(
+                    u'The environment_id parameter is not a valid value: %s.', environment_id)
                 raise InvalidValueError(None, 'environment_id', environment_id)
 
             if not has_perm(user,
@@ -558,7 +603,8 @@ class AmbienteResource(RestResource):
         except AmbienteNotFoundError:
             return self.response_error(112)
         except AmbienteUsedByEquipmentVlanError, e:
-            # dict sent when a vlan cant be removed because of vip request created
+            # dict sent when a vlan cant be removed because of vip request
+            # created
             if type(e.cause) is dict:
                 return self.response_error(323, environment_id, e.cause['Net'], e.cause['Vlan'], e.cause['ReqVip'])
             # str sent when a vlan cant be removed because its active
@@ -571,6 +617,7 @@ class AmbienteResource(RestResource):
 
 
 class AmbienteEquipamentoResource(RestResource):
+
     '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
 
     log = Log('AmbienteEquipamentoResource')
@@ -622,6 +669,7 @@ class AmbienteEquipamentoResource(RestResource):
             return self.response_error(118, oct1 + '.' + oct2 + '.' + oct3 + '.' + oct4, equip.id)
         except (IpError, EquipamentoError, GrupoError):
             return self.response_error(1)
+
 
 def fix_acl_path(acl_path):
     path = acl_path

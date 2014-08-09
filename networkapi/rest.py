@@ -17,24 +17,31 @@ from _mysql_exceptions import OperationalError
 from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.distributedlock import LockNotAcquiredError
 
+
 class RestError(Exception):
+
     """Representa um erro ocorrido durante uma requisão REST."""
+
     def __init__(self, cause, message):
         self.cause = cause
         self.message = message
 
     def __str__(self):
-        msg = u'Erro ao realizar requisição REST: Causa: %s, Mensagem: %s' % (self.cause, self.message)
+        msg = u'Erro ao realizar requisição REST: Causa: %s, Mensagem: %s' % (
+            self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
 
 class UserNotAuthorizedError(RestError):
+
     """Retorna exceção quando o usuário não tem permissão para executar a operação."""
+
     def __init__(self, cause, message=None):
         RestError.__init__(self, cause, message)
 
 
 class RestResource(object):
+
     """
     Representa um recurso acessível via chamadas REST.
 
@@ -53,14 +60,14 @@ class RestResource(object):
         response = None
         try:
             self.log.rest(u'INICIO da requisição %s para URL %s. XML: [%s].' % (request.method,
-                                                                                 request.path,
-                                                                                 request.raw_post_data))
+                                                                                request.path,
+                                                                                request.raw_post_data))
 
             username, password, user_ldap = self.read_user_data(request)
 
             self.log.debug(u'Usuário da requisição: %s.' % username)
 
-            if  user_ldap is None:
+            if user_ldap is None:
                 user = authenticate(username, password)
             else:
                 user = authenticate(username, password, user_ldap)
@@ -73,7 +80,8 @@ class RestResource(object):
                 elif request.method == 'POST':
                     response = self.handle_post(request, user, args, **kwargs)
                 elif request.method == 'DELETE':
-                    response = self.handle_delete(request, user, args, **kwargs)
+                    response = self.handle_delete(
+                        request, user, args, **kwargs)
                 elif request.method == 'PUT':
                     response = self.handle_put(request, user, args, **kwargs)
 
@@ -92,19 +100,20 @@ class RestResource(object):
             if response is not None:
                 if response.status_code == 200:
                     transaction.commit()
-                    self.log.debug(u'Requisição do usuário %s concluída com sucesso.' % username)
+                    self.log.debug(
+                        u'Requisição do usuário %s concluída com sucesso.' % username)
                 else:
                     transaction.rollback()
                     self.log.debug(u'Requisição do usuário %s concluída com falha. Conteúdo: [%s].' % (username,
                                                                                                        response.content))
             else:
                 transaction.rollback()
-                self.log.debug(u'Requisição do usuário %s concluída com falha.' % username)
+                self.log.debug(
+                    u'Requisição do usuário %s concluída com falha.' % username)
 
             self.log.debug(u'FIM da requisição do usuário %s.' % username)
 
         return response
-
 
     def handle_get(self, request, user, *args, **kwargs):
         """Trata uma requisição com o método GET"""
@@ -154,6 +163,7 @@ class RestResource(object):
 
 
 class RestResponse:
+
     """Classe básica para respostas dos webservices REST"""
 
     def __init__(self, exception=None):

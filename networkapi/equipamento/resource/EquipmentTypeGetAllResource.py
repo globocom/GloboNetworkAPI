@@ -13,6 +13,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import TipoEquipamento, EquipamentoError
 from django.forms.models import model_to_dict
 
+
 class EquipmentTypeGetAllResource(RestResource):
 
     log = Log('EquipmentTypeGetAllResource')
@@ -23,20 +24,22 @@ class EquipmentTypeGetAllResource(RestResource):
         URL: equipmenttype/all
         """
         try:
-            
+
             self.log.info("GET to list all Equipment Type")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-                
-            map_list = []  
+
+            map_list = []
             for equipment_type in TipoEquipamento.objects.all():
-                eq_tp = {'id': equipment_type.id, 'nome': equipment_type.tipo_equipamento}
+                eq_tp = {
+                    'id': equipment_type.id, 'nome': equipment_type.tipo_equipamento}
                 map_list.append(eq_tp)
-            
-            return self.response(dumps_networkapi({'equipment_type':map_list}))
+
+            return self.response(dumps_networkapi({'equipment_type': map_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

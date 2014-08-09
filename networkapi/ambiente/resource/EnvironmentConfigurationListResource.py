@@ -35,7 +35,8 @@ class EnvironmentConfigurationListResource(RestResource):
 
             self._validate_environment_id(environment_id)
 
-            configurations_prefix = IPConfig.get_by_environment(self, environment_id)
+            configurations_prefix = IPConfig.get_by_environment(
+                self, environment_id)
 
             lists_configuration = list()
 
@@ -47,7 +48,8 @@ class EnvironmentConfigurationListResource(RestResource):
                 configuration_dict['subnet'] = configuration.subnet
                 configuration_dict['new_prefix'] = configuration.new_prefix
                 configuration_dict['type'] = configuration.type
-                configuration_dict['network_type'] = configuration.network_type.tipo_rede if configuration.network_type else None
+                configuration_dict[
+                    'network_type'] = configuration.network_type.tipo_rede if configuration.network_type else None
 
                 lists_configuration.append(configuration_dict)
 
@@ -57,7 +59,8 @@ class EnvironmentConfigurationListResource(RestResource):
             return self.not_authorized()
 
         except InvalidValueError, e:
-            self.log.error(u'Parameter %s is invalid. Value: %s.', e.param, e.value)
+            self.log.error(
+                u'Parameter %s is invalid. Value: %s.', e.param, e.value)
             return self.response_error(269, e.param, e.value)
 
         except AmbienteNotFoundError, e:
@@ -71,13 +74,15 @@ class EnvironmentConfigurationListResource(RestResource):
     def _validate_permission(self, user):
 
         if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.ENVIRONMENT_MANAGEMENT):
-            self.log.error(u'User does not have permission to perform the operation.')
+            self.log.error(
+                u'User does not have permission to perform the operation.')
             raise PermissionError(None, None)
 
     def _validate_environment_id(self, id_environment):
 
         if not is_valid_int_greater_zero_param(id_environment):
-            self.log.error(u'The id_environment parameter is invalid value: %s.', id_environment)
+            self.log.error(
+                u'The id_environment parameter is invalid value: %s.', id_environment)
             raise InvalidValueError(None, 'id_environment', id_environment)
 
         Ambiente().get_by_pk(id_environment)

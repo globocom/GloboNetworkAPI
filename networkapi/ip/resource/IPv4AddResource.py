@@ -26,8 +26,9 @@ from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize,\
     is_valid_string_minsize
 
+
 class IPv4AddResource(RestResource):
-    
+
     log = Log('IPv4AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
@@ -40,13 +41,13 @@ class IPv4AddResource(RestResource):
 
         try:
 
-            ## Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
 
             # XML data format
-            
+
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
                 msg = u'There is no value to the networkapi tag of XML request.'
@@ -65,17 +66,21 @@ class IPv4AddResource(RestResource):
 
             # Valid equip_id
             if not is_valid_int_greater_zero_param(equip_id):
-                self.log.error(u'Parameter equip_id is invalid. Value: %s.', equip_id)
+                self.log.error(
+                    u'Parameter equip_id is invalid. Value: %s.', equip_id)
                 raise InvalidValueError(None, 'equip_id', equip_id)
 
             # Valid network_ipv4_id
             if not is_valid_int_greater_zero_param(network_ipv4_id):
-                self.log.error(u'Parameter network_ipv4_id is invalid. Value: %s.', network_ipv4_id)
-                raise InvalidValueError(None, 'network_ipv4_id', network_ipv4_id)
+                self.log.error(
+                    u'Parameter network_ipv4_id is invalid. Value: %s.', network_ipv4_id)
+                raise InvalidValueError(
+                    None, 'network_ipv4_id', network_ipv4_id)
 
             # Description can NOT be greater than 100
             if not is_valid_string_maxsize(description, 100) or not is_valid_string_minsize(description, 3):
-                self.log.error(u'Parameter descricao is invalid. Value: %s.', description)
+                self.log.error(
+                    u'Parameter descricao is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'descricao', description)
 
             # User permission
@@ -85,9 +90,10 @@ class IPv4AddResource(RestResource):
                             None,
                             equip_id,
                             AdminPermission.EQUIP_WRITE_OPERATION):
-                raise UserNotAuthorizedError(None, u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(
+                    None, u'User does not have permission to perform the operation.')
 
-            ## Business Rules
+            # Business Rules
 
             # New IP
             ip = Ip()
@@ -106,7 +112,7 @@ class IPv4AddResource(RestResource):
             ip_map['oct1'] = ip.oct1
             ip_map['descricao'] = ip.descricao
 
-            return self.response(dumps_networkapi({'ip':ip_map}))
+            return self.response(dumps_networkapi({'ip': ip_map}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)

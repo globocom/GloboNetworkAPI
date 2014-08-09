@@ -18,10 +18,10 @@ from networkapi.log import Log
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
 from networkapi.settings import VIP_REAL_v4_CREATE, VIP_REAL_v6_CREATE, VIP_REAL_v4_REMOVE, \
-    VIP_REAL_v6_REMOVE , VIP_REAL_v4_ENABLE, VIP_REAL_v6_ENABLE, VIP_REAL_v4_DISABLE, \
+    VIP_REAL_v6_REMOVE, VIP_REAL_v4_ENABLE, VIP_REAL_v6_ENABLE, VIP_REAL_v4_DISABLE, \
     VIP_REAL_v6_DISABLE, VIP_REAL_v4_CHECK, VIP_REAL_v6_CHECK, \
     VIP_REALS_v4_CREATE, VIP_REALS_v6_CREATE, VIP_REALS_v4_REMOVE, \
-    VIP_REALS_v6_REMOVE , VIP_REALS_v4_ENABLE, VIP_REALS_v6_ENABLE, VIP_REALS_v4_DISABLE, \
+    VIP_REALS_v6_REMOVE, VIP_REALS_v4_ENABLE, VIP_REALS_v6_ENABLE, VIP_REALS_v4_DISABLE, \
     VIP_REALS_v6_DISABLE, VIP_REALS_v4_CHECK, VIP_REALS_v6_CHECK
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.distributedlock import distributedlock, LOCK_VIP_IP_EQUIP
@@ -29,10 +29,11 @@ from django.db.utils import IntegrityError
 from networkapi.requisicaovips.models import ServerPoolMember
 from django.db import transaction
 
+
 class RequestVipsRealResource(RestResource):
-    
+
     log = Log('RequestVipsRealResource')
-    
+
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to Add/Del/Enable/Disable/Check request VIP - Real.
 
@@ -52,39 +53,38 @@ URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             else:
                 # Load XML data
                 xml_map, attrs_map = loads(request.raw_post_data)
-    
+
                 # XML data format
                 networkapi_map = xml_map.get('networkapi')
                 if networkapi_map is None:
                     return self.response_error(3, u'There is no value to the networkapi tag of XML request.')
-    
+
                 vip_map = networkapi_map.get('vip')
                 if vip_map is None:
                     return self.response_error(3, u'There is no value to the vip tag of XML request.')
-    
+
                 # Get XML data
                 vip_id = vip_map.get('vip_id')
                 equip_id = vip_map.get('equip_id')
                 ip_id = vip_map.get('ip_id')
                 operation = vip_map.get('operation')
                 network_version = vip_map.get('network_version')
-                
+
                 port_vip = None
                 port_real = None
                 if 'port_vip' in vip_map and 'port_real' in vip_map:
                     port_vip = vip_map.get('port_vip')
                     port_real = vip_map.get('port_real')
-                
 
             return self.administrate_real(user, vip_id, equip_id, ip_id, operation, network_version, port_vip, port_real)
-        
+
         except UserNotAuthorizedError:
             return self.not_authorized()
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
-        except ScriptError,e:
+        except ScriptError, e:
             return self.response_error(2, e)
 
         except IpNotFoundError:
@@ -104,14 +104,14 @@ URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
 
         except (RequisicaoVipsError, EquipamentoError, IpError, GrupoError):
             return self.response_error(1)
-        
+
         except Exception, e:
             if isinstance(e, IntegrityError):
                 # Duplicate value for Port Vip, Port Real and IP
                 return self.response_error(353)
             else:
                 return self.response_error(1)
-    
+
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to Enable/Disable/ request VIP - Real.
 URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
@@ -120,14 +120,14 @@ URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
 
         try:
             parameter = request.path.split('/')[2]
-            
+
             if parameter == 'enable':
                 operation = 'ena'
             elif parameter == 'check':
                 operation = 'chk'
             else:
                 operation = 'dis'
-            
+
             # Get URL data
             vip_id = int(kwargs.get('id_vip'))
             equip_id = int(kwargs.get('id_equip'))
@@ -135,14 +135,14 @@ URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
             network_version = IP_VERSION.IPv4[0]
 
             return self.administrate_real(user, vip_id, equip_id, ip_id, operation, network_version)
-        
+
         except UserNotAuthorizedError:
             return self.not_authorized()
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
-        except ScriptError,e:
+        except ScriptError, e:
             return self.response_error(2, e)
 
         except IpNotFoundError:
@@ -163,7 +163,6 @@ URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
         except (RequisicaoVipsError, EquipamentoError, IpError, GrupoError):
             return self.response_error(1)
 
-        
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests POST to Del request VIP - Real.
 
@@ -173,7 +172,7 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
 
         try:
             parameter = request.path.split('/')[2]
-            
+
             if parameter == 'equip':
                 operation = 'del'
                 # Get URL data
@@ -183,14 +182,14 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
                 network_version = IP_VERSION.IPv4[0]
 
             return self.administrate_real(user, vip_id, equip_id, ip_id, operation, network_version)
-        
+
         except UserNotAuthorizedError:
             return self.not_authorized()
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
-        except ScriptError,e:
+        except ScriptError, e:
             return self.response_error(2, e)
 
         except IpNotFoundError:
@@ -211,41 +210,48 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         except (RequisicaoVipsError, EquipamentoError, IpError, GrupoError):
             return self.response_error(1)
 
-    def administrate_real(self, user, vip_id, equip_id, ip_id, operation, network_version, port_vip = None, port_real = None):
+    def administrate_real(self, user, vip_id, equip_id, ip_id, operation, network_version, port_vip=None, port_real=None):
 
         # Valid VIP ID
         if not is_valid_int_greater_zero_param(vip_id):
-            self.log.error(u'The vip_id parameter is not a valid value: %s.', vip_id)
+            self.log.error(
+                u'The vip_id parameter is not a valid value: %s.', vip_id)
             raise InvalidValueError(None, 'vip_id', vip_id)
 
         # Valid Equipament ID
         if not is_valid_int_greater_zero_param(equip_id):
-            self.log.error(u'The equip_id parameter is not a valid value: %s.', equip_id)
+            self.log.error(
+                u'The equip_id parameter is not a valid value: %s.', equip_id)
             raise InvalidValueError(None, 'equip_id', equip_id)
 
         # Valid IP ID
         if not is_valid_int_greater_zero_param(ip_id):
-            self.log.error(u'The ip_id parameter is not a valid value: %s.', ip_id)
+            self.log.error(
+                u'The ip_id parameter is not a valid value: %s.', ip_id)
             raise InvalidValueError(None, 'ip_id', ip_id)
-        
+
         # Valid operation
         if operation not in ['add', 'del', 'ena', 'dis', 'chk']:
-            self.log.error(u'The operation parameter is not a valid value: %s.', operation)
+            self.log.error(
+                u'The operation parameter is not a valid value: %s.', operation)
             raise InvalidValueError(None, 'operation', operation)
-        
+
         # Valid network version
         if network_version not in ['v4', 'v6']:
-            self.log.error(u'The network_version parameter is not a valid value: %s.', network_version)
+            self.log.error(
+                u'The network_version parameter is not a valid value: %s.', network_version)
             raise InvalidValueError(None, 'network_version', network_version)
-        
+
         # User permission
         if (operation == 'chk'):
-            if not has_perm(user, AdminPermission.VIP_ALTER_SCRIPT,AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.VIP_ALTER_SCRIPT, AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
         else:
-            if not has_perm(user, AdminPermission.VIP_ALTER_SCRIPT,AdminPermission.WRITE_OPERATION, None, equip_id, AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.VIP_ALTER_SCRIPT, AdminPermission.WRITE_OPERATION, None, equip_id, AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
         # new_call = True - New calls for Add/Del/Enable/Disable/Check with new params (Port Vip and Port Real)
@@ -254,18 +260,20 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         if port_vip != None and port_real != None:
             # Valid ports
             if not is_valid_int_greater_zero_param(port_vip):
-                self.log.error(u'The port_vip parameter is not a valid value: %s.', port_vip)
+                self.log.error(
+                    u'The port_vip parameter is not a valid value: %s.', port_vip)
                 raise InvalidValueError(None, 'port_vip', port_vip)
-            
+
             if not is_valid_int_greater_zero_param(port_real):
-                self.log.error(u'The port_vip parameter is not a valid value: %s.', port_real)
+                self.log.error(
+                    u'The port_vip parameter is not a valid value: %s.', port_real)
                 raise InvalidValueError(None, 'port_real', port_real)
-            
+
             new_call = True
-            
+
         # Find Request VIP by ID to check if it exist
         vip = RequisicaoVips.get_by_pk(vip_id)
-        
+
         # Valid network_version - IPv4
         if network_version == IP_VERSION.IPv4[0]:
 
@@ -273,7 +281,8 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             IpEquip = IpEquipamento().get_by_ip_equipment(ip_id, equip_id)
 
             real_name = IpEquip.equipamento.nome
-            end_ip = "%s.%s.%s.%s" % (IpEquip.ip.oct1, IpEquip.ip.oct2, IpEquip.ip.oct3, IpEquip.ip.oct4)
+            end_ip = "%s.%s.%s.%s" % (
+                IpEquip.ip.oct1, IpEquip.ip.oct2, IpEquip.ip.oct3, IpEquip.ip.oct4)
 
         # Valid network_version - IPv6
         elif network_version == IP_VERSION.IPv6[0]:
@@ -282,88 +291,119 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             Ipv6Equip = Ipv6Equipament().get_by_ip_equipment(ip_id, equip_id)
 
             real_name = Ipv6Equip.equipamento.nome
-            end_ip = "%s:%s:%s:%s:%s:%s:%s:%s" % (Ipv6Equip.ip.block1, Ipv6Equip.ip.block2, Ipv6Equip.ip.block3, Ipv6Equip.ip.block4, Ipv6Equip.ip.block5, Ipv6Equip.ip.block6, Ipv6Equip.ip.block7, Ipv6Equip.ip.block8)
-        
+            end_ip = "%s:%s:%s:%s:%s:%s:%s:%s" % (Ipv6Equip.ip.block1, Ipv6Equip.ip.block2, Ipv6Equip.ip.block3,
+                                                  Ipv6Equip.ip.block4, Ipv6Equip.ip.block5, Ipv6Equip.ip.block6, Ipv6Equip.ip.block7, Ipv6Equip.ip.block8)
+
         if (operation == 'chk'):
 
             if IP_VERSION.IPv4[0] == network_version:
                 if new_call:
-                    command = VIP_REALS_v4_CHECK % (vip_id, ip_id, port_real, port_vip)
+                    command = VIP_REALS_v4_CHECK % (
+                        vip_id, ip_id, port_real, port_vip)
                 else:
                     command = VIP_REAL_v4_CHECK % (vip_id, real_name, end_ip)
             else:
                 if new_call:
-                    command = VIP_REALS_v6_CHECK % (vip_id, ip_id, port_real, port_vip)
-                else:                
+                    command = VIP_REALS_v6_CHECK % (
+                        vip_id, ip_id, port_real, port_vip)
+                else:
                     command = VIP_REAL_v6_CHECK % (vip_id, real_name, end_ip)
         else:
-        
+
             with distributedlock(LOCK_VIP_IP_EQUIP % (vip_id, ip_id, equip_id)):
-        
+
                 if (operation == 'add'):
-        
+
                     if IP_VERSION.IPv4[0] == network_version:
                         if new_call:
-                            command = VIP_REALS_v4_CREATE % (vip_id, ip_id, port_real, port_vip)
-                            ServerPoolMember().save_specified_port(vip_id, port_vip, IpEquip.ip, IP_VERSION.IPv4[1], port_real, user)
+                            command = VIP_REALS_v4_CREATE % (
+                                vip_id, ip_id, port_real, port_vip)
+                            ServerPoolMember().save_specified_port(
+                                vip_id, port_vip, IpEquip.ip, IP_VERSION.IPv4[1], port_real, user)
                         else:
-                            command = VIP_REAL_v4_CREATE % (vip_id, real_name, end_ip)
-                            ServerPoolMember().save_with_default_port(vip_id, IpEquip.ip, IP_VERSION.IPv4[1], user)
-                                                        
+                            command = VIP_REAL_v4_CREATE % (
+                                vip_id, real_name, end_ip)
+                            ServerPoolMember().save_with_default_port(
+                                vip_id, IpEquip.ip, IP_VERSION.IPv4[1], user)
+
                     else:
                         if new_call:
-                            command = VIP_REALS_v6_CREATE % (vip_id, ip_id, port_real, port_vip)
-                            ServerPoolMember().save_specified_port(vip_id, port_vip, Ipv6Equip.ip, IP_VERSION.IPv6[1], port_real, user)
+                            command = VIP_REALS_v6_CREATE % (
+                                vip_id, ip_id, port_real, port_vip)
+                            ServerPoolMember().save_specified_port(
+                                vip_id, port_vip, Ipv6Equip.ip, IP_VERSION.IPv6[1], port_real, user)
                         else:
-                            command = VIP_REAL_v6_CREATE % (vip_id, real_name, end_ip)
-                            ServerPoolMember().save_with_default_port(vip_id, Ipv6Equip.ip, IP_VERSION.IPv6[1], user)
-        
+                            command = VIP_REAL_v6_CREATE % (
+                                vip_id, real_name, end_ip)
+                            ServerPoolMember().save_with_default_port(
+                                vip_id, Ipv6Equip.ip, IP_VERSION.IPv6[1], user)
+
                 elif (operation == 'del'):
-        
+
                     if IP_VERSION.IPv4[0] == network_version:
                         if new_call:
-                            command = VIP_REALS_v4_REMOVE % (vip_id, ip_id, port_real, port_vip)
-                            pool_members = ServerPoolMember.objects.filter(ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                            [pool_member.delete(user) for pool_member in pool_members]
+                            command = VIP_REALS_v4_REMOVE % (
+                                vip_id, ip_id, port_real, port_vip)
+                            pool_members = ServerPoolMember.objects.filter(
+                                ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
+                            [pool_member.delete(user)
+                             for pool_member in pool_members]
                         else:
-                            command = VIP_REAL_v4_REMOVE % (vip_id, real_name, end_ip)
-                            pool_members = ServerPoolMember.objects.filter(ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                            [pool_member.delete(user) for pool_member in pool_members]
+                            command = VIP_REAL_v4_REMOVE % (
+                                vip_id, real_name, end_ip)
+                            pool_members = ServerPoolMember.objects.filter(
+                                ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
+                            [pool_member.delete(user)
+                             for pool_member in pool_members]
                     else:
                         if new_call:
-                            command = VIP_REALS_v6_REMOVE % (vip_id, ip_id, port_real, port_vip)
-                            pool_members = ServerPoolMember.objects.filter(ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                            [pool_member.delete(user) for pool_member in pool_members]
+                            command = VIP_REALS_v6_REMOVE % (
+                                vip_id, ip_id, port_real, port_vip)
+                            pool_members = ServerPoolMember.objects.filter(
+                                ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
+                            [pool_member.delete(user)
+                             for pool_member in pool_members]
                         else:
-                            command = VIP_REAL_v6_REMOVE % (vip_id, real_name, end_ip)
-                            pool_members = ServerPoolMember.objects.filter(ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                            [pool_member.delete(user) for pool_member in pool_members]
-        
+                            command = VIP_REAL_v6_REMOVE % (
+                                vip_id, real_name, end_ip)
+                            pool_members = ServerPoolMember.objects.filter(
+                                ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
+                            [pool_member.delete(user)
+                             for pool_member in pool_members]
+
                 elif (operation == 'ena'):
-        
+
                     if IP_VERSION.IPv4[0] == network_version:
                         if new_call:
-                            command = VIP_REALS_v4_ENABLE % (vip_id, ip_id, port_real, port_vip)
+                            command = VIP_REALS_v4_ENABLE % (
+                                vip_id, ip_id, port_real, port_vip)
                         else:
-                            command = VIP_REAL_v4_ENABLE % (vip_id, real_name, end_ip)
+                            command = VIP_REAL_v4_ENABLE % (
+                                vip_id, real_name, end_ip)
                     else:
                         if new_call:
-                            command = VIP_REALS_v6_ENABLE % (vip_id, ip_id, port_real, port_vip)
+                            command = VIP_REALS_v6_ENABLE % (
+                                vip_id, ip_id, port_real, port_vip)
                         else:
-                            command = VIP_REAL_v6_ENABLE % (vip_id, real_name, end_ip)
-        
+                            command = VIP_REAL_v6_ENABLE % (
+                                vip_id, real_name, end_ip)
+
                 elif (operation == 'dis'):
-        
+
                     if IP_VERSION.IPv4[0] == network_version:
                         if new_call:
-                            command = VIP_REALS_v4_DISABLE % (vip_id, ip_id, port_real, port_vip)
+                            command = VIP_REALS_v4_DISABLE % (
+                                vip_id, ip_id, port_real, port_vip)
                         else:
-                            command = VIP_REAL_v4_DISABLE % (vip_id, real_name, end_ip)
+                            command = VIP_REAL_v4_DISABLE % (
+                                vip_id, real_name, end_ip)
                     else:
                         if new_call:
-                            command = VIP_REALS_v6_DISABLE % (vip_id, ip_id, port_real, port_vip)
+                            command = VIP_REALS_v6_DISABLE % (
+                                vip_id, ip_id, port_real, port_vip)
                         else:
-                            command = VIP_REAL_v6_DISABLE % (vip_id, real_name, end_ip)
+                            command = VIP_REAL_v6_DISABLE % (
+                                vip_id, real_name, end_ip)
 
         self.log.info(command)
         # Execute script
@@ -376,21 +416,23 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         # Return XML
         if code == 0:
             success_map['codigo'] = '%04d' % code
-            success_map['descricao'] = {'stdout':stdout, 'stderr':stderr}
+            success_map['descricao'] = {'stdout': stdout, 'stderr': stderr}
 
             map['sucesso'] = success_map
             return self.response(dumps_networkapi(map))
 
         elif code == 12:
             success_map['codigo'] = '0'
-            success_map['descricao'] = {'stdout':'0', 'stderr':''}
+            success_map['descricao'] = {'stdout': '0', 'stderr': ''}
 
             map['sucesso'] = success_map
-            self.rollback_changes(operation, new_call, network_version, vip_id, ip_id, port_real, port_vip, real_name, end_ip, user)
+            self.rollback_changes(operation, new_call, network_version,
+                                  vip_id, ip_id, port_real, port_vip, real_name, end_ip, user)
             return self.response(dumps_networkapi(map))
 
         else:
-            self.rollback_changes(operation, new_call, network_version, vip_id, ip_id, port_real, port_vip, real_name, end_ip, user)
+            self.rollback_changes(operation, new_call, network_version,
+                                  vip_id, ip_id, port_real, port_vip, real_name, end_ip, user)
             return self.response_error(2, stdout + stderr)
 
     def rollback_changes(self, operation, new_call, network_version, vip_id, ip_id, port_real, port_vip, real_name, end_ip, user):
@@ -398,17 +440,25 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             if IP_VERSION.IPv4[0] == network_version:
                 if IP_VERSION.IPv4[0] == network_version:
                     if new_call:
-                        pool_members = ServerPoolMember.objects.filter(ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                        [pool_member.delete(user) for pool_member in pool_members]
+                        pool_members = ServerPoolMember.objects.filter(
+                            ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
+                        [pool_member.delete(user)
+                         for pool_member in pool_members]
                     else:
-                        pool_members = ServerPoolMember.objects.filter(ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                        [pool_member.delete(user) for pool_member in pool_members]
+                        pool_members = ServerPoolMember.objects.filter(
+                            ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
+                        [pool_member.delete(user)
+                         for pool_member in pool_members]
                 else:
                     if new_call:
-                        pool_members = ServerPoolMember.objects.filter(ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                        [pool_member.delete(user) for pool_member in pool_members]
+                        pool_members = ServerPoolMember.objects.filter(
+                            ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
+                        [pool_member.delete(user)
+                         for pool_member in pool_members]
                     else:
-                        pool_members = ServerPoolMember.objects.filter(ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                        [pool_member.delete(user) for pool_member in pool_members]
+                        pool_members = ServerPoolMember.objects.filter(
+                            ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
+                        [pool_member.delete(user)
+                         for pool_member in pool_members]
             # commit to rollback when script return error
             transaction.commit()

@@ -33,12 +33,14 @@ class RequestVipL7RollbackResource(RestResource):
 
             # User is authorized
             if not has_perm(user, AdminPermission.VIP_ALTER_SCRIPT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid Vip ID
             if not is_valid_int_greater_zero_param(id_vip):
-                self.log.error(u'The vip_id parameter is not a valid value: %s.', id_vip)
+                self.log.error(
+                    u'The vip_id parameter is not a valid value: %s.', id_vip)
                 raise InvalidValueError(None)
 
             # Get VIP data
@@ -50,11 +52,14 @@ class RequestVipL7RollbackResource(RestResource):
 
                 # Vip must be created
                 if not vip.vip_criado:
-                    self.log.error(u'Filter can not be applied because VIP has not been created yet.')
+                    self.log.error(
+                        u'Filter can not be applied because VIP has not been created yet.')
                     raise RequestVipsNotBeenCreatedError(None)
 
-                # salva data do rollback, rollback para aplicado, passa o aplicado para l7
-                vip.applied_l7_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # salva data do rollback, rollback para aplicado, passa o
+                # aplicado para l7
+                vip.applied_l7_datetime = datetime.now().strftime(
+                    "%Y-%m-%d %H:%M:%S")
                 vip.filter_applied = vip.filter_rollback
                 vip.rule_applied = vip.rule_rollback
 
@@ -68,11 +73,12 @@ class RequestVipL7RollbackResource(RestResource):
                 command = 'gerador_vips -i %d --l7_filter_current' % vip.id
                 code, stdout, stderr = exec_script(command)
 
-                    # code 0 = executou com sucesso
+                # code 0 = executou com sucesso
                 if code == 0:
                     success_map = dict()
                     success_map['codigo'] = '%04d' % code
-                    success_map['descricao'] = {'stdout': stdout, 'stderr': stderr}
+                    success_map['descricao'] = {
+                        'stdout': stdout, 'stderr': stderr}
 
                     map = dict()
                     map['sucesso'] = success_map

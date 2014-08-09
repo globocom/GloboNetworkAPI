@@ -35,7 +35,8 @@ class VlanAllocateIPv6Resorce(RestResource):
         try:
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
@@ -64,14 +65,16 @@ class VlanAllocateIPv6Resorce(RestResource):
 
             # Description can NOT be greater than 200
             if not is_valid_string_minsize(description, 3, False) or not is_valid_string_maxsize(description, 200, False):
-                self.log.error(u'Parameter descricao is invalid. Value: %s.', description)
+                self.log.error(
+                    u'Parameter descricao is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'descricao', description)
 
             # Environment
 
             # Valid environment ID
             if not is_valid_int_greater_zero_param(environment):
-                self.log.error(u'Parameter id_environment is invalid. Value: %s.', environment)
+                self.log.error(
+                    u'Parameter id_environment is invalid. Value: %s.', environment)
                 raise InvalidValueError(None, 'id_environment', environment)
 
             # Find environment by ID to check if it exist
@@ -83,8 +86,10 @@ class VlanAllocateIPv6Resorce(RestResource):
 
                 # Valid environment_vip ID
                 if not is_valid_int_greater_zero_param(environment_vip):
-                    self.log.error(u'Parameter id_environment_vip is invalid. Value: %s.', environment_vip)
-                    raise InvalidValueError(None, 'id_environment_vip', environment_vip)
+                    self.log.error(
+                        u'Parameter id_environment_vip is invalid. Value: %s.', environment_vip)
+                    raise InvalidValueError(
+                        None, 'id_environment_vip', environment_vip)
 
                 # Find Environment VIP by ID to check if it exist
                 evip = EnvironmentVip.get_by_pk(environment_vip)
@@ -96,7 +101,8 @@ class VlanAllocateIPv6Resorce(RestResource):
 
             # Valid network_type ID
             if not is_valid_int_greater_zero_param(network_type):
-                self.log.error(u'Parameter id_network_type is invalid. Value: %s.', network_type)
+                self.log.error(
+                    u'Parameter id_network_type is invalid. Value: %s.', network_type)
                 raise InvalidValueError(None, 'id_network_type', network_type)
 
             # Find network_type by ID to check if it exist
@@ -108,7 +114,8 @@ class VlanAllocateIPv6Resorce(RestResource):
             vlan.descricao = description
             vlan.ambiente = env
 
-            # Check if environment has min/max num_vlan value or use the value thas was configured in settings
+            # Check if environment has min/max num_vlan value or use the value
+            # thas was configured in settings
             if (vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1) or (vlan.ambiente.min_num_vlan_2 and vlan.ambiente.max_num_vlan_2):
                 min_num_01 = vlan.ambiente.min_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.min_num_vlan_2
                 max_num_01 = vlan.ambiente.max_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.max_num_vlan_2

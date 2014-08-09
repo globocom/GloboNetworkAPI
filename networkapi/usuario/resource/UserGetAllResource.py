@@ -13,6 +13,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.usuario.models import Usuario, UsuarioError
 from django.forms.models import model_to_dict
 
+
 class UserGetAllResource(RestResource):
 
     log = Log('UserGetAllResource')
@@ -23,20 +24,20 @@ class UserGetAllResource(RestResource):
         URL: user/all
         """
         try:
-            
+
             self.log.info("GET to list all the Users")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             users_list = []
             for user in Usuario.objects.all():
                 users_list.append(model_to_dict(user))
 
-            return self.response(dumps_networkapi({'usuario':users_list}))
-
+            return self.response(dumps_networkapi({'usuario': users_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

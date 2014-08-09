@@ -132,8 +132,10 @@ class EnvironmentConfigTest(BasicTestCase):
     def env_ip_config_attr_test(self, attr):
         mock = self.mock_environment_ip_config_valid()
         mock[self.KEY_ATTR] = attr
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY: mock})
         return response
+
 
 class EnvironmentConsultationTest(EnvironmentConfigTest, ConsultationTest):
 
@@ -165,227 +167,277 @@ class EnvironmentConsultationTest(EnvironmentConfigTest, ConsultationTest):
         response = self.client_no_read_permission().get(self.URL_GET_ALL_2)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
+
 class EnvironmentConsultationEnvironmentTest(EnvironmentConfigTest, AttrTest):
 
     CODE_ERROR_NOT_FOUND = CodeError.ENVIRONMENT_NOT_FOUND
 
     def test_get_by_environment(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_ENV_ID % self.ID_VALID)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_ENV_ID % self.ID_VALID)
         valid_response(response)
         valid_content(response, self.XML_KEY, True)
 
     def test_get_by_environment_no_permission(self):
-        response = self.client_no_permission().get(self.URL_GET_BY_ENV_ID % self.ID_VALID)
+        response = self.client_no_permission().get(
+            self.URL_GET_BY_ENV_ID % self.ID_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_environment_no_read_permission(self):
-        response = self.client_no_read_permission().get(self.URL_GET_BY_ENV_ID % self.ID_VALID)
+        response = self.client_no_read_permission().get(
+            self.URL_GET_BY_ENV_ID % self.ID_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_environment_nonexistent(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_ENV_ID % self.ID_NONEXISTENT)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_ENV_ID % self.ID_NONEXISTENT)
         self._not_found(response)
 
     def test_get_by_environment_negative(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_ENV_ID % self.NEGATIVE_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_ENV_ID % self.NEGATIVE_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_environment_letter(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_ENV_ID % self.LETTER_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_ENV_ID % self.LETTER_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_environment_zero(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_ENV_ID % self.ZERO_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_ENV_ID % self.ZERO_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_environment_empty(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_ENV_ID % self.EMPTY_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_ENV_ID % self.EMPTY_ATTR)
         self._attr_invalid(response)
+
 
 class EnvironmentConsultationDivisionDcTest(EnvironmentConfigTest, AttrTest):
 
     CODE_ERROR_NOT_FOUND = CodeError.DIVISION_DC_NOT_FOUND
 
     def test_get_by_division(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC % self.ID_DIVISION_DC_VALID)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_DIVISAO_DC % self.ID_DIVISION_DC_VALID)
         valid_response(response)
         valid_content(response, self.XML_KEY, True)
 
     def test_get_by_division_no_permission(self):
-        response = self.client_no_permission().get(self.URL_GET_BY_DIVISAO_DC % self.ID_DIVISION_DC_VALID)
+        response = self.client_no_permission().get(
+            self.URL_GET_BY_DIVISAO_DC % self.ID_DIVISION_DC_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_division_no_read_permission(self):
-        response = self.client_no_read_permission().get(self.URL_GET_BY_DIVISAO_DC % self.ID_DIVISION_DC_VALID)
+        response = self.client_no_read_permission().get(
+            self.URL_GET_BY_DIVISAO_DC % self.ID_DIVISION_DC_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_division_nonexistent(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC % self.ID_NONEXISTENT)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_DIVISAO_DC % self.ID_NONEXISTENT)
         self._not_found(response)
 
     def test_get_by_division_negative(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC % self.NEGATIVE_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_DIVISAO_DC % self.NEGATIVE_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_division_letter(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC % self.LETTER_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_DIVISAO_DC % self.LETTER_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_division_zero(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC % self.ZERO_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_DIVISAO_DC % self.ZERO_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_division_empty(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC % self.EMPTY_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_DIVISAO_DC % self.EMPTY_ATTR)
         self._attr_invalid(response)
+
 
 class EnvironmentConsultationDivisionDcEnvironmentLogicalTest(EnvironmentConfigTest, AttrTest):
 
     CODE_ERROR_NOT_FOUND = CodeError.DIVISION_DC_NOT_FOUND
 
     def test_get_by_division_environment_logical(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
         valid_response(response)
         valid_content(response, self.XML_KEY, True)
 
     def test_get_by_division_environment_logical_no_permission(self):
-        response = self.client_no_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_no_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                   (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_division_environment_logical_no_read_permission(self):
-        response = self.client_no_read_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_no_read_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                        (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_division_environment_logical_nonexistent(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_NONEXISTENT, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_NONEXISTENT, self.ID_ENVIRONMENT_LOGICAL_VALID))
         self._not_found(response)
 
     def test_get_by_division_environment_logical_negative(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.NEGATIVE_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.NEGATIVE_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
         self._attr_invalid(response)
 
     def test_get_by_division_environment_logical_letter(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.LETTER_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.LETTER_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
         self._attr_invalid(response)
 
     def test_get_by_division_environment_logical_zero(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ZERO_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ZERO_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
         self._attr_invalid(response)
 
     def test_get_by_division_environment_logical_empty(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.EMPTY_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.EMPTY_ATTR, self.ID_ENVIRONMENT_LOGICAL_VALID))
         self._attr_invalid(response)
+
 
 class EnvironmentConsultationEnvironmentLogicalDivisionDcTest(EnvironmentConfigTest, AttrTest):
 
     CODE_ERROR_NOT_FOUND = CodeError.LOGICAL_ENVIRONMENT_NOT_FOUND
 
     def test_get_by_environment_logical_division(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
         valid_response(response)
         valid_content(response, self.XML_KEY, True)
 
     def test_get_by_environment_logical_division_no_permission(self):
-        response = self.client_no_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_no_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                   (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_environment_logical_division_no_read_permission(self):
-        response = self.client_no_read_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
+        response = self.client_no_read_permission().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                        (self.ID_DIVISION_DC_VALID, self.ID_ENVIRONMENT_LOGICAL_VALID))
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_environment_logical_division_nonexistent(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ID_NONEXISTENT))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.ID_NONEXISTENT))
         self._not_found(response)
 
     def test_get_by_environment_logical_division_negative(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.NEGATIVE_ATTR))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.NEGATIVE_ATTR))
         self._attr_invalid(response)
 
     def test_get_by_environment_logical_division_letter(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.LETTER_ATTR))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.LETTER_ATTR))
         self._attr_invalid(response)
 
     def test_get_by_environment_logical_division_zero(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.ZERO_ATTR))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.ZERO_ATTR))
         self._attr_invalid(response)
 
     def test_get_by_environment_logical_division_empty(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT % (self.ID_DIVISION_DC_VALID, self.EMPTY_ATTR))
+        response = self.client_autenticado().get(self.URL_GET_BY_DIVISAO_DC_LOGICAL_ENVIRONMENT %
+                                                 (self.ID_DIVISION_DC_VALID, self.EMPTY_ATTR))
         self._attr_invalid(response)
+
 
 class EnvironmentConsultationEquipmentTest(EnvironmentConfigTest, AttrTest):
 
     CODE_ERROR_NOT_FOUND = CodeError.EQUIPMENT_NOT_FOUND
 
     def test_get_by_equipment(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP % self.ID_EQUIPMENT_VALID)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP % self.ID_EQUIPMENT_VALID)
         valid_response(response)
         content = valid_content(response, self.XML_KEY, True)
         query = Q(equipamentoambiente__equipamento=self.ID_EQUIPMENT_VALID)
         valid_get_filtered(content, Ambiente, query)
 
     def test_get_by_equipment_no_permission(self):
-        response = self.client_no_permission().get(self.URL_GET_BY_EQUIP % self.ID_EQUIPMENT_VALID)
+        response = self.client_no_permission().get(
+            self.URL_GET_BY_EQUIP % self.ID_EQUIPMENT_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_equipment_no_read_permission(self):
-        response = self.client_no_read_permission().get(self.URL_GET_BY_EQUIP % self.ID_EQUIPMENT_VALID)
+        response = self.client_no_read_permission().get(
+            self.URL_GET_BY_EQUIP % self.ID_EQUIPMENT_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_get_by_equipment_nonexistent(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP % self.ID_NONEXISTENT)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP % self.ID_NONEXISTENT)
         self._not_found(response)
 
     def test_get_by_equipment_negative(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP % self.NEGATIVE_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP % self.NEGATIVE_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_equipment_letter(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP % self.LETTER_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP % self.LETTER_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_equipment_zero(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP % self.ZERO_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP % self.ZERO_ATTR)
         self._attr_invalid(response)
 
     def test_get_by_equipment_empty(self):
-        response = self.client_autenticado().get(self.URL_GET_BY_EQUIP % self.EMPTY_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_GET_BY_EQUIP % self.EMPTY_ATTR)
         self._attr_invalid(response)
+
 
 class EnvironmentTest(EnvironmentConfigTest):
 
     def test_save_valid(self):
         mock = self.mock_valid()
-        response = self.save({ self.XML_KEY : mock })
+        response = self.save({self.XML_KEY: mock})
         valid_response(response)
         valid_content(response, self.XML_KEY)
 
     def test_save_no_permission(self):
         mock = self.mock_valid()
-        response = self.save({ self.XML_KEY : mock }, CLIENT_TYPES.NO_PERMISSION)
+        response = self.save({self.XML_KEY: mock}, CLIENT_TYPES.NO_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_save_no_write_permission(self):
         mock = self.mock_valid()
-        response = self.save({ self.XML_KEY : mock }, CLIENT_TYPES.NO_WRITE_PERMISSION)
+        response = self.save(
+            {self.XML_KEY: mock}, CLIENT_TYPES.NO_WRITE_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_alter_valid(self):
         mock = self.mock_valid_alter()
-        response = self.alter(self.ID_ALTER_VALID, {self.XML_KEY:mock})
+        response = self.alter(self.ID_ALTER_VALID, {self.XML_KEY: mock})
         valid_response(response)
         environ = Ambiente.get_by_pk(self.ID_ALTER_VALID)
         self.valid_attr(mock, model_to_dict(environ))
 
     def test_alter_no_permission(self):
         mock = self.mock_valid_alter()
-        response = self.alter(self.ID_ALTER_VALID, {self.XML_KEY:mock}, CLIENT_TYPES.NO_PERMISSION)
+        response = self.alter(
+            self.ID_ALTER_VALID, {self.XML_KEY: mock}, CLIENT_TYPES.NO_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_alter_no_write_permission(self):
         mock = self.mock_valid_alter()
-        response = self.alter(self.ID_ALTER_VALID, {self.XML_KEY:mock}, CLIENT_TYPES.NO_WRITE_PERMISSION)
+        response = self.alter(
+            self.ID_ALTER_VALID, {self.XML_KEY: mock}, CLIENT_TYPES.NO_WRITE_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
+
 
 class EnvironmentAttrGrupoL3Test(EnvironmentConfigTest, AttrTest):
 
@@ -428,6 +480,7 @@ class EnvironmentAttrGrupoL3Test(EnvironmentConfigTest, AttrTest):
     def test_alter_none(self):
         self.alter_attr_none(self.NONE_ATTR)
 
+
 class EnvironmentAttrLogicalEnvironmentTest(EnvironmentConfigTest, AttrTest):
 
     KEY_ATTR = "id_ambiente_logico"
@@ -468,6 +521,7 @@ class EnvironmentAttrLogicalEnvironmentTest(EnvironmentConfigTest, AttrTest):
 
     def test_alter_none(self):
         self.alter_attr_none(self.NONE_ATTR)
+
 
 class EnvironmentAttrDivisionTest(EnvironmentConfigTest, AttrTest):
 
@@ -525,6 +579,7 @@ class EnvironmentAttrLinkTest(EnvironmentConfigTest, AttrTest):
         mock[self.KEY_ATTR] = string_generator(201)
         self.process_alter_attr_invalid(self.ID_ALTER_VALID, mock)
 
+
 class EnvironmentAttrFilterTest(EnvironmentConfigTest, AttrTest):
 
     KEY_ATTR = "id_filter"
@@ -558,39 +613,48 @@ class EnvironmentAttrFilterTest(EnvironmentConfigTest, AttrTest):
 class EnvironmentRemoveTest(EnvironmentConfigTest, RemoveTest):
 
     def test_remove_valid(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.ID_REMOVE_VALID)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.ID_REMOVE_VALID)
         valid_response(response)
 
     def test_remove_no_permission(self):
-        response = self.client_no_permission().delete(self.URL_REMOVE % self.ID_REMOVE_VALID)
+        response = self.client_no_permission().delete(
+            self.URL_REMOVE % self.ID_REMOVE_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_remove_no_write_permission(self):
-        response = self.client_no_write_permission().delete(self.URL_REMOVE % self.ID_REMOVE_VALID)
+        response = self.client_no_write_permission().delete(
+            self.URL_REMOVE % self.ID_REMOVE_VALID)
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_remove_environment_nonexistent(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.ID_NONEXISTENT)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.ID_NONEXISTENT)
         self._not_found(response, CodeError.ENVIRONMENT_NOT_FOUND)
 
     def test_remove_environment_negative(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.NEGATIVE_ATTR)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.NEGATIVE_ATTR)
         self._attr_invalid(response)
 
     def test_remove_environment_letter(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.LETTER_ATTR)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.LETTER_ATTR)
         self._attr_invalid(response)
 
     def test_remove_environment_zero(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.ZERO_ATTR)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.ZERO_ATTR)
         self._attr_invalid(response)
 
     def test_remove_environment_empty(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.EMPTY_ATTR)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.EMPTY_ATTR)
         self._attr_invalid(response)
 
     def test_remove_environment_none(self):
-        response = self.client_autenticado().delete(self.URL_REMOVE % self.NONE_ATTR)
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE % self.NONE_ATTR)
         self._attr_invalid(response)
 
 
@@ -598,18 +662,21 @@ class IpConfigTest(EnvironmentConfigTest):
 
     def test_save_valid(self):
         mock = self.mock_ip_config_valid()
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, {self.XML_KEY:mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         valid_response(response)
         valid_content(response, 'config_do_ambiente')
 
     def test_save_no_permission(self):
         mock = self.mock_ip_config_valid()
-        response = self.client_no_permission().postXML(self.URL_SAVE_IPCONFIG, {self.XML_KEY:mock})
+        response = self.client_no_permission().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_save_no_write_permission(self):
         mock = self.mock_ip_config_valid()
-        response = self.client_no_write_permission().postXML(self.URL_SAVE_IPCONFIG, {self.XML_KEY:mock})
+        response = self.client_no_write_permission().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
 
@@ -622,44 +689,53 @@ class IpConfigAttrEnvironmentTest(EnvironmentConfigTest, AttrTest):
     def test_save_nonexistent(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.ID_NONEXISTENT
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._not_found(response)
 
     def test_save_negative(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.NEGATIVE_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_letter(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.LETTER_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_zero(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.ZERO_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_empty(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.EMPTY_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_none(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.NONE_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_duplicate(self):
         mock = self.mock_ip_config_valid()
-        self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
-        self._attr_invalid(response, CodeError.CONFIG_ENVIRONMENT_ALREADY_EXISTS)
+        self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
+        self._attr_invalid(
+            response, CodeError.CONFIG_ENVIRONMENT_ALREADY_EXISTS)
 
 
 class IpConfigAttrIpConfigTest(EnvironmentConfigTest, AttrTest):
@@ -670,37 +746,43 @@ class IpConfigAttrIpConfigTest(EnvironmentConfigTest, AttrTest):
     def test_save_nonexistent(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.ID_NONEXISTENT
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._not_found(response)
 
     def test_save_negative(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.NEGATIVE_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_letter(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.LETTER_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_zero(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.ZERO_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_empty(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.EMPTY_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_none(self):
         mock = self.mock_ip_config_valid()
         mock[self.KEY_ATTR] = self.NONE_ATTR
-        response = self.client_autenticado().postXML(self.URL_SAVE_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
 
@@ -708,18 +790,21 @@ class EnvironmentIpConfigTest(EnvironmentConfigTest):
 
     def test_save_valid(self):
         mock = self.mock_environment_ip_config_valid()
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY:mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY: mock})
         valid_response(response)
         valid_content(response, self.XML_KEY)
 
     def test_save_no_permission(self):
         mock = self.mock_environment_ip_config_valid()
-        response = self.client_no_permission().postXML(self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY:mock})
+        response = self.client_no_permission().postXML(
+            self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_save_no_write_permission(self):
         mock = self.mock_environment_ip_config_valid()
-        response = self.client_no_write_permission().postXML(self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY:mock})
+        response = self.client_no_write_permission().postXML(
+            self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
 
@@ -800,7 +885,6 @@ class EnvironmentIpConfigAttrFilterTest(EnvironmentConfigTest, AttrTest):
     KEY_ATTR = "id_filter"
     CODE_ERROR_NOT_FOUND = CodeError.FILTER_NOT_FOUND
 
-
     def test_save_nonexistent(self):
         self._not_found(self.env_ip_config_attr_test(self.ID_NONEXISTENT))
 
@@ -845,78 +929,92 @@ class EnvironmentIpConfigAttrLinkTest(EnvironmentConfigTest, AttrTest):
     def test_save_maxsize(self):
         mock = self.mock_environment_ip_config_valid()
         mock[self.KEY_ATTR] = string_generator(201)
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_IPCONFIG, { self.XML_KEY : mock })
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_IPCONFIG, {self.XML_KEY: mock})
         self._attr_invalid(response)
+
 
 @me
 class EnvironmentConfigurationAddTest(EnvironmentConfigTest, AttrTest):
 
     def test_save_v4_valid(self):
         mock = self.mock_environment_configuration_v4()
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         valid_response(response)
 
     def test_save_v6_valid(self):
         mock = self.mock_environment_configuration_v6()
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         valid_response(response)
 
     def test_save_v4_no_permission(self):
         mock = self.mock_environment_configuration_v4()
-        response = self.client_no_permission().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_no_permission().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_save_v6_no_permission(self):
         mock = self.mock_environment_configuration_v6()
-        response = self.client_no_permission().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_no_permission().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         valid_response(response, httplib.PAYMENT_REQUIRED)
 
     def test_save_v4_invalid(self):
         mock = self.mock_environment_configuration_v4()
         mock.update({'network': '192.168.256.1/24'})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_v6_invalid(self):
         mock = self.mock_environment_configuration_v6()
         mock.update({'network': 'ffff:ffff:ffff:ffff:ffff:ffff:0101:0/96'})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_v4_invalid_prefix(self):
         mock = self.mock_environment_configuration_v4()
         mock.update({'network': '192.168.0.0/33'})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_v6_invalid_prefix(self):
         mock = self.mock_environment_configuration_v6()
         mock.update({'network': 'ffff:ffff:ffff:ffff:ffff:ffff:0:0/129'})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_v4_invalid_network_type(self):
         mock = self.mock_environment_configuration_v4()
         mock.update({'network_type': '0'})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_v6_invalid_network_type(self):
         mock = self.mock_environment_configuration_v6()
         mock.update({'network_type': '0'})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
     def test_save_nonexistent_environment(self):
         mock = self.mock_environment_configuration_v4()
         mock.update({'id_environment': self.ID_NONEXISTENT})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response, CodeError.ENVIRONMENT_NOT_FOUND)
 
     def test_save_invalid_environment(self):
         mock = self.mock_environment_configuration_v4()
         mock.update({'id_environment': self.LETTER_ATTR})
-        response = self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
+        response = self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock})
         self._attr_invalid(response)
 
 
@@ -924,22 +1022,28 @@ class EnvironmentConfigurationListTest(EnvironmentConfigTest, AttrTest):
 
     def setUp(self):
         mock_v4 = self.mock_environment_configuration_v4()
-        self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v4})
+        self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v4})
         mock_v6 = self.mock_environment_configuration_v6()
-        self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v6})
+        self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v6})
         EnvironmentConfigTest.setUp(self)
 
     def test_get_all(self):
-        response = self.client_autenticado().get(self.URL_LIST_ENVIRONMENT_CONFIGURATION % self.ID_VALID)
-        lists_configuration = valid_content(response, 'lists_configuration', True)
+        response = self.client_autenticado().get(
+            self.URL_LIST_ENVIRONMENT_CONFIGURATION % self.ID_VALID)
+        lists_configuration = valid_content(
+            response, 'lists_configuration', True)
         self.assertTrue(len(lists_configuration) == 2)
 
     def test_get_all_by_nonexistent_environment(self):
-        response = self.client_autenticado().get(self.URL_LIST_ENVIRONMENT_CONFIGURATION % self.ID_NONEXISTENT)
+        response = self.client_autenticado().get(
+            self.URL_LIST_ENVIRONMENT_CONFIGURATION % self.ID_NONEXISTENT)
         self._attr_invalid(response, CodeError.ENVIRONMENT_NOT_FOUND)
 
     def test_get_all_by_invalid_environment(self):
-        response = self.client_autenticado().get(self.URL_LIST_ENVIRONMENT_CONFIGURATION % self.LETTER_ATTR)
+        response = self.client_autenticado().get(
+            self.URL_LIST_ENVIRONMENT_CONFIGURATION % self.LETTER_ATTR)
         self._attr_invalid(response)
 
 
@@ -947,37 +1051,44 @@ class EnvironmentConfigurationRemoveTest(EnvironmentConfigTest, AttrTest):
 
     def setUp(self):
         mock_v4 = self.mock_environment_configuration_v4()
-        self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v4})
+        self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v4})
         mock_v6 = self.mock_environment_configuration_v6()
-        self.client_autenticado().postXML(self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v6})
+        self.client_autenticado().postXML(
+            self.URL_SAVE_ENVIRONMENT_CONFIGURATION, {self.XML_KEY: mock_v6})
         EnvironmentConfigTest.setUp(self)
 
     def test_remove(self):
         ENVIRONMENT_ID = self.ID_REMOVE_EVIRONMENT
         CONFIGURATION_ID = self.ID_REMOVE_CONFIG
-        response = self.client_autenticado().delete(self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
         valid_response(response)
 
     def test_remove_nonexistent(self):
         ENVIRONMENT_ID = self.ID_VALID
         CONFIGURATION_ID = self.ID_NONEXISTENT
-        response = self.client_autenticado().delete(self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
         self._attr_invalid(response, CodeError.IP_CONFIG_NOT_FOUND)
 
     def test_remove_invalid(self):
         ENVIRONMENT_ID = self.ID_VALID
         CONFIGURATION_ID = self.LETTER_ATTR
-        response = self.client_autenticado().delete(self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
         self._attr_invalid(response)
 
     def test_remove_environment_nonexistent(self):
         ENVIRONMENT_ID = self.ID_NONEXISTENT
         CONFIGURATION_ID = 22
-        response = self.client_autenticado().delete(self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
         self._attr_invalid(response, CodeError.ENVIRONMENT_NOT_FOUND)
 
     def test_remove_environment_invalid(self):
         ENVIRONMENT_ID = 23
         CONFIGURATION_ID = self.LETTER_ATTR
-        response = self.client_autenticado().delete(self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
+        response = self.client_autenticado().delete(
+            self.URL_REMOVE_ENVIRONMENT_CONFIGURATION % (ENVIRONMENT_ID, CONFIGURATION_ID))
         self._attr_invalid(response,)

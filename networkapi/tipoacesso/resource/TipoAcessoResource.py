@@ -10,7 +10,7 @@ from django.forms.models import model_to_dict
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi  
+from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.log import Log
 from networkapi.grupo.models import GrupoError
 from networkapi.tipoacesso.models import TipoAcesso, TipoAcessoError, DuplicateProtocolError, AccessTypeUsedByEquipmentError, AccessTypeNotFoundError
@@ -21,29 +21,31 @@ from networkapi.distributedlock import distributedlock, LOCK_TYPE_ACCESS
 
 
 class TipoAcessoResource(RestResource):
+
     '''Class to treat GET, POST, PUT and DELETE requests to tipo_acesso table.'''
 
     log = Log('TipoAcessoResource')
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """GET requests to list all TipoAcesso.
-        
+
         URL: /tipoacesso/ 
         """
-        
+
         try:
             if not has_perm(user, AdminPermission.ACCESS_TYPE_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-        
+
             # Efetua a consulta de todos os tipos de acesso
             map_list = []
             for item in TipoAcesso.objects.all():
                 map_list.append(model_to_dict(item))
-            
+
             # Gera response (XML) com resultados
-            return self.response(dumps_networkapi({'tipo_acesso':map_list}))
-            
+            return self.response(dumps_networkapi({'tipo_acesso': map_list}))
+
         except UserNotAuthorizedError:
             return self.not_authorized()
         except (TipoAcessoError, GrupoError):
@@ -51,50 +53,53 @@ class TipoAcessoResource(RestResource):
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat POST requests to add new Access Type.
-        
+
         URL: /tipoacesso/
-        
+
         """
-        
+
         try:
             if not has_perm(user, AdminPermission.ACCESS_TYPE_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             xml_map, attrs_map = loads(request.raw_post_data)
-            
+
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
                 return self.response_error(3, u'There is no networkapi tag in request XML.')
-            
+
             tipo_acesso_map = networkapi_map.get('tipo_acesso')
             if tipo_acesso_map is None:
                 return self.response_error(3, u'There is no tipo_acesso tag in request XML.')
-            
-            #Valid protocol
+
+            # Valid protocol
             protocol = tipo_acesso_map.get('protocolo')
-            if not is_valid_string_minsize(protocol,3) or not is_valid_string_maxsize(protocol, 45) or not is_valid_regex(protocol, r'^[- a-zA-Z0-9]+$'):
-                self.log.error(u'Parameter protocol is invalid. Value: %s', protocol)
+            if not is_valid_string_minsize(protocol, 3) or not is_valid_string_maxsize(protocol, 45) or not is_valid_regex(protocol, r'^[- a-zA-Z0-9]+$'):
+                self.log.error(
+                    u'Parameter protocol is invalid. Value: %s', protocol)
                 raise InvalidValueError(None, 'protocol', protocol)
-            
+
             access_type = TipoAcesso()
             access_type.protocolo = protocol
-            
+
             try:
                 TipoAcesso.objects.get(protocolo__iexact=access_type.protocolo)
-                raise DuplicateProtocolError(None, u'Access Type with protocol %s already exists' % protocol)
+                raise DuplicateProtocolError(
+                    None, u'Access Type with protocol %s already exists' % protocol)
             except TipoAcesso.DoesNotExist:
                 pass
-            
+
             try:
                 # save access type
                 access_type.save(user)
             except Exception, e:
                 self.log.error(u'Failed to save TipoAcesso.')
                 raise TipoAcessoError(e, u'Failed to save TipoAcesso.')
-            
-            return self.response(dumps_networkapi({'tipo_acesso':{'id':access_type.id}}))
-            
+
+            return self.response(dumps_networkapi({'tipo_acesso': {'id': access_type.id}}))
+
         except UserNotAuthorizedError:
             return self.not_authorized()
         except InvalidValueError, e:
@@ -106,64 +111,67 @@ class TipoAcessoResource(RestResource):
             return self.response_error(203, protocol)
         except (TipoAcessoError, GrupoError):
             return self.response_error(1)
-    
+
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to edit Access Type.
-        
+
         URL: /tipoacesso/<id_tipo_acesso>/
-        
+
         """
 
         try:
             if not has_perm(user, AdminPermission.ACCESS_TYPE_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             # Valid Access Type ID
             tipo_acesso_id = kwargs.get('id_tipo_acesso')
             if not is_valid_int_greater_zero_param(tipo_acesso_id):
-                self.log.error(u'The tipo_acesso_id parameter is not a valid value: %s.', tipo_acesso_id)
+                self.log.error(
+                    u'The tipo_acesso_id parameter is not a valid value: %s.', tipo_acesso_id)
                 raise InvalidValueError(None, 'tipo_acesso_id', tipo_acesso_id)
-            
+
             xml_map, attrs_map = loads(request.raw_post_data)
-            
+
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
                 return self.response_error(3, u'There is no networkapi tag in request XML.')
-            
+
             tipo_acesso_map = networkapi_map.get('tipo_acesso')
             if tipo_acesso_map is None:
                 return self.response_error(3, u'There is no tipo_acesso tag in request XML.')
-            
-            #Valid protocol
+
+            # Valid protocol
             protocol = tipo_acesso_map.get('protocolo')
-            if not is_valid_string_minsize(protocol,3) or not is_valid_string_maxsize(protocol, 45) or not is_valid_regex(protocol, r'^[- a-zA-Z0-9]+$'):
-                self.log.error(u'Parameter protocol is invalid. Value: %s', protocol)
+            if not is_valid_string_minsize(protocol, 3) or not is_valid_string_maxsize(protocol, 45) or not is_valid_regex(protocol, r'^[- a-zA-Z0-9]+$'):
+                self.log.error(
+                    u'Parameter protocol is invalid. Value: %s', protocol)
                 raise InvalidValueError(None, 'protocol', protocol)
-            
-            #Verify existence
+
+            # Verify existence
             tpa = TipoAcesso.get_by_pk(tipo_acesso_id)
-            
+
             tpa.protocolo = protocol
-            
+
             try:
                 if len(TipoAcesso.objects.filter(protocolo__iexact=protocol).exclude(id=tpa.id)) > 0:
-                    raise DuplicateProtocolError(None, u'Access Type with protocol %s already exists' % protocol)
+                    raise DuplicateProtocolError(
+                        None, u'Access Type with protocol %s already exists' % protocol)
             except TipoAcesso.DoesNotExist:
                 pass
-            
-            
+
             with distributedlock(LOCK_TYPE_ACCESS % tipo_acesso_id):
-                
+
                 try:
                     # save access type
                     tpa.save(user)
                 except Exception, e:
                     self.log.error(u'Failed to update TipoAcesso.')
                     raise TipoAcessoError(e, u'Failed to update TipoAcesso.')
-            
+
             return self.response(dumps_networkapi({}))
-        
+
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
@@ -180,36 +188,40 @@ class TipoAcessoResource(RestResource):
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat DELETE requests to remove Access Type.
-        
+
         URL: /tipoacesso/<id_tipo_acesso>/ 
-        
+
         """
 
         try:
             if not has_perm(user, AdminPermission.ACCESS_TYPE_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             # Valid Access Type ID
             tipo_acesso_id = kwargs.get('id_tipo_acesso')
             if not is_valid_int_greater_zero_param(tipo_acesso_id):
-                self.log.error(u'The tipo_acesso_id parameter is not a valid value: %s.', tipo_acesso_id)
+                self.log.error(
+                    u'The tipo_acesso_id parameter is not a valid value: %s.', tipo_acesso_id)
                 raise InvalidValueError(None, 'tipo_acesso_id', tipo_acesso_id)
 
-            #Verify existence
+            # Verify existence
             tpa = TipoAcesso.get_by_pk(tipo_acesso_id)
-            
+
             with distributedlock(LOCK_TYPE_ACCESS % tipo_acesso_id):
-            
-                # Verifica se o tipo de acesso não é utilizado por algum equipamento
+
+                # Verifica se o tipo de acesso não é utilizado por algum
+                # equipamento
                 if tpa.equipamentoacesso_set.count() > 0:
                     self.log.error(u'Access Type in use by equipment.')
-                    raise AccessTypeUsedByEquipmentError(None, u'Access Type in use by equipment.')
-            
+                    raise AccessTypeUsedByEquipmentError(
+                        None, u'Access Type in use by equipment.')
+
                 tpa.delete(user)
-                
+
             return self.response(dumps_networkapi({}))
-        
+
         except UserNotAuthorizedError:
             return self.not_authorized()
         except AccessTypeNotFoundError:
@@ -226,4 +238,3 @@ class TipoAcessoResource(RestResource):
         tipo_acesso_map['id'] = tipo_acesso.id
         tipo_acesso_map['protocolo'] = tipo_acesso.protocolo
         return tipo_acesso_map
-

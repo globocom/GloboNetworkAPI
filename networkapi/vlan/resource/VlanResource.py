@@ -26,6 +26,7 @@ from networkapi.settings import VLAN_CREATE
 
 
 class VlanResource(RestResource):
+
     '''Class to treat GET, POST, PUT and DELETE requests for Vlan.'''
 
     log = Log('VlanResource')
@@ -41,14 +42,15 @@ class VlanResource(RestResource):
 
         try:
 
-            # # Commons Validations
+            # Commons Validations
 
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            # # Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -79,13 +81,15 @@ class VlanResource(RestResource):
 
             # Description can NOT be greater than 200
             if not is_valid_string_minsize(description, 3, False) or not is_valid_string_maxsize(description, 200, False):
-                self.log.error(u'Parameter descricao is invalid. Value: %s.', description)
+                self.log.error(
+                    u'Parameter descricao is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'descricao', description)
 
             # Environment
             # Valid environment ID
             if not is_valid_int_greater_zero_param(environment):
-                self.log.error(u'Parameter id_ambiente is invalid. Value: %s.', environment)
+                self.log.error(
+                    u'Parameter id_ambiente is invalid. Value: %s.', environment)
                 raise InvalidValueError(None, 'id_ambiente', environment)
 
             # Find environment by ID to check if it exist
@@ -96,8 +100,10 @@ class VlanResource(RestResource):
 
                 # Valid environment_vip ID
                 if not is_valid_int_greater_zero_param(environment_vip):
-                    self.log.error(u'Parameter id_ambiente_vip is invalid. Value: %s.', environment_vip)
-                    raise InvalidValueError(None, 'id_ambiente_vip', environment_vip)
+                    self.log.error(
+                        u'Parameter id_ambiente_vip is invalid. Value: %s.', environment_vip)
+                    raise InvalidValueError(
+                        None, 'id_ambiente_vip', environment_vip)
 
                 # Find Environment VIP by ID to check if it exist
                 evip = EnvironmentVip.get_by_pk(environment_vip)
@@ -108,13 +114,14 @@ class VlanResource(RestResource):
             # Network Type
             # Valid network_type ID
             if not is_valid_int_greater_zero_param(network_type):
-                self.log.error(u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
+                self.log.error(
+                    u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
                 raise InvalidValueError(None, 'id_tipo_rede', network_type)
 
             # Find network_type by ID to check if it exist
             net = TipoRede.get_by_pk(network_type)
 
-            # # Business Rules
+            # Business Rules
 
             # New Vlan
             vlan = Vlan()
@@ -122,7 +129,8 @@ class VlanResource(RestResource):
             vlan.descricao = description
             vlan.ambiente = env
 
-            # Check if environment has min/max num_vlan value or use the value thas was configured in settings
+            # Check if environment has min/max num_vlan value or use the value
+            # thas was configured in settings
             if (vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1) or (vlan.ambiente.min_num_vlan_2 and vlan.ambiente.max_num_vlan_2):
                 min_num_01 = vlan.ambiente.min_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.min_num_vlan_2
                 max_num_01 = vlan.ambiente.max_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.max_num_vlan_2
@@ -246,7 +254,8 @@ class VlanResource(RestResource):
 
                 # Valid environment_vip ID
                 if not is_valid_int_greater_zero_param(id_vlan):
-                    self.log.error(u'Parameter id_vlan is invalid. Value: %s.', id_vlan)
+                    self.log.error(
+                        u'Parameter id_vlan is invalid. Value: %s.', id_vlan)
                     raise InvalidValueError(None, 'id_vlan', id_vlan)
 
                 vlan = Vlan().get_by_pk(id_vlan)
@@ -256,13 +265,16 @@ class VlanResource(RestResource):
                     network_ipv4 = vlan.networkipv4_set.order_by('id')[0]
                     vlan_map = self.get_vlan_map(vlan, network_ipv4)
                 except IndexError, e:
-                    self.log.error(u'Error finding the first network_ipv4 from vlan, trying network_ipv6.')
+                    self.log.error(
+                        u'Error finding the first network_ipv4 from vlan, trying network_ipv6.')
                     try:
                         network_ipv6 = vlan.networkipv6_set.order_by('id')[0]
                         vlan_map = self.get_vlan_map_ipv6(vlan, network_ipv6)
                     except IndexError, e:
-                        self.log.error(u'Error findind the first network_ipv6, raising exception.')
-                        raise NetworkIPvXNotFoundError(e, u'Error finding the first network_ipv4 and network_ipv6 from vlan.')
+                        self.log.error(
+                            u'Error findind the first network_ipv6, raising exception.')
+                        raise NetworkIPvXNotFoundError(
+                            e, u'Error finding the first network_ipv4 and network_ipv6 from vlan.')
 
                 map = dict()
                 map['vlan'] = vlan_map
@@ -297,17 +309,20 @@ class VlanResource(RestResource):
         try:
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Valid vlan id
             if (operation != 'list') and not is_valid_int_greater_zero_param(kwargs.get('id_vlan')):
-                self.log.error(u'Parameter id_vlan is invalid. Value: %s.', kwargs.get('id_vlan'))
+                self.log.error(
+                    u'Parameter id_vlan is invalid. Value: %s.', kwargs.get('id_vlan'))
                 raise InvalidValueError(None, 'id_vlan', kwargs.get('id_vlan'))
 
             # XML operations
             else:
-                xml_map, attrs_map = loads(request.raw_post_data, ['id_equipamento'])
+                xml_map, attrs_map = loads(
+                    request.raw_post_data, ['id_equipamento'])
                 networkapi_map = xml_map.get('networkapi')
                 if networkapi_map is None:
                     return self.response_error(3, u'There is no value to the networkapi tag of XML request.')
@@ -317,7 +332,8 @@ class VlanResource(RestResource):
                 else:
                     return self.add_remove_check_list_vlan_trunk(user,
                                                                  networkapi_map,
-                                                                 kwargs.get('id_vlan'),
+                                                                 kwargs.get(
+                                                                     'id_vlan'),
                                                                  operation)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -341,17 +357,21 @@ class VlanResource(RestResource):
         vlan = Vlan().get_by_pk(vlan_id)
 
         # Check permission group equipments
-        equips_from_ipv4 = Equipamento.objects.filter(ipequipamento__ip__networkipv4__vlan=vlan_id, equipamentoambiente__is_router=1)
-        equips_from_ipv6 = Equipamento.objects.filter(ipv6equipament__ip__networkipv6__vlan=vlan_id, equipamentoambiente__is_router=1)
+        equips_from_ipv4 = Equipamento.objects.filter(
+            ipequipamento__ip__networkipv4__vlan=vlan_id, equipamentoambiente__is_router=1)
+        equips_from_ipv6 = Equipamento.objects.filter(
+            ipv6equipament__ip__networkipv6__vlan=vlan_id, equipamentoambiente__is_router=1)
         for equip in equips_from_ipv4:
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
         for equip in equips_from_ipv6:
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
         if vlan.ativada:
@@ -388,7 +408,8 @@ class VlanResource(RestResource):
 
             interface_name = equipment_map.get('nome_interface')
             if interface_name is None or interface_name == '':
-                self.log.error(u'Parameter nome_interface is invalid. Value: %s.', interface_name)
+                self.log.error(
+                    u'Parameter nome_interface is invalid. Value: %s.', interface_name)
                 raise InvalidValueError(None, 'nome_interface', interface_name)
 
             if operation != 'list':
@@ -411,7 +432,8 @@ class VlanResource(RestResource):
                             equip_permission):
                 return self.not_authorized()
 
-            interface = Interface.get_by_interface_equipment(interface_name, equipment.id)
+            interface = Interface.get_by_interface_equipment(
+                interface_name, equipment.id)
 
             if interface.ligacao_front is None:
                 return self.response_error(139)
@@ -421,7 +443,8 @@ class VlanResource(RestResource):
                 protected = 0
 
             try:
-                switch_interface = interface.get_switch_interface_from_host_interface(protected)
+                switch_interface = interface.get_switch_interface_from_host_interface(
+                    protected)
             except InterfaceNotFoundError:
                 return self.response_error(144)
 
@@ -436,7 +459,8 @@ class VlanResource(RestResource):
             # configurador -T snmp_vlans_trunk -i <nomequip> -A “'int=<interface> add=<numvlan>'”
             # configurador -T snmp_vlans_trunk -i <nomequip> -A “'int=<interface> del=<numvlan>'”
             # configurador -T snmp_vlans_trunk -i <nomequip> -A “'int=<interface> check=<numvlan>'"
-            # configurador -T snmp_vlans_trunk -i <nomequip> -A “'int=<interface> list'"
+            # configurador -T snmp_vlans_trunk -i <nomequip> -A
+            # “'int=<interface> list'"
             command = 'configurador -T snmp_vlans_trunk -i %s -A "\'int=%s %s' % (switch_interface.equipamento.nome,
                                                                                   switch_interface.interface,
                                                                                   operation)
@@ -458,7 +482,7 @@ class VlanResource(RestResource):
                 return self.response_error(2, stdout + stderr)
 
         except EquipamentoNotFoundError:
-                return self.response_error(117, name)
+            return self.response_error(117, name)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except InterfaceNotFoundError:

@@ -64,36 +64,42 @@ class NetworkEditResource(RestResource):
 
             # Valid id_network
             if not is_valid_int_greater_zero_param(id_network):
-                self.log.error(u'Parameter id_network is invalid. Value: %s.', id_network)
+                self.log.error(
+                    u'Parameter id_network is invalid. Value: %s.', id_network)
                 raise InvalidValueError(None, 'id_network', id_network)
 
             # Valid ip_type
             if not is_valid_int_param(ip_type):
-                self.log.error(u'Parameter ip_type is invalid. Value: %s.', ip_type)
+                self.log.error(
+                    u'Parameter ip_type is invalid. Value: %s.', ip_type)
                 raise InvalidValueError(None, 'ip_type', ip_type)
 
             list_choice = [0, 1]
             # Valid ip_type choice
             if int(ip_type) not in list_choice:
-                self.log.error(u'Parameter ip_type is invalid. Value: %s.', ip_type)
+                self.log.error(
+                    u'Parameter ip_type is invalid. Value: %s.', ip_type)
                 raise InvalidValueError(None, 'ip_type', ip_type)
 
             # Valid id_net_type
             if not is_valid_int_greater_zero_param(id_net_type):
-                self.log.error(u'Parameter id_net_type is invalid. Value: %s.', id_net_type)
+                self.log.error(
+                    u'Parameter id_net_type is invalid. Value: %s.', id_net_type)
                 raise InvalidValueError(None, 'id_net_type', id_net_type)
 
             # Valid id_env_vip
             if id_env_vip is not None:
                 if not is_valid_int_greater_zero_param(id_env_vip):
-                    self.log.error(u'Parameter id_env_vip is invalid. Value: %s.', id_env_vip)
+                    self.log.error(
+                        u'Parameter id_env_vip is invalid. Value: %s.', id_env_vip)
                     raise InvalidValueError(None, 'id_env_vip', id_env_vip)
 
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                raise UserNotAuthorizedError(None, u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(
+                    None, u'User does not have permission to perform the operation.')
 
-            # # Business Rules
+            # Business Rules
 
             if (id_env_vip is not None):
                 id_env_vip = EnvironmentVip.get_by_pk(id_env_vip)
@@ -111,17 +117,22 @@ class NetworkEditResource(RestResource):
 
                         if net.ambient_vip is None or net.ambient_vip.id != id_env_vip.id:
 
-                            network = IPNetwork('%d.%d.%d.%d/%d' % (net.oct1, net.oct2, net.oct3, net.oct4, net.block))
+                            network = IPNetwork(
+                                '%d.%d.%d.%d/%d' % (net.oct1, net.oct2, net.oct3, net.oct4, net.block))
 
                             # Find all networks related to environment vip
-                            nets = NetworkIPv4.objects.select_related().filter(ambient_vip__id=id_env_vip.id)
+                            nets = NetworkIPv4.objects.select_related().filter(
+                                ambient_vip__id=id_env_vip.id)
 
                             # Cast to API class
-                            networks = set([IPv4Network('%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block)) for net_ip in nets])
+                            networks = set([IPv4Network(
+                                '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block)) for net_ip in nets])
 
-                            # If there is already a network with the same ip range as related the environment vip
+                            # If there is already a network with the same ip
+                            # range as related the environment vip
                             if network in networks:
-                                raise NetworkIpAddressNotAvailableError(None, u'Unavailable address to create a NetworkIPv4.')
+                                raise NetworkIpAddressNotAvailableError(
+                                    None, u'Unavailable address to create a NetworkIPv4.')
 
                     net.edit_network_ipv4(user, id_net_type, id_env_vip)
 
@@ -135,17 +146,22 @@ class NetworkEditResource(RestResource):
 
                         if net.ambient_vip is None or net.ambient_vip.id != id_env_vip.id:
 
-                            network = IPNetwork('%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net.block1, net.block2, net.block3, net.block4, net.block5, net.block6, net.block7, net.block8, net.block))
+                            network = IPNetwork('%s:%s:%s:%s:%s:%s:%s:%s/%d' % (
+                                net.block1, net.block2, net.block3, net.block4, net.block5, net.block6, net.block7, net.block8, net.block))
 
                             # Find all networks related to environment vip
-                            nets = NetworkIPv6.objects.select_related().filter(ambient_vip__id=id_env_vip.id)
+                            nets = NetworkIPv6.objects.select_related().filter(
+                                ambient_vip__id=id_env_vip.id)
 
                             # Cast to API class
-                            networks = set([IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net_ip.block1, net_ip.block2, net_ip.block3, net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block)) for net_ip in nets])
+                            networks = set([IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net_ip.block1, net_ip.block2, net_ip.block3,
+                                                                                        net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block)) for net_ip in nets])
 
-                            # If there is already a network with the same  range ip as related the environment  vip
+                            # If there is already a network with the same
+                            # range ip as related the environment  vip
                             if net in networks:
-                                raise NetworkIpAddressNotAvailableError(None, u'Unavailable address to create a NetworkIPv6.')
+                                raise NetworkIpAddressNotAvailableError(
+                                    None, u'Unavailable address to create a NetworkIPv6.')
 
                     net.edit_network_ipv6(user, id_net_type, id_env_vip)
 
@@ -185,7 +201,8 @@ class NetworkEditResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
@@ -198,24 +215,29 @@ class NetworkEditResource(RestResource):
             id_vlan = network_map.get('id_vlan')
 
             if not is_valid_int_greater_zero_param(id_vlan):
-                self.log.error(u'The id network parameter is invalid. Value: %s.', id_vlan)
+                self.log.error(
+                    u'The id network parameter is invalid. Value: %s.', id_vlan)
                 raise InvalidValueError(None, 'id_network', id_vlan)
 
             vlan = Vlan()
             vlan = vlan.get_by_pk(id_vlan)
 
             # Check permission group equipments
-            equips_from_ipv4 = Equipamento.objects.filter(ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1)
-            equips_from_ipv6 = Equipamento.objects.filter(ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1)
+            equips_from_ipv4 = Equipamento.objects.filter(
+                ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1)
+            equips_from_ipv6 = Equipamento.objects.filter(
+                ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1)
             for equip in equips_from_ipv4:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                    self.log.error(u'User does not have permission to perform the operation.')
+                    self.log.error(
+                        u'User does not have permission to perform the operation.')
                     return self.not_authorized()
             for equip in equips_from_ipv6:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                    self.log.error(u'User does not have permission to perform the operation.')
+                    self.log.error(
+                        u'User does not have permission to perform the operation.')
                     return self.not_authorized()
 
             with distributedlock(LOCK_VLAN % id_vlan):
@@ -255,18 +277,21 @@ class NetworkEditResource(RestResource):
         value = id.split('-')
 
         if len(value) != 2:
-            self.log.error(u'The id network parameter is invalid format: %s.', value)
+            self.log.error(
+                u'The id network parameter is invalid format: %s.', value)
             raise InvalidValueError(None, 'id_network', value)
 
         id_net = value[0]
         network_type = value[1]
 
         if not is_valid_int_greater_zero_param(id_net):
-            self.log.error(u'The id network parameter is invalid. Value: %s.', id_net)
+            self.log.error(
+                u'The id network parameter is invalid. Value: %s.', id_net)
             raise InvalidValueError(None, 'id_network', id_net)
 
         if not is_valid_version_ip(network_type, IP_VERSION):
-            self.log.error(u'The type network parameter is invalid value: %s.', network_type)
+            self.log.error(
+                u'The type network parameter is invalid value: %s.', network_type)
             raise InvalidValueError(None, 'network_type', network_type)
 
         if network_type == 'v4':

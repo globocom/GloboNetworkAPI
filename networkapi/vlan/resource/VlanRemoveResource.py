@@ -35,46 +35,51 @@ class VlanRemoveResource(RestResource):
         self.log.info('Remove VLAN by ID')
         CODE_MESSAGE_VLAN_ERROR = 369
 
-
         try:
 
-            # # Commons Validations
+            # Commons Validations
 
             # User permission
             if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            # # Business Validations
+            # Business Validations
 
             # Load URL param
             vlan_id = kwargs.get('id_vlan')
 
             # Valid VLAN ID
             if not is_valid_int_greater_zero_param(vlan_id):
-                self.log.error(u'Parameter id_vlan is invalid. Value: %s.', vlan_id)
+                self.log.error(
+                    u'Parameter id_vlan is invalid. Value: %s.', vlan_id)
                 raise InvalidValueError(None, 'id_vlan', vlan_id)
 
             # Existing VLAN ID
             vlan = Vlan().get_by_pk(vlan_id)
 
             # Check permission group equipments
-            equips_from_ipv4 = Equipamento.objects.filter(ipequipamento__ip__networkipv4__vlan=vlan_id, equipamentoambiente__is_router=1)
-            equips_from_ipv6 = Equipamento.objects.filter(ipv6equipament__ip__networkipv6__vlan=vlan_id, equipamentoambiente__is_router=1)
+            equips_from_ipv4 = Equipamento.objects.filter(
+                ipequipamento__ip__networkipv4__vlan=vlan_id, equipamentoambiente__is_router=1)
+            equips_from_ipv6 = Equipamento.objects.filter(
+                ipv6equipament__ip__networkipv6__vlan=vlan_id, equipamentoambiente__is_router=1)
             for equip in equips_from_ipv4:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                    self.log.error(u'User does not have permission to perform the operation.')
+                    self.log.error(
+                        u'User does not have permission to perform the operation.')
                     return self.not_authorized()
             for equip in equips_from_ipv6:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                    self.log.error(u'User does not have permission to perform the operation.')
+                    self.log.error(
+                        u'User does not have permission to perform the operation.')
                     return self.not_authorized()
 
             with distributedlock(LOCK_VLAN % vlan_id):
 
-                # # Business Rules
+                # Business Rules
 
                 if vlan.ativada:
                     network_errors = []
@@ -82,13 +87,14 @@ class VlanRemoveResource(RestResource):
                     for net4 in vlan.networkipv4_set.all():
                         if net4.active:
                             try:
-                                command = settings.NETWORKIPV4_REMOVE % int(net4.id)
+                                command = settings.NETWORKIPV4_REMOVE % int(
+                                    net4.id)
 
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
                                     net4.deactivate(user, True)
-                                else:   
-                                    network_errors.append(str(net4.id))  
+                                else:
+                                    network_errors.append(str(net4.id))
                             except Exception, e:
                                 network_errors.append(str(net4.id))
                                 pass
@@ -96,7 +102,8 @@ class VlanRemoveResource(RestResource):
                     for net6 in vlan.networkipv6_set.all():
                         if net6.active:
                             try:
-                                command = settings.NETWORKIPV6_REMOVE % int(net6.id)
+                                command = settings.NETWORKIPV6_REMOVE % int(
+                                    net6.id)
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
                                     net6.deactivate(user, True)
@@ -107,10 +114,12 @@ class VlanRemoveResource(RestResource):
                                 pass
 
                     if network_errors:
-                        raise VlanNetworkError(None, message = ', '.join(network_errors))
+                        raise VlanNetworkError(
+                            None, message=', '.join(network_errors))
 
                 else:
-                    raise VlanInactiveError(None, 'Cant remove vlan because its inactive.')
+                    raise VlanInactiveError(
+                        None, 'Cant remove vlan because its inactive.')
 
                 # Execute script
 
@@ -122,7 +131,8 @@ class VlanRemoveResource(RestResource):
                 if code == 0:
                     success_map = dict()
                     success_map['codigo'] = '%04d' % code
-                    success_map['descricao'] = {'stdout':stdout, 'stderr':stderr}
+                    success_map['descricao'] = {
+                        'stdout': stdout, 'stderr': stderr}
 
                     map = dict()
                     map['sucesso'] = success_map

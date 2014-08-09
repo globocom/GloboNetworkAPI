@@ -15,22 +15,23 @@ from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
 
 
-def get_envs(self, user, no_blocks = False):
+def get_envs(self, user, no_blocks=False):
     try:
-        
-        ## Commons Validations
-        
+
+        # Commons Validations
+
         # User permission
         if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
             return self.not_authorized()
-        
-        ## Business Rules
-        
+
+        # Business Rules
+
         # Get all environments in DB
-        environments = Ambiente.objects.all().order_by("divisao_dc__nome", "ambiente_logico__nome", "grupo_l3__nome").select_related("grupo_l3", "ambiente_logico", "divisao_dc", "filter")
-        
+        environments = Ambiente.objects.all().order_by("divisao_dc__nome", "ambiente_logico__nome",
+                                                       "grupo_l3__nome").select_related("grupo_l3", "ambiente_logico", "divisao_dc", "filter")
+
         lists = []
-        
+
         for env in environments:
             if env.blockrules_set.count() == 0 or not no_blocks:
                 env_map = model_to_dict(env)
@@ -40,32 +41,32 @@ def get_envs(self, user, no_blocks = False):
                 if env.filter is not None:
                     env_map["filter_name"] = env.filter.name
                 lists.append(env_map)
-            
+
         # Return XML
         environment_list = dict()
         environment_list["ambiente"] = lists
         return self.response(dumps_networkapi(environment_list))
-    
+
     except GrupoError:
-        return self.response_error(1)   
+        return self.response_error(1)
+
 
 class EnvironmentListResource(RestResource):
-    
+
     log = Log('EnvironmentListResource')
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests POST to list all Environments.
 
         URL: /ambiente/list/
         """
-        
+
         return get_envs(self, user)
-        
+
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to list all Environments without blocks.
 
         URL: /ambiente/list_no_blocks/
         """
-        
+
         return get_envs(self, user, True)
-     

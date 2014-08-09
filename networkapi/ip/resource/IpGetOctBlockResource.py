@@ -8,7 +8,7 @@ Copyright: ( c )  2009 globo.com todos os direitos reservados.
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import  Ipv6, IpError,Ip, IpNotFoundError, IP_VERSION
+from networkapi.ip.models import Ipv6, IpError, Ip, IpNotFoundError, IP_VERSION
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
@@ -30,7 +30,7 @@ class IpGetOctBlockResource(RestResource):
 
         try:
 
-            ## Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -52,47 +52,50 @@ class IpGetOctBlockResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.IPS, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-            
+
             # Valid ip
             if not is_valid_ip_ipaddr(ip):
                 self.log.error(u'Parameter ip is invalid. Value: %s.', ip)
                 raise InvalidValueError(None, 'ip', ip)
 
-            ## Business Rules
+            # Business Rules
             version = ""
             ip_list = ip.split(".")
-            
+
             if len(ip_list) == 1:
-                
+
                 ip_list = ip.split(":")
-                ips = Ipv6.get_by_blocks(ip_list[0], ip_list[1], ip_list[2], ip_list[3], ip_list[4], ip_list[5], ip_list[6], ip_list[7])
+                ips = Ipv6.get_by_blocks(ip_list[0], ip_list[1], ip_list[2], ip_list[
+                                         3], ip_list[4], ip_list[5], ip_list[6], ip_list[7])
                 version = IP_VERSION.IPv6[1]
-                
+
             else:
-                
-                ips = Ip.get_by_octs(ip_list[0], ip_list[1], ip_list[2], ip_list[3])
+
+                ips = Ip.get_by_octs(
+                    ip_list[0], ip_list[1], ip_list[2], ip_list[3])
                 version = IP_VERSION.IPv4[1]
-            
+
             ips_list = []
             for ip in ips:
                 ip_dict = model_to_dict(ip)
                 ip_dict["version"] = version
                 ips_list.append(ip_dict)
 
-            return self.response(dumps_networkapi({'ips':ips_list}))
+            return self.response(dumps_networkapi({'ips': ips_list}))
 
         except XMLError, x:
             self.log.error(u'Error reading the XML request.')
-            return self.response_error(3, x)        
+            return self.response_error(3, x)
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
         except UserNotAuthorizedError:
             return self.not_authorized()
-        
+
         except IpNotFoundError:
             return self.response_error(119)
 

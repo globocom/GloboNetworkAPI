@@ -23,13 +23,14 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 from networkapi.exception import InvalidValueError
 
+
 class HealthcheckExpectGetResource(RestResource):
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """Trata as requisições GET para consulta de HealthCheckExpects por id.
-        
+
         Lista as informações de um HealthCheckExpect por id.
-        
+
         URL:  /healthcheckexpect/get/<id_healthcheck_expect>/
         """
         try:
@@ -37,19 +38,20 @@ class HealthcheckExpectGetResource(RestResource):
                             AdminPermission.HEALTH_CHECK_EXPECT,
                             AdminPermission.READ_OPERATION):
                 return self.not_authorized()
-            
+
             id_healthcheck = kwargs.get('id_healthcheck')
-            
+
             if not is_valid_int_greater_zero_param(id_healthcheck):
-                self.log.error(u'The id_healthcheck parameter is not a valid value: %s.', id_healthcheck)
+                self.log.error(
+                    u'The id_healthcheck parameter is not a valid value: %s.', id_healthcheck)
                 raise InvalidValueError(None, 'id_healthcheck', id_healthcheck)
-            
+
             heal = HealthcheckExpect.get_by_pk(id_healthcheck)
-            
+
             healthcheckexpect_map = model_to_dict(heal)
-                
-            return self.response(dumps_networkapi({'healthcheck_expect':healthcheckexpect_map}))
-        
+
+            return self.response(dumps_networkapi({'healthcheck_expect': healthcheckexpect_map}))
+
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except HealthcheckExpectNotFoundError:

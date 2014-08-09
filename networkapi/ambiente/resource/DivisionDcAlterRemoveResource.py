@@ -16,6 +16,7 @@ from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
 
+
 class DivisionDcAlterRemoveResource(RestResource):
 
     log = Log('DivisionDcAlterRemoveResource')
@@ -28,14 +29,15 @@ class DivisionDcAlterRemoveResource(RestResource):
         try:
 
             self.log.info("Edit Division Dc")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             id_divisiondc = kwargs.get('id_divisiondc')
-            
+
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
 
@@ -47,42 +49,45 @@ class DivisionDcAlterRemoveResource(RestResource):
             division_dc_map = networkapi_map.get('division_dc')
             if division_dc_map is None:
                 return self.response_error(3, u'There is no value to the division_dc tag  of XML request.')
-            
+
             # Get XML data
             name = division_dc_map.get('name')
-            
+
             # Valid ID Division Dc
             if not is_valid_int_greater_zero_param(id_divisiondc):
-                self.log.error(u'The id_divisiondc parameter is not a valid value: %s.', id_divisiondc)
+                self.log.error(
+                    u'The id_divisiondc parameter is not a valid value: %s.', id_divisiondc)
                 raise InvalidValueError(None, 'id_divisiondc', id_divisiondc)
-            
-            #Valid name
-            if not is_valid_string_minsize(name,2) or not is_valid_string_maxsize(name, 80) or not is_valid_regex(name, '^[-0-9a-zA-Z]+$'):
-                self.log.error(u'Parameter name is invalid. Value: %s',name)
-                raise InvalidValueError(None,'name',name)
+
+            # Valid name
+            if not is_valid_string_minsize(name, 2) or not is_valid_string_maxsize(name, 80) or not is_valid_regex(name, '^[-0-9a-zA-Z]+$'):
+                self.log.error(u'Parameter name is invalid. Value: %s', name)
+                raise InvalidValueError(None, 'name', name)
 
             # Find Division Dc by ID to check if it exist
             division_dc = DivisaoDc.get_by_pk(id_divisiondc)
-            
+
             with distributedlock(LOCK_DC_DIVISION % id_divisiondc):
-                
+
                 try:
                     if division_dc.nome.lower() != name.lower():
                         DivisaoDc.get_by_name(name)
-                        raise DivisaoDcNameDuplicatedError(None, u'Já existe um Divisão Dc com o valor name %s.' % name)
+                        raise DivisaoDcNameDuplicatedError(
+                            None, u'Já existe um Divisão Dc com o valor name %s.' % name)
                 except DivisaoDcNotFoundError:
                     pass
-                
+
                 # set variables
-                division_dc.nome  = name
-                
+                division_dc.nome = name
+
                 try:
                     # update Division Dc
                     division_dc.save(user)
                 except Exception, e:
                     self.log.error(u'Failed to update the Division Dc.')
-                    raise AmbienteError(e, u'Failed to update the Division Dc.')
-    
+                    raise AmbienteError(
+                        e, u'Failed to update the Division Dc.')
+
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
@@ -96,61 +101,65 @@ class DivisionDcAlterRemoveResource(RestResource):
 
         except DivisaoDcNotFoundError:
             return self.response_error(164, id_divisiondc)
-        
+
         except AmbienteError:
             return self.response_error(1)
-        
+
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests DELETE to remove Division Dc.
 
         URL: divisiondc/<id_divisiondc>/
         """
         try:
-            
+
             self.log.info("Remove Division Dc")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             id_divisiondc = kwargs.get('id_divisiondc')
-            
+
             # Valid ID Division Dc
             if not is_valid_int_greater_zero_param(id_divisiondc):
-                self.log.error(u'The id_divisiondc parameter is not a valid value: %s.', id_divisiondc)
+                self.log.error(
+                    u'The id_divisiondc parameter is not a valid value: %s.', id_divisiondc)
                 raise InvalidValueError(None, 'id_divisiondc', id_divisiondc)
-            
+
             # Find Division Dc by ID to check if it exist
             division_dc = DivisaoDc.get_by_pk(id_divisiondc)
-            
+
             with distributedlock(LOCK_DC_DIVISION % id_divisiondc):
-                
+
                 try:
-                    
+
                     if division_dc.ambiente_set.count() > 0:
-                        raise DivisaoDcUsedByEnvironmentError(None, u"A Divisão DC %s tem ambiente associado." % division_dc.id)
-                    
+                        raise DivisaoDcUsedByEnvironmentError(
+                            None, u"A Divisão DC %s tem ambiente associado." % division_dc.id)
+
                     # remove Division Dc
                     division_dc.delete(user)
-                    
+
                 except DivisaoDcUsedByEnvironmentError, e:
                     raise e
                 except Exception, e:
                     self.log.error(u'Failed to remove the Division Dc.')
-                    raise AmbienteError(e, u'Failed to remove the Division Dc.')
-                
+                    raise AmbienteError(
+                        e, u'Failed to remove the Division Dc.')
+
                 return self.response(dumps_networkapi({}))
-        
+
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
         except UserNotAuthorizedError:
             return self.not_authorized()
-        
+
         except DivisaoDcNotFoundError:
             return self.response_error(164, id_divisiondc)
-        
+
         except DivisaoDcUsedByEnvironmentError:
             return self.response_error(216, id_divisiondc)
 

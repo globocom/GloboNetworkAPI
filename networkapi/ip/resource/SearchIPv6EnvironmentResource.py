@@ -8,13 +8,14 @@ Copyright: ( c )  2009 globo.com todos os direitos reservados.
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.infrastructure.ipaddr import IPv6Address
 from networkapi.ip.models import Ipv6, IpNotFoundError, IpError
-from networkapi.ambiente.models import Ambiente, AmbienteError, AmbienteNotFoundError 
+from networkapi.ambiente.models import Ambiente, AmbienteError, AmbienteNotFoundError
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.log import Log
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_ipv6
 from networkapi.exception import InvalidValueError
+
 
 class SearchIPv6EnvironmentResource(RestResource):
 
@@ -31,8 +32,9 @@ class SearchIPv6EnvironmentResource(RestResource):
         try:
 
             # User permission
-            if not has_perm(user, AdminPermission.IPS,AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.IPS, AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -53,21 +55,24 @@ class SearchIPv6EnvironmentResource(RestResource):
 
             # Valid Environment ID
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'The id_environment parameter is not a valid value: %s.', environment_id)
+                self.log.error(
+                    u'The id_environment parameter is not a valid value: %s.', environment_id)
                 raise InvalidValueError(None, 'id_environment', environment_id)
 
             # Valid IPv6 ID
             if not is_valid_ipv6(ipv6):
-                self.log.error(u'The ipv6 parameter is not a valid value: %s.', ipv6)
+                self.log.error(
+                    u'The ipv6 parameter is not a valid value: %s.', ipv6)
                 raise InvalidValueError(None, 'ipv6', ipv6)
 
             blocks = str(IPv6Address(ipv6).exploded).split(':')
-            
+
             # Find Environment by ID to check if it exist
             environment = Ambiente.get_by_pk(environment_id)
 
             # Find Ipv6 by blocks to check if it exist
-            IPv6 = Ipv6.get_by_octs_and_environment(blocks[0], blocks[1], blocks[2], blocks[3], blocks[4], blocks[5], blocks[6], blocks[7], environment_id)
+            IPv6 = Ipv6.get_by_octs_and_environment(blocks[0], blocks[1], blocks[2], blocks[
+                                                    3], blocks[4], blocks[5], blocks[6], blocks[7], environment_id)
 
             # Generate return map
             ipv6_map = dict()
@@ -83,7 +88,7 @@ class SearchIPv6EnvironmentResource(RestResource):
             ipv6_map['bloco8'] = IPv6.block8
             ipv6_map['descricao'] = IPv6.description
 
-            return self.response(dumps_networkapi({'ipv6':ipv6_map}))
+            return self.response(dumps_networkapi({'ipv6': ipv6_map}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

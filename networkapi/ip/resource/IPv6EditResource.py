@@ -18,8 +18,9 @@ from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.distributedlock import distributedlock, LOCK_IPV6
 
+
 class IPv6EditResource(RestResource):
-    
+
     log = Log('IPv6EditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
@@ -50,43 +51,47 @@ class IPv6EditResource(RestResource):
             id_ip = ip_map.get('id_ip')
             description = ip_map.get('descricao')
             ip6 = ip_map.get('ip6')
-            
+
             # Valid equip_id
             if not is_valid_int_greater_zero_param(id_ip):
-                self.log.error(u'Parameter id_ip is invalid. Value: %s.', id_ip)
+                self.log.error(
+                    u'Parameter id_ip is invalid. Value: %s.', id_ip)
                 raise InvalidValueError(None, 'id_ip', id_ip)
-            
+
             # Description can NOT be greater than 100
             if not is_valid_string_maxsize(ip6, 39):
-                self.log.error(u'Parameter descricao is invalid. Value: %s.', ip6)
+                self.log.error(
+                    u'Parameter descricao is invalid. Value: %s.', ip6)
                 raise InvalidValueError(None, 'ip6', ip6)
-            
+
             if description is not None:
-                if not is_valid_string_maxsize(description,100) or not is_valid_string_minsize(description,3):
-                    self.log.error(u'Parameter description is invalid. Value: %s.', description)
+                if not is_valid_string_maxsize(description, 100) or not is_valid_string_minsize(description, 3):
+                    self.log.error(
+                        u'Parameter description is invalid. Value: %s.', description)
                     raise InvalidValueError(None, 'description', description)
 
             # User permission
             if not has_perm(user, AdminPermission.IPS, AdminPermission.WRITE_OPERATION):
-                raise UserNotAuthorizedError(None, u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(
+                    None, u'User does not have permission to perform the operation.')
 
-            ## Business Rules
+            # Business Rules
 
             # New IP
-            
+
             ipv6 = Ipv6()
-            
+
             ipv6 = ipv6.get_by_pk(id_ip)
-            
+
             with distributedlock(LOCK_IPV6 % id_ip):
-            
+
                 ip_error = ip6
                 ip6 = ip6.split(":")
-                
-                #Ip informado de maneira incorreta
+
+                # Ip informado de maneira incorreta
                 if len(ip6) is not 8:
                     raise InvalidValueError(None, 'ip6', ip_error)
-                
+
                 ipv6.description = description
                 ipv6.block1 = ip6[0]
                 ipv6.block2 = ip6[1]
@@ -98,10 +103,10 @@ class IPv6EditResource(RestResource):
                 ipv6.block8 = ip6[7]
                 # Persist
                 ipv6.edit_ipv6(user)
-    
+
                 return self.response(dumps_networkapi({}))
-        
-        except IpNotFoundError,e:
+
+        except IpNotFoundError, e:
             return self.response_error(150, e.message)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)

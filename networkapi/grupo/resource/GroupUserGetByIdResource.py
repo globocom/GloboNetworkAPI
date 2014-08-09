@@ -15,8 +15,9 @@ from django.forms.models import model_to_dict
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
 
+
 class GroupUserGetByIdResource(RestResource):
-    
+
     log = Log('GroupUserGetByIdResource')
 
     def handle_get(self, request, user, *args, **kwargs):
@@ -32,12 +33,14 @@ class GroupUserGetByIdResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid Group User ID
             if not is_valid_int_greater_zero_param(id_ugroup):
-                self.log.error(u'The id_ugroup parameter is not a valid value: %s.', id_ugroup)
+                self.log.error(
+                    u'The id_ugroup parameter is not a valid value: %s.', id_ugroup)
                 raise InvalidValueError(None, 'id_ugroup', id_ugroup)
 
             # Find Group User by ID to check if it exist
@@ -56,6 +59,6 @@ class GroupUserGetByIdResource(RestResource):
 
         except UGrupoNotFoundError, e:
             return self.response_error(180, id_ugroup)
-        
+
         except GrupoError, e:
             return self.response_error(1)

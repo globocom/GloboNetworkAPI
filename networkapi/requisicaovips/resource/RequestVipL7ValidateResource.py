@@ -21,44 +21,44 @@ from networkapi.ambiente.models import EnvironmentVip
 
 class RequestVipL7ValidateResource(RestResource):
 
-
     log = Log('RequestVipL7ValidateResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Validate L7 filter
-        
+
         URLs: /vip/l7/<id_vip>/validate/
         """
         try:
-            
+
             if not has_perm(user,
-                        AdminPermission.VIP_VALIDATION,
-                        AdminPermission.WRITE_OPERATION):
+                            AdminPermission.VIP_VALIDATION,
+                            AdminPermission.WRITE_OPERATION):
                 return self.not_authorized()
-            
+
             self.log.info("Validate L7 filter to VIP")
-                
+
             id_vip = kwargs.get('id_vip')
-            
+
             # Valid Vip ID
             if not is_valid_int_greater_zero_param(id_vip):
-                self.log.error(u'The vip_id parameter is not a valid value: %s.', id_vip)
+                self.log.error(
+                    u'The vip_id parameter is not a valid value: %s.', id_vip)
                 raise InvalidValueError(None)
-            
-            
+
             vip = RequisicaoVips.get_by_pk(id_vip)
-            
+
             with distributedlock(LOCK_VIP % id_vip):
-                    
+
                 # Vip must be created
                 if not vip.vip_criado:
-                    self.log.error(u'L7 filter can not be changed because VIP has not yet been created.')
+                    self.log.error(
+                        u'L7 filter can not be changed because VIP has not yet been created.')
                     raise RequestVipsNotBeenCreatedError(None)
-                
-                vip.filter_valid = True                 
-                
+
+                vip.filter_valid = True
+
                 vip.save(user)
-                
+
                 map = dict()
                 map['sucesso'] = 'sucesso'
                 return self.response(dumps_networkapi(map))

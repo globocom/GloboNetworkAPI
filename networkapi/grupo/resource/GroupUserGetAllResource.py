@@ -13,6 +13,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.grupo.models import UGrupo, GrupoError
 from django.forms.models import model_to_dict
 
+
 class GroupUserGetAllResource(RestResource):
 
     log = Log('GroupUserGetAllResource')
@@ -23,19 +24,20 @@ class GroupUserGetAllResource(RestResource):
         URL: ugroup/all
         """
         try:
-            
+
             self.log.info("GET to list all the GroupUser")
-            
+
             # User permission
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-            
+
             ugroup_list = []
             for ugrp in UGrupo.objects.all():
                 ugroup_list.append(model_to_dict(ugrp))
 
-            return self.response(dumps_networkapi({'user_group':ugroup_list}))
+            return self.response(dumps_networkapi({'user_group': ugroup_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()
