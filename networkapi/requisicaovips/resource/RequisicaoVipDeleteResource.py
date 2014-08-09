@@ -34,13 +34,19 @@ class RequisicaoVipDeleteResource(RestResource):
             vip_id = kwargs.get('id_vip')
 
             # User permission
-            if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.VIPS_REQUEST,
+                    AdminPermission.WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Valid vip ID
             if not is_valid_int_greater_zero_param(vip_id):
-                self.log.error(u'Parameter id_vip is invalid. Value: %s.', vip_id)
+                self.log.error(
+                    u'Parameter id_vip is invalid. Value: %s.',
+                    vip_id)
                 raise InvalidValueError(None, 'id_vip', vip_id)
 
             vip = RequisicaoVips.get_by_pk(vip_id)
@@ -57,17 +63,19 @@ class RequisicaoVipDeleteResource(RestResource):
                     if ipv6:
                         if not self.is_ipv6_in_use(ipv6, vip_id):
                             ipv6.delete(user)
-                except Exception, e:
-                    raise RequisicaoVipsError(e, u'Failed to remove Vip Request.')
+                except Exception as e:
+                    raise RequisicaoVipsError(
+                        e,
+                        u'Failed to remove Vip Request.')
 
             return self.response(dumps_networkapi({}))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        except RequisicaoVipsNotFoundError, e:
+        except RequisicaoVipsNotFoundError as e:
             self.log.error(e.message)
             return self.response_error(152)
-        except RequisicaoVipsError, e:
+        except RequisicaoVipsError as e:
             self.log.error(e.message)
             return self.response_error(1)
 
@@ -78,8 +86,12 @@ class RequisicaoVipDeleteResource(RestResource):
     def is_ipv4_in_use(self, ipv4, vip_id):
 
         is_in_use = True
-        pool_member_count = ServerPoolMember.objects.filter(ip=ipv4).exclude(server_pool__vipporttopool__requisicao_vip__id=vip_id).count()
-        vip_count = RequisicaoVips.get_by_ipv4_id(ipv4.id).exclude(pk=vip_id).count()
+        pool_member_count = ServerPoolMember.objects.filter(
+            ip=ipv4).exclude(
+            server_pool__vipporttopool__requisicao_vip__id=vip_id).count()
+        vip_count = RequisicaoVips.get_by_ipv4_id(
+            ipv4.id).exclude(
+            pk=vip_id).count()
         if vip_count == 0 and pool_member_count == 0:
             is_in_use = False
 
@@ -88,8 +100,12 @@ class RequisicaoVipDeleteResource(RestResource):
     def is_ipv6_in_use(self, ipv6, vip_id):
 
         is_in_use = True
-        pool_member_count = ServerPoolMember.objects.filter(ipv6=ipv6).exclude(server_pool__vipporttopool__requisicao_vip__ipv6=vip_id).count()
-        vip_count = RequisicaoVips.get_by_ipv6_id(ipv6.id).exclude(pk=vip_id).count()
+        pool_member_count = ServerPoolMember.objects.filter(
+            ipv6=ipv6).exclude(
+            server_pool__vipporttopool__requisicao_vip__ipv6=vip_id).count()
+        vip_count = RequisicaoVips.get_by_ipv6_id(
+            ipv6.id).exclude(
+            pk=vip_id).count()
         if vip_count == 0 and pool_member_count == 0:
             is_in_use = False
 

@@ -17,24 +17,31 @@ from _mysql_exceptions import OperationalError
 from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.distributedlock import LockNotAcquiredError
 
+
 class RestError(Exception):
+
     """Representa um erro ocorrido durante uma requisão REST."""
+
     def __init__(self, cause, message):
         self.cause = cause
         self.message = message
 
     def __str__(self):
-        msg = u'Erro ao realizar requisição REST: Causa: %s, Mensagem: %s' % (self.cause, self.message)
+        msg = u'Erro ao realizar requisição REST: Causa: %s, Mensagem: %s' % (
+            self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
 
 class UserNotAuthorizedError(RestError):
+
     """Retorna exceção quando o usuário não tem permissão para executar a operação."""
+
     def __init__(self, cause, message=None):
         RestError.__init__(self, cause, message)
 
 
 class RestResource(object):
+
     """
     Representa um recurso acessível via chamadas REST.
 
@@ -52,15 +59,15 @@ class RestResource(object):
         """
         response = None
         try:
-            self.log.rest(u'INICIO da requisição %s para URL %s. XML: [%s].' % (request.method,
-                                                                                 request.path,
-                                                                                 request.raw_post_data))
+            self.log.rest(
+                u'INICIO da requisição %s para URL %s. XML: [%s].' %
+                (request.method, request.path, request.raw_post_data))
 
             username, password, user_ldap = self.read_user_data(request)
 
             self.log.debug(u'Usuário da requisição: %s.' % username)
 
-            if  user_ldap is None:
+            if user_ldap is None:
                 user = authenticate(username, password)
             else:
                 user = authenticate(username, password, user_ldap)
@@ -73,17 +80,21 @@ class RestResource(object):
                 elif request.method == 'POST':
                     response = self.handle_post(request, user, args, **kwargs)
                 elif request.method == 'DELETE':
-                    response = self.handle_delete(request, user, args, **kwargs)
+                    response = self.handle_delete(
+                        request,
+                        user,
+                        args,
+                        **kwargs)
                 elif request.method == 'PUT':
                     response = self.handle_put(request, user, args, **kwargs)
 
-        except (LockNotAcquiredError, OperationalError), e:
+        except (LockNotAcquiredError, OperationalError) as e:
             self.log.error(u'Lock wait timeout exceeded.')
             return self.response_error(273)
-        except XMLError, e:
+        except XMLError as e:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Erro não esperado.')
             response = self.response_error(1)
         finally:
@@ -92,19 +103,23 @@ class RestResource(object):
             if response is not None:
                 if response.status_code == 200:
                     transaction.commit()
-                    self.log.debug(u'Requisição do usuário %s concluída com sucesso.' % username)
+                    self.log.debug(
+                        u'Requisição do usuário %s concluída com sucesso.' %
+                        username)
                 else:
                     transaction.rollback()
-                    self.log.debug(u'Requisição do usuário %s concluída com falha. Conteúdo: [%s].' % (username,
-                                                                                                       response.content))
+                    self.log.debug(
+                        u'Requisição do usuário %s concluída com falha. Conteúdo: [%s].' %
+                        (username, response.content))
             else:
                 transaction.rollback()
-                self.log.debug(u'Requisição do usuário %s concluída com falha.' % username)
+                self.log.debug(
+                    u'Requisição do usuário %s concluída com falha.' %
+                    username)
 
             self.log.debug(u'FIM da requisição do usuário %s.' % username)
 
         return response
-
 
     def handle_get(self, request, user, *args, **kwargs):
         """Trata uma requisição com o método GET"""
@@ -129,14 +144,16 @@ class RestResource(object):
         return username, password, user_ldap
 
     def not_authenticated(self):
-        return HttpResponse(u'401 - Usuário não autenticado. Usuário e/ou senha incorretos.',
-                            status=401,
-                            content_type='text/plain')
+        return HttpResponse(
+            u'401 - Usuário não autenticado. Usuário e/ou senha incorretos.',
+            status=401,
+            content_type='text/plain')
 
     def not_authorized(self):
-        return HttpResponse(u'402 - Usuário não autorizado para executar a operação.',
-                            status=402,
-                            content_type='text/plain')
+        return HttpResponse(
+            u'402 - Usuário não autorizado para executar a operação.',
+            status=402,
+            content_type='text/plain')
 
     def not_implemented(self):
         """Cria um HttpResponse com o código HTTP 501 - Not implemented."""
@@ -145,7 +162,12 @@ class RestResource(object):
 
     def response_error(self, code, *args):
         """Cria um HttpResponse com o XML de erro."""
-        return HttpResponse(error_dumps(code, *args), status=500, content_type='text/plain')
+        return HttpResponse(
+            error_dumps(
+                code,
+                *args),
+            status=500,
+            content_type='text/plain')
 
     def response(self, content, status=200, content_type='text/plain'):
         """Cria um HttpResponse com os dados informados"""
@@ -154,6 +176,7 @@ class RestResource(object):
 
 
 class RestResponse:
+
     """Classe básica para respostas dos webservices REST"""
 
     def __init__(self, exception=None):

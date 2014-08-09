@@ -23,23 +23,29 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError
 
+
 class RequestAllVipsEnviromentVipResource(RestResource):
 
     log = Log('RequestAllVipsEnviromentVipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        """Treat requests GET to list all the VIPs related to Environment VIP. 
+        """Treat requests GET to list all the VIPs related to Environment VIP.
 
         URL: environmentvip/<id_environment_vip>/vip/all'
         """
 
         try:
 
-            self.log.info("GET to list all the VIPs related to Environment VIP")
+            self.log.info(
+                "GET to list all the VIPs related to Environment VIP")
 
             # User permission
-            if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.ENVIRONMENT_VIP,
+                    AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Get data
@@ -47,17 +53,24 @@ class RequestAllVipsEnviromentVipResource(RestResource):
 
             # Valid Environment VIP ID
             if not is_valid_int_greater_zero_param(id_environment_vip):
-                self.log.error(u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
-                raise InvalidValueError(None, 'id_environment_vip', id_environment_vip)
+                self.log.error(
+                    u'The id_environment_vip parameter is not a valid value: %s.',
+                    id_environment_vip)
+                raise InvalidValueError(
+                    None,
+                    'id_environment_vip',
+                    id_environment_vip)
 
             # Find Environment VIP by ID to check if it exist
             environment_vip = EnvironmentVip.get_by_pk(id_environment_vip)
 
             # Find Request VIP - IPv4 by ID Environment
-            vips_ipv4 = RequisicaoVips.objects.filter(ip__networkipv4__ambient_vip__id = environment_vip.id)
+            vips_ipv4 = RequisicaoVips.objects.filter(
+                ip__networkipv4__ambient_vip__id=environment_vip.id)
 
             # Find Request VIP - IPv6 by ID Environment
-            vips_ipv6 = RequisicaoVips.objects.filter(ipv6__networkipv6__ambient_vip__id = environment_vip.id)
+            vips_ipv6 = RequisicaoVips.objects.filter(
+                ipv6__networkipv6__ambient_vip__id=environment_vip.id)
 
             vips = {}
             for vips_ip in [vips_ipv4, vips_ipv6]:
@@ -76,7 +89,7 @@ class RequestAllVipsEnviromentVipResource(RestResource):
 
             return self.response(dumps_networkapi(vips))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
 
         except UserNotAuthorizedError:

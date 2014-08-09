@@ -23,7 +23,9 @@ from networkapi.exception import InvalidValueError
 
 
 class NetworkIPv4Error(Exception):
+
     """Generic exception for everything related to NetworkIPv4."""
+
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -31,9 +33,12 @@ class NetworkIPv4Error(Exception):
     def __str__(self):
         msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
 
 class NetworkIPv6Error(Exception):
+
     """Generic exception for everything related to NetworkIPv6."""
+
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -41,9 +46,12 @@ class NetworkIPv6Error(Exception):
     def __str__(self):
         msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
 
 class NetworkIPvXError(Exception):
+
     """Generic exception for everything related to both NetworkIPv4 and NetworkIPv6."""
+
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -51,9 +59,12 @@ class NetworkIPvXError(Exception):
     def __str__(self):
         msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
 
 class NetworkIPRangeEnvError(NetworkIPvXError):
+
     """Exception for two environments with same ip range when trying to add new network."""
+
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -62,8 +73,11 @@ class NetworkIPRangeEnvError(NetworkIPvXError):
         msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
+
 class IpError(Exception):
+
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
+
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -72,89 +86,133 @@ class IpError(Exception):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
+
 class NetworkIPv4NotFoundError(NetworkIPv4Error):
+
     """Exception to search by primary key."""
+
     def __init__(self, cause, message=None):
         NetworkIPv4Error.__init__(self, cause, message)
+
 
 class NetworkIPv6NotFoundError(NetworkIPv6Error):
+
     """Exception to search by primary key."""
+
     def __init__(self, cause, message=None):
         NetworkIPv6Error.__init__(self, cause, message)
 
+
 class NetworkIPvXNotFoundError(NetworkIPvXError):
+
     """Exception to search by primary key."""
+
     def __init__(self, cause, message=None):
         NetworkIPvXError.__init__(self, cause, message)
 
+
 class NetworkIPv4AddressNotAvailableError(NetworkIPv4Error):
+
     """Exception to unavailable address to create a new NetworkIPv4."""
+
     def __init__(self, cause, message=None):
         NetworkIPv4Error.__init__(self, cause, message)
 
+
 class NetworkIPv6AddressNotAvailableError(NetworkIPv6Error):
+
     """Exception to unavailable address to create a new NetworkIPv6."""
+
     def __init__(self, cause, message=None):
         NetworkIPv6Error.__init__(self, cause, message)
 
+
 class NetworkIpAddressNotAvailableError(NetworkIPvXError):
+
     """Exception to unavailable address."""
+
     def __init__(self, cause, message=None):
         NetworkIPvXError.__init__(self, cause, message)
 
+
 class IpNotFoundError(IpError):
+
     """Retorna exceção para pesquisa de IP por chave primária."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
 
+
 class IpEquipmentNotFoundError(IpError):
+
     """Retorna exceção para pesquisa de IP-Equipamento por chave primária/ip e equipamento."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
 
 
 class IpEquipamentoDuplicatedError(IpError):
+
     """Retorna exceção para pesquisa de IP-Equipamento duplicado."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
 
 
 class IpNotAvailableError(IpError):
+
     """Retorna exceção porque não existe um IP disponível para a VLAN."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
+
 
 class IpEquipmentAlreadyAssociation(IpError):
+
     """Retorna exceção caso um Ip já esteja associado a um determinado equipamento."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
+
 
 class IpNotFoundByEquipAndVipError(IpError):
+
     """Retorna exceção caso um Ip já esteja associado a um determinado equipamento."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
+
 
 class IpCantBeRemovedFromVip(IpError):
+
     """Retorna exceção caso um Ip não possa ser excluído por estar em uso por uma requisição VIP."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
+
 
 class NetworkNotInEvip(IpError):
+
     """Retorna exceção caso não haja uma rede Ipv4 ou Ipv6 para o Ambiente Vip."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
+
 
 class IpRangeAlreadyAssociation(IpError):
+
     """Returns exception for equipment already having ip with same ip range in another network."""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
+
 
 class IpEquipCantDissociateFromVip(IpError):
+
     """Returns exception when trying to dissociate ip and equipment, but equipment is the last balancer for Vip Request"""
+
     def __init__(self, cause, message=None):
         IpError.__init__(self, cause, message)
-
-
 
 
 class NetworkIPv4(BaseModel):
@@ -171,8 +229,14 @@ class NetworkIPv4(BaseModel):
     mask_oct4 = models.IntegerField(unique=True, db_column='masc_oct4')
     broadcast = models.CharField(max_length=15, blank=False)
     vlan = models.ForeignKey(Vlan, db_column='id_vlan')
-    network_type = models.ForeignKey(TipoRede, null=True, db_column='id_tipo_rede')
-    ambient_vip = models.ForeignKey(EnvironmentVip, null=True, db_column='id_ambientevip')
+    network_type = models.ForeignKey(
+        TipoRede,
+        null=True,
+        db_column='id_tipo_rede')
+    ambient_vip = models.ForeignKey(
+        EnvironmentVip,
+        null=True,
+        db_column='id_ambientevip')
     active = models.BooleanField()
 
     log = Log('NetworkIPv4')
@@ -193,22 +257,25 @@ class NetworkIPv4(BaseModel):
         """
         try:
             return NetworkIPv4.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist, e:
-            raise NetworkIPv4NotFoundError(e, u'There is no NetworkIPv4 with pk = %s.' % id)
-        except OperationalError, e:
+        except ObjectDoesNotExist as e:
+            raise NetworkIPv4NotFoundError(
+                e,
+                u'There is no NetworkIPv4 with pk = %s.' %
+                id)
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Failure to search the NetworkIPv4.')
-
-
 
     def activate(self, authenticated_user):
         try:
             self.active = 1
             self.save(authenticated_user)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error activating NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv4.')
 
@@ -225,7 +292,7 @@ class NetworkIPv4(BaseModel):
             self.active = 0
             self.save(authenticated_user, commit=commit)
 
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error disabling NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error disabling NetworkIPv4.')
 
@@ -234,7 +301,7 @@ class NetworkIPv4(BaseModel):
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
             self.save(authenticated_user)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error on update NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error on update NetworkIPv4.')
 
@@ -261,11 +328,15 @@ class NetworkIPv4(BaseModel):
         try:
 
             # Find all configs type v4 in environment
-            configs = ConfigEnvironment.get_by_environment(self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv4[0])
+            configs = ConfigEnvironment.get_by_environment(
+                self.vlan.ambiente.id).filter(
+                ip_config__type=IP_VERSION.IPv4[0])
 
             # If not found, an exception is thrown
             if len(configs) == 0:
-                raise ConfigEnvironmentInvalidError(None, u'Invalid Configuration')
+                raise ConfigEnvironmentInvalidError(
+                    None,
+                    u'Invalid Configuration')
 
             # For each configuration founded in environment
             for config in configs:
@@ -278,10 +349,19 @@ class NetworkIPv4(BaseModel):
                 if config.ip_config.type == IP_VERSION.IPv4[0]:
 
                     # Find all networks ralated to environment
-                    nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
+                    nets = NetworkIPv4.objects.filter(
+                        vlan__ambiente__id=self.vlan.ambiente.id)
 
                     # Cast to API class
-                    networksv4 = set([(IPv4Network('%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
+                    networksv4 = set(
+                        [
+                            (IPv4Network(
+                                '%d.%d.%d.%d/%d' %
+                                (net_ip.oct1,
+                                 net_ip.oct2,
+                                 net_ip.oct3,
+                                 net_ip.oct4,
+                                 net_ip.block))) for net_ip in nets])
 
                     net4 = IPv4Network(config.ip_config.subnet)
 
@@ -305,8 +385,13 @@ class NetworkIPv4(BaseModel):
                             elif config.ip_config.network_type is not None:
                                 internal_network_type = config.ip_config.network_type
                             else:
-                                self.log.error(u'Parameter tipo_rede is invalid. Value: %s', network_type)
-                                raise InvalidValueError(None, 'network_type', network_type)
+                                self.log.error(
+                                    u'Parameter tipo_rede is invalid. Value: %s',
+                                    network_type)
+                                raise InvalidValueError(
+                                    None,
+                                    'network_type',
+                                    network_type)
 
                             # Stop generation logic
                             stop = True
@@ -315,22 +400,28 @@ class NetworkIPv4(BaseModel):
                 # If not be IPv4
                 else:
                     # Throw an exception
-                    raise ConfigEnvironmentInvalidError(None, u'Invalid Configuration')
+                    raise ConfigEnvironmentInvalidError(
+                        None,
+                        u'Invalid Configuration')
 
-        except (ValueError, TypeError, AddressValueError), e:
+        except (ValueError, TypeError, AddressValueError) as e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
 
         # Checks if found any available network
-        if network_found == None:
+        if network_found is None:
             # If not found, an exception is thrown
-            raise NetworkIPv4AddressNotAvailableError(None, u'Unavailable address to create a NetworkIPv4.')
+            raise NetworkIPv4AddressNotAvailableError(
+                None,
+                u'Unavailable address to create a NetworkIPv4.')
 
         # Set octs by network generated
-        self.oct1, self.oct2, self.oct3, self.oct4 = str(network_found.network).split('.')
+        self.oct1, self.oct2, self.oct3, self.oct4 = str(
+            network_found.network).split('.')
         # Set block by network generated
         self.block = network_found.prefixlen
         # Set mask by network generated
-        self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4 = str(network_found.netmask).split('.')
+        self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4 = str(
+            network_found.netmask).split('.')
         # Set broadcast by network generated
         self.broadcast = network_found.broadcast
 
@@ -341,7 +432,7 @@ class NetworkIPv4(BaseModel):
 
             self.save(user)
 
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error persisting a NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
 
@@ -384,11 +475,15 @@ class NetworkIPv4(BaseModel):
 
             super(NetworkIPv4, self).delete(authenticated_user)
 
-        except IpCantBeRemovedFromVip, e:
+        except IpCantBeRemovedFromVip as e:
             # Network id and ReqVip id
-            net_name = str(self.oct1) + '.' + str(self.oct2) + '.' + str(self.oct3) + '.' + str(self.oct4) + '/' + str(self.block)
-            cause = {'Net':net_name, 'ReqVip': e.cause}
-            raise IpCantBeRemovedFromVip(cause, "Esta Rede possui um Vip apontando para ela, e não pode ser excluída")
+            net_name = str(self.oct1) + '.' + str(self.oct2) + '.' + \
+                str(self.oct3) + '.' + str(self.oct4) + '/' + str(self.block)
+            cause = {'Net': net_name, 'ReqVip': e.cause}
+            raise IpCantBeRemovedFromVip(
+                cause,
+                "Esta Rede possui um Vip apontando para ela, e não pode ser excluída")
+
 
 class Ip(BaseModel):
 
@@ -420,12 +515,17 @@ class Ip(BaseModel):
 
         try:
             return Ip.objects.filter(networkipv4=id_network)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP with network_id = %s.' % id)
-        except OperationalError, e:
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e,
+                u'There is no IP with network_id = %s.' %
+                id)
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP')
 
@@ -441,13 +541,20 @@ class Ip(BaseModel):
         """
 
         try:
-            return Ip.objects.select_related().filter(networkipv4__vlan__ambiente__id=id_ambiente, ipequipamento__equipamento__id=id_equipment)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP with network_id = %s.' % id)
-        except OperationalError, e:
+            return Ip.objects.select_related().filter(
+                networkipv4__vlan__ambiente__id=id_ambiente,
+                ipequipamento__equipamento__id=id_equipment)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e,
+                u'There is no IP with network_id = %s.' %
+                id)
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP')
 
@@ -463,12 +570,14 @@ class Ip(BaseModel):
         """
         try:
             return Ip.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise IpNotFoundError(e, u'There is no IP with pk = %s.' % id)
-        except OperationalError, e:
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP')
 
@@ -478,12 +587,11 @@ class Ip(BaseModel):
             ip = self.get_by_pk(id_ip)
             ip.delete(user)
 
-        except IpNotFoundError, e:
+        except IpNotFoundError as e:
             raise IpNotFoundError(None, e)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Failure to delete the IP.')
             raise IpError(e, u'Failure to delete the IP')
-
 
     @classmethod
     def get_available_ip(self, id_network):
@@ -497,13 +605,20 @@ class Ip(BaseModel):
         networkipv4 = NetworkIPv4().get_by_pk(id_network)
 
         # Cast to API
-        net4 = IPv4Network('%d.%d.%d.%d/%d' % (networkipv4.oct1, networkipv4.oct2, networkipv4.oct3, networkipv4.oct4, networkipv4.block))
+        net4 = IPv4Network(
+            '%d.%d.%d.%d/%d' %
+            (networkipv4.oct1,
+             networkipv4.oct2,
+             networkipv4.oct3,
+             networkipv4.oct4,
+             networkipv4.block))
 
         # Find all ips ralated to network
         ips = Ip.objects.filter(networkipv4__id=networkipv4.id)
 
         # Cast all to API class
-        ipsv4 = set([(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
+        ipsv4 = set(
+            [(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
 
         # Get configuration
         conf = Configuration.get()
@@ -528,8 +643,10 @@ class Ip(BaseModel):
                     return selected_ip
 
         if selected_ip is None:
-            raise IpNotAvailableError(None, u'No IP available to NETWORK %s.' % networkipv4.id)
-
+            raise IpNotAvailableError(
+                None,
+                u'No IP available to NETWORK %s.' %
+                networkipv4.id)
 
     @classmethod
     def get_first_available_ip(self, id_network):
@@ -543,13 +660,20 @@ class Ip(BaseModel):
         networkipv4 = NetworkIPv4().get_by_pk(id_network)
 
         # Cast to API
-        net4 = IPv4Network('%d.%d.%d.%d/%d' % (networkipv4.oct1, networkipv4.oct2, networkipv4.oct3, networkipv4.oct4, networkipv4.block))
+        net4 = IPv4Network(
+            '%d.%d.%d.%d/%d' %
+            (networkipv4.oct1,
+             networkipv4.oct2,
+             networkipv4.oct3,
+             networkipv4.oct4,
+             networkipv4.block))
 
         # Find all ips ralated to network
         ips = Ip.objects.filter(networkipv4__id=networkipv4.id)
 
         # Cast all to API class
-        ipsv4 = set([(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
+        ipsv4 = set(
+            [(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
 
         selected_ip = None
 
@@ -566,21 +690,33 @@ class Ip(BaseModel):
                 return selected_ip
 
         if selected_ip is None:
-            raise IpNotAvailableError(None, u'No IP available to NETWORK %s.' % networkipv4.id)
+            raise IpNotAvailableError(
+                None,
+                u'No IP available to NETWORK %s.' %
+                networkipv4.id)
 
     def edit_ipv4(self, user):
         try:
 
             # Cast to API
-            net4 = IPv4Network('%d.%d.%d.%d/%d' % (self.networkipv4.oct1, self.networkipv4.oct2, self.networkipv4.oct3, self.networkipv4.oct4, self.networkipv4.block))
+            net4 = IPv4Network(
+                '%d.%d.%d.%d/%d' %
+                (self.networkipv4.oct1,
+                 self.networkipv4.oct2,
+                 self.networkipv4.oct3,
+                 self.networkipv4.oct4,
+                 self.networkipv4.block))
 
             # Find all ips ralated to network
             ips = Ip.objects.filter(networkipv4__id=self.networkipv4.id)
 
-            ip4_object = IPv4Address('%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4))
+            ip4_object = IPv4Address(
+                '%s.%s.%s.%s' %
+                (self.oct1, self.oct2, self.oct3, self.oct4))
 
             # Cast all to API class
-            ipsv4 = set([IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4)) for ip in ips])
+            ipsv4 = set([IPv4Address('%d.%d.%d.%d' %
+                                     (ip.oct1, ip.oct2, ip.oct3, ip.oct4)) for ip in ips])
 
             flag = True
 
@@ -598,29 +734,46 @@ class Ip(BaseModel):
 
                     ipv4_network = int(ip4_object)
 
-                    if ipv4_network >= (first_ip_network) and ipv4_network < (bcast_ip_network):
+                    if ipv4_network >= (first_ip_network) and ipv4_network < (
+                            bcast_ip_network):
                         flag = True
 
             else:
-                ip4_aux = self.get_by_octs_and_net(self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id)
+                ip4_aux = self.get_by_octs_and_net(
+                    self.oct1,
+                    self.oct2,
+                    self.oct3,
+                    self.oct4,
+                    self.networkipv4.id)
                 if self.id != ip4_aux.id:
-                    raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s already on use by network %s.' % (self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
+                    raise IpNotAvailableError(
+                        None, u'Ip %s.%s.%s.%s already on use by network %s.' %
+                        (self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
 
             if flag:
                 self.save(user)
             else:
-                raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
+                raise IpNotAvailableError(
+                    None, u'Ip %s.%s.%s.%s not available for network %s.' %
+                    (self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
 
-        except IpEquipmentAlreadyAssociation, e:
+        except IpEquipmentAlreadyAssociation as e:
             self.log.error(e)
             raise IpEquipmentAlreadyAssociation(None, e)
         except AddressValueError:
-            raise InvalidValueError(None, 'ip', u'%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4))
-        except IpNotAvailableError, e:
-            raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
-        except IpError, e:
-            self.log.error(u'Error adding new IP or relationship ip-equipment.')
-            raise IpError(e, u'Error adding new IP or relationship ip-equipment.')
+            raise InvalidValueError(
+                None, 'ip', u'%s.%s.%s.%s' %
+                (self.oct1, self.oct2, self.oct3, self.oct4))
+        except IpNotAvailableError as e:
+            raise IpNotAvailableError(
+                None, u'Ip %s.%s.%s.%s not available for network %s.' %
+                (self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
+        except IpError as e:
+            self.log.error(
+                u'Error adding new IP or relationship ip-equipment.')
+            raise IpError(
+                e,
+                u'Error adding new IP or relationship ip-equipment.')
 
     def save_ipv4(self, equipment_id, user, net):
 
@@ -629,15 +782,24 @@ class Ip(BaseModel):
             already_ip = False
 
             # Cast to API
-            net4 = IPv4Network('%d.%d.%d.%d/%d' % (net.oct1, net.oct2, net.oct3, net.oct4, net.block))
+            net4 = IPv4Network(
+                '%d.%d.%d.%d/%d' %
+                (net.oct1,
+                 net.oct2,
+                 net.oct3,
+                 net.oct4,
+                 net.block))
 
             # Find all ips ralated to network
             ips = Ip.objects.filter(networkipv4__id=net.id)
 
-            ip4_object = IPv4Address('%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4))
+            ip4_object = IPv4Address(
+                '%s.%s.%s.%s' %
+                (self.oct1, self.oct2, self.oct3, self.oct4))
 
             # Cast all to API class
-            ipsv4 = set([IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4)) for ip in ips])
+            ipsv4 = set([IPv4Address('%d.%d.%d.%d' %
+                                     (ip.oct1, ip.oct2, ip.oct3, ip.oct4)) for ip in ips])
 
             flag = False
 
@@ -653,16 +815,28 @@ class Ip(BaseModel):
 
                     ipv4_network = int(ip4_object)
 
-                    if ipv4_network >= (first_ip_network) and ipv4_network < (bcast_ip_network):
+                    if ipv4_network >= (first_ip_network) and ipv4_network < (
+                            bcast_ip_network):
                         flag = True
 
             else:
 
-                ip_aux = self.get_by_octs_and_net(self.oct1, self.oct2, self.oct3, self.oct4, net.id)
+                ip_aux = self.get_by_octs_and_net(
+                    self.oct1,
+                    self.oct2,
+                    self.oct3,
+                    self.oct4,
+                    net.id)
                 try:
                     IpEquipamento.get_by_ip(ip_aux.id)
-                    raise IpEquipmentAlreadyAssociation(None, u'Ip %s.%s.%s.%s already has association with an Equipament. Try using the association screen for this Ip.' % (self.oct1, self.oct2, self.oct3, self.oct4))
-                except IpEquipmentNotFoundError, e:
+                    raise IpEquipmentAlreadyAssociation(
+                        None,
+                        u'Ip %s.%s.%s.%s already has association with an Equipament. Try using the association screen for this Ip.' %
+                        (self.oct1,
+                         self.oct2,
+                         self.oct3,
+                         self.oct4))
+                except IpEquipmentNotFoundError as e:
                     flag = True
                     already_ip = True
 
@@ -685,19 +859,22 @@ class Ip(BaseModel):
                 # # Filter case 2 - Adding new IpEquip for a equip that already have ip in other network with the same range ##
 
                 # Get all IpEquipamento related to this equipment
-                ip_equips = IpEquipamento.objects.filter(equipamento=equipment_id)
+                ip_equips = IpEquipamento.objects.filter(
+                    equipamento=equipment_id)
 
                 for ip_test in [ip_equip.ip for ip_equip in ip_equips]:
                     if ip_test.networkipv4.oct1 == self.networkipv4.oct1 and \
-                    ip_test.networkipv4.oct2 == self.networkipv4.oct2 and \
-                    ip_test.networkipv4.oct3 == self.networkipv4.oct3 and \
-                    ip_test.networkipv4.oct4 == self.networkipv4.oct4 and \
-                    ip_test.networkipv4.block == self.networkipv4.block and \
-                    ip_test.networkipv4 != self.networkipv4:
+                            ip_test.networkipv4.oct2 == self.networkipv4.oct2 and \
+                            ip_test.networkipv4.oct3 == self.networkipv4.oct3 and \
+                            ip_test.networkipv4.oct4 == self.networkipv4.oct4 and \
+                            ip_test.networkipv4.block == self.networkipv4.block and \
+                            ip_test.networkipv4 != self.networkipv4:
 
                         # Filter testing
                         if ip_test.networkipv4.vlan.ambiente.filter is None or self.networkipv4.vlan.ambiente.filter is None:
-                            raise IpRangeAlreadyAssociation(None, u'Equipment is already associated with another ip with the same ip range.')
+                            raise IpRangeAlreadyAssociation(
+                                None,
+                                u'Equipment is already associated with another ip with the same ip range.')
                         else:
                             # Test both environment's filters
                             tp_equip_list_one = list()
@@ -709,8 +886,9 @@ class Ip(BaseModel):
                                 tp_equip_list_two.append(fet.equiptype)
 
                             if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
-                                raise IpRangeAlreadyAssociation(None, u'Equipment is already associated with another ip with the same ip range.')
-
+                                raise IpRangeAlreadyAssociation(
+                                    None,
+                                    u'Equipment is already associated with another ip with the same ip range.')
 
                 # # Filter case 2 - end ##
 
@@ -722,24 +900,33 @@ class Ip(BaseModel):
                     equipment_environment.equipamento = equipment
                     equipment_environment.ambiente = net.vlan.ambiente
                     equipment_environment.create(user)
-                except EquipamentoAmbienteDuplicatedError, e:
+                except EquipamentoAmbienteDuplicatedError as e:
                     # If already exists, OK !
                     pass
 
             else:
-                raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (self.oct1, self.oct2, self.oct3, self.oct4, net.id))
+                raise IpNotAvailableError(
+                    None, u'Ip %s.%s.%s.%s not available for network %s.' %
+                    (self.oct1, self.oct2, self.oct3, self.oct4, net.id))
 
-        except IpRangeAlreadyAssociation, e:
+        except IpRangeAlreadyAssociation as e:
             raise IpRangeAlreadyAssociation(None, e.message)
-        except IpEquipmentAlreadyAssociation, e:
+        except IpEquipmentAlreadyAssociation as e:
             raise IpEquipmentAlreadyAssociation(None, e.message)
         except AddressValueError:
-            raise InvalidValueError(None, 'ip', u'%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4))
-        except IpNotAvailableError, e:
-            raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (self.oct1, self.oct2, self.oct3, self.oct4, net.id))
-        except (IpError, EquipamentoError), e:
-            self.log.error(u'Error adding new IP or relationship ip-equipment.')
-            raise IpError(e, u'Error adding new IP or relationship ip-equipment.')
+            raise InvalidValueError(
+                None, 'ip', u'%s.%s.%s.%s' %
+                (self.oct1, self.oct2, self.oct3, self.oct4))
+        except IpNotAvailableError as e:
+            raise IpNotAvailableError(
+                None, u'Ip %s.%s.%s.%s not available for network %s.' %
+                (self.oct1, self.oct2, self.oct3, self.oct4, net.id))
+        except (IpError, EquipamentoError) as e:
+            self.log.error(
+                u'Error adding new IP or relationship ip-equipment.')
+            raise IpError(
+                e,
+                u'Error adding new IP or relationship ip-equipment.')
 
     def create(self, authenticated_user, equipment_id, id, new):
         """Persist an IPv4 and associate it to an equipment.
@@ -756,27 +943,37 @@ class Ip(BaseModel):
             @raise IpError: Error persisting in database.
         """
 
-        if new == False:
+        if not new:
             # Search vlan by id
             vlan = Vlan().get_by_pk(id)
 
             # Get first networkipv4 related to vlan
             try:
                 self.networkipv4 = vlan.networkipv4_set.order_by('id')[0]
-            except IndexError, e:
-                self.log.error(u'Error finding the first networkipv4 from vlan.')
-                raise NetworkIPv4NotFoundError(e, u'Error finding the first networkipv4 from vlan.')
+            except IndexError as e:
+                self.log.error(
+                    u'Error finding the first networkipv4 from vlan.')
+                raise NetworkIPv4NotFoundError(
+                    e,
+                    u'Error finding the first networkipv4 from vlan.')
         else:
             self.networkipv4 = NetworkIPv4().get_by_pk(id)
 
         # Cast to API
-        net4 = IPv4Network('%d.%d.%d.%d/%d' % (self.networkipv4.oct1, self.networkipv4.oct2, self.networkipv4.oct3, self.networkipv4.oct4, self.networkipv4.block))
+        net4 = IPv4Network(
+            '%d.%d.%d.%d/%d' %
+            (self.networkipv4.oct1,
+             self.networkipv4.oct2,
+             self.networkipv4.oct3,
+             self.networkipv4.oct4,
+             self.networkipv4.block))
 
         # Find all ips ralated to network
         ips = Ip.objects.filter(networkipv4__id=self.networkipv4.id)
 
         # Cast all to API class
-        ipsv4 = set([(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
+        ipsv4 = set(
+            [(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
 
         # Get configuration
         conf = Configuration.get()
@@ -801,9 +998,13 @@ class Ip(BaseModel):
                     break
 
         if selected_ip is None:
-            raise IpNotAvailableError(None, u'No IP available to VLAN %s.' % self.networkipv4.vlan.num_vlan)
+            raise IpNotAvailableError(
+                None,
+                u'No IP available to VLAN %s.' %
+                self.networkipv4.vlan.num_vlan)
 
-        self.oct1, self.oct2, self.oct3, self.oct4 = str(selected_ip).split('.')
+        self.oct1, self.oct2, self.oct3, self.oct4 = str(
+            selected_ip).split('.')
 
         equipment = Equipamento().get_by_pk(equipment_id)
 
@@ -817,18 +1018,21 @@ class Ip(BaseModel):
             ip_equipment.save(authenticated_user)
 
             try:
-                equipment_environment = EquipamentoAmbiente().get_by_equipment_environment(equipment_id,
-                                                                                           self.networkipv4.vlan.ambiente_id)
+                equipment_environment = EquipamentoAmbiente().get_by_equipment_environment(
+                    equipment_id,
+                    self.networkipv4.vlan.ambiente_id)
             except EquipamentoAmbienteNotFoundError:
                 equipment_environment = EquipamentoAmbiente()
                 equipment_environment.equipamento = equipment
                 equipment_environment.ambiente = self.networkipv4.vlan.ambiente
                 equipment_environment.save(authenticated_user)
 
-        except Exception, e:
-            self.log.error(u'Error adding new IP or relationship ip-equipment.')
-            raise IpError(e, u'Error adding new IP or relationship ip-equipment.')
-
+        except Exception as e:
+            self.log.error(
+                u'Error adding new IP or relationship ip-equipment.')
+            raise IpError(
+                e,
+                u'Error adding new IP or relationship ip-equipment.')
 
     def get_by_octs_equipment(self, oct1, oct2, oct3, oct4, equip_id):
         """Get IP by octs and equip_id.
@@ -839,10 +1043,17 @@ class Ip(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, ipequipamento__equipamento__id=equip_id)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP %s.%s.%s.%s of the equipament %s.' % (oct1, oct2, oct3, oct4, equip_id))
-        except Exception, e:
+            return Ip.objects.get(
+                oct1=oct1,
+                oct2=oct2,
+                oct3=oct3,
+                oct4=oct4,
+                ipequipamento__equipamento__id=equip_id)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e, u'There is no IP %s.%s.%s.%s of the equipament %s.' %
+                (oct1, oct2, oct3, oct4, equip_id))
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
@@ -856,15 +1067,29 @@ class Ip(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4=id_network)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP = %s.%s.%s.%s.' % (oct1, oct2, oct3, oct4))
-        except Exception, e:
+            return Ip.objects.get(
+                oct1=oct1,
+                oct2=oct2,
+                oct3=oct3,
+                oct4=oct4,
+                networkipv4=id_network)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e, u'There is no IP = %s.%s.%s.%s.' %
+                (oct1, oct2, oct3, oct4))
+        except Exception as e:
             cls.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
     @classmethod
-    def get_by_octs_and_environment_vip(cls, oct1, oct2, oct3, oct4, id_evip, valid=True):
+    def get_by_octs_and_environment_vip(
+            cls,
+            oct1,
+            oct2,
+            oct3,
+            oct4,
+            id_evip,
+            valid=True):
         """Get IP by octs and environment vip.
 
             @return: IP.
@@ -873,30 +1098,48 @@ class Ip(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            if valid == True:
-                return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__ambient_vip__id=id_evip)
+            if valid:
+                return Ip.objects.get(
+                    oct1=oct1,
+                    oct2=oct2,
+                    oct3=oct3,
+                    oct4=oct4,
+                    networkipv4__ambient_vip__id=id_evip)
             else:
-                ips = Ip.objects.filter(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4)
+                ips = Ip.objects.filter(
+                    oct1=oct1,
+                    oct2=oct2,
+                    oct3=oct3,
+                    oct4=oct4)
                 for ip in ips:
                     if ip.networkipv4.ambient_vip:
                         if ip.networkipv4.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(vlan__networkipv4__ambient_vip__id=id_evip)
+                        environments = Ambiente.objects.filter(
+                            vlan__networkipv4__ambient_vip__id=id_evip)
                         for env in environments:
                             if ip.networkipv4.vlan.ambiente.divisao_dc.id == env.divisao_dc.id and ip.networkipv4.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
                                 return ip
                 raise ObjectDoesNotExist()
 
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             evip = EnvironmentVip.get_by_pk(id_evip)
-            raise IpNotFoundError(e, u'Ipv4 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip())
-        except Exception, e:
+            raise IpNotFoundError(
+                e, u'Ipv4 não está relacionado ao Ambiente Vip: %s.' %
+                evip.show_environment_vip())
+        except Exception as e:
             cls.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
     @classmethod
-    def get_by_octs_and_environment(cls, oct1, oct2, oct3, oct4, id_environment):
+    def get_by_octs_and_environment(
+            cls,
+            oct1,
+            oct2,
+            oct3,
+            oct4,
+            id_environment):
         """Get IP by octs and environment.
 
             @return: IP.
@@ -905,10 +1148,17 @@ class Ip(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__vlan__ambiente__id=id_environment)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP %s.%s.%s.%s of the environment %s.' % (oct1, oct2, oct3, oct4, id_environment))
-        except Exception, e:
+            return Ip.objects.get(
+                oct1=oct1,
+                oct2=oct2,
+                oct3=oct3,
+                oct4=oct4,
+                networkipv4__vlan__ambiente__id=id_environment)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e, u'There is no IP %s.%s.%s.%s of the environment %s.' %
+                (oct1, oct2, oct3, oct4, id_environment))
+        except Exception as e:
             cls.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
@@ -928,10 +1178,16 @@ class Ip(BaseModel):
 
         '''
         try:
-            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__ambient_vip__id=id_evip, ipequipamento__equipamento__nome=real_name)
-        except ObjectDoesNotExist, e:
+            return Ip.objects.get(
+                oct1=oct1,
+                oct2=oct2,
+                oct3=oct3,
+                oct4=oct4,
+                networkipv4__ambient_vip__id=id_evip,
+                ipequipamento__equipamento__nome=real_name)
+        except ObjectDoesNotExist as e:
             raise IpNotFoundError(e, u'')
-        except Exception, e:
+        except Exception as e:
             cls.log.error(u'')
             raise IpError(e, u'')
 
@@ -951,9 +1207,11 @@ class Ip(BaseModel):
                 raise ObjectDoesNotExist()
 
             return ips
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP = %s.%s.%s.%s.' % (oct1, oct2, oct3, oct4))
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e, u'There is no IP = %s.%s.%s.%s.' %
+                (oct1, oct2, oct3, oct4))
+        except Exception as e:
             cls.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
@@ -966,7 +1224,10 @@ class Ip(BaseModel):
             for r in self.requisicaovips_set.all():
                 r_alter = False
                 if r.vip_criado:
-                    raise IpCantBeRemovedFromVip(r.id, "Ipv4 não pode ser removido, porque está em uso por Requisição Vip %s" % (r.id))
+                    raise IpCantBeRemovedFromVip(
+                        r.id,
+                        "Ipv4 não pode ser removido, porque está em uso por Requisição Vip %s" %
+                        (r.id))
                 else:
                     if r.ipv6 is not None:
                         r.ip = None
@@ -978,10 +1239,16 @@ class Ip(BaseModel):
             for ie in self.ipequipamento_set.all():
 
                 ambienteequip = EquipamentoAmbiente()
-                ambienteequip = ambienteequip.get_by_equipment_environment(ie.equipamento.id, self.networkipv4.vlan.ambiente_id)
+                ambienteequip = ambienteequip.get_by_equipment_environment(
+                    ie.equipamento.id,
+                    self.networkipv4.vlan.ambiente_id)
 
-                ips = Ip.list_by_environment_and_equipment(ambienteequip.ambiente_id, ie.equipamento.id)
-                ips6 = Ipv6.list_by_environment_and_equipment(ambienteequip.ambiente_id, ie.equipamento.id)
+                ips = Ip.list_by_environment_and_equipment(
+                    ambienteequip.ambiente_id,
+                    ie.equipamento.id)
+                ips6 = Ipv6.list_by_environment_and_equipment(
+                    ambienteequip.ambiente_id,
+                    ie.equipamento.id)
 
                 if len(ips) <= 1 and len(ips6) <= 0:
 
@@ -990,15 +1257,18 @@ class Ip(BaseModel):
                 ie.delete(authenticated_user)
             super(Ip, self).delete(authenticated_user)
 
-        except EquipamentoAmbienteNotFoundError, e:
+        except EquipamentoAmbienteNotFoundError as e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
-        except IpCantBeRemovedFromVip, e:
-            raise IpCantBeRemovedFromVip(e.cause , e.message)
-        except IpEquipmentNotFoundError, e:
+        except IpCantBeRemovedFromVip as e:
+            raise IpCantBeRemovedFromVip(e.cause, e.message)
+        except IpEquipmentNotFoundError as e:
             raise IpEquipmentNotFoundError(None, e.message)
 
+
 class IpEquipamento(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_ips_dos_equipamentos')
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_ips_dos_equipamentos')
     ip = models.ForeignKey(Ip, db_column='id_ip')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
@@ -1020,9 +1290,11 @@ class IpEquipamento(BaseModel):
         """
         try:
             return IpEquipamento.objects.filter(ip__id=ip_id).uniqueResult()
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'There is no IP-Equipament by IP = %s.')
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e,
+                u'There is no IP-Equipament by IP = %s.')
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
 
@@ -1037,9 +1309,11 @@ class IpEquipamento(BaseModel):
         """
         try:
             return IpEquipamento.objects.filter(ip__id=ip_id)
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'There is no IP-Equipament by IP = %s.')
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e,
+                u'There is no IP-Equipament by IP = %s.')
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
 
@@ -1054,9 +1328,11 @@ class IpEquipamento(BaseModel):
         """
         try:
             return IpEquipamento.objects.filter(equipamento__id=equip_id)
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'There is no IP-Equipament by Equip = %s.')
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e,
+                u'There is no IP-Equipament by Equip = %s.')
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
 
@@ -1070,20 +1346,25 @@ class IpEquipamento(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return IpEquipamento.objects.get(ip__id=ip_id, equipamento__id=equip_id)
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'There is no IP-Equipament by IP = %s. and Equipament = %s.' % (ip_id, equip_id))
-        except Exception, e:
+            return IpEquipamento.objects.get(
+                ip__id=ip_id,
+                equipamento__id=equip_id)
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e, u'There is no IP-Equipament by IP = %s. and Equipament = %s.' %
+                (ip_id, equip_id))
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
 
     def __validate_ip(self):
         try:
             IpEquipamento.objects.get(ip=self.ip, equipamento=self.equipamento)
-            raise IpEquipamentoDuplicatedError(None, u'IP já cadastrado para o equipamento.')
+            raise IpEquipamentoDuplicatedError(
+                None,
+                u'IP já cadastrado para o equipamento.')
         except ObjectDoesNotExist:
             pass
-
 
     def create(self, authenticated_user, ip_id, equipment_id):
         '''Insere um relacionamento entre IP e Equipamento.
@@ -1103,12 +1384,15 @@ class IpEquipamento(BaseModel):
         self.__validate_ip()
 
         try:
-            if self.equipamento not in [ea.equipamento for ea in self.ip.networkipv4.vlan.ambiente.equipamentoambiente_set.all()]:
-                ea = EquipamentoAmbiente(ambiente=self.ip.networkipv4.vlan.ambiente, equipamento=self.equipamento)
+            if self.equipamento not in [
+                    ea.equipamento for ea in self.ip.networkipv4.vlan.ambiente.equipamentoambiente_set.all()]:
+                ea = EquipamentoAmbiente(
+                    ambiente=self.ip.networkipv4.vlan.ambiente,
+                    equipamento=self.equipamento)
                 ea.save(authenticated_user)
 
             self.save(authenticated_user)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Falha ao inserir um ip_equipamento.')
             raise IpError(e, u'Falha ao inserir um ip_equipamento.')
 
@@ -1125,16 +1409,26 @@ class IpEquipamento(BaseModel):
             if self.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
                 # Get all equipments (except the one being removed) related to ip
                 # to find another balancer
-                other_equips = self.ip.ipequipamento_set.exclude(equipamento=self.equipamento.id)
+                other_equips = self.ip.ipequipamento_set.exclude(
+                    equipamento=self.equipamento.id)
                 another_balancer = False
                 for ipequip in other_equips:
-                    if ipequip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
+                    if ipequip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador(
+                    ):
                         another_balancer = True
                         break
 
                 if not another_balancer:
                     if r.vip_criado:
-                        raise IpEquipCantDissociateFromVip({'vip_id': r.id, 'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome}, "Ipv4 não pode ser disassociado do equipamento %s porque é o último balanceador da Requisição Vip %s." % (self.equipamento.nome, r.id))
+                        raise IpEquipCantDissociateFromVip(
+                            {
+                                'vip_id': r.id,
+                                'ip': mount_ipv4_string(
+                                    self.ip),
+                                'equip_name': self.equipamento.nome},
+                            "Ipv4 não pode ser disassociado do equipamento %s porque é o último balanceador da Requisição Vip %s." %
+                            (self.equipamento.nome,
+                             r.id))
                     else:
                         # Remove ip from vip or remove vip
                         if r.ipv6 is not None:
@@ -1145,8 +1439,13 @@ class IpEquipamento(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome}, "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP." % (self.equipamento.nome))
-
+            raise IpEquipCantDissociateFromVip(
+                {
+                    'ip': mount_ipv4_string(
+                        self.ip),
+                    'equip_name': self.equipamento.nome},
+                "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP." %
+                (self.equipamento.nome))
 
         super(IpEquipamento, self).delete(authenticated_user)
 
@@ -1168,18 +1467,25 @@ class IpEquipamento(BaseModel):
 
         try:
             ip_equipamento.delete(authenticated_user)
-        except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip), e:
+        except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip) as e:
             raise e
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Falha ao remover um ip_equipamento.')
             raise IpError(e, u'Falha ao remover um ip_equipamento.')
+
 
 class NetworkIPv6(BaseModel):
 
     id = models.AutoField(primary_key=True)
     vlan = models.ForeignKey(Vlan, db_column='id_vlan')
-    network_type = models.ForeignKey(TipoRede, null=True, db_column='id_tipo_rede')
-    ambient_vip = models.ForeignKey(EnvironmentVip, null=True, db_column='id_ambientevip')
+    network_type = models.ForeignKey(
+        TipoRede,
+        null=True,
+        db_column='id_tipo_rede')
+    ambient_vip = models.ForeignKey(
+        EnvironmentVip,
+        null=True,
+        db_column='id_ambientevip')
     block = models.IntegerField(db_column='bloco')
     block1 = models.CharField(max_length=4, db_column='bloco1')
     block2 = models.CharField(max_length=4, db_column='bloco2')
@@ -1217,12 +1523,17 @@ class NetworkIPv6(BaseModel):
         """
         try:
             return NetworkIPv6.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist, e:
-            raise NetworkIPv6NotFoundError(e, u'Can not find a NetworkIPv4 with id = %s.' % id)
-        except OperationalError, e:
+        except ObjectDoesNotExist as e:
+            raise NetworkIPv6NotFoundError(
+                e,
+                u'Can not find a NetworkIPv4 with id = %s.' %
+                id)
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Error finding NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error finding NetworkIPv6.')
 
@@ -1230,7 +1541,7 @@ class NetworkIPv6(BaseModel):
         try:
             self.active = 1
             self.save(authenticated_user)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error activating NetworkIPv6.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv6.')
 
@@ -1247,7 +1558,7 @@ class NetworkIPv6(BaseModel):
             self.active = 0
             self.save(authenticated_user, commit=commit)
 
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error disabling NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error disabling NetworkIPv6.')
 
@@ -1256,7 +1567,7 @@ class NetworkIPv6(BaseModel):
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
             self.save(authenticated_user)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error on update NetworkIPv6.')
             raise NetworkIPv4Error(e, u'Error on update NetworkIPv6.')
 
@@ -1283,11 +1594,15 @@ class NetworkIPv6(BaseModel):
         try:
 
             # Find all configs type v6 in environment
-            configs = ConfigEnvironment.get_by_environment(self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv6[0])
+            configs = ConfigEnvironment.get_by_environment(
+                self.vlan.ambiente.id).filter(
+                ip_config__type=IP_VERSION.IPv6[0])
 
             # If not found, an exception is thrown
             if len(configs) == 0:
-                raise ConfigEnvironmentInvalidError(None, u'Invalid Configuration')
+                raise ConfigEnvironmentInvalidError(
+                    None,
+                    u'Invalid Configuration')
 
             # For each configuration founded in environment
             for config in configs:
@@ -1300,10 +1615,23 @@ class NetworkIPv6(BaseModel):
                 if config.ip_config.type == IP_VERSION.IPv6[0]:
 
                     # Find all networks ralated to environment
-                    nets = NetworkIPv6.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
+                    nets = NetworkIPv6.objects.filter(
+                        vlan__ambiente__id=self.vlan.ambiente.id)
 
                     # Cast to API class
-                    networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3, net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
+                    networksv6 = set(
+                        [
+                            (IPv6Network(
+                                '%s:%s:%s:%s:%s:%s:%s:%s/%s' %
+                                (net_ip.block1,
+                                 net_ip.block2,
+                                 net_ip.block3,
+                                 net_ip.block4,
+                                 net_ip.block5,
+                                 net_ip.block6,
+                                 net_ip.block7,
+                                 net_ip.block8,
+                                 net_ip.block))) for net_ip in nets])
 
                     net6 = IPv6Network(config.ip_config.subnet)
 
@@ -1328,8 +1656,13 @@ class NetworkIPv6(BaseModel):
                             elif config.ip_config.network_type is not None:
                                 internal_network_type = config.ip_config.network_type
                             else:
-                                self.log.error(u'Parameter tipo_rede is invalid. Value: %s', network_type)
-                                raise InvalidValueError(None, 'network_type', network_type)
+                                self.log.error(
+                                    u'Parameter tipo_rede is invalid. Value: %s',
+                                    network_type)
+                                raise InvalidValueError(
+                                    None,
+                                    'network_type',
+                                    network_type)
 
                             # Stop generation logic
                             stop = True
@@ -1338,24 +1671,30 @@ class NetworkIPv6(BaseModel):
                 # If not be IPv6
                 else:
                     # Throw an exception
-                    raise ConfigEnvironmentInvalidError(None, u'Invalid Configuration')
+                    raise ConfigEnvironmentInvalidError(
+                        None,
+                        u'Invalid Configuration')
 
-        except (ValueError, TypeError, AddressValueError), e:
+        except (ValueError, TypeError, AddressValueError) as e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
 
         # Checks if found any available network
-        if network_found == None:
+        if network_found is None:
             # If not found, an exception is thrown
-            raise NetworkIPv6AddressNotAvailableError(None, u'Unavailable address to create a NetworkIPv6.')
+            raise NetworkIPv6AddressNotAvailableError(
+                None,
+                u'Unavailable address to create a NetworkIPv6.')
 
         # Set block by network generated
-        self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8 = str(network_found.network.exploded).split(':')
+        self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8 = str(
+            network_found.network.exploded).split(':')
 
         # Set block by network generated
         self.block = network_found.prefixlen
 
         # Set mask by network generated
-        self.mask1, self.mask2, self.mask3, self.mask4, self.mask5, self.mask6, self.mask7, self.mask8 = str(network_found.netmask.exploded).split(':')
+        self.mask1, self.mask2, self.mask3, self.mask4, self.mask5, self.mask6, self.mask7, self.mask8 = str(
+            network_found.netmask.exploded).split(':')
 
         try:
             # Set Network Type
@@ -1364,7 +1703,7 @@ class NetworkIPv6(BaseModel):
             self.ambient_vip = evip
             self.save(user)
 
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error persisting a NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error persisting a NetworkIPv6.')
 
@@ -1414,18 +1753,25 @@ class NetworkIPv6(BaseModel):
 
             super(NetworkIPv6, self).delete(authenticated_user)
 
-
-        except IpCantBeRemovedFromVip, e:
+        except IpCantBeRemovedFromVip as e:
             # Network id and ReqVip id
-            net_name = str(self.block1) + ':' + str(self.block2) + ':' + str(self.block3) + ':' + str(self.block4) + ':'
-            net_name = net_name + str(self.block5) + ':' + str(self.block6) + ':' + str(self.block7) + ':' + str(self.block8) + '/' + str(self.block)
-            cause = {'Net':net_name, 'ReqVip': e.cause}
-            raise IpCantBeRemovedFromVip(cause, "Esta Rede possui um Vip apontando para ela, e não pode ser excluída")
+            net_name = str(self.block1) + ':' + str(self.block2) + \
+                ':' + str(self.block3) + ':' + str(self.block4) + ':'
+            net_name = net_name + str(self.block5) + ':' + str(self.block6) + ':' + str(
+                self.block7) + ':' + str(self.block8) + '/' + str(self.block)
+            cause = {'Net': net_name, 'ReqVip': e.cause}
+            raise IpCantBeRemovedFromVip(
+                cause,
+                "Esta Rede possui um Vip apontando para ela, e não pode ser excluída")
+
 
 class Ipv6(BaseModel):
 
     id = models.AutoField(primary_key=True, db_column='id_ipv6')
-    description = models.CharField(max_length=100, blank=True, db_column='descricao')
+    description = models.CharField(
+        max_length=100,
+        blank=True,
+        db_column='descricao')
     networkipv6 = models.ForeignKey(NetworkIPv6, db_column='id_redeipv6')
     block1 = models.CharField(max_length=4, db_column='bloco1')
     block2 = models.CharField(max_length=4, db_column='bloco2')
@@ -1441,7 +1787,16 @@ class Ipv6(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'ipsv6'
         managed = True
-        unique_together = ('block1', 'block2', 'block3', 'block4', 'block5', 'block6', 'block7', 'block8', 'networkipv6')
+        unique_together = (
+            'block1',
+            'block2',
+            'block3',
+            'block4',
+            'block5',
+            'block6',
+            'block7',
+            'block8',
+            'networkipv6')
 
     @classmethod
     def get_by_pk(self, id):
@@ -1455,16 +1810,28 @@ class Ipv6(BaseModel):
         '''
         try:
             return Ipv6.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise IpNotFoundError(e, u'Dont there is a IP by pk = %s.' % id)
-        except OperationalError, e:
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
-    def get_by_blocks_equipment(self, block1, block2, block3, block4, block5, block6, block7, block8, equip_id):
+    def get_by_blocks_equipment(
+            self,
+            block1,
+            block2,
+            block3,
+            block4,
+            block5,
+            block6,
+            block7,
+            block8,
+            equip_id):
         """Get IPv6 by blocks and equip_id.
 
             @return: IPv6.
@@ -1473,10 +1840,30 @@ class Ipv6(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8, ipv6equipament__equipamento__id=equip_id)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'There is no IP %s:%s:%s:%s:%s:%s:%s:%s of the equipament %s.' % (block1, block2, block3, block4, block5, block6, block7, block8, equip_id))
-        except Exception, e:
+            return Ipv6.objects.get(
+                block1=block1,
+                block2=block2,
+                block3=block3,
+                block4=block4,
+                block5=block5,
+                block6=block6,
+                block7=block7,
+                block8=block8,
+                ipv6equipament__equipamento__id=equip_id)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e,
+                u'There is no IP %s:%s:%s:%s:%s:%s:%s:%s of the equipament %s.' %
+                (block1,
+                 block2,
+                 block3,
+                 block4,
+                 block5,
+                 block6,
+                 block7,
+                 block8,
+                 equip_id))
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
@@ -1493,12 +1880,17 @@ class Ipv6(BaseModel):
 
         try:
             return Ipv6.objects.filter(networkipv6=id_network)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'Dont there is a IP by network_id = %s.' % id)
-        except OperationalError, e:
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e,
+                u'Dont there is a IP by network_id = %s.' %
+                id)
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP')
 
@@ -1514,13 +1906,20 @@ class Ipv6(BaseModel):
         """
 
         try:
-            return Ipv6.objects.select_related().filter(networkipv6__vlan__ambiente__id=id_ambiente, ipv6equipament__equipamento__id=id_equipment)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'Dont there is a IP by network_id = %s.' % id)
-        except OperationalError, e:
+            return Ipv6.objects.select_related().filter(
+                networkipv6__vlan__ambiente__id=id_ambiente,
+                ipv6equipament__equipamento__id=id_equipment)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e,
+                u'Dont there is a IP by network_id = %s.' %
+                id)
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP')
 
@@ -1537,13 +1936,33 @@ class Ipv6(BaseModel):
         self.networkipv6 = NetworkIPv6.get_by_pk(id_network)
 
         # Cast to API
-        net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.networkipv6.block1, self.networkipv6.block2, self.networkipv6.block3, self.networkipv6.block4,
-                                                        self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8, self.networkipv6.block))
+        net6 = IPv6Network(
+            '%s:%s:%s:%s:%s:%s:%s:%s/%s' %
+            (self.networkipv6.block1,
+             self.networkipv6.block2,
+             self.networkipv6.block3,
+             self.networkipv6.block4,
+             self.networkipv6.block5,
+             self.networkipv6.block6,
+             self.networkipv6.block7,
+             self.networkipv6.block8,
+             self.networkipv6.block))
         # Find all ipv6s ralated to network
         ips = Ipv6.objects.filter(networkipv6__id=self.networkipv6.id)
 
         # Cast all to API class
-        ipsv6 = set([(IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8))) for ip in ips])
+        ipsv6 = set(
+            [
+                (IPv6Address(
+                    '%s:%s:%s:%s:%s:%s:%s:%s' %
+                    (ip.block1,
+                     ip.block2,
+                     ip.block3,
+                     ip.block4,
+                     ip.block5,
+                     ip.block6,
+                     ip.block7,
+                     ip.block8))) for ip in ips])
 
         # Get configuration
         conf = Configuration.get()
@@ -1571,7 +1990,10 @@ class Ipv6(BaseModel):
                     break
 
         if selected_ip is None:
-            raise IpNotAvailableError(None, u'No IP6 available to NETWORK %s.' % self.networkipv6.id)
+            raise IpNotAvailableError(
+                None,
+                u'No IP6 available to NETWORK %s.' %
+                self.networkipv6.id)
 
     @classmethod
     def get_first_available_ip6(self, id_network):
@@ -1586,13 +2008,33 @@ class Ipv6(BaseModel):
         self.networkipv6 = NetworkIPv6.get_by_pk(id_network)
 
         # Cast to API
-        net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.networkipv6.block1, self.networkipv6.block2, self.networkipv6.block3, self.networkipv6.block4,
-                                                        self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8, self.networkipv6.block))
+        net6 = IPv6Network(
+            '%s:%s:%s:%s:%s:%s:%s:%s/%s' %
+            (self.networkipv6.block1,
+             self.networkipv6.block2,
+             self.networkipv6.block3,
+             self.networkipv6.block4,
+             self.networkipv6.block5,
+             self.networkipv6.block6,
+             self.networkipv6.block7,
+             self.networkipv6.block8,
+             self.networkipv6.block))
         # Find all ipv6s ralated to network
         ips = Ipv6.objects.filter(networkipv6__id=self.networkipv6.id)
 
         # Cast all to API class
-        ipsv6 = set([(IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8))) for ip in ips])
+        ipsv6 = set(
+            [
+                (IPv6Address(
+                    '%s:%s:%s:%s:%s:%s:%s:%s' %
+                    (ip.block1,
+                     ip.block2,
+                     ip.block3,
+                     ip.block4,
+                     ip.block5,
+                     ip.block6,
+                     ip.block7,
+                     ip.block8))) for ip in ips])
 
         selected_ip = None
 
@@ -1611,7 +2053,10 @@ class Ipv6(BaseModel):
                 break
 
         if selected_ip is None:
-            raise IpNotAvailableError(None, u'No IP6 available to NETWORK %s.' % self.networkipv6.id)
+            raise IpNotAvailableError(
+                None,
+                u'No IP6 available to NETWORK %s.' %
+                self.networkipv6.id)
 
     def delete_ip6(self, user, id_ip):
         try:
@@ -1619,24 +2064,53 @@ class Ipv6(BaseModel):
             ip = self.get_by_pk(id_ip)
             ip.delete(user)
 
-        except IpNotFoundError, e:
+        except IpNotFoundError as e:
             raise IpNotFoundError(None, e)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Failure to delete the IP.')
             raise IpError(e, u'Failure to delete the IP')
 
     def edit_ipv6(self, user):
         try:
             # Cast to API
-            net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.networkipv6.block1, self.networkipv6.block2, self.networkipv6.block3, self.networkipv6.block4,
-                                                        self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8, self.networkipv6.block))
+            net6 = IPv6Network(
+                '%s:%s:%s:%s:%s:%s:%s:%s/%s' %
+                (self.networkipv6.block1,
+                 self.networkipv6.block2,
+                 self.networkipv6.block3,
+                 self.networkipv6.block4,
+                 self.networkipv6.block5,
+                 self.networkipv6.block6,
+                 self.networkipv6.block7,
+                 self.networkipv6.block8,
+                 self.networkipv6.block))
             # Find all ipv6s ralated to network
             ips = Ipv6.objects.filter(networkipv6__id=self.networkipv6.id)
 
-            ip6_object = IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
+            ip6_object = IPv6Address(
+                '%s:%s:%s:%s:%s:%s:%s:%s' %
+                (self.block1,
+                 self.block2,
+                 self.block3,
+                 self.block4,
+                 self.block5,
+                 self.block6,
+                 self.block7,
+                 self.block8))
 
             # Cast all to API class
-            ipsv6 = set([IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)) for ip in ips])
+            ipsv6 = set(
+                [
+                    IPv6Address(
+                        '%s:%s:%s:%s:%s:%s:%s:%s' %
+                        (ip.block1,
+                         ip.block2,
+                         ip.block3,
+                         ip.block4,
+                         ip.block5,
+                         ip.block6,
+                         ip.block7,
+                         ip.block8)) for ip in ips])
 
             # Get configuration
             conf = Configuration.get()
@@ -1668,32 +2142,79 @@ class Ipv6(BaseModel):
 
                     ipv6_network = int(ip6_object)
 
-                    if ipv6_network >= (first_ip_network + conf.IPv6_MIN) and ipv6_network < (bcast_ip_network - conf.IPv6_MAX):
+                    if ipv6_network >= (
+                            first_ip_network +
+                            conf.IPv6_MIN) and ipv6_network < (
+                            bcast_ip_network -
+                            conf.IPv6_MAX):
                         flag = True
 
             else:
-                ip6_aux = self.get_by_blocks_and_net(self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.networkipv6.id)
+                ip6_aux = self.get_by_blocks_and_net(
+                    self.block1,
+                    self.block2,
+                    self.block3,
+                    self.block4,
+                    self.block5,
+                    self.block6,
+                    self.block7,
+                    self.block8,
+                    self.networkipv6.id)
                 if self.id != ip6_aux.id:
-                    raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already on use by network %s.' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.networkipv6.id))
+                    raise IpNotAvailableError(
+                        None,
+                        u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already on use by network %s.' %
+                        (self.block1,
+                         self.block2,
+                         self.block3,
+                         self.block4,
+                         self.block5,
+                         self.block6,
+                         self.block7,
+                         self.block8,
+                         self.networkipv6.id))
 
             if flag:
                 self.save(user)
 
             else:
-                raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.networkipv6.id))
+                raise IpNotAvailableError(
+                    None,
+                    u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' %
+                    (self.block1,
+                     self.block2,
+                     self.block3,
+                     self.block4,
+                     self.block5,
+                     self.block6,
+                     self.block7,
+                     self.block8,
+                     self.networkipv6.id))
 
-
-        except IpEquipmentAlreadyAssociation, e:
+        except IpEquipmentAlreadyAssociation as e:
             self.log.error(e)
             raise IpEquipmentAlreadyAssociation(None, e)
         except AddressValueError:
-            raise InvalidValueError(None, 'ip6', u'%s:%s:%s:%s:%s:%s:%s:%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
-        except IpNotAvailableError, e:
+            raise InvalidValueError(
+                None,
+                'ip6',
+                u'%s:%s:%s:%s:%s:%s:%s:%s' %
+                (self.block1,
+                 self.block2,
+                 self.block3,
+                 self.block4,
+                 self.block5,
+                 self.block6,
+                 self.block7,
+                 self.block8))
+        except IpNotAvailableError as e:
             raise IpNotAvailableError(None, e.message)
-        except IpError, e:
-            self.log.error(u'Error adding new IPv6 or relationship ip-equipment.')
-            raise IpError(e, u'Error adding new IPv6 or relationship ip-equipment.')
-
+        except IpError as e:
+            self.log.error(
+                u'Error adding new IPv6 or relationship ip-equipment.')
+            raise IpError(
+                e,
+                u'Error adding new IPv6 or relationship ip-equipment.')
 
     def save_ipv6(self, equipment_id, user, net):
 
@@ -1702,15 +2223,44 @@ class Ipv6(BaseModel):
             already_ip = False
 
             # Cast to API
-            net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net.block1, net.block2, net.block3, net.block4,
-                                                        net.block5, net.block6, net.block7, net.block8, net.block))
+            net6 = IPv6Network(
+                '%s:%s:%s:%s:%s:%s:%s:%s/%s' %
+                (net.block1,
+                 net.block2,
+                 net.block3,
+                 net.block4,
+                 net.block5,
+                 net.block6,
+                 net.block7,
+                 net.block8,
+                 net.block))
             # Find all ipv6s ralated to network
             ips = Ipv6.objects.filter(networkipv6__id=net.id)
 
-            ip6_object = IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
+            ip6_object = IPv6Address(
+                '%s:%s:%s:%s:%s:%s:%s:%s' %
+                (self.block1,
+                 self.block2,
+                 self.block3,
+                 self.block4,
+                 self.block5,
+                 self.block6,
+                 self.block7,
+                 self.block8))
 
             # Cast all to API class
-            ipsv6 = set([IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)) for ip in ips])
+            ipsv6 = set(
+                [
+                    IPv6Address(
+                        '%s:%s:%s:%s:%s:%s:%s:%s' %
+                        (ip.block1,
+                         ip.block2,
+                         ip.block3,
+                         ip.block4,
+                         ip.block5,
+                         ip.block6,
+                         ip.block7,
+                         ip.block8)) for ip in ips])
 
             # Get configuration
             conf = Configuration.get()
@@ -1741,16 +2291,35 @@ class Ipv6(BaseModel):
 
                     ipv6_network = int(ip6_object)
 
-
-                    if ipv6_network >= (first_ip_network) and ipv6_network < (bcast_ip_network):
+                    if ipv6_network >= (first_ip_network) and ipv6_network < (
+                            bcast_ip_network):
                         flag = True
 
             else:
-                ip_aux = self.get_by_blocks_and_net(self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, net.id)
+                ip_aux = self.get_by_blocks_and_net(
+                    self.block1,
+                    self.block2,
+                    self.block3,
+                    self.block4,
+                    self.block5,
+                    self.block6,
+                    self.block7,
+                    self.block8,
+                    net.id)
                 try:
                     Ipv6Equipament.get_by_ip6(ip_aux.id)
-                    raise IpEquipmentAlreadyAssociation(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already has association with an Equipament. Try using the association screen for this Ip.' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
-                except IpEquipmentNotFoundError, e:
+                    raise IpEquipmentAlreadyAssociation(
+                        None,
+                        u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already has association with an Equipament. Try using the association screen for this Ip.' %
+                        (self.block1,
+                         self.block2,
+                         self.block3,
+                         self.block4,
+                         self.block5,
+                         self.block6,
+                         self.block7,
+                         self.block8))
+                except IpEquipmentNotFoundError as e:
                     flag = True
                     already_ip = True
 
@@ -1764,7 +2333,8 @@ class Ipv6(BaseModel):
 
                 else:
                     ip6_equipment.ip = ip_aux
-                    if self.description is not None and len(self.description) > 0:
+                    if self.description is not None and len(
+                            self.description) > 0:
                         ip_aux.description = self.description
                         ip_aux.save(user)
 
@@ -1773,23 +2343,26 @@ class Ipv6(BaseModel):
                 # # Filter case 2 - Adding new IpEquip for a equip that already have ip in other network with the same range ##
 
                 # Get all IpEquipamento related to this equipment
-                ip_equips = Ipv6Equipament.objects.filter(equipamento=equipment_id)
+                ip_equips = Ipv6Equipament.objects.filter(
+                    equipamento=equipment_id)
 
                 for ip_test in [ip_equip.ip for ip_equip in ip_equips]:
                     if ip_test.networkipv6.block1 == self.networkipv6.block1 and \
-                    ip_test.networkipv6.block2 == self.networkipv6.block2 and \
-                    ip_test.networkipv6.block3 == self.networkipv6.block3 and \
-                    ip_test.networkipv6.block4 == self.networkipv6.block4 and \
-                    ip_test.networkipv6.block5 == self.networkipv6.block5 and \
-                    ip_test.networkipv6.block6 == self.networkipv6.block6 and \
-                    ip_test.networkipv6.block7 == self.networkipv6.block7 and \
-                    ip_test.networkipv6.block8 == self.networkipv6.block8 and \
-                    ip_test.networkipv6.block == self.networkipv6.block and \
-                    ip_test.networkipv6 != self.networkipv6:
+                            ip_test.networkipv6.block2 == self.networkipv6.block2 and \
+                            ip_test.networkipv6.block3 == self.networkipv6.block3 and \
+                            ip_test.networkipv6.block4 == self.networkipv6.block4 and \
+                            ip_test.networkipv6.block5 == self.networkipv6.block5 and \
+                            ip_test.networkipv6.block6 == self.networkipv6.block6 and \
+                            ip_test.networkipv6.block7 == self.networkipv6.block7 and \
+                            ip_test.networkipv6.block8 == self.networkipv6.block8 and \
+                            ip_test.networkipv6.block == self.networkipv6.block and \
+                            ip_test.networkipv6 != self.networkipv6:
 
                         # Filter testing
                         if ip_test.networkipv6.vlan.ambiente.filter is None or self.networkipv6.vlan.ambiente.filter is None:
-                            raise IpRangeAlreadyAssociation(None, u'Equipment is already associated with another ip with the same ip range.')
+                            raise IpRangeAlreadyAssociation(
+                                None,
+                                u'Equipment is already associated with another ip with the same ip range.')
                         else:
                             # Test both environment's filters
                             tp_equip_list_one = list()
@@ -1801,8 +2374,9 @@ class Ipv6(BaseModel):
                                 tp_equip_list_two.append(fet.equiptype)
 
                             if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
-                                raise IpRangeAlreadyAssociation(None, u'Equipment is already associated with another ip with the same ip range.')
-
+                                raise IpRangeAlreadyAssociation(
+                                    None,
+                                    u'Equipment is already associated with another ip with the same ip range.')
 
                 # # Filter case 2 - end ##
 
@@ -1814,24 +2388,60 @@ class Ipv6(BaseModel):
                     equipment_environment.equipamento = equipment
                     equipment_environment.ambiente = net.vlan.ambiente
                     equipment_environment.create(user)
-                except EquipamentoAmbienteDuplicatedError, e:
+                except EquipamentoAmbienteDuplicatedError as e:
                     # If already exists, OK !
                     pass
 
             else:
-                raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, net.id))
+                raise IpNotAvailableError(
+                    None,
+                    u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' %
+                    (self.block1,
+                     self.block2,
+                     self.block3,
+                     self.block4,
+                     self.block5,
+                     self.block6,
+                     self.block7,
+                     self.block8,
+                     net.id))
 
-        except IpRangeAlreadyAssociation, e:
+        except IpRangeAlreadyAssociation as e:
             raise IpRangeAlreadyAssociation(None, e.message)
-        except IpEquipmentAlreadyAssociation, e:
+        except IpEquipmentAlreadyAssociation as e:
             raise IpEquipmentAlreadyAssociation(None, e.message)
         except AddressValueError:
-            raise InvalidValueError(None, 'ip6', u'%s:%s:%s:%s:%s:%s:%s:%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
-        except IpNotAvailableError, e:
-            raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, net.id))
-        except IpError, e:
-            self.log.error(u'Error adding new IPv6 or relationship ip-equipment.')
-            raise IpError(e, u'Error adding new IPv6 or relationship ip-equipment.')
+            raise InvalidValueError(
+                None,
+                'ip6',
+                u'%s:%s:%s:%s:%s:%s:%s:%s' %
+                (self.block1,
+                 self.block2,
+                 self.block3,
+                 self.block4,
+                 self.block5,
+                 self.block6,
+                 self.block7,
+                 self.block8))
+        except IpNotAvailableError as e:
+            raise IpNotAvailableError(
+                None,
+                u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' %
+                (self.block1,
+                 self.block2,
+                 self.block3,
+                 self.block4,
+                 self.block5,
+                 self.block6,
+                 self.block7,
+                 self.block8,
+                 net.id))
+        except IpError as e:
+            self.log.error(
+                u'Error adding new IPv6 or relationship ip-equipment.')
+            raise IpError(
+                e,
+                u'Error adding new IPv6 or relationship ip-equipment.')
 
     def create(self, authenticated_user, equipment_id, id):
         '''Persist an IPv6 and associate it to an equipment.
@@ -1851,13 +2461,33 @@ class Ipv6(BaseModel):
         self.networkipv6 = NetworkIPv6().get_by_pk(id)
 
         # Cast to API
-        net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.networkipv6.block1, self.networkipv6.block2, self.networkipv6.block3, self.networkipv6.block4,
-                                                        self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8, self.networkipv6.block))
+        net6 = IPv6Network(
+            '%s:%s:%s:%s:%s:%s:%s:%s/%s' %
+            (self.networkipv6.block1,
+             self.networkipv6.block2,
+             self.networkipv6.block3,
+             self.networkipv6.block4,
+             self.networkipv6.block5,
+             self.networkipv6.block6,
+             self.networkipv6.block7,
+             self.networkipv6.block8,
+             self.networkipv6.block))
         # Find all ipv6s ralated to network
         ips = Ipv6.objects.filter(networkipv6__id=self.networkipv6.id)
 
         # Cast all to API class
-        ipsv6 = set([(IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8))) for ip in ips])
+        ipsv6 = set(
+            [
+                (IPv6Address(
+                    '%s:%s:%s:%s:%s:%s:%s:%s' %
+                    (ip.block1,
+                     ip.block2,
+                     ip.block3,
+                     ip.block4,
+                     ip.block5,
+                     ip.block6,
+                     ip.block7,
+                     ip.block8))) for ip in ips])
 
         # Get configuration
         conf = Configuration.get()
@@ -1882,9 +2512,13 @@ class Ipv6(BaseModel):
                     break
 
         if selected_ip is None:
-            raise IpNotAvailableError(None, u'No IPv6 available to VLAN %s.' % self.networkipv6.vlan.num_vlan)
+            raise IpNotAvailableError(
+                None,
+                u'No IPv6 available to VLAN %s.' %
+                self.networkipv6.vlan.num_vlan)
 
-        self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8 = str(selected_ip.exploded).split(':')
+        self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8 = str(
+            selected_ip.exploded).split(':')
 
         equipment = Equipamento().get_by_pk(equipment_id)
 
@@ -1897,7 +2531,9 @@ class Ipv6(BaseModel):
             ipv6_equipment.save(authenticated_user)
 
             try:
-                equipment_environment = EquipamentoAmbiente().get_by_equipment_environment(equipment_id, self.networkipv6.vlan.ambiente_id)
+                equipment_environment = EquipamentoAmbiente().get_by_equipment_environment(
+                    equipment_id,
+                    self.networkipv6.vlan.ambiente_id)
 
             except EquipamentoAmbienteNotFoundError:
                 equipment_environment = EquipamentoAmbiente()
@@ -1905,12 +2541,25 @@ class Ipv6(BaseModel):
                 equipment_environment.ambiente = self.networkipv6.vlan.ambiente
                 equipment_environment.save(authenticated_user)
 
-        except Exception, e:
-            self.log.error(u'Error adding new IPv6 or relationship ip-equipment.')
-            raise IpError(e, u'Error adding new IPv6 or relationship ip-equipment.')
+        except Exception as e:
+            self.log.error(
+                u'Error adding new IPv6 or relationship ip-equipment.')
+            raise IpError(
+                e,
+                u'Error adding new IPv6 or relationship ip-equipment.')
 
     @classmethod
-    def get_by_blocks_and_net(self, block1, block2, block3, block4, block5, block6, block7, block8, id_network):
+    def get_by_blocks_and_net(
+            self,
+            block1,
+            block2,
+            block3,
+            block4,
+            block5,
+            block6,
+            block7,
+            block8,
+            id_network):
         '''Get Ipv6 by blocks and network.
 
         @return: Ipv6.
@@ -1919,15 +2568,35 @@ class Ipv6(BaseModel):
         @raise IpError: Failed to search for the Ipv6.
         '''
         try:
-            return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8, networkipv6=id_network)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'Dont there is a Ipv6 %s:%s:%s:%s:%s:%s:%s:%s  ' % (block1, block2, block3, block4, block5, block6, block7, block8))
-        except Exception, e:
+            return Ipv6.objects.get(
+                block1=block1,
+                block2=block2,
+                block3=block3,
+                block4=block4,
+                block5=block5,
+                block6=block6,
+                block7=block7,
+                block8=block8,
+                networkipv6=id_network)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e, u'Dont there is a Ipv6 %s:%s:%s:%s:%s:%s:%s:%s  ' %
+                (block1, block2, block3, block4, block5, block6, block7, block8))
+        except Exception as e:
             self.log.error(u'Failure to search the Ipv6.')
             raise IpError(e, u'Failure to search the Ipv6.')
 
     @classmethod
-    def get_by_blocks(cls, block1, block2, block3, block4, block5, block6, block7, block8):
+    def get_by_blocks(
+            cls,
+            block1,
+            block2,
+            block3,
+            block4,
+            block5,
+            block6,
+            block7,
+            block8):
         '''Get Ipv6's  by blocks.
 
         @return: Ipv6's.
@@ -1936,20 +2605,41 @@ class Ipv6(BaseModel):
         @raise IpError: Failed to search for the Ipv6.
         '''
         try:
-            ips = Ipv6.objects.filter(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8)
+            ips = Ipv6.objects.filter(
+                block1=block1,
+                block2=block2,
+                block3=block3,
+                block4=block4,
+                block5=block5,
+                block6=block6,
+                block7=block7,
+                block8=block8)
 
             if len(ips) == 0:
                 raise ObjectDoesNotExist()
 
             return ips
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'Dont there is a Ipv6 %s:%s:%s:%s:%s:%s:%s:%s  ' % (block1, block2, block3, block4, block5, block6, block7, block8))
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e, u'Dont there is a Ipv6 %s:%s:%s:%s:%s:%s:%s:%s  ' %
+                (block1, block2, block3, block4, block5, block6, block7, block8))
+        except Exception as e:
             cls.log.error(u'Failure to search the Ipv6.')
             raise IpError(e, u'Failure to search the Ipv6.')
 
     @classmethod
-    def get_by_octs_and_environment_vip(self, block1, block2, block3, block4, block5, block6, block7, block8, id_evip, valid=True):
+    def get_by_octs_and_environment_vip(
+            self,
+            block1,
+            block2,
+            block3,
+            block4,
+            block5,
+            block6,
+            block7,
+            block8,
+            id_evip,
+            valid=True):
         '''Get Ipv6 by blocks and environment vip.
 
         @return: Ipv6.
@@ -1958,30 +2648,60 @@ class Ipv6(BaseModel):
         @raise IpError: Failed to search for the Ipv6.
         '''
         try:
-            if valid == True:
-                return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
+            if valid:
+                return Ipv6.objects.get(
+                    block1=block1,
+                    block2=block2,
+                    block3=block3,
+                    block4=block4,
+                    block5=block5,
+                    block6=block6,
+                    block7=block7,
+                    block8=block8,
+                    networkipv6__ambient_vip__id=id_evip)
             else:
-                ips = Ipv6.objects.filter(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8)
+                ips = Ipv6.objects.filter(
+                    block1=block1,
+                    block2=block2,
+                    block3=block3,
+                    block4=block4,
+                    block5=block5,
+                    block6=block6,
+                    block7=block7,
+                    block8=block8)
                 for ip in ips:
                     if ip.networkipv6.ambient_vip:
                         if ip.networkipv6.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(vlan__networkipv6__ambient_vip__id=id_evip)
+                        environments = Ambiente.objects.filter(
+                            vlan__networkipv6__ambient_vip__id=id_evip)
                         for env in environments:
                             if ip.networkipv6.vlan.ambiente.divisao_dc.id == env.divisao_dc.id and ip.networkipv6.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
                                 return ip
                 raise ObjectDoesNotExist()
 
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             evip = EnvironmentVip.get_by_pk(id_evip)
-            raise IpNotFoundError(e, u'Ipv6 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip())
-        except Exception, e:
+            raise IpNotFoundError(
+                e, u'Ipv6 não está relacionado ao Ambiente Vip: %s.' %
+                evip.show_environment_vip())
+        except Exception as e:
             self.log.error(u'Failure to search the Ipv6.')
             raise IpError(e, u'Failure to search the Ipv6.')
 
     @classmethod
-    def get_by_octs_and_environment(self, block1, block2, block3, block4, block5, block6, block7, block8, id_environment):
+    def get_by_octs_and_environment(
+            self,
+            block1,
+            block2,
+            block3,
+            block4,
+            block5,
+            block6,
+            block7,
+            block8,
+            id_environment):
         '''Get Ipv6 by blocks and environment.
 
         @return: Ipv6.
@@ -1990,10 +2710,30 @@ class Ipv6(BaseModel):
         @raise IpError: Failed to search for the Ipv6.
         '''
         try:
-            return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8, networkipv6__vlan__ambiente__id=id_environment)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'Dont there is a IPv6 %s:%s:%s:%s:%s:%s:%s:%s of the environment %s.' % (block1, block2, block3, block4, block5, block6, block7, block8, id_environment))
-        except Exception, e:
+            return Ipv6.objects.get(
+                block1=block1,
+                block2=block2,
+                block3=block3,
+                block4=block4,
+                block5=block5,
+                block6=block6,
+                block7=block7,
+                block8=block8,
+                networkipv6__vlan__ambiente__id=id_environment)
+        except ObjectDoesNotExist as e:
+            raise IpNotFoundError(
+                e,
+                u'Dont there is a IPv6 %s:%s:%s:%s:%s:%s:%s:%s of the environment %s.' %
+                (block1,
+                 block2,
+                 block3,
+                 block4,
+                 block5,
+                 block6,
+                 block7,
+                 block8,
+                 id_environment))
+        except Exception as e:
             self.log.error(u'Failure to search the Ipv6.')
             raise IpError(e, u'Failure to search the Ipv6.')
 
@@ -2007,7 +2747,10 @@ class Ipv6(BaseModel):
             for r in self.requisicaovips_set.all():
                 r_alter = False
                 if r.vip_criado:
-                    raise IpCantBeRemovedFromVip(r.id, "Ipv6 não pode ser removido, porque está em uso por Requisição Vip %s" % (r.id))
+                    raise IpCantBeRemovedFromVip(
+                        r.id,
+                        "Ipv6 não pode ser removido, porque está em uso por Requisição Vip %s" %
+                        (r.id))
                 else:
                     if r.ip is not None:
                         r.ipv6 = None
@@ -2022,10 +2765,16 @@ class Ipv6(BaseModel):
             for ie in self.ipv6equipament_set.all():
 
                 ambienteequip = EquipamentoAmbiente()
-                ambienteequip = ambienteequip.get_by_equipment_environment(ie.equipamento.id, self.networkipv6.vlan.ambiente_id)
+                ambienteequip = ambienteequip.get_by_equipment_environment(
+                    ie.equipamento.id,
+                    self.networkipv6.vlan.ambiente_id)
 
-                ips = Ip.list_by_environment_and_equipment(ambienteequip.ambiente_id, ie.equipamento.id)
-                ips6 = Ipv6.list_by_environment_and_equipment(ambienteequip.ambiente_id, ie.equipamento.id)
+                ips = Ip.list_by_environment_and_equipment(
+                    ambienteequip.ambiente_id,
+                    ie.equipamento.id)
+                ips6 = Ipv6.list_by_environment_and_equipment(
+                    ambienteequip.ambiente_id,
+                    ie.equipamento.id)
 
                 if len(ips) <= 0 and len(ips6) <= 1:
 
@@ -2035,17 +2784,20 @@ class Ipv6(BaseModel):
 
             super(Ipv6, self).delete(authenticated_user)
 
-        except EquipamentoAmbienteNotFoundError, e:
+        except EquipamentoAmbienteNotFoundError as e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
-        except IpCantBeRemovedFromVip, e:
-            raise IpCantBeRemovedFromVip(e.cause , e.message)
-        except IpEquipmentNotFoundError, e:
+        except IpCantBeRemovedFromVip as e:
+            raise IpCantBeRemovedFromVip(e.cause, e.message)
+        except IpEquipmentNotFoundError as e:
             raise IpEquipmentNotFoundError(None, e.message)
-        except Exception, e:
+        except Exception as e:
             raise Exception(None, e.message)
 
+
 class Ipv6Equipament(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_ipsv6_dos_equipamentos')
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_ipsv6_dos_equipamentos')
     ip = models.ForeignKey(Ipv6, db_column='id_ipv6')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
@@ -2067,12 +2819,13 @@ class Ipv6Equipament(BaseModel):
         """
         try:
             return Ipv6Equipament.objects.filter(equipamento__id=equip_id)
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'Dont there is a IP-Equipament by Equip = %s.')
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e,
+                u'Dont there is a IP-Equipament by Equip = %s.')
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
-
 
     @classmethod
     def get_by_ip6(self, ip6_id):
@@ -2085,12 +2838,13 @@ class Ipv6Equipament(BaseModel):
         """
         try:
             return Ipv6Equipament.objects.filter(ip__id=ip6_id).uniqueResult()
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'Dont there is a IP-Equipament by IP = %s.')
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e,
+                u'Dont there is a IP-Equipament by IP = %s.')
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
-
 
     @classmethod
     def list_by_ip6(self, ip6_id):
@@ -2103,9 +2857,11 @@ class Ipv6Equipament(BaseModel):
         """
         try:
             return Ipv6Equipament.objects.filter(ip__id=ip6_id)
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'Dont there is a IP-Equipament by IP = %s.')
-        except Exception, e:
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e,
+                u'Dont there is a IP-Equipament by IP = %s.')
+        except Exception as e:
             self.log.error(u'Failure to search the Ip-Equipament.')
             raise IpError(e, u'Failure to search the Ip-Equipament.')
 
@@ -2120,13 +2876,19 @@ class Ipv6Equipament(BaseModel):
         @raise OperationalError: Lock wait timeout exceeded.
         """
         try:
-            return Ipv6Equipament.objects.filter(ip__id=ip_id, equipamento__id=equip_id).uniqueResult()
-        except ObjectDoesNotExist, e:
-            raise IpEquipmentNotFoundError(e, u'Dont there is a Ipv6Equipament by ip_id = %s and equip_id = %s' % (ip_id, equip_id))
-        except OperationalError, e:
+            return Ipv6Equipament.objects.filter(
+                ip__id=ip_id,
+                equipamento__id=equip_id).uniqueResult()
+        except ObjectDoesNotExist as e:
+            raise IpEquipmentNotFoundError(
+                e, u'Dont there is a Ipv6Equipament by ip_id = %s and equip_id = %s' %
+                (ip_id, equip_id))
+        except OperationalError as e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError(
+                e,
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             self.log.error(u'Failure to search the Ipv6Equipament.')
             raise IpError(e, u'Failure to search the Ipv6Equipament.')
 
@@ -2136,8 +2898,12 @@ class Ipv6Equipament(BaseModel):
             @raise IpEquipamentoDuplicatedError: if IPv6 is already associated with equipment
         '''
         try:
-            Ipv6Equipament.objects.get(ip=self.ip, equipamento=self.equipamento)
-            raise IpEquipamentoDuplicatedError(None, u'IP already registered for the equipment.')
+            Ipv6Equipament.objects.get(
+                ip=self.ip,
+                equipamento=self.equipamento)
+            raise IpEquipamentoDuplicatedError(
+                None,
+                u'IP already registered for the equipment.')
         except ObjectDoesNotExist:
             pass
 
@@ -2159,12 +2925,15 @@ class Ipv6Equipament(BaseModel):
         self.validate_ip()
 
         try:
-            if self.equipamento not in [ea.equipamento for ea in self.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
-                ea = EquipamentoAmbiente(ambiente=self.ip.networkipv6.vlan.ambiente, equipamento=self.equipamento)
+            if self.equipamento not in [
+                    ea.equipamento for ea in self.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
+                ea = EquipamentoAmbiente(
+                    ambiente=self.ip.networkipv6.vlan.ambiente,
+                    equipamento=self.equipamento)
                 ea.save(authenticated_user)
 
             self.save(authenticated_user)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Falha ao inserir um ip_equipamento.')
             raise IpError(e, u'Falha ao inserir um ip_equipamento.')
 
@@ -2181,9 +2950,9 @@ class Ipv6Equipament(BaseModel):
         try:
             ip_equipamento.delete(authenticated_user)
 
-        except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip), e:
+        except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip) as e:
             raise e
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Failure to remove the Ipv6Equipament.')
             raise IpError(e, u'Failure to remove the Ipv6Equipament.')
 
@@ -2200,16 +2969,26 @@ class Ipv6Equipament(BaseModel):
             if self.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
                 # Get all equipments (except the one being removed) related to ip
                 # to find another balancer
-                other_equips = self.ip.ipv6equipament_set.exclude(equipamento=self.equipamento.id)
+                other_equips = self.ip.ipv6equipament_set.exclude(
+                    equipamento=self.equipamento.id)
                 another_balancer = False
                 for ipequip in other_equips:
-                    if ipequip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
+                    if ipequip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador(
+                    ):
                         another_balancer = True
                         break
 
                 if not another_balancer:
                     if r.vip_criado:
-                        raise IpEquipCantDissociateFromVip({'vip_id': r.id, 'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome}, "Ipv6 não pode ser disassociado do equipamento %s porque é o último balanceador da Requisição Vip %s." % (self.equipamento.nome, r.id))
+                        raise IpEquipCantDissociateFromVip(
+                            {
+                                'vip_id': r.id,
+                                'ip': mount_ipv6_string(
+                                    self.ip),
+                                'equip_name': self.equipamento.nome},
+                            "Ipv6 não pode ser disassociado do equipamento %s porque é o último balanceador da Requisição Vip %s." %
+                            (self.equipamento.nome,
+                             r.id))
                     else:
                         # Remove ip from vip or remove vip
                         if r.ip is not None:
@@ -2219,13 +2998,17 @@ class Ipv6Equipament(BaseModel):
                         else:
                             r.delete(authenticated_user)
 
-
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome}, "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP" % (self.equipamento.nome))
+            raise IpEquipCantDissociateFromVip(
+                {
+                    'ip': mount_ipv6_string(
+                        self.ip),
+                    'equip_name': self.equipamento.nome},
+                "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP" %
+                (self.equipamento.nome))
 
         super(Ipv6Equipament, self).delete(authenticated_user)
 
         # If ip has no other equipment, than he will be removed to
         if self.ip.ipv6equipament_set.count() == 0:
             self.ip.delete(authenticated_user)
-

@@ -19,6 +19,7 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.requisicaovips.models import RequisicaoVips
 
+
 class RequestVipRealValidResource(RestResource):
 
     log = Log('RequestVipRealValidResource')
@@ -32,7 +33,7 @@ class RequestVipRealValidResource(RestResource):
 
         try:
 
-            ## Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -40,11 +41,15 @@ class RequestVipRealValidResource(RestResource):
             # XML data format
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
-                return self.response_error(3, u'There is no value to the networkapi tag  of XML request.')
+                return self.response_error(
+                    3,
+                    u'There is no value to the networkapi tag  of XML request.')
 
             real_map = networkapi_map.get('real')
             if real_map is None:
-                return self.response_error(3, u'There is no value to the vip tag  of XML request.')
+                return self.response_error(
+                    3,
+                    u'There is no value to the vip tag  of XML request.')
 
             # Get XML data
             ip = real_map.get('ip')
@@ -53,60 +58,73 @@ class RequestVipRealValidResource(RestResource):
             valid = real_map.get('valid')
 
             # User permission
-            if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.VIPS_REQUEST,
+                    AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-        
+
             # Valid IP
             if not is_valid_ip_ipaddr(ip):
                 self.log.error(u'Parameter ip is invalid. Value: %s.', ip)
                 raise InvalidValueError(None, 'ip', ip)
 
             # Valid Name Equipment
-            if not is_valid_string_minsize(name,3) or not is_valid_string_maxsize(name, 80) or not is_valid_regex(name, "^[A-Z0-9-_]+$"):
-                self.log.error(u'Parameter name_equipment is invalid. Value: %s',name)
-                raise InvalidValueError(None,'name_equipment',name)
-            
+            if not is_valid_string_minsize(
+                name,
+                3) or not is_valid_string_maxsize(
+                name,
+                80) or not is_valid_regex(
+                name,
+                    "^[A-Z0-9-_]+$"):
+                self.log.error(
+                    u'Parameter name_equipment is invalid. Value: %s',
+                    name)
+                raise InvalidValueError(None, 'name_equipment', name)
+
             # Valid Environment Vip
             if not is_valid_int_greater_zero_param(id_evip):
-                self.log.error(u'Parameter id_environment_vip is invalid. Value: %s.', id_evip)
+                self.log.error(
+                    u'Parameter id_environment_vip is invalid. Value: %s.',
+                    id_evip)
                 raise InvalidValueError(None, 'id_environment_vip', id_evip)
-            
-            
-            #Valid Equipment
+
+            # Valid Equipment
             equip = Equipamento.get_by_name(name)
-            
-            #Valid EnvironmentVip
+
+            # Valid EnvironmentVip
             evip = EnvironmentVip.get_by_pk(id_evip)
-            
 
             version = ""
             if is_valid_ipv4(ip):
                 version = IP_VERSION.IPv4[1]
-            
+
             elif is_valid_ipv6(ip):
                 version = IP_VERSION.IPv6[1]
-            
-            ip, equip, evip = RequisicaoVips.valid_real_server(ip, equip, evip, valid)
-           
-            real_dict =  {}
+
+            ip, equip, evip = RequisicaoVips.valid_real_server(
+                ip, equip, evip, valid)
+
+            real_dict = {}
             ip_dict = model_to_dict(ip)
             ip_dict["version"] = version
-            
+
             real_dict["ip"] = ip_dict
             real_dict["equipment"] = model_to_dict(equip)
             real_dict["environmentvip"] = model_to_dict(evip)
-            
-            return self.response(dumps_networkapi({'real':real_dict}))
 
-        except XMLError, x:
+            return self.response(dumps_networkapi({'real': real_dict}))
+
+        except XMLError as x:
             self.log.error(u'Error reading the XML request.')
-            return self.response_error(3, x)        
-        except InvalidValueError, e:
+            return self.response_error(3, x)
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
         except UserNotAuthorizedError:
             return self.not_authorized()
-        except IpNotFoundError, e:
+        except IpNotFoundError as e:
             return self.response_error(334, e.message)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)

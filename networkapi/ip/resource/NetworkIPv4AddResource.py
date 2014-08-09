@@ -35,14 +35,18 @@ class NetworkIPv4AddResource(RestResource):
             URL: network/ipv4/add/
         '''
 
-        # # Commons Validations
+        # Commons Validations
 
         # User permission
-        if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-            self.log.error(u'User does not have permission to perform the operation.')
+        if not has_perm(
+                user,
+                AdminPermission.VLAN_MANAGEMENT,
+                AdminPermission.WRITE_OPERATION):
+            self.log.error(
+                u'User does not have permission to perform the operation.')
             return self.not_authorized()
 
-        # # Business Validations
+        # Business Validations
 
         # Load XML data
         xml_map, _ = loads(request.raw_post_data)
@@ -66,11 +70,18 @@ class NetworkIPv4AddResource(RestResource):
         prefix = vlan_map.get('prefix')
 
         # Valid prefix
-        if not is_valid_int_greater_zero_param(prefix, False) or (prefix and int(prefix) > 32):
-                self.log.error(u'Parameter prefix is invalid. Value: %s.', prefix)
-                return self.response_error(269, 'prefix', prefix)
+        if not is_valid_int_greater_zero_param(
+                prefix, False) or (
+                prefix and int(prefix) > 32):
+            self.log.error(u'Parameter prefix is invalid. Value: %s.', prefix)
+            return self.response_error(269, 'prefix', prefix)
 
-        return self.network_ipv4_add(user, vlan_id, network_type, environment_vip, prefix)
+        return self.network_ipv4_add(
+            user,
+            vlan_id,
+            network_type,
+            environment_vip,
+            prefix)
 
     def handle_put(self, request, user, *args, **kwargs):
         '''
@@ -78,14 +89,18 @@ class NetworkIPv4AddResource(RestResource):
             URL: network/ipv4/add/
         '''
 
-        # # Commons Validations
+        # Commons Validations
 
         # User permission
-        if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-            self.log.error(u'User does not have permission to perform the operation.')
+        if not has_perm(
+                user,
+                AdminPermission.VLAN_MANAGEMENT,
+                AdminPermission.WRITE_OPERATION):
+            self.log.error(
+                u'User does not have permission to perform the operation.')
             return self.not_authorized()
 
-        # # Business Validations
+        # Business Validations
 
         # Load XML data
         xml_map, _ = loads(request.raw_post_data)
@@ -109,8 +124,11 @@ class NetworkIPv4AddResource(RestResource):
         num_hosts = vlan_map.get('num_hosts')
 
         # Valid num_hosts
-        if not is_valid_int_greater_zero_param(num_hosts) or int(num_hosts) > MAX_IPV4_HOSTS:
-            self.log.error(u'Parameter num_hosts is invalid. Value: %s.', num_hosts)
+        if not is_valid_int_greater_zero_param(
+                num_hosts) or int(num_hosts) > MAX_IPV4_HOSTS:
+            self.log.error(
+                u'Parameter num_hosts is invalid. Value: %s.',
+                num_hosts)
             return self.response_error(269, 'num_hosts', num_hosts)
 
         num_hosts = int(num_hosts)
@@ -121,35 +139,55 @@ class NetworkIPv4AddResource(RestResource):
         prefix = get_prefix_IPV4(num_hosts)
         self.log.info(u'Prefix for %s hosts: %s' % (num_hosts, prefix))
 
-        return self.network_ipv4_add(user, vlan_id, network_type, environment_vip, prefix)
+        return self.network_ipv4_add(
+            user,
+            vlan_id,
+            network_type,
+            environment_vip,
+            prefix)
 
-    def network_ipv4_add(self, user, vlan_id, network_type, environment_vip, prefix=None):
+    def network_ipv4_add(
+            self,
+            user,
+            vlan_id,
+            network_type,
+            environment_vip,
+            prefix=None):
 
         try:
 
             # Valid vlan ID
             if not is_valid_int_greater_zero_param(vlan_id):
-                self.log.error(u'Parameter id_vlan is invalid. Value: %s.', vlan_id)
+                self.log.error(
+                    u'Parameter id_vlan is invalid. Value: %s.',
+                    vlan_id)
                 raise InvalidValueError(None, 'id_vlan', vlan_id)
 
-            # # Network Type
+            # Network Type
 
             # Valid network_type ID
             if not is_valid_int_greater_zero_param(network_type):
-                self.log.error(u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
+                self.log.error(
+                    u'Parameter id_tipo_rede is invalid. Value: %s.',
+                    network_type)
                 raise InvalidValueError(None, 'id_tipo_rede', network_type)
 
             # Find network_type by ID to check if it exist
             net = TipoRede.get_by_pk(network_type)
 
-            # # Environment Vip
+            # Environment Vip
 
             if environment_vip is not None:
 
                 # Valid environment_vip ID
                 if not is_valid_int_greater_zero_param(environment_vip):
-                    self.log.error(u'Parameter id_ambiente_vip is invalid. Value: %s.', environment_vip)
-                    raise InvalidValueError(None, 'id_ambiente_vip', environment_vip)
+                    self.log.error(
+                        u'Parameter id_ambiente_vip is invalid. Value: %s.',
+                        environment_vip)
+                    raise InvalidValueError(
+                        None,
+                        'id_ambiente_vip',
+                        environment_vip)
 
                 # Find Environment VIP by ID to check if it exist
                 evip = EnvironmentVip.get_by_pk(environment_vip)
@@ -157,18 +195,26 @@ class NetworkIPv4AddResource(RestResource):
             else:
                 evip = None
 
-            # # Business Rules
+            # Business Rules
 
             # New NetworkIPv4
             network_ipv4 = NetworkIPv4()
-            vlan_map = network_ipv4.add_network_ipv4(user, vlan_id, net, evip, prefix)
+            vlan_map = network_ipv4.add_network_ipv4(
+                user,
+                vlan_id,
+                net,
+                evip,
+                prefix)
 
-            list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(ambiente=network_ipv4.vlan.ambiente.id, is_router=True)
+            list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
+                ambiente=network_ipv4.vlan.ambiente.id,
+                is_router=True)
 
             if list_equip_routers_ambient:
 
                 # Add Adds the first available ipv4 on all equipment
-                # that is configured as a router for the environment related to network
+                # that is configured as a router for the environment related to
+                # network
                 ip = Ip.get_first_available_ip(network_ipv4.id)
 
                 ip = str(ip).split('.')
@@ -184,25 +230,28 @@ class NetworkIPv4AddResource(RestResource):
 
                 for equip in list_equip_routers_ambient:
 
-                    IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
+                    IpEquipamento().create(
+                        user,
+                        ip_model.id,
+                        equip.equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        except NetworkTypeNotFoundError, e:
+        except NetworkTypeNotFoundError as e:
             self.log.error(u'The network_type parameter does not exist.')
             return self.response_error(111)
-        except VlanNotFoundError, e:
+        except VlanNotFoundError as e:
             self.log.error(u'Vlan not found')
             return self.response_error(116)
-        except XMLError, e:
+        except XMLError as e:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
-        except GrupoError, e:
+        except GrupoError as e:
             return self.response_error(1)
-        except NetworkTypeNotFoundError, e:
+        except NetworkTypeNotFoundError as e:
             return self.response_error(111)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
@@ -210,7 +259,7 @@ class NetworkIPv4AddResource(RestResource):
             return self.response_error(295)
         except ConfigEnvironmentInvalidError:
             return self.response_error(294)
-        except NetworkIPv4AddressNotAvailableError, e:
+        except NetworkIPv4AddressNotAvailableError as e:
             return self.response_error(294)
-        except IpNotAvailableError, e:
+        except IpNotAvailableError as e:
             return self.response_error(150, e)

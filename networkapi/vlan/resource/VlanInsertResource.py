@@ -12,7 +12,7 @@ from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, \
     destroy_cache_function
-from networkapi.vlan.models import  VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
+from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import  AmbienteError, Ambiente, AmbienteNotFoundError,\
     ConfigEnvironmentInvalidError
@@ -21,6 +21,7 @@ from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.vlan.models import TipoRede
 from networkapi.ip.models import NetworkIPv4AddressNotAvailableError, IpNotAvailableError
 from django.core.exceptions import ObjectDoesNotExist
+
 
 class VlanInsertResource(RestResource):
 
@@ -33,17 +34,21 @@ class VlanInsertResource(RestResource):
         '''
 
         try:
-            # # Generic method for v4 and v6
+            # Generic method for v4 and v6
             network_version = kwargs.get('network_version')
 
-            # # Commons Validations
+            # Commons Validations
 
             # User permission
-            if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.VLAN_MANAGEMENT,
+                    AdminPermission.WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            # # Business Validations
+            # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -72,36 +77,52 @@ class VlanInsertResource(RestResource):
 
             # Valid environment_id ID
             if not is_valid_int_greater_zero_param(environment_id):
-                self.log.error(u'Parameter environment_id is invalid. Value: %s.', environment_id)
+                self.log.error(
+                    u'Parameter environment_id is invalid. Value: %s.',
+                    environment_id)
                 raise InvalidValueError(None, 'environment_id', environment_id)
 
             # Valid number of Vlan
             if not is_valid_int_greater_zero_param(number):
-                self.log.error(u'Parameter number is invalid. Value: %s', number)
+                self.log.error(
+                    u'Parameter number is invalid. Value: %s',
+                    number)
                 raise InvalidValueError(None, 'number', number)
 
             # Valid name of Vlan
-            if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 50):
+            if not is_valid_string_minsize(
+                    name,
+                    3) or not is_valid_string_maxsize(
+                    name,
+                    50):
                 self.log.error(u'Parameter name is invalid. Value: %s', name)
                 raise InvalidValueError(None, 'name', name)
 
             if not network_ipv4 or not str(network_ipv4).isdigit():
-                self.log.error(u'Parameter network_ipv4 is invalid. Value: %s.', network_ipv4)
+                self.log.error(
+                    u'Parameter network_ipv4 is invalid. Value: %s.',
+                    network_ipv4)
                 raise InvalidValueError(None, 'network_ipv4', network_ipv4)
 
             if not network_ipv6 or not str(network_ipv6).isdigit():
-                self.log.error(u'Parameter network_ipv6 is invalid. Value: %s.', network_ipv6)
+                self.log.error(
+                    u'Parameter network_ipv6 is invalid. Value: %s.',
+                    network_ipv6)
                 raise InvalidValueError(None, 'network_ipv6', network_ipv6)
 
             network_ipv4 = int(network_ipv4)
             network_ipv6 = int(network_ipv6)
 
             if network_ipv4 not in range(0, 2):
-                self.log.error(u'Parameter network_ipv4 is invalid. Value: %s.', network_ipv4)
+                self.log.error(
+                    u'Parameter network_ipv4 is invalid. Value: %s.',
+                    network_ipv4)
                 raise InvalidValueError(None, 'network_ipv4', network_ipv4)
 
             if network_ipv6 not in range(0, 2):
-                self.log.error(u'Parameter network_ipv6 is invalid. Value: %s.', network_ipv6)
+                self.log.error(
+                    u'Parameter network_ipv6 is invalid. Value: %s.',
+                    network_ipv6)
                 raise InvalidValueError(None, 'network_ipv6', network_ipv6)
 
             p = re.compile("^[A-Z0-9-_]+$")
@@ -115,16 +136,30 @@ class VlanInsertResource(RestResource):
                     raise InvalidValueError(None, 'name', name)
 
             # Valid description of Vlan
-            if not is_valid_string_minsize(description, 3, False) or not is_valid_string_maxsize(description, 200, False):
-                self.log.error(u'Parameter description is invalid. Value: %s', description)
+            if not is_valid_string_minsize(
+                    description,
+                    3,
+                    False) or not is_valid_string_maxsize(
+                    description,
+                    200,
+                    False):
+                self.log.error(
+                    u'Parameter description is invalid. Value: %s',
+                    description)
                 raise InvalidValueError(None, 'description', description)
 
             vlan = Vlan()
 
             # Valid acl_file Vlan
             if acl_file is not None:
-                if not is_valid_string_minsize(acl_file, 3) or not is_valid_string_maxsize(acl_file, 200):
-                    self.log.error(u'Parameter acl_file is invalid. Value: %s', acl_file)
+                if not is_valid_string_minsize(
+                        acl_file,
+                        3) or not is_valid_string_maxsize(
+                        acl_file,
+                        200):
+                    self.log.error(
+                        u'Parameter acl_file is invalid. Value: %s',
+                        acl_file)
                     raise InvalidValueError(None, 'acl_file', acl_file)
                 p = re.compile("^[A-Z0-9-_]+$")
                 m = p.match(acl_file)
@@ -136,8 +171,14 @@ class VlanInsertResource(RestResource):
 
             # Valid acl_file_v6 Vlan
             if acl_file_v6 is not None:
-                if not is_valid_string_minsize(acl_file_v6, 3) or not is_valid_string_maxsize(acl_file_v6, 200):
-                    self.log.error(u'Parameter acl_file_v6 is invalid. Value: %s', acl_file_v6)
+                if not is_valid_string_minsize(
+                        acl_file_v6,
+                        3) or not is_valid_string_maxsize(
+                        acl_file_v6,
+                        200):
+                    self.log.error(
+                        u'Parameter acl_file_v6 is invalid. Value: %s',
+                        acl_file_v6)
                     raise InvalidValueError(None, 'acl_file_v6', acl_file_v6)
                 p = re.compile("^[A-Z0-9-_]+$")
                 m = p.match(acl_file_v6)
@@ -185,28 +226,28 @@ class VlanInsertResource(RestResource):
             # Return XML
             return self.response(dumps_networkapi(map))
 
-        except VlanACLDuplicatedError, e:
+        except VlanACLDuplicatedError as e:
             return self.response_error(311, acl_file)
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        except AmbienteNotFoundError, e:
+        except AmbienteNotFoundError as e:
             return self.response_error(112)
-        except VlanNameDuplicatedError, e:
+        except VlanNameDuplicatedError as e:
             return self.response_error(108)
-        except VlanNumberNotAvailableError, e:
+        except VlanNumberNotAvailableError as e:
             return self.response_error(306, vlan.num_vlan)
-        except VlanNumberEnvironmentNotAvailableError, e:
+        except VlanNumberEnvironmentNotAvailableError as e:
             return self.response_error(315, e.message)
-        except XMLError, e:
+        except XMLError as e:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
-        except (VlanError, AmbienteError), e:
+        except (VlanError, AmbienteError) as e:
             return self.response_error(1)
-        except ConfigEnvironmentInvalidError, e:
+        except ConfigEnvironmentInvalidError as e:
             return self.response_error(294)
-        except NetworkIPv4AddressNotAvailableError, e:
+        except NetworkIPv4AddressNotAvailableError as e:
             return self.response_error(294)
-        except IpNotAvailableError, e:
+        except IpNotAvailableError as e:
             return self.response_error(150, e)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             return self.response_error(111, e)

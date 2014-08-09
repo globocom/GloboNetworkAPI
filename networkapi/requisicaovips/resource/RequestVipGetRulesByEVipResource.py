@@ -34,8 +34,12 @@ class RequestVipGetRulesByEVipResource(RestResource):
             self.log.info("GET to list all the Rules by Environment Vip.")
 
             # User permission
-            if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.VIPS_REQUEST,
+                    AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             id_environment_vip = kwargs.get('id_evip')
@@ -43,8 +47,13 @@ class RequestVipGetRulesByEVipResource(RestResource):
 
             # Valid Environment VIP ID
             if not is_valid_int_greater_zero_param(id_environment_vip):
-                self.log.error(u'The id_environment_vip parameter is not a valid value: %s.', id_environment_vip)
-                raise InvalidValueError(None, 'id_environment_vip', id_environment_vip)
+                self.log.error(
+                    u'The id_environment_vip parameter is not a valid value: %s.',
+                    id_environment_vip)
+                raise InvalidValueError(
+                    None,
+                    'id_environment_vip',
+                    id_environment_vip)
 
             # Find Environment VIP by ID to check if it exist
             environment_vip = EnvironmentVip.get_by_pk(id_environment_vip)
@@ -61,11 +70,14 @@ class RequestVipGetRulesByEVipResource(RestResource):
 
             if id_vip:
                 if not is_valid_int_greater_zero_param(id_vip):
-                    self.log.error(u'Parameter id_vip is invalid. Value: %s.', id_vip)
+                    self.log.error(
+                        u'Parameter id_vip is invalid. Value: %s.',
+                        id_vip)
                     raise InvalidValueError(None, 'id_vip', id_vip)
 
                 vip = RequisicaoVips.get_by_pk(id_vip)
-                rules = Rule.objects.filter(environment__id__in=envs).filter(Q(vip=vip) | Q(vip=None))
+                rules = Rule.objects.filter(environment__id__in=envs).filter(
+                    Q(vip=vip) | Q(vip=None))
             else:
                 rules = Rule.objects.filter(environment__id__in=envs, vip=None)
 
@@ -80,16 +92,17 @@ class RequestVipGetRulesByEVipResource(RestResource):
                 rules_list.append(rules_dict)
                 rules_dict = dict()
 
-            return self.response(dumps_networkapi({'name_rule_opt': rules_list}))
+            return self.response(
+                dumps_networkapi({'name_rule_opt': rules_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
 
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
 
-        except OptionVipError, EnvironmentVipError:
+        except OptionVipError as EnvironmentVipError:
             return self.response_error(1)

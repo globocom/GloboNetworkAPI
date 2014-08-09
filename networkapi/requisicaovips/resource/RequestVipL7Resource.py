@@ -33,10 +33,14 @@ class RequestVipL7Resource(RestResource):
         # XML data format
         networkapi_map = xml_map.get('networkapi')
         if networkapi_map is None:
-            return self.response_error(3, u'There is no value to the networkapi tag of XML request.')
+            return self.response_error(
+                3,
+                u'There is no value to the networkapi tag of XML request.')
         vip_map = networkapi_map.get('vip')
         if vip_map is None:
-            return self.response_error(3, u'There is no value to the vip tag of XML request.')
+            return self.response_error(
+                3,
+                u'There is no value to the vip tag of XML request.')
 
         vip = RequisicaoVips.get_by_pk(id_vip)
 
@@ -50,7 +54,10 @@ class RequestVipL7Resource(RestResource):
         if vip_map.get('rule_id') is not None:
             vip.filter_valid = 1
             rule = Rule.objects.get(pk=vip_map.get('rule_id'))
-            vip.l7_filter = '\n'.join(rule.rulecontent_set.all().values_list('content', flat=True))
+            vip.l7_filter = '\n'.join(
+                rule.rulecontent_set.all().values_list(
+                    'content',
+                    flat=True))
             vip.rule = rule
         else:
             vip.filter_valid = 0
@@ -76,7 +83,9 @@ class RequestVipL7Resource(RestResource):
 
             # Valid Ip ID
             if not is_valid_int_greater_zero_param(kwargs.get('id_vip')):
-                self.log.error(u'The id_vip parameter is not a valid value: %s.', kwargs.get('id_vip'))
+                self.log.error(
+                    u'The id_vip parameter is not a valid value: %s.',
+                    kwargs.get('id_vip'))
                 raise InvalidValueError(None, 'id_vip', kwargs.get('id_vip'))
 
             request_vip = RequisicaoVips.get_by_pk(kwargs.get('id_vip'))
@@ -94,11 +103,12 @@ class RequestVipL7Resource(RestResource):
             request_vip_map['filter_rollback'] = request_vip.filter_rollback
             request_vip_map['rule_rollback'] = request_vip.rule_rollback
             request_vip_map['applied_l7_datetime'] = date
-            request_vip_map['filter_valid'] = convert_boolean_to_int(request_vip.filter_valid)
+            request_vip_map['filter_valid'] = convert_boolean_to_int(
+                request_vip.filter_valid)
 
             return self.response(dumps_networkapi({'vip': request_vip_map}))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
         except (RequisicaoVipsNotFoundError):
             return self.response_error(152)

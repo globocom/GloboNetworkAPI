@@ -20,36 +20,42 @@ from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente,\
 
 
 class EnvironmentGetByEquipResource(RestResource):
-    
+
     log = Log('EnvironmentGetByEquipResource')
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all Environments.
 
         URL: /ambiente/equip/id_equip
         """
-        
+
         try:
-            
-            ## Commons Validations
-            
+
+            # Commons Validations
+
             # User permission
-           
-            if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+
+            if not has_perm(
+                    user,
+                    AdminPermission.ENVIRONMENT_MANAGEMENT,
+                    AdminPermission.READ_OPERATION):
                 return self.not_authorized()
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+            if not has_perm(
+                    user,
+                    AdminPermission.EQUIPMENT_MANAGEMENT,
+                    AdminPermission.READ_OPERATION):
                 return self.not_authorized()
-            
+
             id_equip = kwargs.get('id_equip')
-            
+
             if not is_valid_int_greater_zero_param(id_equip):
                 raise InvalidValueError(None, 'id_equip', id_equip)
-            
-            ## Business Rules
+
+            # Business Rules
             equip = Equipamento.get_by_pk(id_equip)
             environments_list = EquipamentoAmbiente.get_by_equipment(equip.id)
-            
-            # Get all environments in DB    
+
+            # Get all environments in DB
             lists_aux = []
             for environment in environments_list:
                 env = Ambiente.get_by_pk(environment.ambiente.id)
@@ -68,11 +74,14 @@ class EnvironmentGetByEquipResource(RestResource):
             environment_list = dict()
             environment_list["ambiente"] = lists_aux
             return self.response(dumps_networkapi(environment_list))
-        
-        except InvalidValueError, e:
-            self.log.error(u'Parameter %s is invalid. Value: %s.', e.param, e.value)
+
+        except InvalidValueError as e:
+            self.log.error(
+                u'Parameter %s is invalid. Value: %s.',
+                e.param,
+                e.value)
             return self.response_error(269, e.param, e.value)
-        except EquipamentoNotFoundError,e:
+        except EquipamentoNotFoundError as e:
             return self.response_error(117, id_equip)
         except GrupoError:
             return self.response_error(1)

@@ -21,7 +21,8 @@ TEMPLATE_DEBUG = DEBUG
 
 API_VERSION = '15.96'
 
-# On create group will associate the 'authenticate' permission automatically if 'True'
+# On create group will associate the 'authenticate' permission
+# automatically if 'True'
 ASSOCIATE_PERMISSION_AUTOMATICALLY = True
 ID_AUTHENTICATE_PERMISSION = 5
 
@@ -101,14 +102,14 @@ SECRET_KEY = 'ry@zgop%w80_nu83#!tbz)m&7*i@1)d-+ki@5^d#%6-&^216sg'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    #     'django.template.loaders.eggs.load_template_source',
 )
 
 if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
         'django.middleware.common.CommonMiddleware',
-#        'django.contrib.sessions.middleware.SessionMiddleware',
-#        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        #        'django.contrib.sessions.middleware.SessionMiddleware',
+        #        'django.contrib.auth.middleware.AuthenticationMiddleware',
         'networkapi.SQLLogMiddleware.SQLLogMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
     )
@@ -116,8 +117,8 @@ else:
     MIDDLEWARE_CLASSES = (
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
-#        'django.contrib.sessions.middleware.SessionMiddleware',
-#        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        #        'django.contrib.sessions.middleware.SessionMiddleware',
+        #        'django.contrib.auth.middleware.AuthenticationMiddleware',
     )
 
 ROOT_URLCONF = 'networkapi.urls'
@@ -130,10 +131,10 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.auth',
-#    'django.contrib.contenttypes',
-#    'django.contrib.sessions',
-#    'django.contrib.sites',
+    #    'django.contrib.auth',
+    #    'django.contrib.contenttypes',
+    #    'django.contrib.sessions',
+    #    'django.contrib.sites',
     'networkapi.ambiente',
     'networkapi.equipamento',
     'networkapi.eventlog',
@@ -151,7 +152,7 @@ INSTALLED_APPS = (
     'networkapi.filter',
     'networkapi.filterequiptype',
     'networkapi.blockrules',
-#    'networkapi.test_form',
+    #    'networkapi.test_form',
 )
 
 
@@ -170,7 +171,7 @@ MAX_OCT4 = 250
 TEST_RUNNER = 'django_pytest.test_runner.TestRunner'
 
 ##########
-# # Scripts
+# Scripts
 
 # VLAN
 VLAN_REMOVE = 'navlan -i %d --remove'

@@ -43,8 +43,12 @@ class NetworkRemoveResource(RestResource):
         try:
 
             # User permission
-            if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.VLAN_MANAGEMENT,
+                    AdminPermission.WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
@@ -71,22 +75,27 @@ class NetworkRemoveResource(RestResource):
 
             return self.response(dumps_networkapi({'network': network_map}))
 
-        except NetworkInactiveError, e:
+        except NetworkInactiveError as e:
             self.log.error(e.cause)
             return self.response_error(self.CODE_MESSAGE_INACTIVE_NETWORK)
 
-        except NetworkIPv4NotFoundError, e:
+        except NetworkIPv4NotFoundError as e:
             self.log.error(e.message)
-            return self.response_error(self.CODE_MESSAGE_OBJECT_DOES_NOT_EXIST_V4)
+            return self.response_error(
+                self.CODE_MESSAGE_OBJECT_DOES_NOT_EXIST_V4)
 
-        except NetworkIPv6NotFoundError, e:
+        except NetworkIPv6NotFoundError as e:
             self.log.error(e.message)
-            return self.response_error(self.CODE_MESSAGE_OBJECT_DOES_NOT_EXIST_V6)
+            return self.response_error(
+                self.CODE_MESSAGE_OBJECT_DOES_NOT_EXIST_V6)
 
-        except InvalidValueError, e:
-            return self.response_error(self.CODE_MESSAGE_INVALID_PARAM, e.param, e.value)
+        except InvalidValueError as e:
+            return self.response_error(
+                self.CODE_MESSAGE_INVALID_PARAM,
+                e.param,
+                e.value)
 
-        except Exception, e:
+        except Exception as e:
             return self.response_error(self.CODE_MESSAGE_DEFAULT_ERROR)
 
     def check_permission_equipment(self, user, ids):
@@ -94,18 +103,36 @@ class NetworkRemoveResource(RestResource):
         for row in ids:
             id_network, network_type = self.get_id_and_net_type(row)
             if network_type == self.NETWORK_TYPE_V4:
-                equips_from_ipv4 = Equipamento.objects.filter(ipequipamento__ip__networkipv4=id_network, equipamentoambiente__is_router=1)
+                equips_from_ipv4 = Equipamento.objects.filter(
+                    ipequipamento__ip__networkipv4=id_network,
+                    equipamentoambiente__is_router=1)
                 for equip in equips_from_ipv4:
                     # User permission
-                    if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                        self.log.error(u'User does not have permission to perform the operation.')
+                    if not has_perm(
+                            user,
+                            AdminPermission.EQUIPMENT_MANAGEMENT,
+                            AdminPermission.WRITE_OPERATION,
+                            None,
+                            equip.id,
+                            AdminPermission.EQUIP_WRITE_OPERATION):
+                        self.log.error(
+                            u'User does not have permission to perform the operation.')
                         return False
             else:
-                equips_from_ipv6 = Equipamento.objects.filter(ipv6equipament__ip__networkipv6=id_network, equipamentoambiente__is_router=1)
+                equips_from_ipv6 = Equipamento.objects.filter(
+                    ipv6equipament__ip__networkipv6=id_network,
+                    equipamentoambiente__is_router=1)
                 for equip in equips_from_ipv6:
                     # User permission
-                    if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
-                        self.log.error(u'User does not have permission to perform the operation.')
+                    if not has_perm(
+                            user,
+                            AdminPermission.EQUIPMENT_MANAGEMENT,
+                            AdminPermission.WRITE_OPERATION,
+                            None,
+                            equip.id,
+                            AdminPermission.EQUIP_WRITE_OPERATION):
+                        self.log.error(
+                            u'User does not have permission to perform the operation.')
                         return False
 
         return True
@@ -115,18 +142,24 @@ class NetworkRemoveResource(RestResource):
         id_network, network_type = self.get_id_and_net_type(id)
 
         if not is_valid_int_greater_zero_param(id_network):
-            self.log.error(u'The id network parameter is invalid. Value: %s.', id_network)
+            self.log.error(
+                u'The id network parameter is invalid. Value: %s.',
+                id_network)
             raise InvalidValueError(None, 'id_network', id_network)
 
         if not is_valid_version_ip(network_type, IP_VERSION):
-            self.log.error(u'The type network parameter is invalid value: %s.', network_type)
+            self.log.error(
+                u'The type network parameter is invalid value: %s.',
+                network_type)
             raise InvalidValueError(None, 'network_type', network_type)
 
         if network_type == self.NETWORK_TYPE_V4:
             net = NetworkIPv4.get_by_pk(id_network)
 
             if not self.is_active_netwok(net):
-                raise NetworkInactiveError(message=error_messages.get(self.CODE_MESSAGE_INACTIVE_NETWORK))
+                raise NetworkInactiveError(
+                    message=error_messages.get(
+                        self.CODE_MESSAGE_INACTIVE_NETWORK))
 
             command = NETWORKIPV4_REMOVE % int(id_network)
 
@@ -139,7 +172,9 @@ class NetworkRemoveResource(RestResource):
             net = NetworkIPv6.get_by_pk(id_network)
 
             if not self.is_active_netwok(net):
-                raise NetworkInactiveError(message=error_messages.get(self.CODE_MESSAGE_INACTIVE_NETWORK))
+                raise NetworkInactiveError(
+                    message=error_messages.get(
+                        self.CODE_MESSAGE_INACTIVE_NETWORK))
 
             command = NETWORKIPV6_REMOVE % int(id_network)
 
@@ -154,7 +189,9 @@ class NetworkRemoveResource(RestResource):
         value = id.split('-')
 
         if len(value) != 2:
-            self.log.error(u'The id network parameter is invalid format: %s.', value)
+            self.log.error(
+                u'The id network parameter is invalid format: %s.',
+                value)
             raise InvalidValueError(None, 'id_network', value)
 
         id_network = value[0]

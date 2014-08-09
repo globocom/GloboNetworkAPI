@@ -13,23 +13,30 @@ from networkapi.rest import RestResource
 
 
 class EnvironmentGetAclPathsResource(RestResource):
-    
+
     def handle_get(self, request, user, *args, **kwargs):
         '''Handles a get request to a environment lookup.
-        
+
         Lists all distinct ACL paths
-        
-        URL: /environment/acl_path/ 
+
+        URL: /environment/acl_path/
         '''
         try:
-            if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+            if not has_perm(
+                    user,
+                    AdminPermission.ENVIRONMENT_MANAGEMENT,
+                    AdminPermission.READ_OPERATION):
                 return self.not_authorized()
-        
-            acl_paths = list(Ambiente.objects.values_list('acl_path', flat=True).distinct().exclude(acl_path=None))
-        
-            return self.response(dumps_networkapi({'acl_paths':acl_paths}))
-        
-        except InvalidValueError, e:
+
+            acl_paths = list(
+                Ambiente.objects.values_list(
+                    'acl_path',
+                    flat=True).distinct().exclude(
+                    acl_path=None))
+
+            return self.response(dumps_networkapi({'acl_paths': acl_paths}))
+
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
         except (AmbienteError):
             return self.response_error(1)

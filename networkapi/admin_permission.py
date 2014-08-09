@@ -5,6 +5,7 @@ Author: globo.com / TQI
 Copyright: ( c )  2009 globo.com todos os direitos reservados.
 '''
 
+
 class AdminPermission(object):
     USER_ADMINISTRATION = 'administracao_usuarios'
     ENVIRONMENT_MANAGEMENT = 'cadastro_de_ambiente'
@@ -30,13 +31,12 @@ class AdminPermission(object):
     ACL_VLAN_VALIDATION = 'validar_acl_vlans'
     ENVIRONMENT_VIP = 'ambiente_vip'
     OPTION_VIP = 'opcao_vip'
-    AUTHENTICATE =  'authenticate'
+    AUTHENTICATE = 'authenticate'
     AUDIT_LOG = 'audit_logs'
-    ACL_APPLY= 'aplicar_acl'
-    
+    ACL_APPLY = 'aplicar_acl'
+
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'
     EQUIP_UPDATE_CONFIG_OPERATION = 'UPDATE_CONFIG'
     READ_OPERATION = 'READ'
     WRITE_OPERATION = 'WRITE'
-    

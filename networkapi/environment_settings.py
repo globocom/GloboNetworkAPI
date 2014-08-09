@@ -29,12 +29,15 @@ Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 
 # Configurações de banco de dados
-DATABASE_ENGINE = 'mysql'      # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+# 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_ENGINE = 'mysql'
 DATABASE_NAME = 'telecom'      # Or path to database file if using sqlite3.
 DATABASE_USER = 'root'         # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = 'localhost'    # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = '3306'         # Set to empty string for default. Not used with sqlite3.
+# Set to empty string for localhost. Not used with sqlite3.
+DATABASE_HOST = 'localhost'
+# Set to empty string for default. Not used with sqlite3.
+DATABASE_PORT = '3306'
 DATABASE_OPTIONS = {"init_command": "SET storage_engine=INNODB"}
 
 
@@ -45,5 +48,4 @@ DEBUG = True
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
 # Diretório dos arquivos dos scripts
-SCRIPTS_DIR=os.path.abspath(os.path.join(__file__, '../../scripts'))
-
+SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))

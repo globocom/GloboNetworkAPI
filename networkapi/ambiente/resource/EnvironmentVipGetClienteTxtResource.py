@@ -21,7 +21,9 @@ from networkapi.util import is_valid_string_maxsize, is_valid_text, is_valid_str
 
 from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError
 
+
 class EnvironmentVipGetClienteTxtResource(RestResource):
+
     '''Class that receives requests related to the table 'EnvironmentVip'.'''
 
     log = Log('EnvironmentVipGetClienteTxtResource')
@@ -34,11 +36,16 @@ class EnvironmentVipGetClienteTxtResource(RestResource):
 
         try:
 
-            self.log.info("Search cliente_txt Environment VIP by finalidade_txt")
+            self.log.info(
+                "Search cliente_txt Environment VIP by finalidade_txt")
 
             # User permission
-            if not has_perm(user, AdminPermission.ENVIRONMENT_VIP, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.ENVIRONMENT_VIP,
+                    AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -47,40 +54,51 @@ class EnvironmentVipGetClienteTxtResource(RestResource):
             # XML data format
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
-                return self.response_error(3, u'There is no value to the networkapi tag of XML request.')
+                return self.response_error(
+                    3,
+                    u'There is no value to the networkapi tag of XML request.')
 
             environmentvip_map = networkapi_map.get('vip')
             if environmentvip_map is None:
-                return self.response_error(3, u'There is no value to the vip tag of XML request.')
+                return self.response_error(
+                    3,
+                    u'There is no value to the vip tag of XML request.')
 
             # Get XML data
             finalidade = environmentvip_map.get('finalidade_txt')
-            if not is_valid_string_maxsize(finalidade, 50) or not is_valid_string_minsize(finalidade, 3) or not is_valid_text(finalidade):
-                self.log.error(u'The finalidade_txt parameter is not a valid value: %s.', finalidade)
+            if not is_valid_string_maxsize(
+                    finalidade,
+                    50) or not is_valid_string_minsize(
+                    finalidade,
+                    3) or not is_valid_text(finalidade):
+                self.log.error(
+                    u'The finalidade_txt parameter is not a valid value: %s.',
+                    finalidade)
                 raise InvalidValueError(None, 'finalidade_txt', finalidade)
-            
+
             environmentVip = EnvironmentVip()
-            
-            evip_values = environmentVip.list_all_clientes_by_finalitys(finalidade)
-           
+
+            evip_values = environmentVip.list_all_clientes_by_finalitys(
+                finalidade)
+
             evips = dict()
             evips_list = []
-            
+
             for evip in evip_values:
                 evips['finalidade_txt'] = finalidade
                 evips['cliente_txt'] = evip.get('cliente_txt')
                 evips_list.append(evips)
                 evips = dict()
 
-            return self.response(dumps_networkapi({'cliente_txt':evips_list}))
+            return self.response(dumps_networkapi({'cliente_txt': evips_list}))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
-        except XMLError, x:
+        except XMLError as x:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, x)
 
@@ -90,5 +108,5 @@ class EnvironmentVipGetClienteTxtResource(RestResource):
         except EnvironmentVipError:
             return self.response_error(1)
 
-        except Exception, e:
+        except Exception as e:
             return self.response_error(1)

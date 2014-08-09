@@ -16,6 +16,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.equipamento.models import Equipamento
 
+
 class EquipmentGetByGroupEquipmentResource(RestResource):
 
     log = Log('EquipmentGetByGroupEquipmentResource')
@@ -32,42 +33,48 @@ class EquipmentGetByGroupEquipmentResource(RestResource):
             id_egroup = kwargs.get('id_egroup')
 
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_GROUP_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.EQUIPMENT_GROUP_MANAGEMENT,
+                    AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Valid Group Equipment ID
             if not is_valid_int_greater_zero_param(id_egroup):
-                self.log.error(u'The id_egroup parameter is not a valid value: %s.', id_egroup)
+                self.log.error(
+                    u'The id_egroup parameter is not a valid value: %s.',
+                    id_egroup)
                 raise InvalidValueError(None, 'id_egroup', id_egroup)
 
             # Find Group Equipment by ID to check if it exist
             egroup = EGrupo.get_by_pk(id_egroup)
-            
+
             equip_list = []
             for equipament in egroup.equipamento_set.all():
                 eq = {}
-                equip = Equipamento.objects.select_related().get(id=equipament.id)
+                equip = Equipamento.objects.select_related().get(
+                    id=equipament.id)
                 eq = model_to_dict(equip)
                 eq['type'] = model_to_dict(equip.tipo_equipamento)
                 eq['model'] = model_to_dict(equip.modelo)
                 eq['mark'] = model_to_dict(equip.modelo.marca)
                 equip_list.append(eq)
-                
 
             equipament_map = dict()
             equipament_map['equipments'] = equip_list
 
             return self.response(dumps_networkapi(equipament_map))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
-        except EGrupoNotFoundError, e:
+        except EGrupoNotFoundError as e:
             return self.response_error(102)
-        
-        except GrupoError, e:
+
+        except GrupoError as e:
             return self.response_error(1)

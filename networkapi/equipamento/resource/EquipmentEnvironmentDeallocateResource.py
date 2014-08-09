@@ -17,96 +17,116 @@ from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 
+
 class EquipmentEnvironmentDeallocateResource(RestResource):
-    
+
     log = Log('EquipmentEnvironmentDeallocateResource')
-    
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat Delete requests to remove related Equipment and  Environment
-        
+
         URL: equipment/<id_equip>/environment/<id_amb>/
         """
 
         self.log.info('Remove EquipmentEnvironment by id')
-        
+
         try:
-            
-            ## Business Validations
-            
+
+            # Business Validations
+
             id_equipment = kwargs.get('id_equipment')
             id_environment = kwargs.get('id_environment')
-            
+
             if not is_valid_int_greater_zero_param(id_equipment):
-                self.log.error(u'Parameter id_equipment is invalid. Value: %s.', id_equipment)
+                self.log.error(
+                    u'Parameter id_equipment is invalid. Value: %s.',
+                    id_equipment)
                 raise InvalidValueError(None, 'id_equipment', id_equipment)
-            
+
             if not is_valid_int_greater_zero_param(id_environment):
-                self.log.error(u'Parameter id_environment is invalid. Value: %s.', id_environment)
+                self.log.error(
+                    u'Parameter id_environment is invalid. Value: %s.',
+                    id_environment)
                 raise InvalidValueError(None, 'id_environment', id_environment)
-            
+
             # Find Equipment by ID to check if it exist
             Equipamento.get_by_pk(id_equipment)
-            
+
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,  id_equipment, AdminPermission.EQUIP_WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.EQUIPMENT_MANAGEMENT,
+                    AdminPermission.WRITE_OPERATION,
+                    None,
+                    id_equipment,
+                    AdminPermission.EQUIP_WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-            
+
             # Find Environment by ID to check if it exist
             environment = Ambiente.get_by_pk(id_environment)
-            
+
             with distributedlock(LOCK_EQUIPMENT_ENVIRONMENT % id_environment):
-                
-                equip_env = EquipamentoAmbiente().get_by_equipment_environment(id_equipment, id_environment)
-                
+
+                equip_env = EquipamentoAmbiente().get_by_equipment_environment(
+                    id_equipment,
+                    id_environment)
+
                 is_error = False
                 ipv4_error = ""
                 ipv6_error = ""
-                
+
                 for ipequip in equip_env.equipamento.ipequipamento_set.all():
 
-                    if ipequip.ip.networkipv4.vlan.ambiente.id == int(id_environment):
+                    if ipequip.ip.networkipv4.vlan.ambiente.id == int(
+                            id_environment):
                         try:
                             ip = ipequip.ip
                             ipequip.remove(user, ip.id, ipequip.equipamento.id)
-                        except IpCantBeRemovedFromVip, e:
+                        except IpCantBeRemovedFromVip as e:
                             is_error = True
-                            ipv4_error += " %s.%s.%s.%s - Vip %s ," % (ip.oct1, ip.oct2, ip.oct3, ip.oct4, e.cause)
+                            ipv4_error += " %s.%s.%s.%s - Vip %s ," % (
+                                ip.oct1, ip.oct2, ip.oct3, ip.oct4, e.cause)
 
                 for ipequip in equip_env.equipamento.ipv6equipament_set.all():
-                
-                    if ipequip.ip.networkipv6.vlan.ambiente.id == int(id_environment):
+
+                    if ipequip.ip.networkipv6.vlan.ambiente.id == int(
+                            id_environment):
                         try:
                             ip = ipequip.ip
                             ipequip.remove(user, ip.id, ipequip.equipamento.id)
-                        except IpCantBeRemovedFromVip, e:
+                        except IpCantBeRemovedFromVip as e:
                             is_error = True
-                            ipv6_error += " %s:%s:%s:%s:%s:%s:%s:%s - Vip %s ," % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8, e.cause)
+                            ipv6_error += " %s:%s:%s:%s:%s:%s:%s:%s - Vip %s ," % (
+                                ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8, e.cause)
 
                 if is_error:
-                    return self.response_error(336, environment.show_environment(), ipv4_error, ipv6_error)
+                    return self.response_error(
+                        336,
+                        environment.show_environment(),
+                        ipv4_error,
+                        ipv6_error)
 
-                
-                #Remove Equipment - Environment
+                # Remove Equipment - Environment
                 EquipamentoAmbiente.remove(user, id_equipment, id_environment)
-           
+
                 return self.response(dumps_networkapi({}))
-           
-        except EquipamentoNotFoundError,e:
+
+        except EquipamentoNotFoundError as e:
             return self.response_error(117, id_equipment)
-        
-        except AmbienteNotFoundError, e:
+
+        except AmbienteNotFoundError as e:
             return self.response_error(112)
-        
-        except EquipamentoAmbienteNotFoundError, e:
+
+        except EquipamentoAmbienteNotFoundError as e:
             return self.response_error(320)
-        
-        except IpNotFoundError, e:
-            return self.response_error(119)            
-            
-        except InvalidValueError, e:
+
+        except IpNotFoundError as e:
+            return self.response_error(119)
+
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        
-        except (EquipamentoError, AmbienteError, IpError), e:
+
+        except (EquipamentoError, AmbienteError, IpError) as e:
             return self.response_error(1)

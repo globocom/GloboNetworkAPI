@@ -29,8 +29,9 @@ from networkapi.exception import *
 
 from networkapi.distributedlock import distributedlock, LOCK_IPV6
 
+
 class Ipv6AssociateResource(RestResource):
-    
+
     log = Log('Ipv6AssociateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
@@ -47,12 +48,16 @@ class Ipv6AssociateResource(RestResource):
 
             # Valid Ipv6 ID
             if not is_valid_int_greater_zero_param(ipv6_id):
-                self.log.error(u'The id_ipv6 parameter is not a valid value: %s.', ipv6_id)
+                self.log.error(
+                    u'The id_ipv6 parameter is not a valid value: %s.',
+                    ipv6_id)
                 raise InvalidValueError(None, 'id_ipv6', ipv6_id)
 
             # Valid Ipv6 ID
             if not is_valid_int_greater_zero_param(equip_id):
-                self.log.error(u'The id_equip parameter is not a valid value: %s.', equip_id)
+                self.log.error(
+                    u'The id_equip parameter is not a valid value: %s.',
+                    equip_id)
                 raise InvalidValueError(None, 'id_equip', equip_id)
 
             # Existing Ipv6Equipament ID
@@ -60,38 +65,47 @@ class Ipv6AssociateResource(RestResource):
             ipv6_equipment.equipamento = Equipamento().get_by_pk(equip_id)
 
             # User permission
-            if not has_perm(user, AdminPermission.IPS,AdminPermission.WRITE_OPERATION, None, equip_id, AdminPermission.EQUIP_WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+            if not has_perm(
+                    user,
+                    AdminPermission.IPS,
+                    AdminPermission.WRITE_OPERATION,
+                    None,
+                    equip_id,
+                    AdminPermission.EQUIP_WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Existing IPv6 ID
             ipv6_equipment.ip = Ipv6().get_by_pk(ipv6_id)
-            
+
             with distributedlock(LOCK_IPV6 % ipv6_id):
 
                 # Existing IPv6 ID
                 ipv6_equipment.validate_ip()
-    
+
                 try:
                     # Existing EquipmentEnvironment
-                    if ipv6_equipment.equipamento not in [ea.equipamento
-                                                         for ea in ipv6_equipment.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
-                        ea = EquipamentoAmbiente(ambiente = ipv6_equipment.ip.networkipv6.vlan.ambiente, equipamento = ipv6_equipment.equipamento)
+                    if ipv6_equipment.equipamento not in [
+                            ea.equipamento for ea in ipv6_equipment.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
+                        ea = EquipamentoAmbiente(
+                            ambiente=ipv6_equipment.ip.networkipv6.vlan.ambiente,
+                            equipamento=ipv6_equipment.equipamento)
                         ea.save(user)
-    
+
                     ipv6_equipment.save(user)
-                except Exception, e:
+                except Exception as e:
                     self.log.error(u'Failed to insert a ip_equipamento.')
                     raise IpError(e, u'Failed to insert a ip_equipamento.')
-    
+
                 ipequipamento_map = dict()
                 ipequipamento_map['id'] = ipv6_equipment.id
                 map = dict()
                 map['ip_equipamento'] = ipequipamento_map
-    
+
                 return self.response(dumps_networkapi(map))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
 
         except IpNotFoundError:
