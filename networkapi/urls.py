@@ -227,8 +227,6 @@ from networkapi.filter.resource.FilterDissociateOneResource import FilterDissoci
 from networkapi.eventlog.resource.EventLogFindResource import EventLogFindResource
 from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceResource
 
-from networkapitest.action.TestAction import TestAction
-
 # Healthcheck
 from networkapi.check.CheckAction import CheckAction
 from usuario.resource.UserGetByLdapResource import UserGetByLdapResource
@@ -518,8 +516,6 @@ filter_dissociate_one = FilterDissociateOneResource()
 eventlog_find_resource = EventLogFindResource()
 eventlog_choice_resource = EventLogChoiceResource()
 
-test_action = TestAction()
-
 urlpatterns = patterns('',
     # Example:
     # (r'^networkapi/', include('networkapi.foo.urls')),
@@ -789,8 +785,6 @@ urlpatterns = patterns('',
     url(r'^direitosgrupoequipamento/egrupo/(?P<id_grupo_equipamento>[^/]+)/$', access_right_resource.handle_request, name='access_right.search.by.egroup'),
     url(r'^direitosgrupoequipamento/(?P<id_direito>[^/]+)/$', access_right_resource.handle_request, name='access_right.search.update.remove.by.pk'),
 
-    url(r'^teste/$', test_action.show, name='test.show'),
-    url(r'^teste/executar/$', test_action.call_url, name='test.call'),
     url(r'^check$', check_action.check, name='check'),
 
     url(r'^network/ipv4/id/(?P<id_rede4>[^/]+)/$', networkip4_get_resource.handle_request, name='network.ip4.get.by.id'),
