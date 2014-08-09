@@ -28,7 +28,6 @@ from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_max
 
 from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV6
 
-
 class IPv6AddResource(RestResource):
 
     log = Log('IPv6AddResource')
@@ -43,7 +42,7 @@ class IPv6AddResource(RestResource):
 
         try:
 
-            # Business Validations
+            ## Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -67,30 +66,17 @@ class IPv6AddResource(RestResource):
 
             # Valid equip_id
             if not is_valid_int_greater_zero_param(equip_id):
-                self.log.error(
-                    u'Parameter id_equip is invalid. Value: %s.',
-                    equip_id)
+                self.log.error(u'Parameter id_equip is invalid. Value: %s.', equip_id)
                 raise InvalidValueError(None, 'id_equip', equip_id)
 
             # Valid network_ipv6_id
             if not is_valid_int_greater_zero_param(network_ipv6_id):
-                self.log.error(
-                    u'Parameter id_network_ipv6 is invalid. Value: %s.',
-                    network_ipv6_id)
-                raise InvalidValueError(
-                    None,
-                    'id_network_ipv6',
-                    network_ipv6_id)
+                self.log.error(u'Parameter id_network_ipv6 is invalid. Value: %s.', network_ipv6_id)
+                raise InvalidValueError(None, 'id_network_ipv6', network_ipv6_id)
 
             # Description can NOT be greater than 100
-            if not is_valid_string_maxsize(
-                    description,
-                    100) or not is_valid_string_minsize(
-                    description,
-                    3):
-                self.log.error(
-                    u'Parameter description is invalid. Value: %s.',
-                    description)
+            if not is_valid_string_maxsize(description, 100) or not is_valid_string_minsize(description, 3):
+                self.log.error(u'Parameter description is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'description', description)
 
             # User permission
@@ -100,21 +86,19 @@ class IPv6AddResource(RestResource):
                             None,
                             equip_id,
                             AdminPermission.EQUIP_WRITE_OPERATION):
-                raise UserNotAuthorizedError(
-                    None,
-                    u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(None, u'User does not have permission to perform the operation.')
 
-            # Business Rules
-
+            ## Business Rules
+            
             with distributedlock(LOCK_NETWORK_IPV6 % network_ipv6_id):
 
                 # New IPv6
                 ipv6 = Ipv6()
                 ipv6.description = description
-
+    
                 # Persist
                 ipv6.create(user, equip_id, network_ipv6_id)
-
+    
                 # Generate return map
                 ip_map = dict()
                 ip_map['id'] = ipv6.id
@@ -128,14 +112,14 @@ class IPv6AddResource(RestResource):
                 ip_map['bloco7'] = ipv6.block7
                 ip_map['bloco8'] = ipv6.block8
                 ip_map['descricao'] = ipv6.description
+    
+                return self.response(dumps_networkapi({'ip':ip_map}))
 
-                return self.response(dumps_networkapi({'ip': ip_map}))
-
-        except XMLError as x:
+        except XMLError, x:
             self.log.error(u'Error reading the XML request.')
-            return self.response_error(3, x)
+            return self.response_error(3, x)        
 
-        except InvalidValueError as e:
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
         except NetworkIPv6NotFoundError:
@@ -144,7 +128,7 @@ class IPv6AddResource(RestResource):
         except EquipamentoNotFoundError:
             return self.response_error(117, ip_map.get('id_equipment'))
 
-        except IpNotAvailableError as e:
+        except IpNotAvailableError, e:
             return self.response_error(150, e.message)
 
         except UserNotAuthorizedError:

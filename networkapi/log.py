@@ -9,17 +9,15 @@ import glob
 import sys
 import os
 import logging
-import traceback
+import traceback 
 import time
 from logging.handlers import TimedRotatingFileHandler, codecs
 import re
 from django.utils.log import AdminEmailHandler
 
-
 def convert_to_utf8(object):
     """Converte o object informado para uma representação em utf-8"""
     return unicode(str(object), 'utf-8', 'replace')
-
 
 def get_lock():
     """Obtém lock para evitar que várias mensagens sejam sobrepostas no log"""
@@ -33,9 +31,8 @@ def get_lock():
     except ImportError:
         dump_file = open('/tmp/networkapi_log_error_dump', 'a')
         traceback.print_exc(file=dump_file)
-        dump_file.close()
+        dump_file.close()        
         pass
-
 
 def release_lock():
     """Obtém lock para evitar que várias mensagens sejam sobrepostas no log"""
@@ -46,16 +43,15 @@ def release_lock():
     except ImportError:
         pass
 
-
 class NetworkAPILogFormatter(logging.Formatter):
-
+    
     def formatException(self, ei):
         s = logging.Formatter.formatException(self, ei)
         return convert_to_utf8(s)
-
+    
 
 class MultiprocessTimedRotatingFileHandler(TimedRotatingFileHandler):
-
+    
     def doRollover(self):
         """
         do a rollover; in this case, a date/time stamp is appended to the filename
@@ -64,16 +60,14 @@ class MultiprocessTimedRotatingFileHandler(TimedRotatingFileHandler):
         then we have to get a list of matching filenames, sort them and remove
         the one with the oldest suffix.
         """
-        # evita que seja rodado o log ao mesmo tempo por dois processos.
+        # evita que seja rodado o log ao mesmo tempo por dois processos. 
         get_lock()
         try:
             self.stream.close()
-            # get the time that this sequence started at and make it a
-            # TimeTuple
+            # get the time that this sequence started at and make it a TimeTuple
             t = self.rolloverAt - self.interval
             timeTuple = time.localtime(t)
-            dfn = self.baseFilename + "." + \
-                time.strftime(self.suffix, timeTuple)
+            dfn = self.baseFilename + "." + time.strftime(self.suffix, timeTuple)
             if not os.path.exists(dfn):
                 os.rename(self.baseFilename, dfn)
                 if self.backupCount > 0:
@@ -83,49 +77,41 @@ class MultiprocessTimedRotatingFileHandler(TimedRotatingFileHandler):
                         s.sort()
                         os.remove(s[0])
             if self.encoding:
-                self.stream = codecs.open(
-                    self.baseFilename,
-                    'a',
-                    self.encoding)
+                self.stream = codecs.open(self.baseFilename, 'a', self.encoding)
             else:
                 self.stream = open(self.baseFilename, 'a')
             self.rolloverAt = self.rolloverAt + self.interval
         except Exception:
             dump_file = open('/tmp/networkapi_log_error_dump', 'a')
             traceback.print_exc(file=dump_file)
-            dump_file.close()
+            dump_file.close()    
         finally:
-            release_lock()
-
+            release_lock()        
 
 class Log(object):
-
     """Classe responsável por encapsular a API de logging.
-
-    Encapsula as funcionalidades da API de logging de forma a adicionar o
+    
+    Encapsula as funcionalidades da API de logging de forma a adicionar o 
     nome do módulo nas mensagens que forem impressas.
     """
 
-    # Define o nome do arquivo de log
+    # Define o nome do arquivo de log 
     _LOG_FILE_NAME = '/tmp/networkapi.log'
-
+    
     # Define o número de dias que os logs serão mantidos
     _NUMBER_OF_DAYS_TO_LOG = 10
-
+    
     # Define o nível de detalhamento do log a ser utilizado
     _LOG_LEVEL = logging.DEBUG
-
+    
     # Define o formato do log padrão
     _LOG_FORMAT = '%(asctime)s %(filename)-12s %(levelname)-8s %(message)s'
-
+    
     _USE_STDOUT = True
-
+    
     _MAX_LINE_SIZE = 500
-
-    _PATTERN_XML_PASSWORD = [
-        "<password>(.*?)</password>",
-        "<enable_pass>(.*?)</enable_pass>",
-        "<pass>(.*?)</pass>"]
+    
+    _PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
 
     def __init__(self, module_name):
         """Cria um logger para o módulo informado."""
@@ -136,7 +122,7 @@ class Log(object):
                         Log._LOG_FORMAT,
                         Log._USE_STDOUT,
                         Log._MAX_LINE_SIZE)
-
+    
     def __init_log(self,
                    log_file_name,
                    number_of_days_to_log,
@@ -145,19 +131,18 @@ class Log(object):
                    use_stdout,
                    max_line_size):
         """Cria o logger com os parâmetros especificados"""
-
+        
         # obtém o logger
         self.logger = logging.getLogger()
         # se não inicializou os handlers inicializa
         if len(self.logger.handlers) == 0:
             log_dir = os.path.split(log_file_name)[0]
             if not os.path.exists(log_dir):
-                os.makedirs(log_dir, mode=0o755)
-            fh = MultiprocessTimedRotatingFileHandler(
-                log_file_name,
-                'midnight',
-                backupCount=number_of_days_to_log,
-                encoding='utf-8')
+                os.makedirs(log_dir, mode=0755)
+            fh = MultiprocessTimedRotatingFileHandler(log_file_name,
+                                                      'midnight',
+                                                      backupCount=number_of_days_to_log,
+                                                      encoding='utf-8')
             fmt = NetworkAPILogFormatter(log_format)
             fh.setFormatter(fmt)
             self.logger.setLevel(log_level)
@@ -167,6 +152,7 @@ class Log(object):
                 sh.setFormatter(fmt)
                 self.logger.addHandler(sh)
 
+    
     @classmethod
     def init_log(cls,
                  log_file_name=_LOG_FILE_NAME,
@@ -188,7 +174,7 @@ class Log(object):
             get_lock()
             msg = (msg % args)
             if len(msg) > self._MAX_LINE_SIZE:
-                msg = msg[0:self._MAX_LINE_SIZE] + '...'
+                msg = msg[0:self._MAX_LINE_SIZE]+'...'
             method(msg, extra={'module_name': self.module_name})
         finally:
             release_lock()
@@ -200,7 +186,7 @@ class Log(object):
     def debug(self, msg, *args):
         """Imprime uma mensagem de debug no log"""
         self.__emit(self.logger.debug, msg, args)
-
+            
     def info(self, msg, *args):
         """Imprime uma mensagem de informação no log"""
         self.__emit(self.logger.info, msg, args)
@@ -214,34 +200,28 @@ class Log(object):
         try:
             get_lock()
             msg = msg % args
-            self.logger.error(
-                msg,
-                extra={
-                    'module_name': self.module_name},
-                exc_info=True)
+            self.logger.error(msg, extra={'module_name': self.module_name}, exc_info=True)
         finally:
             release_lock()
-
+            
     def _search_hide_password(self, msg):
-
+        
         for text in self. _PATTERN_XML_PASSWORD:
             r = re.compile(text)
             m = r.search(msg)
             if m:
                 password = m.group(1)
                 msg = msg.replace(password, "****")
-
+                
         return msg
-
+        
 
 class CommonAdminEmailHandler(AdminEmailHandler):
-
     """An exception log handler that e-mails log entries to site admins.
 
     If the request is passed as the first argument to the log record,
     request data will be provided in the
     """
-
     def emit(self, record):
         if sys.version_info < (2, 5):
             request = record.exc_info[2].tb_frame.f_locals['request']
@@ -255,36 +235,33 @@ class CommonAdminEmailHandler(AdminEmailHandler):
             m = r.search(post_values[values])
             if m:
                 password = m.group(1)
-                msg = re.sub(
-                    password,
-                    "****",
-                    post_values[values]) if password != '****' else post_values[values]
+                msg = re.sub(password, "****", post_values[values]) if password != '****' else post_values[values]  
 
             post_values[values] = msg
 
         request.POST = post_values
 
-        if('password' in post_values):
+        if(post_values.has_key('password')):
 
             # Change PASSWORD value to '*'
             post_values['password'] = '****'
-            request.POST = post_values
+            request.POST = post_values;
 
         # Get META value
         meta_values = request.META.copy()
 
-        if('HTTP_NETWORKAPI_PASSWORD' in meta_values):
+        if(meta_values.has_key('HTTP_NETWORKAPI_PASSWORD')):
 
             # Change HTTP_NETWORKAPI_PASSWORD value to '*'
-            meta_values['HTTP_NETWORKAPI_PASSWORD'] = '****'
-            request.META = meta_values
+            meta_values['HTTP_NETWORKAPI_PASSWORD'] = '****';
+            request.META = meta_values;
 
-        super(CommonAdminEmailHandler, self).emit(record)
-
+        super(CommonAdminEmailHandler, self).emit(record)        
+        
 if __name__ == '__main__':
     Log.init_log()
     log = Log('teste')
-    log.debug('A debug message %s', 'teste' * 501)
+    log.debug('A debug message %s', 'teste'*501)
     log = Log('teste2')
     log.debug('A debug message')
     print 'waiting...'
@@ -294,3 +271,5 @@ if __name__ == '__main__':
     log = Log('teste2')
     log.debug('A debug message')
     print 'done!'
+    
+    

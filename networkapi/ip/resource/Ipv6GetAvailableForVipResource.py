@@ -34,12 +34,8 @@ class Ipv6GetAvailableForVipResource(RestResource):
 
         try:
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.IPS,
-                    AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.IPS, AdminPermission.WRITE_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
@@ -55,21 +51,17 @@ class Ipv6GetAvailableForVipResource(RestResource):
             name = ip_map.get('name')
 
             if not is_valid_int_greater_zero_param(id_evip):
-                self.log.error(
-                    u'Parameter id_evip is invalid. Value: %s.',
-                    id_evip)
+                self.log.error(u'Parameter id_evip is invalid. Value: %s.', id_evip)
                 raise InvalidValueError(None, 'id_evip', id_evip)
 
-            # Business Rules
+            # # Business Rules
             evip = EnvironmentVip.get_by_pk(id_evip)
 
             ipv6 = Ipv6()
             len_network = len(evip.networkipv6_set.all())
 
             if len_network <= 0:
-                raise NetworkNotInEvip(
-                    None,
-                    'Não há rede no ambiente vip fornecido')
+                raise NetworkNotInEvip(None, 'Não há rede no ambiente vip fornecido')
 
             raise_not_found_balanceamento = False
 
@@ -116,47 +108,35 @@ class Ipv6GetAvailableForVipResource(RestResource):
                                 balanceador_found_flag = True
 
                     if not balanceador_found_flag:
-                        cont_balanceador_not_found = cont_balanceador_not_found + \
-                            1
+                        cont_balanceador_not_found = cont_balanceador_not_found + 1
                     else:
                         break
 
                     if cont_balanceador_not_found == len_network:
                         raise_not_found_balanceamento = True
-                        raise IpNotAvailableError(
-                            None,
-                            "Não há ipv6 disponivel para as redes associadas com o Ambiente Vip: %s - %s - %s, pois não existe equipamentos do Tipo Balanceador nessas redes." %
-                            (evip.finalidade_txt,
-                             evip.cliente_txt,
-                             evip.ambiente_p44_txt))
+                        raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associadas com o Ambiente Vip: %s - %s - %s, pois não existe equipamentos do Tipo Balanceador nessas redes." % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
-                except (IpNotAvailableError, IpRangeAlreadyAssociation) as e:
+                except (IpNotAvailableError, IpRangeAlreadyAssociation), e:
                     cont_balanceador_not_found = cont_balanceador_not_found + 1
                     if raise_not_found_balanceamento:
                         raise IpNotAvailableError(None, e.message)
                     elif len_network == cont_network:
-                        raise IpNotAvailableError(
-                            None,
-                            "Não há ipv6 disponivel para as redes associdas com o Ambiente Vip: %s - %s - %s" %
-                            (evip.finalidade_txt,
-                             evip.cliente_txt,
-                             evip.ambiente_p44_txt))
+                        raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associdas com o Ambiente Vip: %s - %s - %s" % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
-            return self.response(
-                dumps_networkapi({"ip": model_to_dict(ip_new)}))
+            return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))
 
-        except NetworkNotInEvip as e:
+        except NetworkNotInEvip, e:
             return self.response_error(321, 'ipv6')
-        except InvalidValueError as e:
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-        except IpNotAvailableError as e:
+        except IpNotAvailableError, e:
             return self.response_error(150, e.message)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
         except UserNotAuthorizedError:
             return self.not_authorized()
-        except XMLError as x:
+        except XMLError, x:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, x)
-        except (IpError, NetworkIPv6Error, EquipamentoError, GrupoError) as e:
+        except (IpError, NetworkIPv6Error, EquipamentoError, GrupoError), e:
             return self.response_error(1)

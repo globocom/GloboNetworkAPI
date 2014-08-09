@@ -21,25 +21,12 @@ skipTest = pytest.mark.skipTest
 me = pytest.mark.me
 bug = pytest.mark.bug
 
-__all__ = [
-    'log',
-    'show_sql',
-    'xml2dict',
-    'dict2xml',
-    'BasicTestCase',
-    'me',
-    'skipTest',
-    'bug',
-    'mock_script',
-    'assert_response_error',
-    'assert_response_success',
-    'permute']
+__all__ = [ 'log', 'show_sql' , 'xml2dict', 'dict2xml', 'BasicTestCase', 'me', 'skipTest', 'bug', 'mock_script', 'assert_response_error', 'assert_response_success', 'permute' ]
 
 log.info(u"Desligando logging de queries")
 show_sql(False)
 
 CONTENT_APPLICATION_XML = 'application/xml'
-
 
 class CLIENT_TYPES():
     TEST = "TEST"
@@ -47,7 +34,6 @@ class CLIENT_TYPES():
     NO_WRITE_PERMISSION = "NO_WRITE_PERMISSION"
     NO_READ_PERMISSION = "NO_READ_PERMISSION"
     NO_ACTIVE = "NO_ACTIVE"
-
 
 class BasicTestCase(TransactionTestCase):
 
@@ -59,6 +45,7 @@ class BasicTestCase(TransactionTestCase):
 
     ID_NONEXISTENT = 9999
 
+
     @classmethod
     def setUpClass(cls):
         '''
@@ -66,6 +53,7 @@ class BasicTestCase(TransactionTestCase):
           making tests faster
         '''
         cls._fixture_load()
+
 
     @classmethod
     def _fixture_load(cls):
@@ -85,8 +73,7 @@ class BasicTestCase(TransactionTestCase):
             if hasattr(cls, 'fixtures'):
                 # We have to use this slightly awkward syntax due to the fact
                 # that we're using *args and **kwargs together.
-                call_command('loaddata', *
-                             cls.fixtures, **{'verbosity': 0, 'database': db})
+                call_command('loaddata', *cls.fixtures, **{'verbosity': 0, 'database': db})
 
     def _pre_setup(self):
         """
@@ -108,33 +95,23 @@ class BasicTestCase(TransactionTestCase):
         self.client = NetworkAPITestClient()
 
     def client_autenticado(self, *perms):
-        c = NetworkAPITestClient(
-            HTTP_NETWORKAPI_USERNAME='TEST',
-            HTTP_NETWORKAPI_PASSWORD='12345678')
+        c = NetworkAPITestClient(HTTP_NETWORKAPI_USERNAME='TEST', HTTP_NETWORKAPI_PASSWORD='12345678')
         return c
 
     def client_no_permission(self, *perms):
-        c = NetworkAPITestClient(
-            HTTP_NETWORKAPI_USERNAME='NO_PERMISSION',
-            HTTP_NETWORKAPI_PASSWORD='12345678')
+        c = NetworkAPITestClient(HTTP_NETWORKAPI_USERNAME='NO_PERMISSION', HTTP_NETWORKAPI_PASSWORD='12345678')
         return c
 
     def client_no_write_permission(self, *perms):
-        c = NetworkAPITestClient(
-            HTTP_NETWORKAPI_USERNAME='NO_WRITE_PERMISSION',
-            HTTP_NETWORKAPI_PASSWORD='12345678')
+        c = NetworkAPITestClient(HTTP_NETWORKAPI_USERNAME='NO_WRITE_PERMISSION', HTTP_NETWORKAPI_PASSWORD='12345678')
         return c
 
     def client_no_read_permission(self, *perms):
-        c = NetworkAPITestClient(
-            HTTP_NETWORKAPI_USERNAME='NO_READ_PERMISSION',
-            HTTP_NETWORKAPI_PASSWORD='12345678')
+        c = NetworkAPITestClient(HTTP_NETWORKAPI_USERNAME='NO_READ_PERMISSION', HTTP_NETWORKAPI_PASSWORD='12345678')
         return c
 
     def client_no_active(self, *perms):
-        c = NetworkAPITestClient(
-            HTTP_NETWORKAPI_USERNAME='NO_ACTIVE',
-            HTTP_NETWORKAPI_PASSWORD='12345678')
+        c = NetworkAPITestClient(HTTP_NETWORKAPI_USERNAME='NO_ACTIVE', HTTP_NETWORKAPI_PASSWORD='12345678')
         return c
 
     def switch(self, client_type):
@@ -213,16 +190,13 @@ from django.utils.itercompat import is_iterable
 from django.db import transaction, close_connection
 from django.test.utils import ContextList
 
-
 class FakePayload(object):
-
     """
     A wrapper around StringIO that restricts what can be read since data from
     the network can't be seeked and cannot be read outside of its content
     length. This makes sure that views can't do anything under the test client
     that wouldn't work in Real Life.
     """
-
     def __init__(self, content):
         self.__content = StringIO(content)
         self.__len = len(content)
@@ -235,49 +209,41 @@ class FakePayload(object):
         self.__len -= num_bytes
         return content
 
-
 class NetworkAPITestClient(Client):
 
     def putXML(self, url, data=None, **extra):
         """ Converte o dicionario data para XML e faz um requisição PUT """
-        if isinstance(data, dict):
+        if type(data) == dict:
             data = dict2xml(data)
 
         return self.put(url, data=data, content_type=CONTENT_APPLICATION_XML)
 
     def postXML(self, url, data=None, **extra):
         """ Converte o dicionario data para XML e faz um requisição POST """
-        if isinstance(data, dict):
+        if type(data) == dict:
             data = dict2xml(data)
 
         return self.post(url, data=data, content_type=CONTENT_APPLICATION_XML)
 
     def deleteXML(self, url, data=None, **extra):
         """ Converte o dicionario data para XML e faz um requisição PUT """
-        if isinstance(data, dict):
+        if type(data) == dict:
             data = dict2xml(data)
 
-        return self.delete_client(
-            url,
-            data=data,
-            content_type=CONTENT_APPLICATION_XML)
+        return self.delete_client(url, data=data, content_type=CONTENT_APPLICATION_XML)
 
     def delete_client(self, path, data={}, content_type=MULTIPART_CONTENT,
-                      follow=False, **extra):
+             follow=False, **extra):
         """
         Requests a response from the server using POST.
         """
-        response = self.delete_request(
-            path,
-            data=data,
-            content_type=content_type,
-            **extra)
+        response = self.delete_request(path, data=data, content_type=content_type, **extra)
         if follow:
             response = self._handle_redirects(response, **extra)
         return response
 
     def delete_request(self, path, data={}, content_type=MULTIPART_CONTENT,
-                       **extra):
+             **extra):
         "Construct a POST request."
 
         post_data = self._encode_data(data, content_type)
@@ -285,15 +251,14 @@ class NetworkAPITestClient(Client):
         parsed = urlparse(path)
         r = {
             'CONTENT_LENGTH': len(post_data),
-            'CONTENT_TYPE': content_type,
-            'PATH_INFO': self._get_path(parsed),
-            'QUERY_STRING': parsed[4],
+            'CONTENT_TYPE':   content_type,
+            'PATH_INFO':      self._get_path(parsed),
+            'QUERY_STRING':   parsed[4],
             'REQUEST_METHOD': 'DELETE',
-            'wsgi.input': FakePayload(post_data),
+            'wsgi.input':     FakePayload(post_data),
         }
         r.update(extra)
         return self.request(**r)
-
 
 class CodeError(CodeError):
 
@@ -482,11 +447,11 @@ class BasicTest():
         return mock
 
     def process_save_not_found(self, mock):
-        response = self.save({self.XML_KEY: mock})
+        response = self.save({ self.XML_KEY : mock })
         self._not_found(response)
 
     def process_save_attr_invalid(self, mock, code_error=None):
-        response = self.save({self.XML_KEY: mock})
+        response = self.save({ self.XML_KEY : mock })
 
         if code_error is not None:
             self._attr_invalid(response, code_error)
@@ -495,11 +460,11 @@ class BasicTest():
             self._attr_invalid(response)
 
     def process_alter_not_found(self, idt, mock):
-        response = self.alter(idt, {self.XML_KEY: mock})
+        response = self.alter(idt, { self.XML_KEY : mock })
         self._not_found(response)
 
     def process_alter_attr_invalid(self, idt, mock, code_error=None):
-        response = self.alter(idt, {self.XML_KEY: mock})
+        response = self.alter(idt, { self.XML_KEY : mock })
 
         if code_error is not None:
             self._attr_invalid(response, code_error)
@@ -561,7 +526,6 @@ class AttrTest(BasicTest):
     def alter_attr_none(self, idt):
         mock = self._attr_none()
         self.process_alter_attr_invalid(idt, mock)
-
 
 class ConsultationTest(BasicTestCase, BasicTest):
 

@@ -7,12 +7,7 @@ from networkapi.infrastructure.ipaddr import IPv4Network, IPv6Network, IPv6Addre
 
 net4 = IPv4Network('192.168.0.0/16')
 net4_sub = IPv4Network('192.168.1.0/24')
-nets4 = (
-    IPv4Network('192.168.1.0/24'),
-    IPv4Network('192.168.2.0/24'),
-    IPv4Network('192.168.3.0/24'),
-    IPv4Network('192.168.4.0/24'),
-    IPv4Network('192.168.5.0/24'))
+nets4 = (IPv4Network('192.168.1.0/24'),IPv4Network('192.168.2.0/24'),IPv4Network('192.168.3.0/24'),IPv4Network('192.168.4.0/24'),IPv4Network('192.168.5.0/24'))
 
 print net4.supernet()
 

@@ -13,7 +13,6 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.ambiente.models import GrupoL3, AmbienteError
 from django.forms.models import model_to_dict
 
-
 class GroupL3GetAllResource(RestResource):
 
     log = Log('GroupL3GetAllResource')
@@ -24,23 +23,20 @@ class GroupL3GetAllResource(RestResource):
         URL: groupl3/all
         """
         try:
-
+            
             self.log.info("GET to list all the Group l3")
-
+            
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.ENVIRONMENT_MANAGEMENT,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-
+            
             groupl3_list = []
             for group in GrupoL3.objects.all():
                 groupl3_list.append(model_to_dict(group))
 
-            return self.response(dumps_networkapi({'group_l3': groupl3_list}))
+            return self.response(dumps_networkapi({'group_l3':groupl3_list}))
+
 
         except UserNotAuthorizedError:
             return self.not_authorized()

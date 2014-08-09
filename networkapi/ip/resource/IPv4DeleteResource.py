@@ -19,13 +19,12 @@ from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.distributedlock import distributedlock, LOCK_IPV4
 
-
 class IPv4DeleteResource(RestResource):
-
+    
     log = Log('IPv4DeleteResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Handles GET requests for delete an IP4
+        '''Handles GET requests for delete an IP4 
 
         URL: ip4/delete/id_ip4
         '''
@@ -33,52 +32,42 @@ class IPv4DeleteResource(RestResource):
         self.log.info('Delete an IP4')
 
         try:
-
+            
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.IPS,
-                    AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.IPS, AdminPermission.WRITE_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-
-            # Business Validations
-
+            
+            ## Business Validations
+            
             # Valid id access
             id_ip = kwargs.get('id_ipv4')
-
+            
             if not is_valid_int_greater_zero_param(id_ip):
-                self.log.error(
-                    u'Parameter id_ip is invalid. Value: %s.',
-                    id_ip)
+                self.log.error(u'Parameter id_ip is invalid. Value: %s.', id_ip)
                 raise InvalidValueError(None, 'id_rede', id_ip)
-
+            
             ip = Ip.get_by_pk(id_ip)
-
+            
             with distributedlock(LOCK_IPV4 % id_ip):
-
-                # Business Rules
+               
+                ## Business Rules
                 ip.delete(user)
-                # Business Rules
-
+                ## Business Rules
+    
                 return self.response(dumps_networkapi({}))
-
-        except IpCantBeRemovedFromVip as e:
-            return self.response_error(319, "ip", 'ipv4', id_ip)
-        except IpEquipCantDissociateFromVip as e:
-            return self.response_error(
-                352,
-                e.cause['ip'],
-                e.cause['equip_name'],
-                e.cause['vip_id'])
-        except InvalidValueError as e:
+        
+        except IpCantBeRemovedFromVip, e:
+            return self.response_error(319,"ip",'ipv4',id_ip)
+        except IpEquipCantDissociateFromVip, e:
+            return self.response_error(352, e.cause['ip'], e.cause['equip_name'], e.cause['vip_id'])
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-        except IpEquipmentNotFoundError as e:
-            return self.response_error(308, id_ip)
-        except EquipamentoAmbienteNotFoundError as e:
-            return self.response_error(307, e.message)
-        except IpNotFoundError as e:
+        except IpEquipmentNotFoundError, e:
+            return self.response_error(308,id_ip)
+        except EquipamentoAmbienteNotFoundError, e:
+            return self.response_error(307,e.message)
+        except IpNotFoundError, e:
             return self.response_error(119)
         except (IpError, NetworkIPv4Error, GrupoError):
             return self.response_error(1)

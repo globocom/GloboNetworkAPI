@@ -12,7 +12,6 @@ from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Modelo, EquipamentoError
 
-
 class ModelGetAllResource(RestResource):
 
     log = Log('ModelGetAllResource')
@@ -23,18 +22,14 @@ class ModelGetAllResource(RestResource):
         URL: model/all
         """
         try:
-
+            
             self.log.info("GET to list all the Model")
-
+            
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.BRAND_MANAGEMENT,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.BRAND_MANAGEMENT, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-
+            
             model_list = []
             for model in Modelo.objects.all():
                 model_map = dict()
@@ -44,7 +39,7 @@ class ModelGetAllResource(RestResource):
                 model_map['nome_marca'] = model.marca.nome
                 model_list.append(model_map)
 
-            return self.response(dumps_networkapi({'model': model_list}))
+            return self.response(dumps_networkapi({'model':model_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

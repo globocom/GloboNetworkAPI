@@ -14,7 +14,6 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckExpectError, HealthcheckEqualError
 
-
 class HealthcheckAddExpectStringResource(RestResource):
 
     log = Log('HealthcheckAddExpectStringResource.')
@@ -26,7 +25,7 @@ class HealthcheckAddExpectStringResource(RestResource):
         """
 
         try:
-            # Business Validations
+            ## Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -44,41 +43,38 @@ class HealthcheckAddExpectStringResource(RestResource):
                 return self.response_error(3, msg)
 
             # Get XML data
-
+           
             expect_string = healthcheck_map.get('expect_string')
-            if not is_valid_string_maxsize(expect_string, 50):
-                self.log.error(
-                    u'Parameter expect_string is invalid. Value: %s.',
-                    expect_string)
+            if not is_valid_string_maxsize(expect_string,50):
+                self.log.error(u'Parameter expect_string is invalid. Value: %s.', expect_string)
                 raise InvalidValueError(None, 'expect_string', expect_string)
-
+                
             # User permission
             if not has_perm(user,
                             AdminPermission.HEALTH_CHECK_EXPECT,
                             AdminPermission.WRITE_OPERATION):
                 return self.not_authorized()
-
+            
             healthcheck = HealthcheckExpect()
-
+            
             healthcheck.insert_expect_string(user, expect_string)
-
+            
             healtchcheck_dict = dict()
             healtchcheck_dict['id'] = healthcheck.id
-
-            return self.response(
-                dumps_networkapi({'healthcheck_expect': healtchcheck_dict}))
-
-        except InvalidValueError as e:
+            
+            return self.response(dumps_networkapi({'healthcheck_expect':healtchcheck_dict}))
+        
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-
+        
         except UserNotAuthorizedError:
             return self.not_authorized()
+        
+        except HealthcheckEqualError, e:
+            return self.response_error(313,e.message)
 
-        except HealthcheckEqualError as e:
-            return self.response_error(313, e.message)
-
-        except HealthcheckExpectError as e:
+        except HealthcheckExpectError, e:
             return self.response_error(1)
-
-        except XMLError as e:
+        
+        except XMLError, e:
             return self.response_error(1)

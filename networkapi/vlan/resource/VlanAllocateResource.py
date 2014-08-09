@@ -33,18 +33,14 @@ class VlanAllocateResource(RestResource):
 
         try:
 
-            # Commons Validations
+            # # Commons Validations
 
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.VLAN_MANAGEMENT,
-                    AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            # Business Validations
+            # # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -67,25 +63,13 @@ class VlanAllocateResource(RestResource):
             description = vlan_map.get('description')
 
             # Name must NOT be none and 50 is the maxsize
-            if not is_valid_string_minsize(
-                    name,
-                    3) or not is_valid_string_maxsize(
-                    name,
-                    50):
+            if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 50):
                 self.log.error(u'Parameter name is invalid. Value: %s.', name)
                 raise InvalidValueError(None, 'name', name)
 
             # Description can NOT be greater than 200
-            if not is_valid_string_minsize(
-                    description,
-                    3,
-                    False) or not is_valid_string_maxsize(
-                    description,
-                    200,
-                    False):
-                self.log.error(
-                    u'Parameter description is invalid. Value: %s.',
-                    description)
+            if not is_valid_string_minsize(description, 3, False) or not is_valid_string_maxsize(description, 200, False):
+                self.log.error(u'Parameter description is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'description', description)
 
             # Environment
@@ -93,22 +77,17 @@ class VlanAllocateResource(RestResource):
 
                 # Valid environment ID
                 if not is_valid_int_greater_zero_param(environment):
-                    self.log.error(
-                        u'Parameter environment_id is invalid. Value: %s.',
-                        environment)
-                    raise InvalidValueError(
-                        None,
-                        'environment_id',
-                        environment)
+                    self.log.error(u'Parameter environment_id is invalid. Value: %s.', environment)
+                    raise InvalidValueError(None, 'environment_id', environment)
 
                 # Find environment by ID to check if it exist
                 env = Ambiente.get_by_pk(environment)
 
-            except AmbienteNotFoundError as e:
+            except AmbienteNotFoundError, e:
                 self.log.error(u'The environment parameter does not exist.')
                 return self.response_error(112)
 
-            # Business Rules
+            # # Business Rules
 
             # New Vlan
             vlan = Vlan()
@@ -116,10 +95,8 @@ class VlanAllocateResource(RestResource):
             vlan.descricao = description
             vlan.ambiente = env
 
-            # Check if environment has min/max num_vlan value or use the value
-            # thas was configured in settings
-            if (vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1) or (
-                    vlan.ambiente.min_num_vlan_2 and vlan.ambiente.max_num_vlan_2):
+            # Check if environment has min/max num_vlan value or use the value thas was configured in settings
+            if (vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1) or (vlan.ambiente.min_num_vlan_2 and vlan.ambiente.max_num_vlan_2):
                 min_num_01 = vlan.ambiente.min_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.min_num_vlan_2
                 max_num_01 = vlan.ambiente.max_num_vlan_1 if vlan.ambiente.min_num_vlan_1 and vlan.ambiente.max_num_vlan_1 else vlan.ambiente.max_num_vlan_2
                 min_num_02 = vlan.ambiente.min_num_vlan_2 if vlan.ambiente.min_num_vlan_2 and vlan.ambiente.max_num_vlan_2 else vlan.ambiente.min_num_vlan_1
@@ -144,9 +121,9 @@ class VlanAllocateResource(RestResource):
             # Return XML
             return self.response(dumps_networkapi(vlan_map))
 
-        except InvalidValueError as e:
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-        except XMLError as x:
+        except XMLError, x:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, x)
         except GrupoError:
@@ -156,11 +133,6 @@ class VlanAllocateResource(RestResource):
         except VlanNameDuplicatedError:
             return self.response_error(108)
         except VlanNumberNotAvailableError:
-            return self.response_error(
-                109,
-                min_num_01,
-                max_num_01,
-                min_num_02,
-                max_num_02)
+            return self.response_error(109, min_num_01, max_num_01, min_num_02, max_num_02)
         except (VlanError, AmbienteError):
             return self.response_error(1)

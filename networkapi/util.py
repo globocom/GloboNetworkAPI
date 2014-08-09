@@ -8,20 +8,19 @@ Copyright: ( c )  2009 globo.com todos os direitos reservados.
 from hashlib import sha1
 from django.core.cache import cache
 
-import socket
-import copy
+import socket, copy
 
 import re
 
 import time
 
-from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
+from networkapi.infrastructure.ipaddr import  IPAddress, AddressValueError
 from django.forms.models import model_to_dict
 
 LOCK = 'LOCK'
 
-
 def is_valid_regex(string, regex):
+
     '''Checks if the parameter is a valid value by regex.
 
     :param param: Value to be validated.
@@ -32,12 +31,10 @@ def is_valid_regex(string, regex):
     pattern = re.compile(regex)
     return pattern.match(string) is not None
 
-
 def is_valid_ip(address):
     """Verifica se address é um endereço ip válido."""
     pattern = r"\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
     return re.match(pattern, address)
-
 
 def to_ip(address):
     """Resolve o endereço IP caso address seja um hostname.
@@ -49,8 +46,7 @@ def to_ip(address):
     if is_valid_ip(address):
         # Se for um ip válido retorna
         return address
-    # Se não for um ip válido tenta resolver o ip considerando que address é
-    # um hostname
+    # Se não for um ip válido tenta resolver o ip considerando que address é um hostname
     return socket.gethostbyname(address)
 
 
@@ -72,7 +68,6 @@ def is_valid_int_param(param, required=True):
         return False
     return True
 
-
 def is_valid_int_greater_zero_param(param, required=True):
     '''Checks if the parameter is a valid integer value and greater than zero.
 
@@ -92,7 +87,6 @@ def is_valid_int_greater_zero_param(param, required=True):
         return False
     return True
 
-
 def is_valid_int_greater_equal_zero_param(param):
     '''Checks if the parameter is a valid integer value and greater and equal than zero.
 
@@ -110,7 +104,6 @@ def is_valid_int_greater_equal_zero_param(param):
         return False
     return True
 
-
 def is_valid_string_maxsize(param, maxsize=None, required=True):
     '''Checks if the parameter is a valid string and his size is less than maxsize.
     If the parameter maxsize is None than the size is ignored
@@ -123,7 +116,7 @@ def is_valid_string_maxsize(param, maxsize=None, required=True):
     @return True if the parameter is valid or False otherwise.
     '''
 
-    if required and param is None:
+    if required == True and param == None:
         return False
 
     elif required == False and (param == None or param == ''):
@@ -132,16 +125,15 @@ def is_valid_string_maxsize(param, maxsize=None, required=True):
     if '' == param.strip():
         return False
 
-    if param is not None and not isinstance(param, basestring):
+    if param != None and not isinstance(param, basestring):
         return False
 
-    if param is not None and maxsize is not None:
+    if param != None and maxsize is not None:
         if is_valid_int_greater_zero_param(maxsize):
             if len(param.strip()) > maxsize:
                 return False
 
     return True
-
 
 def is_valid_string_minsize(param, minsize=None, required=True):
     '''Checks if the parameter is a valid string and his size is more than minsize.
@@ -155,7 +147,7 @@ def is_valid_string_minsize(param, minsize=None, required=True):
     @return True if the parameter is valid or False otherwise.
     '''
 
-    if required and param is None:
+    if required == True and param == None:
         return False
 
     elif required == False and (param == None or param == ''):
@@ -164,16 +156,15 @@ def is_valid_string_minsize(param, minsize=None, required=True):
     if '' == param.strip():
         return False
 
-    if param is not None and not isinstance(param, basestring):
+    if param != None and not isinstance(param, basestring):
         return False
 
-    if param is not None and minsize is not None:
+    if param != None and minsize is not None:
         if is_valid_int_greater_zero_param(minsize):
             if len(param.strip()) < minsize:
                 return False
 
     return True
-
 
 def is_valid_boolean_param(param, required=True):
     '''Checks if the parameter is a valid boolean.
@@ -227,7 +218,6 @@ def is_valid_yes_no_choice(param):
     else:
         return False
 
-
 def is_valid_uri(param):
     '''Checks if the parameter is a valid uri.
 
@@ -238,7 +228,6 @@ def is_valid_uri(param):
     pattern = r"^[a-zA-Z0-9\\-_\\\-\\.!\\~\\*'\\(\\);/\\?:\\@\\&=\\{\\}\\#\\\[\\\]\\,]*$"
     return re.match(pattern, param)
 
-
 def is_valid_text(param, required=True):
     '''Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
 
@@ -248,7 +237,7 @@ def is_valid_text(param, required=True):
     @return True if the parameter has a valid text value, or False otherwise.
 
     '''
-    if required and param is None:
+    if required == True and param == None:
         return False
 
     elif required == False and (param == None or param == ''):
@@ -269,7 +258,6 @@ def is_valid_option(param):
     pattern = r"^[0-9a-zA-Z\\-_.\\\-\\ ]*$"
     return re.match(pattern, param)
 
-
 def is_valid_email(param):
     '''Checks if the parameter is a valid e-mail.
 
@@ -277,14 +265,11 @@ def is_valid_email(param):
 
     @return True if the parameter has a valid e-mail value, or False otherwise.
     '''
-    pattern = re.compile(
-        r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"
-        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"'
-        r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$',
-        re.IGNORECASE)
+    pattern = re.compile(r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"
+                          r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"'
+                          r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$', re.IGNORECASE)
 
     return re.match(pattern, param)
-
 
 def is_valid_ipv4(param):
     '''Checks if the parameter is a valid ipv4.
@@ -299,7 +284,6 @@ def is_valid_ipv4(param):
     except AddressValueError:
         return False
 
-
 def is_valid_ipv6(param):
     '''Checks if the parameter is a valid ipv6.
 
@@ -312,7 +296,6 @@ def is_valid_ipv6(param):
         return True
     except AddressValueError:
         return False
-
 
 def is_valid_ip_ipaddr(param):
     '''Checks if the parameter is a valid ip is ipv4 or ipv6.
@@ -327,7 +310,6 @@ def is_valid_ip_ipaddr(param):
     except ValueError:
         return False
 
-
 def convert_boolean_to_int(param):
     '''Convert the parameter of boolean to int.
 
@@ -335,12 +317,11 @@ def convert_boolean_to_int(param):
 
     @return Parameter converted.
     '''
-    if param:
+    if param == True:
         return int(1)
 
     elif param == False:
         return int(0)
-
 
 def convert_string_or_int_to_boolean(param):
     '''Convert the parameter of string or int to boolean.
@@ -355,7 +336,6 @@ def convert_string_or_int_to_boolean(param):
     elif param == "0" or int(0) or param == "False":
         return False
 
-
 def clone(obj):
     '''Clone the object
 
@@ -364,7 +344,6 @@ def clone(obj):
     @return object cloned.
     '''
     return copy.copy(obj)
-
 
 def is_valid_version_ip(param, IP_VERSION):
     '''Checks if the parameter is a valid ip version value.
@@ -381,34 +360,11 @@ def is_valid_version_ip(param, IP_VERSION):
 
     return False
 
-
 def mount_ipv4_string(ip):
-    return str(str(ip.oct1) +
-               '.' +
-               str(ip.oct2) +
-               '.' +
-               str(ip.oct3) +
-               '.' +
-               str(ip.oct4))
-
+    return str(str(ip.oct1) + '.' + str(ip.oct2) + '.' + str(ip.oct3) + '.' + str(ip.oct4))
 
 def mount_ipv6_string(ip):
-    return str(str(ip.block1) +
-               ':' +
-               str(ip.block2) +
-               ':' +
-               str(ip.block3) +
-               ':' +
-               str(ip.block4) +
-               ':' +
-               str(ip.block5) +
-               ':' +
-               str(ip.block6) +
-               ':' +
-               str(ip.block7) +
-               ':' +
-               str(ip.block8))
-
+    return str(str(ip.block1) + ':' + str(ip.block2) + ':' + str(ip.block3) + ':' + str(ip.block4) + ':' + str(ip.block5) + ':' + str(ip.block6) + ':' + str(ip.block7) + ':' + str(ip.block8))
 
 def cache_function(length, equipment=False):
     """
@@ -420,7 +376,7 @@ def cache_function(length, equipment=False):
 
         def _cache(*args, **kwargs):
 
-            if equipment:
+            if equipment == True:
                 key = sha1(str(args[0].id) + 'equipment').hexdigest()
                 print str(args[0].id) + 'equipment'
             else:
@@ -428,7 +384,7 @@ def cache_function(length, equipment=False):
                 print str(args[0].id)
 
             # Search in cache if it exists
-            if key in cache:
+            if cache.has_key(key):
 
                 # Get value in cache
                 value = cache.get(key)
@@ -472,9 +428,9 @@ def cache_function(length, equipment=False):
 def destroy_cache_function(key_list, equipment=False):
     for key in key_list:
         key = str(key)
-        if equipment:
+        if equipment == True:
             key = str(key) + 'equipment'
-        if(sha1(key).hexdigest() in cache):
+        if(cache.has_key(sha1(key).hexdigest())):
             cache.delete(sha1(key).hexdigest())
 
 
@@ -495,8 +451,8 @@ def get_environment_map(environment):
     environment_map['id_grupo_l3'] = environment.grupo_l3.id
     environment_map['nome_grupo_l3'] = environment.grupo_l3.nome
     environment_map['ambiente_rede'] = environment.divisao_dc.nome + ' - ' + \
-        environment.ambiente_logico.nome + ' - ' + \
-        environment.grupo_l3.nome
+                                        environment.ambiente_logico.nome + ' - ' + \
+                                        environment.grupo_l3.nome
 
     if environment.filter is not None:
         environment_map['id_filter'] = environment.filter.id
@@ -516,29 +472,29 @@ def get_environment_map(environment):
 
 def get_vlan_map(vlan, network_ipv4, network_ipv6):
 
-    vlan_map = model_to_dict(vlan)
+        vlan_map = model_to_dict(vlan)
 
-    if network_ipv4 is not None and len(network_ipv4) > 0:
-        net_map = []
-        for net in network_ipv4:
-            net_dict = model_to_dict(net)
-            net_map.append(net_dict)
+        if network_ipv4 is not None and len(network_ipv4) > 0:
+            net_map = []
+            for net in network_ipv4:
+                net_dict = model_to_dict(net)
+                net_map.append(net_dict)
 
-        vlan_map['redeipv4'] = net_map
-    else:
-        vlan_map['redeipv4'] = None
+            vlan_map['redeipv4'] = net_map
+        else:
+            vlan_map['redeipv4'] = None
 
-    if network_ipv6 is not None and len(network_ipv6) > 0:
-        net_map = []
-        for net in network_ipv6:
-            net_dict = model_to_dict(net)
-            net_map.append(net_dict)
+        if network_ipv6 is not None and len(network_ipv6) > 0:
+            net_map = []
+            for net in network_ipv6:
+                net_dict = model_to_dict(net)
+                net_map.append(net_dict)
 
-        vlan_map['redeipv6'] = net_map
-    else:
-        vlan_map['redeipv6'] = None
+            vlan_map['redeipv6'] = net_map
+        else:
+            vlan_map['redeipv6'] = None
 
-    return vlan_map
+        return vlan_map
 
 
 def clear_newline_chr(string):

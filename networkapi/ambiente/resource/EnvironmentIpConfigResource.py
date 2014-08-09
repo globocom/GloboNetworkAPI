@@ -31,16 +31,13 @@ class EnvironmentIpConfigResource(RestResource):
 
         try:
 
-            # Commons Validations
+            # # Commons Validations
 
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.ENVIRONMENT_MANAGEMENT,
-                    AdminPermission.WRITE_OPERATION):
+            if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
                 return self.not_authorized()
 
-            # Business Validations
+            # # Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -48,14 +45,10 @@ class EnvironmentIpConfigResource(RestResource):
             # XML data format
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
-                return self.response_error(
-                    3,
-                    u'Não existe valor para a tag networkapi do XML de requisição.')
+                return self.response_error(3, u'Não existe valor para a tag networkapi do XML de requisição.')
             environment_map = networkapi_map.get('ambiente')
             if environment_map is None:
-                return self.response_error(
-                    3,
-                    u'Não existe valor para a tag ambiente do XML de requisição.')
+                return self.response_error(3, u'Não existe valor para a tag ambiente do XML de requisição.')
 
             # Get XML data
             id_environment = environment_map.get('id_environment')
@@ -82,29 +75,27 @@ class EnvironmentIpConfigResource(RestResource):
 
             config.save(user)
 
-            # Make return xml
+            # # Make return xml
             conf_env_map = dict()
             conf_env_map['id_config_do_ambiente'] = config.id
 
-            return self.response(
-                dumps_networkapi({'config_do_ambiente': conf_env_map}))
+            return self.response(dumps_networkapi({'config_do_ambiente': conf_env_map}))
 
-        except InvalidValueError as e:
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
-        except ConfigEnvironmentDuplicateError as e:
-            return self.response_error(
-                self.CODE_MESSAGE_CONFIG_ENVIRONMENT_ALREADY_EXISTS)
+        except ConfigEnvironmentDuplicateError, e:
+            return self.response_error(self.CODE_MESSAGE_CONFIG_ENVIRONMENT_ALREADY_EXISTS)
 
-        except IPConfigNotFoundError as e:
+        except IPConfigNotFoundError, e:
             return self.response_error(301)
 
-        except AmbienteNotFoundError as e:
+        except AmbienteNotFoundError, e:
             return self.response_error(112)
 
-        except XMLError as x:
+        except XMLError, x:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, x)
 
-        except (AmbienteError, GrupoError, Exception) as e:
+        except (AmbienteError, GrupoError, Exception), e:
             return self.response_error(1)

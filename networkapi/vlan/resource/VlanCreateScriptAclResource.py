@@ -15,7 +15,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 
 import logging
-from networkapi.acl.acl import scriptAclCvs
+from networkapi.acl.acl import  scriptAclCvs
 from networkapi.vlan.models import Vlan
 from networkapi.acl.Enum import NETWORK_TYPES
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_version_ip, \
@@ -46,18 +46,12 @@ class VlanCreateScriptAclResource(RestResource):
 
         try:
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.VLAN_MANAGEMENT,
-                    AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
-            xml_map, _ = loads(
-                request.raw_post_data, [
-                    "searchable_columns", "asorting_cols"])
+            xml_map, _ = loads(request.raw_post_data, ["searchable_columns", "asorting_cols"])
 
             # XML data format
             networkapi_map = xml_map.get('networkapi')
@@ -91,60 +85,42 @@ class VlanCreateScriptAclResource(RestResource):
 
             self.validate_required_acl(acl_name)
 
-            scriptAclCvs(
-                acl_name,
-                vlan_formated,
-                environment,
-                network_type,
-                user,
-                template_name)
+            scriptAclCvs(acl_name, vlan_formated, environment, network_type, user, template_name)
 
             return self.response(dumps_networkapi({'vlan': vlan_formated}))
 
-        except InvalidValueError as e:
-            return self.response_error(
-                self.CODE_MESSAGE_INVALID_PARAM,
-                e.param,
-                e.value)
+        except InvalidValueError, e:
+            return self.response_error(self.CODE_MESSAGE_INVALID_PARAM, e.param, e.value)
 
-        except VlanNotFoundError as e:
+        except VlanNotFoundError, e:
             self.log.error(e.message)
             return self.response_error(self.CODE_MESSAGE_VLAN_NOT_FOUND)
 
-        except AclNotFoundError as e:
+        except AclNotFoundError, e:
             return self.response_error(self.CODE_MESSAGE_ACL_NOT_CREATED)
 
-        except XMLError as e:
+        except XMLError, e:
             return self.response_error(self.CODE_MESSAGE_FAIL_READ_XML)
 
     def validate_networkapi_map(self, networkapi_map):
         if networkapi_map is None:
-            self.log.error(
-                u'There is no value to the networkapi tag of XML request.')
+            self.log.error(u'There is no value to the networkapi tag of XML request.')
             raise XMLError(None, None)
 
     def validate_vlan_map(self, vlan_map):
         if vlan_map is None:
-            self.log.error(
-                u'There is no value to the vlan tag of XML request.')
+            self.log.error(u'There is no value to the vlan tag of XML request.')
             raise XMLError(None, None)
 
     def validate_id_vlan(self, id_vlan):
         if not is_valid_int_greater_zero_param(id_vlan):
-            self.log.error(
-                u'The id_valan parameter is not a valid value: %s.',
-                id_vlan)
+            self.log.error(u'The id_valan parameter is not a valid value: %s.', id_vlan)
             raise InvalidValueError('Invalid Id For Vlan', 'id_vlan', id_vlan)
 
     def validate_ip_version(self, network_type):
         if not is_valid_version_ip(network_type, IP_VERSION):
-            self.log.error(
-                u'The type network parameter is invalid value: %s.',
-                network_type)
-            raise InvalidValueError(
-                'Invalid Network Type',
-                'network_type',
-                network_type)
+            self.log.error(u'The type network parameter is invalid value: %s.', network_type)
+            raise InvalidValueError('Invalid Network Type', 'network_type', network_type)
 
     def validate_required_acl(self, acl_name):
         if not acl_name:

@@ -14,7 +14,6 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
 from networkapi.equipamento.models import TipoEquipamento, EquipamentoError, TipoEquipamentoDuplicateNameError
 
-
 class EquipmentTypeAddResource(RestResource):
 
     log = Log('EquipmentTypeAddResource')
@@ -26,17 +25,14 @@ class EquipmentTypeAddResource(RestResource):
         """
 
         try:
-
+            
             self.log.info("Add Equipment Script")
-
+            
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.EQUIPMENT_MANAGEMENT,
-                    AdminPermission.WRITE_OPERATION):
-                return self.not_authorized()
-
-            # Business Validations
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
+                return self.not_authorized()  
+            
+            ## Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -56,41 +52,34 @@ class EquipmentTypeAddResource(RestResource):
 
             # Get XML data
             name = equipment_type_map.get('name')
-
+            
             # Valid Name
-            if not is_valid_string_minsize(
-                name,
-                3) or not is_valid_string_maxsize(
-                name,
-                100) or not is_valid_regex(
-                name,
-                    "^[A-Za-z0-9 -]+$"):
-                self.log.error(u'Parameter name is invalid. Value: %s', name)
-                raise InvalidValueError(None, 'name', name)
-
-            # Business Rules
+            if not is_valid_string_minsize(name,3) or not is_valid_string_maxsize(name, 100) or not is_valid_regex(name, "^[A-Za-z0-9 -]+$"):
+                self.log.error(u'Parameter name is invalid. Value: %s',name)
+                raise InvalidValueError(None,'name',name)
+        
+            ## Business Rules
             equipment_type = TipoEquipamento()
-
+            
             # save Equipment Type
             equipment_type.insert_new(user, name)
-
+            
             etype_dict = dict()
             etype_dict['id'] = equipment_type.id
+            
+            return self.response(dumps_networkapi({'equipment_type':etype_dict}))
 
-            return self.response(
-                dumps_networkapi({'equipment_type': etype_dict}))
-
-        except InvalidValueError as e:
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-
-        except TipoEquipamentoDuplicateNameError as e:
-            return self.response_error(312, name)
+        
+        except TipoEquipamentoDuplicateNameError, e:
+            return self.response_error(312, name) 
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
-        except EquipamentoError as e:
+        except EquipamentoError, e:
             return self.response_error(1)
-
-        except XMLError as e:
+        
+        except XMLError, e:
             return self.response_error(1)

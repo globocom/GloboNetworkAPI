@@ -13,7 +13,6 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.ambiente.models import DivisaoDc, AmbienteError
 from django.forms.models import model_to_dict
 
-
 class DivisionDcGetAllResource(RestResource):
 
     log = Log('DivisionDcGetAllResource')
@@ -24,24 +23,19 @@ class DivisionDcGetAllResource(RestResource):
         URL: divisiondc/all
         """
         try:
-
+            
             self.log.info("GET to list all the Division Dc")
-
+            
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.ENVIRONMENT_MANAGEMENT,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-
+            
             division_dc_list = []
             for division in DivisaoDc.objects.all():
                 division_dc_list.append(model_to_dict(division))
 
-            return self.response(
-                dumps_networkapi({'division_dc': division_dc_list}))
+            return self.response(dumps_networkapi({'division_dc':division_dc_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

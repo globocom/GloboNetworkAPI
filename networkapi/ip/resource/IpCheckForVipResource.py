@@ -11,7 +11,7 @@ from networkapi.auth import has_perm
 
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 
-from networkapi.ip.models import Ipv6, IpError, Ip, IpNotFoundError, IpNotAvailableError, NetworkNotInEvip
+from networkapi.ip.models import  Ipv6, IpError,Ip, IpNotFoundError, IpNotAvailableError, NetworkNotInEvip
 
 from networkapi.log import Log
 
@@ -38,7 +38,7 @@ class IpCheckForVipResource(RestResource):
 
         try:
 
-            # Business Validations
+            ## Business Validations
 
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -60,120 +60,90 @@ class IpCheckForVipResource(RestResource):
             id_evip = ip_map.get('id_evip')
 
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.IPS,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.IPS, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 return self.not_authorized()
-
+            
             # Valid ip id
             if ip is None:
                 self.log.error(u'Parameter ip is invalid. Value: %s.', ip)
                 raise InvalidValueError(None, 'ip', ip)
-
+            
             # Valid evip id
             if not is_valid_int_greater_zero_param(id_evip):
                 raise InvalidValueError(None, 'id_evip', id_evip)
 
-            # Business Rules
-
+            ## Business Rules
+            
             evip = EnvironmentVip.get_by_pk(id_evip)
-
+               
             ip_list = ip.split(".")
-
+            
             if len(ip_list) == 1:
-
+                
                 if not is_valid_ipv6(ip):
                     self.log.error(u'Parameter ip is invalid. Value: %s.', ip)
                     raise InvalidValueError(None, 'ip', ip)
-
+                
                 if len(evip.networkipv6_set.all()) <= 0:
-                    raise NetworkNotInEvip(
-                        'IPv6',
-                        'Não há rede no ambiente vip fornecido')
-
+                    raise NetworkNotInEvip('IPv6','Não há rede no ambiente vip fornecido')
+                
                 ip_list = ip.split(":")
-                ip_checked = Ipv6.get_by_octs_and_environment_vip(
-                    ip_list[0],
-                    ip_list[1],
-                    ip_list[2],
-                    ip_list[3],
-                    ip_list[4],
-                    ip_list[5],
-                    ip_list[6],
-                    ip_list[7],
-                    id_evip)
-
+                ip_checked = Ipv6.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[2], ip_list[3], ip_list[4], ip_list[5], ip_list[6], ip_list[7], id_evip)
+                
                 ip_ok = False
-
+                    
                 for ip_equip in ip_checked.ipv6equipament_set.all():
-
-                    if ip_equip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador(
-                    ):
-
+                    
+                    if ip_equip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
+                        
                         ip_ok = True
                         break
-
-                if not ip_ok:
-                    raise IpNotAvailableError(
-                        None,
-                        "Ipv6 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip." %
-                        evip.show_environment_vip())
+                                
+                if  not ip_ok:
+                    raise IpNotAvailableError(None,"Ipv6 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip."  % evip.show_environment_vip() )
 
             else:
-
+                
                 if not is_valid_ipv4(ip):
                     self.log.error(u'Parameter ip is invalid. Value: %s.', ip)
                     raise InvalidValueError(None, 'ip', ip)
-
+                
                 if len(evip.networkipv4_set.all()) <= 0:
-                    raise NetworkNotInEvip(
-                        'IPv4',
-                        'Não há rede no ambiente vip fornecido')
-
-                ip_checked = Ip.get_by_octs_and_environment_vip(
-                    ip_list[0],
-                    ip_list[1],
-                    ip_list[2],
-                    ip_list[3],
-                    id_evip)
-
+                    raise NetworkNotInEvip('IPv4','Não há rede no ambiente vip fornecido')
+                
+                ip_checked = Ip.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[2], ip_list[3], id_evip)
+                
                 ip_ok = False
-
+                    
                 for ip_equip in ip_checked.ipequipamento_set.all():
-
-                    if ip_equip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador(
-                    ):
-
+                    
+                    if ip_equip.equipamento.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
+                        
                         ip_ok = True
                         break
-
-                if not ip_ok:
-                    raise IpNotAvailableError(
-                        None,
-                        "Ipv4 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip." %
-                        evip.show_environment_vip())
-
+                                
+                if  not ip_ok:
+                    raise IpNotAvailableError(None,"Ipv4 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip."  % evip.show_environment_vip() )
+                
             ip_dict = model_to_dict(ip_checked)
 
-            return self.response(dumps_networkapi({'ip': ip_dict}))
-
-        except NetworkNotInEvip as e:
+            return self.response(dumps_networkapi({'ip':ip_dict}))
+        
+        except NetworkNotInEvip, e:
             return self.response_error(321, e.cause)
-        except IpNotAvailableError as e:
-            return self.response_error(150, e.message)
-        except XMLError as x:
+        except IpNotAvailableError, e:
+            return self.response_error(150, e.message)        
+        except XMLError, x:
             self.log.error(u'Error reading the XML request.')
-            return self.response_error(3, x)
-        except EnvironmentVipNotFoundError as e:
-            return self.response_error(283)
-        except InvalidValueError as e:
+            return self.response_error(3, x)              
+        except EnvironmentVipNotFoundError, e:
+            return self.response_error(283)   
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except UserNotAuthorizedError:
-            return self.not_authorized()
-        except IpNotFoundError as e:
+            return self.not_authorized()        
+        except IpNotFoundError, e:
             return self.response_error(334, e.message)
         except (IpError):
             return self.response_error(1)

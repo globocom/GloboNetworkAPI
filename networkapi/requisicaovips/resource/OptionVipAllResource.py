@@ -21,13 +21,12 @@ from networkapi.exception import OptionVipError
 
 from django.forms.models import model_to_dict
 
-
 class OptionVipAllResource(RestResource):
 
     log = Log('OptionVipAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        """Treat requests GET to list all the Option VIP.
+        """Treat requests GET to list all the Option VIP. 
 
         URL: optionvip/all'
         """
@@ -37,23 +36,19 @@ class OptionVipAllResource(RestResource):
             self.log.info("GET to list all the Option VIP")
 
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.OPTION_VIP,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Find All Option VIP
-            option_vips = OptionVip.get_all()
+            option_vips = OptionVip.get_all();
 
             ovips = []
 
             for ov in option_vips:
                 ovips.append(model_to_dict(ov))
 
-            return self.response(dumps_networkapi({'option_vip': ovips}))
+            return self.response(dumps_networkapi({'option_vip':ovips}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

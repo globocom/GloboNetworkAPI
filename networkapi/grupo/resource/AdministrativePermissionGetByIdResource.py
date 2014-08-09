@@ -15,7 +15,6 @@ from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
-
 class AdministrativePermissionGetByIdResource(RestResource):
 
     log = Log('AdministrativePermissionGetByIdResource')
@@ -25,27 +24,22 @@ class AdministrativePermissionGetByIdResource(RestResource):
 
         URL: aperms/get/<id_perm>/
         """
-
+        
         try:
-
+            
             self.log.info("Get Administrative Permission by the identifier")
 
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.USER_ADMINISTRATION,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-
+            
+            
             id_perm = kwargs.get('id_perm')
-
+            
             # Valid Administrative Permission ID
             if not is_valid_int_greater_zero_param(id_perm):
-                self.log.error(
-                    u'The id_perm parameter is not a valid value: %s.',
-                    id_perm)
+                self.log.error(u'The id_perm parameter is not a valid value: %s.', id_perm)
                 raise InvalidValueError(None, 'id_perm', id_perm)
 
             # Find Administrative Permission by ID to check if it exist
@@ -56,7 +50,7 @@ class AdministrativePermissionGetByIdResource(RestResource):
 
             return self.response(dumps_networkapi(perms_map))
 
-        except InvalidValueError as e:
+        except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
 
         except UserNotAuthorizedError:
@@ -65,5 +59,5 @@ class AdministrativePermissionGetByIdResource(RestResource):
         except PermissaoAdministrativaNotFoundError:
             return self.response_error(189, id_perm)
 
-        except GrupoError as e:
+        except GrupoError, e:
             return self.response_error(1)

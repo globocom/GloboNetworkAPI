@@ -88,20 +88,17 @@ class EnvironmentConfigurationAddResource(RestResource):
         except PermissionError:
             return self.not_authorized()
 
-        except AmbienteNotFoundError as e:
+        except AmbienteNotFoundError, e:
             return self.response_error(112)
 
-        except InvalidValueError as e:
-            self.log.error(
-                u'Parameter %s is invalid. Value: %s.',
-                e.param,
-                e.value)
+        except InvalidValueError, e:
+            self.log.error(u'Parameter %s is invalid. Value: %s.', e.param, e.value)
             return self.response_error(269, e.param, e.value)
 
-        except ConfigEnvironmentInvalidError as e:
+        except ConfigEnvironmentInvalidError, e:
             return self.response_error(294)
 
-        except XMLError as e:
+        except XMLError, e:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
 
@@ -109,12 +106,8 @@ class EnvironmentConfigurationAddResource(RestResource):
 
     def _validate_permission(self, user):
 
-        if not has_perm(
-                user,
-                AdminPermission.ENVIRONMENT_MANAGEMENT,
-                AdminPermission.ENVIRONMENT_MANAGEMENT):
-            self.log.error(
-                u'User does not have permission to perform the operation.')
+        if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.ENVIRONMENT_MANAGEMENT):
+            self.log.error(u'User does not have permission to perform the operation.')
             raise PermissionError(None, None)
 
     def _validate_xml_networkapi(self, networkapi_map):
@@ -127,32 +120,26 @@ class EnvironmentConfigurationAddResource(RestResource):
     def _validate_xml_network(self, network_map):
 
         if network_map is None:
-            msg = u'There is no value to the vlan tag of XML request.'
-            self.log.error(msg)
-            raise XMLError(None, message=msg)
+                msg = u'There is no value to the vlan tag of XML request.'
+                self.log.error(msg)
+                raise XMLError(None, message=msg)
 
     def _validate_ip_version(self, network_type):
 
         if not is_valid_version_ip(network_type, IP_VERSION):
-            self.log.error(
-                u'The type network parameter is invalid value: %s.',
-                network_type)
+            self.log.error(u'The type network parameter is invalid value: %s.', network_type)
             raise InvalidValueError(None, 'network_type', network_type)
 
     def _validate_environment_id(self, id_environment):
 
         if not is_valid_int_greater_zero_param(id_environment):
-            self.log.error(
-                u'The id_environment parameter is invalid value: %s.',
-                id_environment)
+            self.log.error(u'The id_environment parameter is invalid value: %s.', id_environment)
             raise InvalidValueError(None, 'id_environment', id_environment)
 
     def _validate_network_type(self, network_type_id):
 
         if not is_valid_int_greater_zero_param(network_type_id):
-            self.log.error(
-                u'The network_type_id parameter is invalid value: %s.',
-                network_type_id)
+            self.log.error(u'The network_type_id parameter is invalid value: %s.', network_type_id)
             raise InvalidValueError(None, 'network_type_id', network_type_id)
 
     def _validate_network(self, network, prefix):
@@ -160,16 +147,12 @@ class EnvironmentConfigurationAddResource(RestResource):
         try:
             net = IPNetwork(network)
         except ValueError:
-            self.log.error(
-                u'The network parameter is invalid value: %s.',
-                network)
+            self.log.error(u'The network parameter is invalid value: %s.', network)
             raise InvalidValueError(None, 'network', network)
 
         blocks, network, version = break_network(network)
 
-        expl = split(
-            net.network.exploded,
-            "." if version == IP_VERSION.IPv4[0] else ":")
+        expl = split(net.network.exploded, "." if version == IP_VERSION.IPv4[0] else ":")
         expl.append(str(net.prefixlen))
 
         block = int(blocks[-1])
@@ -186,13 +169,9 @@ class EnvironmentConfigurationAddResource(RestResource):
         if is_valid_int_param(prefix):
             if network_type == IP_VERSION.IPv4[0]:
                 if int(prefix) not in range(33):
-                    self.log.error(
-                        u'The prefix parameter is invalid value: %s.',
-                        prefix)
+                    self.log.error(u'The prefix parameter is invalid value: %s.', prefix)
                     raise InvalidValueError(None, 'prefix', prefix)
             elif network_type == IP_VERSION.IPv6[0]:
                 if int(prefix) not in range(129):
-                    self.log.error(
-                        u'The prefix parameter is invalid value: %s.',
-                        prefix)
+                    self.log.error(u'The prefix parameter is invalid value: %s.', prefix)
                     raise InvalidValueError(None, 'prefix', prefix)

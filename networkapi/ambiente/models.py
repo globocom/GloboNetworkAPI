@@ -24,9 +24,7 @@ from os.path import stat
 
 
 class AmbienteError(Exception):
-
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com ambiente."""
-
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -37,35 +35,27 @@ class AmbienteError(Exception):
 
 
 class AmbienteNotFoundError(AmbienteError):
-
     """Retorna exceção para pesquisa de ambiente por chave primária."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class AmbienteDuplicatedError(AmbienteError):
-
     """Retorna exceção porque existe um Ambiente cadastrada com os mesmos nomes
        de grupo layer 3, ambiente lógico e divisão DC."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class AmbienteUsedByEquipmentVlanError(AmbienteError):
-
     """Retorna exceção se houver tentativa de exclusão de um Ambiente utilizado
        por algum equipamento ou alguma VLAN."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class IPConfigError(Exception):
-
     """Generic exception for everything related to IPConfig."""
-
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -76,17 +66,13 @@ class IPConfigError(Exception):
 
 
 class IPConfigNotFoundError(IPConfigError):
-
     """Exception generated when IPConfig was not found in database"""
-
     def __init__(self, cause, message=None):
         IPConfigError.__init__(self, cause, message)
 
 
 class ConfigEnvironmentError(Exception):
-
     """Generic exception for everything related to ConfigEnvironment."""
-
     def __init__(self, cause, message=None):
         self.cause = cause
         self.message = message
@@ -97,97 +83,73 @@ class ConfigEnvironmentError(Exception):
 
 
 class ConfigEnvironmentNotFoundError(ConfigEnvironmentError):
-
     """Exception generated when ConfigEnvironment was not found in database"""
-
     def __init__(self, cause, message=None):
         ConfigEnvironmentError.__init__(self, cause, message)
 
 
 class ConfigEnvironmentInvalidError(ConfigEnvironmentError):
-
     """Exception generated when ConfigEnvironment was not found in database"""
-
     def __init__(self, cause, message=None):
         ConfigEnvironmentError.__init__(self, cause, message)
 
 
 class ConfigEnvironmentDuplicateError(ConfigEnvironmentError):
-
     """Exception generated when ConfigEnvironment Duplicate Environment and IpConfig"""
-
     def __init__(self, cause, message=None):
         ConfigEnvironmentError.__init__(self, cause, message)
 
 
 class DivisaoDcNotFoundError(AmbienteError):
-
     """Retorna exceção para pesquisa de Divisão DataCenter pelo nome."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class DivisaoDcNameDuplicatedError(AmbienteError):
-
     """Retorna exceção porque existe uma Divisão DataCenter cadastrada com o mesmo nome."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class DivisaoDcUsedByEnvironmentError(AmbienteError):
-
     """Retorna exceção se houver tentativa de exclusão de uma Divisão DC utilizada por algum ambiente."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class GrupoL3NameDuplicatedError(AmbienteError):
-
     """Retorna exceção porque existe um GrupoL3 cadastrada com o mesmo nome."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class GrupoL3UsedByEnvironmentError(AmbienteError):
-
     """Retorna exceção se houver tentativa de exclusão de um GrupoL3 utilizado por algum ambiente."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class AmbienteLogicoNotFoundError(AmbienteError):
-
     """Retorna exceção para pesquisa de ambiente lógico por chave primária."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class AmbienteLogicoNameDuplicatedError(AmbienteError):
-
     """Retorna exceção porque existe uma Divisão DataCenter cadastrada com o mesmo nome."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class AmbienteLogicoUsedByEnvironmentError(AmbienteError):
-
     """Retorna exceção se houver tentativa de exclusão de um Ambiente Lógico utilizado por algum ambiente."""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
 
 class GroupL3NotFoundError(AmbienteError):
-
     """Exception generated when GroupL3 was not found in database"""
-
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
 
@@ -214,12 +176,9 @@ class GrupoL3(BaseModel):
         """
         try:
             return GrupoL3.objects.get(nome__iexact=name)
-        except ObjectDoesNotExist as e:
-            raise GroupL3NotFoundError(
-                e,
-                u'Dont there is a Group L3 by name = %s.' %
-                name)
-        except Exception as e:
+        except ObjectDoesNotExist, e:
+            raise GroupL3NotFoundError(e, u'Dont there is a Group L3 by name = %s.' % name)
+        except Exception, e:
             cls.log.error(u'Failure to search the Group L3.')
             raise AmbienteError(e, u'Failure to search the Group L3.')
 
@@ -234,15 +193,11 @@ class GrupoL3(BaseModel):
         """
         try:
             return GrupoL3.objects.filter(id=idt).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise GroupL3NotFoundError(
-                e,
-                u'Dont there is a Group L3 by pk = %s.' %
-                idt)
-        except Exception as e:
+        except ObjectDoesNotExist, e:
+            raise GroupL3NotFoundError(e, u'Dont there is a Group L3 by pk = %s.' % idt)
+        except Exception, e:
             cls.log.error(u'Failure to search the Group L3.')
             raise AmbienteError(e, u'Failure to search the Group L3.')
-
 
 class DivisaoDc(BaseModel):
     BE = 'BE'
@@ -268,12 +223,9 @@ class DivisaoDc(BaseModel):
         """
         try:
             return DivisaoDc.objects.filter(id=idt).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise DivisaoDcNotFoundError(
-                e,
-                u'Dont there is a Division Dc by pk = %s.' %
-                idt)
-        except Exception as e:
+        except ObjectDoesNotExist, e:
+            raise DivisaoDcNotFoundError(e, u'Dont there is a Division Dc by pk = %s.' % idt)
+        except Exception, e:
             cls.log.error(u'Failure to search the Division Dc.')
             raise AmbienteError(e, u'Failure to search the Division Dc.')
 
@@ -288,12 +240,9 @@ class DivisaoDc(BaseModel):
         """
         try:
             return DivisaoDc.objects.get(nome__iexact=name)
-        except ObjectDoesNotExist as e:
-            raise DivisaoDcNotFoundError(
-                e,
-                u'Dont there is a Division Dc by name = %s.' %
-                name)
-        except Exception as e:
+        except ObjectDoesNotExist, e:
+            raise DivisaoDcNotFoundError(e, u'Dont there is a Division Dc by name = %s.' % name)
+        except Exception, e:
             cls.log.error(u'Failure to search the Division Dc.')
             raise AmbienteError(e, u'Failure to search the Division Dc.')
 
@@ -321,16 +270,11 @@ class AmbienteLogico(BaseModel):
         """
         try:
             return AmbienteLogico.objects.filter(id=idt).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise AmbienteLogicoNotFoundError(
-                e,
-                u'Dont there is a Logical Environment by pk = %s.' %
-                idt)
-        except Exception as e:
+        except ObjectDoesNotExist, e:
+            raise AmbienteLogicoNotFoundError(e, u'Dont there is a Logical Environment by pk = %s.' % idt)
+        except Exception, e:
             cls.log.error(u'Failure to search the Logical Environment.')
-            raise AmbienteError(
-                e,
-                u'Failure to search the Logical Environment.')
+            raise AmbienteError(e, u'Failure to search the Logical Environment.')
 
     @classmethod
     def get_by_name(cls, name):
@@ -343,32 +287,17 @@ class AmbienteLogico(BaseModel):
         """
         try:
             return AmbienteLogico.objects.get(nome__iexact=name)
-        except ObjectDoesNotExist as e:
-            raise AmbienteLogicoNotFoundError(
-                e,
-                u'Dont there is a Logical Environment by name = %s.' %
-                name)
-        except Exception as e:
+        except ObjectDoesNotExist, e:
+            raise AmbienteLogicoNotFoundError(e, u'Dont there is a Logical Environment by name = %s.' % name)
+        except Exception, e:
             cls.log.error(u'Failure to search the Logical Environment.')
-            raise AmbienteError(
-                e,
-                u'Failure to search the Logical Environment.')
-
+            raise AmbienteError(e, u'Failure to search the Logical Environment.')
 
 class EnvironmentVip(BaseModel):
     id = models.AutoField(primary_key=True)
-    finalidade_txt = models.CharField(
-        max_length=50,
-        blank=False,
-        db_column='finalidade_txt')
-    cliente_txt = models.CharField(
-        max_length=50,
-        blank=False,
-        db_column='cliente_txt')
-    ambiente_p44_txt = models.CharField(
-        max_length=50,
-        blank=False,
-        db_column='ambiente_p44_txt')
+    finalidade_txt = models.CharField(max_length=50, blank=False, db_column='finalidade_txt')
+    cliente_txt = models.CharField(max_length=50, blank=False, db_column='cliente_txt')
+    ambiente_p44_txt = models.CharField(max_length=50, blank=False, db_column='ambiente_p44_txt')
 
     log = Log('EnvironmentVip')
 
@@ -388,21 +317,15 @@ class EnvironmentVip(BaseModel):
         """
         try:
             return EnvironmentVip.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise EnvironmentVipNotFoundError(
-                e,
-                u'There is no environment vip by pk = %s.' %
-                id)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise EnvironmentVipNotFoundError(e, u'There is no environment vip by pk = %s.' % id)
+        except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             cls.log.error(u'Failure to search the request vip.')
-            raise EnvironmentVipError(
-                e,
-                u'Failure to search the environment vip.')
+            raise EnvironmentVipError(e, u'Failure to search the environment vip.')
+
 
     @classmethod
     def get_by_values(cls, finalidade, cliente, ambiente_p44):
@@ -415,24 +338,15 @@ class EnvironmentVip(BaseModel):
         @raise OperationalError: Lock wait timeout exceeded.
         """
         try:
-            return EnvironmentVip.objects.filter(
-                finalidade_txt=finalidade,
-                cliente_txt=cliente,
-                ambiente_p44_txt=ambiente_p44).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise EnvironmentVipNotFoundError(
-                e, u'Dont there is a request of environment vip by values = %s,%s,%s.' %
-                (finalidade, cliente, ambiente_p44))
-        except OperationalError as e:
+            return EnvironmentVip.objects.filter(finalidade_txt=finalidade, cliente_txt=cliente, ambiente_p44_txt=ambiente_p44).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise EnvironmentVipNotFoundError(e, u'Dont there is a request of environment vip by values = %s,%s,%s.' % (finalidade, cliente, ambiente_p44))
+        except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             cls.log.error(u'Failure to search the request vip.')
-            raise EnvironmentVipError(
-                e,
-                u'Failure to search the environment vip.')
+            raise EnvironmentVipError(e, u'Failure to search the environment vip.')
 
     def list_all_finalitys(self):
         """Get  all finalidade_txt of environment VIPs with distinct.
@@ -448,16 +362,12 @@ class EnvironmentVip(BaseModel):
 
             return EnvironmentVip.objects.values('finalidade_txt').distinct()
 
-        except OperationalError as e:
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Failure to search the request vip.')
-            raise EnvironmentVipError(
-                e,
-                u'Failure to search the environment vip.')
+            raise EnvironmentVipError(e, u'Failure to search the environment vip.')
 
     def list_all_clientes_by_finalitys(self, finalidade):
         """Get cliente_txt by finalidade_txt with distinct.
@@ -471,24 +381,16 @@ class EnvironmentVip(BaseModel):
 
         try:
 
-            return EnvironmentVip.objects.filter(
-                finalidade_txt__iexact=finalidade).values('cliente_txt').distinct()
+            return EnvironmentVip.objects.filter(finalidade_txt__iexact=finalidade).values('cliente_txt').distinct()
 
-        except OperationalError as e:
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Failure to search the request vip.')
-            raise EnvironmentVipError(
-                e,
-                u'Failure to search the environment vip.')
+            raise EnvironmentVipError(e, u'Failure to search the environment vip.')
 
-    def list_all_ambientep44_by_finality_and_cliente(
-            self,
-            finalidade,
-            cliente_txt):
+    def list_all_ambientep44_by_finality_and_cliente(self, finalidade, cliente_txt):
         """Get  Environment Vip by id.
 
         @return: Environment Vip.
@@ -500,20 +402,14 @@ class EnvironmentVip(BaseModel):
 
         try:
 
-            return EnvironmentVip.objects.filter(
-                finalidade_txt__iexact=finalidade,
-                cliente_txt__iexact=cliente_txt)
+            return EnvironmentVip.objects.filter(finalidade_txt__iexact=finalidade, cliente_txt__iexact=cliente_txt)
 
-        except OperationalError as e:
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Failure to search the request vip.')
-            raise EnvironmentVipError(
-                e,
-                u'Failure to search the environment vip.')
+            raise EnvironmentVipError(e, u'Failure to search the environment vip.')
 
     def valid_environment_vip(self, environmentvip_map):
         '''Validate the values ​​of environment vip
@@ -529,42 +425,18 @@ class EnvironmentVip(BaseModel):
         ambiente_p44_txt = environmentvip_map.get('ambiente_p44_txt')
 
         # finalidade_txt can NOT be greater than 50 or lesser than 3
-        if not is_valid_string_maxsize(
-                finalidade_txt,
-                50,
-                True) or not is_valid_string_minsize(
-                finalidade_txt,
-                3,
-                True) or not is_valid_text(finalidade_txt):
-            self.log.error(
-                u'Parameter finalidade_txt is invalid. Value: %s.',
-                finalidade_txt)
+        if not is_valid_string_maxsize(finalidade_txt, 50, True) or not is_valid_string_minsize(finalidade_txt, 3, True) or not is_valid_text(finalidade_txt):
+            self.log.error(u'Parameter finalidade_txt is invalid. Value: %s.', finalidade_txt)
             raise InvalidValueError(None, 'finalidade_txt', finalidade_txt)
 
         # cliente_txt can NOT be greater than 50 or lesser than 3
-        if not is_valid_string_maxsize(
-                cliente_txt,
-                50,
-                True) or not is_valid_string_minsize(
-                cliente_txt,
-                3,
-                True) or not is_valid_text(cliente_txt):
-            self.log.error(
-                u'Parameter cliente_txt is invalid. Value: %s.',
-                cliente_txt)
+        if not is_valid_string_maxsize(cliente_txt, 50, True) or not is_valid_string_minsize(cliente_txt, 3, True) or not is_valid_text(cliente_txt):
+            self.log.error(u'Parameter cliente_txt is invalid. Value: %s.', cliente_txt)
             raise InvalidValueError(None, 'cliente_txt', cliente_txt)
 
         # ambiente_p44_txt can NOT be greater than 50 or lesser than 3
-        if not is_valid_string_maxsize(
-                ambiente_p44_txt,
-                50,
-                True) or not is_valid_string_minsize(
-                ambiente_p44_txt,
-                3,
-                True) or not is_valid_text(ambiente_p44_txt):
-            self.log.error(
-                u'Parameter ambiente_p44_txt is invalid. Value: %s.',
-                ambiente_p44_txt)
+        if not is_valid_string_maxsize(ambiente_p44_txt, 50, True) or not is_valid_string_minsize(ambiente_p44_txt, 3, True) or not is_valid_text(ambiente_p44_txt):
+            self.log.error(u'Parameter ambiente_p44_txt is invalid. Value: %s.', ambiente_p44_txt)
             raise InvalidValueError(None, 'ambiente_p44_txt', ambiente_p44_txt)
 
         # set variables
@@ -586,9 +458,7 @@ class EnvironmentVip(BaseModel):
         super(EnvironmentVip, self).delete(authenticated_user)
 
     def show_environment_vip(self):
-        return "%s - %s - %s" % (self.finalidade_txt,
-                                 self.cliente_txt,
-                                 self.ambiente_p44_txt)
+        return "%s - %s - %s" % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
 
     def available_evips(self, evips, id_vlan):
         # The model couldn't be imported in the top of the file. It is a UWSGI bug, where
@@ -627,44 +497,20 @@ class EnvironmentVip(BaseModel):
 
         return evip_list
 
-
 class Ambiente(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_ambiente')
     grupo_l3 = models.ForeignKey(GrupoL3, db_column='id_grupo_l3')
-    ambiente_logico = models.ForeignKey(
-        AmbienteLogico,
-        db_column='id_ambiente_logic')
+    ambiente_logico = models.ForeignKey(AmbienteLogico, db_column='id_ambiente_logic')
     divisao_dc = models.ForeignKey(DivisaoDc, db_column='id_divisao')
     filter = models.ForeignKey(Filter, db_column='id_filter', null=True)
-    acl_path = models.CharField(
-        max_length=250,
-        db_column='acl_path',
-        null=True)
-    ipv4_template = models.CharField(
-        max_length=250,
-        db_column='ipv4_template',
-        null=True)
-    ipv6_template = models.CharField(
-        max_length=250,
-        db_column='ipv6_template',
-        null=True)
+    acl_path = models.CharField(max_length=250, db_column='acl_path', null=True)
+    ipv4_template = models.CharField(max_length=250, db_column='ipv4_template', null=True)
+    ipv6_template = models.CharField(max_length=250, db_column='ipv6_template', null=True)
     link = models.CharField(max_length=200, blank=True)
-    min_num_vlan_1 = models.IntegerField(
-        blank=True,
-        null=True,
-        db_column='min_num_vlan_1')
-    max_num_vlan_1 = models.IntegerField(
-        blank=True,
-        null=True,
-        db_column='max_num_vlan_1')
-    min_num_vlan_2 = models.IntegerField(
-        blank=True,
-        null=True,
-        db_column='min_num_vlan_2')
-    max_num_vlan_2 = models.IntegerField(
-        blank=True,
-        null=True,
-        db_column='max_num_vlan_2')
+    min_num_vlan_1 = models.IntegerField(blank=True, null=True, db_column='min_num_vlan_1')
+    max_num_vlan_1 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_1')
+    min_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='min_num_vlan_2')
+    max_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_2')
 
     log = Log('Ambiente')
 
@@ -685,17 +531,12 @@ class Ambiente(BaseModel):
         """
         try:
             return Ambiente.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise AmbienteNotFoundError(
-                e,
-                u'Não existe um ambiente com o id = %s.' %
-                id)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise AmbienteNotFoundError(e, u'Não existe um ambiente com o id = %s.' % id)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Falha ao pesquisar o ambiente.')
             raise AmbienteError(e, u'Falha ao pesquisar o ambiente.')
 
@@ -708,7 +549,7 @@ class Ambiente(BaseModel):
                 a = a.filter(ambiente_logico__id=ambiente_logico_id)
 
             return a
-        except Exception as e:
+        except Exception, e:
             self.log.error(u'Falha ao pesquisar os ambientes.')
             raise AmbienteError(e, u'Falha ao pesquisar os ambientes.')
 
@@ -730,8 +571,7 @@ class Ambiente(BaseModel):
         @raise FilterNotFoundError: Não existe o filtro para a pk pesquisada.
         """
 
-        self.ambiente_logico = AmbienteLogico.get_by_pk(
-            self.ambiente_logico.id)
+        self.ambiente_logico = AmbienteLogico.get_by_pk(self.ambiente_logico.id)
         self.divisao_dc = DivisaoDc.get_by_pk(self.divisao_dc.id)
 
         try:
@@ -749,17 +589,14 @@ class Ambiente(BaseModel):
                 try:
                     self.filter = Filter.objects.get(pk=self.filter.id)
                 except Filter.DoesNotExist:
-                    raise FilterNotFoundError(
-                        None,
-                        u'There is no Filter with pk = %s.' %
-                        self.filter.id)
+                    raise FilterNotFoundError(None, u'There is no Filter with pk = %s.' % self.filter.id)
 
             self.save(authenticated_user)
-        except FilterNotFoundError as e:
+        except FilterNotFoundError, e:
             raise e
-        except AmbienteDuplicatedError as e:
+        except AmbienteDuplicatedError, e:
             raise e
-        except GrupoL3.DoesNotExist as e:
+        except GrupoL3.DoesNotExist, e:
             raise e
         except Exception:
             self.log.error(u'Falha ao inserir um Ambiente.')
@@ -791,8 +628,7 @@ class Ambiente(BaseModel):
         try:
             logic_environment_id = kwargs['ambiente_logico_id']
             if (logic_environment_id != environment.ambiente_logico_id):
-                environment.ambiente_logico = AmbienteLogico.get_by_pk(
-                    logic_environment_id)
+                environment.ambiente_logico = AmbienteLogico.get_by_pk(logic_environment_id)
         except (KeyError):
             logic_environment_id = environment.ambiente_logico_id
             pass
@@ -821,11 +657,10 @@ class Ambiente(BaseModel):
                         logic_environment_id == old_logic_environment_id and
                         dc_division_id == old_dc_division_id):
 
-                    Ambiente.objects.get(
-                        grupo_l3__id=l3_group_id,
-                        ambiente_logico__id=logic_environment_id,
-                        divisao_dc__id=dc_division_id)
-                    raise AmbienteDuplicatedError(None, u'Ambiente duplicado.')
+                        Ambiente.objects.get(grupo_l3__id=l3_group_id,
+                                             ambiente_logico__id=logic_environment_id,
+                                             divisao_dc__id=dc_division_id)
+                        raise AmbienteDuplicatedError(None, u'Ambiente duplicado.')
             except Ambiente.DoesNotExist:
                 pass
 
@@ -838,13 +673,13 @@ class Ambiente(BaseModel):
             environment.__dict__.update(kwargs)
             environment.save(authenticated_user)
 
-        except AmbienteDuplicatedError as e:
+        except AmbienteDuplicatedError, e:
             raise e
 
-        except CannotDissociateFilterError as e:
+        except CannotDissociateFilterError, e:
             raise CannotDissociateFilterError(e.cause, e.message)
 
-        except Exception as e:
+        except Exception, e:
             cls.log.error(u'Falha ao alterar Ambiente.')
             raise AmbienteError(u'Falha ao alterar Ambiente.')
 
@@ -871,52 +706,43 @@ class Ambiente(BaseModel):
         for vlan in environment.vlan_set.all():
             try:
                 vlan.delete(authenticated_user)
-            except VlanCantDeallocate as e:
+            except VlanCantDeallocate, e:
                 raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
-            except IpCantBeRemovedFromVip as e:
+            except IpCantBeRemovedFromVip, e:
                 raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
 
         # Remove every association between equipment and this environment
         for equip_env in environment.equipamentoambiente_set.all():
             try:
-                EquipamentoAmbiente.remove(
-                    authenticated_user,
-                    equip_env.equipamento_id,
-                    equip_env.ambiente_id)
-            except EquipamentoAmbienteNotFoundError as e:
+                EquipamentoAmbiente.remove(authenticated_user, equip_env.equipamento_id, equip_env.ambiente_id)
+            except EquipamentoAmbienteNotFoundError, e:
                 raise AmbienteUsedByEquipmentVlanError(e, e.message)
-            except EquipamentoError as e:
+            except EquipamentoError, e:
                 raise AmbienteUsedByEquipmentVlanError(e, e.message)
 
         # Dissociate or remove healthcheck expects
         try:
-            HealthcheckExpect.dissociate_environment_and_delete(
-                authenticated_user,
-                pk)
-        except HealthcheckExpectError as e:
+            HealthcheckExpect.dissociate_environment_and_delete(authenticated_user, pk)
+        except HealthcheckExpectError, e:
             cls.log.error(u'Falha ao desassociar algum HealthCheckExpect.')
-            raise AmbienteError(
-                e,
-                u'Falha ao desassociar algum HealthCheckExpect.')
+            raise AmbienteError(e, u'Falha ao desassociar algum HealthCheckExpect.')
 
         # Remove ConfigEnvironments associated with environment
         try:
             ConfigEnvironment.remove_by_environment(authenticated_user, pk)
-        except (ConfigEnvironmentError, OperationalError, ConfigEnvironmentNotFoundError) as e:
+        except (ConfigEnvironmentError, OperationalError, ConfigEnvironmentNotFoundError), e:
             cls.log.error(u'Falha ao remover algum Ambiente Config.')
             raise AmbienteError(e, u'Falha ao remover algum Ambiente Config.')
 
         # Remove the environment
         try:
             environment.delete(authenticated_user)
-        except Exception as e:
+        except Exception, e:
             cls.log.error(u'Falha ao remover o Ambiente.')
             raise AmbienteError(e, u'Falha ao remover o Ambiente.')
 
     def show_environment(self):
-        environment = "%s - %s - %s" % (self.divisao_dc.nome,
-                                        self.ambiente_logico.nome,
-                                        self.grupo_l3.nome)
+        environment = "%s - %s - %s" % (self.divisao_dc.nome, self.ambiente_logico.nome, self.grupo_l3.nome)
         return environment
 
 
@@ -934,10 +760,7 @@ class IPConfig(BaseModel):
     subnet = models.CharField(max_length=40, blank=False)
     new_prefix = models.CharField(max_length=3, blank=False)
     type = models.CharField(max_length=2, blank=False, choices=IP_VERSION.List)
-    network_type = models.ForeignKey(
-        TipoRede,
-        null=True,
-        db_column='network_type')
+    network_type = models.ForeignKey(TipoRede, null=True, db_column='network_type')
 
     log = Log('IPConfig')
 
@@ -956,17 +779,12 @@ class IPConfig(BaseModel):
         """
         try:
             return IPConfig.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise IPConfigNotFoundError(
-                e,
-                u'Can not find a IPConfig with id = %s.' %
-                id)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise IPConfigNotFoundError(e, u'Can not find a IPConfig with id = %s.' % id)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Error finding IPConfig.')
             raise IPConfigError(e, u'Error finding IPConfig.')
 
@@ -981,26 +799,18 @@ class IPConfig(BaseModel):
         """
         try:
 
-            config_environment = ConfigEnvironment.objects.filter(
-                environment=environment_id).values('ip_config').query
+            config_environment = ConfigEnvironment.objects.filter(environment=environment_id).values('ip_config').query
             return IPConfig.objects.filter(id__in=config_environment)
 
             return
-        except ObjectDoesNotExist as e:
-            raise ConfigEnvironmentNotFoundError(
-                e,
-                u'Can not find a ConfigEnvironment with Environment ID = %s.' %
-                environment_id)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise ConfigEnvironmentNotFoundError(e, u'Can not find a ConfigEnvironment with Environment ID = %s.' % environment_id)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Error finding ConfigEnvironment.')
-            raise ConfigEnvironmentError(
-                e,
-                u'Error finding ConfigEnvironment.')
+            raise ConfigEnvironmentError(e, u'Error finding ConfigEnvironment.')
 
     @staticmethod
     def remove(self, authenticated_user, environment_id, configuration_id):
@@ -1013,9 +823,7 @@ class IPConfig(BaseModel):
         try:
 
             ip_config = IPConfig.objects.filter(id=configuration_id)
-            config_environment = ConfigEnvironment.objects.filter(
-                ip_config=ip_config,
-                environment=environment_id)
+            config_environment = ConfigEnvironment.objects.filter(ip_config=ip_config, environment=environment_id)
 
             config_environment.get().delete(authenticated_user)
 
@@ -1023,19 +831,14 @@ class IPConfig(BaseModel):
 
             return ip_config
 
-        except ObjectDoesNotExist as e:
-            raise IPConfigNotFoundError(
-                e,
-                u'Can not find a IpConfig with ID = %s.' %
-                configuration_id)
+        except ObjectDoesNotExist, e:
+            raise IPConfigNotFoundError(e, u'Can not find a IpConfig with ID = %s.' % configuration_id)
 
-        except OperationalError as e:
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
 
-        except Exception as e:
+        except Exception, e:
             self.log.error(u'Error removing IpConfig.')
             raise IPConfigError(e, u'Error removing IpConfig.')
 
@@ -1061,24 +864,15 @@ class ConfigEnvironment(BaseModel):
         @raise ConfigEnvironmentNotFoundError: ConfigEnvironment not found in database.
         """
         try:
-            return ConfigEnvironment.objects.filter(
-                environment=id_environment,
-                ip_config=id_ip_config).uniqueResult()
-        except ObjectDoesNotExist as e:
-            raise ConfigEnvironmentNotFoundError(
-                e,
-                u'Can not find a ConfigEnvironment with id = %s.' %
-                id)
-        except OperationalError as e:
+            return ConfigEnvironment.objects.filter(environment=id_environment, ip_config=id_ip_config).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise ConfigEnvironmentNotFoundError(e, u'Can not find a ConfigEnvironment with id = %s.' % id)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Error finding ConfigEnvironment.')
-            raise ConfigEnvironmentError(
-                e,
-                u'Error finding ConfigEnvironment.')
+            raise ConfigEnvironmentError(e, u'Error finding ConfigEnvironment.')
 
     @classmethod
     def get_by_environment(self, id_environment):
@@ -1091,21 +885,14 @@ class ConfigEnvironment(BaseModel):
         """
         try:
             return ConfigEnvironment.objects.filter(environment=id_environment)
-        except ObjectDoesNotExist as e:
-            raise ConfigEnvironmentNotFoundError(
-                e,
-                u'Can not find a ConfigEnvironment with Environment ID = %s.' %
-                id_environment)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise ConfigEnvironmentNotFoundError(e, u'Can not find a ConfigEnvironment with Environment ID = %s.' % id_environment)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Error finding ConfigEnvironment.')
-            raise ConfigEnvironmentError(
-                e,
-                u'Error finding ConfigEnvironment.')
+            raise ConfigEnvironmentError(e, u'Error finding ConfigEnvironment.')
 
     @classmethod
     def get_by_ip_config(self, id_ip_config):
@@ -1118,21 +905,14 @@ class ConfigEnvironment(BaseModel):
         """
         try:
             return ConfigEnvironment.objects.filter(ip_config=id_ip_config)
-        except ObjectDoesNotExist as e:
-            raise ConfigEnvironmentNotFoundError(
-                e,
-                u'Can not find a ConfigEnvironment with IPConfig ID = %s.' %
-                id_ip_config)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise ConfigEnvironmentNotFoundError(e, u'Can not find a ConfigEnvironment with IPConfig ID = %s.' % id_ip_config)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Error finding ConfigEnvironment.')
-            raise ConfigEnvironmentError(
-                e,
-                u'Error finding ConfigEnvironment.')
+            raise ConfigEnvironmentError(e, u'Error finding ConfigEnvironment.')
 
     @classmethod
     def remove_by_environment(self, authenticated_user, id_environment):
@@ -1146,21 +926,14 @@ class ConfigEnvironment(BaseModel):
             ces = ConfigEnvironment.objects.filter(environment=id_environment)
             for ce in ces:
                 ce.delete(authenticated_user)
-        except ObjectDoesNotExist as e:
-            raise ConfigEnvironmentNotFoundError(
-                e,
-                u'Can not find a ConfigEnvironment with Environment ID = %s.' %
-                id_environment)
-        except OperationalError as e:
+        except ObjectDoesNotExist, e:
+            raise ConfigEnvironmentNotFoundError(e, u'Can not find a ConfigEnvironment with Environment ID = %s.' % id_environment)
+        except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e,
-                u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception as e:
+            raise OperationalError(e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
             self.log.error(u'Error removing ConfigEnvironment.')
-            raise ConfigEnvironmentError(
-                e,
-                u'Error removing ConfigEnvironment.')
+            raise ConfigEnvironmentError(e, u'Error removing ConfigEnvironment.')
 
     def save(self, authenticated_user):
         '''
@@ -1172,8 +945,6 @@ class ConfigEnvironment(BaseModel):
 
             super(ConfigEnvironment, self).save(authenticated_user)
 
-        except IntegrityError as e:
+        except IntegrityError, e:
             self.log.error(u'Error saving ConfigEnvironment: ' + str(e))
-            raise ConfigEnvironmentDuplicateError(
-                e,
-                u'Error saving duplicate Environment Configuration.')
+            raise ConfigEnvironmentDuplicateError(e, u'Error saving duplicate Environment Configuration.')

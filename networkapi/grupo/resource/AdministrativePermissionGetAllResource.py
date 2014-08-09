@@ -13,7 +13,6 @@ from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from django.forms.models import model_to_dict
 
-
 class AdministrativePermissionGetAllResource(RestResource):
 
     log = Log('AdministrativePermissionGetAllResource')
@@ -24,23 +23,20 @@ class AdministrativePermissionGetAllResource(RestResource):
         URL: aperms/all
         """
         try:
-
+            
             self.log.info("GET to list all the Administrative Permission")
-
+            
             # User permission
-            if not has_perm(
-                    user,
-                    AdminPermission.USER_ADMINISTRATION,
-                    AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.READ_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
-
+            
             perms_list = []
             for perm in PermissaoAdministrativa.objects.all():
                 perms_list.append(model_to_dict(perm))
+            
+            return self.response(dumps_networkapi({'perms':perms_list}))
 
-            return self.response(dumps_networkapi({'perms': perms_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()
