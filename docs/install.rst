@@ -169,7 +169,7 @@ If you want to generate documentation, you need the following python modules ins
 Front End
 *********
 
-If you want o have a Front End user application to use with Globo NetworkAPI you can install `CadVlan <http://cadvlan>`_.
+If you want o have a Front End user application to use with Globo NetworkAPI you can install `GloboNetworkAPI WebUI <http://http://globonetworkapi-webui.readthedocs.org/>`_.
 
 
 
