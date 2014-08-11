@@ -34,8 +34,8 @@ In this example we are downloading code to ``/opt/app``::
 
 We are exporting this variable below to better document the install process::
 
-	export NETWORKAPI_FOLDER=/opt/app/networkapi/
-	echo "export NETWORKAPI_FOLDER=/opt/app/networkapi/src/networkapi/" >> ~/.bashrc 
+	export NETWORKAPI_FOLDER=/opt/app/GloboNetworkAPI/
+	echo "export NETWORKAPI_FOLDER=/opt/app/GloboNetworkAPI/" >> ~/.bashrc 
 
 
 Create a VirtualEnv
@@ -59,11 +59,11 @@ You will need the following packages in order to install the next python package
 	sudo yum install mysql-devel
 	sudo yum install gcc
 	
-Install the packages listed on ``$NETWORKAPI_FOLDER/src/requirements.txt`` file:
+Install the packages listed on ``$NETWORKAPI_FOLDER/requirements.txt`` file:
 
 ::
 
-	pip install -r $NETWORKAPI_FOLDER/src/requirements.txt
+	pip install -r $NETWORKAPI_FOLDER/requirements.txt
 
 Create a ``sitecustomize.py`` inside your ``/path/to/lib/python2.X`` folder with the following content::
 
@@ -78,7 +78,7 @@ Create a ``sitecustomize.py`` inside your ``/path/to/lib/python2.X`` folder with
 Install Memcached
 *****************
 
-You can run memcached locally or you can set file variable ``CACHE_BACKEND`` to use a remote memcached farm in file ``$NETWORKAPI_FOLDER/src/networkapi/environment_settings.py``.
+You can run memcached locally or you can set file variable ``CACHE_BACKEND`` to use a remote memcached farm in file ``$NETWORKAPI_FOLDER/networkapi/environment_settings.py``.
 
 In case you need to run locally::
 	
@@ -115,7 +115,7 @@ If you want to load into your database the environment used for documentation ex
  
 Configure the Globo NetworkAPI code to use your MySQL instance:
 
-File ``$NETWORKAPI_FOLDER/src/networkapi/environment_settings.py``::
+File ``$NETWORKAPI_FOLDER/networkapi/environment_settings.py``::
 
 	DATABASE_ENGINE = 'mysql'
 	DATABASE_NAME = 'your_db_name'
@@ -136,9 +136,9 @@ For a better performance, install Green Unicorn to run Globo NetworkAPI.
 
 There is no need to install a nginx or apache to proxy pass the requests, once there is no static files in the API.
 
-Edit ``$NETWORKAPI_FOLDER/src/gunicorn.conf.py`` to use your log files location and `user preferentes <http://gunicorn-docs.readthedocs.org/en/latest/settings.html#config-file>`_ and run gunicorn::
+Edit ``$NETWORKAPI_FOLDER/gunicorn.conf.py`` to use your log files location and `user preferentes <http://gunicorn-docs.readthedocs.org/en/latest/settings.html#config-file>`_ and run gunicorn::
 
-	cd $NETWORKAPI_FOLDER/src/
+	cd $NETWORKAPI_FOLDER
 	gunicorn networkapi_wsgi:application
 
 Test installation

@@ -286,6 +286,7 @@ if __name__ == '__main__':
 <id></id>
 </equipamento_grupo>
 </networkapi>
+'''
 
     map, attrs_map = loads(xml)
 
@@ -297,6 +298,7 @@ if __name__ == '__main__':
 <networkapi versao="1.0">
     <x/>
 </networkapi>
+'''
 
     map, attrs_map = loads(xml)
 
