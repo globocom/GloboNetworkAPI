@@ -5,4 +5,8 @@
 
 # Contributors:
 
+- Avner Gonçalves
+- Lucas Borges
+- Mauricio Leoncio dos Santos
+- Mateus Constanzo
 - [Silvano Buback](https://github.com/snbuback)
