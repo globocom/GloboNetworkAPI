@@ -107,11 +107,11 @@ Test installation and create a telecom database::
 
 Create the necessary tables::
 
-	mysql -u <user> -p <password> -h <host> <dbname> < <$NETWORKAPI_FOLDER/docs/scripts/database_configuration.sql
+	mysql -u <user> -p <password> -h <host> <dbname> < $NETWORKAPI_FOLDER/dev/database_configuration.sql
 
 If you want to load into your database the environment used for documentation examples::
 
-	mysql -u <user> -p <password> -h <host> <dbname> < <$NETWORKAPI_FOLDER/docs/scripts/load_example_environment.sql
+	mysql -u <user> -p <password> -h <host> <dbname> < $NETWORKAPI_FOLDER/dev/load_example_environment.sql
  
 Configure the Globo NetworkAPI code to use your MySQL instance:
 
