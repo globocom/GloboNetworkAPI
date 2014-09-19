@@ -295,7 +295,7 @@ error_messages = {
     367: u'O ambiente desta Vlan já possui uma ACL com o nome = %s',
     368: u'Nao foi possivel remover a vlan pois ela esta inativa.',
     369: u'Nao foi possivel remover a vlan pois as seguintes redes nao puderam ser removidas: %s.',
-
+    370: u'Nao foi possivel excluir o vip %s. Remova-o dos equipamentos primeiro.',
 }
 
 

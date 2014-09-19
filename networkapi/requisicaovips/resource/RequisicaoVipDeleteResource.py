@@ -58,7 +58,11 @@ class RequisicaoVipDeleteResource(RestResource):
                     u'Parameter id_vip is invalid. Value: %s.', vip_id)
                 raise InvalidValueError(None, 'id_vip', vip_id)
 
-            vip = RequisicaoVips.get_by_pk(vip_id)
+	    vip = RequisicaoVips.get_by_pk(vip_id)
+
+            if vip.vip_criado:
+                return self.response_error(370, vip_id)
+
             ipv4 = vip.ip
             ipv6 = vip.ipv6
 
