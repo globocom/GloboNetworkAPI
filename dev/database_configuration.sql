@@ -1,18 +1,3 @@
--- Licensed to the Apache Software Foundation (ASF) under one or more
--- contributor license agreements.  See the NOTICE file distributed with
--- this work for additional information regarding copyright ownership.
--- The ASF licenses this file to You under the Apache License, Version 2.0
--- (the "License"); you may not use this file except in compliance with
--- the License.  You may obtain a copy of the License at
---
---     http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
-
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
@@ -29,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ambiente_logico` (
   PRIMARY KEY (`id_ambiente_logic`),
   UNIQUE INDEX `nome` (`nome` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 94
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Separação de ambiente utilizada na Globo.com';
 
@@ -43,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`divisao_dc` (
   PRIMARY KEY (`id_divisao`),
   UNIQUE INDEX `nome` (`nome` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 39
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Divisao da rede (FE, BE, Parceiros etc)';
 
@@ -58,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`filter` (
   PRIMARY KEY (`id_filter`),
   UNIQUE INDEX `name_UNIQUE` (`name` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -71,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`grupo_l3` (
   PRIMARY KEY (`id_grupo_l3`),
   UNIQUE INDEX `nome` (`nome` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 74
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Descreve grupo de roteamento de um ambiente';
 
@@ -117,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ambiente` (
     REFERENCES `telecom`.`grupo_l3` (`id_grupo_l3`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 152
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -131,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ambientevip` (
   `ambiente_p44_txt` CHAR(50) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 32
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -151,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`block_rules` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 25
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -178,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`tipo_rede` (
   PRIMARY KEY (`id_tipo_rede`),
   UNIQUE INDEX `tipo_rede_unico` (`tipo_rede` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Informa o tipo dos IPs da vlan.';
 
@@ -199,7 +184,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ip_config` (
     REFERENCES `telecom`.`tipo_rede` (`id_tipo_rede`)
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 34
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -225,7 +210,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`config_do_ambiente` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 42
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -237,7 +222,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`grupos_equip` (
   `nome` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL COMMENT 'unique',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 24
+AUTO_INCREMENT = 3
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -254,7 +239,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`grupos` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `nome` (`nome` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 18
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -284,7 +269,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`direitos_grupoequip` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 155
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -297,7 +282,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`marcas` (
   PRIMARY KEY (`id_marca`),
   UNIQUE INDEX `marca_unica` (`nome` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 24
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Marca do equipamento (Cisco, 3Com etc...)';
 
@@ -317,7 +302,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`modelos` (
     REFERENCES `telecom`.`marcas` (`id_marca`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 91
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Modelo do equipamento';
 
@@ -330,7 +315,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`tipo_equipamento` (
   `tipo_equipamento` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_tipo_equipamento`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 20
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Tipo do equipamento (roteador, servidor, switch)';
 
@@ -356,7 +341,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equipamentos` (
     REFERENCES `telecom`.`tipo_equipamento` (`id_tipo_equipamento`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 14549
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -382,7 +367,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equip_do_ambiente` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 17697
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -407,7 +392,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equip_do_grupo` (
     REFERENCES `telecom`.`grupos_equip` (`id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 14678
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -420,7 +405,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`tipo_acesso` (
   PRIMARY KEY (`id_tipo_acesso`),
   UNIQUE INDEX `protocolo` (`protocolo` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 7
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -449,7 +434,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equiptos_access` (
     REFERENCES `telecom`.`tipo_acesso` (`id_tipo_acesso`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 651
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = latin1;
 
 
@@ -463,7 +448,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`tipo_roteiro` (
   PRIMARY KEY (`id_tipo_roteiro`),
   UNIQUE INDEX `tipo` (`tipo` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 106
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -483,7 +468,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`roteiros` (
     REFERENCES `telecom`.`tipo_roteiro` (`id_tipo_roteiro`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 131
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -508,7 +493,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equiptos_roteiros` (
     REFERENCES `telecom`.`roteiros` (`id_roteiros`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 879
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -526,7 +511,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`usuarios` (
   PRIMARY KEY (`id_user`),
   UNIQUE INDEX `key_user` (`user` ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 87
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -552,7 +537,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`event_log` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 136836
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'InnoDB free: 0 kB; (`id_user`) REFER `telecom/usuarios`(`id_';
 
@@ -578,7 +563,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`filter_equiptype_xref` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -623,7 +608,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`healthcheck_expect` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 84
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -657,7 +642,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
     REFERENCES `telecom`.`interfaces` (`id_interface`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 23057
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
@@ -685,7 +670,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`vlans` (
     REFERENCES `telecom`.`ambiente` (`id_ambiente`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 3361
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COMMENT = 'Descreve as características da vlan.';
 
@@ -725,7 +710,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`redeipv4` (
     FOREIGN KEY (`id_vlan`)
     REFERENCES `telecom`.`vlans` (`id_vlan`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2584
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -749,7 +734,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ips` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 46389
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -774,7 +759,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ips_dos_equipamentos` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 53055
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -820,7 +805,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`redeipv6` (
     FOREIGN KEY (`id_vlan`)
     REFERENCES `telecom`.`vlans` (`id_vlan`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 114
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -847,7 +832,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ipsv6` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 46
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -868,7 +853,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ipsv6_dos_equipamentos` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 57
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -881,7 +866,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`opcoesvip` (
   `nome_opcao_txt` CHAR(50) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 43
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -902,7 +887,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`opcoesvip_ambiente_xref` (
     FOREIGN KEY (`id_opcoesvip`)
     REFERENCES `telecom`.`opcoesvip` (`id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 851
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -942,7 +927,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`permissoes_administrativas` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 258
+AUTO_INCREMENT = 30
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
@@ -969,7 +954,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`rule` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 11
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -1028,7 +1013,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`requisicao_vips` (
     ON DELETE SET NULL
     ON UPDATE SET NULL)
 ENGINE = InnoDB
-AUTO_INCREMENT = 6630
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
@@ -1049,7 +1034,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`rule_content` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 35
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -1081,7 +1066,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`server_pool` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 5821
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
@@ -1128,7 +1113,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`server_pool_member` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 12753
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -1154,7 +1139,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`usuarios_do_grupo` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 95
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -1180,8 +1165,29 @@ CREATE TABLE IF NOT EXISTS `telecom`.`vip_port_to_pool` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 5824
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
+
+
+LOCK TABLES `grupos` WRITE;
+INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');
+UNLOCK TABLES;
+
+LOCK TABLES `permissions` WRITE;
+INSERT INTO `permissions` VALUES (1,'administracao_usuarios'),(2,'administrativa'),(3,'alocar_vlan'),(4,'ambiente_vip'),(5,'authenticate'),(6,'cadastro_de_ambiente'),(7,'cadastro_de_equipamentos'),(8,'cadastro_de_grupos_equipamentos'),(9,'cadastro_de_marca'),(10,'cadastro_de_roteiro'),(11,'cadastro_de_tipo_acesso'),(12,'cadastro_de_tipo_rede'),(13,'cadastro_de_vlans'),(14,'cadastro_de_vm'),(15,'healthcheck_expect'),(16,'ips'),(17,'opcao_vip'),(18,'requisicao_vips'),(19,'script_alterar_vip'),(20,'script_alterar_vlan'),(21,'script_criacao_vip'),(22,'script_criacao_vlan'),(23,'validar_acl_vlans'),(24,'validar_vip'),(25,'administracao_vips'),(26,'audit_logs'),(27,'script_remover_vip'),(28,'aplicar_acl');
+UNLOCK TABLES;
+
+LOCK TABLES `permissoes_administrativas` WRITE;
+INSERT INTO `permissoes_administrativas` VALUES (1,1,1,1,1),(2,1,1,1,2),(3,1,1,1,3),(4,1,1,1,4),(5,1,1,1,5),(6,1,1,1,6),(7,1,1,1,7),(8,1,1,1,8),(9,1,1,1,9),(10,1,1,1,10),(11,1,1,1,11),(12,1,1,1,12),(13,1,1,1,13),(14,1,1,1,14),(15,1,1,1,15),(16,1,1,1,16),(17,1,1,1,17),(18,1,1,1,18),(19,1,1,1,19),(20,1,1,1,20),(21,1,1,1,21),(22,1,1,1,22),(23,1,1,1,23),(24,1,1,1,24),(25,1,1,1,25),(26,1,1,1,26),(27,1,1,1,27),(28,1,1,1,28),(29,0,1,2,5);
+UNLOCK TABLES;
+
+LOCK TABLES `usuarios_do_grupo` WRITE;
+INSERT INTO `usuarios_do_grupo` VALUES (1,1,1);
+UNLOCK TABLES;
+
+LOCK TABLES `usuarios` WRITE;
+INSERT INTO `usuarios` VALUES ('ADMIN','c21f969b5f03d33d43e04f8f136e7682',1,'Administrator',1,'admin@networkapi',NULL);
+UNLOCK TABLES;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
