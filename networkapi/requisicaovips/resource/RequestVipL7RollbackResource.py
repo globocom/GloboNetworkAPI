@@ -76,12 +76,14 @@ class RequestVipL7RollbackResource(RestResource):
                 # aplicado para l7
                 vip.applied_l7_datetime = datetime.now().strftime(
                     "%Y-%m-%d %H:%M:%S")
-                vip.filter_applied = vip.filter_rollback
-                vip.rule_applied = vip.rule_rollback
 
+                # Set Applied With Rollback
+                vip.filter_applied = vip_old.filter_rollback
+                vip.rule_applied = vip_old.rule_rollback
+
+                # Set Rollback With Applied
                 vip.filter_rollback = vip_old.filter_applied
                 vip.rule_rollback = vip_old.rule_applied
-                vip.filter_valid = False
 
                 vip.save(user, commit=True)
 
