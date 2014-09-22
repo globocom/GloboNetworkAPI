@@ -27,9 +27,9 @@ from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
 import re
 from string import upper
-from networkapi.util import is_valid_ip, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_option, is_valid_regex, is_valid_ipv6, is_valid_ipv4,\
+from networkapi.util import is_valid_ip, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_option, is_valid_regex, is_valid_ipv6, is_valid_ipv4, \
     mount_ipv4_string, mount_ipv6_string
-from networkapi.exception import InvalidValueError, OptionVipError, OptionVipNotFoundError, OptionVipEnvironmentVipError, OptionVipEnvironmentVipNotFoundError, OptionVipEnvironmentVipDuplicatedError,\
+from networkapi.exception import InvalidValueError, OptionVipError, OptionVipNotFoundError, OptionVipEnvironmentVipError, OptionVipEnvironmentVipNotFoundError, OptionVipEnvironmentVipDuplicatedError, \
     EnvironmentVipNotFoundError
 from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
@@ -218,30 +218,93 @@ class InvalidWeightValueError(RequisicaoVipsError):
 
 
 class RequisicaoVips(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_requisicao_vips')
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_requisicao_vips'
+    )
+
     validado = models.BooleanField()
-    variaveis = models.TextField(blank=True)
+
+    variaveis = models.TextField(
+        blank=True
+    )
+
     vip_criado = models.BooleanField()
-    ip = models.ForeignKey(Ip, db_column='ips_id_ip', blank=True, null=True)
+
+    ip = models.ForeignKey(
+        Ip,
+        db_column='ips_id_ip',
+        blank=True,
+        null=True
+    )
+
     ipv6 = models.ForeignKey(
-        Ipv6, db_column='ipsv6_id_ipv6', blank=True, null=True)
+        Ipv6,
+        db_column='ipsv6_id_ipv6',
+        blank=True,
+        null=True
+    )
+
     l7_filter = models.TextField(
-        blank=True, null=True, db_column='l7_filter_to_apply')
+        blank=True,
+        null=True,
+        db_column='l7_filter_to_apply'
+    )
+
     filter_applied = models.TextField(
-        blank=True, null=True, db_column='l7_filter_current')
+        blank=True,
+        null=True,
+        db_column='l7_filter_current'
+    )
+
     filter_rollback = models.TextField(
-        blank=True, null=True, db_column='l7_filter_rollback')
-    filter_valid = models.BooleanField(db_column='l7_filter_is_valid')
+        blank=True,
+        null=True,
+        db_column='l7_filter_rollback'
+    )
+
+    filter_valid = models.BooleanField(
+        db_column='l7_filter_is_valid'
+    )
+
     applied_l7_datetime = models.DateTimeField(
-        db_column='l7_filter_applied_datetime')
+        db_column='l7_filter_applied_datetime'
+    )
+
     healthcheck_expect = models.ForeignKey(
-        HealthcheckExpect, null=True, db_column='id_healthcheck_expect', blank=True)
-    rule = models.ForeignKey('blockrules.Rule', db_column='id_rule',
-                             blank=True, null=True, on_delete=models.SET_NULL, related_name='rule')
-    rule_applied = models.ForeignKey('blockrules.Rule', db_column='id_rule_current',
-                                     blank=True, null=True, on_delete=models.SET_NULL, related_name='rule_applied')
-    rule_rollback = models.ForeignKey('blockrules.Rule', db_column='id_rule_rollback',
-                                      blank=True, null=True, on_delete=models.SET_NULL, related_name='rule_rollback')
+        HealthcheckExpect,
+        null=True,
+        db_column='id_healthcheck_expect',
+        blank=True
+    )
+
+    rule = models.ForeignKey(
+        'blockrules.Rule',
+        db_column='id_rule',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='rule'
+    )
+
+    rule_applied = models.ForeignKey(
+        'blockrules.Rule',
+        db_column='id_rule_current',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='rule_applied'
+    )
+
+    rule_rollback = models.ForeignKey(
+        'blockrules.Rule',
+        db_column='id_rule_rollback',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='rule_rollback'
+    )
 
     log = Log('RequisicaoVips')
 
@@ -257,7 +320,7 @@ class RequisicaoVips(BaseModel):
 
             @raise RequisicaoVipsNotFoundError: Request Vip is not registered.
             @raise RequisicaoVipsError: Failed to search for the Request Vip.
-            @raise OperationalError: Lock wait timeout exceeded. 
+            @raise OperationalError: Lock wait timeout exceeded.
         """
         try:
             return RequisicaoVips.objects.get(id=id)
@@ -483,7 +546,7 @@ class RequisicaoVips(BaseModel):
 
         @raise InvalidServicePortValueError: Porta do Serviço com valor inválido.
 
-        @raise InvalidRealValueError: Valor inválido de um real. 
+        @raise InvalidRealValueError: Valor inválido de um real.
 
         @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
         '''
@@ -634,13 +697,13 @@ class RequisicaoVips(BaseModel):
                 values = values[0:len(values) - 1]
                 self.add_variable('_transbordo', values)
 
-        """# portas_servicos    
+        """# portas_servicos
         portas_servicos_map = variables_map.get('portas_servicos')
         if portas_servicos_map is not None:
             portas = portas_servicos_map.get('porta')
             if len(portas) == 0:
                 raise InvalidServicePortValueError(None, portas)
-             
+
             i = 1
             for porta in portas:
                 try:
@@ -656,15 +719,15 @@ class RequisicaoVips(BaseModel):
                 i = i + 1
         else:
             raise InvalidServicePortValueError(None, portas_servicos_map)
-        
-        # reals   
+
+        # reals
         reals_map = variables_map.get('reals')
         if (reals_map is not None):
             real_maps = reals_map.get('real')
-            
+
             if len(real_maps) == 0:
                 raise InvalidRealValueError(None, real_maps)
-            
+
             i = 1
             for real_map in real_maps:
                 real_name = real_map.get('real_name')
@@ -674,21 +737,21 @@ class RequisicaoVips(BaseModel):
                 self.add_variable('-reals_name.' + str(i), real_name)
                 self.add_variable('-reals_ip.' + str(i), real_ip)
                 i = i + 1
-        
-            # reals_priority   
+
+            # reals_priority
             reals_prioritys_map = variables_map.get('reals_prioritys')
             if (reals_prioritys_map is not None):
                 reals_priority_map = reals_prioritys_map.get('reals_priority')
-                
+
                 if len(reals_priority_map) == 0:
                     raise InvalidPriorityValueError(None, reals_priority_map)
-                
+
                 i = 1
                 for reals_priority in reals_priority_map:
-                    
+
                     if reals_priority is None:
-                        raise InvalidRealValueError(None, '(%s)' % reals_priority )                
-                    
+                        raise InvalidRealValueError(None, '(%s)' % reals_priority )
+
                     self.add_variable('-reals_priority.' + str(i), reals_priority)
                     i = i + 1
             else:
@@ -696,21 +759,21 @@ class RequisicaoVips(BaseModel):
 
             # reals_weight
             if ( str(balanceamento).upper() == "WEIGHTED" ):
-                   
-                # reals_weight   
+
+                # reals_weight
                 reals_weights_map = variables_map.get('reals_weights')
                 if (reals_weights_map is not None):
                     reals_weight_map = reals_weights_map.get('reals_weight')
-        
+
                     if len(reals_weight_map) == 0:
                         raise InvalidPriorityValueError(None, reals_weight_map)
-        
+
                     i = 1
                     for reals_weight in reals_weight_map:
-        
+
                         if reals_weight is None:
-                            raise InvalidRealValueError(None, '(%s)' % reals_weight )                
-        
+                            raise InvalidRealValueError(None, '(%s)' % reals_weight )
+
                         self.add_variable('-reals_weight.' + str(i), reals_weight)
                         i = i + 1
                 else:
@@ -736,13 +799,13 @@ class RequisicaoVips(BaseModel):
         Após atualizar os dados o campo "validado" receberá o valor 0(zero).
 
         Se o campo "vip_criado" da requisição de VIP tem o valor 1 então
-        o VIP não poderá ser alterado. 
+        o VIP não poderá ser alterado.
 
         @return: Nothing.
 
         @raise RequisicaoVipsNotFoundError: Requisição de VIP não cadastrada.
 
-        @raise RequisicaoVipsError: Falha ao atualizar a requisição de VIP. 
+        @raise RequisicaoVipsError: Falha ao atualizar a requisição de VIP.
 
         @raise RequisicaoVipsAlreadyCreatedError: Requisição de VIP já foi criada e não poderá ser alterada.
 
@@ -889,7 +952,7 @@ class RequisicaoVips(BaseModel):
 
         @return: Nothing
 
-        @raise IpNotFoundError: IP não cadastrado.  
+        @raise IpNotFoundError: IP não cadastrado.
 
         @raise IpError: Falha ao pesquisar o IP.
 
@@ -921,11 +984,11 @@ class RequisicaoVips(BaseModel):
 
         @raise InvalidServicePortValueError: Porta do Serviço com valor inválido.
 
-        @raise InvalidRealValueError: Valor inválido de um real. 
+        @raise InvalidRealValueError: Valor inválido de um real.
 
         @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
 
-        @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP. 
+        @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
         '''
         self.ip = Ip().get_by_pk(self.ip.id)
 
@@ -969,12 +1032,12 @@ class RequisicaoVips(BaseModel):
 
     def valid_values_ports(self, vip_map):
         '''Validation when the values ​​of portas_servicos
-        This method accept 'port1:port2' and 'port1' only, when the parameter is port1, the method will understand that it means 'por1:por1' 
+        This method accept 'port1:port2' and 'port1' only, when the parameter is port1, the method will understand that it means 'por1:por1'
 
         @param vip_map: Map with the data of the request..
 
         @return: On success: vip_map, None
-                 In case of error: vip_map, code  (code error message).        
+                 In case of error: vip_map, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
         '''
@@ -1018,7 +1081,7 @@ class RequisicaoVips(BaseModel):
         @param vip_map: Map with the data of the request..
 
         @return: On success: vip_map, None
-                 In case of error: vip_map, code  (code error message).        
+                 In case of error: vip_map, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
         '''
@@ -1064,7 +1127,7 @@ class RequisicaoVips(BaseModel):
         @param vip_map: Map with the data of the request.
 
         @return: On success: vip_map, None
-                 In case of error: vip_map, code  (code error message).        
+                 In case of error: vip_map, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
         '''
@@ -1121,7 +1184,7 @@ class RequisicaoVips(BaseModel):
         @param vip: request VIP.
 
         @return: On success: vip_map, vip, None
-                 In case of error: vip_map, vip, code  (code error message).        
+                 In case of error: vip_map, vip, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
         @raise ObjectDoesNotExist: Healthcheck does not exist .
@@ -1730,9 +1793,9 @@ class ServerPoolMember(BaseModel):
         self.save(user, commit=commit)
 
     def save_with_default_port(self, vip_id, ip, ip_version, user):
-        """ 
+        """
             Old calls hasn't a port real, save with deafult_port specified in server pool
-            Save with commit = True 
+            Save with commit = True
         """
 
         server_pools = ServerPool.objects.filter(
