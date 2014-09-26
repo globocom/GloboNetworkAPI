@@ -136,6 +136,10 @@ class CreateVipResource(RestResource):
                 vip.rule_applied = vip.rule
                 vip.filter_applied = vip.l7_filter
 
+                vip.l7_filter = None
+                vip.rule = None
+                vip.filter_valid = False
+
                 vip.vip_criado = 1
                 vip.save(user)
 
