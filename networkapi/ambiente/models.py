@@ -851,7 +851,7 @@ class IPConfig(BaseModel):
     from networkapi.vlan.models import TipoRede
 
     id = models.AutoField(primary_key=True, db_column='id_ip_config')
-    subnet = models.CharField(max_length=40, blank=False)
+    subnet = models.CharField(max_length=45, blank=False)
     new_prefix = models.CharField(max_length=3, blank=False)
     type = models.CharField(max_length=2, blank=False, choices=IP_VERSION.List)
     network_type = models.ForeignKey(
@@ -1062,6 +1062,6 @@ class ConfigEnvironment(BaseModel):
             super(ConfigEnvironment, self).save(authenticated_user)
 
         except IntegrityError, e:
-            self.log.error(u'Error saving ConfigEnvironment: ' + str(e))
+            self.log.error(u'Error saving ConfigEnvironment: %r' % str(e))
             raise ConfigEnvironmentDuplicateError(
                 e, u'Error saving duplicate Environment Configuration.')
