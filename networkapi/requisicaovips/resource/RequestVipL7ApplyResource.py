@@ -90,6 +90,10 @@ class RequestVipL7ApplyResource(RestResource):
                 vip.filter_applied = vip.l7_filter
                 vip.rule_applied = vip.rule
 
+                vip.l7_filter = None
+                vip.rule = None
+                vip.filter_valid = False
+
                 vip.save(user, commit=True)
 
                 # roda script

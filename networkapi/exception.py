@@ -48,6 +48,12 @@ class RequestVipsNotBeenCreatedError(CustomException):
         CustomException.__init__(self, cause, message)
 
 
+class AddBlockOverrideNotDefined(CustomException):
+    """Represents an error occurred when attempting to change a VIP that has not been created."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
 class EquipmentGroupsNotAuthorizedError(CustomException):
 
     """Represents an error when the groups of equipment registered with the IP of the VIP request is not allowed acess."""

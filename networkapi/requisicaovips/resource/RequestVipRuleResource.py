@@ -18,7 +18,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.blockrules.models import BlockRules, Rule, RuleContent
-from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError
+from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, AddBlockOverrideNotDefined
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, \
@@ -136,15 +136,20 @@ class RequestVipRuleResource(RestResource):
                 rule_content.rule = new_rule_content
                 rule_content.save(user)
 
-            if override:
+            if override or not vip.l7_filter:
                 # update filter and rule with new block
                 vip.l7_filter = new_content
                 vip.rule = new_rule_content
+                vip.filter_valid = True
                 vip.save(user)
+            else:
+                self.log.error(
+                    u'Block can not be added because there is already a rule to apply, and the value of zero is overwritten.')
+                raise AddBlockOverrideNotDefined(None)
 
             success_map = dict()
             success_map['codigo'] = 0
-            success_map['descricao'] = 'Bloco incluído com sucesso'
+            success_map['descricao'] = u'Bloco incluído com sucesso'
 
             return self.response(dumps_networkapi({'sucesso': success_map}))
 
@@ -162,6 +167,8 @@ class RequestVipRuleResource(RestResource):
             self.log.error(
                 u'Parameter %s is invalid. Value: %s.', e.param, e.value)
             return self.response_error(269, e.param, e.value)
+        except AddBlockOverrideNotDefined:
+            return self.response_error(371)
         except BaseException, e:
             return self.response_error(1)
 
