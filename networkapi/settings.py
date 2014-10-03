@@ -62,6 +62,7 @@ LOGGING = {
     }
 }
 
+
 MANAGERS = ADMINS
 
 DEFAULT_CHARSET = 'utf-8'  # Set the encoding to database data
@@ -70,7 +71,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': [
-            '192.168.24.48:11211'
+            '127.0.0.1:11211'
         ]
     }
 }
@@ -163,6 +164,7 @@ INSTALLED_APPS = (
     'networkapi.filter',
     'networkapi.filterequiptype',
     'networkapi.blockrules',
+    'networkapi.config'
     #    'networkapi.test_form',
 )
 
