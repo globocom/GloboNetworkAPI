@@ -151,14 +151,22 @@ class HealthcheckExpect(BaseModel):
     @classmethod
     def get_expect_strings(self):
         try:
-            return HealthcheckExpect.objects.all().distinct('expect_string')
+            query = (HealthcheckExpect.objects.values('expect_string')
+                     .annotate(id=models.Min('id')))
+
+            return list(query)
+
         except ObjectDoesNotExist, e:
+            self.log.error(u'Healthchecks Does Not Exists.')
             raise HealthcheckExpectNotFoundError(
-                e, u'Erro ao pequisar Healthcheks_expects')
+                e, u'Erro ao pequisar Healthcheks_expects'
+            )
+
         except Exception, e:
             self.log.error(u'Falha ao pesquisar o healthcheck_expect.')
             raise HealthcheckExpectError(
-                e, u'Falha ao pesquisar o healthcheck_expect.')
+                e, u'Falha ao pesquisar o healthcheck_expect.'
+            )
 
     def insert_expect_string(self, authenticated_user, expect_string, ambiente=None):
         try:
