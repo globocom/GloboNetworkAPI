@@ -79,6 +79,7 @@ class UserGroupNotFoundError(UsuarioError):
 
 
 class Usuario(BaseModel):
+
     user = models.CharField(unique=True, max_length=45)
     pwd = models.CharField(max_length=45)
     id = models.AutoField(primary_key=True, db_column='id_user')
@@ -94,6 +95,13 @@ class Usuario(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'usuarios'
         managed = True
+
+    def is_authenticated(self):
+        return Usuario.objects.filter(
+            user=self.user.lower(),
+            pwd=self.pwd,
+            ativo=1
+        )
 
     @classmethod
     def get_by_pk(cls, pk):
@@ -156,7 +164,7 @@ class Usuario(BaseModel):
         '''
         Busca o usuário de acordo com o login e a senha.
 
-        Retorna apenas usuário ativo.        
+        Retorna apenas usuário ativo.
         '''
         try:
             password = hashlib.md5(password).hexdigest()

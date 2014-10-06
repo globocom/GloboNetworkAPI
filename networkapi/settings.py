@@ -164,9 +164,26 @@ INSTALLED_APPS = (
     'networkapi.filter',
     'networkapi.filterequiptype',
     'networkapi.blockrules',
-    'networkapi.config'
+    'networkapi.config',
+    'rest_framework',
+    'networkapi.snippets',
     #    'networkapi.test_form',
 )
+
+
+"""Rest Configuration
+"""
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'networkapi.api_rest.authentication.BasicAuthentication',
+    ),
+}
 
 
 NETWORKAPI_VERSION = "1.0"
