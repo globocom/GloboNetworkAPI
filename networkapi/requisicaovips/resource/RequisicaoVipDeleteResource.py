@@ -45,6 +45,7 @@ class RequisicaoVipDeleteResource(RestResource):
 
         try:
             vip_id = kwargs.get('id_vip')
+            keep_ip = bool(request.REQUEST.get('keep_ip', False))
 
             # User permission
             if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.WRITE_OPERATION):
@@ -70,10 +71,10 @@ class RequisicaoVipDeleteResource(RestResource):
                 try:
                     vip.delete_vips_and_reals(user)
                     vip.delete(user)
-                    if ipv4:
+                    if ipv4 and not keep_ip:
                         if not self.is_ipv4_in_use(ipv4, vip_id):
                             ipv4.delete(user)
-                    if ipv6:
+                    if ipv6 and not keep_ip:
                         if not self.is_ipv6_in_use(ipv6, vip_id):
                             ipv6.delete(user)
                 except Exception, e:
