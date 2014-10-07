@@ -40,7 +40,7 @@ Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 # Configurações de banco de dados
 # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_ENGINE = 'mysql'
+DATABASE_ENGINE = 'django.db.backends.mysql'
 DATABASE_NAME = 'telecom'      # Or path to database file if using sqlite3.
 DATABASE_USER = 'root'         # Not used with sqlite3.
 DATABASE_PASSWORD = 'root'         # Not used with sqlite3.
