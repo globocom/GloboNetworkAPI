@@ -167,6 +167,7 @@ INSTALLED_APPS = (
     'networkapi.config',
     'rest_framework',
     'networkapi.snippets',
+    'networkapi.pools',
     #    'networkapi.test_form',
 )
 
