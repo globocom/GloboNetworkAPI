@@ -3,7 +3,7 @@ import base64
 from rest_framework import exceptions, HTTP_HEADER_ENCODING
 from rest_framework.authentication import BaseAuthentication,\
     get_authorization_header
-from auth import authenticate
+from networkapi.auth import authenticate
 
 
 class BasicAuthentication(BaseAuthentication):
