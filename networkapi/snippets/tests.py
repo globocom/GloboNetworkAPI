@@ -9,6 +9,15 @@ from django.test import TestCase
 
 
 class SimpleTest(TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        super(SimpleTest, cls).setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super(SimpleTest, cls).tearDownClass()
+    
     def test_basic_addition(self):
         """
         Tests that 1 + 1 always equals 2.
