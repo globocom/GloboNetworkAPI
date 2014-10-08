@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPool
 
 
 class ServerPoolSerializer(serializers.ModelSerializer):

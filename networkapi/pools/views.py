@@ -18,12 +18,12 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from snippets.permissions import Read, Write
+from networkapi.snippets.permissions import Read, Write
 from django.db.transaction import commit_on_success
 from rest_framework.response import Response
 from networkapi.requisicaovips.models import ServerPool
-from pools.serializers import ServerPoolSerializer
-from infrastructure.datatable import build_query_to_datatable
+from networkapi.pools.serializers import ServerPoolSerializer
+from networkapi.infrastructure.datatable import build_query_to_datatable
 
 
 @api_view(['GET', 'POST'])

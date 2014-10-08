@@ -3,6 +3,6 @@
 from django.conf.urls import patterns, url
 
 urlpatterns = patterns(
-    'pools.views',
+    'networkapi.pools.views',
     url(r'^pools/$', 'pool_list'),
 )
