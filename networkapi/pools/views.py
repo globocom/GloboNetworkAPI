@@ -21,9 +21,14 @@ from rest_framework.permissions import IsAuthenticated
 from networkapi.snippets.permissions import Read, Write
 from django.db.transaction import commit_on_success
 from rest_framework.response import Response
-from networkapi.requisicaovips.models import ServerPool
-from networkapi.pools.serializers import ServerPoolSerializer
+from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
+from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer
 from networkapi.infrastructure.datatable import build_query_to_datatable
+from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect
+from networkapi.ambiente.models import Ambiente
+from networkapi.ip.models import Ip, Ipv6
+
+
 
 
 @api_view(['GET', 'POST'])
@@ -71,3 +76,77 @@ def pool_list(request):
             return Response(snippet_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(snippet_serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def healthcheck_list(request):
+        data = dict()
+        healthchecks = Healthcheck.objects.all()
+        serializer_healthchecks = HealthcheckSerializer(healthchecks, many=True)
+        data["healthchecks"] = serializer_healthchecks.data
+
+        return Response(data)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def pool_insert(request):
+
+    if request.method == 'POST':
+        import json
+        identifier = request.DATA.get('identifier')
+        default_port = request.DATA.get('default_port')
+        environment = request.DATA.get('environment')
+        balancing = request.DATA.get('balancing')
+        healthcheck = request.DATA.get('healthcheck')
+        maxcom = request.DATA.get('maxcom')
+        ip_list_full = json.loads(request.DATA.get('ip_list_full'))
+        id_equips = request.DATA.getlist('id_equips')
+        priorities = request.DATA.getlist('priorities')
+        ports_reals = request.DATA.getlist('ports_reals')
+
+        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
+        ambiente_obj = Ambiente.get_by_pk(environment)
+
+        sp = ServerPool(
+            identifier=identifier,
+            default_port=default_port,
+            healthcheck=healthcheck_obj,
+            ambiente_id_ambiente=ambiente_obj,
+            pool_criado=True,
+            lb_method=''
+        )
+
+        sp.save(request.user)
+
+        ip_object = None;
+        ipv6_object = None;
+
+        for i in range(0, len(ip_list_full)):
+
+            if len(ip_list_full[i]['ip']) <= 15:
+                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+            else:
+                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+
+            spm = ServerPoolMember(
+                server_pool=sp,
+                identifier=identifier,
+                ip=ip_object,
+                ipv6=ipv6_object,
+                priority=priorities[i],
+                weight=0,
+                limit=maxcom,
+                port_real=ports_reals[i],
+                healthcheck=healthcheck_obj
+            )
+
+            spm.save(request.user)
+
+    return Response(status=status.HTTP_201_CREATED)
+
+
+
