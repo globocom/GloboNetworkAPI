@@ -28,6 +28,7 @@ import time
 
 from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
 from django.forms.models import model_to_dict
+from django.core import validators
 
 LOCK = 'LOCK'
 
@@ -533,3 +534,30 @@ def get_vlan_map(vlan, network_ipv4, network_ipv6):
 def clear_newline_chr(string):
     str_return = string.replace(chr(10), '').replace(chr(13), '')
     return str_return
+
+
+def is_valid_list_int_greater_zero_param(list_param, required=True):
+    '''Checks if the parameter list is a valid integer value and greater than zero.
+
+    @param param: Value to be validated.
+
+    @raise ValidationError: If there is validation error in the field
+    '''
+    if list_param in validators.EMPTY_VALUES:
+        raise ValueError
+
+    for param in list_param:
+
+        if param is None and required:
+            raise ValueError
+
+        try:
+            param = int(param)
+
+            if param < 1:
+                raise ValueError
+
+        except Exception:
+            raise ValueError
+
+    return True
