@@ -14,40 +14,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from networkapi.snippets.permissions import Read, Write
-from django.db.transaction import commit_on_success
+from rest_framework import status
 from rest_framework.response import Response
+
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer
-from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect
 from networkapi.ambiente.models import Ambiente
 from networkapi.ip.models import Ip, Ipv6
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.transaction import commit_on_success
+from networkapi.snippets.permissions import Read, Write
+from networkapi.infrastructure.datatable import build_query_to_datatable
+from networkapi.api_rest.exceptions import NetworkAPIError, ValidationBadRequest
+from networkapi.util import is_valid_list_int_greater_zero_param
 
 
-
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @permission_classes((IsAuthenticated, Read, Write))
 @commit_on_success
 def pool_list(request):
     """
     List all code snippets, or create a new snippet.
     """
-    if request.method == 'POST':
+    try:
 
         data = dict()
 
         start_record = request.DATA.get("start_record")
         end_record = request.DATA.get("end_record")
-        asorting_cols = request.DATA.getlist("asorting_cols")
+        asorting_cols = request.DATA.get("asorting_cols")
         searchable_columns = request.DATA.get("searchable_columns")
         custom_search = request.DATA.get("custom_search")
-
         query_pools = ServerPool.objects.all()
 
         server_pools, total = build_query_to_datatable(
@@ -66,16 +67,41 @@ def pool_list(request):
 
         return Response(data)
 
-    elif request.method == 'POST':
+    except Exception:
+        raise NetworkAPIError
 
-        snippet_serializer = ServerPoolSerializer(data=request.DATA)
 
-        if snippet_serializer.is_valid():
-            snippet = snippet_serializer.object
-            snippet.save(request.user)
-            return Response(snippet_serializer.data, status=status.HTTP_201_CREATED)
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def delete(request):
+    """
+    Delete Pools by list id.
+    """
 
-        return Response(snippet_serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+    try:
+
+        ids = request.DATA.get('ids')
+
+        is_valid_list_int_greater_zero_param(ids)
+
+        for _id in ids:
+            try:
+                server_pool = ServerPool.objects.get(id=_id)
+                server_pool.delete(request.user)
+
+            except ObjectDoesNotExist:
+                pass
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    except ValueError:
+        raise ValidationBadRequest('Invalid Id For Pool.')
+
+    except Exception:
+        raise NetworkAPIError
+
+
 
 
 @api_view(['GET'])
@@ -147,6 +173,5 @@ def pool_insert(request):
             spm.save(request.user)
 
     return Response(status=status.HTTP_201_CREATED)
-
 
 
