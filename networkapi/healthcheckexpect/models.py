@@ -194,3 +194,10 @@ class Healthcheck(BaseModel):
     healthcheck_request = models.CharField(max_length=500)
     healthcheck_expect = models.CharField(max_length=200)
     destination = models.CharField(max_length=45)
+
+
+    log = Log('Healthcheck')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'healthcheck'
+        managed = True
