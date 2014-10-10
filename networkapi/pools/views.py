@@ -20,14 +20,17 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
-from networkapi.snippets.permissions import Read, Write
-from networkapi.requisicaovips.models import ServerPool
-from networkapi.pools.serializers import ServerPoolSerializer
+from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
+from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer
+from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect
+from networkapi.ambiente.models import Ambiente
+from networkapi.ip.models import Ip, Ipv6
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.util import is_valid_list_int_greater_zero_param
 from networkapi.log import Log
 from networkapi.pools.exceptions import InvalidIdPoolException
+from networkapi.pools.permissions import Read, Write
 
 log = Log(__name__)
 
@@ -120,13 +123,15 @@ def remove(request):
 
         for _id in ids:
             try:
+
                 server_pool = ServerPool.objects.get(id=_id)
-                server_pool.delete(request.user)
+                server_pool.pool_created = False
+                server_pool.save(request.user)
 
             except ServerPool.DoesNotExist:
                 pass
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response()
 
     except ValueError, e:
         log.error(e.message)
@@ -135,3 +140,74 @@ def remove(request):
     except Exception, e:
         log.error(e.message)
         raise NetworkAPIException
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def healthcheck_list(request):
+        data = dict()
+        healthchecks = Healthcheck.objects.all()
+        serializer_healthchecks = HealthcheckSerializer(healthchecks, many=True)
+        data["healthchecks"] = serializer_healthchecks.data
+
+        return Response(data)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def pool_insert(request):
+
+    if request.method == 'POST':
+        import json
+        identifier = request.DATA.get('identifier')
+        default_port = request.DATA.get('default_port')
+        environment = request.DATA.get('environment')
+        balancing = request.DATA.get('balancing')
+        healthcheck = request.DATA.get('healthcheck')
+        maxcom = request.DATA.get('maxcom')
+        ip_list_full = json.loads(request.DATA.get('ip_list_full'))
+        id_equips = request.DATA.getlist('id_equips')
+        priorities = request.DATA.getlist('priorities')
+        ports_reals = request.DATA.getlist('ports_reals')
+
+        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
+        ambiente_obj = Ambiente.get_by_pk(environment)
+
+        sp = ServerPool(
+            identifier=identifier,
+            default_port=default_port,
+            healthcheck=healthcheck_obj,
+            environment=ambiente_obj,
+            pool_created=True,
+            lb_method=''
+        )
+
+        sp.save(request.user)
+
+        ip_object = None
+        ipv6_object = None
+
+        for i in range(0, len(ip_list_full)):
+
+            if len(ip_list_full[i]['ip']) <= 15:
+                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+            else:
+                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+
+            spm = ServerPoolMember(
+                server_pool=sp,
+                identifier=identifier,
+                ip=ip_object,
+                ipv6=ipv6_object,
+                priority=priorities[i],
+                weight=0,
+                limit=maxcom,
+                port_real=ports_reals[i],
+                healthcheck=healthcheck_obj
+            )
+
+            spm.save(request.user)
+
+    return Response(status=status.HTTP_201_CREATED)
