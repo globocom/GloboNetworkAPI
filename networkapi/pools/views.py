@@ -14,22 +14,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.transaction import commit_on_success
 from networkapi.snippets.permissions import Read, Write
 from networkapi.requisicaovips.models import ServerPool
 from networkapi.pools.serializers import ServerPoolSerializer
 from networkapi.infrastructure.datatable import build_query_to_datatable
-from networkapi.api_rest.exceptions import NetworkAPIError, ValidationBadRequest
+from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.util import is_valid_list_int_greater_zero_param
+from networkapi.log import Log
+from networkapi.pools.exceptions import InvalidIdPoolException
+
+log = Log(__name__)
 
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated, Read, Write))
+@permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def pool_list(request):
     """
@@ -62,12 +66,13 @@ def pool_list(request):
 
         return Response(data)
 
-    except Exception:
-        raise NetworkAPIError
+    except Exception, e:
+        log.error(e.message)
+        raise NetworkAPIException
 
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated, Read, Write))
+@permission_classes((IsAuthenticated, Write))
 @commit_on_success
 def delete(request):
     """
@@ -85,13 +90,48 @@ def delete(request):
                 server_pool = ServerPool.objects.get(id=_id)
                 server_pool.delete(request.user)
 
-            except ObjectDoesNotExist:
+            except ServerPool.DoesNotExist:
                 pass
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    except ValueError:
-        raise ValidationBadRequest('Invalid Id For Pool.')
+    except ValueError, e:
+        log.error(e.message)
+        raise InvalidIdPoolException
 
-    except Exception:
-        raise NetworkAPIError
+    except Exception, e:
+        log.error(e.message)
+        raise NetworkAPIException
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def remove(request):
+    """
+    Remove Pools by list id running script and update to not created.
+    """
+
+    try:
+
+        ids = request.DATA.get('ids')
+
+        is_valid_list_int_greater_zero_param(ids)
+
+        for _id in ids:
+            try:
+                server_pool = ServerPool.objects.get(id=_id)
+                server_pool.delete(request.user)
+
+            except ServerPool.DoesNotExist:
+                pass
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    except ValueError, e:
+        log.error(e.message)
+        raise InvalidIdPoolException
+
+    except Exception, e:
+        log.error(e.message)
+        raise NetworkAPIException
