@@ -543,21 +543,21 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
 
     @raise ValidationError: If there is validation error in the field
     '''
-    if list_param in validators.EMPTY_VALUES:
-        raise ValueError
+    if required and list_param in validators.EMPTY_VALUES:
+        raise ValueError('Field is required.')
 
     for param in list_param:
 
         if param is None and required:
-            raise ValueError
+            raise ValueError('Field is required.')
 
         try:
             param = int(param)
 
             if param < 1:
-                raise ValueError
+                raise ValueError('Field must be an positive integer.')
 
         except Exception:
-            raise ValueError
+            raise ValueError('Field must be an integer.')
 
     return True
