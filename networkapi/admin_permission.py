@@ -16,7 +16,6 @@
 # limitations under the License.
 
 
-
 class AdminPermission(object):
     USER_ADMINISTRATION = 'administracao_usuarios'
     ENVIRONMENT_MANAGEMENT = 'cadastro_de_ambiente'
@@ -45,6 +44,7 @@ class AdminPermission(object):
     AUTHENTICATE = 'authenticate'
     AUDIT_LOG = 'audit_logs'
     ACL_APPLY = 'aplicar_acl'
+    POOL_MANAGEMENT = 'cadastro_de_pool'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'

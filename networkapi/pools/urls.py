@@ -8,5 +8,6 @@ urlpatterns = patterns(
     url(r'^pools/insert/$', 'pool_insert'),
     url(r'^pools/list_healthchecks/$', 'healthcheck_list'),
     url(r'^pools/delete/$', 'delete'),
-    url(r'^pools/getbypk/(?P<id_server_pool>[^/]+)/$', 'get_by_pk')
+    url(r'^pools/getbypk/(?P<id_server_pool>[^/]+)/$', 'get_by_pk'),
+    url(r'^pools/remove/$', 'remove')
 )

@@ -4,14 +4,19 @@ from networkapi.healthcheckexpect.models import Healthcheck
 
 
 class ServerPoolSerializer(serializers.ModelSerializer):
+
+    environment = serializers.RelatedField(
+        source='environment.name'
+    )
+
     class Meta:
         model = ServerPool
         fields = ('id',
                   'identifier',
                   'default_port',
                   'healthcheck',
-                  'pool_criado',
-                  'ambiente_id_ambiente',
+                  'pool_created',
+                  'environment',
                   'lb_method'
                   )
 

@@ -1738,15 +1738,41 @@ class OptionVipEnvironmentVip(BaseModel):
 
 
 class ServerPool(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_server_pool')
-    identifier = models.CharField(max_length=200)
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_server_pool'
+    )
+
+    identifier = models.CharField(
+        max_length=200
+    )
+
     healthcheck = models.ForeignKey(
-        Healthcheck, db_column='healthcheck_id_healthcheck')
-    default_port = models.IntegerField(db_column='default_port')
-    pool_criado = models.NullBooleanField(db_column='pool_criado', null=True)
-    ambiente_id_ambiente = models.ForeignKey(
-        Ambiente, db_column='ambiente_id_ambiente', null=True)
-    lb_method = models.CharField(max_length=50, db_column='lb_method', null=True)
+        Healthcheck,
+        db_column='healthcheck_id_healthcheck'
+    )
+
+    default_port = models.IntegerField(
+        db_column='default_port'
+    )
+
+    pool_created = models.NullBooleanField(
+        db_column='pool_criado',
+        null=True
+    )
+
+    environment = models.ForeignKey(
+        Ambiente,
+        db_column='ambiente_id_ambiente',
+        null=True
+    )
+
+    lb_method = models.CharField(
+        max_length=50,
+        db_column='lb_method',
+        null=True
+    )
 
     log = Log('ServerPool')
 
