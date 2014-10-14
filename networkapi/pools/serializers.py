@@ -1,15 +1,13 @@
 from rest_framework import serializers
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 from networkapi.healthcheckexpect.models import Healthcheck
+from networkapi.equipamento.models import Equipamento
 
 
 class ServerPoolSerializer(serializers.ModelSerializer):
 
-    environment = serializers.RelatedField(
-        source='environment.name'
-    )
-
     class Meta:
+        depth = 1
         model = ServerPool
         fields = ('id',
                   'identifier',
@@ -23,6 +21,7 @@ class ServerPoolSerializer(serializers.ModelSerializer):
 
 class ServerPoolMemberSerializer(serializers.ModelSerializer):
     class Meta:
+        depth = 1
         model = ServerPoolMember
         fields = ('id',
                   'server_pool',
@@ -46,3 +45,13 @@ class HealthcheckSerializer(serializers.ModelSerializer):
                   'healthcheck_expect',
                   'destination'
                   )
+
+class EquipamentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Equipamento
+        fields = ('id',
+                  'tipo_equipamento',
+                  'modelo',
+                  'nome',
+                  'grupos'
+                 )

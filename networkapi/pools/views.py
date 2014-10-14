@@ -20,8 +20,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+from networkapi.ip.models import IpEquipamento
+from networkapi.equipamento.models import Equipamento
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, ServerPoolMemberSerializer
+from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, ServerPoolMemberSerializer, EquipamentoSerializer
 from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect
 from networkapi.ambiente.models import Ambiente
 from networkapi.ip.models import Ip, Ipv6
@@ -70,6 +72,65 @@ def pool_list(request):
         return Response(data)
 
     except Exception, e:
+        log.error(e.message)
+        raise NetworkAPIException
+
+
+@api_view(['POST', 'GET'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def list_all_members_by_pool(request, id_server_pool):
+
+     try:
+
+        data = dict()
+        start_record = request.DATA.get("start_record")
+        end_record = request.DATA.get("end_record")
+        asorting_cols = request.DATA.get("asorting_cols")
+        searchable_columns = request.DATA.get("searchable_columns")
+        custom_search = request.DATA.get("custom_search")
+
+        query_pools = ServerPoolMember.objects.filter(server_pool=id_server_pool)
+
+        server_pools, total = build_query_to_datatable(
+            query_pools,
+            asorting_cols,
+            custom_search,
+            searchable_columns,
+            start_record,
+            end_record
+        )
+
+        serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
+
+        data["server_pool_members"] = serializer_pools.data
+        data["total"] = total
+
+        return Response(data)
+
+     except Exception, e:
+        log.error(e.message)
+        raise NetworkAPIException
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def get_equipamento_by_ip(request, id_ip):
+
+     try:
+
+        data = dict()
+        ipequips_obj = IpEquipamento.objects.get(ip=id_ip)
+        equip = Equipamento.get_by_pk(pk=ipequips_obj.equipamento_id)
+
+        serializer_equipamento = EquipamentoSerializer(equip, many=False)
+
+        data["equipamento"] = serializer_equipamento.data
+
+        return Response(data)
+
+     except Exception, e:
         log.error(e.message)
         raise NetworkAPIException
 
@@ -228,3 +289,71 @@ def pool_insert(request):
             spm.save(request.user)
 
     return Response(status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def pool_edit(request):
+
+    if request.method == 'POST':
+
+        id_server_pool = request.DATA.get('id_server_pool')
+        identifier = request.DATA.get('identifier')
+        default_port = request.DATA.get('default_port')
+        environment = request.DATA.get('environment')
+        balancing = request.DATA.get('balancing')
+        healthcheck = request.DATA.get('healthcheck')
+        maxcom = request.DATA.get('maxcom')
+        ip_list_full = request.DATA.get('ip_list_full')
+        priorities = request.DATA.get('priorities')
+        ports_reals = request.DATA.get('ports_reals')
+
+        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
+        ambiente_obj = Ambiente.get_by_pk(environment)
+
+        sp = ServerPool(
+            id=id_server_pool,
+            identifier=identifier,
+            default_port=default_port,
+            healthcheck=healthcheck_obj,
+            environment=ambiente_obj,
+            pool_created=True,
+            lb_method=''
+        )
+
+        sp.save(request.user)
+
+        # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
+        spm_list = ServerPoolMember.objects.filter(server_pool=sp)
+
+        for spm in spm_list:
+            spm.delete(request.user)
+
+
+        ip_object = None
+        ipv6_object = None
+
+        for i in range(0, len(ip_list_full)):
+
+            if len(ip_list_full[i]['ip']) <= 15:
+                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+            else:
+                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+
+            spm = ServerPoolMember(
+                server_pool=sp,
+                identifier=identifier,
+                ip=ip_object,
+                ipv6=ipv6_object,
+                priority=priorities[i],
+                weight=0,
+                limit=maxcom,
+                port_real=ports_reals[i],
+                healthcheck=healthcheck_obj
+            )
+
+            spm.save(request.user)
+
+    return Response(status=status.HTTP_201_CREATED)
+
