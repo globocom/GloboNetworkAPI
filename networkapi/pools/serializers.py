@@ -4,7 +4,11 @@ from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.equipamento.models import Equipamento
 
 
-class ServerPoolSerializer(serializers.ModelSerializer):
+class ServerPoolDatatableSerializer(serializers.ModelSerializer):
+
+    healthcheck = serializers.RelatedField(
+        source='healthcheck.healthcheck_type'
+    )
 
     class Meta:
         depth = 1
@@ -33,6 +37,21 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'port_real',
                   'healthcheck'
                   )
+
+
+class ServerPoolSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        depth = 1
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'healthcheck',
+            'environment',
+            'pool_created'
+        )
 
 
 class HealthcheckSerializer(serializers.ModelSerializer):

@@ -23,16 +23,23 @@ from rest_framework.response import Response
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, ServerPoolMemberSerializer, EquipamentoSerializer
-from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect
+from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
+    ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer
+from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.infrastructure.datatable import build_query_to_datatable
-from networkapi.api_rest.exceptions import NetworkAPIException
-from networkapi.util import is_valid_list_int_greater_zero_param
+from networkapi.api_rest.exceptions import NetworkAPIException, \
+    ValidationException
+from networkapi.util import is_valid_list_int_greater_zero_param, \
+    is_valid_int_greater_zero_param, is_valid_int_param
 from networkapi.log import Log
-from networkapi.pools.exceptions import InvalidIdPoolException
+from networkapi.pools.exceptions import InvalidIdPoolException, \
+    ScriptRemovePoolException, PoolDoesNotExistException, \
+    ScriptCreatePoolException
 from networkapi.pools.permissions import Read, Write
+from networkapi.infrastructure.script_utils import exec_script, ScriptError
+from networkapi.settings import POOL_REMOVE, POOL_CREATE
 
 log = Log(__name__)
 
@@ -48,12 +55,20 @@ def pool_list(request):
 
         data = dict()
 
+        environment_id = request.DATA.get("environment_id")
         start_record = request.DATA.get("start_record")
         end_record = request.DATA.get("end_record")
         asorting_cols = request.DATA.get("asorting_cols")
         searchable_columns = request.DATA.get("searchable_columns")
         custom_search = request.DATA.get("custom_search")
+
+        if not is_valid_int_greater_zero_param(environment_id, False):
+            raise ValidationException('Environment id invalid.')
+
         query_pools = ServerPool.objects.all()
+
+        if environment_id:
+            query_pools = query_pools.filter(environment=environment_id)
 
         server_pools, total = build_query_to_datatable(
             query_pools,
@@ -64,15 +79,22 @@ def pool_list(request):
             end_record
         )
 
-        serializer_pools = ServerPoolSerializer(server_pools, many=True)
+        serializer_pools = ServerPoolDatatableSerializer(
+            server_pools,
+            many=True
+        )
 
         data["pools"] = serializer_pools.data
         data["total"] = total
 
         return Response(data)
 
-    except Exception, e:
-        log.error(e.message)
+    except ValidationException, exception:
+        log.error(exception.detail)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception.message)
         raise NetworkAPIException
 
 
@@ -152,6 +174,12 @@ def delete(request):
         for _id in ids:
             try:
                 server_pool = ServerPool.objects.get(id=_id)
+
+                code, _, _ = exec_script(POOL_REMOVE % _id)
+
+                if code != 0:
+                    raise ScriptRemovePoolException
+
                 server_pool.delete(request.user)
 
             except ServerPool.DoesNotExist:
@@ -159,12 +187,20 @@ def delete(request):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    except ValueError, e:
-        log.error(e.message)
+    except ScriptRemovePoolException, exception:
+        log.error(exception.detail)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception.message)
+        raise ScriptRemovePoolException
+
+    except ValueError, exception:
+        log.error(exception.message)
         raise InvalidIdPoolException
 
-    except Exception, e:
-        log.error(e.message)
+    except Exception, exception:
+        log.error(exception.message)
         raise NetworkAPIException
 
 
@@ -186,6 +222,12 @@ def remove(request):
             try:
 
                 server_pool = ServerPool.objects.get(id=_id)
+
+                code, _, _ = exec_script(POOL_REMOVE % _id)
+
+                if code != 0:
+                    raise ScriptRemovePoolException
+
                 server_pool.pool_created = False
                 server_pool.save(request.user)
 
@@ -194,12 +236,73 @@ def remove(request):
 
         return Response()
 
-    except ValueError, e:
-        log.error(e.message)
+    except ScriptRemovePoolException, exception:
+        log.error(exception.detail)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception.message)
+        raise ScriptRemovePoolException
+
+    except ValueError, exception:
+        log.error(exception.message)
         raise InvalidIdPoolException
 
-    except Exception, e:
-        log.error(e.message)
+    except Exception, exception:
+        log.error(exception.message)
+        raise NetworkAPIException
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def create(request):
+    """
+    Create Pools by list id running script and update to created.
+    """
+
+    try:
+
+        ids = request.DATA.get('ids')
+
+        is_valid_list_int_greater_zero_param(ids)
+
+        for _id in ids:
+            try:
+
+                server_pool = ServerPool.objects.get(id=_id)
+
+                code, _, _ = exec_script(POOL_CREATE % _id)
+
+                if code != 0:
+                    raise ScriptCreatePoolException
+
+                server_pool.pool_created = True
+                server_pool.save(request.user)
+
+            except ServerPool.DoesNotExist:
+                raise PoolDoesNotExistException
+
+        return Response()
+
+    except PoolDoesNotExistException, exception:
+        log.error(exception.detail)
+        raise exception
+
+    except ScriptCreatePoolException, exception:
+        log.error(exception.detail)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception.message)
+        raise ScriptCreatePoolException
+
+    except ValueError, exception:
+        log.error(exception.message)
+        raise InvalidIdPoolException
+
+    except Exception, exception:
+        log.error(exception.message)
         raise NetworkAPIException
 
 

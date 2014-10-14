@@ -217,6 +217,9 @@ NETWORKIPV6_REMOVE = 'navlan -I %d --IPv6 --remove'
 VIP_CREATE = 'gerador_vips -i %d --cria'
 VIP_REMOVE = 'gerador_vips -i %d --remove'
 
+POOL_CREATE = 'gerador_vips --pool %s --cria'
+POOL_REMOVE = 'gerador_vips --pool %s --remove'
+
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'
 VIP_REAL_v6_CREATE = 'gerador_vips -i %s --real %s --ipv6 %s --add'
