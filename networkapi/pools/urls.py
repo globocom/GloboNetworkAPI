@@ -9,4 +9,5 @@ urlpatterns = patterns(
     url(r'^pools/list_healthchecks/$', 'healthcheck_list'),
     url(r'^pools/delete/$', 'delete'),
     url(r'^pools/remove/$', 'remove'),
+    url(r'^pools/create/$', 'create'),
 )

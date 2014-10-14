@@ -3,13 +3,32 @@ from networkapi.requisicaovips.models import ServerPool
 from networkapi.healthcheckexpect.models import Healthcheck
 
 
-class ServerPoolSerializer(serializers.ModelSerializer):
+class ServerPoolDatatableSerializer(serializers.ModelSerializer):
+
+    healthcheck = serializers.RelatedField(
+        source='healthcheck.healthcheck_type'
+    )
 
     environment = serializers.RelatedField(
         source='environment.name'
     )
 
     class Meta:
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'healthcheck',
+            'environment',
+            'pool_created'
+        )
+
+
+class ServerPoolSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        depth = 1
         model = ServerPool
         fields = (
             'id',
