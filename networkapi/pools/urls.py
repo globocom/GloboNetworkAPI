@@ -10,4 +10,6 @@ urlpatterns = patterns(
     url(r'^pools/delete/$', 'delete'),
     url(r'^pools/remove/$', 'remove'),
     url(r'^pools/create/$', 'create'),
+    url(r'^pools/getbypk/(?P<id_server_pool>[^/]+)/$', 'get_by_pk'),
+    url(r'^pools/remove/$', 'remove'),
 )

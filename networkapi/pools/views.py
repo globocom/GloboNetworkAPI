@@ -22,7 +22,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
-    ServerPoolDatatableSerializer
+    ServerPoolMemberSerializer, ServerPoolDatatableSerializer
+
 from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect
 from networkapi.ambiente.models import Ambiente
 from networkapi.ip.models import Ip, Ipv6
@@ -257,23 +258,40 @@ def healthcheck_list(request):
         return Response(data)
 
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read, Write))
+@commit_on_success
+def get_by_pk(request, id_server_pool):
+
+        data = dict()
+        server_pool = ServerPool.objects.get(pk=id_server_pool)
+        server_pool_members = ServerPoolMember.objects.filter(server_pool=id_server_pool)
+
+        serializer_server_pool = ServerPoolSerializer(server_pool)
+        serializer_server_pool_member = ServerPoolMemberSerializer(server_pool_members, many=True)
+
+        data["server_pool"] = serializer_server_pool.data
+        data["server_pool_members"] = serializer_server_pool_member.data
+
+        return Response(data)
+
+
 @api_view(['GET', 'POST'])
 @permission_classes((IsAuthenticated, Read, Write))
 @commit_on_success
 def pool_insert(request):
 
     if request.method == 'POST':
-        import json
+
         identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
         environment = request.DATA.get('environment')
         balancing = request.DATA.get('balancing')
         healthcheck = request.DATA.get('healthcheck')
         maxcom = request.DATA.get('maxcom')
-        ip_list_full = json.loads(request.DATA.get('ip_list_full'))
-        id_equips = request.DATA.getlist('id_equips')
-        priorities = request.DATA.getlist('priorities')
-        ports_reals = request.DATA.getlist('ports_reals')
+        ip_list_full = request.DATA.get('ip_list_full')
+        priorities = request.DATA.get('priorities')
+        ports_reals = request.DATA.get('ports_reals')
 
         healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
         ambiente_obj = Ambiente.get_by_pk(environment)
