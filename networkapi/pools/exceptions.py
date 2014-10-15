@@ -20,3 +20,8 @@ class ScriptRemovePoolException(APIException):
 class ScriptCreatePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute create script for pool.'
+
+
+class PoolConstraintVipException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool can not be deleted because it is associated with a VIP.'
