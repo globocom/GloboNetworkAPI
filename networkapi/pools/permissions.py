@@ -14,7 +14,7 @@ class Read(BasePermission):
     def has_permission(self, request, view):
         return has_perm(
             request.user,
-            AdminPermission.ENVIRONMENT_MANAGEMENT,
+            AdminPermission.POOL_MANAGEMENT,
             AdminPermission.READ_OPERATION
         )
 
@@ -24,6 +24,36 @@ class Write(BasePermission):
     def has_permission(self, request, view):
         return has_perm(
             request.user,
-            AdminPermission.ENVIRONMENT_MANAGEMENT,
+            AdminPermission.POOL_MANAGEMENT,
+            AdminPermission.WRITE_OPERATION
+        )
+
+
+class ScriptRemovePermission(BasePermission):
+
+    def has_permission(self, request, view):
+        return has_perm(
+            request.user,
+            AdminPermission.POOL_REMOVE_SCRIPT,
+            AdminPermission.WRITE_OPERATION
+        )
+
+
+class ScriptCreatePermission(BasePermission):
+
+    def has_permission(self, request, view):
+        return has_perm(
+            request.user,
+            AdminPermission.POOL_CREATE_SCRIPT,
+            AdminPermission.WRITE_OPERATION
+        )
+
+
+class ScriptAlterPermission(BasePermission):
+
+    def has_permission(self, request, view):
+        return has_perm(
+            request.user,
+            AdminPermission.POOL_ALTER_SCRIPT,
             AdminPermission.WRITE_OPERATION
         )

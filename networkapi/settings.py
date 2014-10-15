@@ -217,8 +217,15 @@ NETWORKIPV6_REMOVE = 'navlan -I %d --IPv6 --remove'
 VIP_CREATE = 'gerador_vips -i %d --cria'
 VIP_REMOVE = 'gerador_vips -i %d --remove'
 
+"""
+ Manager Scripts Pool
+"""
 POOL_CREATE = 'gerador_vips --pool %s --cria'
 POOL_REMOVE = 'gerador_vips --pool %s --remove'
+POOL_REAL_CREATE = 'gerador_vips -p %s --id_ip %s --port_ip %s --add'
+POOL_REAL_REMOVE = 'gerador_vips -p %s --id_ip %s --port_ip %s --del'
+POOL_REAL_ENABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --ena'
+POOL_REAL_DISABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --dis'
 
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'
