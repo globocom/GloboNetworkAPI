@@ -22,21 +22,19 @@ from rest_framework import status
 from rest_framework.response import Response
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
+from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
+    VipPortToPool
 from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.infrastructure.datatable import build_query_to_datatable
-from networkapi.api_rest.exceptions import NetworkAPIException, \
-    ValidationException
+from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import is_valid_list_int_greater_zero_param, \
-    is_valid_int_greater_zero_param, is_valid_int_param
+    is_valid_int_greater_zero_param
 from networkapi.log import Log
-from networkapi.pools.exceptions import InvalidIdPoolException, \
-    ScriptRemovePoolException, PoolDoesNotExistException, \
-    ScriptCreatePoolException
+from networkapi.pools import exceptions
 from networkapi.pools.permissions import Read, Write
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.settings import POOL_REMOVE, POOL_CREATE
@@ -63,7 +61,7 @@ def pool_list(request):
         custom_search = request.DATA.get("custom_search")
 
         if not is_valid_int_greater_zero_param(environment_id, False):
-            raise ValidationException('Environment id invalid.')
+            raise api_exceptions.ValidationException('Environment id invalid.')
 
         query_pools = ServerPool.objects.all()
 
@@ -89,13 +87,13 @@ def pool_list(request):
 
         return Response(data)
 
-    except ValidationException, exception:
-        log.error(exception.detail)
+    except api_exceptions.ValidationException, exception:
+        log.error(exception)
         raise exception
 
     except Exception, exception:
-        log.error(exception.message)
-        raise NetworkAPIException
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['POST', 'GET'])
@@ -103,10 +101,10 @@ def pool_list(request):
 @commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
 
-     try:
+    try:
 
         if not is_valid_int_greater_zero_param(id_server_pool):
-            raise InvalidIdPoolException
+            raise exceptions.InvalidIdPoolException()
 
         data = dict()
         start_record = request.DATA.get("start_record")
@@ -133,17 +131,17 @@ def list_all_members_by_pool(request, id_server_pool):
 
         return Response(data)
 
-     except InvalidIdPoolException, exception:
+    except exceptions.InvalidIdPoolException, exception:
         log.error(exception.detail)
         raise exception
 
-     except ServerPool.DoesNotExist, exception:
+    except ServerPool.DoesNotExist, exception:
         log.error(exception.detail)
-        raise PoolDoesNotExistException
+        raise exceptions.PoolDoesNotExistException()
 
-     except Exception, exception:
+    except Exception, exception:
         log.error(exception.message)
-        raise NetworkAPIException
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['GET'])
@@ -151,10 +149,10 @@ def list_all_members_by_pool(request, id_server_pool):
 @commit_on_success
 def get_equipamento_by_ip(request, id_ip):
 
-     try:
+    try:
 
         if not is_valid_int_greater_zero_param(id_ip):
-            raise InvalidIdPoolException
+            raise exceptions.InvalidIdPoolException()
 
         data = dict()
         ipequips_obj = IpEquipamento.objects.get(ip=id_ip)
@@ -166,13 +164,13 @@ def get_equipamento_by_ip(request, id_ip):
 
         return Response(data)
 
-     except InvalidIdPoolException, exception:
+    except exceptions.InvalidIdPoolException, exception:
         log.error(exception.detail)
         raise exception
 
-     except Exception, e:
+    except Exception, e:
         log.error(e.message)
-        raise NetworkAPIException
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['POST'])
@@ -193,10 +191,13 @@ def delete(request):
             try:
                 server_pool = ServerPool.objects.get(id=_id)
 
+                if VipPortToPool.objects.filter(server_pool=_id):
+                    raise exceptions.PoolConstraintVipException()
+
                 code, _, _ = exec_script(POOL_REMOVE % _id)
 
                 if code != 0:
-                    raise ScriptRemovePoolException
+                    raise exceptions.ScriptRemovePoolException()
 
                 server_pool.delete(request.user)
 
@@ -205,21 +206,25 @@ def delete(request):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    except ScriptRemovePoolException, exception:
-        log.error(exception.detail)
+    except exceptions.PoolConstraintVipException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.ScriptRemovePoolException, exception:
+        log.error(exception)
         raise exception
 
     except ScriptError, exception:
-        log.error(exception.message)
-        raise ScriptRemovePoolException
+        log.error(exception)
+        raise exceptions.ScriptRemovePoolException()
 
     except ValueError, exception:
-        log.error(exception.message)
-        raise InvalidIdPoolException
+        log.error(exception)
+        raise exceptions.InvalidIdPoolException()
 
     except Exception, exception:
-        log.error(exception.message)
-        raise NetworkAPIException
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['POST'])
@@ -244,7 +249,7 @@ def remove(request):
                 code, _, _ = exec_script(POOL_REMOVE % _id)
 
                 if code != 0:
-                    raise ScriptRemovePoolException
+                    raise exceptions.ScriptRemovePoolException()
 
                 server_pool.pool_created = False
                 server_pool.save(request.user)
@@ -254,21 +259,21 @@ def remove(request):
 
         return Response()
 
-    except ScriptRemovePoolException, exception:
-        log.error(exception.detail)
+    except exceptions.ScriptRemovePoolException, exception:
+        log.error(exception)
         raise exception
 
     except ScriptError, exception:
-        log.error(exception.message)
-        raise ScriptRemovePoolException
+        log.error(exception)
+        raise exceptions.ScriptRemovePoolException()
 
     except ValueError, exception:
-        log.error(exception.message)
-        raise InvalidIdPoolException
+        log.error(exception)
+        raise exceptions.InvalidIdPoolException()
 
     except Exception, exception:
-        log.error(exception.message)
-        raise NetworkAPIException
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['POST'])
@@ -293,35 +298,35 @@ def create(request):
                 code, _, _ = exec_script(POOL_CREATE % _id)
 
                 if code != 0:
-                    raise ScriptCreatePoolException
+                    raise exceptions.ScriptCreatePoolException()
 
                 server_pool.pool_created = True
                 server_pool.save(request.user)
 
             except ServerPool.DoesNotExist:
-                raise PoolDoesNotExistException
+                raise exceptions.PoolDoesNotExistException()
 
         return Response()
 
-    except PoolDoesNotExistException, exception:
+    except exceptions.PoolDoesNotExistException, exception:
         log.error(exception.detail)
         raise exception
 
-    except ScriptCreatePoolException, exception:
+    except exceptions.ScriptCreatePoolException, exception:
         log.error(exception.detail)
         raise exception
 
     except ScriptError, exception:
         log.error(exception.message)
-        raise ScriptCreatePoolException
+        raise exceptions.ScriptCreatePoolException()
 
     except ValueError, exception:
         log.error(exception.message)
-        raise InvalidIdPoolException
+        raise exceptions.InvalidIdPoolException()
 
     except Exception, exception:
         log.error(exception.message)
-        raise NetworkAPIException
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['GET'])
@@ -335,11 +340,12 @@ def healthcheck_list(request):
         serializer_healthchecks = HealthcheckSerializer(healthchecks, many=True)
         data["healthchecks"] = serializer_healthchecks.data
 
+
         return Response(data)
 
     except Exception, exception:
         log.error(exception.message)
-        raise NetworkAPIException
+        raise api_exceptions.NetworkAPIException
 
 
 @api_view(['GET'])
@@ -350,7 +356,7 @@ def get_by_pk(request, id_server_pool):
         try:
 
             if not is_valid_int_greater_zero_param(id_server_pool):
-                raise InvalidIdPoolException
+                raise exceptions.InvalidIdPoolException
 
             data = dict()
             server_pool = ServerPool.objects.get(pk=id_server_pool)
@@ -365,20 +371,17 @@ def get_by_pk(request, id_server_pool):
             return Response(data)
 
 
-        except InvalidIdPoolException, exception:
+        except exceptions.InvalidIdPoolException(), exception:
             log.error(exception.detail)
             raise exception
 
         except ServerPool.DoesNotExist, exception:
             log.error(exception.detail)
-            raise PoolDoesNotExistException
+            raise exceptions.PoolDoesNotExistException
 
         except Exception, exception:
             log.error(exception.message)
-            raise NetworkAPIException
-
-
-
+            raise api_exceptions.NetworkAPIException
 
 
 
@@ -443,7 +446,7 @@ def pool_insert(request):
 
     except Exception, exception:
         log.error(exception.message)
-        raise NetworkAPIException
+        raise api_exceptions.NetworkAPIException
 
 
 @api_view(['GET', 'POST'])
@@ -454,7 +457,7 @@ def pool_edit(request):
     try:
 
         if not is_valid_int_greater_zero_param(request.DATA.get('id_server_pool')):
-                raise InvalidIdPoolException
+            raise exceptions.InvalidIdPoolException
 
         if request.method == 'POST':
 
@@ -495,7 +498,6 @@ def pool_edit(request):
             ipv6_object = None
 
             for i in range(0, len(ip_list_full)):
-
                 if len(ip_list_full[i]['ip']) <= 15:
                     ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
                 else:
@@ -517,14 +519,15 @@ def pool_edit(request):
 
         return Response(status=status.HTTP_201_CREATED)
 
-    except InvalidIdPoolException, exception:
+    except exceptions.InvalidIdPoolException(), exception:
         log.error(exception.detail)
         raise exception
 
     except ServerPool.DoesNotExist, exception:
         log.error(exception.detail)
-        raise PoolDoesNotExistException
+        raise exceptions.PoolDoesNotExistException
 
     except Exception, exception:
         log.error(exception.message)
-        raise NetworkAPIException
+        raise api_exceptions.NetworkAPIException
+

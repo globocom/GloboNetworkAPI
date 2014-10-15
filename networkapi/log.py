@@ -219,7 +219,7 @@ class Log(object):
         """Imprime uma mensagem de erro no log"""
         try:
             get_lock()
-            msg = msg % args
+            msg = str(msg) % args
             self.logger.error(
                 msg, extra={'module_name': self.module_name}, exc_info=True)
         finally:

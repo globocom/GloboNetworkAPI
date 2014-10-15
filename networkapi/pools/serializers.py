@@ -10,17 +10,20 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
         source='healthcheck.healthcheck_type'
     )
 
+    environment = serializers.RelatedField(
+        source='environment.name'
+    )
+
     class Meta:
-        depth = 1
         model = ServerPool
-        fields = ('id',
-                  'identifier',
-                  'default_port',
-                  'healthcheck',
-                  'pool_created',
-                  'environment',
-                  'lb_method'
-                  )
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'healthcheck',
+            'environment',
+            'pool_created'
+        )
 
 
 class ServerPoolMemberSerializer(serializers.ModelSerializer):
