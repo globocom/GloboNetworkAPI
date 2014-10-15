@@ -105,6 +105,9 @@ def list_all_members_by_pool(request, id_server_pool):
 
      try:
 
+        if not is_valid_int_greater_zero_param(id_server_pool):
+            raise InvalidIdPoolException
+
         data = dict()
         start_record = request.DATA.get("start_record")
         end_record = request.DATA.get("end_record")
@@ -130,8 +133,16 @@ def list_all_members_by_pool(request, id_server_pool):
 
         return Response(data)
 
-     except Exception, e:
-        log.error(e.message)
+     except InvalidIdPoolException, exception:
+        log.error(exception.detail)
+        raise exception
+
+     except ServerPool.DoesNotExist, exception:
+        log.error(exception.detail)
+        raise PoolDoesNotExistException
+
+     except Exception, exception:
+        log.error(exception.message)
         raise NetworkAPIException
 
 
@@ -142,6 +153,9 @@ def get_equipamento_by_ip(request, id_ip):
 
      try:
 
+        if not is_valid_int_greater_zero_param(id_ip):
+            raise InvalidIdPoolException
+
         data = dict()
         ipequips_obj = IpEquipamento.objects.get(ip=id_ip)
         equip = Equipamento.get_by_pk(pk=ipequips_obj.equipamento_id)
@@ -151,6 +165,10 @@ def get_equipamento_by_ip(request, id_ip):
         data["equipamento"] = serializer_equipamento.data
 
         return Response(data)
+
+     except InvalidIdPoolException, exception:
+        log.error(exception.detail)
+        raise exception
 
      except Exception, e:
         log.error(e.message)
@@ -310,6 +328,8 @@ def create(request):
 @permission_classes((IsAuthenticated, Read, Write))
 @commit_on_success
 def healthcheck_list(request):
+
+    try:
         data = dict()
         healthchecks = Healthcheck.objects.all()
         serializer_healthchecks = HealthcheckSerializer(healthchecks, many=True)
@@ -317,23 +337,49 @@ def healthcheck_list(request):
 
         return Response(data)
 
+    except Exception, exception:
+        log.error(exception.message)
+        raise NetworkAPIException
+
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read, Write))
 @commit_on_success
 def get_by_pk(request, id_server_pool):
 
-        data = dict()
-        server_pool = ServerPool.objects.get(pk=id_server_pool)
-        server_pool_members = ServerPoolMember.objects.filter(server_pool=id_server_pool)
+        try:
 
-        serializer_server_pool = ServerPoolSerializer(server_pool)
-        serializer_server_pool_member = ServerPoolMemberSerializer(server_pool_members, many=True)
+            if not is_valid_int_greater_zero_param(id_server_pool):
+                raise InvalidIdPoolException
 
-        data["server_pool"] = serializer_server_pool.data
-        data["server_pool_members"] = serializer_server_pool_member.data
+            data = dict()
+            server_pool = ServerPool.objects.get(pk=id_server_pool)
+            server_pool_members = ServerPoolMember.objects.filter(server_pool=id_server_pool)
 
-        return Response(data)
+            serializer_server_pool = ServerPoolSerializer(server_pool)
+            serializer_server_pool_member = ServerPoolMemberSerializer(server_pool_members, many=True)
+
+            data["server_pool"] = serializer_server_pool.data
+            data["server_pool_members"] = serializer_server_pool_member.data
+
+            return Response(data)
+
+
+        except InvalidIdPoolException, exception:
+            log.error(exception.detail)
+            raise exception
+
+        except ServerPool.DoesNotExist, exception:
+            log.error(exception.detail)
+            raise PoolDoesNotExistException
+
+        except Exception, exception:
+            log.error(exception.message)
+            raise NetworkAPIException
+
+
+
+
 
 
 @api_view(['GET', 'POST'])
@@ -341,57 +387,63 @@ def get_by_pk(request, id_server_pool):
 @commit_on_success
 def pool_insert(request):
 
-    if request.method == 'POST':
 
-        identifier = request.DATA.get('identifier')
-        default_port = request.DATA.get('default_port')
-        environment = request.DATA.get('environment')
-        balancing = request.DATA.get('balancing')
-        healthcheck = request.DATA.get('healthcheck')
-        maxcom = request.DATA.get('maxcom')
-        ip_list_full = request.DATA.get('ip_list_full')
-        priorities = request.DATA.get('priorities')
-        ports_reals = request.DATA.get('ports_reals')
+    try:
+        if request.method == 'POST':
 
-        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
-        ambiente_obj = Ambiente.get_by_pk(environment)
+            identifier = request.DATA.get('identifier')
+            default_port = request.DATA.get('default_port')
+            environment = request.DATA.get('environment')
+            balancing = request.DATA.get('balancing')
+            healthcheck = request.DATA.get('healthcheck')
+            maxcom = request.DATA.get('maxcom')
+            ip_list_full = request.DATA.get('ip_list_full')
+            priorities = request.DATA.get('priorities')
+            ports_reals = request.DATA.get('ports_reals')
 
-        sp = ServerPool(
-            identifier=identifier,
-            default_port=default_port,
-            healthcheck=healthcheck_obj,
-            environment=ambiente_obj,
-            pool_created=True,
-            lb_method=''
-        )
+            healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
+            ambiente_obj = Ambiente.get_by_pk(environment)
 
-        sp.save(request.user)
-
-        ip_object = None
-        ipv6_object = None
-
-        for i in range(0, len(ip_list_full)):
-
-            if len(ip_list_full[i]['ip']) <= 15:
-                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-            else:
-                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-
-            spm = ServerPoolMember(
-                server_pool=sp,
+            sp = ServerPool(
                 identifier=identifier,
-                ip=ip_object,
-                ipv6=ipv6_object,
-                priority=priorities[i],
-                weight=0,
-                limit=maxcom,
-                port_real=ports_reals[i],
-                healthcheck=healthcheck_obj
+                default_port=default_port,
+                healthcheck=healthcheck_obj,
+                environment=ambiente_obj,
+                pool_created=True,
+                lb_method=''
             )
 
-            spm.save(request.user)
+            sp.save(request.user)
 
-    return Response(status=status.HTTP_201_CREATED)
+            ip_object = None
+            ipv6_object = None
+
+            for i in range(0, len(ip_list_full)):
+
+                if len(ip_list_full[i]['ip']) <= 15:
+                    ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+                else:
+                    ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+
+                spm = ServerPoolMember(
+                    server_pool=sp,
+                    identifier=identifier,
+                    ip=ip_object,
+                    ipv6=ipv6_object,
+                    priority=priorities[i],
+                    weight=0,
+                    limit=maxcom,
+                    port_real=ports_reals[i],
+                    healthcheck=healthcheck_obj
+                )
+
+                spm.save(request.user)
+
+            return Response(status=status.HTTP_201_CREATED)
+
+    except Exception, exception:
+        log.error(exception.message)
+        raise NetworkAPIException
 
 
 @api_view(['GET', 'POST'])
@@ -399,64 +451,80 @@ def pool_insert(request):
 @commit_on_success
 def pool_edit(request):
 
-    if request.method == 'POST':
+    try:
 
-        id_server_pool = request.DATA.get('id_server_pool')
-        identifier = request.DATA.get('identifier')
-        default_port = request.DATA.get('default_port')
-        environment = request.DATA.get('environment')
-        balancing = request.DATA.get('balancing')
-        healthcheck = request.DATA.get('healthcheck')
-        maxcom = request.DATA.get('maxcom')
-        ip_list_full = request.DATA.get('ip_list_full')
-        priorities = request.DATA.get('priorities')
-        ports_reals = request.DATA.get('ports_reals')
+        if not is_valid_int_greater_zero_param(request.DATA.get('id_server_pool')):
+                raise InvalidIdPoolException
 
-        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
-        ambiente_obj = Ambiente.get_by_pk(environment)
+        if request.method == 'POST':
 
-        sp = ServerPool(
-            id=id_server_pool,
-            identifier=identifier,
-            default_port=default_port,
-            healthcheck=healthcheck_obj,
-            environment=ambiente_obj,
-            pool_created=True,
-            lb_method=''
-        )
+            id_server_pool = request.DATA.get('id_server_pool')
+            identifier = request.DATA.get('identifier')
+            default_port = request.DATA.get('default_port')
+            environment = request.DATA.get('environment')
+            balancing = request.DATA.get('balancing')
+            healthcheck = request.DATA.get('healthcheck')
+            maxcom = request.DATA.get('maxcom')
+            ip_list_full = request.DATA.get('ip_list_full')
+            priorities = request.DATA.get('priorities')
+            ports_reals = request.DATA.get('ports_reals')
 
-        sp.save(request.user)
+            healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
+            ambiente_obj = Ambiente.get_by_pk(environment)
 
-        # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
-        spm_list = ServerPoolMember.objects.filter(server_pool=sp)
-
-        for spm in spm_list:
-            spm.delete(request.user)
-
-
-        ip_object = None
-        ipv6_object = None
-
-        for i in range(0, len(ip_list_full)):
-
-            if len(ip_list_full[i]['ip']) <= 15:
-                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-            else:
-                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-
-            spm = ServerPoolMember(
-                server_pool=sp,
+            sp = ServerPool(
+                id=id_server_pool,
                 identifier=identifier,
-                ip=ip_object,
-                ipv6=ipv6_object,
-                priority=priorities[i],
-                weight=0,
-                limit=maxcom,
-                port_real=ports_reals[i],
-                healthcheck=healthcheck_obj
+                default_port=default_port,
+                healthcheck=healthcheck_obj,
+                environment=ambiente_obj,
+                pool_created=True,
+                lb_method=''
             )
 
-            spm.save(request.user)
+            sp.save(request.user)
 
-    return Response(status=status.HTTP_201_CREATED)
+            # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
+            spm_list = ServerPoolMember.objects.filter(server_pool=sp)
 
+            for spm in spm_list:
+                spm.delete(request.user)
+
+
+            ip_object = None
+            ipv6_object = None
+
+            for i in range(0, len(ip_list_full)):
+
+                if len(ip_list_full[i]['ip']) <= 15:
+                    ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+                else:
+                    ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+
+                spm = ServerPoolMember(
+                    server_pool=sp,
+                    identifier=identifier,
+                    ip=ip_object,
+                    ipv6=ipv6_object,
+                    priority=priorities[i],
+                    weight=0,
+                    limit=maxcom,
+                    port_real=ports_reals[i],
+                    healthcheck=healthcheck_obj
+                )
+
+                spm.save(request.user)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+    except InvalidIdPoolException, exception:
+        log.error(exception.detail)
+        raise exception
+
+    except ServerPool.DoesNotExist, exception:
+        log.error(exception.detail)
+        raise PoolDoesNotExistException
+
+    except Exception, exception:
+        log.error(exception.message)
+        raise NetworkAPIException
