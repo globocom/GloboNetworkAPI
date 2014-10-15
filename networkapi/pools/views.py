@@ -582,23 +582,21 @@ def enable(request):
 
         for _id in ids:
 
-            server_pool_members = ServerPoolMember.objects.get(id=_id)
+            server_pool_member = ServerPoolMember.objects.get(id=_id)
 
-            for server_pool_member in server_pool_members:
+            ipv4 = server_pool_member.ip
+            ipv6 = server_pool_member.ipv6
 
-                ipv4 = server_pool_member.ip
-                ipv6 = server_pool_member.ipv6
+            id_pool = server_pool_member.server_pool.id
+            id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
+            port_ip = server_pool_member.port_real
 
-                id_pool = server_pool_member.server_pool.id
-                id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
-                port_ip = server_pool_member.port_real
+            command = POOL_REAL_ENABLE % (id_pool, id_ip, port_ip)
 
-                command = POOL_REAL_ENABLE % (id_pool, id_ip, port_ip)
+            code, _, _ = exec_script(command)
 
-                code, _, _ = exec_script(command)
-
-                if code != 0:
-                    raise exceptions.ScriptEnablePoolException()
+            if code != 0:
+                raise exceptions.ScriptEnablePoolException()
 
         return Response()
 
@@ -639,23 +637,21 @@ def disable(request):
 
         for _id in ids:
 
-            server_pool_members = ServerPoolMember.objects.get(id=_id)
+            server_pool_member = ServerPoolMember.objects.get(id=_id)
 
-            for server_pool_member in server_pool_members:
+            ipv4 = server_pool_member.ip
+            ipv6 = server_pool_member.ipv6
 
-                ipv4 = server_pool_member.ip
-                ipv6 = server_pool_member.ipv6
+            id_pool = server_pool_member.server_pool.id
+            id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
+            port_ip = server_pool_member.port_real
 
-                id_pool = server_pool_member.server_pool.id
-                id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
-                port_ip = server_pool_member.port_real
+            command = POOL_REAL_DISABLE % (id_pool, id_ip, port_ip)
 
-                command = POOL_REAL_DISABLE % (id_pool, id_ip, port_ip)
+            code, _, _ = exec_script(command)
 
-                code, _, _ = exec_script(command)
-
-                if code != 0:
-                    raise exceptions.ScriptDisablePoolException()
+            if code != 0:
+                raise exceptions.ScriptDisablePoolException()
 
         return Response()
 
