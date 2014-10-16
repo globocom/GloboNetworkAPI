@@ -98,7 +98,7 @@ def pool_list(request):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST', 'GET'])
+@api_view(['POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
@@ -342,7 +342,7 @@ def create(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, Read, Write))
+@permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def healthcheck_list(request):
 
@@ -366,7 +366,7 @@ def healthcheck_list(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, Read, Write))
+@permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def get_by_pk(request, id_server_pool):
 
@@ -484,14 +484,14 @@ def pool_insert(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
-# TODO: ALTERAR PARA PUT
+
 @api_view(['POST'])
-@permission_classes((IsAuthenticated, Write))
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
 @commit_on_success
 def pool_edit(request):
 
     try:
-        # TODO: ADD VALIDATION
+
         id_server_pool = request.DATA.get('id_server_pool')
 
         if not is_valid_int_greater_zero_param(id_server_pool):
@@ -516,7 +516,6 @@ def pool_edit(request):
             default_port=default_port,
             healthcheck=healthcheck_obj,
             environment=ambiente_obj,
-            pool_created=True,  # TODO: REMOVER?
             lb_method=balancing
         )
 
