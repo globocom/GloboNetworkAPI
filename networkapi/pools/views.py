@@ -510,14 +510,12 @@ def pool_edit(request):
         healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
         ambiente_obj = Ambiente.get_by_pk(environment)
 
-        sp = ServerPool(
-            id=id_server_pool,
-            identifier=identifier,
-            default_port=default_port,
-            healthcheck=healthcheck_obj,
-            environment=ambiente_obj,
-            lb_method=balancing
-        )
+        sp = ServerPool.objects.get(id=id_server_pool)
+        sp.identifier = identifier
+        sp.default_port = default_port
+        sp.healthcheck = healthcheck_obj
+        sp.environment = ambiente_obj
+        sp.lb_method = balancing
 
         sp.save(request.user)
 
