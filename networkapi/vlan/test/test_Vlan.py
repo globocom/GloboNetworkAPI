@@ -1893,7 +1893,6 @@ class VlanCreateNetV6ScriptTest(VlanConfigTest, AttrTest):
         self._attr_invalid(response)
 
 
-@me
 class VlanAttrNetworkTypeTest(VlanConfigTest, AttrTest):
 
     def test_add_automatic_network_type_ipv4_invalid_option(self):
@@ -1927,5 +1926,5 @@ class VlanAttrNetworkTypeTest(VlanConfigTest, AttrTest):
     def test_add_automatic_network_type_ipv6_success(self):
         mock = self.mock_valid()
         mock['network_ipv6'] = 1
-        mock["environment_id"] = 30
+        mock["environment_id"] = 31
         self.process_save_attr_invalid(mock)

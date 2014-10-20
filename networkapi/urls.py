@@ -17,6 +17,7 @@
 
 
 from django.conf.urls.defaults import *
+from networkapi.equipamento.resource import EquipmentGetIpsByAmbiente
 
 from networkapi.vlan.resource.VlanResource import VlanResource
 from networkapi.vlan.resource.VlanListResource import VlanListResource
@@ -45,6 +46,7 @@ from networkapi.equipamento.resource.EquipmentGetRealRelated import EquipmentGet
 from networkapi.equipamento.resource.BrandAddResource import BrandAddResource
 from networkapi.equipamento.resource.BrandAlterRemoveResource import BrandAlterRemoveResource
 from networkapi.equipamento.resource.BrandGetAllResource import BrandGetAllResource
+from networkapi.equipamento.resource.EquipmentGetIpsByAmbiente import EquipmentGetIpsByAmbiente
 
 from networkapi.equipamento.resource.ModelAddResource import ModelAddResource
 from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterRemoveResource
@@ -336,6 +338,7 @@ equipment_find_resource = EquipmentFindResource()
 equipment_get_all_resource = EquipmentGetAllResource()
 equipment_get_by_group_resource = EquipmentGetByGroupEquipmentResource()
 equipment_environment_remove = EquipmentEnvironmentDeallocateResource()
+equipment_get_ips_resource = EquipmentGetIpsByAmbiente()
 
 environment_resource = AmbienteResource()
 environment_list_resource = EnvironmentListResource()
@@ -529,6 +532,9 @@ eventlog_find_resource = EventLogFindResource()
 eventlog_choice_resource = EventLogChoiceResource()
 
 urlpatterns = patterns('',
+
+                       url(r'^api/', include('networkapi.pools.urls')),
+                       url(r'^api/', include('networkapi.snippets.urls')),
                        # Example:
                        # (r'^networkapi/', include('networkapi.foo.urls')),
 
@@ -631,6 +637,8 @@ urlpatterns = patterns('',
                            name='equipment.get.all'),
                        url(r'^equipment/group/(?P<id_egroup>[^/]+)/$',
                            equipment_get_by_group_resource.handle_request, name='equipment.get.by.group'),
+                       url(r'^equipment/getipsbyambiente/(?P<equip_name>[^/]+)/(?P<id_ambiente>[^/]+)/$',
+                           equipment_get_ips_resource.handle_request, name='equipment.get.by.ambiente'),
 
                        url(r'^equipamentogrupo/$', equipment_group_resource.handle_request,
                            name='equipmentgroup.insert'),

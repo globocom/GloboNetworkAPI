@@ -44,16 +44,9 @@ class HealthcheckExpectDistinctResource(RestResource):
 
             expect_strings = HealthcheckExpect.get_expect_strings()
 
-            map_list = []
-            ex = []
-            for es in expect_strings:
-
-                if not es.expect_string in ex:
-                    map_list.append(
-                        {'expect_string': es.expect_string, 'id': es.id})
-                    ex.append(es.expect_string)
-
-            return self.response(dumps_networkapi({'healthcheck_expect': map_list}))
+            return self.response(
+                dumps_networkapi({'healthcheck_expect': expect_strings})
+            )
 
         except (HealthcheckExpectError, GrupoError):
             return self.response_error(1)

@@ -604,6 +604,12 @@ class Ambiente(BaseModel):
         managed = True
         unique_together = ('grupo_l3', 'ambiente_logico', 'divisao_dc')
 
+    def _get_name(self):
+        "Returns complete name for environment."
+        return '%s - %s - %s' % (self.divisao_dc.nome, self.ambiente_logico.nome, self.grupo_l3.nome)
+
+    name = property(_get_name)
+
     @classmethod
     def get_by_pk(self, id):
         """Efetua a consulta de Ambiente pelo seu id.

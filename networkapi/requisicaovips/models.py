@@ -17,10 +17,11 @@
 
 from __future__ import with_statement
 from django.db import models
+from django.db.models.fields import NullBooleanField
 from networkapi.log import Log
 from networkapi.healthcheckexpect.models import HealthcheckExpect
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
-from networkapi.ambiente.models import EnvironmentVip, IP_VERSION
+from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
 from django.core.exceptions import ObjectDoesNotExist
 from _mysql_exceptions import OperationalError
 from networkapi.log import Log
@@ -1737,11 +1738,41 @@ class OptionVipEnvironmentVip(BaseModel):
 
 
 class ServerPool(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_server_pool')
-    identifier = models.CharField(max_length=200)
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_server_pool'
+    )
+
+    identifier = models.CharField(
+        max_length=200
+    )
+
     healthcheck = models.ForeignKey(
-        Healthcheck, db_column='healthcheck_id_healthcheck')
-    default_port = models.IntegerField(db_column='default_port')
+        Healthcheck,
+        db_column='healthcheck_id_healthcheck'
+    )
+
+    default_port = models.IntegerField(
+        db_column='default_port'
+    )
+
+    pool_created = models.NullBooleanField(
+        db_column='pool_criado',
+        null=True
+    )
+
+    environment = models.ForeignKey(
+        Ambiente,
+        db_column='ambiente_id_ambiente',
+        null=True
+    )
+
+    lb_method = models.CharField(
+        max_length=50,
+        db_column='lb_method',
+        null=True
+    )
 
     log = Log('ServerPool')
 
@@ -1759,7 +1790,7 @@ class ServerPoolMember(BaseModel):
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
     identifier = models.CharField(max_length=200)
     ip = models.ForeignKey(Ip, db_column='ips_id_ip')
-    ipv6 = models.ForeignKey(Ipv6, db_column='ipsv6_id_ipv6')
+    ipv6 = models.ForeignKey(Ipv6, db_column='ipsv6_id_ipv6', null=True)
     priority = models.IntegerField()
     weight = models.IntegerField(db_column='weight')
     limit = models.IntegerField()

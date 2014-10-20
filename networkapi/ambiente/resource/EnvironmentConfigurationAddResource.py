@@ -18,7 +18,8 @@
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import ConfigEnvironmentInvalidError, IP_VERSION, \
-    Ambiente, IPConfig, ConfigEnvironment, AmbienteNotFoundError
+    Ambiente, IPConfig, ConfigEnvironment, AmbienteNotFoundError,\
+    ConfigEnvironmentDuplicateError
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError, PermissionError
@@ -109,6 +110,10 @@ class EnvironmentConfigurationAddResource(RestResource):
 
         except ConfigEnvironmentInvalidError, e:
             return self.response_error(294)
+
+        except ConfigEnvironmentDuplicateError, e:
+            self.log.error(u'Environment Configuration already exists')
+            return self.response_error(302)
 
         except XMLError, e:
             self.log.error(u'Error reading the XML request.')

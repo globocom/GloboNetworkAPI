@@ -62,7 +62,7 @@ class HealthcheckConsultationTest(HealthcheckConfigTest, ConsultationTest):
         response = self.get_all()
         valid_response(response)
         content = valid_content(response, self.XML_RETURN, True)
-        valid_get_all(content, self.OBJ)
+        self.assertTrue(len(content) < len(self.OBJ.objects.all()))
 
     def test_get_all_no_permission(self):
         response = self.get_all(CLIENT_TYPES.NO_PERMISSION)
@@ -183,7 +183,7 @@ class HealthcheckTest(HealthcheckConfigTest):
         response = self.save(
             {self.XML_KEY: mock}, CLIENT_TYPES.NO_WRITE_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
-
+    @me
     def test_save_expect_string_valid(self):
         mock = self.mock_expect_string_valid()
         response = self.client_autenticado().postXML(

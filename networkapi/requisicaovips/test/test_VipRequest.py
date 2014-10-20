@@ -1949,6 +1949,7 @@ class VipRequestAddRealsIpv6Test(VipRequestConfigTest, AttrTest):
 
 class VipRequestEditRealsTest(VipRequestConfigTest, AttrTest):
 
+    @me
     def test_a_for_first_vip_edit_reals_valid_no_changes(self):
         response = self.edit_reals()
         valid_response(response)
@@ -1960,7 +1961,7 @@ class VipRequestEditRealsTest(VipRequestConfigTest, AttrTest):
     def test_vip_edit_reals_no_write_permission(self):
         response = self.edit_reals(client=CLIENT_TYPES.NO_WRITE_PERMISSION)
         valid_response(response, httplib.PAYMENT_REQUIRED)
-
+    @me
     def test_vip_edit_reals_valid_add_new_real(self):
         response = self.edit_reals(dicts={'reals': {'real': [{'real_name': 'BalancingEquipForVip2', 'real_ip': '192.168.55.136', 'port_vip': '81', 'id_ip': self.ID_IPV4_TO_ADD_REAL, 'port_real': '8099'},
                                                              {'real_name': 'BalancingEquipForVip2', 'real_ip': 'ffab:cdef:ffff:ffff:0000:0000:0000:0126',
@@ -1971,7 +1972,7 @@ class VipRequestEditRealsTest(VipRequestConfigTest, AttrTest):
         valid_response(response)
         # Edit it back to default state
         response = self.edit_reals()
-
+    @me
     def test_vip_edit_reals_add_new_wrong_priority(self):
         response = self.edit_reals(dicts={'reals': {'real': [{'real_name': 'BalancingEquipForVip2', 'real_ip': '192.168.55.136'},
                                                              {'real_name': 'BalancingEquipForVip2', 'real_ip':
@@ -1981,7 +1982,7 @@ class VipRequestEditRealsTest(VipRequestConfigTest, AttrTest):
                                           'reals_weights': {'reals_weight': [1, 2, 3]}})
         self._attr_invalid(
             response, CodeError.VIP_EDIT_REALS_PRIORITY_INCONSISTENCY)
-
+    @me
     def test_vip_edit_reals_add_new_wrong_weights(self):
         response = self.edit_reals(dicts={'reals': {'real': [{'real_name': 'BalancingEquipForVip2', 'real_ip': '192.168.55.136'},
                                                              {'real_name': 'BalancingEquipForVip2', 'real_ip':
@@ -2013,7 +2014,7 @@ class VipRequestEditRealsTest(VipRequestConfigTest, AttrTest):
                                           'reals_weights': {'reals_weight': [1, 3]}})
         self._attr_invalid(
             response, CodeError.VIP_EDIT_REALS_WEIGHT_INCONSISTENCY)
-
+    @me
     def test_vip_edit_reals_valid_add_remove_real(self):
         response = self.edit_reals(dicts={'reals': {'real': [{'real_name': 'BalancingEquipForVip2', 'real_ip': 'ffab:cdef:ffff:ffff:0000:0000:0000:0126', 'port_vip': '81', 'id_ip': self.ID_IPV6_TO_ADD_REAL, 'port_real': '8001'},
                                                              {'real_name': 'BalancingEquipForVip2', 'real_ip': '192.168.55.137', 'port_vip': '81', 'id_ip': self.ID_IPV4_TO_ADD_REAL, 'port_real': '8091'}]},
