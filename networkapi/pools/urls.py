@@ -16,4 +16,6 @@ urlpatterns = patterns(
     url(r'^pools/get_equip_by_ip/(?P<id_ip>[^/]+)/$', 'get_equipamento_by_ip'),
     url(r'^pools/enable/$', 'enable'),
     url(r'^pools/disable/$', 'disable'),
+    url(r'^pools/get_opcoes_pool_by_ambiente/$', 'get_opcoes_pool_by_ambiente'),
+    url(r'^pools/get_requisicoes_vip_by_pool/(?P<id_server_pool>[^/]+)/$', 'get_requisicoes_vip_by_pool'),
 )

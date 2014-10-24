@@ -16,10 +16,6 @@ class InvalidIdPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Pool.'
 
-class InvalidIdentifierPoolException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Identifier ja existe'
-
 
 class InvalidIdPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
