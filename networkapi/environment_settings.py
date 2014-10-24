@@ -43,7 +43,7 @@ Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 DATABASE_ENGINE = 'django.db.backends.mysql'
 DATABASE_NAME = 'telecom'      # Or path to database file if using sqlite3.
 DATABASE_USER = 'root'         # Not used with sqlite3.
-DATABASE_PASSWORD = 'root'         # Not used with sqlite3.
+DATABASE_PASSWORD = ''         # Not used with sqlite3.
 # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_HOST = 'localhost'
 # Set to empty string for default. Not used with sqlite3.
