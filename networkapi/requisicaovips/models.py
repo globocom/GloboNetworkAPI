@@ -556,11 +556,6 @@ class RequisicaoVips(BaseModel):
 
         self.variaveis = ''
 
-        healthcheck_type = variables_map.get('healthcheck_type')
-        if self.healthcheck_expect is not None and healthcheck_type != 'HTTP':
-            raise InvalidHealthcheckTypeValueError(
-                None, u"Valor do healthcheck_type inconsistente com o valor do healthcheck_expect.")
-
         finalidade = variables_map.get('finalidade')
         if not is_valid_string_minsize(finalidade, 3) or not is_valid_string_maxsize(finalidade, 50):
             log.error(u'Finality value is invalid: %s.', finalidade)
@@ -585,7 +580,6 @@ class RequisicaoVips(BaseModel):
             raise EnvironmentVipNotFoundError(
                 None, u'Não existe ambiente vip para valores: finalidade %s, cliente %s e ambiente_p44 %s.' % (finalidade, cliente, ambiente))
 
-        balanceamento = variables_map.get('metodo_bal')
         timeout = variables_map.get('timeout')
         grupo_cache = variables_map.get('cache')
         persistencia = variables_map.get('persistencia')
@@ -596,8 +590,6 @@ class RequisicaoVips(BaseModel):
                     for t in OptionVip.get_all_timeout(evip.id)]
         persistencias = [(p.nome_opcao_txt)
                          for p in OptionVip.get_all_persistencia(evip.id)]
-        balanceamentos = [(b.nome_opcao_txt)
-                          for b in OptionVip.get_all_balanceamento(evip.id)]
 
         if timeout not in timeouts:
             log.error(
@@ -605,13 +597,6 @@ class RequisicaoVips(BaseModel):
             raise InvalidTimeoutValueError(
                 None, 'timeout com valor inválido: %s.' % timeout)
         self.add_variable('timeout', timeout)
-
-        if balanceamento not in balanceamentos:
-            log.error(
-                u'The method_bal not in OptionVip, invalid value: %s.', balanceamento)
-            raise InvalidMetodoBalValueError(
-                None, 'metodo_bal com valor inválido: %s.' % balanceamento)
-        self.add_variable('metodo_bal', balanceamento)
 
         if grupo_cache not in grupos_cache:
             log.error(
@@ -629,36 +614,11 @@ class RequisicaoVips(BaseModel):
 
         environment_vip = EnvironmentVip.get_by_values(
             finalidade, cliente, ambiente)
-        healthcheck_is_valid = RequisicaoVips.heathcheck_exist(
-            healthcheck_type, environment_vip.id)
-
-        # healthcheck_type
-        if not healthcheck_is_valid:
-            raise InvalidHealthcheckTypeValueError(
-                None, u'Healthcheck_type com valor inválido: %s.' % healthcheck_type)
-        self.add_variable('healthcheck_type', healthcheck_type)
-
-        # healthcheck
-        healthcheck = variables_map.get('healthcheck')
-        if healthcheck is not None:
-            if healthcheck_type != 'HTTP':
-                raise InvalidHealthcheckValueError(
-                    None, u"Valor do healthcheck inconsistente com o valor do healthcheck_type.")
-            self.add_variable('healthcheck', healthcheck)
 
         # Host
         host_name = variables_map.get('host')
         if host_name is not None:
             self.add_variable('host', host_name)
-
-        # maxcon
-        maxcon = variables_map.get('maxcon')
-        try:
-            maxcon_int = int(maxcon)
-            self.add_variable('maxcon', maxcon)
-        except (TypeError, ValueError):
-            raise InvalidMaxConValueError(
-                None, u'Maxcon com valor inválido: %s.' % maxcon)
 
         # dsr
         dsr = variables_map.get('dsr')
@@ -1441,14 +1401,14 @@ class RequisicaoVips(BaseModel):
                 server_pool, ip, ip_type, priority, weight, port_real, user)
 
     def get_vips_and_reals(self, id_vip):
-        vip_port = VipPortToPool.get_by_vip_id(id_vip)
+        vip_ports = VipPortToPool.get_by_vip_id(id_vip)
 
         vip_port_list = list()
         reals_list = list()
         reals_priority = list()
         reals_weight = list()
 
-        for v_port in vip_port:
+        for v_port in vip_ports:
 
             vip_port_list.append(
                 str(v_port.port_vip) + ':' + str(v_port.server_pool.default_port))
@@ -1467,9 +1427,8 @@ class RequisicaoVips(BaseModel):
                     ip_string = mount_ipv6_string(member.ipv6)
                     ip_id = member.ipv6.id
 
-                vip_port = member.server_pool.vipporttopool_set.get()
                 reals_list.append({'real_ip': ip_string, 'real_name': equip_name,
-                                   'port_vip': vip_port.port_vip, 'port_real': member.port_real, 'id_ip': ip_id})
+                                   'port_vip': v_port.port_vip, 'port_real': member.port_real, 'id_ip': ip_id})
                 reals_priority.append(member.priority)
                 reals_weight.append(member.weight)
 
@@ -1796,7 +1755,7 @@ class ServerPoolMember(BaseModel):
     limit = models.IntegerField()
     port_real = models.IntegerField(db_column='port')
     healthcheck = models.ForeignKey(
-        Healthcheck, db_column='healthcheck_id_healthcheck')
+        Healthcheck, db_column='healthcheck_id_healthcheck', null=True)
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'

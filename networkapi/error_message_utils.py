@@ -297,6 +297,7 @@ error_messages = {
     369: u'Nao foi possivel remover a vlan pois as seguintes redes nao puderam ser removidas: %s.',
     370: u'Nao foi possivel excluir o vip %s. Remova-o dos equipamentos primeiro.',
     371: u'Bloco não pode ser adicionado porque já existe uma regra para ser aplicada e o valor do parametro override é zero.',
+    372: u'Server Pool Does Not Exists'
 }
 
 

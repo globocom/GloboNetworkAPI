@@ -26,14 +26,15 @@ from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError
     InvalidBalAtivoValueError, InvalidTransbordoValueError
 from networkapi.equipamento.models import EquipamentoError, Equipamento, EquipamentoNotFoundError
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundError, IpError, IpEquipmentNotFoundError, IpNotFoundByEquipAndVipError
-from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import EnvironmentVip, Ambiente
 from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
 from networkapi.grupo.models import GrupoError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
-from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param,\
-    is_valid_ipv4, is_valid_string_minsize, is_valid_string_maxsize
+from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
+    is_valid_ipv4, is_valid_string_minsize, is_valid_string_maxsize, \
+    is_valid_list_int_greater_zero_param
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.requisicaovips.models import VipPortToPool
@@ -55,8 +56,7 @@ class RequestVipsResource(RestResource):
 
         try:
             # Load XML data
-            xml_map, attrs_map = loads(
-                request.raw_post_data, ['real', 'reals_weight', 'reals_priority', 'porta'])
+            xml_map, attrs_map = loads(request.raw_post_data, ['pool_ids'])
 
             # XML data format
 
@@ -95,11 +95,7 @@ class RequestVipsResource(RestResource):
                     raise InvalidValueError(
                         None, 'id_ipv6', vip_map.get('id_ipv6'))
 
-            # Valid maxcon
-            if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
-                self.log.error(
-                    u'The maxcon parameter is not a valid value: %s.', vip_map.get('maxcon'))
-                raise InvalidValueError(None, 'maxcon', vip_map.get('maxcon'))
+            pool_ids = vip_map.get('pool_ids')
 
             vip = RequisicaoVips()
 
@@ -114,32 +110,6 @@ class RequestVipsResource(RestResource):
                 raise EnvironmentVipNotFoundError(
                     e, 'The fields finality or client or ambiente is None')
 
-            # Valid real names and real ips of real server
-            if vip_map.get('reals') is not None:
-
-                for real in vip_map.get('reals').get('real'):
-                    ip_aux_error = real.get('real_ip')
-                    equip_aux_error = real.get('real_name')
-                    if equip_aux_error is not None:
-                        equip = Equipamento.get_by_name(equip_aux_error)
-                    else:
-                        self.log.error(
-                            u'The real_name parameter is not a valid value: None.')
-                        raise InvalidValueError(None, 'real_name', 'None')
-
-                    # Valid Real
-                    RequisicaoVips.valid_real_server(
-                        ip_aux_error, equip, evip, False)
-
-                # Valid reals_prioritys
-                vip_map, code = vip.valid_values_reals_priority(vip_map)
-                if code is not None:
-                    return self.response_error(code)
-
-                # Valid reals_weight
-                vip_map, code = vip.valid_values_reals_weight(vip_map)
-                if code is not None:
-                    return self.response_error(code)
 
             # Existing IPv4 ID
             if vip_map.get('id_ipv4') is not None:
@@ -148,17 +118,6 @@ class RequestVipsResource(RestResource):
             # Existing IPv6 ID
             if vip_map.get('id_ipv6') is not None:
                 vip.ipv6 = Ipv6().get_by_pk(vip_map.get('id_ipv6'))
-
-            # Valid ports
-            vip_map, code = vip.valid_values_ports(vip_map)
-            if code is not None:
-                return self.response_error(code[0], code[1])
-
-            # Valid HealthcheckExpect
-            vip_map, vip, code = vip.valid_values_healthcheck(
-                vip_map, vip, evip)
-            if code is not None:
-                return self.response_error(code)
 
             # Host
             host_name = vip_map.get('host')
@@ -197,6 +156,18 @@ class RequestVipsResource(RestResource):
                     rule.rulecontent_set.all().values_list('content', flat=True))
                 vip.rule = rule
 
+            if pool_ids:
+                try:
+
+                    is_valid_list_int_greater_zero_param(pool_ids)
+
+                except ValueError, error:
+                    self.log.error(error)
+                    raise InvalidValueError(
+                        None,
+                        'pool_ids',
+                        pool_ids
+                    )
             # set variables
             vip.filter_valid = 1
             vip.validado = 0
@@ -207,8 +178,20 @@ class RequestVipsResource(RestResource):
                 # save Resquest Vip
                 vip.save(user)
 
+                for pool_id in pool_ids:
+
+                    pool_obj = ServerPool.objects.get(id=pool_id)
+
+                    vip_port_pool_obj = VipPortToPool(
+                        requisicao_vip=vip,
+                        server_pool=pool_obj,
+                        port_vip=pool_obj.default_port
+                    )
+
+                    vip_port_pool_obj.save(user)
+
                 # save VipPortToPool, ServerPool and ServerPoolMember
-                vip.save_vips_and_ports(vip_map, user)
+                # vip.save_vips_and_ports(vip_map, user)
             except Exception, e:
                 if isinstance(e, IntegrityError):
                     # Duplicate value for Port Vip, Port Real and IP
@@ -223,6 +206,10 @@ class RequestVipsResource(RestResource):
             vip_map['id'] = vip.id
 
             return self.response(dumps_networkapi({'requisicao_vip': vip_map}))
+
+        except ServerPool.DoesNotExist, e:
+            self.log.error(str(e))
+            return self.response_error(372)
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -266,10 +253,7 @@ class RequestVipsResource(RestResource):
             return self.response_error(151, real)
         except InvalidBalAtivoValueError:
             return self.response_error(129)
-        except EquipamentoNotFoundError:
-            return self.response_error(117, equip_aux_error)
-        except IpEquipmentNotFoundError:
-            return self.response_error(318, ip_aux_error, equip_aux_error)
+
         except InvalidTransbordoValueError, e:
             transbordo = 'nulo'
             if e.message is not None:
@@ -297,8 +281,7 @@ class RequestVipsResource(RestResource):
             vip_id = kwargs.get('id_vip')
 
             # Load XML data
-            xml_map, attrs_map = loads(
-                request.raw_post_data, ['real', 'reals_weight', 'reals_priority', 'porta'])
+            xml_map, attrs_map = loads(request.raw_post_data, ['pool_ids'])
 
             # XML data format
             networkapi_map = xml_map.get('networkapi')
@@ -356,11 +339,7 @@ class RequestVipsResource(RestResource):
                 raise InvalidValueError(
                     None, 'vip_created', vip_map.get('vip_criado'))
 
-            # Valid maxcon
-            if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
-                self.log.error(
-                    u'The maxcon parameter is not a valid value: %s.', vip_map.get('maxcon'))
-                raise InvalidValueError(None, 'maxcon', vip_map.get('maxcon'))
+            pool_ids = vip_map.get('pool_ids', [])
 
             # Existing Vip ID
             vip = RequisicaoVips.get_by_pk(vip_id)
@@ -379,35 +358,11 @@ class RequestVipsResource(RestResource):
                 # Valid variables
                 vip.set_variables(variables_map)
 
-                evip = EnvironmentVip.get_by_values(variables_map.get(
-                    'finalidade'), variables_map.get('cliente'), variables_map.get('ambiente'))
-
-                # Valid real names and real ips of real server
-                if vip_map.get('reals') is not None:
-
-                    for real in vip_map.get('reals').get('real'):
-                        ip_aux_error = real.get('real_ip')
-                        equip_aux_error = real.get('real_name')
-                        if equip_aux_error is not None:
-                            equip = Equipamento.get_by_name(equip_aux_error)
-                        else:
-                            self.log.error(
-                                u'The real_name parameter is not a valid value: None.')
-                            raise InvalidValueError(None, 'real_name', 'None')
-
-                        # Valid Real
-                        RequisicaoVips.valid_real_server(
-                            ip_aux_error, equip, evip, False)
-
-                    # Valid reals_prioritys
-                    vip_map, code = vip.valid_values_reals_priority(vip_map)
-                    if code is not None:
-                        return self.response_error(code)
-
-                    # Valid reals_weight
-                    vip_map, code = vip.valid_values_reals_weight(vip_map)
-                    if code is not None:
-                        return self.response_error(code)
+                evip = EnvironmentVip.get_by_values(
+                    variables_map.get('finalidade'),
+                    variables_map.get('cliente'),
+                    variables_map.get('ambiente')
+                )
 
                 # Existing IPv4 ID
                 if vip_map.get('id_ipv4') is not None:
@@ -420,17 +375,6 @@ class RequestVipsResource(RestResource):
                     vip.ipv6 = Ipv6().get_by_pk(vip_map.get('id_ipv6'))
                 else:
                     vip.ipv6 = None
-
-                # Valid ports
-                vip_map, code = vip.valid_values_ports(vip_map)
-                if code is not None:
-                    return self.response_error(code)
-
-                # Valid HealthcheckExpect
-                vip_map, vip, code = vip.valid_values_healthcheck(
-                    vip_map, vip, evip)
-                if code is not None:
-                    return self.response_error(code)
 
                 # Existing l7_filter
                 if vip_map.get('l7_filter') is not None:
@@ -454,6 +398,19 @@ class RequestVipsResource(RestResource):
                 else:
                     vip.rule = None
 
+                if pool_ids:
+                    try:
+
+                        is_valid_list_int_greater_zero_param(pool_ids)
+
+                    except ValueError, error:
+                        self.log.error(error)
+                        raise InvalidValueError(
+                            None,
+                            'pool_ids',
+                            pool_ids
+                        )
+
                 # set variables
                 vip.filter_valid = 1
                 vip.validado = 0
@@ -463,11 +420,22 @@ class RequestVipsResource(RestResource):
                     # update Resquest Vip
                     vip.save(user)
 
-                    # Remove all port and reals
-                    vip.delete_vips_and_reals(user)
+                    # Remove VipPortPool Related
+                    for vip_port_pool in vip.vipporttopool_set.all():
+                        vip_port_pool.delete(user)
 
-                    # save VipPortToPool, ServerPool and ServerPoolMember
-                    vip.save_vips_and_ports(vip_map, user)
+                    # Related Pool with Vip
+                    for pool_id in pool_ids:
+
+                        pool_obj = ServerPool.objects.get(id=pool_id)
+
+                        vip_port_pool_obj = VipPortToPool(
+                            requisicao_vip=vip,
+                            server_pool=pool_obj,
+                            port_vip=pool_obj.default_port
+                        )
+
+                        vip_port_pool_obj.save(user)
 
                 except Exception, e:
                     if isinstance(e, IntegrityError):
@@ -480,6 +448,9 @@ class RequestVipsResource(RestResource):
                             e, u'Failed to update the request vip')
 
                 return self.response(dumps_networkapi({}))
+
+        except ServerPool.DoesNotExist, e:
+            return self.response_error(372)
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -507,10 +478,6 @@ class RequestVipsResource(RestResource):
             return self.response_error(132)
         except InvalidHealthcheckTypeValueError:
             return self.response_error(133)
-        except EquipamentoNotFoundError:
-            return self.response_error(117, equip_aux_error)
-        except IpEquipmentNotFoundError:
-            return self.response_error(318, ip_aux_error, equip_aux_error)
         except InvalidHealthcheckValueError:
             return self.response_error(134)
         except InvalidTimeoutValueError:

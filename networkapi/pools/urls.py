@@ -18,4 +18,7 @@ urlpatterns = patterns(
     url(r'^pools/disable/$', 'disable'),
     url(r'^pools/get_opcoes_pool_by_ambiente/$', 'get_opcoes_pool_by_ambiente'),
     url(r'^pools/get_requisicoes_vip_by_pool/(?P<id_server_pool>[^/]+)/$', 'get_requisicoes_vip_by_pool'),
+    url(r'^pools/list/by/environment/(?P<environment_id>[^/]+)/$', 'list_by_environment'),
+    url(r'^pools/list/members/(?P<pool_id>[^/]+)/$', 'list_pool_members'),
+    url(r'^pools/list/by/environment/vip/(?P<environment_vip_id>\d+)/$', 'list_by_environment_vip'),
 )
