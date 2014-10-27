@@ -534,6 +534,7 @@ eventlog_choice_resource = EventLogChoiceResource()
 urlpatterns = patterns('',
 
                        url(r'^api/', include('networkapi.pools.urls')),
+                       url(r'^api/', include('networkapi.api_healthcheck.urls')),
                        url(r'^api/', include('networkapi.snippets.urls')),
                        # Example:
                        # (r'^networkapi/', include('networkapi.foo.urls')),

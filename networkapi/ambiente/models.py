@@ -367,6 +367,12 @@ class EnvironmentVip(BaseModel):
         db_table = u'ambientevip'
         managed = True
 
+    def _get_name(self):
+        "Returns complete name for environment."
+        return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
+
+    name = property(_get_name)
+
     @classmethod
     def get_by_pk(cls, id):
         """"Get  Environment Vip by id.

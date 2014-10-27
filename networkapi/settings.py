@@ -226,6 +226,7 @@ POOL_REAL_CREATE = 'gerador_vips -p %s --id_ip %s --port_ip %s --add'
 POOL_REAL_REMOVE = 'gerador_vips -p %s --id_ip %s --port_ip %s --del'
 POOL_REAL_ENABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --ena'
 POOL_REAL_DISABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --dis'
+POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
 
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'
