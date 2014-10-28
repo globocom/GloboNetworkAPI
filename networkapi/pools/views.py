@@ -162,7 +162,7 @@ def get_equipamento_by_ip(request, id_ip):
 
         data = dict()
 
-        ipequips_obj = IpEquipamento.objects.get(ip=id_ip)
+        ipequips_obj = IpEquipamento.objects.filter(ip=id_ip).uniqueResult()
         equip = Equipamento.get_by_pk(pk=ipequips_obj.equipamento_id)
 
         serializer_equipamento = EquipamentoSerializer(equip, many=False)
