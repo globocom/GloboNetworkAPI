@@ -16,6 +16,7 @@
 # limitations under the License.
 
 from django.db.transaction import commit_on_success
+from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -128,7 +129,8 @@ def list_environment_by_environment_vip(request, environment_vip_id):
         env_vip = EnvironmentVip.objects.get(id=environment_vip_id)
 
         environment_query = Ambiente.objects.filter(
-            vlan__networkipv4__ambient_vip=env_vip
+            Q(vlan__networkipv4__ambient_vip=env_vip) |
+            Q(vlan__networkipv6__ambient_vip=env_vip)
         )
 
         environment_query = set(environment_query)

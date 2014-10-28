@@ -40,7 +40,9 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.requisicaovips.models import VipPortToPool
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 from django.db.utils import IntegrityError
+from django.db.models import Q
 from networkapi.blockrules.models import Rule
+from networkapi.error_message_utils import error_messages
 
 
 class RequestVipsResource(RestResource):
@@ -156,7 +158,13 @@ class RequestVipsResource(RestResource):
                     rule.rulecontent_set.all().values_list('content', flat=True))
                 vip.rule = rule
 
+            environments = Ambiente.objects.filter(
+                Q(vlan__networkipv4__ambient_vip=evip) |
+                Q(vlan__networkipv6__ambient_vip=evip)
+            )
+
             if pool_ids:
+
                 try:
 
                     is_valid_list_int_greater_zero_param(pool_ids)
@@ -168,6 +176,12 @@ class RequestVipsResource(RestResource):
                         'pool_ids',
                         pool_ids
                     )
+
+                # Valid equipment by environment
+                for pool_id in pool_ids:
+                    serv_pool = ServerPool.objects.get(id=pool_id)
+                    if serv_pool.environment not in environments:
+                        raise IpNotFoundByEquipAndVipError(None, error_messages.get(373) % (serv_pool.id, evip.id))
             # set variables
             vip.filter_valid = 1
             vip.validado = 0
@@ -211,6 +225,8 @@ class RequestVipsResource(RestResource):
             self.log.error(str(e))
             return self.response_error(372)
 
+        except IpNotFoundByEquipAndVipError, e:
+            return self.response_error(334, e.message)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except EnvironmentVipNotFoundError:
