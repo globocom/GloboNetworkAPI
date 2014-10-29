@@ -152,6 +152,7 @@ class EnvironmentVipSearchResource(RestResource):
                 request_evip_map['finalidade_txt'] = evip.finalidade_txt
                 request_evip_map['cliente_txt'] = evip.cliente_txt
                 request_evip_map['ambiente_p44_txt'] = evip.ambiente_p44_txt
+                request_evip_map['description'] = evip.description
                 evips.append(request_evip_map)
 
             return self.response(dumps_networkapi({'environment_vip': evips}))

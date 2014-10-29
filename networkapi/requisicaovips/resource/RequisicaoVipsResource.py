@@ -36,18 +36,19 @@ from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeVa
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
+from django.forms.models import model_to_dict
 
 
 def insert_vip_request(vip_map, user):
     '''Insere uma requisição de VIP.
 
     @param vip_map: Mapa com os dados da requisição.
-    @param user: Usuário autenticado.   
+    @param user: Usuário autenticado.
 
     @return: Em caso de sucesso: tupla (0, <requisição de VIP>).
              Em caso de erro: tupla (código da mensagem de erro, argumento01, argumento02, ...)
 
-    @raise IpNotFoundError: IP não cadastrado.  
+    @raise IpNotFoundError: IP não cadastrado.
 
     @raise IpError: Falha ao pesquisar o IP.
 
@@ -83,13 +84,13 @@ def insert_vip_request(vip_map, user):
 
     @raise InvalidServicePortValueError: Porta do Serviço com valor inválido.
 
-    @raise InvalidRealValueError: Valor inválido de um real. 
+    @raise InvalidRealValueError: Valor inválido de um real.
 
     @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
 
-    @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP. 
+    @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
 
-    @raise UserNotAuthorizedError: 
+    @raise UserNotAuthorizedError:
     '''
 
     log = Log('insert_vip_request')
@@ -350,20 +351,26 @@ class RequisicaoVipsResource(RestResource):
 
             request_vip_map = request_vip.variables_to_map()
 
-            """"""
-            vip_port_list, reals_list, reals_priority, reals_weight = request_vip.get_vips_and_reals(
-                request_vip.id)
+            pools = list()
 
-            if reals_list:
-                request_vip_map['reals'] = {'real': reals_list}
-                request_vip_map['reals_prioritys'] = {
-                    'reals_priority': reals_priority}
-                request_vip_map['reals_weights'] = {
-                    'reals_weight': reals_weight}
+            for vip_pool_port in request_vip.vipporttopool_set.all():
 
-            request_vip_map['portas_servicos'] = {'porta': vip_port_list}
+                pools_members = []
 
-            """"""
+                pool_raw = model_to_dict(vip_pool_port.server_pool)
+
+                for pool_member in vip_pool_port.server_pool.serverpoolmember_set.all():
+
+                    pools_member_raw = model_to_dict(pool_member)
+                    healthcheck_type = pool_member.healthcheck and pool_member.healthcheck.healthcheck_type
+                    pools_member_raw["healthcheck"] = dict(healthcheck_type=healthcheck_type)
+                    pools_members.append(pools_member_raw)
+
+                pool_raw['server_pool_members'] = pools_members
+
+                pools.append(pool_raw)
+
+            request_vip_map["pools"] = pools
 
             request_vip_map['id'] = request_vip.id
             request_vip_map['validado'] = convert_boolean_to_int(

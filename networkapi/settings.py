@@ -258,3 +258,7 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ###################################
 
 PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
+print PATH_ACL
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')

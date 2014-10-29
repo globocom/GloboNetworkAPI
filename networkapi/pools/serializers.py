@@ -79,6 +79,20 @@ class ServerPoolSerializer(serializers.ModelSerializer):
         )
 
 
+class PoolSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'healthcheck',
+            'environment',
+            'pool_created'
+        )
+
+
 class HealthcheckSerializer(serializers.ModelSerializer):
     class Meta:
         model = Healthcheck

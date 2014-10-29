@@ -97,6 +97,7 @@ class EnvironmentVipGetAmbienteP44TxtResource(RestResource):
                 evips['finalidade_txt'] = finalidade
                 evips['cliente_txt'] = cliente_txt
                 evips['ambiente_p44'] = evip.ambiente_p44_txt
+                evips['description'] = evip.description
                 evips_list.append(evips)
                 evips = dict()
 
