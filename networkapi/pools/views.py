@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.db.models import Q
 from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -902,7 +902,8 @@ def list_by_environment_vip(request, environment_vip_id):
         env_vip = EnvironmentVip.objects.get(id=environment_vip_id)
 
         server_pool_query = ServerPool.objects.filter(
-            environment__vlan__networkipv4__ambient_vip=env_vip
+            Q(environment__vlan__networkipv4__ambient_vip=env_vip) |
+            Q(environment__vlan__networkipv6__ambient_vip=env_vip)
         ).order_by('identifier')
 
         serializer_pools = PoolSerializer(server_pool_query, many=True)
