@@ -131,9 +131,7 @@ def list_environment_by_environment_vip(request, environment_vip_id):
         environment_query = Ambiente.objects.filter(
             Q(vlan__networkipv4__ambient_vip=env_vip) |
             Q(vlan__networkipv6__ambient_vip=env_vip)
-        )
-
-        environment_query = set(environment_query)
+        ).distinct()
 
         serializer_environment = EnvironmentOptionsSerializer(
             environment_query,
