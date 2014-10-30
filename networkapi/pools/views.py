@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
@@ -25,7 +26,8 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
-    ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer
+    ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
+    VipPortToPoolSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente
 from networkapi.ip.models import Ip, Ipv6
@@ -40,6 +42,8 @@ from networkapi.pools.permissions import Read, Write, ScriptRemovePermission, \
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.settings import POOL_REMOVE, POOL_CREATE, POOL_REAL_CREATE, \
     POOL_REAL_REMOVE, POOL_REAL_ENABLE, POOL_REAL_DISABLE
+from networkapi.pools.models import OpcaoPool, OpcaoPoolAmbiente
+from networkapi.requisicaovips.models import RequisicaoVips
 
 log = Log(__name__)
 
@@ -69,6 +73,58 @@ def pool_list(request):
 
         if environment_id:
             query_pools = query_pools.filter(environment=environment_id)
+
+        server_pools, total = build_query_to_datatable(
+            query_pools,
+            asorting_cols,
+            custom_search,
+            searchable_columns,
+            start_record,
+            end_record
+        )
+
+        serializer_pools = ServerPoolDatatableSerializer(
+            server_pools,
+            many=True
+        )
+
+        data["pools"] = serializer_pools.data
+        data["total"] = total
+
+        return Response(data)
+
+    except api_exceptions.ValidationException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def pool_list_by_reqvip(request):
+    """
+    List all code snippets, or create a new snippet.
+    """
+    try:
+
+        data = dict()
+
+        id_vip = request.DATA.get("id_vip")
+        start_record = request.DATA.get("start_record")
+        end_record = request.DATA.get("end_record")
+        asorting_cols = request.DATA.get("asorting_cols")
+        searchable_columns = request.DATA.get("searchable_columns")
+        custom_search = request.DATA.get("custom_search")
+
+        if not is_valid_int_greater_zero_param(id_vip, False):
+            raise api_exceptions.ValidationException('Vip id invalid.')
+
+        query_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=id_vip)
+
 
         server_pools, total = build_query_to_datatable(
             query_pools,
@@ -419,25 +475,67 @@ def pool_insert(request):
         default_port = request.DATA.get('default_port')
         environment = request.DATA.get('environment')
         balancing = request.DATA.get('balancing')
-        healthcheck = request.DATA.get('healthcheck')
         maxcom = request.DATA.get('maxcom')
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
+        nome_equips = request.DATA.get('nome_equips')
+        weight = request.DATA.get('weight')
 
-        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
+
+        has_identifier = ServerPool.objects.filter(identifier=identifier).count()
+
+        if has_identifier > 0:
+            raise exceptions.InvalidIdentifierPoolException()
+
+
+
+        # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
+        healthcheck_type = request.DATA.get('healthcheck_type')
+        healthcheck_request = request.DATA.get('healthcheck_request')
+        healthcheck_expect = request.DATA.get('healthcheck_expect')
+        old_healthcheck_id = request.DATA.get('old_healthcheck_id')
+
+        try:
+            #Query HealthCheck table for one equal this
+            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
+
+        #Else, add a new one
+        except ObjectDoesNotExist:
+
+            hc = Healthcheck(
+                identifier='',
+                healthcheck_type=healthcheck_type,
+                healthcheck_request=healthcheck_request,
+                healthcheck_expect=healthcheck_expect,
+                destination=''
+            )
+
+            hc.save(request.user)
+
+        # ---------------------------------------------------------------------------------------
+
+
         ambiente_obj = Ambiente.get_by_pk(environment)
 
         sp = ServerPool(
             identifier=identifier,
             default_port=default_port,
-            healthcheck=healthcheck_obj,
+            healthcheck=hc,
             environment=ambiente_obj,
             pool_created=False,
             lb_method=balancing
         )
 
         sp.save(request.user)
+
+        #Check if someone is using the old healthcheck
+        #If not, delete it to keep the database clean
+        if old_healthcheck_id is not None:
+            pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+
+            if pools_using_healthcheck == 0:
+                Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
         ip_object = None
         ipv6_object = None
@@ -451,14 +549,14 @@ def pool_insert(request):
 
             spm = ServerPoolMember(
                 server_pool=sp,
-                identifier=identifier,
+                identifier=nome_equips[i],
                 ip=ip_object,
                 ipv6=ipv6_object,
                 priority=priorities[i],
-                weight=0,
+                weight=weight[i],
                 limit=maxcom,
                 port_real=ports_reals[i],
-                healthcheck=healthcheck_obj
+                healthcheck=hc
             )
 
             spm.save(request.user)
@@ -480,6 +578,10 @@ def pool_insert(request):
         log.error(exception)
         raise exception
 
+    except exceptions.InvalidIdentifierPoolException, exception:
+        log.error(exception)
+        raise exception
+
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
@@ -497,27 +599,57 @@ def pool_edit(request):
         if not is_valid_int_greater_zero_param(id_server_pool):
             raise exceptions.InvalidIdPoolException()
 
-        identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
-        environment = request.DATA.get('environment')
         balancing = request.DATA.get('balancing')
-        healthcheck = request.DATA.get('healthcheck')
         maxcom = request.DATA.get('maxcom')
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
+        nome_equips = request.DATA.get('nome_equips')
+        weight = request.DATA.get('weight')
 
-        healthcheck_obj = Healthcheck.objects.get(id=healthcheck)
-        ambiente_obj = Ambiente.get_by_pk(environment)
+
+        # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
+        healthcheck_type = request.DATA.get('healthcheck_type')
+        healthcheck_request = request.DATA.get('healthcheck_request')
+        healthcheck_expect = request.DATA.get('healthcheck_expect')
+        old_healthcheck_id = request.DATA.get('old_healthcheck_id')
+
+        try:
+            #Query HealthCheck table for one equal this
+            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
+
+        #Else, add a new one
+        except ObjectDoesNotExist:
+
+            hc = Healthcheck(
+                identifier='',
+                healthcheck_type=healthcheck_type,
+                healthcheck_request=healthcheck_request,
+                healthcheck_expect=healthcheck_expect,
+                destination=''
+            )
+
+            hc.save(request.user)
+
+        # ---------------------------------------------------------------------------------------
+
+        #ambiente_obj = Ambiente.get_by_pk(environment)
 
         sp = ServerPool.objects.get(id=id_server_pool)
-        sp.identifier = identifier
         sp.default_port = default_port
-        sp.healthcheck = healthcheck_obj
-        sp.environment = ambiente_obj
+        sp.healthcheck = hc
         sp.lb_method = balancing
 
         sp.save(request.user)
+
+        #Check if someone is using the old healthcheck
+        #If not, delete it to keep the database clean
+        if old_healthcheck_id is not None:
+            pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+
+            if pools_using_healthcheck == 0:
+                Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
         # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
         spm_list = ServerPoolMember.objects.filter(server_pool=sp)
@@ -536,14 +668,14 @@ def pool_edit(request):
 
             spm = ServerPoolMember(
                 server_pool=sp,
-                identifier=identifier,
+                identifier=nome_equips[i],
                 ip=ip_object,
                 ipv6=ipv6_object,
                 priority=priorities[i],
-                weight=0,
+                weight=weight[i],
                 limit=maxcom,
                 port_real=ports_reals[i],
-                healthcheck=healthcheck_obj
+                healthcheck=hc
             )
 
             spm.save(request.user)
@@ -671,3 +803,72 @@ def disable(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def get_opcoes_pool_by_ambiente(request):
+
+    try:
+
+        id_ambiente = request.DATA.get('id_environment')
+
+        data = dict()
+
+
+
+        is_valid_int_greater_zero_param(id_ambiente)
+        query_opcoes = OpcaoPoolAmbiente.objects.filter(ambiente=id_ambiente)
+        opcoes_serializer = OpcaoPoolAmbienteSerializer(query_opcoes, many=True)
+        data['opcoes_pool'] = opcoes_serializer.data
+
+        return Response(data)
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def get_requisicoes_vip_by_pool(request, id_server_pool):
+
+    try:
+        data = dict()
+
+        if not is_valid_int_greater_zero_param(id_server_pool):
+            raise exceptions.InvalidIdPoolException()
+
+        start_record = request.DATA.get("start_record")
+        end_record = request.DATA.get("end_record")
+        asorting_cols = request.DATA.get("asorting_cols")
+        searchable_columns = request.DATA.get("searchable_columns")
+        custom_search = request.DATA.get("custom_search")
+
+        query_requisicoes = VipPortToPool.objects.filter(server_pool=id_server_pool)
+
+
+        requisicoes, total = build_query_to_datatable(
+            query_requisicoes,
+            asorting_cols,
+            custom_search,
+            searchable_columns,
+            start_record,
+            end_record
+        )
+
+        requisicoes_serializer = VipPortToPoolSerializer(requisicoes, many=True)
+
+        data['requisicoes_vip'] = requisicoes_serializer.data
+        data['total'] = total
+
+
+        return Response(data)
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
