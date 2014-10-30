@@ -105,6 +105,58 @@ def pool_list(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
+def pool_list_by_reqvip(request):
+    """
+    List all code snippets, or create a new snippet.
+    """
+    try:
+
+        data = dict()
+
+        id_vip = request.DATA.get("id_vip")
+        start_record = request.DATA.get("start_record")
+        end_record = request.DATA.get("end_record")
+        asorting_cols = request.DATA.get("asorting_cols")
+        searchable_columns = request.DATA.get("searchable_columns")
+        custom_search = request.DATA.get("custom_search")
+
+        if not is_valid_int_greater_zero_param(id_vip, False):
+            raise api_exceptions.ValidationException('Vip id invalid.')
+
+        query_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=id_vip)
+
+
+        server_pools, total = build_query_to_datatable(
+            query_pools,
+            asorting_cols,
+            custom_search,
+            searchable_columns,
+            start_record,
+            end_record
+        )
+
+        serializer_pools = ServerPoolDatatableSerializer(
+            server_pools,
+            many=True
+        )
+
+        data["pools"] = serializer_pools.data
+        data["total"] = total
+
+        return Response(data)
+
+    except api_exceptions.ValidationException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
 
     try:
@@ -427,6 +479,8 @@ def pool_insert(request):
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
+        nome_equips = request.DATA.get('nome_equips')
+        weight = request.DATA.get('weight')
 
 
         has_identifier = ServerPool.objects.filter(identifier=identifier).count()
@@ -495,11 +549,11 @@ def pool_insert(request):
 
             spm = ServerPoolMember(
                 server_pool=sp,
-                identifier=identifier,
+                identifier=nome_equips[i],
                 ip=ip_object,
                 ipv6=ipv6_object,
                 priority=priorities[i],
-                weight=0,
+                weight=weight[i],
                 limit=maxcom,
                 port_real=ports_reals[i],
                 healthcheck=hc
@@ -545,14 +599,14 @@ def pool_edit(request):
         if not is_valid_int_greater_zero_param(id_server_pool):
             raise exceptions.InvalidIdPoolException()
 
-        identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
-        #environment = request.DATA.get('environment')
         balancing = request.DATA.get('balancing')
         maxcom = request.DATA.get('maxcom')
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
+        nome_equips = request.DATA.get('nome_equips')
+        weight = request.DATA.get('weight')
 
 
         # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
@@ -614,11 +668,11 @@ def pool_edit(request):
 
             spm = ServerPoolMember(
                 server_pool=sp,
-                identifier=identifier,
+                identifier=nome_equips[i],
                 ip=ip_object,
                 ipv6=ipv6_object,
                 priority=priorities[i],
-                weight=0,
+                weight=weight[i],
                 limit=maxcom,
                 port_real=ports_reals[i],
                 healthcheck=hc
