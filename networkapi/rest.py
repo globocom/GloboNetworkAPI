@@ -71,7 +71,7 @@ class RestResource(object):
         response = None
         try:
             self.log.rest(u'INICIO da requisição %s para URL %s. XML: [%s].' % (request.method,
-                                                                                request.path,
+                                                                                request.get_full_path(),
                                                                                 request.raw_post_data))
 
             username, password, user_ldap = self.read_user_data(request)
