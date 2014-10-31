@@ -1002,7 +1002,7 @@ class Ip(BaseModel):
             if ips.count() == 0:
                 raise IpNotFoundError(None)
 
-            if valid:
+            if valid == True:
                     return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4,
                                           networkipv4__ambient_vip__id=id_evip)
             else:
