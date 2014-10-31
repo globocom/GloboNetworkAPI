@@ -277,7 +277,7 @@ class RequestVipsResource(RestResource):
             return self.response_error(130, transbordo)
         except UserNotAuthorizedError:
             return self.not_authorized()
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
         except Rule.DoesNotExist:
             return self.response_error(358)

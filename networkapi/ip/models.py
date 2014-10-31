@@ -988,38 +988,46 @@ class Ip(BaseModel):
             raise IpError(e, u'Failure to search the IP.')
 
     @classmethod
-    def get_by_octs_and_environment_vip(cls, oct1, oct2, oct3, oct4, id_evip, valid=True):
+    def get_by_octs_and_environment_vip(self, oct1, oct2, oct3, oct4, id_evip, valid=True):
         """Get IP by octs and environment vip.
 
             @return: IP.
 
+            @raise IpNotFoundByEquipAndVipError: IP is not related with equipament.
             @raise IpNotFoundError: IP is not registered.
             @raise IpError: Failed to search for the IP.
         """
         try:
+            ips = Ip.objects.filter(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4)
+            if ips.count() == 0:
+                raise IpNotFoundError(None)
+
             if valid == True:
-                return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__ambient_vip__id=id_evip)
+                    return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4,
+                                          networkipv4__ambient_vip__id=id_evip)
             else:
-                ips = Ip.objects.filter(
-                    oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4)
                 for ip in ips:
                     if ip.networkipv4.ambient_vip:
                         if ip.networkipv4.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(
-                            vlan__networkipv4__ambient_vip__id=id_evip)
+                        environments = Ambiente.objects.filter(vlan__networkipv4__ambient_vip__id=id_evip)
                         for env in environments:
-                            if ip.networkipv4.vlan.ambiente.divisao_dc.id == env.divisao_dc.id and ip.networkipv4.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
+                            if ip.networkipv4.vlan.ambiente.divisao_dc.id == env.divisao_dc.id \
+                                    and ip.networkipv4.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
                                 return ip
                 raise ObjectDoesNotExist()
-
         except ObjectDoesNotExist, e:
             evip = EnvironmentVip.get_by_pk(id_evip)
-            raise IpNotFoundError(
-                e, u'Ipv4 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip())
+            msg = u'Ipv4 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip()
+            self.log.error(msg)
+            raise IpNotFoundByEquipAndVipError(e, msg)
+        except IpNotFoundError, e:
+            msg = u'Ipv4 "%s.%s.%s.%s" não exite.' % (oct1,oct2,oct3,oct4)
+            self.log.error(msg)
+            raise IpNotFoundError(e, msg)
         except Exception, e:
-            cls.log.error(u'Failure to search the IP.')
+            self.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
     @classmethod
@@ -1105,20 +1113,23 @@ class Ip(BaseModel):
                         r_alter = True
                 if not r_alter:
                     r.delete(authenticated_user)
+
             for ie in self.ipequipamento_set.all():
+                # Codigo removido, pois não devemos remover o ambiente do equipamento mesmo que não tenha IP
+                # para o ambiente solicidado pelo Henrique
 
-                ambienteequip = EquipamentoAmbiente()
-                ambienteequip = ambienteequip.get_by_equipment_environment(
-                    ie.equipamento.id, self.networkipv4.vlan.ambiente_id)
-
-                ips = Ip.list_by_environment_and_equipment(
-                    ambienteequip.ambiente_id, ie.equipamento.id)
-                ips6 = Ipv6.list_by_environment_and_equipment(
-                    ambienteequip.ambiente_id, ie.equipamento.id)
-
-                if len(ips) <= 1 and len(ips6) <= 0:
-
-                    ambienteequip.delete(authenticated_user)
+                # ambienteequip = EquipamentoAmbiente()
+                # ambienteequip = ambienteequip.get_by_equipment_environment(
+                #     ie.equipamento.id, self.networkipv4.vlan.ambiente_id)
+                #
+                # ips = Ip.list_by_environment_and_equipment(
+                #     ambienteequip.ambiente_id, ie.equipamento.id)
+                # ips6 = Ipv6.list_by_environment_and_equipment(
+                #     ambienteequip.ambiente_id, ie.equipamento.id)
+                #
+                # if len(ips) <= 1 and len(ips6) <= 0:
+                #
+                #     ambienteequip.delete(authenticated_user)
 
                 ie.delete(authenticated_user)
             super(Ip, self).delete(authenticated_user)
@@ -2155,11 +2166,15 @@ class Ipv6(BaseModel):
         @raise IpError: Failed to search for the Ipv6.
         '''
         try:
+            ips = Ipv6.objects.filter(block1=block1, block2=block2, block3=block3,
+                                    block4=block4, block5=block5, block6=block6, block7=block7, block8=block8)
+            if ips.count() == 0:
+                raise IpNotFoundError(None)
+
             if valid == True:
-                return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
+                return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5,
+                                    block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
             else:
-                ips = Ipv6.objects.filter(block1=block1, block2=block2, block3=block3,
-                                          block4=block4, block5=block5, block6=block6, block7=block7, block8=block8)
                 for ip in ips:
                     if ip.networkipv6.ambient_vip:
                         if ip.networkipv6.ambient_vip.id == id_evip:
@@ -2168,14 +2183,23 @@ class Ipv6(BaseModel):
                         environments = Ambiente.objects.filter(
                             vlan__networkipv6__ambient_vip__id=id_evip)
                         for env in environments:
-                            if ip.networkipv6.vlan.ambiente.divisao_dc.id == env.divisao_dc.id and ip.networkipv6.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
+                            if ip.networkipv6.vlan.ambiente.divisao_dc.id == env.divisao_dc.id \
+                                    and ip.networkipv6.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
                                 return ip
                 raise ObjectDoesNotExist()
 
         except ObjectDoesNotExist, e:
             evip = EnvironmentVip.get_by_pk(id_evip)
-            raise IpNotFoundError(
-                e, u'Ipv6 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip())
+            msg = u'Ipv6 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip()
+            self.log.error(msg)
+            raise IpNotFoundByEquipAndVipError(e, msg)
+
+        except IpNotFoundError, e:
+            msg = u'Ipv6 "%s.%s.%s.%s.%s.%s.%s.%s" não existe.' % (block1, block2, block3, block4,
+                                                                   block5, block6, block7, block8)
+            self.log.error(msg)
+            raise IpNotFoundError(e, msg)
+
         except Exception, e:
             self.log.error(u'Failure to search the Ipv6.')
             raise IpError(e, u'Failure to search the Ipv6.')
@@ -2222,19 +2246,21 @@ class Ipv6(BaseModel):
 
             # Delete all EquipmentIp and EnviromentEquip associated
             for ie in self.ipv6equipament_set.all():
+                # Codigo removido, pois não devemos remover o ambiente do equipamento mesmo que não tenha IP
+                # para o ambiente solicidado pelo Henrique
 
-                ambienteequip = EquipamentoAmbiente()
-                ambienteequip = ambienteequip.get_by_equipment_environment(
-                    ie.equipamento.id, self.networkipv6.vlan.ambiente_id)
-
-                ips = Ip.list_by_environment_and_equipment(
-                    ambienteequip.ambiente_id, ie.equipamento.id)
-                ips6 = Ipv6.list_by_environment_and_equipment(
-                    ambienteequip.ambiente_id, ie.equipamento.id)
-
-                if len(ips) <= 0 and len(ips6) <= 1:
-
-                    ambienteequip.delete(authenticated_user)
+                # ambienteequip = EquipamentoAmbiente()
+                # ambienteequip = ambienteequip.get_by_equipment_environment(
+                #     ie.equipamento.id, self.networkipv6.vlan.ambiente_id)
+                #
+                # ips = Ip.list_by_environment_and_equipment(
+                #     ambienteequip.ambiente_id, ie.equipamento.id)
+                # ips6 = Ipv6.list_by_environment_and_equipment(
+                #     ambienteequip.ambiente_id, ie.equipamento.id)
+                #
+                # if len(ips) <= 0 and len(ips6) <= 1:
+                #
+                #     ambienteequip.delete(authenticated_user)
 
                 ie.delete(authenticated_user)
 

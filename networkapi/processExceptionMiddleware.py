@@ -27,6 +27,7 @@ class LoggingMiddleware(object):
         for values in post_values:
             r = re.compile('<password>(.*?)</password>')
             m = r.search(post_values[values])
+            msg = ''
             if m:
                 password = m.group(1)
                 msg = re.sub(password, "****", post_values[values])
