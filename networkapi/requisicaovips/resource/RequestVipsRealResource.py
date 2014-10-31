@@ -291,7 +291,7 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         # Get variables
         variables_map = vip.variables_to_map()
         # Valid variables
-        vip.set_variables(variables_map)
+        #vip.set_variables(variables_map)
 
         evip = EnvironmentVip.get_by_values(variables_map.get('finalidade'), variables_map.get('cliente'), variables_map.get('ambiente'))
 
