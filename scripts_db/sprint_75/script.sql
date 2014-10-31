@@ -28,7 +28,7 @@ CREATE TABLE `healthcheckexpect_healthcheck` (
 ALTER TABLE `config_do_ambiente` DROP INDEX `uniq_ip_config_ambiente` ;
 ALTER TABLE `config_do_ambiente` ADD INDEX `unique_ip_config_ambiente` (`id_ambiente` ASC, `id_ip_config` ASC) ;
 
-ALTER TABLE `ip_config` ADD COLUMN `network_type` INT UNSIGNED NULL  AFTER `type` , 
+ALTER TABLE `ip_config` ADD COLUMN `network_type` INT UNSIGNED NULL  AFTER `type` ,
   ADD CONSTRAINT `fk_ip_config_tipo_rede`
   FOREIGN KEY (`network_type` )
   REFERENCES `tipo_rede` (`id_tipo_rede` )
@@ -37,4 +37,5 @@ ALTER TABLE `ip_config` ADD COLUMN `network_type` INT UNSIGNED NULL  AFTER `type
 , ADD INDEX `fk_ip_config_tipo_rede` (`network_type` ASC) ;
 
 ALTER TABLE `equipamentos` CHANGE COLUMN nome nome varchar(50) NOT NULL;
+ALTER TABLE `ambientevip` ADD COLUMN `description` CHAR(50) NOT NULL  AFTER `ambiente_p44_txt` ;
 
