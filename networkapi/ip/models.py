@@ -2171,7 +2171,7 @@ class Ipv6(BaseModel):
             if ips.count() == 0:
                 raise IpNotFoundError(None)
 
-            if valid:
+            if valid == True:
                 return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5,
                                     block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
             else:
