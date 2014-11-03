@@ -959,7 +959,7 @@ def list_by_environment_vip(request, environment_vip_id):
         server_pool_query = ServerPool.objects.filter(
             Q(environment__vlan__networkipv4__ambient_vip=env_vip) |
             Q(environment__vlan__networkipv6__ambient_vip=env_vip)
-        ).order_by('identifier')
+        ).distinct().order_by('identifier')
 
         serializer_pools = PoolSerializer(server_pool_query, many=True)
 
