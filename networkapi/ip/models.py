@@ -491,6 +491,12 @@ class Ip(BaseModel):
         managed = True
         unique_together = ('oct1', 'oct2', 'oct3', 'oct4', 'networkipv4')
 
+    def _get_formated_ip(self):
+        "Returns formated ip."
+        return '%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4)
+
+    ip_formated = property(_get_formated_ip)
+
     @classmethod
     def list_by_network(self, id_network):
         """Get IP LIST by id_network.
@@ -1604,6 +1610,13 @@ class Ipv6(BaseModel):
         managed = True
         unique_together = ('block1', 'block2', 'block3', 'block4',
                            'block5', 'block6', 'block7', 'block8', 'networkipv6')
+
+    def _get_formated_ip(self):
+        "Returns formated ip."
+        return '%s.%s.%s.%s.%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.oct5, self.oct6, self.oct7, self.oct8)
+
+    ip_formated = property(_get_formated_ip)
+
 
     @classmethod
     def get_by_pk(self, id):
