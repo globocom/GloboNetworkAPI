@@ -23,7 +23,7 @@ from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
 from networkapi.log import Log
 from networkapi.rest import RestResource
-from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param,\
+from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, \
     is_valid_boolean_param
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.ipaddr import IPAddress, IPv6Address
@@ -109,14 +109,14 @@ def get_vips(vips):
         vip_map = vip.variables_to_map()
 
         list_environment.append(
-            "%s - %s - %s" % (vip_map['finalidade'], vip_map['cliente'], vip_map['ambiente']))
+            "%s - %s - %s" % (vip_map.get('finalidade', ''), vip_map.get('cliente', ''), vip_map.get('ambiente', '')))
         try:
             if vip.ip is not None:
 
                 descricao_ipv4 = vip.ip.descricao
                 list_ips.append(
                     "%s.%s.%s.%s" % (vip.ip.oct1, vip.ip.oct2, vip.ip.oct3, vip.ip.oct4))
-                #list_environment.append("%s - %s - %s" % (vip.ip.networkipv4.vlan.ambiente.divisao_dc.nome,vip.ip.networkipv4.vlan.ambiente.ambiente_logico.nome,vip.ip.networkipv4.vlan.ambiente.grupo_l3.nome))
+                # list_environment.append("%s - %s - %s" % (vip.ip.networkipv4.vlan.ambiente.divisao_dc.nome,vip.ip.networkipv4.vlan.ambiente.ambiente_logico.nome,vip.ip.networkipv4.vlan.ambiente.grupo_l3.nome))
 
                 equips = vip.ip.ipequipamento_set.all()
 
@@ -131,7 +131,7 @@ def get_vips(vips):
                 descricao_ipv6 = vip.ipv6.description
                 list_ips.append("%s:%s:%s:%s:%s:%s:%s:%s" % (vip.ipv6.block1, vip.ipv6.block2, vip.ipv6.block3,
                                                              vip.ipv6.block4, vip.ipv6.block5, vip.ipv6.block6, vip.ipv6.block7, vip.ipv6.block8))
-                #list_environment.append("%s - %s - %s" % (vip.ipv6.networkipv6.vlan.ambiente.divisao_dc.nome,vip.ipv6.networkipv6.vlan.ambiente.ambiente_logico.nome,vip.ipv6.networkipv6.vlan.ambiente.grupo_l3.nome))
+                # list_environment.append("%s - %s - %s" % (vip.ipv6.networkipv6.vlan.ambiente.divisao_dc.nome,vip.ipv6.networkipv6.vlan.ambiente.ambiente_logico.nome,vip.ipv6.networkipv6.vlan.ambiente.grupo_l3.nome))
 
                 equips = vip.ipv6.ipv6equipament_set.all()
 
