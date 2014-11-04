@@ -29,7 +29,8 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.pools import exceptions as pool_exceptions
 from networkapi.api_vip_request import exceptions
 from networkapi.ambiente.models import EnvironmentVip, Ambiente
-from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
+from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer, \
+    RequesVipSerializer, VipPortToPoolSerializer
 
 log = Log(__name__)
 
@@ -143,6 +144,58 @@ def list_environment_by_environment_vip(request, environment_vip_id):
     except EnvironmentVip.DoesNotExist, exception:
         log.error(exception)
         raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def save(request):
+
+    try:
+
+        errors = list()
+
+        req_vip_serializer = RequesVipSerializer(data=request.DATA)
+
+        v_ports_serializer = VipPortToPoolSerializer(
+            data=request.DATA.get("vip_ports"),
+            many=True
+        )
+
+        if req_vip_serializer.is_valid() and v_ports_serializer.is_valid():
+
+            obj_req_vip = req_vip_serializer.object
+            obj_vip_ports = v_ports_serializer.object
+            obj_req_vip.save(request.user)
+            for v_port in obj_vip_ports:
+                v_port.requisicao_vip = obj_req_vip
+                v_port.save(request.user)
+
+            return Response(status=status.HTTP_201_CREATED)
+
+        errors_vip = req_vip_serializer.errors
+        errors_vip_port = v_ports_serializer.errors
+
+        if errors_vip:
+            errors.extend(errors_vip)
+
+        if errors_vip_port:
+            errors.extend(errors_vip_port)
+# TODO: REFATORAR EXCEPTIOn
+        raise api_exceptions.ValidationException(detail='%s' % errors)
+
+        return Response(
+            errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    except api_exceptions.ValidationException, exception:
+        log.error(exception)
+        raise exception
 
     except Exception, exception:
         log.error(exception)
