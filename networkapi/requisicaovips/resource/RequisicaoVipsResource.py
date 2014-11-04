@@ -34,7 +34,8 @@ from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeVa
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
     InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int
+from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int, \
+    deprecated
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from django.forms.models import model_to_dict
 
@@ -351,26 +352,20 @@ class RequisicaoVipsResource(RestResource):
 
             request_vip_map = request_vip.variables_to_map()
 
-            pools = list()
+            """"""
+            vip_port_list, reals_list, reals_priority, reals_weight = request_vip.get_vips_and_reals(
+                request_vip.id)
 
-            for vip_pool_port in request_vip.vipporttopool_set.all():
+            if reals_list:
+                request_vip_map['reals'] = {'real': reals_list}
+                request_vip_map['reals_prioritys'] = {
+                    'reals_priority': reals_priority}
+                request_vip_map['reals_weights'] = {
+                    'reals_weight': reals_weight}
 
-                pools_members = []
+            request_vip_map['portas_servicos'] = {'porta': vip_port_list}
 
-                pool_raw = model_to_dict(vip_pool_port.server_pool)
-
-                for pool_member in vip_pool_port.server_pool.serverpoolmember_set.all():
-
-                    pools_member_raw = model_to_dict(pool_member)
-                    healthcheck_type = pool_member.healthcheck and pool_member.healthcheck.healthcheck_type
-                    pools_member_raw["healthcheck"] = dict(healthcheck_type=healthcheck_type)
-                    pools_members.append(pools_member_raw)
-
-                pool_raw['server_pool_members'] = pools_members
-
-                pools.append(pool_raw)
-
-            request_vip_map["pools"] = pools
+            """"""
 
             request_vip_map['id'] = request_vip.id
             request_vip_map['validado'] = convert_boolean_to_int(
