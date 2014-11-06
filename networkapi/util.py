@@ -18,10 +18,11 @@
 
 from hashlib import sha1
 from django.core.cache import cache
-
+import warnings
+import functools
 import socket
 import copy
-
+import sys
 import re
 
 import time
@@ -565,3 +566,28 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
         raise ValueError('Invalid List Parameter.')
 
     return True
+
+
+def deprecated(new_uri=None):
+    '''This is a decorator which can be used to mark functions
+        as deprecated. It will result in a warning being emitted
+        when the function is used.
+    '''
+    def outer(fun):
+        @functools.wraps(fun)
+        def inner(*args, **kwargs):
+            from networkapi.log import Log
+            log = Log(fun.func_code.co_filename)
+            message = "%s:%s: %s is deprecated. Use the new rest API." % (
+                fun.func_code.co_filename,
+                fun.func_code.co_firstlineno + 1,
+                fun.__name__,
+            )
+
+            if new_uri:
+                message += " Uri to access: %s" % new_uri
+
+            log.warning(message)
+            return fun(*args, **kwargs)
+        return inner
+    return outer

@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 from django.db import models
+from django.db.models import Q
 from django.db.models.fields import NullBooleanField
 from networkapi.log import Log
 from networkapi.healthcheckexpect.models import HealthcheckExpect
@@ -270,7 +271,9 @@ class RequisicaoVips(BaseModel):
     )
 
     applied_l7_datetime = models.DateTimeField(
-        db_column='l7_filter_applied_datetime'
+        db_column='l7_filter_applied_datetime',
+        null=True,
+        blank=True
     )
 
     healthcheck_expect = models.ForeignKey(
@@ -556,6 +559,11 @@ class RequisicaoVips(BaseModel):
 
         self.variaveis = ''
 
+        healthcheck_type = variables_map.get('healthcheck_type')
+        if self.healthcheck_expect is not None and healthcheck_type != 'HTTP':
+            raise InvalidHealthcheckTypeValueError(
+                None, u"Valor do healthcheck_type inconsistente com o valor do healthcheck_expect.")
+
         finalidade = variables_map.get('finalidade')
         if not is_valid_string_minsize(finalidade, 3) or not is_valid_string_maxsize(finalidade, 50):
             log.error(u'Finality value is invalid: %s.', finalidade)
@@ -580,6 +588,7 @@ class RequisicaoVips(BaseModel):
             raise EnvironmentVipNotFoundError(
                 None, u'Não existe ambiente vip para valores: finalidade %s, cliente %s e ambiente_p44 %s.' % (finalidade, cliente, ambiente))
 
+        balanceamento = variables_map.get('metodo_bal')
         timeout = variables_map.get('timeout')
         grupo_cache = variables_map.get('cache')
         persistencia = variables_map.get('persistencia')
@@ -590,6 +599,8 @@ class RequisicaoVips(BaseModel):
                     for t in OptionVip.get_all_timeout(evip.id)]
         persistencias = [(p.nome_opcao_txt)
                          for p in OptionVip.get_all_persistencia(evip.id)]
+        balanceamentos = [(b.nome_opcao_txt)
+                          for b in OptionVip.get_all_balanceamento(evip.id)]
 
         if timeout not in timeouts:
             log.error(
@@ -597,6 +608,13 @@ class RequisicaoVips(BaseModel):
             raise InvalidTimeoutValueError(
                 None, 'timeout com valor inválido: %s.' % timeout)
         self.add_variable('timeout', timeout)
+
+        if balanceamento not in balanceamentos:
+            log.error(
+                u'The method_bal not in OptionVip, invalid value: %s.', balanceamento)
+            raise InvalidMetodoBalValueError(
+                None, 'metodo_bal com valor inválido: %s.' % balanceamento)
+        self.add_variable('metodo_bal', balanceamento)
 
         if grupo_cache not in grupos_cache:
             log.error(
@@ -614,11 +632,36 @@ class RequisicaoVips(BaseModel):
 
         environment_vip = EnvironmentVip.get_by_values(
             finalidade, cliente, ambiente)
+        healthcheck_is_valid = RequisicaoVips.heathcheck_exist(
+            healthcheck_type, environment_vip.id)
+
+        # healthcheck_type
+        if not healthcheck_is_valid:
+            raise InvalidHealthcheckTypeValueError(
+                None, u'Healthcheck_type com valor inválido: %s.' % healthcheck_type)
+        self.add_variable('healthcheck_type', healthcheck_type)
+
+        # healthcheck
+        healthcheck = variables_map.get('healthcheck')
+        if healthcheck is not None:
+            if healthcheck_type != 'HTTP':
+                raise InvalidHealthcheckValueError(
+                    None, u"Valor do healthcheck inconsistente com o valor do healthcheck_type.")
+            self.add_variable('healthcheck', healthcheck)
 
         # Host
         host_name = variables_map.get('host')
         if host_name is not None:
             self.add_variable('host', host_name)
+
+        # maxcon
+        maxcon = variables_map.get('maxcon')
+        try:
+            maxcon_int = int(maxcon)
+            self.add_variable('maxcon', maxcon)
+        except (TypeError, ValueError):
+            raise InvalidMaxConValueError(
+                None, u'Maxcon com valor inválido: %s.' % maxcon)
 
         # dsr
         dsr = variables_map.get('dsr')
@@ -1219,17 +1262,23 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def heathcheck_exist(cls, healthcheck_type, id_evironment_vip):
-        healthcheck_is_valid = False
-        healthcheck_type = healthcheck_type.upper()
 
-        healthcheck_list = OptionVip.get_all_healthcheck(id_evironment_vip)
+        health_type_upper = healthcheck_type.upper()
 
-        for option_vip_healthcheck in healthcheck_list:
-            if str(option_vip_healthcheck.nome_opcao_txt).upper() == healthcheck_type:
-                healthcheck_is_valid = True
-                break
+        env_query = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip__id=id_evironment_vip) |
+            Q(vlan__networkipv6__ambient_vip__id=id_evironment_vip)
+        )
 
-        return healthcheck_is_valid
+        environment = env_query and env_query.uniqueResult() or None
+
+        options_pool_environment = environment.opcaopoolambiente_set.all()
+
+        for option_pool_env in options_pool_environment:
+            if option_pool_env.opcao_pool.description.upper() == health_type_upper:
+                return True
+
+        return False
 
     @classmethod
     def valid_real_server(cls, ip, equip, evip, valid=True):
@@ -1317,6 +1366,36 @@ class RequisicaoVips(BaseModel):
         return ip, equip, evip
 
     def save_vips_and_ports(self, vip_map, user):
+
+        finalidade = vip_map.get('finalidade')
+        cliente = vip_map.get('cliente')
+        ambiente = vip_map.get('ambiente')
+
+        evip = EnvironmentVip.get_by_values(
+            finalidade,
+            cliente,
+            ambiente
+        )
+
+        env_query = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip=evip) |
+            Q(vlan__networkipv6__ambient_vip=evip)
+        )
+
+        environment_obj = env_query and env_query.uniqueResult() or None
+
+        lb_method = vip_map.get('metodo_bal', '')
+
+        healthcheck_type = vip_map.get('healthcheck_type', '')
+
+        healthcheck_type_upper = healthcheck_type.upper()
+
+        healthcheck_query = Healthcheck.objects.filter(
+            healthcheck_type=healthcheck_type_upper
+        )
+
+        healthcheck_obj = healthcheck_query.uniqueResult()
+
         # Ports Vip
         ports_vip_map = vip_map.get('portas_servicos')
         ports_vip = ports_vip_map.get('porta')
@@ -1343,8 +1422,20 @@ class RequisicaoVips(BaseModel):
 
             port_vip = port_vip.split(':')
             default_port = port_vip[1]
+            vip_port = port_vip[0]
+            ip_vip = self.ip or self.ipv6
+            identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
+
             # save ServerPool
-            server_pool = ServerPool()
+            server_pool = ServerPool(
+                healthcheck=healthcheck_obj,
+                environment=environment_obj,
+                lb_method=lb_method,
+                identifier=identifier,
+                pool_created=False
+
+            )
+
             server_pool.prepare_and_save(default_port, user)
 
             # save VipPortToPool
@@ -1417,12 +1508,12 @@ class RequisicaoVips(BaseModel):
 
             for member in members:
                 try:
-                    ip_equip = member.ip.ipequipamento_set.get()
+                    ip_equip = member.ip.ipequipamento_set.all().uniqueResult()
                     equip_name = ip_equip.equipamento.nome
                     ip_string = mount_ipv4_string(member.ip)
                     ip_id = member.ip.id
                 except:
-                    ip_equip = member.ipv6.ipv6equipament_set.get()
+                    ip_equip = member.ipv6.ipv6equipament_set.all().uniqueResult()
                     equip_name = ip_equip.equipamento.nome
                     ip_string = mount_ipv6_string(member.ipv6)
                     ip_id = member.ipv6.id
