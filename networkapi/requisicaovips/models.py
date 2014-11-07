@@ -527,6 +527,90 @@ class RequisicaoVips(BaseModel):
 
         return map
 
+    def set_new_variables(self, data):
+        log = Log('insert_vip_request_set_new_variables')
+
+        self.variaveis = ''
+
+        finalidade = data.get('finalidade')
+        if not is_valid_string_minsize(finalidade, 3) or not is_valid_string_maxsize(finalidade, 50):
+            log.error(u'Finality value is invalid: %s.', finalidade)
+            raise InvalidValueError(None, 'finalidade', finalidade)
+
+        cliente = data.get('cliente')
+        if not is_valid_string_minsize(cliente, 3) or not is_valid_string_maxsize(cliente, 50):
+            log.error(u'Client value is invalid: %s.', cliente)
+            raise InvalidValueError(None, 'cliente', cliente)
+
+        ambiente = data.get('ambiente')
+        if not is_valid_string_minsize(ambiente, 3) or not is_valid_string_maxsize(ambiente, 50):
+            log.error(u'Environment value is invalid: %s.', ambiente)
+            raise InvalidValueError(None, 'ambiente', ambiente)
+
+        try:
+            evip = EnvironmentVip.get_by_values(finalidade, cliente, ambiente)
+            self.add_variable('finalidade', finalidade)
+            self.add_variable('cliente', cliente)
+            self.add_variable('ambiente', ambiente)
+        except EnvironmentVipNotFoundError:
+            raise EnvironmentVipNotFoundError(
+                None, u'Não existe ambiente vip para valores: finalidade %s, cliente %s e ambiente_p44 %s.' % (finalidade, cliente, ambiente))
+
+        timeout = data.get('timeout')
+        grupo_cache = data.get('cache')
+        persistencia = data.get('persistencia')
+
+        grupos_cache = [(gc.nome_opcao_txt)
+                        for gc in OptionVip.get_all_grupo_cache(evip.id)]
+        timeouts = [(t.nome_opcao_txt)
+                    for t in OptionVip.get_all_timeout(evip.id)]
+        persistencias = [(p.nome_opcao_txt)
+                         for p in OptionVip.get_all_persistencia(evip.id)]
+
+        if timeout not in timeouts:
+            log.error(
+                u'The timeout not in OptionVip, invalid value: %s.', timeout)
+            raise InvalidTimeoutValueError(
+                None, 'timeout com valor inválido: %s.' % timeout)
+        self.add_variable('timeout', timeout)
+
+        if grupo_cache not in grupos_cache:
+            log.error(
+                u'The grupo_cache not in OptionVip, invalid value: %s.', grupo_cache)
+            raise InvalidCacheValueError(
+                None, 'grupo_cache com valor inválido: %s.' % grupo_cache)
+        self.add_variable('cache', grupo_cache)
+
+        if persistencia not in persistencias:
+            log.error(
+                u'The persistencia not in OptionVip, invalid value: %s.', persistencia)
+            raise InvalidPersistenciaValueError(
+                None, 'persistencia com valor inválido %s.' % persistencia)
+        self.add_variable('persistencia', persistencia)
+
+        # Host
+        host_name = data.get('host')
+        if host_name is not None:
+            self.add_variable('host', host_name)
+
+        # dsr
+        dsr = data.get('dsr')
+        if dsr is not None:
+            self.add_variable('dsr', dsr)
+
+        # area negocio
+        areanegocio = data.get('areanegocio')
+        if areanegocio is not None:
+            self.add_variable('areanegocio', areanegocio)
+
+        # nome servico
+        nomeservico = data.get('nome_servico')
+        if nomeservico is not None:
+            self.add_variable('nome_servico', nomeservico)
+
+        if self.variaveis != '':
+            self.variaveis = self.variaveis[0:len(self.variaveis) - 1]
+
     def set_variables(self, variables_map):
         '''Constroe e atribui o valor do campo "variaveis" a partir dos dados no mapa.
 
@@ -1491,7 +1575,8 @@ class RequisicaoVips(BaseModel):
             server_pool_member.prepare_and_save(
                 server_pool, ip, ip_type, priority, weight, port_real, user)
 
-    def get_vips_and_reals(self, id_vip):
+    def get_vips_and_reals(self, id_vip, omit_port_real=False):
+
         vip_ports = VipPortToPool.get_by_vip_id(id_vip)
 
         vip_port_list = list()
@@ -1500,9 +1585,13 @@ class RequisicaoVips(BaseModel):
         reals_weight = list()
 
         for v_port in vip_ports:
+            full_port = str(v_port.port_vip)
 
-            vip_port_list.append(
-                str(v_port.port_vip) + ':' + str(v_port.server_pool.default_port))
+            if not omit_port_real:
+                full_port += ':' + str(v_port.server_pool.default_port)
+
+            if full_port not in vip_port_list:
+                vip_port_list.append(full_port)
 
             members = v_port.server_pool.serverpoolmember_set.all()
 
@@ -1518,8 +1607,17 @@ class RequisicaoVips(BaseModel):
                     ip_string = mount_ipv6_string(member.ipv6)
                     ip_id = member.ipv6.id
 
-                reals_list.append({'real_ip': ip_string, 'real_name': equip_name,
-                                   'port_vip': v_port.port_vip, 'port_real': member.port_real, 'id_ip': ip_id})
+                real_raw = {
+                    'real_ip': ip_string,
+                    'real_name': equip_name,
+                    'port_vip': v_port.port_vip,
+                    'port_real': member.port_real,
+                    'id_ip': ip_id
+                }
+
+                if real_raw not in reals_list:
+                    reals_list.append(real_raw)
+
                 reals_priority.append(member.priority)
                 reals_weight.append(member.weight)
 
