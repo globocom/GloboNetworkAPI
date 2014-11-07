@@ -22,6 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from networkapi.log import Log
+from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.api_vip_request.permissions import Read, Write
 from networkapi.requisicaovips.models import ServerPool, VipPortToPool, \
     RequisicaoVips
@@ -30,7 +31,11 @@ from networkapi.pools import exceptions as pool_exceptions
 from networkapi.api_vip_request import exceptions
 from networkapi.ambiente.models import EnvironmentVip, Ambiente
 from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer, \
-    RequesVipSerializer, VipPortToPoolSerializer
+    RequesVipSerializer
+from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError, \
+    EquipamentoError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 
 log = Log(__name__)
 
@@ -150,48 +155,92 @@ def list_environment_by_environment_vip(request, environment_vip_id):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST'])
+def _set_l7_filter_for_vip(obj_req_vip):
+
+    if obj_req_vip.rule:
+        obj_req_vip.l7_filter = '\n'.join(
+            obj_req_vip.rule.rulecontent_set.all().values_list(
+                'content',
+                flat=True
+            )
+        )
+
+
+@api_view(['POST', 'PUT'])
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
-def save(request):
+def save(request, pk=None):
 
     try:
 
-        errors = list()
+        data = request.DATA
+        user = request.user
 
-        req_vip_serializer = RequesVipSerializer(data=request.DATA)
+        vip_ports = data.get("vip_ports_to_pools")
 
-        v_ports_serializer = VipPortToPoolSerializer(
-            data=request.DATA.get("vip_ports"),
-            many=True
+        req_vip_serializer = RequesVipSerializer(
+            data=data
         )
 
-        if req_vip_serializer.is_valid() and v_ports_serializer.is_valid():
+        if not req_vip_serializer.is_valid():
+            raise api_exceptions.ValidationException("Invalid Vip Request")
+
+        if request.method == "POST":
 
             obj_req_vip = req_vip_serializer.object
-            obj_vip_ports = v_ports_serializer.object
-            obj_req_vip.save(request.user)
-            for v_port in obj_vip_ports:
-                v_port.requisicao_vip = obj_req_vip
-                v_port.save(request.user)
 
-            return Response(status=status.HTTP_201_CREATED)
+            obj_req_vip.filter_valid = True
+            obj_req_vip.validado = False
+            _set_l7_filter_for_vip(obj_req_vip)
+            obj_req_vip.set_new_variables(data)
+            obj_req_vip.save(user)
 
-        errors_vip = req_vip_serializer.errors
-        errors_vip_port = v_ports_serializer.errors
+            if vip_ports:
 
-        if errors_vip:
-            errors.extend(errors_vip)
+                for v_port in obj_req_vip.vip_ports_to_pools:
+                    v_port.requisicao_vip = obj_req_vip
+                    v_port.save(user)
+            else:
+                _validate_reals(data)
+                obj_req_vip.save_vips_and_ports(data, user)
 
-        if errors_vip_port:
-            errors.extend(errors_vip_port)
-# TODO: REFATORAR EXCEPTIOn
-        raise api_exceptions.ValidationException(detail='%s' % errors)
+            return Response(
+                data=req_vip_serializer.data,
+                status=status.HTTP_201_CREATED
+            )
 
-        return Response(
-            errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        elif request.method == "PUT":
+
+            obj_req_vip = RequisicaoVips.objects.get(pk=pk)
+
+            with distributedlock(LOCK_VIP % pk):
+
+                obj_req_vip = req_vip_serializer.object
+                obj_req_vip.id = pk
+                obj_req_vip.filter_valid = True
+                obj_req_vip.validado = False
+                _set_l7_filter_for_vip(obj_req_vip)
+                obj_req_vip.set_new_variables(data)
+                obj_req_vip.save(user)
+
+                if vip_ports:
+
+                    for v_port_to_del in obj_req_vip.vipporttopool_set.all():
+                        v_port_to_del.delete(user)
+
+                    for v_port in obj_req_vip.vip_ports_to_pools:
+                        v_port.requisicao_vip = obj_req_vip
+                        v_port.save(user)
+                else:
+                    _validate_reals(data)
+                    obj_req_vip.delete_vips_and_reals(user)
+                    obj_req_vip.save_vips_and_ports(data, user)
+
+                return Response(data=req_vip_serializer.data)
+
+    except RequisicaoVips.DoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.VipRequestDoesNotExistException()
 
     except api_exceptions.ValidationException, exception:
         log.error(exception)
@@ -200,3 +249,56 @@ def save(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+
+def _validate_reals(data):
+
+    try:
+
+        reals_data = data.get('reals')
+
+        if reals_data is not None:
+
+            finalidade = data.get('finalidade')
+            cliente = data.get('cliente')
+            ambiente = data.get('ambiente')
+
+            evip = EnvironmentVip.get_by_values(
+                finalidade,
+                cliente,
+                ambiente
+            )
+
+            for real in reals_data.get('real'):
+
+                real_ip = real.get('real_ip')
+                real_name = real.get('real_name')
+
+                if real_name:
+                    equip = Equipamento.get_by_name(real_name)
+                else:
+                    message = u'The real_name parameter is not a valid value'
+                    log.error(message)
+                    raise api_exceptions.ValidationException(message)
+
+                RequisicaoVips.valid_real_server(real_ip, equip, evip, False)
+
+    except EnvironmentVipNotFoundError, exception:
+        log.error(exception.message)
+        raise api_exceptions.ValidationException(exception.message)
+
+    except EquipamentoError, exception:
+        log.error(exception.message)
+        raise api_exceptions.ValidationException(exception.message)
+
+    except EquipamentoNotFoundError, exception:
+        log.error(exception.message)
+        raise api_exceptions.ValidationException(exception.message)
+
+    except IpNotFoundByEquipAndVipError, exception:
+        log.error(exception.message)
+        raise api_exceptions.ValidationException(exception.message)
+
+    except InvalidValueError, exception:
+        log.error(u'Invalid Ip Type')
+        raise api_exceptions.ValidationException(u'Invalid Ip Type')
