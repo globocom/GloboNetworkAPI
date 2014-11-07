@@ -210,6 +210,13 @@ class InvalidPriorityValueError(RequisicaoVipsError):
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+class RequestVipWithoutServerPoolError(RequisicaoVipsError):
+
+    """Return exception when no one exisitir server pool to request VIP."""
+
+    def __init__(self, cause, message=None):
+        RequisicaoVipsError.__init__(self, cause, message)
+
 
 class InvalidWeightValueError(RequisicaoVipsError):
 
@@ -1905,6 +1912,10 @@ class ServerPool(BaseModel):
         db_column='default_port'
     )
 
+    default_limit = models.IntegerField(
+        db_column='default_limit'
+    )
+
     pool_created = models.NullBooleanField(
         db_column='pool_criado',
         null=True
@@ -1980,6 +1991,9 @@ class ServerPoolMember(BaseModel):
         server_pools = ServerPool.objects.filter(
             vipporttopool__requisicao_vip__id=vip_id)
 
+        if server_pools.count() == 0:
+            raise RequestVipWithoutServerPoolError(None, "Vip's request has no registered server pool")
+
         for server_pool in server_pools:
             server_pool_member = ServerPoolMember()
             server_pool_member.prepare_and_save(
@@ -1989,6 +2003,10 @@ class ServerPoolMember(BaseModel):
         """ Save with commit = True """
         vipporttopool = VipPortToPool.objects.filter(
             requisicao_vip__id=vip_id, port_vip=port_vip)
+
+        if vipporttopool.count() == 0:
+            raise RequestVipWithoutServerPoolError(None, "Vip's request has no registered server pool")
+
         if vipporttopool:
             vipporttopool = vipporttopool[0]
             ServerPoolMember().prepare_and_save(
@@ -1996,10 +2014,13 @@ class ServerPoolMember(BaseModel):
 
 
 class VipPortToPool(BaseModel):
+
     id = models.AutoField(primary_key=True, db_column='id_vip_port_to_pool')
-    requisicao_vip = models.ForeignKey(
-        RequisicaoVips, db_column='id_requisicao_vips')
+
+    requisicao_vip = models.ForeignKey(RequisicaoVips, db_column='id_requisicao_vips')
+
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
+
     port_vip = models.IntegerField(db_column='vip_port')
 
     class Meta(BaseModel.Meta):

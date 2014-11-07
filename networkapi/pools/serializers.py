@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from networkapi.infrastructure.script_utils import exec_script
+from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, VipPortToPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.equipamento.models import Equipamento
@@ -30,11 +31,28 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
         )
 
 
+class Ipv4Serializer(serializers.ModelSerializer):
+
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ip
+
+
+class Ipv6Serializer(serializers.ModelSerializer):
+
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ipv6
 
 
 class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
     pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
+
+    ip = Ipv4Serializer()
+    ipv6 = Ipv6Serializer()
 
     class Meta:
         depth = 1
@@ -72,6 +90,7 @@ class ServerPoolSerializer(serializers.ModelSerializer):
             'id',
             'identifier',
             'default_port',
+            'default_limit',
             'healthcheck',
             'environment',
             'pool_created',

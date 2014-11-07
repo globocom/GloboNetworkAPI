@@ -5,6 +5,7 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns(
     'networkapi.pools.views',
     url(r'^pools/$', 'pool_list'),
+    url(r'^pools/pool_list_by_reqvip/$', 'pool_list_by_reqvip'),
     url(r'^pools/insert/$', 'pool_insert'),
     url(r'^pools/list_healthchecks/$', 'healthcheck_list'),
     url(r'^pools/delete/$', 'delete'),
@@ -21,4 +22,6 @@ urlpatterns = patterns(
     url(r'^pools/list/by/environment/(?P<environment_id>[^/]+)/$', 'list_by_environment'),
     url(r'^pools/list/members/(?P<pool_id>[^/]+)/$', 'list_pool_members'),
     url(r'^pools/list/by/environment/vip/(?P<environment_vip_id>\d+)/$', 'list_by_environment_vip'),
+
+    url(r'^pools/save/$', 'save'),
 )

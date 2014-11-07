@@ -18,11 +18,13 @@
 from __future__ import with_statement
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.admin_permission import AdminPermission
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError, \
+    RequestVipWithoutServerPoolError
 from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
-from networkapi.ip.models import IpNotFoundError, IpError, IpEquipamento, Ipv6Equipament, IpEquipmentNotFoundError
+from networkapi.ip.models import IpNotFoundError, IpError, IpEquipamento, Ipv6Equipament, IpEquipmentNotFoundError, \
+    IpNotFoundByEquipAndVipError
 from networkapi.grupo.models import GrupoError, EGrupoNotFoundError
-from networkapi.ambiente.models import IP_VERSION
+from networkapi.ambiente.models import IP_VERSION, EnvironmentVip
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
@@ -46,7 +48,7 @@ class RequestVipsRealResource(RestResource):
     log = Log('RequestVipsRealResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        """Treat requests POST to Add/Del/Enable/Disable/Check request VIP - Real.
+        """Treat requests POST to Add/Del/Enable/Disable/Check  requestIP - Real.
 
 URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
 """
@@ -112,6 +114,12 @@ URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
 
         except IpEquipmentNotFoundError:
             return self.response_error(118, ip_id, equip_id)
+
+        except IpNotFoundByEquipAndVipError, e:
+            return self.response_error(334, e.message)
+
+        except RequestVipWithoutServerPoolError, e:
+            return self.response_error(374, e.message)
 
         except (RequisicaoVipsError, EquipamentoError, IpError, GrupoError):
             return self.response_error(1)
@@ -284,6 +292,12 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
 
         # Find Request VIP by ID to check if it exist
         vip = RequisicaoVips.get_by_pk(vip_id)
+        # Get variables
+        variables_map = vip.variables_to_map()
+        # Valid variables
+        #vip.set_variables(variables_map)
+
+        evip = EnvironmentVip.get_by_values(variables_map.get('finalidade'), variables_map.get('cliente'), variables_map.get('ambiente'))
 
         # Valid network_version - IPv4
         if network_version == IP_VERSION.IPv4[0]:
@@ -295,6 +309,9 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             end_ip = "%s.%s.%s.%s" % (
                 IpEquip.ip.oct1, IpEquip.ip.oct2, IpEquip.ip.oct3, IpEquip.ip.oct4)
 
+            # Valid Real
+            RequisicaoVips.valid_real_server(end_ip, IpEquip.equipamento, evip, False)
+
         # Valid network_version - IPv6
         elif network_version == IP_VERSION.IPv6[0]:
 
@@ -304,6 +321,9 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             real_name = Ipv6Equip.equipamento.nome
             end_ip = "%s:%s:%s:%s:%s:%s:%s:%s" % (Ipv6Equip.ip.block1, Ipv6Equip.ip.block2, Ipv6Equip.ip.block3,
                                                   Ipv6Equip.ip.block4, Ipv6Equip.ip.block5, Ipv6Equip.ip.block6, Ipv6Equip.ip.block7, Ipv6Equip.ip.block8)
+
+            # Valid Real
+            RequisicaoVips.valid_real_server(end_ip, Ipv6Equip.equipamento, evip, False)
 
         if (operation == 'chk'):
 

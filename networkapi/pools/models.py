@@ -24,23 +24,23 @@ from networkapi.models.BaseModel import BaseModel
 
 
 class OpcaoPool(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_opcao_pool')
+    id = models.AutoField(primary_key=True, db_column='id_opcaopool')
     description = models.CharField(blank=False, max_length=200)
 
     log = Log('OpcaoPool')
 
     class Meta(BaseModel.Meta):
-        db_table = u'opcoes_pool'
+        db_table = u'opcoespool'
         managed = True
 
 
 class OpcaoPoolAmbiente(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_opcao_pool_ambiente')
-    opcao_pool = models.ForeignKey(OpcaoPool, db_column='id_opcao_pool')
+    id = models.AutoField(primary_key=True, db_column='id_opcaopool_ambiente_xref')
+    opcao_pool = models.ForeignKey(OpcaoPool, db_column='id_opcaopool')
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
 
     log = Log('OpcaoPoolAmbiente')
 
     class Meta(BaseModel.Meta):
-        db_table = u'opcoes_pool_ambiente'
+        db_table = u'opcoespool_ambiente_xref'
         managed = True

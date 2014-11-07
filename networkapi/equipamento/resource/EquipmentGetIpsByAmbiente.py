@@ -66,7 +66,7 @@ class EquipmentGetIpsByAmbiente(RestResource):
             # Business Validations
 
             # Get data from URL GET parameters
-            equip_name = kwargs.get('equip_name')
+            equip_name = kwargs.get('equip_name').strip()
             id_ambiente = kwargs.get('id_ambiente')
 
             # Business Rules

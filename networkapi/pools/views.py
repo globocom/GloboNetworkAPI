@@ -105,6 +105,58 @@ def pool_list(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
+def pool_list_by_reqvip(request):
+    """
+    List all code snippets, or create a new snippet.
+    """
+    try:
+
+        data = dict()
+
+        id_vip = request.DATA.get("id_vip")
+        start_record = request.DATA.get("start_record")
+        end_record = request.DATA.get("end_record")
+        asorting_cols = request.DATA.get("asorting_cols")
+        searchable_columns = request.DATA.get("searchable_columns")
+        custom_search = request.DATA.get("custom_search")
+
+        if not is_valid_int_greater_zero_param(id_vip, False):
+            raise api_exceptions.ValidationException('Vip id invalid.')
+
+        query_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=id_vip)
+
+
+        server_pools, total = build_query_to_datatable(
+            query_pools,
+            asorting_cols,
+            custom_search,
+            searchable_columns,
+            start_record,
+            end_record
+        )
+
+        serializer_pools = ServerPoolDatatableSerializer(
+            server_pools,
+            many=True
+        )
+
+        data["pools"] = serializer_pools.data
+        data["total"] = total
+
+        return Response(data)
+
+    except api_exceptions.ValidationException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
 
     try:
@@ -412,233 +464,236 @@ def get_by_pk(request, id_server_pool):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
-@commit_on_success
-def pool_insert(request):
-
-    try:
-        # TODO: ADD VALIDATION
-        identifier = request.DATA.get('identifier')
-        default_port = request.DATA.get('default_port')
-        environment = request.DATA.get('environment')
-        balancing = request.DATA.get('balancing')
-        maxcom = request.DATA.get('maxcom')
-        ip_list_full = request.DATA.get('ip_list_full')
-        priorities = request.DATA.get('priorities')
-        ports_reals = request.DATA.get('ports_reals')
-
-
-        has_identifier = ServerPool.objects.filter(identifier=identifier).count()
-
-        if has_identifier > 0:
-            raise exceptions.InvalidIdentifierPoolException()
-
-
-
-        # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
-        healthcheck_type = request.DATA.get('healthcheck_type')
-        healthcheck_request = request.DATA.get('healthcheck_request')
-        healthcheck_expect = request.DATA.get('healthcheck_expect')
-        old_healthcheck_id = request.DATA.get('old_healthcheck_id')
-
-        try:
-            # Query HealthCheck table for one equal this
-            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
-
-        # Else, add a new one
-        except ObjectDoesNotExist:
-
-            hc = Healthcheck(
-                identifier='',
-                healthcheck_type=healthcheck_type,
-                healthcheck_request=healthcheck_request,
-                healthcheck_expect=healthcheck_expect,
-                destination=''
-            )
-
-            hc.save(request.user)
-
-        # ---------------------------------------------------------------------------------------
-
-
-        ambiente_obj = Ambiente.get_by_pk(environment)
-
-        sp = ServerPool(
-            identifier=identifier,
-            default_port=default_port,
-            healthcheck=hc,
-            environment=ambiente_obj,
-            pool_created=False,
-            lb_method=balancing
-        )
-
-        sp.save(request.user)
-
-        # Check if someone is using the old healthcheck
-        # If not, delete it to keep the database clean
-        if old_healthcheck_id is not None:
-            pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
-
-            if pools_using_healthcheck == 0:
-                Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
-
-        ip_object = None
-        ipv6_object = None
-
-        for i in range(0, len(ip_list_full)):
-
-            if len(ip_list_full[i]['ip']) <= 15:
-                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-            else:
-                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-
-            spm = ServerPoolMember(
-                server_pool=sp,
-                identifier=identifier,
-                ip=ip_object,
-                ipv6=ipv6_object,
-                priority=priorities[i],
-                weight=0,
-                limit=maxcom,
-                port_real=ports_reals[i],
-                healthcheck=hc
-            )
-
-            spm.save(request.user)
-
-            id_pool = sp.id
-            id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
-            port_ip = spm.port_real
-
-            command = POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-
-            code, _, _ = exec_script(command)
-
-            if code != 0:
-                raise exceptions.ScriptAddPoolException()
-
-        return Response(status=status.HTTP_201_CREATED)
-
-    except exceptions.ScriptAddPoolException, exception:
-        log.error(exception)
-        raise exception
-
-    except exceptions.InvalidIdentifierPoolException, exception:
-        log.error(exception)
-        raise exception
-
-    except Exception, exception:
-        log.error(exception)
-        raise api_exceptions.NetworkAPIException()
-
-
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
-@commit_on_success
-def pool_edit(request):
-
-    try:
-
-        id_server_pool = request.DATA.get('id_server_pool')
-
-        if not is_valid_int_greater_zero_param(id_server_pool):
-            raise exceptions.InvalidIdPoolException()
-
-        identifier = request.DATA.get('identifier')
-        default_port = request.DATA.get('default_port')
-        # environment = request.DATA.get('environment')
-        balancing = request.DATA.get('balancing')
-        maxcom = request.DATA.get('maxcom')
-        ip_list_full = request.DATA.get('ip_list_full')
-        priorities = request.DATA.get('priorities')
-        ports_reals = request.DATA.get('ports_reals')
+# @api_view(['POST'])
+# @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+# @commit_on_success
+# def pool_insert(request):
+#
+#     try:
+#         # TODO: ADD VALIDATION
+#         identifier = request.DATA.get('identifier')
+#         default_port = request.DATA.get('default_port')
+#         environment = request.DATA.get('environment')
+#         balancing = request.DATA.get('balancing')
+#         maxcom = request.DATA.get('maxcom')
+#         ip_list_full = request.DATA.get('ip_list_full')
+#         priorities = request.DATA.get('priorities')
+#         ports_reals = request.DATA.get('ports_reals')
+#         nome_equips = request.DATA.get('nome_equips')
+#         weight = request.DATA.get('weight')
+#
+#
+#         has_identifier = ServerPool.objects.filter(identifier=identifier).count()
+#
+#         if has_identifier > 0:
+#             raise exceptions.InvalidIdentifierPoolException()
+#
+#
+#
+#         # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
+#         healthcheck_type = request.DATA.get('healthcheck_type')
+#         healthcheck_request = request.DATA.get('healthcheck_request')
+#         healthcheck_expect = request.DATA.get('healthcheck_expect')
+#         old_healthcheck_id = request.DATA.get('old_healthcheck_id')
+#
+#         try:
+#             # Query HealthCheck table for one equal this
+#             hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
+#
+#         # Else, add a new one
+#         except ObjectDoesNotExist:
+#
+#             hc = Healthcheck(
+#                 identifier='',
+#                 healthcheck_type=healthcheck_type,
+#                 healthcheck_request=healthcheck_request,
+#                 healthcheck_expect=healthcheck_expect,
+#                 destination=''
+#             )
+#
+#             hc.save(request.user)
+#
+#         # ---------------------------------------------------------------------------------------
+#
+#
+#         ambiente_obj = Ambiente.get_by_pk(environment)
+#
+#         sp = ServerPool(
+#             identifier=identifier,
+#             default_port=default_port,
+#             healthcheck=hc,
+#             environment=ambiente_obj,
+#             pool_created=False,
+#             lb_method=balancing
+#         )
+#
+#         sp.save(request.user)
+#
+#         # Check if someone is using the old healthcheck
+#         # If not, delete it to keep the database clean
+#         if old_healthcheck_id is not None:
+#             pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+#
+#             if pools_using_healthcheck == 0:
+#                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
+#
+#         ip_object = None
+#         ipv6_object = None
+#
+#         for i in range(0, len(ip_list_full)):
+#
+#             if len(ip_list_full[i]['ip']) <= 15:
+#                 ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+#             else:
+#                 ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+#
+#             spm = ServerPoolMember(
+#                 server_pool=sp,
+#                 identifier=nome_equips[i],
+#                 ip=ip_object,
+#                 ipv6=ipv6_object,
+#                 priority=priorities[i],
+#                 weight=weight[i],
+#                 limit=maxcom,
+#                 port_real=ports_reals[i],
+#                 healthcheck=hc
+#             )
+#
+#             spm.save(request.user)
+#
+#             id_pool = sp.id
+#             id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
+#             port_ip = spm.port_real
+#
+#             command = POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+#
+#             code, _, _ = exec_script(command)
+#
+#             if code != 0:
+#                 raise exceptions.ScriptAddPoolException()
+#
+#         return Response(status=status.HTTP_201_CREATED)
+#
+#     except exceptions.ScriptAddPoolException, exception:
+#         log.error(exception)
+#         raise exception
+#
+#     except exceptions.InvalidIdentifierPoolException, exception:
+#         log.error(exception)
+#         raise exception
+#
+#     except Exception, exception:
+#         log.error(exception)
+#         raise api_exceptions.NetworkAPIException()
 
 
-        # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
-        healthcheck_type = request.DATA.get('healthcheck_type')
-        healthcheck_request = request.DATA.get('healthcheck_request')
-        healthcheck_expect = request.DATA.get('healthcheck_expect')
-        old_healthcheck_id = request.DATA.get('old_healthcheck_id')
-
-        try:
-            # Query HealthCheck table for one equal this
-            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
-
-        # Else, add a new one
-        except ObjectDoesNotExist:
-
-            hc = Healthcheck(
-                identifier='',
-                healthcheck_type=healthcheck_type,
-                healthcheck_request=healthcheck_request,
-                healthcheck_expect=healthcheck_expect,
-                destination=''
-            )
-
-            hc.save(request.user)
-
-        # ---------------------------------------------------------------------------------------
-
-        # ambiente_obj = Ambiente.get_by_pk(environment)
-
-        sp = ServerPool.objects.get(id=id_server_pool)
-        sp.default_port = default_port
-        sp.healthcheck = hc
-        sp.lb_method = balancing
-
-        sp.save(request.user)
-
-        # Check if someone is using the old healthcheck
-        # If not, delete it to keep the database clean
-        if old_healthcheck_id is not None:
-            pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
-
-            if pools_using_healthcheck == 0:
-                Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
-
-        # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
-        spm_list = ServerPoolMember.objects.filter(server_pool=sp)
-
-        for spm in spm_list:
-            spm.delete(request.user)
-
-        ip_object = None
-        ipv6_object = None
-
-        for i in range(0, len(ip_list_full)):
-            if len(ip_list_full[i]['ip']) <= 15:
-                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-            else:
-                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-
-            spm = ServerPoolMember(
-                server_pool=sp,
-                identifier=identifier,
-                ip=ip_object,
-                ipv6=ipv6_object,
-                priority=priorities[i],
-                weight=0,
-                limit=maxcom,
-                port_real=ports_reals[i],
-                healthcheck=hc
-            )
-
-            spm.save(request.user)
-
-        return Response()
-
-    except exceptions.InvalidIdPoolException, exception:
-        log.error(exception)
-        raise exception
-
-    except ServerPool.DoesNotExist, exception:
-        log.error(exception)
-        raise exceptions.PoolDoesNotExistException()
-
-    except Exception, exception:
-        log.error(exception)
-        raise api_exceptions.NetworkAPIException()
+# @api_view(['POST'])
+# @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+# @commit_on_success
+# def pool_edit(request):
+#
+#     try:
+#
+#         id_server_pool = request.DATA.get('id_server_pool')
+#
+#         if not is_valid_int_greater_zero_param(id_server_pool):
+#             raise exceptions.InvalidIdPoolException()
+#
+#         default_port = request.DATA.get('default_port')
+#
+#         balancing = request.DATA.get('balancing')
+#         maxcom = request.DATA.get('maxcom')
+#         ip_list_full = request.DATA.get('ip_list_full')
+#         priorities = request.DATA.get('priorities')
+#         ports_reals = request.DATA.get('ports_reals')
+#         nome_equips = request.DATA.get('nome_equips')
+#         weight = request.DATA.get('weight')
+#
+#
+#         # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
+#         healthcheck_type = request.DATA.get('healthcheck_type')
+#         healthcheck_request = request.DATA.get('healthcheck_request')
+#         healthcheck_expect = request.DATA.get('healthcheck_expect')
+#         old_healthcheck_id = request.DATA.get('old_healthcheck_id')
+#
+#         try:
+#             # Query HealthCheck table for one equal this
+#             hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
+#
+#         # Else, add a new one
+#         except ObjectDoesNotExist:
+#
+#             hc = Healthcheck(
+#                 identifier='',
+#                 healthcheck_type=healthcheck_type,
+#                 healthcheck_request=healthcheck_request,
+#                 healthcheck_expect=healthcheck_expect,
+#                 destination=''
+#             )
+#
+#             hc.save(request.user)
+#
+#         # ---------------------------------------------------------------------------------------
+#
+#         # ambiente_obj = Ambiente.get_by_pk(environment)
+#
+#         sp = ServerPool.objects.get(id=id_server_pool)
+#         sp.default_port = default_port
+#         sp.healthcheck = hc
+#         sp.lb_method = balancing
+#
+#         sp.save(request.user)
+#
+#         # Check if someone is using the old healthcheck
+#         # If not, delete it to keep the database clean
+#         if old_healthcheck_id is not None:
+#             pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+#
+#             if pools_using_healthcheck == 0:
+#                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
+#
+#         # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
+#         spm_list = ServerPoolMember.objects.filter(server_pool=sp)
+#
+#         for spm in spm_list:
+#             spm.delete(request.user)
+#
+#         ip_object = None
+#         ipv6_object = None
+#
+#         for i in range(0, len(ip_list_full)):
+#             if len(ip_list_full[i]['ip']) <= 15:
+#                 ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+#             else:
+#                 ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+#
+#             spm = ServerPoolMember(
+#                 server_pool=sp,
+#                 identifier=nome_equips[i],
+#                 ip=ip_object,
+#                 ipv6=ipv6_object,
+#                 priority=priorities[i],
+#                 weight=weight[i],
+#                 limit=maxcom,
+#                 port_real=ports_reals[i],
+#                 healthcheck=hc
+#             )
+#
+#             spm.save(request.user)
+#
+#         return Response()
+#
+#     except exceptions.InvalidIdPoolException, exception:
+#         log.error(exception)
+#         raise exception
+#
+#     except ServerPool.DoesNotExist, exception:
+#         log.error(exception)
+#         raise exceptions.PoolDoesNotExistException()
+#
+#     except Exception, exception:
+#         log.error(exception)
+#         raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['POST'])
@@ -913,6 +968,173 @@ def list_by_environment_vip(request, environment_vip_id):
     except EnvironmentVip.DoesNotExist, exception:
         log.error(exception)
         raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def save(request):
+
+    try:
+        # TODO: ADD VALIDATION
+        id = request.DATA.get('id')
+        identifier = request.DATA.get('identifier')
+        default_port = request.DATA.get('default_port')
+        environment = long(request.DATA.get('environment'))
+        balancing = request.DATA.get('balancing')
+        maxcom = request.DATA.get('maxcom')
+
+        id_pool_member = request.DATA.get('id_pool_member')
+        ip_list_full = request.DATA.get('ip_list_full')
+        priorities = request.DATA.get('priorities')
+        ports_reals = request.DATA.get('ports_reals')
+        nome_equips = request.DATA.get('nome_equips')
+        weight = request.DATA.get('weight')
+
+        old_healthcheck_id = None
+
+        has_identifier = ServerPool.objects.filter(identifier=identifier)
+        if id:
+            has_identifier = has_identifier.exclude(id=id)
+
+        if has_identifier.count() > 0:
+            raise exceptions.InvalidIdentifierPoolException()
+
+        # ADDING AND VERIFYING HEALTHCHECK
+        healthcheck_type = request.DATA.get('healthcheck_type')
+        healthcheck_request = request.DATA.get('healthcheck_request')
+        healthcheck_expect = request.DATA.get('healthcheck_expect')
+
+        try:
+            # Query HealthCheck table for one equal this
+            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
+                                         healthcheck_request=healthcheck_request)
+        # Else, add a new one
+        except ObjectDoesNotExist:
+            hc = Healthcheck(identifier='', healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
+                             healthcheck_expect=healthcheck_expect, destination='')
+            hc.save(request.user)
+
+        #remove empyt values from list
+        id_pool_member_new = [x for x in id_pool_member if x != '']
+        del_smp = None
+
+        # Get environment
+        env = Ambiente.objects.get(id=environment)
+
+        # Save Server pool
+        if id:
+            sp = ServerPool.objects.get(id=id)
+
+            # storage old healthcheck id
+            old_healthcheck_id = sp.healthcheck_id
+
+            #valid change environment
+            if sp.environment.id != env.id:
+                del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_new)
+                vip = sp.vipporttopool_set.count()
+                if vip > 0:
+                    raise exceptions.UpdateEnvironmentVIPException()
+
+                if len(del_smp) > 0:
+                    raise exceptions.UpdateEnvironmentServerPoolMemberException()
+
+            sp.default_port = default_port
+            sp.healthcheck = hc
+            sp.lb_method = balancing
+            sp.identifier = identifier
+            sp.environment = env
+            sp.default_limit = maxcom
+        else:
+            sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
+                            environment=env, pool_created=False, lb_method=balancing)
+        sp.save(request.user)
+
+        #exclue server pool member
+        del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_new) if not del_smp else del_smp
+        for obj in del_smp:
+
+            #execute script remove real
+            command = POOL_REAL_REMOVE % (obj.server_pool_id,
+                                          obj.ip_id if obj.ip else obj.ipv6_id,
+                                          obj.port_real)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                raise exceptions.ScriptCreatePoolException()
+
+            obj.delete(request.user)
+
+        for i in range(0, len(ip_list_full)):
+
+            ip_object = None
+            ipv6_object = None
+            if len(ip_list_full[i]['ip']) <= 15:
+                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
+            else:
+                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
+
+            id_pool = sp.id
+            id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
+            port_ip = ports_reals[i]
+
+            if id_pool_member[i]:
+                spm = ServerPoolMember.objects.get(id=id_pool_member[i])
+                spm.server_pool = sp
+                spm.identifier = nome_equips[i]
+                spm.ip = ip_object
+                spm.ipv6 = ipv6_object
+                spm.priority = priorities[i]
+                spm.weight = weight[i]
+                spm.limit = maxcom
+                spm.port_real = ports_reals[i]
+                spm.healthcheck = hc
+
+                #execute script remove real
+                command = POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    raise exceptions.ScriptCreatePoolException()
+
+            else:
+                spm = ServerPoolMember(server_pool=sp, identifier=nome_equips[i], ip=ip_object, ipv6=ipv6_object,
+                                       priority=priorities[i], weight=weight[i], limit=maxcom, port_real=ports_reals[i],
+                                       healthcheck=hc)
+            spm.save(request.user)
+
+            #execute script create real
+            command = POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                raise exceptions.ScriptCreatePoolException()
+
+        # Check if someone is using the old healthcheck
+        # If not, delete it to keep the database clean
+        if old_healthcheck_id is not None:
+            pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+            if pools_using_healthcheck == 0:
+                Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+    except exceptions.ScriptAddPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.InvalidIdentifierPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.UpdateEnvironmentVIPException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.UpdateEnvironmentServerPoolMemberException, exception:
+        log.error(exception)
+        raise exception
 
     except Exception, exception:
         log.error(exception)
