@@ -7,19 +7,19 @@ CREATE TABLE `opcoespool` (
 INSERT INTO opcoespool (description) 
 SELECT nome_opcao_txt FROM telecom.opcoesvip where tipo_opcao = 'HealthCheck';
 
-CREATE TABLE `opcoespool_ambiente` (
-  `id_opcaopool_ambiente` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `opcoespool_ambiente_xref` (
+  `id_opcaopool_ambiente_xref` int(11) NOT NULL AUTO_INCREMENT,
   `id_opcaopool` int(11) NOT NULL,
   `id_ambiente` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id_opcaopool_ambiente`),
+  PRIMARY KEY (`id_opcaopool_ambiente_xref`),
   KEY `fk_opcoes_id_opcaopool_idx` (`id_opcaopool`),
   KEY `fk_opcoes_id_ambiente_idx` (`id_ambiente`),
   CONSTRAINT `fk_opcoes_id_opcaopool` FOREIGN KEY (`id_opcaopool`) REFERENCES `opcoespool` (`id_opcaopool`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_opcoes_id_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO opcoespool_ambiente (id_ambiente, id_opcaopool) 
-SELECT vlans.id_ambiente, opcoespool.id_opcaopool  
+INSERT INTO opcoespool_ambiente_xref (id_ambiente, id_opcaopool) 
+SELECT distinct vlans.id_ambiente, opcoespool.id_opcaopool  
 FROM opcoesvip_ambiente_xref
 INNER JOIN ambientevip ON ambientevip.id = opcoesvip_ambiente_xref.id_ambiente
 INNER JOIN redeipv4 ON redeipv4.id_ambientevip = ambientevip.id
@@ -64,6 +64,7 @@ ALTER TABLE `server_pool`
 DROP INDEX `fk_server_pool_environment` 
 , ADD INDEX `fk_server_pool_environment` (`ambiente_id_ambiente` ASC, `identifier` ASC) ;
 
+ALTER TABLE `server_pool` ADD COLUMN `default_limit` INT(11) NULL  AFTER `default_port` ;
 
 UPDATE `server_pool` as sp
 SET `ambiente_id_ambiente`= (
@@ -89,4 +90,6 @@ INSERT INTO `permissions` (`function`) VALUES ('cadastro_de_pool');
 INSERT INTO `permissions` (`function`) VALUES ('script_remover_pool');
 INSERT INTO `permissions` (`function`) VALUES ('script_criacao_pool');
 INSERT INTO `permissions` (`function`) VALUES ('script_alterar_pool');
+
+--update usuarios set pwd=md5('12345678');
 
