@@ -4,7 +4,7 @@ CREATE TABLE `opcoespool` (
   PRIMARY KEY (`id_opcaopool`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO opcoespool (description) 
+INSERT INTO opcoespool (description)
 SELECT nome_opcao_txt FROM telecom.opcoesvip where tipo_opcao = 'HealthCheck';
 
 CREATE TABLE `opcoespool_ambiente_xref` (
@@ -18,8 +18,8 @@ CREATE TABLE `opcoespool_ambiente_xref` (
   CONSTRAINT `fk_opcoes_id_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO opcoespool_ambiente_xref (id_ambiente, id_opcaopool) 
-SELECT distinct vlans.id_ambiente, opcoespool.id_opcaopool  
+INSERT INTO opcoespool_ambiente_xref (id_ambiente, id_opcaopool)
+SELECT distinct vlans.id_ambiente, opcoespool.id_opcaopool
 FROM opcoesvip_ambiente_xref
 INNER JOIN ambientevip ON ambientevip.id = opcoesvip_ambiente_xref.id_ambiente
 INNER JOIN redeipv4 ON redeipv4.id_ambientevip = ambientevip.id
@@ -52,7 +52,7 @@ ALTER TABLE `ip_config` ADD COLUMN `network_type` INT UNSIGNED NULL  AFTER `type
 ALTER TABLE `equipamentos` CHANGE COLUMN nome nome varchar(50) NOT NULL;
 ALTER TABLE `ambientevip` ADD COLUMN `description` CHAR(50) NOT NULL  AFTER `ambiente_p44_txt` ;
 
-ALTER TABLE `server_pool` ADD COLUMN `ambiente_id_ambiente` INT UNSIGNED NULL  AFTER `default_port` , ADD COLUMN `pool_criado` TINYINT NOT NULL DEFAULT 0  AFTER `ambiente_id_ambiente` , ADD COLUMN `lb_method` VARCHAR(50) NULL  AFTER `pool_criado` , 
+ALTER TABLE `server_pool` ADD COLUMN `ambiente_id_ambiente` INT UNSIGNED NULL  AFTER `default_port` , ADD COLUMN `pool_criado` TINYINT NOT NULL DEFAULT 0  AFTER `ambiente_id_ambiente` , ADD COLUMN `lb_method` VARCHAR(50) NULL  AFTER `pool_criado` ,
   ADD CONSTRAINT `fk_server_pool_environment`
   FOREIGN KEY (`ambiente_id_ambiente` )
   REFERENCES `ambiente` (`id_ambiente` )
@@ -60,25 +60,25 @@ ALTER TABLE `server_pool` ADD COLUMN `ambiente_id_ambiente` INT UNSIGNED NULL  A
   ON UPDATE NO ACTION
 , ADD INDEX `fk_server_pool_environment` (`ambiente_id_ambiente` ASC) ;
 
-ALTER TABLE `server_pool` 
-DROP INDEX `fk_server_pool_environment` 
+ALTER TABLE `server_pool`
+DROP INDEX `fk_server_pool_environment`
 , ADD INDEX `fk_server_pool_environment` (`ambiente_id_ambiente` ASC, `identifier` ASC) ;
 
 ALTER TABLE `server_pool` ADD COLUMN `default_limit` INT(11) NULL  AFTER `default_port` ;
 
 UPDATE `server_pool` as sp
 SET `ambiente_id_ambiente`= (
-SELECT `ambiente`.`id_ambiente` 
-FROM `ambiente` 
-INNER JOIN `vlans` ON (`ambiente`.`id_ambiente` = `vlans`.`id_ambiente`) 
-LEFT OUTER JOIN `redeipv4` ON (`vlans`.`id_vlan` = `redeipv4`.`id_vlan`) 
-LEFT OUTER JOIN `ips` ON (`redeipv4`.`id` = `ips`.`id_redeipv4`) 
-LEFT OUTER JOIN `requisicao_vips` ON (`ips`.`id_ip` = `requisicao_vips`.`ips_id_ip`) 
-LEFT OUTER JOIN `vip_port_to_pool` ON (`requisicao_vips`.`id_requisicao_vips` = `vip_port_to_pool`.`id_requisicao_vips`) 
-LEFT OUTER JOIN `redeipv6` ON (`vlans`.`id_vlan` = `redeipv6`.`id_vlan`) 
-LEFT OUTER JOIN `ipsv6` ON (`redeipv6`.`id` = `ipsv6`.`id_redeipv6`) 
-LEFT OUTER JOIN `requisicao_vips` T10 ON (`ipsv6`.`id_ipv6` = T10.`ipsv6_id_ipv6`) 
-LEFT OUTER JOIN `vip_port_to_pool` T11 ON (T10.`id_requisicao_vips` = T11.`id_requisicao_vips`) 
+SELECT `ambiente`.`id_ambiente`
+FROM `ambiente`
+INNER JOIN `vlans` ON (`ambiente`.`id_ambiente` = `vlans`.`id_ambiente`)
+LEFT OUTER JOIN `redeipv4` ON (`vlans`.`id_vlan` = `redeipv4`.`id_vlan`)
+LEFT OUTER JOIN `ips` ON (`redeipv4`.`id` = `ips`.`id_redeipv4`)
+LEFT OUTER JOIN `requisicao_vips` ON (`ips`.`id_ip` = `requisicao_vips`.`ips_id_ip`)
+LEFT OUTER JOIN `vip_port_to_pool` ON (`requisicao_vips`.`id_requisicao_vips` = `vip_port_to_pool`.`id_requisicao_vips`)
+LEFT OUTER JOIN `redeipv6` ON (`vlans`.`id_vlan` = `redeipv6`.`id_vlan`)
+LEFT OUTER JOIN `ipsv6` ON (`redeipv6`.`id` = `ipsv6`.`id_redeipv6`)
+LEFT OUTER JOIN `requisicao_vips` T10 ON (`ipsv6`.`id_ipv6` = T10.`ipsv6_id_ipv6`)
+LEFT OUTER JOIN `vip_port_to_pool` T11 ON (T10.`id_requisicao_vips` = T11.`id_requisicao_vips`)
 WHERE (`vip_port_to_pool`.`id_server_pool` = sp.`id_server_pool`  OR T11.`id_server_pool` = sp.`id_server_pool` ) LIMIT 1 )
 WHERE `ambiente_id_ambiente` is null;
 
@@ -91,5 +91,24 @@ INSERT INTO `permissions` (`function`) VALUES ('script_remover_pool');
 INSERT INTO `permissions` (`function`) VALUES ('script_criacao_pool');
 INSERT INTO `permissions` (`function`) VALUES ('script_alterar_pool');
 
---update usuarios set pwd=md5('12345678');
+
+UPDATE `server_pool` SET `identifier` = (
+SELECT
+CONCAT(
+'VIP',
+`requisicao_vips`.`id_requisicao_vips`,'_',
+`ips`.`oct1`,'.',
+`ips`.`oct2`,'.',
+`ips`.`oct3`,'.',
+`ips`.`oct4`,'_',
+`server_pool`.`default_port`
+)
+FROM `vip_port_to_pool`
+INNER JOIN `requisicao_vips`
+ON (`requisicao_vips`.`id_requisicao_vips` = `vip_port_to_pool`.`id_requisicao_vips`)
+INNER JOIN `ips`
+ON (`ips`.`id_ip` = `requisicao_vips`.`ips_id_ip`)
+WHERE (`server_pool`.`id_server_pool` = `vip_port_to_pool`.`id_server_pool`)
+)
+WHERE `server_pool`.`identifier` = '' or `server_pool`.`identifier` is null
 
