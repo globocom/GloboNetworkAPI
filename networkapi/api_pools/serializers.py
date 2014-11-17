@@ -4,7 +4,7 @@ from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, VipPortToPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.equipamento.models import Equipamento
-from networkapi.pools.models import OpcaoPoolAmbiente, OpcaoPool
+from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool
 from networkapi.settings import POOL_REAL_CHECK
 
 

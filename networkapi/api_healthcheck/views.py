@@ -24,8 +24,8 @@ from networkapi.api_healthcheck.permissions import Write
 from networkapi.log import Log
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.pools import exceptions
-from networkapi.pools.serializers import HealthcheckSerializer
+from networkapi.api_pools import exceptions
+from networkapi.api_pools.serializers import HealthcheckSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from networkapi.requisicaovips.models import ServerPool
 

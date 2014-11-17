@@ -27,7 +27,7 @@ from networkapi.api_vip_request.permissions import Read, Write
 from networkapi.requisicaovips.models import ServerPool, VipPortToPool, \
     RequisicaoVips
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.pools import exceptions as pool_exceptions
+from networkapi.api_pools import exceptions as pool_exceptions
 from networkapi.api_vip_request import exceptions
 from networkapi.ambiente.models import EnvironmentVip, Ambiente
 from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer, \

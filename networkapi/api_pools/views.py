@@ -14,36 +14,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
+    prepare_to_save_reals
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
-from networkapi.pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
+from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
     VipPortToPoolSerializer, PoolSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
-from networkapi.ip.models import Ip, Ipv6
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import is_valid_list_int_greater_zero_param, \
     is_valid_int_greater_zero_param
 from networkapi.log import Log
-from networkapi.pools import exceptions
-from networkapi.pools.permissions import Read, Write, ScriptRemovePermission, \
+from networkapi.api_pools import exceptions
+from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.settings import POOL_REMOVE, POOL_CREATE, POOL_REAL_CREATE, \
+from networkapi.settings import POOL_REMOVE, POOL_CREATE, \
     POOL_REAL_REMOVE, POOL_REAL_ENABLE, POOL_REAL_DISABLE
-from networkapi.pools.models import OpcaoPool, OpcaoPoolAmbiente
-from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.api_pools.models import OpcaoPoolAmbiente
 
 log = Log(__name__)
 
@@ -973,6 +972,39 @@ def list_by_environment_vip(request, environment_vip_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def save_reals(request):
+
+    try:
+        id_server_pool = request.DATA.get('id_server_pool')
+
+        id_pool_member = request.DATA.get('id_pool_member')
+        ip_list_full = request.DATA.get('ip_list_full')
+        priorities = request.DATA.get('priorities')
+        ports_reals = request.DATA.get('ports_reals')
+        nome_equips = request.DATA.get('nome_equips')
+        weight = request.DATA.get('weight')
+
+        # Get server pool data
+        sp = ServerPool.objects.get(id=id_server_pool)
+
+        # Prepare to save reals
+        list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
+                                                        id_pool_member)
+
+        # Save reals
+        save_server_pool_member(request.user, sp, list_server_pool_member)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+    except exceptions.ScriptAddPoolException, exception:
+        log.error(exception)
+        raise exception
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
@@ -995,8 +1027,12 @@ def save(request):
         nome_equips = request.DATA.get('nome_equips')
         weight = request.DATA.get('weight')
 
-        old_healthcheck_id = None
+        # ADDING AND VERIFYING HEALTHCHECK
+        healthcheck_type = request.DATA.get('healthcheck_type')
+        healthcheck_request = request.DATA.get('healthcheck_request')
+        healthcheck_expect = request.DATA.get('healthcheck_expect')
 
+        # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier)
         if id:
             has_identifier = has_identifier.exclude(id=id)
@@ -1004,112 +1040,24 @@ def save(request):
         if has_identifier.count() > 0:
             raise exceptions.InvalidIdentifierPoolException()
 
-        # ADDING AND VERIFYING HEALTHCHECK
-        healthcheck_type = request.DATA.get('healthcheck_type')
-        healthcheck_request = request.DATA.get('healthcheck_request')
-        healthcheck_expect = request.DATA.get('healthcheck_expect')
+        # Ger or create new health check
+        hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request)
 
-        try:
-            # Query HealthCheck table for one equal this
-            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
-                                         healthcheck_request=healthcheck_request)
-        # Else, add a new one
-        except ObjectDoesNotExist:
-            hc = Healthcheck(identifier='', healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
-                             healthcheck_expect=healthcheck_expect, destination='')
-            hc.save(request.user)
-
-        #remove empyt values from list
-        id_pool_member_new = [x for x in id_pool_member if x != '']
-        del_smp = None
+        # Remove empty values from list
+        id_pool_member_noempty = [x for x in id_pool_member if x != '']
 
         # Get environment
         env = Ambiente.objects.get(id=environment)
 
         # Save Server pool
-        if id:
-            sp = ServerPool.objects.get(id=id)
+        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, hc, env, balancing,
+                                                  maxcom, id_pool_member_noempty)
 
-            # storage old healthcheck id
-            old_healthcheck_id = sp.healthcheck_id
-
-            #valid change environment
-            if sp.environment.id != env.id:
-                del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_new)
-                vip = sp.vipporttopool_set.count()
-                if vip > 0:
-                    raise exceptions.UpdateEnvironmentVIPException()
-
-                if len(del_smp) > 0:
-                    raise exceptions.UpdateEnvironmentServerPoolMemberException()
-
-            sp.default_port = default_port
-            sp.healthcheck = hc
-            sp.lb_method = balancing
-            sp.identifier = identifier
-            sp.environment = env
-            sp.default_limit = maxcom
-        else:
-            sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
-                            environment=env, pool_created=False, lb_method=balancing)
-        sp.save(request.user)
-
-        #exclue server pool member
-        del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_new) if not del_smp else del_smp
-        for obj in del_smp:
-
-            #execute script remove real
-            command = POOL_REAL_REMOVE % (obj.server_pool_id,
-                                          obj.ip_id if obj.ip else obj.ipv6_id,
-                                          obj.port_real)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                raise exceptions.ScriptCreatePoolException()
-
-            obj.delete(request.user)
-
-        for i in range(0, len(ip_list_full)):
-
-            ip_object = None
-            ipv6_object = None
-            if len(ip_list_full[i]['ip']) <= 15:
-                ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-            else:
-                ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-
-            id_pool = sp.id
-            id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
-            port_ip = ports_reals[i]
-
-            if id_pool_member[i]:
-                spm = ServerPoolMember.objects.get(id=id_pool_member[i])
-                spm.server_pool = sp
-                spm.identifier = nome_equips[i]
-                spm.ip = ip_object
-                spm.ipv6 = ipv6_object
-                spm.priority = priorities[i]
-                spm.weight = weight[i]
-                spm.limit = maxcom
-                spm.port_real = ports_reals[i]
-                spm.healthcheck = hc
-
-                #execute script remove real
-                command = POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
-                code, _, _ = exec_script(command)
-                if code != 0:
-                    raise exceptions.ScriptCreatePoolException()
-
-            else:
-                spm = ServerPoolMember(server_pool=sp, identifier=nome_equips[i], ip=ip_object, ipv6=ipv6_object,
-                                       priority=priorities[i], weight=weight[i], limit=maxcom, port_real=ports_reals[i],
-                                       healthcheck=hc)
-            spm.save(request.user)
-
-            #execute script create real
-            command = POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                raise exceptions.ScriptCreatePoolException()
+        # Prepare to save reals
+        list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
+                                                        id_pool_member)
+        # Save reals
+        save_server_pool_member(request.user, sp, list_server_pool_member)
 
         # Check if someone is using the old healthcheck
         # If not, delete it to keep the database clean
