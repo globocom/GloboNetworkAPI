@@ -50,7 +50,7 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
         old_healthcheck_id = sp.healthcheck_id
 
         #valid change environment
-        if sp.environment.id != env.id:
+        if sp.environment and sp.environment.id != env.id:
             del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member)
             vip = sp.vipporttopool_set.count()
             if vip > 0:
@@ -72,9 +72,32 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
 
     return sp, old_healthcheck_id
 
-def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight, id_pool_member):
+
+def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight, id_pool_member, id_equips):
+
     list_server_pool_member = list()
+
     if id_pool_member:
+
+        invalid_ports_real = [i for i in ports_reals if int(i) > 65535 or int(i) < 1]
+        invalid_priority = [i for i in priorities if int(i) > 4294967295 or int(i) < 0]
+
+        if invalid_priority:
+            raise exceptions.InvalidRealPoolException('O valor da Prioridade deve estar entre 0 e 4294967295.')
+
+        if invalid_ports_real:
+            raise exceptions.InvalidRealPoolException('O número da porta deve estar entre 1 e 65535.')
+
+        if len(id_equips) != len(id_pool_member):
+            raise exceptions.InvalidRealPoolException('Quantidade de portas e equipamento difere.')
+
+        for i in range(0, len(ip_list_full)):
+            for j in range(0, len(ip_list_full)):
+                if i == j:
+                    pass
+                elif ports_reals[i] == ports_reals[j] and ip_list_full[i]['id'] == ip_list_full[j]['id']:
+                    raise exceptions.InvalidRealPoolException('Ips com portas iguais.')
+
         for i in range(0, len(id_pool_member)):
             list_server_pool_member.append({'id':ip_list_full[i]['id'],
                                             'ip': ip_list_full[i]['ip'],
@@ -85,6 +108,7 @@ def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, we
                                             'id_pool_member': id_pool_member[i],
                                           })
     return list_server_pool_member
+
 
 def save_server_pool_member(user, sp, list_server_pool_member):
 
@@ -111,8 +135,17 @@ def save_server_pool_member(user, sp, list_server_pool_member):
             ipv6_object = None
             if len(dic['ip']) <= 15:
                 ip_object = Ip.get_by_pk(dic['id'])
+
+                if sp.environment.divisao_dc.id != ip_object.networkipv4.vlan.ambiente.divisao_dc.id \
+                        or sp.environment.ambiente_logico.id != ip_object.networkipv4.vlan.ambiente.ambiente_logico.id:
+                    raise exceptions.IpNotFoundByEnvironment()
+
             else:
                 ipv6_object = Ipv6.get_by_pk(dic['id'])
+
+                if sp.environment.divisao_dc.id != ipv6_object.networkipv6.vlan.ambiente.divisao_dc.id \
+                        or sp.environment.ambiente_logico.id != ipv6_object.networkipv6.vlan.ambiente.ambiente_logico.id:
+                    raise exceptions.IpNotFoundByEnvironment()
 
             id_pool = sp.id
             id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id

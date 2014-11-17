@@ -16,6 +16,7 @@ class InvalidIdPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Pool.'
 
+
 class InvalidIdentifierPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Identifier ja existe'
@@ -69,3 +70,13 @@ class UpdateEnvironmentVIPException(APIException):
 class UpdateEnvironmentServerPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Ambiente nao pode ser alterado pois o server pool esta associado com um ou mais server pool member.'
+
+
+class IpNotFoundByEnvironment(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'O ambiente do IP e diferente do ambiente do Server Pool.'
+
+
+class InvalidRealPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Parametros invalidos do real.'

@@ -463,238 +463,6 @@ def get_by_pk(request, id_server_pool):
         raise api_exceptions.NetworkAPIException()
 
 
-# @api_view(['POST'])
-# @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
-# @commit_on_success
-# def pool_insert(request):
-#
-#     try:
-#         # TODO: ADD VALIDATION
-#         identifier = request.DATA.get('identifier')
-#         default_port = request.DATA.get('default_port')
-#         environment = request.DATA.get('environment')
-#         balancing = request.DATA.get('balancing')
-#         maxcom = request.DATA.get('maxcom')
-#         ip_list_full = request.DATA.get('ip_list_full')
-#         priorities = request.DATA.get('priorities')
-#         ports_reals = request.DATA.get('ports_reals')
-#         nome_equips = request.DATA.get('nome_equips')
-#         weight = request.DATA.get('weight')
-#
-#
-#         has_identifier = ServerPool.objects.filter(identifier=identifier).count()
-#
-#         if has_identifier > 0:
-#             raise exceptions.InvalidIdentifierPoolException()
-#
-#
-#
-#         # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
-#         healthcheck_type = request.DATA.get('healthcheck_type')
-#         healthcheck_request = request.DATA.get('healthcheck_request')
-#         healthcheck_expect = request.DATA.get('healthcheck_expect')
-#         old_healthcheck_id = request.DATA.get('old_healthcheck_id')
-#
-#         try:
-#             # Query HealthCheck table for one equal this
-#             hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
-#
-#         # Else, add a new one
-#         except ObjectDoesNotExist:
-#
-#             hc = Healthcheck(
-#                 identifier='',
-#                 healthcheck_type=healthcheck_type,
-#                 healthcheck_request=healthcheck_request,
-#                 healthcheck_expect=healthcheck_expect,
-#                 destination=''
-#             )
-#
-#             hc.save(request.user)
-#
-#         # ---------------------------------------------------------------------------------------
-#
-#
-#         ambiente_obj = Ambiente.get_by_pk(environment)
-#
-#         sp = ServerPool(
-#             identifier=identifier,
-#             default_port=default_port,
-#             healthcheck=hc,
-#             environment=ambiente_obj,
-#             pool_created=False,
-#             lb_method=balancing
-#         )
-#
-#         sp.save(request.user)
-#
-#         # Check if someone is using the old healthcheck
-#         # If not, delete it to keep the database clean
-#         if old_healthcheck_id is not None:
-#             pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
-#
-#             if pools_using_healthcheck == 0:
-#                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
-#
-#         ip_object = None
-#         ipv6_object = None
-#
-#         for i in range(0, len(ip_list_full)):
-#
-#             if len(ip_list_full[i]['ip']) <= 15:
-#                 ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-#             else:
-#                 ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-#
-#             spm = ServerPoolMember(
-#                 server_pool=sp,
-#                 identifier=nome_equips[i],
-#                 ip=ip_object,
-#                 ipv6=ipv6_object,
-#                 priority=priorities[i],
-#                 weight=weight[i],
-#                 limit=maxcom,
-#                 port_real=ports_reals[i],
-#                 healthcheck=hc
-#             )
-#
-#             spm.save(request.user)
-#
-#             id_pool = sp.id
-#             id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
-#             port_ip = spm.port_real
-#
-#             command = POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-#
-#             code, _, _ = exec_script(command)
-#
-#             if code != 0:
-#                 raise exceptions.ScriptAddPoolException()
-#
-#         return Response(status=status.HTTP_201_CREATED)
-#
-#     except exceptions.ScriptAddPoolException, exception:
-#         log.error(exception)
-#         raise exception
-#
-#     except exceptions.InvalidIdentifierPoolException, exception:
-#         log.error(exception)
-#         raise exception
-#
-#     except Exception, exception:
-#         log.error(exception)
-#         raise api_exceptions.NetworkAPIException()
-
-
-# @api_view(['POST'])
-# @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
-# @commit_on_success
-# def pool_edit(request):
-#
-#     try:
-#
-#         id_server_pool = request.DATA.get('id_server_pool')
-#
-#         if not is_valid_int_greater_zero_param(id_server_pool):
-#             raise exceptions.InvalidIdPoolException()
-#
-#         default_port = request.DATA.get('default_port')
-#
-#         balancing = request.DATA.get('balancing')
-#         maxcom = request.DATA.get('maxcom')
-#         ip_list_full = request.DATA.get('ip_list_full')
-#         priorities = request.DATA.get('priorities')
-#         ports_reals = request.DATA.get('ports_reals')
-#         nome_equips = request.DATA.get('nome_equips')
-#         weight = request.DATA.get('weight')
-#
-#
-#         # ADDING AND VERIFYING HEALTHCHECK ------------------------------------------------------
-#         healthcheck_type = request.DATA.get('healthcheck_type')
-#         healthcheck_request = request.DATA.get('healthcheck_request')
-#         healthcheck_expect = request.DATA.get('healthcheck_expect')
-#         old_healthcheck_id = request.DATA.get('old_healthcheck_id')
-#
-#         try:
-#             # Query HealthCheck table for one equal this
-#             hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
-#
-#         # Else, add a new one
-#         except ObjectDoesNotExist:
-#
-#             hc = Healthcheck(
-#                 identifier='',
-#                 healthcheck_type=healthcheck_type,
-#                 healthcheck_request=healthcheck_request,
-#                 healthcheck_expect=healthcheck_expect,
-#                 destination=''
-#             )
-#
-#             hc.save(request.user)
-#
-#         # ---------------------------------------------------------------------------------------
-#
-#         # ambiente_obj = Ambiente.get_by_pk(environment)
-#
-#         sp = ServerPool.objects.get(id=id_server_pool)
-#         sp.default_port = default_port
-#         sp.healthcheck = hc
-#         sp.lb_method = balancing
-#
-#         sp.save(request.user)
-#
-#         # Check if someone is using the old healthcheck
-#         # If not, delete it to keep the database clean
-#         if old_healthcheck_id is not None:
-#             pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
-#
-#             if pools_using_healthcheck == 0:
-#                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
-#
-#         # Excludes all ServerPoolMembers of this ServerPool so we can re-add them
-#         spm_list = ServerPoolMember.objects.filter(server_pool=sp)
-#
-#         for spm in spm_list:
-#             spm.delete(request.user)
-#
-#         ip_object = None
-#         ipv6_object = None
-#
-#         for i in range(0, len(ip_list_full)):
-#             if len(ip_list_full[i]['ip']) <= 15:
-#                 ip_object = Ip.get_by_pk(ip_list_full[i]['id'])
-#             else:
-#                 ipv6_object = Ipv6.get_by_pk(ip_list_full[i]['id'])
-#
-#             spm = ServerPoolMember(
-#                 server_pool=sp,
-#                 identifier=nome_equips[i],
-#                 ip=ip_object,
-#                 ipv6=ipv6_object,
-#                 priority=priorities[i],
-#                 weight=weight[i],
-#                 limit=maxcom,
-#                 port_real=ports_reals[i],
-#                 healthcheck=hc
-#             )
-#
-#             spm.save(request.user)
-#
-#         return Response()
-#
-#     except exceptions.InvalidIdPoolException, exception:
-#         log.error(exception)
-#         raise exception
-#
-#     except ServerPool.DoesNotExist, exception:
-#         log.error(exception)
-#         raise exceptions.PoolDoesNotExistException()
-#
-#     except Exception, exception:
-#         log.error(exception)
-#         raise api_exceptions.NetworkAPIException()
-
-
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ScriptAlterPermission))
 @commit_on_success
@@ -985,6 +753,7 @@ def save_reals(request):
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
         nome_equips = request.DATA.get('nome_equips')
+        id_equips = request.DATA.get('id_equips')
         weight = request.DATA.get('weight')
 
         # Get server pool data
@@ -992,7 +761,7 @@ def save_reals(request):
 
         # Prepare to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
-                                                        id_pool_member)
+                                                        id_pool_member, id_equips)
 
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
@@ -1002,6 +771,15 @@ def save_reals(request):
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)
         raise exception
+
+    except exceptions.IpNotFoundByEnvironment, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.InvalidRealPoolException, exception:
+        log.error(exception)
+        raise exception
+
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
@@ -1025,6 +803,7 @@ def save(request):
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
         nome_equips = request.DATA.get('nome_equips')
+        id_equips = request.DATA.get('id_equips')
         weight = request.DATA.get('weight')
 
         # ADDING AND VERIFYING HEALTHCHECK
@@ -1053,9 +832,9 @@ def save(request):
         sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, hc, env, balancing,
                                                   maxcom, id_pool_member_noempty)
 
-        # Prepare to save reals
+        # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
-                                                        id_pool_member)
+                                                        id_pool_member, id_equips)
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
 
@@ -1081,6 +860,14 @@ def save(request):
         raise exception
 
     except exceptions.UpdateEnvironmentServerPoolMemberException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.IpNotFoundByEnvironment, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.InvalidRealPoolException, exception:
         log.error(exception)
         raise exception
 
