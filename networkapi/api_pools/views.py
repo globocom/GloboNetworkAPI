@@ -28,7 +28,7 @@ from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
-    VipPortToPoolSerializer, PoolSerializer
+    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -812,7 +812,7 @@ def save(request):
         healthcheck_expect = request.DATA.get('healthcheck_expect')
 
         # Valid duplicate server pool
-        has_identifier = ServerPool.objects.filter(identifier=identifier)
+        has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
         if id:
             has_identifier = has_identifier.exclude(id=id)
 
@@ -870,6 +870,25 @@ def save(request):
     except exceptions.InvalidRealPoolException, exception:
         log.error(exception)
         raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def list_environments_with_pools(request):
+    try:
+
+        environment_query = Ambiente.objects.filter(serverpool__environment__isnull=False).distinct()
+
+        serializer_pools = AmbienteSerializer(environment_query, many=True)
+
+        return Response(serializer_pools.data)
+
+    except EnvironmentVip.DoesNotExist, exception:
+        log.error(exception)
+        raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
 
     except Exception, exception:
         log.error(exception)
