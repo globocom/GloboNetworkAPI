@@ -6,6 +6,8 @@ from networkapi.exception import EnvironmentVipNotFoundError
 
 class VipPortToPoolSerializer(serializers.ModelSerializer):
 
+    id = serializers.Field()
+
     requisicao_vip = serializers.PrimaryKeyRelatedField(
         many=False,
         read_only=True
@@ -13,6 +15,12 @@ class VipPortToPoolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VipPortToPool
+        fields = (
+            'id',
+            'requisicao_vip',
+            'server_pool',
+            'port_vip',
+        )
 
 
 class RequesVipSerializer(serializers.ModelSerializer):
@@ -108,6 +116,7 @@ class RequesVipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RequisicaoVips
+        depth = 1
         fields = (
             'id', 'ip', 'ipv6', 'l7_filter',
             'filter_applied', 'filter_rollback',

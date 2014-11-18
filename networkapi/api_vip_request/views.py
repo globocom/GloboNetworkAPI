@@ -31,7 +31,7 @@ from networkapi.api_pools import exceptions as pool_exceptions
 from networkapi.api_vip_request import exceptions
 from networkapi.ambiente.models import EnvironmentVip, Ambiente
 from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer, \
-    RequesVipSerializer
+    RequesVipSerializer, VipPortToPoolSerializer
 from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError, \
     EquipamentoError
 from networkapi.ip.models import IpNotFoundByEquipAndVipError
@@ -225,12 +225,30 @@ def save(request, pk=None):
 
                 if vip_ports:
 
-                    for v_port_to_del in obj_req_vip.vipporttopool_set.all():
+                    vip_port_serializer = VipPortToPoolSerializer(data=vip_ports, many=True)
+
+                    if not vip_port_serializer.is_valid():
+                        raise api_exceptions.ValidationException("Invalid Port Vip To Pool")
+
+                    vip_port_to_pool_pks = [port['id'] for port in vip_ports if port.get('id')]
+
+                    vip_port_to_pool_to_remove = VipPortToPool.objects.filter(
+                        requisicao_vip=obj_req_vip
+                    ).exclude(
+                        id__in=vip_port_to_pool_pks
+                    )
+
+                    for v_port_to_del in vip_port_to_pool_to_remove:
                         v_port_to_del.delete(user)
 
-                    for v_port in obj_req_vip.vip_ports_to_pools:
-                        v_port.requisicao_vip = obj_req_vip
-                        v_port.save(user)
+                    for vip_port in vip_ports:
+                        vip_port_obj = VipPortToPool()
+                        vip_port_obj.id = vip_port.get('id')
+                        vip_port_obj.server_pool = ServerPool(id=vip_port.get('server_pool'))
+                        vip_port_obj.port_vip = vip_port.get('port_vip')
+                        vip_port_obj.requisicao_vip = obj_req_vip
+                        vip_port_obj.save(user)
+
                 else:
                     _validate_reals(data)
                     obj_req_vip.delete_vips_and_reals(user)
