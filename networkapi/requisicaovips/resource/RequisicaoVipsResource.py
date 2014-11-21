@@ -388,7 +388,7 @@ class RequisicaoVipsResource(RestResource):
                 request_vip_map['reals_weights'] = {
                     'reals_weight': reals_weight}
 
-            request_vip_map['portas_servicos'] = {'porta': vip_port_list}
+            request_vip_map['portas_servicos'] = vip_port_list
 
             """"""
 
