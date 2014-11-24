@@ -33,7 +33,7 @@ from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeVa
     InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
     InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError, \
-    ServerPool
+    ServerPool, VipPortToPool
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int, \
     deprecated
@@ -353,14 +353,18 @@ class RequisicaoVipsResource(RestResource):
 
             request_vip_map = request_vip.variables_to_map()
 
-            server_pools_query = ServerPool.objects.filter(vipporttopool__requisicao_vip=request_vip).distinct()
+            # server_pools_query = ServerPool.objects.filter(vipporttopool__requisicao_vip=request_vip).distinct()
 
             pools = list()
+            vip_to_ports_query = VipPortToPool.objects.filter(requisicao_vip=request_vip)
 
-            for server_pool in server_pools_query:
+            for vip_port in vip_to_ports_query:
+
                 pools_members = []
 
+                server_pool = vip_port.server_pool
                 pool_raw = model_to_dict(server_pool)
+                pool_raw["port_vip"] = vip_port.port_vip
 
                 for pool_member in server_pool.serverpoolmember_set.all():
 
