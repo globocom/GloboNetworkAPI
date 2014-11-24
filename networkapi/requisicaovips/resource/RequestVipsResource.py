@@ -23,7 +23,8 @@ from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError
     InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
     InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, \
     InvalidMaxConValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsAlreadyCreatedError, RequisicaoVipsNotFoundError, \
-    InvalidBalAtivoValueError, InvalidTransbordoValueError
+    InvalidBalAtivoValueError, InvalidTransbordoValueError, \
+    RequestVipServerPoolConstraintError
 from networkapi.equipamento.models import EquipamentoError, Equipamento, EquipamentoNotFoundError
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundError, IpError, IpEquipmentNotFoundError, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip
@@ -468,11 +469,7 @@ class RequestVipsResource(RestResource):
                 try:
                     # update Resquest Vip
                     vip.save(user)
-
-                    # Remove all port and reals
-                    vip.delete_vips_and_reals(user)
-
-                    # save VipPortToPool, ServerPool and ServerPoolMember
+                    # update ServerPool, VipPortToPool, ServerPoolMembers
                     vip.save_vips_and_ports(vip_map, user)
 
                 except Exception, e:
@@ -486,6 +483,9 @@ class RequestVipsResource(RestResource):
                             e, u'Failed to update the request vip')
 
                 return self.response(dumps_networkapi({}))
+
+        except RequestVipServerPoolConstraintError, e:
+            return self.response_error(375)
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -544,7 +544,7 @@ class RequestVipsResource(RestResource):
             return self.response_error(130, transbordo)
         except UserNotAuthorizedError:
             return self.not_authorized()
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
         except Rule.DoesNotExist:
             return self.response_error(358)
