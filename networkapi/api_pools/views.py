@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
@@ -213,12 +214,15 @@ def get_equipamento_by_ip(request, id_ip):
 
         data = dict()
 
-        ipequips_obj = IpEquipamento.objects.filter(ip=id_ip).uniqueResult()
-        equip = Equipamento.get_by_pk(pk=ipequips_obj.equipamento_id)
+        try:
+            ipequips_obj = IpEquipamento.objects.filter(ip=id_ip).uniqueResult()
+            equip = Equipamento.get_by_pk(pk=ipequips_obj.equipamento_id)
 
-        serializer_equipamento = EquipamentoSerializer(equip, many=False)
+            serializer_equipamento = EquipamentoSerializer(equip, many=False)
 
-        data["equipamento"] = serializer_equipamento.data
+            data["equipamento"] = serializer_equipamento.data
+        except ObjectDoesNotExist, exception:
+            pass
 
         return Response(data)
 
@@ -275,7 +279,7 @@ def delete(request):
             except ServerPool.DoesNotExist:
                 pass
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response()
 
     except exceptions.PoolConstraintVipException, exception:
         log.error(exception)
@@ -766,7 +770,7 @@ def save_reals(request):
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response()
 
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)

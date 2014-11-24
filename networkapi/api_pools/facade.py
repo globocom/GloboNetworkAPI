@@ -95,12 +95,12 @@ def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, we
             for j in range(0, len(ip_list_full)):
                 if i == j:
                     pass
-                elif ports_reals[i] == ports_reals[j] and ip_list_full[i]['id'] == ip_list_full[j]['id']:
+                elif ports_reals[i] == ports_reals[j] and ip_list_full[i].get('id', '') == ip_list_full[j].get('id', ''):
                     raise exceptions.InvalidRealPoolException('Ips com portas iguais.')
 
         for i in range(0, len(id_pool_member)):
-            list_server_pool_member.append({'id':ip_list_full[i]['id'],
-                                            'ip': ip_list_full[i]['ip'],
+            list_server_pool_member.append({'id': ip_list_full[i].get('id', '') if ip_list_full[i] else '',
+                                            'ip': ip_list_full[i].get('ip', '') if ip_list_full[i] else '',
                                             'port_real': ports_reals[i],
                                             'nome_equips': nome_equips[i],
                                             'priority': priorities[i],
@@ -161,7 +161,6 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                 spm.weight = dic['weight']
                 spm.limit = sp.default_limit
                 spm.port_real = dic['port_real']
-                spm.healthcheck = sp.healthcheck
 
                 #execute script remove real
                 command = settings.POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
@@ -172,7 +171,11 @@ def save_server_pool_member(user, sp, list_server_pool_member):
             else:
                 spm = ServerPoolMember(server_pool=sp, identifier=dic['nome_equips'], ip=ip_object, ipv6=ipv6_object,
                                        priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
-                                       port_real=dic['port_real'], healthcheck=sp.healthcheck)
+                                       port_real=dic['port_real'])
+
+            if sp.healthcheck_id:
+                spm.healthcheck = sp.healthcheck
+
             spm.save(user)
 
             #execute script create real
