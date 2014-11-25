@@ -69,6 +69,8 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
     pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
 
+    equipment_name = serializers.SerializerMethodField('get_name_equipment')
+
     ip = Ipv4Serializer()
     ipv6 = Ipv6Serializer()
 
@@ -84,7 +86,8 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'limit',
                   'port_real',
                   'healthcheck',
-                  'pool_enabled'
+                  'pool_enabled',
+                  'equipment_name',
                   )
 
     def check_pool_member_enabled(self, obj):
@@ -97,6 +100,19 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
             return True
 
         return False
+
+    def get_name_equipment(self, obj):
+
+        ipv4 = obj.ip
+        ipv6 = obj.ipv6
+
+        ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
+
+        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+
+        equipment = ip_equipment_obj.equipamento
+
+        return equipment.nome
 
 
 class ServerPoolSerializer(serializers.ModelSerializer):
