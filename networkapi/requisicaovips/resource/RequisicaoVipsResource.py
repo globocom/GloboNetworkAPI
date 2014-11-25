@@ -369,8 +369,24 @@ class RequisicaoVipsResource(RestResource):
                 for pool_member in server_pool.serverpoolmember_set.all():
 
                     pools_member_raw = model_to_dict(pool_member)
+
+                    ipv4 = pool_member.ip
+                    ipv6 = pool_member.ipv6
+                    ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
+                    ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+
                     healthcheck_type = pool_member.healthcheck and pool_member.healthcheck.healthcheck_type
+
                     pools_member_raw["healthcheck"] = dict(healthcheck_type=healthcheck_type)
+                    pools_member_raw["equipment_name"] = ip_equipment_obj.equipamento.nome
+
+                    ip_formated = ip_equipment_obj.ip.ip_formated
+
+                    if ipv4:
+                        pools_member_raw["ip"] = {'ip_formated': ip_formated}
+                    else:
+                        pools_member_raw["ipv6"] = {'ip_formated': ip_formated}
+
                     pools_members.append(pools_member_raw)
 
                 pool_raw['server_pool_members'] = pools_members
