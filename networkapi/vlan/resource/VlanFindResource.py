@@ -34,7 +34,7 @@ from string import split
 from networkapi.ambiente.models import IP_VERSION
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from django.forms.models import model_to_dict
-from networkapi.environment_settings import VLAN_CACHE_TIME
+from networkapi.settings import VLAN_CACHE_TIME
 
 
 def break_network(network):

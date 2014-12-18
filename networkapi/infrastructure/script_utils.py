@@ -20,7 +20,7 @@ import os
 
 from subprocess import Popen, PIPE, STDOUT
 
-from networkapi.environment_settings import SCRIPTS_DIR
+from networkapi.settings import SCRIPTS_DIR
 
 
 class ScriptError(Exception):
