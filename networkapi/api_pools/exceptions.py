@@ -15,6 +15,15 @@ class InvalidIdPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Pool.'
 
+class InvalidIdEnvironmentException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Environment.'
+
+
+class InvalidIdVipException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for VIP.'
+
 
 class InvalidIdentifierPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

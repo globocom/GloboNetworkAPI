@@ -591,7 +591,9 @@ def get_opcoes_pool_by_ambiente(request):
 
         data = dict()
 
-        is_valid_int_greater_zero_param(id_ambiente)
+        if not is_valid_int_greater_zero_param(id_ambiente):
+            raise exceptions.InvalidIdEnvironmentException()
+
         query_opcoes = OpcaoPoolAmbiente.objects.filter(ambiente=id_ambiente)
         opcoes_serializer = OpcaoPoolAmbienteSerializer(query_opcoes, many=True)
         data['opcoes_pool'] = opcoes_serializer.data
@@ -908,7 +910,8 @@ def list_environments_with_pools(request):
 def chk_status_poolmembers_by_pool(request, pool_id):
 
     try:
-        is_valid_int_greater_zero_param(pool_id)
+        if not is_valid_int_greater_zero_param(pool_id):
+            raise exceptions.InvalidIdPoolException()
 
         try:
             obj_pool = ServerPool.objects.get(pk=pool_id)
@@ -934,7 +937,8 @@ def chk_status_poolmembers_by_pool(request, pool_id):
 def chk_status_poolmembers_by_vip(request, vip_id):
 
     try:
-        is_valid_int_greater_zero_param(vip_id)
+        if not is_valid_int_greater_zero_param(vip_id):
+            raise exceptions.InvalidIdVipException()
 
         list_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=vip_id)
 
