@@ -23,5 +23,8 @@ urlpatterns = patterns(
     url(r'^pools/list/members/(?P<pool_id>[^/]+)/$', 'list_pool_members'),
     url(r'^pools/list/by/environment/vip/(?P<environment_vip_id>\d+)/$', 'list_by_environment_vip'),
 
+    url(r'^pools/check/status/by/pool/(?P<pool_id>[^/]+)/$', 'chk_status_poolmembers_by_pool'),
+    url(r'^pools/check/status/by/vip/(?P<vip_id>[^/]+)/$', 'chk_status_poolmembers_by_vip'),
+
     url(r'^pools/save/$', 'save'),
 )
