@@ -36,7 +36,7 @@ from django.forms.models import model_to_dict
 from networkapi.equipamento.models import Equipamento, EquipamentoError
 from networkapi.ip.models import Ip, Ipv6
 from networkapi import ambiente
-from networkapi.environment_settings import EQUIPMENT_CACHE_TIME
+from networkapi.settings import EQUIPMENT_CACHE_TIME
 
 
 def break_ip(ip):

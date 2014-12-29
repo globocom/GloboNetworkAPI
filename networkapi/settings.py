@@ -17,13 +17,35 @@
 
 
 import os
+import logging
 
-# importa os dados dependentes do ambiente
-from networkapi.environment_settings import *
+from networkapi.log import Log
+
+PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+
+# Configurações de banco de dados
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': 'localhost',
+        'NAME': 'telecom',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'PORT': '3306',
+        'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
+    }
+}
 
 from networkapi.models.models_signal_receiver import *
 
-PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+# Aplicação rodando em modo Debug
+DEBUG = True
+
+# CONFIGURAÇÃO DO MEMCACHED
+CACHE_BACKEND = 'memcached://localhost:11211/'
+
+# Diretório dos arquivos dos scripts
+SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
 
 # Armazena a raiz do projeto.
 SITE_ROOT = os.path.realpath(__file__ + "/../../../../")
@@ -109,6 +131,16 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'ry@zgop%w80_nu83#!tbz)m&7*i@1)d-+ki@5^d#%6-&^216sg'
+
+# Configuração do arquivo de log do projeto.
+LOG_FILE = '/tmp/networkapi.log'
+LOG_LEVEL = logging.DEBUG
+LOG_DAYS = 10
+LOG_SHOW_SQL = False
+LOG_USE_STDOUT = False
+
+VLAN_CACHE_TIME = None
+EQUIPMENT_CACHE_TIME = None
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -226,6 +258,9 @@ POOL_REAL_REMOVE = 'gerador_vips -p %s --id_ip %s --port_ip %s --del'
 POOL_REAL_ENABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --ena'
 POOL_REAL_DISABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --dis'
 POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
+POOL_REAL_CHECK_BY_POOL = 'gerador_vips --pool %s --check_status'
+POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
+
 
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'
@@ -257,7 +292,13 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ###################################
 
 PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
-print PATH_ACL
 import sys
 reload(sys)
+
 sys.setdefaultencoding('utf-8')
+
+# Inicialização do log
+# O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
+# O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
+# O terceiro parâmetro é o nível de detalhamento do Log.
+Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)

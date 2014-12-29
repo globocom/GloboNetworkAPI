@@ -183,3 +183,16 @@ def save_server_pool_member(user, sp, list_server_pool_member):
             code, _, _ = exec_script(command)
             if code != 0:
                 raise exceptions.ScriptCreatePoolException()
+
+
+def exec_script_check_poolmember_by_pool(pool_id):
+
+    #execute script check status real
+    command = settings.POOL_REAL_CHECK_BY_POOL % (pool_id)
+    res_script, _, _ = exec_script(command)
+
+    # TODO: Handle errors
+    #if res_script != 0:
+        #raise exceptions.ScriptCreatePoolException()
+
+    return res_script

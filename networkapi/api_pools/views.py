@@ -14,9 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
+from django.conf import settings
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -25,6 +28,7 @@ from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_p
     prepare_to_save_reals
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
+from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
@@ -34,15 +38,14 @@ from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.util import is_valid_list_int_greater_zero_param, \
-    is_valid_int_greater_zero_param
+from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param
 from networkapi.log import Log
+from networkapi.infrastructure.script_utils import exec_script, ScriptError
+
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.settings import POOL_REMOVE, POOL_CREATE, \
-    POOL_REAL_REMOVE, POOL_REAL_ENABLE, POOL_REAL_DISABLE
+
 from networkapi.api_pools.models import OpcaoPoolAmbiente
 
 log = Log(__name__)
@@ -267,7 +270,7 @@ def delete(request):
 
                     server_pool_member.delete(request.user)
 
-                    command = POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
+                    command = settings.POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
 
                     code, _, _ = exec_script(command)
 
@@ -321,7 +324,7 @@ def remove(request):
 
                 server_pool = ServerPool.objects.get(id=_id)
 
-                code, _, _ = exec_script(POOL_REMOVE % _id)
+                code, _, _ = exec_script(settings.POOL_REMOVE % _id)
 
                 if code != 0:
                     raise exceptions.ScriptRemovePoolException()
@@ -369,7 +372,7 @@ def create(request):
 
             server_pool = ServerPool.objects.get(id=_id)
 
-            code, _, _ = exec_script(POOL_CREATE % _id)
+            code, _, _ = exec_script(settings.POOL_CREATE % _id)
 
             if code != 0:
                 raise exceptions.ScriptCreatePoolException()
@@ -492,7 +495,7 @@ def enable(request):
             id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
             port_ip = server_pool_member.port_real
 
-            command = POOL_REAL_ENABLE % (id_pool, id_ip, port_ip)
+            command = settings.POOL_REAL_ENABLE % (id_pool, id_ip, port_ip)
 
             code, _, _ = exec_script(command)
 
@@ -547,7 +550,7 @@ def disable(request):
             id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
             port_ip = server_pool_member.port_real
 
-            command = POOL_REAL_DISABLE % (id_pool, id_ip, port_ip)
+            command = settings.POOL_REAL_DISABLE % (id_pool, id_ip, port_ip)
 
             code, _, _ = exec_script(command)
 
@@ -879,6 +882,7 @@ def save(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def list_environments_with_pools(request):
@@ -897,3 +901,53 @@ def list_environments_with_pools(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def chk_status_poolmembers_by_pool(request, pool_id):
+
+    try:
+        is_valid_int_greater_zero_param(pool_id)
+
+        try:
+            obj_pool = ServerPool.objects.get(pk=pool_id)
+
+            res_script = exec_script_check_poolmember_by_pool(obj_pool.id)
+
+        except ObjectDoesNotExist:
+            raise exceptions.InvalidIdPoolMemberException()
+
+        return Response(res_script)
+
+    except exceptions.InvalidIdPoolMemberException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise exception
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def chk_status_poolmembers_by_vip(request, vip_id):
+
+    try:
+        is_valid_int_greater_zero_param(vip_id)
+
+        list_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=vip_id)
+
+        if len(list_pools) is 0:
+            raise exceptions.PoolMemberDoesNotExistException()
+
+        list_result = []
+        for obj_pool in list_pools:
+            list_sts_poolmembers = exec_script_check_poolmember_by_pool(obj_pool.id)
+            list_result.append({obj_pool.id: list_sts_poolmembers})
+
+        return Response(list_result)
+
+    except Exception, exception:
+        log.error(exception)
+        raise exception
