@@ -18,37 +18,25 @@
 
 import os
 import logging
-import os.path
 
 from networkapi.log import Log
-from networkapi.models.models_signal_receiver import *
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Configurações de banco de dados
-# 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_ENGINE = 'django.db.backends.mysql'
-DATABASE_NAME = 'telecom'  # Or path to database file if using sqlite3.
-DATABASE_USER = 'root'  # Not used with sqlite3.
-DATABASE_PASSWORD = ''  # Not used with sqlite3.
-# Set to empty string for localhost. Not used with sqlite3.
-DATABASE_HOST = 'localhost'
-# Set to empty string for default. Not used with sqlite3.
-DATABASE_PORT = '3306'
-DATABASE_OPTIONS = {"init_command": "SET storage_engine=INNODB"}
-
 DATABASES = {
     'default': {
-        'ENGINE': DATABASE_ENGINE,
-        'HOST': DATABASE_HOST,
-        'NAME': DATABASE_NAME,
-        'USER': DATABASE_USER,
-        'PASSWORD': DATABASE_PASSWORD,
-        'PORT': DATABASE_PORT,
-        'OPTIONS': DATABASE_OPTIONS
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': 'localhost',
+        'NAME': 'telecom',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'PORT': '3306',
+        'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
     }
 }
 
+from networkapi.models.models_signal_receiver import *
 
 # Aplicação rodando em modo Debug
 DEBUG = True
@@ -58,10 +46,6 @@ CACHE_BACKEND = 'memcached://localhost:11211/'
 
 # Diretório dos arquivos dos scripts
 SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
-
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 # Armazena a raiz do projeto.
 SITE_ROOT = os.path.realpath(__file__ + "/../../../../")
@@ -147,6 +131,16 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'ry@zgop%w80_nu83#!tbz)m&7*i@1)d-+ki@5^d#%6-&^216sg'
+
+# Configuração do arquivo de log do projeto.
+LOG_FILE = '/tmp/networkapi.log'
+LOG_LEVEL = logging.DEBUG
+LOG_DAYS = 10
+LOG_SHOW_SQL = False
+LOG_USE_STDOUT = False
+
+VLAN_CACHE_TIME = None
+EQUIPMENT_CACHE_TIME = None
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -265,6 +259,9 @@ POOL_REAL_REMOVE = 'gerador_vips -p %s --id_ip %s --port_ip %s --del'
 POOL_REAL_ENABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --ena'
 POOL_REAL_DISABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --dis'
 POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
+POOL_REAL_CHECK_BY_POOL = 'gerador_vips --pool %s --check_status'
+POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
+
 
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'
@@ -296,23 +293,10 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ###################################
 
 PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
-print PATH_ACL
 import sys
 reload(sys)
+
 sys.setdefaultencoding('utf-8')
-
-
-
-
-# Configuração do arquivo de log do projeto.
-LOG_FILE = '/tmp/networkapi.log'
-LOG_LEVEL = logging.DEBUG
-LOG_DAYS = 10
-LOG_SHOW_SQL = False
-LOG_USE_STDOUT = False
-
-VLAN_CACHE_TIME = None
-EQUIPMENT_CACHE_TIME = None
 
 # Inicialização do log
 # O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
