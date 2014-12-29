@@ -30,7 +30,7 @@ DATABASES = {
         'HOST': 'localhost',
         'NAME': 'telecom',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '',
         'PORT': '3306',
         'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
     }
