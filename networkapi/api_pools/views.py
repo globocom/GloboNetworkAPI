@@ -33,7 +33,7 @@ from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
-    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer
+    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, ServerPoolMemberStatusSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -904,26 +904,38 @@ def list_environments_with_pools(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def chk_status_poolmembers_by_pool(request, pool_id):
 
     try:
+
         if not is_valid_int_greater_zero_param(pool_id):
             raise exceptions.InvalidIdPoolException()
 
-        try:
-            obj_pool = ServerPool.objects.get(pk=pool_id)
+        pool_obj = ServerPool.objects.get(id=pool_id)
+        pool_members_query = ServerPoolMember.objects.filter(server_pool=pool_obj)
 
-            res_script = exec_script_check_poolmember_by_pool(obj_pool.id)
+        status_serializer = ServerPoolMemberStatusSerializer(pool_members_query, many=True)
 
-        except ObjectDoesNotExist:
-            raise exceptions.InvalidIdPoolMemberException()
+        data = dict(
+            server_pool_id=pool_obj.id,
+            server_pool_members=status_serializer.data
+        )
 
-        return Response(res_script)
+        return Response(data)
 
-    except exceptions.InvalidIdPoolMemberException, exception:
+    except ScriptError, exception:
+        log.error(exception)
+        raise exceptions.ScriptCheckStatusPoolMemberException()
+
+    except ServerPool.DoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.PoolDoesNotExistException()
+
+    except exceptions.InvalidIdPoolException, exception:
         log.error(exception)
         raise exception
 
