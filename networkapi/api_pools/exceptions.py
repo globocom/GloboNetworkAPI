@@ -49,6 +49,11 @@ class ScriptAddPoolException(APIException):
     default_detail = 'Failed to execute add script for pool.'
 
 
+class ScriptCheckStatusPoolMemberException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute status script for pool member.'
+
+
 class ScriptDeletePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute delete script for pool.'
