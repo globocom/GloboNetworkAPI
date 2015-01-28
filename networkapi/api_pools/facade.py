@@ -20,10 +20,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from networkapi.api_pools import exceptions
 from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ipv6, Ip
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
-
+from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
 
 def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck_request):
     try:
@@ -189,10 +189,66 @@ def exec_script_check_poolmember_by_pool(pool_id):
 
     #execute script check status real
     command = settings.POOL_REAL_CHECK_BY_POOL % (pool_id)
-    res_script, _, _ = exec_script(command)
+    status_code, stdout, stderr = exec_script(command)
 
-    # TODO: Handle errors
-    #if res_script != 0:
-        #raise exceptions.ScriptCreatePoolException()
+    if status_code != 0:
+        raise exceptions.ScriptCheckStatusPoolMemberException()
 
-    return res_script
+    return stdout
+
+
+def manager_pools(request):
+    """
+    Manager Status Pool Members Enable/Disabled By Pool
+
+    :param request: HttpRequest
+
+    """
+
+    try:
+        pool_id = request.DATA.get("server_pool_id")
+        pool_members = request.DATA.get("server_pool_members", [])
+
+        pool_members_id = [member.get('id') for member in pool_members]
+
+        if not is_valid_int_greater_zero_param(pool_id):
+            raise exceptions.InvalidIdPoolException()
+
+        #Validate pool members id
+        is_valid_list_int_greater_zero_param(pool_members_id)
+
+        pool_obj = ServerPool.objects.get(id=pool_id)
+
+        related_pool_members = pool_obj.serverpoolmember_set.order_by('id')
+
+        received_pool_members = ServerPoolMember.objects.filter(id__in=pool_members_id).order_by('id')
+
+        relates = list(related_pool_members)
+        receives = list(received_pool_members)
+
+        if relates != receives:
+            raise exceptions.InvalidIdPoolMemberException(u'Required All Pool Members By Pool')
+
+        for member in pool_members:
+
+            member_id = member.get("id")
+            member_status = member.get("status")
+
+            server_pool_member = ServerPoolMember.objects.get(id=member_id)
+            server_pool_member.status = member_status
+
+            server_pool_member.save(request.user, commit=True)
+
+        #Execute Script To Set Status
+        command = settings.POOL_MANAGEMENT_MEMBERS_STATUS % pool_id
+        code, _, _ = exec_script(command)
+        if code != 0:
+            raise exceptions.ScriptManagementPoolException()
+
+    except (exceptions.ScriptManagementPoolException, ScriptError), exception:
+
+        # Rollback
+        for old_member in related_pool_members:
+            old_member.save(request.user, commit=True)
+
+        raise exception
