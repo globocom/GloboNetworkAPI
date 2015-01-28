@@ -15,17 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.conf import settings
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals
+    prepare_to_save_reals, manager_pools
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -33,7 +35,7 @@ from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
-    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, ServerPoolMemberStatusSerializer
+    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -41,12 +43,11 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param
 from networkapi.log import Log
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
-
 from networkapi.api_pools.models import OpcaoPoolAmbiente
+
 
 log = Log(__name__)
 
@@ -906,7 +907,7 @@ def list_environments_with_pools(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, Read))
+@permission_classes((IsAuthenticated, Read, ))
 @commit_on_success
 def chk_status_poolmembers_by_pool(request, pool_id):
 
@@ -916,14 +917,10 @@ def chk_status_poolmembers_by_pool(request, pool_id):
             raise exceptions.InvalidIdPoolException()
 
         pool_obj = ServerPool.objects.get(id=pool_id)
-        pool_members_query = ServerPoolMember.objects.filter(server_pool=pool_obj)
 
-        status_serializer = ServerPoolMemberStatusSerializer(pool_members_query, many=True)
+        stdout = exec_script_check_poolmember_by_pool(pool_obj.id)
 
-        data = dict(
-            server_pool_id=pool_obj.id,
-            server_pool_members=status_serializer.data
-        )
+        data = json.loads(stdout)
 
         return Response(data)
 
@@ -941,7 +938,7 @@ def chk_status_poolmembers_by_pool(request, pool_id):
 
     except Exception, exception:
         log.error(exception)
-        raise exception
+        raise api_exceptions.NetworkAPIException()
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
@@ -966,4 +963,40 @@ def chk_status_poolmembers_by_vip(request, vip_id):
 
     except Exception, exception:
         log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def management_pools(request):
+
+    try:
+
+        manager_pools(request)
+
+        return Response()
+
+    except (exceptions.ScriptManagementPoolException, ScriptError), exception:
+        log.error(exception)
+        raise exceptions.ScriptManagementPoolException()
+
+    except ServerPool.DoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.PoolDoesNotExistException()
+
+    except exceptions.InvalidIdPoolException, exception:
+        log.error(exception)
         raise exception
+
+    except exceptions.InvalidIdPoolMemberException, exception:
+        log.error(exception)
+        raise exception
+
+    except ValueError, exception:
+        log.error(exception)
+        raise exceptions.InvalidIdPoolMemberException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
