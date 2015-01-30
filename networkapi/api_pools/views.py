@@ -977,6 +977,10 @@ def management_pools(request):
 
         return Response()
 
+    except exceptions.InvalidStatusPoolMemberException, exception:
+        log.error(exception)
+        raise exception
+
     except (exceptions.ScriptManagementPoolException, ScriptError), exception:
         log.error(exception)
         raise exceptions.ScriptManagementPoolException()

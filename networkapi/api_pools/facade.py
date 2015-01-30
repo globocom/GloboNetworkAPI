@@ -209,6 +209,9 @@ def manager_pools(request):
         pool_id = request.DATA.get("server_pool_id")
         pool_members = request.DATA.get("server_pool_members", [])
 
+        # List to validate pool member status
+        valid_status = [0, 1, False, True]
+
         pool_members_id = [member.get('id') for member in pool_members]
 
         if not is_valid_int_greater_zero_param(pool_id):
@@ -233,6 +236,9 @@ def manager_pools(request):
 
             member_id = member.get("id")
             member_status = member.get("status")
+
+            if member_status not in valid_status:
+                raise exceptions.InvalidStatusPoolMemberException()
 
             server_pool_member = ServerPoolMember.objects.get(id=member_id)
             server_pool_member.status = member_status
