@@ -37,10 +37,17 @@ def get_lock():
     try:
         from django.core.cache import cache
         cache.default_timeout = 0
-        if cache._cache.get_stats():
+
+        if cache._cache and hasattr(cache._cache, 'get_stats'):
+            stats = cache._cache.get_stats()
+        else:
+            stats = []
+
+        if stats:
             while cache.add('logger_lock', 1, 1) == 0:
                 time.sleep(0.1)
                 pass
+
     except ImportError:
         dump_file = open('/tmp/networkapi_log_error_dump', 'a')
         traceback.print_exc(file=dump_file)
@@ -219,7 +226,7 @@ class Log(object):
         """Imprime uma mensagem de erro no log"""
         try:
             get_lock()
-            msg = msg % args
+            msg = str(msg) % args
             self.logger.error(
                 msg, extra={'module_name': self.module_name}, exc_info=True)
         finally:

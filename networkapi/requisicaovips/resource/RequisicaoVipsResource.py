@@ -32,22 +32,25 @@ from networkapi.log import Log
 from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
     InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError
+    InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError, \
+    ServerPool, VipPortToPool
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int
+from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int, \
+    deprecated
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
+from django.forms.models import model_to_dict
 
 
 def insert_vip_request(vip_map, user):
     '''Insere uma requisição de VIP.
 
     @param vip_map: Mapa com os dados da requisição.
-    @param user: Usuário autenticado.   
+    @param user: Usuário autenticado.
 
     @return: Em caso de sucesso: tupla (0, <requisição de VIP>).
              Em caso de erro: tupla (código da mensagem de erro, argumento01, argumento02, ...)
 
-    @raise IpNotFoundError: IP não cadastrado.  
+    @raise IpNotFoundError: IP não cadastrado.
 
     @raise IpError: Falha ao pesquisar o IP.
 
@@ -83,13 +86,13 @@ def insert_vip_request(vip_map, user):
 
     @raise InvalidServicePortValueError: Porta do Serviço com valor inválido.
 
-    @raise InvalidRealValueError: Valor inválido de um real. 
+    @raise InvalidRealValueError: Valor inválido de um real.
 
     @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
 
-    @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP. 
+    @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
 
-    @raise UserNotAuthorizedError: 
+    @raise UserNotAuthorizedError:
     '''
 
     log = Log('insert_vip_request')
@@ -350,9 +353,53 @@ class RequisicaoVipsResource(RestResource):
 
             request_vip_map = request_vip.variables_to_map()
 
+            # server_pools_query = ServerPool.objects.filter(vipporttopool__requisicao_vip=request_vip).distinct()
+
+            pools = list()
+            vip_to_ports_query = VipPortToPool.objects.filter(requisicao_vip=request_vip)
+
+            for vip_port in vip_to_ports_query:
+
+                pools_members = []
+
+                server_pool = vip_port.server_pool
+                pool_raw = model_to_dict(server_pool)
+                pool_raw["port_vip"] = vip_port.port_vip
+
+                for pool_member in server_pool.serverpoolmember_set.all():
+
+                    pools_member_raw = model_to_dict(pool_member)
+
+                    ipv4 = pool_member.ip
+                    ipv6 = pool_member.ipv6
+                    ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
+                    ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+
+                    healthcheck_type = pool_member.healthcheck and pool_member.healthcheck.healthcheck_type
+
+                    pools_member_raw["healthcheck"] = dict(healthcheck_type=healthcheck_type)
+                    pools_member_raw["equipment_name"] = ip_equipment_obj.equipamento.nome
+
+                    ip_formated = ip_equipment_obj.ip.ip_formated
+
+                    if ipv4:
+                        pools_member_raw["ip"] = {'ip_formated': ip_formated}
+                    else:
+                        pools_member_raw["ipv6"] = {'ip_formated': ip_formated}
+
+                    pools_members.append(pools_member_raw)
+
+                pool_raw['server_pool_members'] = pools_members
+
+                pools.append(pool_raw)
+
+            request_vip_map["pools"] = pools
+
             """"""
             vip_port_list, reals_list, reals_priority, reals_weight = request_vip.get_vips_and_reals(
-                request_vip.id)
+                request_vip.id,
+                omit_port_real=True
+            )
 
             if reals_list:
                 request_vip_map['reals'] = {'real': reals_list}
@@ -361,7 +408,7 @@ class RequisicaoVipsResource(RestResource):
                 request_vip_map['reals_weights'] = {
                     'reals_weight': reals_weight}
 
-            request_vip_map['portas_servicos'] = {'porta': vip_port_list}
+            request_vip_map['portas_servicos'] = vip_port_list
 
             """"""
 

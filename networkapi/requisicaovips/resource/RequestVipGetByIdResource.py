@@ -137,10 +137,11 @@ class RequestVipGetByIdResource(RestResource):
             return self.response(dumps_networkapi(returned_map))
 
         except RequisicaoVipsNotFoundError, e:
+            self.log.error(e)
             return self.response_error(152)
         except InvalidValueError, e:
-            self.log.error(
-                u'Parameter %s is invalid. Value: %s.', e.param, e.value)
+            self.log.error(u'Parameter %s is invalid. Value: %s.', e.param, e.value)
             return self.response_error(269, e.param, e.value)
         except BaseException, e:
+            self.log.error(e)
             return self.response_error(1)

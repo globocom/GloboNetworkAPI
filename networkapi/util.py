@@ -18,16 +18,18 @@
 
 from hashlib import sha1
 from django.core.cache import cache
-
+import warnings
+import functools
 import socket
 import copy
-
+import sys
 import re
 
 import time
 
 from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
 from django.forms.models import model_to_dict
+from django.core import validators
 
 LOCK = 'LOCK'
 
@@ -533,3 +535,59 @@ def get_vlan_map(vlan, network_ipv4, network_ipv6):
 def clear_newline_chr(string):
     str_return = string.replace(chr(10), '').replace(chr(13), '')
     return str_return
+
+
+def is_valid_list_int_greater_zero_param(list_param, required=True):
+    '''Checks if the parameter list is a valid integer value and greater than zero.
+
+    @param param: Value to be validated.
+
+    @raise ValidationError: If there is validation error in the field
+    '''
+    if required and list_param in validators.EMPTY_VALUES:
+        raise ValueError('Field is required.')
+
+    try:
+        for param in list_param:
+
+            if param is None and required:
+                raise ValueError('Field is required.')
+
+            try:
+                param = int(param)
+
+                if param < 1:
+                    raise ValueError('Field must be an positive integer.')
+
+            except Exception:
+                raise ValueError('Field must be an integer.')
+
+    except Exception:
+        raise ValueError('Invalid List Parameter.')
+
+    return True
+
+
+def deprecated(new_uri=None):
+    '''This is a decorator which can be used to mark functions
+        as deprecated. It will result in a warning being emitted
+        when the function is used.
+    '''
+    def outer(fun):
+        @functools.wraps(fun)
+        def inner(*args, **kwargs):
+            from networkapi.log import Log
+            log = Log(fun.func_code.co_filename)
+            message = "%s:%s: %s is deprecated. Use the new rest API." % (
+                fun.func_code.co_filename,
+                fun.func_code.co_firstlineno + 1,
+                fun.__name__,
+            )
+
+            if new_uri:
+                message += " Uri to access: %s" % new_uri
+
+            log.warning(message)
+            return fun(*args, **kwargs)
+        return inner
+    return outer

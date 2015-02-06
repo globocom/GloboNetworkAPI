@@ -111,6 +111,18 @@
 - fields: {function: aplicar_acl}
   model: grupo.permission
   pk: 28
+- fields: {function: cadastro_de_pool}
+  model: grupo.permission
+  pk: 29
+- fields: {function: script_remover_pool}
+  model: grupo.permission
+  pk: 30
+- fields: {function: script_criacao_pool}
+  model: grupo.permission
+  pk: 31
+- fields: {function: script_alterar_pool}
+  model: grupo.permission
+  pk: 32
  
  # PermissaoAdministrativa
   
@@ -370,6 +382,46 @@
 - fields: {escrita: true, leitura: false, ugrupo: 4, permission: 28 }
   model: grupo.permissaoadministrativa
   pk: 84
+
+- fields: {escrita: true, leitura: true, ugrupo: 1, permission: 29 }
+  model: grupo.permissaoadministrativa
+  pk: 85
+- fields: {escrita: false, leitura: true, ugrupo: 3, permission: 29 }
+  model: grupo.permissaoadministrativa
+  pk: 86
+- fields: {escrita: true, leitura: false, ugrupo: 4, permission: 29 }
+  model: grupo.permissaoadministrativa
+  pk: 87
+
+- fields: {escrita: true, leitura: true, ugrupo: 1, permission: 30 }
+  model: grupo.permissaoadministrativa
+  pk: 88
+- fields: {escrita: false, leitura: true, ugrupo: 3, permission: 30 }
+  model: grupo.permissaoadministrativa
+  pk: 89
+- fields: {escrita: true, leitura: false, ugrupo: 4, permission: 30 }
+  model: grupo.permissaoadministrativa
+  pk: 90
+
+- fields: {escrita: true, leitura: true, ugrupo: 1, permission: 31 }
+  model: grupo.permissaoadministrativa
+  pk: 91
+- fields: {escrita: false, leitura: true, ugrupo: 3, permission: 31 }
+  model: grupo.permissaoadministrativa
+  pk: 92
+- fields: {escrita: true, leitura: false, ugrupo: 4, permission: 31 }
+  model: grupo.permissaoadministrativa
+  pk: 93
+
+- fields: {escrita: true, leitura: true, ugrupo: 1, permission: 32 }
+  model: grupo.permissaoadministrativa
+  pk: 94
+- fields: {escrita: false, leitura: true, ugrupo: 3, permission: 32 }
+  model: grupo.permissaoadministrativa
+  pk: 95
+- fields: {escrita: true, leitura: false, ugrupo: 4, permission: 32 }
+  model: grupo.permissaoadministrativa
+  pk: 96
 
 - fields: {ugrupo: 1, egrupo: 1, leitura: 1, escrita: 1, alterar_config: 1, exclusao: 1}
   model: grupo.direitosgrupoequipamento

@@ -945,7 +945,6 @@ class EnvironmentIpConfigAttrLinkTest(EnvironmentConfigTest, AttrTest):
         self._attr_invalid(response)
 
 
-@me
 class EnvironmentConfigurationAddTest(EnvironmentConfigTest, AttrTest):
 
     def test_save_v4_valid(self):

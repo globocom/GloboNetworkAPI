@@ -16,15 +16,14 @@ import re
 # limitations under the License.
 
 
-
 class LoggingMiddleware(object):
 
     def process_exception(self, request, exception):
         """ HIDE PASSWORD VALUES"""
 
         # Get POST value
+        msg = ''
         post_values = request.POST.copy()
-
         for values in post_values:
             r = re.compile('<password>(.*?)</password>')
             m = r.search(post_values[values])
