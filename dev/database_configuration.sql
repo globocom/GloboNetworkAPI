@@ -1169,6 +1169,40 @@ AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
+-- -----------------------------------------------------
+-- Table `telecom`.`racks`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
+  `id_rack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `numero` INT(10) UNSIGNED NOT NULL,
+  `mac_sw1` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `mac_sw2` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `mac_sw3` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `id_equip1` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
+  INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
+  INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
+  INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
+  PRIMARY KEY (`id_rack`),
+  CONSTRAINT `fk_racks_id_equip1`
+    FOREIGN KEY (`id_equip1`)
+    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_racks_id_equip2`
+    FOREIGN KEY (`id_equip2`)
+    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_racks_id_equip3`
+    FOREIGN KEY (`id_equip3`)
+    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
+
+
 LOCK TABLES `grupos` WRITE;
 INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');
 UNLOCK TABLES;
@@ -1193,3 +1227,4 @@ UNLOCK TABLES;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
