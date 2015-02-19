@@ -16,22 +16,22 @@
 # limitations under the License.
 
 
+import re
+
+from django.core.exceptions import ObjectDoesNotExist
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, \
-    destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
 from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import  AmbienteError, Ambiente, AmbienteNotFoundError,\
+from networkapi.ambiente.models import AmbienteError, Ambiente, AmbienteNotFoundError,\
     ConfigEnvironmentInvalidError
-import re
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-from networkapi.vlan.models import TipoRede
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv6AddressNotAvailableError
 from networkapi.ip.models import NetworkIPv4AddressNotAvailableError, IpNotAvailableError
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class VlanInsertResource(RestResource):
@@ -227,7 +227,11 @@ class VlanInsertResource(RestResource):
         except ConfigEnvironmentInvalidError, e:
             return self.response_error(294)
         except NetworkIPv4AddressNotAvailableError, e:
-            return self.response_error(294)
+            return self.response_error(150, e)
+
+        except NetworkIPv6AddressNotAvailableError,e:
+            return self.response_error(150, e)
+
         except IpNotAvailableError, e:
             return self.response_error(150, e)
         except ObjectDoesNotExist, e:
