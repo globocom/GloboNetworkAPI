@@ -197,6 +197,7 @@ INSTALLED_APPS = (
     'networkapi.filterequiptype',
     'networkapi.blockrules',
     'networkapi.config',
+    'networkapi.rack',
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',

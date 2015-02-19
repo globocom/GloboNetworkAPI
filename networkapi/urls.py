@@ -17,6 +17,8 @@
 
 
 from django.conf.urls.defaults import *
+
+
 from networkapi.equipamento.resource import EquipmentGetIpsByAmbiente
 
 from networkapi.vlan.resource.VlanResource import VlanResource
@@ -257,12 +259,17 @@ from networkapi.ambiente.resource.EnvironmentConfigurationRemoveResource import 
 from networkapi.requisicaovips.resource.OptionVipGetHealthcheckByEVipResource import OptionVipGetHealthcheckByEVipResource
 
 
+from networkapi.rack.resource.RackAddResource import RackAddResource
+
 check_action = CheckAction()
 
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
+
+
+rack_add_resource = RackAddResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -1099,8 +1106,11 @@ urlpatterns += patterns('',
                            name='eventlog.choices'),
                        url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
                            name='eventlog.version'),
-                       )
 
+                       url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
+                           name='rack.add'),
+
+                       )
 
 urlpatterns += patterns('networkapi.test_form.views',
                         url('^test-vip[/]?$', 'test_form',
