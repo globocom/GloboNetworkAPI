@@ -260,6 +260,7 @@ from networkapi.requisicaovips.resource.OptionVipGetHealthcheckByEVipResource im
 
 
 from networkapi.rack.resource.RackAddResource import RackAddResource
+from networkapi.rack.resource.RackFindResource import RackFindResource
 
 check_action = CheckAction()
 
@@ -270,6 +271,7 @@ check_action = CheckAction()
 
 
 rack_add_resource = RackAddResource()
+find_rack_resource = RackFindResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -1109,7 +1111,8 @@ urlpatterns += patterns('',
 
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
-
+                       url(r'^rack/find[/]?$', find_rack_resource.handle_request,
+                           name='find.rack'),
                        )
 
 urlpatterns += patterns('networkapi.test_form.views',
