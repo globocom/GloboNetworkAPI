@@ -1789,7 +1789,7 @@ class ServerPoolMember(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_server_pool_member')
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
     identifier = models.CharField(max_length=200)
-    ip = models.ForeignKey(Ip, db_column='ips_id_ip')
+    ip = models.ForeignKey(Ip, db_column='ips_id_ip', null=True)
     ipv6 = models.ForeignKey(Ipv6, db_column='ipsv6_id_ipv6', null=True)
     priority = models.IntegerField()
     weight = models.IntegerField(db_column='weight')
