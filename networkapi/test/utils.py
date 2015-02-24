@@ -17,7 +17,7 @@
 
 import logging
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi import environment_settings
+from networkapi import settings
 from networkapi.log import Log
 
 log = Log('testing')
@@ -28,10 +28,10 @@ def show_sql(sql=True):
 
     if sql:
         logging.getLogger('django.db.backends').level = logging.DEBUG
-        environment_settings.LOG_SHOW_SQL = True
+        settings.LOG_SHOW_SQL = True
     else:
         logging.getLogger('django.db.backends').level = logging.INFO
-        environment_settings.LOG_SHOW_SQL = False
+        settings.LOG_SHOW_SQL = False
 
 
 def xml2dict(x):
