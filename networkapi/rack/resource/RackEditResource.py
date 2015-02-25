@@ -26,21 +26,21 @@ from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.equipamento.models import Equipamento
+from networkapi.distributedlock import distributedlock, LOCK_RACK
 
+class RackEditResource(RestResource):
 
-class RackAddResource(RestResource):
-
-    log = Log('RackAddResource')
+    log = Log('RackEditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        """Treat requests POST to add Rack.
+        """Treat requests POST to edit Rack.
 
-        URL: rack/insert/
+        URL: rack/edit/
         """
 
         try:
 
-            self.log.info("Add Rack")
+            self.log.info("Edit Rack")
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -61,6 +61,7 @@ class RackAddResource(RestResource):
                 return self.response_error(3, u'There is no value to the rack tag  of XML request.')
 
             # Get XML data
+            id_rack = rack_map.get('id_rack')
             number = rack_map.get('number')
             mac_address_sw1 = rack_map.get('mac_address_sw1')
             mac_address_sw2 = rack_map.get('mac_address_sw2')
@@ -69,50 +70,36 @@ class RackAddResource(RestResource):
             id_sw2 = rack_map.get('id_sw2')
             id_ilo = rack_map.get('id_ilo')
 
-            rack = Rack()
+            racks = Rack()
 
-            # set variables
-            rack.numero = number
-            rack.mac_sw1 = mac_address_sw1
-            rack.mac_sw2 = mac_address_sw2
-            rack.mac_ilo = mac_address_ilo
-            if not id_sw1==None:
-                id_sw1 = int(id_sw1)
-                rack.id_sw1 = Equipamento(id=id_sw1)
-            else:
-                rack.id_sw1 = id_sw1
-            if not id_sw2==None:
-                id_sw2 = int(id_sw2)
-                rack.id_sw2 = Equipamento(id=id_sw2)
-            else:
-                rack.id_sw2 = id_sw2
-            if not id_ilo==None:
-                id_ilo = int(id_ilo)
-                rack.id_ilo = Equipamento(id=id_ilo)
-            else:
-                rack.id_ilo = id_ilo
+            with distributedlock(LOCK_RACK % id_rack):
+                racks.__dict__.update(id=id_rack, numero=number, mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
+                if not id_sw1==None:
+                    id_sw1 = int(id_sw1)
+                    racks.id_sw1 = Equipamento.get_by_pk(id_sw1)
 
-            # save 
-            rack.insert_new(user)
-            
-            rack_map = dict()
-            rack_map['rack'] = model_to_dict(
-                rack, exclude=["numero", "mac_sw1", "mac_sw2","mac_ilo", "id_sw1", "id_sw2", "id_ilo"])
+                if not id_sw2==None:
+                    id_sw2 = int(id_sw2)
+                    racks.id_sw2 = Equipamento.get_by_pk(id_sw2)
+
+                if not id_ilo==None:
+                    id_ilo = int(id_ilo)
+                    racks.id_ilo = Equipamento.get_by_pk(id_ilo)
+
+                # save 
+                racks.save(user)
+
+                rack_map = dict()
+                rack_map['rack'] = model_to_dict(racks)
 
             return self.response(dumps_networkapi(rack_map))
 
         except InvalidValueError, e:
             return self.response_error(369, e.param, e.value)
 
-        except RackNumberDuplicatedValueError:
-            return self.response_error(376, number)
-
         except UserNotAuthorizedError:
             return self.not_authorized()
 
         except RackError:
             return self.response_error(1)
-
-        except InvalidMacValueError:
-            return self.response_error(377)
 

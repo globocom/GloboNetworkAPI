@@ -50,7 +50,7 @@ LOCK_TYPE_NETWORK = "type_network:%s"
 LOCK_USER_GROUP = "user_group:%s:%s"
 LOCK_USER = "user:%s"
 LOCK_VLAN = "vlan:%s"
-
+LOCK_RACK = "rack:%s"
 
 # Adjusts settings
 from django.core.cache import cache
