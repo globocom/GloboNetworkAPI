@@ -1090,6 +1090,13 @@ urlpatterns = patterns('',
                        )
 
 
+# Healthcheck
+urlpatterns += patterns('',
+                       url(r'^healthcheck$',
+                           lambda _: HttpResponse("WORKING")),
+                       )
+
+
 urlpatterns += patterns('networkapi.test_form.views',
                         url('^test-vip[/]?$', 'test_form',
                             name='test_form_vip',)
