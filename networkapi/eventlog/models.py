@@ -81,7 +81,7 @@ class EventLog(BaseModel):
     @classmethod
     def uniqueUsers(cls):
         userlist = EventLog.objects.only(
-            'usuario').filter().group_by('id_user')
+            'usuario').filter().group_by('id_user', 'id_evento')
         return userlist
 
 
