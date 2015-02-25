@@ -17,6 +17,7 @@
 
 
 from django.conf.urls.defaults import *
+from django.http import HttpResponse
 from networkapi.equipamento.resource import EquipmentGetIpsByAmbiente
 
 from networkapi.vlan.resource.VlanResource import VlanResource
@@ -1087,6 +1088,13 @@ urlpatterns = patterns('',
                            name='eventlog.choices'),
                        url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
                            name='eventlog.version'),
+                       )
+
+
+# Healthcheck
+urlpatterns += patterns('',
+                       url(r'^healthcheck$',
+                           lambda _: HttpResponse("WORKING")),
                        )
 
 
