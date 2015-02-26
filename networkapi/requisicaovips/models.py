@@ -1361,6 +1361,22 @@ class RequisicaoVips(BaseModel):
         ports_vip_map = vip_map.get('portas_servicos')
         ports_vip = ports_vip_map.get('porta')
         reals = list()
+        
+        # Environment
+        finalidade = vip_map.get('finalidade')
+        cliente = vip_map.get('cliente')
+        ambiente = vip_map.get('ambiente')
+        evip = EnvironmentVip.get_by_values(
+            finalidade,
+            cliente,
+            ambiente
+        )
+        env_query = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip=evip) |
+            Q(vlan__networkipv6__ambient_vip=evip)
+        )
+        environment_obj = env_query and env_query.uniqueResult() or None
+        
         # Reals
         reals_map = vip_map.get('reals')
         if reals_map:
@@ -1385,6 +1401,7 @@ class RequisicaoVips(BaseModel):
             default_port = port_vip[1]
             # save ServerPool
             server_pool = ServerPool()
+            server_pool.environment = environment_obj
             server_pool.prepare_and_save(default_port, user)
 
             # save VipPortToPool
