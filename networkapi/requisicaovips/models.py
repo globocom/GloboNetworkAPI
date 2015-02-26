@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 from django.db import models
+from django.db.models import Q
 from django.db.models.fields import NullBooleanField
 from networkapi.log import Log
 from networkapi.healthcheckexpect.models import HealthcheckExpect
