@@ -124,3 +124,15 @@ class Rack(BaseModel):
             self.log.error(u'Falha ao inserir Rack.')
             raise RackError(e, u'Falha ao inserir Rack.')
 
+
+
+class Tipo_Config(BaseModel):
+
+    log = Log('Tipo_Config')
+
+    id = models.AutoField(primary_key=True, db_column='id_tipo_config')
+    tipo_equip = models.CharField(max_length=20)
+
+    class Meta(BaseModel.Meta):
+        db_table = u'tipo_config'
+        managed = True

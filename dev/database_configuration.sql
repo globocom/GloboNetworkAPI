@@ -1203,6 +1203,25 @@ DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
 
+-- -----------------------------------------------------
+-- Table `telecom`.`tipo_config`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`tipo_config` (
+  `id_tipo_config` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo_equip` VARCHAR(20) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci',
+  PRIMARY KEY (`id_tipo_config`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
+
+
+
+
+LOCK TABLES `tipo_config` WRITE;
+INSERT INTO `tipo_config` VALUES (1,'Switch1'),(2,'Switch2'),(3,'Console');
+UNLOCK TABLES;
+
 LOCK TABLES `grupos` WRITE;
 INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');
 UNLOCK TABLES;
@@ -1227,4 +1246,5 @@ UNLOCK TABLES;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
 
