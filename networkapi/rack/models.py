@@ -77,8 +77,25 @@ class Rack(BaseModel):
         db_table = u'racks'
         managed = True
 
-    def get_by_id(cls, number):
+    def get_by_pk(cls, idt):
         """"Get  Rack id.
+
+        @return: Rack.
+
+        @raise RackNumberNotFoundError: Rack is not registered.
+        @raise RackError: Failed to search for the Rack.
+        """
+        try:
+            return Rack.objects.filter(id=idt).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+        except Exception, e:
+            cls.log.error(u'Failure to search the Rack.')
+            raise RackError(e, u'Failure to search the Rack.') 
+
+
+    def get_by_id(cls, number):
+        """"Get  Rack number.
 
         @return: Rack.
 
