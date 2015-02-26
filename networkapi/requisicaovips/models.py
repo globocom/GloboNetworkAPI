@@ -1402,7 +1402,9 @@ class RequisicaoVips(BaseModel):
             default_port = port_vip[1]
             # save ServerPool
             server_pool = ServerPool()
-            server_pool.identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
+            ip_vip = self.ip or self.ipv6
+            vip_port = port_vip[0]
+            server_pool.identifier = 'VIP' + str(self.id) + '_' + str(ip_vip) + '_' + vip_port
             server_pool.environment = environment_obj
             server_pool.prepare_and_save(default_port, user)
 
