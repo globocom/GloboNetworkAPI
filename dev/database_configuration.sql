@@ -1181,6 +1181,9 @@ CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
   `id_equip1` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `config_sw1` TINYINT(4) NOT NULL DEFAULT '0',
+  `config_sw2` TINYINT(4) NOT NULL DEFAULT '0',
+  `config_ilo` TINYINT(4) NOT NULL DEFAULT '0',
   INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
   INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
   INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
@@ -1217,7 +1220,6 @@ COLLATE = utf8_unicode_ci;
 
 
 
-
 LOCK TABLES `tipo_config` WRITE;
 INSERT INTO `tipo_config` VALUES (1,'Switch1'),(2,'Switch2'),(3,'Console');
 UNLOCK TABLES;
@@ -1246,5 +1248,3 @@ UNLOCK TABLES;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
-
