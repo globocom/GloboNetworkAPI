@@ -82,7 +82,9 @@ class RackConfigResource(RestResource):
              #   self.log.error(
               #      u'Parameter id_vlan is invalid. Value: %s.', var3)
                # raise InvalidValueError(None, 'id_sw1', var3)
-            
+
+            rack.__dict__.update(id=rack_id, config_sw1=var1, config_sw2=var2, config_ilo=var3)
+            rack.save(user) 
             
             return self.response(dumps_networkapi({}))
 
