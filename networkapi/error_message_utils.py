@@ -305,6 +305,7 @@ error_messages = {
     377: u'Endereco MAC invalido',
     378: u'Rack nao pode ser incluido',
     379: u'Rack nao existe',
+    380: u'Arquivo de configuracao do equipamento %s criado',
 }
 
 

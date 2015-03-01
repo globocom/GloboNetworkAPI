@@ -85,8 +85,15 @@ class RackConfigResource(RestResource):
 
             rack.__dict__.update(id=rack_id, config_sw1=var1, config_sw2=var2, config_ilo=var3)
             rack.save(user) 
-            
-            return self.response(dumps_networkapi({}))
+
+            success_map = dict()
+            success_map['equip1'] = str(var1)
+            success_map['equip2'] = str(var2)
+            success_map['equip3'] = str(var3)
+            map = dict()
+            map['sucesso'] = success_map
+                        
+            return self.response(dumps_networkapi(map))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
