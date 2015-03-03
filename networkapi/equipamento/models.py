@@ -404,6 +404,7 @@ class Modelo(BaseModel):
 class TipoEquipamento(BaseModel):
     TIPO_EQUIPAMENTO_SERVIDOR_VIRTUAL = 10
     TIPO_EQUIPAMENTO_SWITCH = 1
+    TIPO_EQUIPAMENTO_ROUTER = 3
 
     id = models.AutoField(primary_key=True, db_column='id_tipo_equipamento')
     tipo_equipamento = models.CharField(max_length=100)
