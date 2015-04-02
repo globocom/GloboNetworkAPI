@@ -1168,6 +1168,26 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
+-- -----------------------------------------------------
+-- Table `telecom`.`option2config`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`option2config` (
+  `id_option2config` INT(11) NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(80) CHARACTER SET 'latin1' NULL DEFAULT NULL,
+  `value` VARCHAR(150) CHARACTER SET 'latin1' NULL DEFAULT NULL,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id_option2config`),
+  INDEX `fk_option2config_ambiente_idx` (`id_ambiente` ASC),
+  UNIQUE INDEX `option2config_unique` (`id_ambiente` ASC, `type` ASC, `value` ASC),
+  CONSTRAINT `fk_option2config_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
 
 LOCK TABLES `grupos` WRITE;
 INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');
