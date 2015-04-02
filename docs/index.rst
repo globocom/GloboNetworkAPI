@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    about
+   preprovisioned
    install
    definitions
    faq

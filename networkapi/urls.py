@@ -146,6 +146,7 @@ from networkapi.requisicaovips.resource.RequestAllVipsResource import RequestAll
 from networkapi.requisicaovips.resource.RequestAllVipsIPv4Resource import RequestAllVipsIPv4Resource
 from networkapi.requisicaovips.resource.RequestAllVipsIPv6Resource import RequestAllVipsIPv6Resource
 from networkapi.requisicaovips.resource.RequestHealthcheckResource import RequestHealthcheckResource
+from networkapi.requisicaovips.resource.RequestPersistenceResource import RequestPersistenceResource
 from networkapi.requisicaovips.resource.RequestMaxconResource import RequestMaxconResource
 from networkapi.requisicaovips.resource.RequestPriorityResource import RequestPriorityResource
 from networkapi.requisicaovips.resource.RequestVipsResource import RequestVipsResource
@@ -450,6 +451,7 @@ vip_list_all_resource = RequestAllVipsResource()
 vip_list_all_ipv4_resource = RequestAllVipsIPv4Resource()
 vip_list_all_ipv6_resource = RequestAllVipsIPv6Resource()
 vip_healthcheck_resource = RequestHealthcheckResource()
+vip_persistence_resource = RequestPersistenceResource()
 vip_maxcon = RequestMaxconResource()
 vip_priority = RequestPriorityResource()
 vip_request = RequestVipsResource()
@@ -890,6 +892,8 @@ urlpatterns = patterns('',
                            vip_maxcon.handle_request, name='vip.update.maxcon.by.pk'),
                        url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>healthcheck)/$',
                            vip_healthcheck_resource.handle_request, name='vip.update.healthcheck.by.pk'),
+                       url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>persistence)/$',
+                           vip_persistence_resource.handle_request, name='vip.update.persistence.by.pk'),
                        url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>priority)/$',
                            vip_priority.handle_request, name='vip.update.priority.by.pk'),
                        url(r'^vip/delete/(?P<id_vip>[^/]+)/$',
