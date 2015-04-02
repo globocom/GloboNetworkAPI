@@ -205,3 +205,24 @@ class AmbienteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ambiente
+
+
+class ServerPoolMemberStatusSerializer(serializers.ModelSerializer):
+
+    status = serializers.SerializerMethodField('check_pool_member_status')
+
+    class Meta:
+        depth = 1
+        model = ServerPoolMember
+        fields = (
+            'id',
+            'status',
+        )
+
+    def check_pool_member_status(self, obj):
+
+        command = POOL_REAL_CHECK % (obj.server_pool.id, obj.ip.id, obj.port_real)
+
+        code, _, _ = exec_script(command)
+
+        return code

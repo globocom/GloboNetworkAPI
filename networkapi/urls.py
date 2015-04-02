@@ -17,6 +17,8 @@
 
 
 from django.conf.urls.defaults import *
+
+
 from networkapi.equipamento.resource import EquipmentGetIpsByAmbiente
 
 from networkapi.vlan.resource.VlanResource import VlanResource
@@ -257,12 +259,25 @@ from networkapi.ambiente.resource.EnvironmentConfigurationRemoveResource import 
 from networkapi.requisicaovips.resource.OptionVipGetHealthcheckByEVipResource import OptionVipGetHealthcheckByEVipResource
 
 
+from networkapi.rack.resource.RackAddResource import RackAddResource
+from networkapi.rack.resource.RackFindResource import RackFindResource
+from networkapi.rack.resource.RackEditResource import RackEditResource
+from networkapi.rack.resource.RackDeleteResource import RackDeleteResource
+from networkapi.rack.resource.RackConfigResource import RackConfigResource
+
 check_action = CheckAction()
 
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
+
+
+rack_add_resource = RackAddResource()
+find_rack_resource = RackFindResource()
+edit_rack_resource = RackEditResource()
+delete_rack_resource = RackDeleteResource()
+gerar_arq_config_rack_resource = RackConfigResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -542,16 +557,6 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
-
-                       # Example:
-                       # (r'^networkapi/', include('networkapi.foo.urls')),
-
-                       # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
-                       # to INSTALLED_APPS to enable admin documentation:
-                       # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-                       # Uncomment the next line to enable the admin:
-                       # (r'^admin/(.*)', admin.site.root),
                        url(r'^vlan/$', vlan_resource.handle_request,
                            name='vlan.allocate'),
                        url(r'^vlan/all/$', vlan_list_resource.handle_request,
@@ -1102,7 +1107,22 @@ urlpatterns += patterns('',
                        )
 
 
+urlpatterns += patterns('',
+                       url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
+                           name='rack.add'),
+                       url(r'^rack/find[/]?$', find_rack_resource.handle_request,
+                           name='find.rack'),
+                       url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
+                           name='edit.rack'),
+                       url(r'^rack/(?P<id_rack>[^/]+)/$', delete_rack_resource.handle_request,
+                           name='delete.rack'),
+                       url(r'^rack/gerar-arq-config/(?P<id_rack>[^/]+)/$', gerar_arq_config_rack_resource.handle_request,
+                           name='config.rack'),
+                       )
+
+
 urlpatterns += patterns('networkapi.test_form.views',
+
                         url('^test-vip[/]?$', 'test_form',
                             name='test_form_vip',)
                         )

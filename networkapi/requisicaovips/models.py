@@ -2008,6 +2008,7 @@ class ServerPoolMember(BaseModel):
     limit = models.IntegerField()
     port_real = models.IntegerField(db_column='port')
     healthcheck = models.ForeignKey(Healthcheck, db_column='healthcheck_id_healthcheck', null=True)
+    status = models.BooleanField(db_column='status', default=False)
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'

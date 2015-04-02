@@ -1189,6 +1189,61 @@ AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
+-- -----------------------------------------------------
+-- Table `telecom`.`racks`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
+  `id_rack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `numero` INT(10) UNSIGNED NOT NULL,
+  `mac_sw1` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `mac_sw2` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `mac_ilo` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `id_equip1` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `config_sw1` TINYINT(4) NOT NULL DEFAULT '0',
+  `config_sw2` TINYINT(4) NOT NULL DEFAULT '0',
+  `config_ilo` TINYINT(4) NOT NULL DEFAULT '0',
+  INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
+  INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
+  INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
+  PRIMARY KEY (`id_rack`),
+  CONSTRAINT `fk_racks_id_equip1`
+    FOREIGN KEY (`id_equip1`)
+    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_racks_id_equip2`
+    FOREIGN KEY (`id_equip2`)
+    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_racks_id_equip3`
+    FOREIGN KEY (`id_equip3`)
+    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Table `telecom`.`tipo_config`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`tipo_config` (
+  `id_tipo_config` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo_equip` VARCHAR(20) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci',
+  PRIMARY KEY (`id_tipo_config`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
+
+
+
+LOCK TABLES `tipo_config` WRITE;
+INSERT INTO `tipo_config` VALUES (1,'Switch1'),(2,'Switch2'),(3,'Console');
+UNLOCK TABLES;
+
 LOCK TABLES `grupos` WRITE;
 INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');
 UNLOCK TABLES;

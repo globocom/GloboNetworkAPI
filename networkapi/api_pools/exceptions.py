@@ -49,6 +49,11 @@ class ScriptAddPoolException(APIException):
     default_detail = 'Failed to execute add script for pool.'
 
 
+class ScriptCheckStatusPoolMemberException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute status script for pool member.'
+
+
 class ScriptDeletePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute delete script for pool.'
@@ -87,3 +92,18 @@ class IpNotFoundByEnvironment(APIException):
 class InvalidRealPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Parametros invalidos do real.'
+
+
+class InvalidIdPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Pool.'
+
+
+class ScriptManagementPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute management pool members script for pool.'
+
+
+class InvalidStatusPoolMemberException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid status for Pool Member.'
