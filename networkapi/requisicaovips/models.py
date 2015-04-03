@@ -1211,6 +1211,11 @@ class RequisicaoVips(BaseModel):
                 self.log.error(
                     u'The healthcheck_type parameter is %s, then healthcheck and id_healthcheck_expect must be None.', healthcheck_type)
                 return vip_map, vip, 276
+            else:
+                vip_map['healthcheck'] = None
+                # Set id_healthcheck_expect to None
+                vip.healthcheck_expect = None
+
 
         # If healthcheck_type is 'HTTP' id_healthcheck_expect and healthcheck
         # must NOT be None
@@ -1247,10 +1252,6 @@ class RequisicaoVips(BaseModel):
                     self.log.error(
                         'The id_healthcheck_expect parameter does not exist.')
                     raise HealthcheckExpectNotFoundError(None)
-        else:
-            vip_map['healthcheck'] = None
-            # Set id_healthcheck_expect to None
-            vip.healthcheck_expect = None
 
         # Make changes in healthcheck
         # Set healthcheck_type
