@@ -1,0 +1,10 @@
+# Servers Pools
+
+- fields: {identifier: teste , default_port: 8080, default_limit: 0,pool_created: false,lb_method: OK, environment: 20}
+  model: requisicaovips.serverpool
+  pk: 1
+
+# Servers Pools Members
+- fields: {server_pool: 1, identifier: teste, priority: 0, weight: 0, limit: 0, port_real: 8080}
+  model: requisicaovips.serverpoolmember
+  pk: 1

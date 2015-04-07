@@ -1,0 +1,46 @@
+# -*- coding:utf-8 -*-
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import with_statement
+from django.db import models
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from networkapi.ambiente.models import Ambiente
+from networkapi.log import Log
+from networkapi.models.BaseModel import BaseModel
+
+
+class OpcaoPool(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id_opcaopool')
+    description = models.CharField(blank=False, max_length=200)
+
+    log = Log('OpcaoPool')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'opcoespool'
+        managed = True
+
+
+class OpcaoPoolAmbiente(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id_opcaopool_ambiente_xref')
+    opcao_pool = models.ForeignKey(OpcaoPool, db_column='id_opcaopool')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+
+    log = Log('OpcaoPoolAmbiente')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'opcoespool_ambiente_xref'
+        managed = True

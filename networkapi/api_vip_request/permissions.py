@@ -14,7 +14,7 @@ class Read(BasePermission):
     def has_permission(self, request, view):
         return has_perm(
             request.user,
-            AdminPermission.ENVIRONMENT_MANAGEMENT,
+            AdminPermission.VIPS_REQUEST,
             AdminPermission.READ_OPERATION
         )
 
@@ -24,6 +24,6 @@ class Write(BasePermission):
     def has_permission(self, request, view):
         return has_perm(
             request.user,
-            AdminPermission.ENVIRONMENT_MANAGEMENT,
+            AdminPermission.VIPS_REQUEST,
             AdminPermission.WRITE_OPERATION
         )

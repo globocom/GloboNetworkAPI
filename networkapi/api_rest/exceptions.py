@@ -15,3 +15,8 @@ class ValidationException(APIException):
 class ObjectDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Object Does Not Exist.'
+
+
+class ScriptException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute script.'

@@ -210,10 +210,25 @@ class InvalidPriorityValueError(RequisicaoVipsError):
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+class RequestVipWithoutServerPoolError(RequisicaoVipsError):
+
+    """Return exception when no one exisitir server pool to request VIP."""
+
+    def __init__(self, cause, message=None):
+        RequisicaoVipsError.__init__(self, cause, message)
+
 
 class InvalidWeightValueError(RequisicaoVipsError):
 
     """Returns exception when the value of the weight variable is invalid."""
+
+    def __init__(self, cause, message=None):
+        RequisicaoVipsError.__init__(self, cause, message)
+
+
+class RequestVipServerPoolConstraintError(RequisicaoVipsError):
+
+    """Return exception when delete server pool related with other request VIP."""
 
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
@@ -271,7 +286,9 @@ class RequisicaoVips(BaseModel):
     )
 
     applied_l7_datetime = models.DateTimeField(
-        db_column='l7_filter_applied_datetime'
+        db_column='l7_filter_applied_datetime',
+        null=True,
+        blank=True
     )
 
     healthcheck_expect = models.ForeignKey(
@@ -524,6 +541,90 @@ class RequisicaoVips(BaseModel):
             del map['reals_weights']
 
         return map
+
+    def set_new_variables(self, data):
+        log = Log('insert_vip_request_set_new_variables')
+
+        self.variaveis = ''
+
+        finalidade = data.get('finalidade')
+        if not is_valid_string_minsize(finalidade, 3) or not is_valid_string_maxsize(finalidade, 50):
+            log.error(u'Finality value is invalid: %s.', finalidade)
+            raise InvalidValueError(None, 'finalidade', finalidade)
+
+        cliente = data.get('cliente')
+        if not is_valid_string_minsize(cliente, 3) or not is_valid_string_maxsize(cliente, 50):
+            log.error(u'Client value is invalid: %s.', cliente)
+            raise InvalidValueError(None, 'cliente', cliente)
+
+        ambiente = data.get('ambiente')
+        if not is_valid_string_minsize(ambiente, 3) or not is_valid_string_maxsize(ambiente, 50):
+            log.error(u'Environment value is invalid: %s.', ambiente)
+            raise InvalidValueError(None, 'ambiente', ambiente)
+
+        try:
+            evip = EnvironmentVip.get_by_values(finalidade, cliente, ambiente)
+            self.add_variable('finalidade', finalidade)
+            self.add_variable('cliente', cliente)
+            self.add_variable('ambiente', ambiente)
+        except EnvironmentVipNotFoundError:
+            raise EnvironmentVipNotFoundError(
+                None, u'Não existe ambiente vip para valores: finalidade %s, cliente %s e ambiente_p44 %s.' % (finalidade, cliente, ambiente))
+
+        timeout = data.get('timeout')
+        grupo_cache = data.get('cache')
+        persistencia = data.get('persistencia')
+
+        grupos_cache = [(gc.nome_opcao_txt)
+                        for gc in OptionVip.get_all_grupo_cache(evip.id)]
+        timeouts = [(t.nome_opcao_txt)
+                    for t in OptionVip.get_all_timeout(evip.id)]
+        persistencias = [(p.nome_opcao_txt)
+                         for p in OptionVip.get_all_persistencia(evip.id)]
+
+        if timeout not in timeouts:
+            log.error(
+                u'The timeout not in OptionVip, invalid value: %s.', timeout)
+            raise InvalidTimeoutValueError(
+                None, 'timeout com valor inválido: %s.' % timeout)
+        self.add_variable('timeout', timeout)
+
+        if grupo_cache not in grupos_cache:
+            log.error(
+                u'The grupo_cache not in OptionVip, invalid value: %s.', grupo_cache)
+            raise InvalidCacheValueError(
+                None, 'grupo_cache com valor inválido: %s.' % grupo_cache)
+        self.add_variable('cache', grupo_cache)
+
+        if persistencia not in persistencias:
+            log.error(
+                u'The persistencia not in OptionVip, invalid value: %s.', persistencia)
+            raise InvalidPersistenciaValueError(
+                None, 'persistencia com valor inválido %s.' % persistencia)
+        self.add_variable('persistencia', persistencia)
+
+        # Host
+        host_name = data.get('host')
+        if host_name is not None:
+            self.add_variable('host', host_name)
+
+        # dsr
+        dsr = data.get('dsr')
+        if dsr is not None:
+            self.add_variable('dsr', dsr)
+
+        # area negocio
+        areanegocio = data.get('areanegocio')
+        if areanegocio is not None:
+            self.add_variable('areanegocio', areanegocio)
+
+        # nome servico
+        nomeservico = data.get('nome_servico')
+        if nomeservico is not None:
+            self.add_variable('nome_servico', nomeservico)
+
+        if self.variaveis != '':
+            self.variaveis = self.variaveis[0:len(self.variaveis) - 1]
 
     def set_variables(self, variables_map):
         '''Constroe e atribui o valor do campo "variaveis" a partir dos dados no mapa.
@@ -1055,13 +1156,13 @@ class RequisicaoVips(BaseModel):
 
                 # Valid values ​​of port
                 for port in port_map:
-                    port_arr = port.split(':')
+                    port_arr = port.get('port').split(':')
                     if len(port_arr) < 2:
                         port = port_arr[0] + ':' + port_arr[0]
-                    if not is_valid_regex(port, "[0-9]+:[0-9]+"):
+                    if not is_valid_regex(port.get('port'), "[0-9]+:[0-9]+"):
                         self.log.error(
-                            u'The port parameter is not a valid value: %s.', port)
-                        raise InvalidValueError(None, 'port', port)
+                            u'The port parameter is not a valid value: %s.', port.get('port'))
+                        raise InvalidValueError(None, 'port', port.get('port'))
 
                     new_port_map.append(port)
 
@@ -1261,17 +1362,23 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def heathcheck_exist(cls, healthcheck_type, id_evironment_vip):
-        healthcheck_is_valid = False
-        healthcheck_type = healthcheck_type.upper()
 
-        healthcheck_list = OptionVip.get_all_healthcheck(id_evironment_vip)
+        health_type_upper = healthcheck_type.upper()
 
-        for option_vip_healthcheck in healthcheck_list:
-            if str(option_vip_healthcheck.nome_opcao_txt).upper() == healthcheck_type:
-                healthcheck_is_valid = True
-                break
+        env_query = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip__id=id_evironment_vip) |
+            Q(vlan__networkipv6__ambient_vip__id=id_evironment_vip)
+        )
 
-        return healthcheck_is_valid
+        environment = env_query and env_query.uniqueResult() or None
+
+        options_pool_environment = environment.opcaopoolambiente_set.all()
+
+        for option_pool_env in options_pool_environment:
+            if option_pool_env.opcao_pool.description.upper() == health_type_upper:
+                return True
+
+        return False
 
     @classmethod
     def valid_real_server(cls, ip, equip, evip, valid=True):
@@ -1359,6 +1466,39 @@ class RequisicaoVips(BaseModel):
         return ip, equip, evip
 
     def save_vips_and_ports(self, vip_map, user):
+
+        vip_port_list = list()
+        pool_member_pks_removed = list()
+
+        finalidade = vip_map.get('finalidade')
+        cliente = vip_map.get('cliente')
+        ambiente = vip_map.get('ambiente')
+
+        evip = EnvironmentVip.get_by_values(
+            finalidade,
+            cliente,
+            ambiente
+        )
+
+        env_query = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip=evip) |
+            Q(vlan__networkipv6__ambient_vip=evip)
+        )
+
+        environment_obj = env_query and env_query.uniqueResult() or None
+
+        lb_method = vip_map.get('metodo_bal', '')
+
+        healthcheck_type = vip_map.get('healthcheck_type', '')
+
+        healthcheck_type_upper = healthcheck_type.upper()
+
+        healthcheck_query = Healthcheck.objects.filter(
+            healthcheck_type=healthcheck_type_upper
+        )
+
+        healthcheck_obj = healthcheck_query.uniqueResult()
+
         # Ports Vip
         ports_vip_map = vip_map.get('portas_servicos')
         ports_vip = ports_vip_map.get('porta')
@@ -1395,33 +1535,74 @@ class RequisicaoVips(BaseModel):
             if reals_weights != None:
                 weights = reals_weights.get('reals_weight')
 
-        vip_port_list = list()
+        server_pool_pks = [port['server_pool_id'] for port in ports_vip if port.get('server_pool_id')]
+
+        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
+
+        for serv_pool_obj in server_pools_to_remove:
+
+            vip_port_by_server_pool = VipPortToPool.objects.filter(server_pool=serv_pool_obj)
+            related_vip_serv_pool = vip_port_by_server_pool.exclude(requisicao_vip=self)
+
+            if related_vip_serv_pool:
+                raise RequestVipServerPoolConstraintError(None)
+
+            for vip_port_obj in vip_port_by_server_pool:
+                vip_port_obj.delete(user)
+
+            related_members_pool = serv_pool_obj.serverpoolmember_set.all()
+
+            for member in related_members_pool:
+                pool_member_pks_removed.append(member.id)
+                member.delete(user)
+
+            serv_pool_obj.delete(user)
+
         # save ServerPool and VipPortToPool
         for port_vip in ports_vip:
 
-            port_vip = port_vip.split(':')
-            default_port = port_vip[1]
-            # save ServerPool
-            server_pool = ServerPool()
+            port_to_vip = port_vip.get('port').split(':')
+            server_pool_id = port_vip.get('server_pool_id')
+            default_port = port_to_vip[1]
+            vip_port = port_to_vip[0]
             ip_vip = self.ip or self.ipv6
-            vip_port = port_vip[0]
-            server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
-            server_pool.environment = environment_obj
-            server_pool.prepare_and_save(default_port, user)
 
-            # save VipPortToPool
-            vip_port_to_pool = VipPortToPool()
-            vip_port_to_pool.prepare_and_save(
-                port_vip[0], server_pool, self, user)
+            if server_pool_id:
+                server_pool = ServerPool.objects.get(id=server_pool_id)
+                vip_port_to_pool = VipPortToPool.objects.filter(
+                    server_pool=server_pool,
+                    requisicao_vip=self
+                ).uniqueResult()
 
-            vip_port_list.append(
-                {'port_vip': port_vip[0], 'server_pool': server_pool})
+            else:
+                server_pool = ServerPool()
+                server_pool.identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
+                server_pool.environment = environment_obj
+                server_pool.pool_created = False
+
+                vip_port_to_pool = VipPortToPool()
+                vip_port_to_pool.requisicao_vip = self
+
+            server_pool.default_port = default_port
+            server_pool.healthcheck = healthcheck_obj
+            server_pool.lb_method = lb_method
+            vip_port_to_pool.port_vip = vip_port
+
+            server_pool.save(user)
+
+            vip_port_to_pool.server_pool = server_pool
+            vip_port_to_pool.save(user)
+
+            vip_port_list.append({'port_vip': vip_port, 'server_pool': server_pool})
 
         # save ServerPoolMember
         for i in range(0, len(reals)):
 
+            weight = ''
             port_real = reals[i].get('port_real')
             port_vip = reals[i].get('port_vip')
+            ip_id = reals[i].get('id_ip')
+            server_pool_member_id = reals[i].get('server_pool_member_id')
 
             # Valid port real
             if not is_valid_int_greater_zero_param(port_real):
@@ -1429,69 +1610,91 @@ class RequisicaoVips(BaseModel):
                     u'The reals.port_real parameter is not a valid value: %s.', port_real)
                 raise InvalidValueError(None, 'reals.port_real', port_real)
 
-            weight = ''
-
-            for v_port in vip_port_list:
-                if v_port['port_vip'] == port_vip:
-                    server_pool = v_port['server_pool']
-
-            ip_id = reals[i].get('id_ip')
             # Valid ip_id
             if not is_valid_int_greater_zero_param(ip_id):
                 self.log.error(
                     u'The reals.ip_id parameter is not a valid value: %s.', ip_id)
                 raise InvalidValueError(None, 'reals.ip_id', ip_id)
 
+            for v_port in vip_port_list:
+                if v_port['port_vip'] == port_vip:
+                    server_pool = v_port['server_pool']
+
+            ipv4 = None
+            ipv6 = None
             # Check ip type
-            if is_valid_ipv4(reals[i].get('real_ip')) == True:
-                ip_type = IP_VERSION.IPv4[1]
-                ip = Ip().get_by_pk(ip_id)
+            if is_valid_ipv4(reals[i].get('real_ip')):
+                ipv4 = Ip().get_by_pk(ip_id)
             else:
-                ip_type = IP_VERSION.IPv6[1]
-                ip = Ipv6().get_by_pk(ip_id)
+                ipv6 = Ipv6().get_by_pk(ip_id)
 
             priority = prioritys[i]
 
-            if weights != None:
+            if weights is not None:
                 if i < len(weights):
                     weight = weights[i]
 
-            server_pool_member = ServerPoolMember()
+            if server_pool_member_id and server_pool_member_id not in pool_member_pks_removed:
+                server_pool_member = ServerPoolMember.objects.get(
+                    id=server_pool_member_id
+                )
 
-            # save ServerPoolMember
-            server_pool_member.prepare_and_save(
-                server_pool, ip, ip_type, priority, weight, port_real, user)
+            else:
+                server_pool_member = ServerPoolMember()
+                server_pool_member.server_pool = server_pool
+                server_pool_member.ip = ipv4
+                server_pool_member.ipv6 = ipv6
 
-    def get_vips_and_reals(self, id_vip):
-        vip_port = VipPortToPool.get_by_vip_id(id_vip)
+            server_pool_member.port_real = port_real
+            server_pool_member.priority = priority
+            server_pool_member.weight = weight or 0
+            server_pool_member.limit = 0
+
+            server_pool_member.save(user)
+
+    def get_vips_and_reals(self, id_vip, omit_port_real=False):
+
+        vip_ports = VipPortToPool.get_by_vip_id(id_vip)
 
         vip_port_list = list()
         reals_list = list()
         reals_priority = list()
         reals_weight = list()
 
-        for v_port in vip_port:
+        for v_port in vip_ports:
+            full_port = str(v_port.port_vip)
 
-            vip_port_list.append(
-                str(v_port.port_vip) + ':' + str(v_port.server_pool.default_port))
+            if not omit_port_real:
+                full_port += ':' + str(v_port.server_pool.default_port)
+
+            if full_port not in vip_port_list:
+                vip_port_list.append({'port': full_port, 'vip_port_id': v_port.id })
 
             members = v_port.server_pool.serverpoolmember_set.all()
 
             for member in members:
                 try:
-                    ip_equip = member.ip.ipequipamento_set.get()
+                    ip_equip = member.ip.ipequipamento_set.all().uniqueResult()
                     equip_name = ip_equip.equipamento.nome
                     ip_string = mount_ipv4_string(member.ip)
                     ip_id = member.ip.id
                 except:
-                    ip_equip = member.ipv6.ipv6equipament_set.get()
+                    ip_equip = member.ipv6.ipv6equipament_set.all().uniqueResult()
                     equip_name = ip_equip.equipamento.nome
                     ip_string = mount_ipv6_string(member.ipv6)
                     ip_id = member.ipv6.id
 
-                vip_port = member.server_pool.vipporttopool_set.get()
-                reals_list.append({'real_ip': ip_string, 'real_name': equip_name,
-                                   'port_vip': vip_port.port_vip, 'port_real': member.port_real, 'id_ip': ip_id})
+                real_raw = {
+                    'real_ip': ip_string,
+                    'real_name': equip_name,
+                    'port_vip': v_port.port_vip,
+                    'port_real': member.port_real,
+                    'id_ip': ip_id
+                }
+
+                if real_raw not in reals_list:
+                    reals_list.append(real_raw)
+
                 reals_priority.append(member.priority)
                 reals_weight.append(member.weight)
 
@@ -1779,6 +1982,10 @@ class ServerPool(BaseModel):
         db_column='default_port'
     )
 
+    default_limit = models.IntegerField(
+        db_column='default_limit'
+    )
+
     pool_created = models.NullBooleanField(
         db_column='pool_criado',
         null=True
@@ -1817,8 +2024,8 @@ class ServerPoolMember(BaseModel):
     weight = models.IntegerField(db_column='weight')
     limit = models.IntegerField()
     port_real = models.IntegerField(db_column='port')
-    healthcheck = models.ForeignKey(
-        Healthcheck, db_column='healthcheck_id_healthcheck')
+    healthcheck = models.ForeignKey(Healthcheck, db_column='healthcheck_id_healthcheck', null=True)
+    status = models.BooleanField(db_column='status', default=False)
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
@@ -1854,6 +2061,9 @@ class ServerPoolMember(BaseModel):
         server_pools = ServerPool.objects.filter(
             vipporttopool__requisicao_vip__id=vip_id)
 
+        if server_pools.count() == 0:
+            raise RequestVipWithoutServerPoolError(None, "Vip's request has no registered server pool")
+
         for server_pool in server_pools:
             server_pool_member = ServerPoolMember()
             server_pool_member.prepare_and_save(
@@ -1863,6 +2073,10 @@ class ServerPoolMember(BaseModel):
         """ Save with commit = True """
         vipporttopool = VipPortToPool.objects.filter(
             requisicao_vip__id=vip_id, port_vip=port_vip)
+
+        if vipporttopool.count() == 0:
+            raise RequestVipWithoutServerPoolError(None, "Vip's request has no registered server pool")
+
         if vipporttopool:
             vipporttopool = vipporttopool[0]
             ServerPoolMember().prepare_and_save(
@@ -1870,10 +2084,13 @@ class ServerPoolMember(BaseModel):
 
 
 class VipPortToPool(BaseModel):
+
     id = models.AutoField(primary_key=True, db_column='id_vip_port_to_pool')
-    requisicao_vip = models.ForeignKey(
-        RequisicaoVips, db_column='id_requisicao_vips')
+
+    requisicao_vip = models.ForeignKey(RequisicaoVips, db_column='id_requisicao_vips')
+
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
+
     port_vip = models.IntegerField(db_column='vip_port')
 
     class Meta(BaseModel.Meta):

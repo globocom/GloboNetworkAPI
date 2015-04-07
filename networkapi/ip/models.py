@@ -226,6 +226,8 @@ class IpEquipCantDissociateFromVip(IpError):
         IpError.__init__(self, cause, message)
 
 
+
+
 class NetworkIPv4(BaseModel):
 
     id = models.AutoField(primary_key=True)
@@ -328,17 +330,23 @@ class NetworkIPv4(BaseModel):
         network_found = None
         stop = False
         internal_network_type = None
+        type_ipv4 = IP_VERSION.IPv4[0]
 
         try:
 
             # Find all configs type v4 in environment
-            configs = ConfigEnvironment.get_by_environment(
-                self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv4[0])
+            configs = ConfigEnvironment.get_by_environment(self.vlan.ambiente.id).filter(ip_config__type=type_ipv4)
 
             # If not found, an exception is thrown
             if len(configs) == 0:
-                raise ConfigEnvironmentInvalidError(
-                    None, u'Invalid Configuration')
+                raise ConfigEnvironmentInvalidError(None, u'Invalid Configuration')
+
+            # Find all networks ralated to environment
+            nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
+
+            # Cast to API class
+            networksv4 = set([(IPv4Network(
+                        '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
 
             # For each configuration founded in environment
             for config in configs:
@@ -348,15 +356,7 @@ class NetworkIPv4(BaseModel):
                     break
 
                 # Need to be IPv4
-                if config.ip_config.type == IP_VERSION.IPv4[0]:
-
-                    # Find all networks ralated to environment
-                    nets = NetworkIPv4.objects.filter(
-                        vlan__ambiente__id=self.vlan.ambiente.id)
-
-                    # Cast to API class
-                    networksv4 = set([(IPv4Network(
-                        '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
+                if config.ip_config.type == type_ipv4:
 
                     net4 = IPv4Network(config.ip_config.subnet)
 
@@ -368,6 +368,12 @@ class NetworkIPv4(BaseModel):
                     self.log.info(u"Prefix that will be used: %s" % new_prefix)
                     # For each subnet generated with configs
                     for subnet in net4.iter_subnets(new_prefix=new_prefix):
+
+                        in_range = network_in_range(self.vlan, subnet, type_ipv4)
+
+                        if in_range:
+                            self.log.debug(u'The network %s is in range' % subnet)
+                            continue
 
                         # Checks if the network generated is UNUSED
                         if subnet not in networksv4:
@@ -392,8 +398,7 @@ class NetworkIPv4(BaseModel):
                 # If not be IPv4
                 else:
                     # Throw an exception
-                    raise ConfigEnvironmentInvalidError(
-                        None, u'Invalid Configuration')
+                    raise ConfigEnvironmentInvalidError(None, u'Invalid Configuration')
 
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
@@ -401,8 +406,7 @@ class NetworkIPv4(BaseModel):
         # Checks if found any available network
         if network_found == None:
             # If not found, an exception is thrown
-            raise NetworkIPv4AddressNotAvailableError(
-                None, u'Unavailable address to create a NetworkIPv4.')
+            raise NetworkIPv4AddressNotAvailableError(u'Network Unavailable', u'Unavailable address to create a NetworkIPv4.')
 
         # Set octs by network generated
         self.oct1, self.oct2, self.oct3, self.oct4 = str(
@@ -490,6 +494,12 @@ class Ip(BaseModel):
         db_table = u'ips'
         managed = True
         unique_together = ('oct1', 'oct2', 'oct3', 'oct4', 'networkipv4')
+
+    def _get_formated_ip(self):
+        "Returns formated ip."
+        return '%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4)
+
+    ip_formated = property(_get_formated_ip)
 
     @classmethod
     def list_by_network(self, id_network):
@@ -1437,12 +1447,13 @@ class NetworkIPv6(BaseModel):
         network_found = None
         stop = False
         internal_network_type = None
+        type_ipv6 = IP_VERSION.IPv6[0]
 
         try:
 
             # Find all configs type v6 in environment
             configs = ConfigEnvironment.get_by_environment(
-                self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv6[0])
+                self.vlan.ambiente.id).filter(ip_config__type=type_ipv6)
 
             # If not found, an exception is thrown
             if len(configs) == 0:
@@ -1457,7 +1468,7 @@ class NetworkIPv6(BaseModel):
                     break
 
                 # Need to be IPv6
-                if config.ip_config.type == IP_VERSION.IPv6[0]:
+                if config.ip_config.type == type_ipv6:
 
                     # Find all networks ralated to environment
                     nets = NetworkIPv6.objects.filter(
@@ -1478,6 +1489,12 @@ class NetworkIPv6(BaseModel):
 
                     # For each subnet generated with configs
                     for subnet in net6.iter_subnets(new_prefix=new_prefix):
+
+                        in_range = network_in_range(self.vlan, subnet, type_ipv6)
+
+                        if in_range:
+                            self.log.debug(u'The network %s is in range' % subnet)
+                            continue
 
                         # Checks if the network generated is UNUSED
                         if subnet not in networksv6:
@@ -1511,8 +1528,7 @@ class NetworkIPv6(BaseModel):
         # Checks if found any available network
         if network_found == None:
             # If not found, an exception is thrown
-            raise NetworkIPv6AddressNotAvailableError(
-                None, u'Unavailable address to create a NetworkIPv6.')
+            raise NetworkIPv6AddressNotAvailableError(u'Network Unavailable', u'Unavailable address to create a NetworkIPv6.')
 
         # Set block by network generated
         self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8 = str(
@@ -1615,6 +1631,13 @@ class Ipv6(BaseModel):
         managed = True
         unique_together = ('block1', 'block2', 'block3', 'block4',
                            'block5', 'block6', 'block7', 'block8', 'networkipv6')
+
+    def _get_formated_ip(self):
+        "Returns formated ip."
+        return '%s.%s.%s.%s.%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.oct5, self.oct6, self.oct7, self.oct8)
+
+    ip_formated = property(_get_formated_ip)
+
 
     @classmethod
     def get_by_pk(self, id):
@@ -2171,7 +2194,7 @@ class Ipv6(BaseModel):
             if ips.count() == 0:
                 raise IpNotFoundError(None)
 
-            if valid:
+            if valid == True:
                 return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5,
                                     block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
             else:
@@ -2469,3 +2492,79 @@ class Ipv6Equipament(BaseModel):
         # If ip has no other equipment, than he will be removed to
         if self.ip.ipv6equipament_set.count() == 0:
             self.ip.delete(authenticated_user)
+
+
+def network_in_range(vlan, network, version):
+    # Get all vlans environments from equipments of the current
+    # environment
+
+    equips = list()
+    envs = list()
+    envs_aux = list()
+    ids_exclude = list()
+    ids_all = list()
+
+    ambiente = vlan.ambiente
+
+    for env in ambiente.equipamentoambiente_set.all():
+        equips.append(env.equipamento)
+
+    for equip in equips:
+        for env in equip.equipamentoambiente_set.all():
+            if not env.ambiente_id in envs_aux:
+                envs.append(env.ambiente)
+                envs_aux.append(env.ambiente_id)
+
+    for env in envs:
+        for vlan_obj in env.vlan_set.all():
+
+            ids_all.append(vlan_obj.id)
+
+            is_subnet = verify_subnet(vlan_obj, network, version)
+
+            if not is_subnet:
+                ids_exclude.append(vlan_obj.id)
+            else:
+                if not(ambiente.filter_id is None or vlan_obj.ambiente.filter_id is None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id)):
+                    ids_exclude.append(vlan_obj.id)
+
+    # Ignore actual vlan
+    if envs and vlan.id not in ids_exclude:
+        ids_exclude.append(vlan.id)
+
+    # Check if have duplicated vlan's with same net range in an
+    # environment with shared equipment
+    if len(ids_all) != len(ids_exclude):
+        return False
+
+    return True
+
+
+def verify_subnet(vlan, network, version):
+
+    from networkapi.infrastructure.ipaddr import IPNetwork
+
+    if version == IP_VERSION.IPv4[0]:
+        vlan_net = vlan.networkipv4_set.all()
+    else:
+        vlan_net = vlan.networkipv6_set.all()
+
+    # One vlan may have many networks, iterate over it
+    for net in vlan_net:
+
+        if version == IP_VERSION.IPv4[0]:
+            ip = "%s.%s.%s.%s/%s" % (net.oct1,
+                                     net.oct2, net.oct3, net.oct4, net.block)
+        else:
+            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+                                                 net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
+
+        ip_net = IPNetwork(ip)
+        # If some network, inside this vlan, is subnet of network search param
+        if ip_net in network or network in ip_net:
+            # This vlan must be in vlans founded, don't need to continue
+            # checking
+            return True
+
+    # If don't found any subnet return False
+    return False

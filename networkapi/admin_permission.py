@@ -45,6 +45,9 @@ class AdminPermission(object):
     AUDIT_LOG = 'audit_logs'
     ACL_APPLY = 'aplicar_acl'
     POOL_MANAGEMENT = 'cadastro_de_pool'
+    POOL_CREATE_SCRIPT = 'script_criacao_pool'
+    POOL_REMOVE_SCRIPT = 'script_remover_pool'
+    POOL_ALTER_SCRIPT = 'script_alterar_pool'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'

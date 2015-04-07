@@ -297,6 +297,15 @@ error_messages = {
     369: u'Nao foi possivel remover a vlan pois as seguintes redes nao puderam ser removidas: %s.',
     370: u'Nao foi possivel excluir o vip %s. Remova-o dos equipamentos primeiro.',
     371: u'Bloco não pode ser adicionado porque já existe uma regra para ser aplicada e o valor do parametro override é zero.',
+    372: u'Server Pool Does Not Exists',
+    373: u'Equipamento(s) do Server Pool: %s não pertence ao mesmo ambiente do Ambiente Vip: %s.',
+    374: u'Está requisição vip não possui nenhum server pool cadastrado.',
+    375: u'Pool can not be excluded because it is associated with a VIP',
+    376: u'Numero de Rack %s ja existe.',
+    377: u'Endereco MAC invalido',
+    378: u'Rack nao pode ser incluido',
+    379: u'Rack nao existe',
+    380: u'Arquivo de configuracao do equipamento %s criado',
 }
 
 
@@ -320,7 +329,7 @@ def error_dumps(code, *args):
 
 
 if __name__ == '__main__':
-    # print error_dumps(u'0001', u'Falha ao acessar a fonte de dados')
+    print error_dumps(u'0001', u'Falha ao acessar a fonte de dados')
     print error_dumps(1)
     print error_dumps(3, 'Causa')
     print error_messages[99]

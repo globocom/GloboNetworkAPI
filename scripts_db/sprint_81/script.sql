@@ -1,0 +1,1 @@
+ALTER TABLE `server_pool_member` ADD COLUMN `status` TINYINT NOT NULL DEFAULT 0 COMMENT '1-enable/ 0-disable'  AFTER `healthcheck_id_healthcheck` ;

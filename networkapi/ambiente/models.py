@@ -353,19 +353,46 @@ class AmbienteLogico(BaseModel):
 
 
 class EnvironmentVip(BaseModel):
-    id = models.AutoField(primary_key=True)
+
+    id = models.AutoField(
+        primary_key=True
+    )
+
     finalidade_txt = models.CharField(
-        max_length=50, blank=False, db_column='finalidade_txt')
+        max_length=50,
+        blank=False,
+        db_column='finalidade_txt'
+    )
+
     cliente_txt = models.CharField(
-        max_length=50, blank=False, db_column='cliente_txt')
+        max_length=50,
+        blank=False,
+        db_column='cliente_txt'
+    )
+
     ambiente_p44_txt = models.CharField(
-        max_length=50, blank=False, db_column='ambiente_p44_txt')
+        max_length=50,
+        blank=False,
+        db_column='ambiente_p44_txt'
+    )
+
+    description = models.CharField(
+        max_length=50,
+        blank=False,
+        db_column='description'
+    )
 
     log = Log('EnvironmentVip')
 
     class Meta(BaseModel.Meta):
         db_table = u'ambientevip'
         managed = True
+
+    def _get_name(self):
+        "Returns complete name for environment."
+        return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
+
+    name = property(_get_name)
 
     @classmethod
     def get_by_pk(cls, id):
@@ -496,6 +523,7 @@ class EnvironmentVip(BaseModel):
         finalidade_txt = environmentvip_map.get('finalidade_txt')
         cliente_txt = environmentvip_map.get('cliente_txt')
         ambiente_p44_txt = environmentvip_map.get('ambiente_p44_txt')
+        description = environmentvip_map.get('description')
 
         # finalidade_txt can NOT be greater than 50 or lesser than 3
         if not is_valid_string_maxsize(finalidade_txt, 50, True) or not is_valid_string_minsize(finalidade_txt, 3, True) or not is_valid_text(finalidade_txt):
@@ -515,10 +543,16 @@ class EnvironmentVip(BaseModel):
                 u'Parameter ambiente_p44_txt is invalid. Value: %s.', ambiente_p44_txt)
             raise InvalidValueError(None, 'ambiente_p44_txt', ambiente_p44_txt)
 
+        if not is_valid_string_maxsize(description, 50, True) or not is_valid_string_minsize(description, 3, True) or not is_valid_text(description):
+            self.log.error(
+                u'Parameter description is invalid. Value: %s.', description)
+            raise InvalidValueError(None, 'description', description)
+
         # set variables
         self.finalidade_txt = finalidade_txt
         self.cliente_txt = cliente_txt
         self.ambiente_p44_txt = ambiente_p44_txt
+        self.description = description
 
     def delete(self, authenticated_user):
         '''Override Django's method to remove environment vip
@@ -904,7 +938,8 @@ class IPConfig(BaseModel):
 
             config_environment = ConfigEnvironment.objects.filter(
                 environment=environment_id).values('ip_config').query
-            return IPConfig.objects.filter(id__in=config_environment)
+
+            return IPConfig.objects.filter(id=config_environment)
 
             return
         except ObjectDoesNotExist, e:

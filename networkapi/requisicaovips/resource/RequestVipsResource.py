@@ -23,7 +23,8 @@ from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError
     InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
     InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, \
     InvalidMaxConValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsAlreadyCreatedError, RequisicaoVipsNotFoundError, \
-    InvalidBalAtivoValueError, InvalidTransbordoValueError
+    InvalidBalAtivoValueError, InvalidTransbordoValueError, \
+    RequestVipServerPoolConstraintError
 from networkapi.equipamento.models import EquipamentoError, Equipamento, EquipamentoNotFoundError
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundError, IpError, IpEquipmentNotFoundError, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip
@@ -32,12 +33,10 @@ from networkapi.grupo.models import GrupoError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
-from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param,\
-    is_valid_ipv4, is_valid_string_minsize, is_valid_string_maxsize
+from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
+    is_valid_string_minsize, is_valid_string_maxsize, deprecated
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.requisicaovips.models import VipPortToPool
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 from django.db.utils import IntegrityError
 from networkapi.blockrules.models import Rule
 
@@ -46,11 +45,15 @@ class RequestVipsResource(RestResource):
 
     log = Log('RequestVipsResource')
 
+    @deprecated(new_uri='api/vip/request/save/')
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to insert request VIP.
 
         URLs: /requestvip/
+
+        deprecated:: Use the new rest API
         """
+
         self.log.info("Add request VIP")
 
         try:
@@ -209,6 +212,7 @@ class RequestVipsResource(RestResource):
 
                 # save VipPortToPool, ServerPool and ServerPoolMember
                 vip.save_vips_and_ports(vip_map, user)
+
             except Exception, e:
                 if isinstance(e, IntegrityError):
                     # Duplicate value for Port Vip, Port Real and IP
@@ -284,10 +288,13 @@ class RequestVipsResource(RestResource):
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
             return self.response_error(1)
 
+    @deprecated(new_uri='api/vip/request/update/')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT change request VIP.
 
         URLs: /requestvip/<id_vip>/
+
+        deprecated:: Use the new rest API
         """
 
         self.log.info("Change request VIP")
@@ -462,11 +469,7 @@ class RequestVipsResource(RestResource):
                 try:
                     # update Resquest Vip
                     vip.save(user)
-
-                    # Remove all port and reals
-                    vip.delete_vips_and_reals(user)
-
-                    # save VipPortToPool, ServerPool and ServerPoolMember
+                    # update ServerPool, VipPortToPool, ServerPoolMembers
                     vip.save_vips_and_ports(vip_map, user)
 
                 except Exception, e:
@@ -480,6 +483,9 @@ class RequestVipsResource(RestResource):
                             e, u'Failed to update the request vip')
 
                 return self.response(dumps_networkapi({}))
+
+        except RequestVipServerPoolConstraintError, e:
+            return self.response_error(375)
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -538,7 +544,7 @@ class RequestVipsResource(RestResource):
             return self.response_error(130, transbordo)
         except UserNotAuthorizedError:
             return self.not_authorized()
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
         except Rule.DoesNotExist:
             return self.response_error(358)

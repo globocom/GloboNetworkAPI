@@ -15,30 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-"""
-
-from django.db.models import Q
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource
-from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, is_valid_boolean_param,\
-    cache_function
 from networkapi.exception import InvalidValueError
-from networkapi.infrastructure.ipaddr import IPAddress
-from string import split
-from networkapi.ambiente.models import IP_VERSION, Ambiente
-from networkapi.infrastructure.datatable import build_query_to_datatable
-from django.forms.models import model_to_dict
-from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoAmbiente
-from networkapi.vlan.models import Vlan
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-from networkapi.ip.models import Ip, Ipv6
-from networkapi import ambiente
-from networkapi.settings import EQUIPMENT_CACHE_TIME
+from networkapi.ambiente.models import Ambiente
+from networkapi.equipamento.models import Equipamento, EquipamentoError
 
 
 class EquipmentGetIpsByAmbiente(RestResource):
@@ -66,7 +51,7 @@ class EquipmentGetIpsByAmbiente(RestResource):
             # Business Validations
 
             # Get data from URL GET parameters
-            equip_name = kwargs.get('equip_name')
+            equip_name = kwargs.get('equip_name').strip()
             id_ambiente = kwargs.get('id_ambiente')
 
             # Business Rules

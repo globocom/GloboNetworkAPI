@@ -1685,6 +1685,10 @@
 # Server pool and Vip port to pool
 - fields:
     default_port: 800
+    identifier: teste1
+    default_limit: 0
+    pool_created: true
+    lb_method: OK
   model: requisicaovips.serverpool
   pk: 5
 

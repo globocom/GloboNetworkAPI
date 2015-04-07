@@ -18,7 +18,8 @@
 from __future__ import with_statement
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.admin_permission import AdminPermission
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError, \
+    RequestVipWithoutServerPoolError
 from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
 from networkapi.ip.models import IpNotFoundError, IpError, IpEquipamento, Ipv6Equipament, IpEquipmentNotFoundError, \
     IpNotFoundByEquipAndVipError
@@ -116,6 +117,9 @@ URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
 
         except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
+
+        except RequestVipWithoutServerPoolError, e:
+            return self.response_error(374, e.message)
 
         except (RequisicaoVipsError, EquipamentoError, IpError, GrupoError):
             return self.response_error(1)

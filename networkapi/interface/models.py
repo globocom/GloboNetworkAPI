@@ -208,7 +208,7 @@ class Interface(BaseModel):
 
         return interfaces
 
-    def get_switch_interface_from_host_interface(self, protegida=None):
+    def get_switch_and_router_interface_from_host_interface(self, protegida=None):
         '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
 
         @param protegida: Indicação do campo 'protegida' da interface do switch. 
@@ -222,6 +222,52 @@ class Interface(BaseModel):
         @raise InterfaceProtectedError: A interface do switch está com o campo protegida diferente do parâmetro.
         '''
 
+        interface_ids = []
+        from_interface = self
+        interface = self.ligacao_front
+        try:
+            while (interface is not None) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_ROUTER):
+                interface_ids.append(interface.id)
+
+                if (interface.ligacao_back is not None) and (from_interface.id != interface.ligacao_back_id):
+                    from_interface = interface
+                    interface = interface.ligacao_back
+                elif (interface.ligacao_front is not None) and (from_interface.id != interface.ligacao_front_id):
+                    from_interface = interface
+                    interface = interface.ligacao_front
+                else:
+                    interface = None
+
+                if interface is not None:
+                    if interface.id in interface_ids:
+                        raise InterfaceNotFoundError(
+                            None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+        except InterfaceNotFoundError, e:
+            raise e
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar a interface do switch.')
+            raise InterfaceError(
+                e, u'Falha ao pesquisar a interface do switch.')
+
+        if (interface is None):
+            raise InterfaceNotFoundError(
+                None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+
+        if ((protegida is not None) and (interface.protegida != protegida)):
+            raise InterfaceProtectedError(
+                None, u'Interface do switch com o campo protegida diferente de %s.' % protegida)
+
+        return interface
+
+
+    def get_switch_interface_from_host_interface(self, protegida=None):
+        '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
+        @param protegida: Indicação do campo 'protegida' da interface do switch
+        @return: Interface ligada a um equipamento do tipo SWITCH.
+        @raise InterfaceError: Falha ao pesquisar a interface do switch
+        @raise InterfaceNotFoundError: Interface do switch não encontrada.
+        @raise InterfaceProtectedError: A interface do switch está com o campo protegida diferente do parâmetr
+        '''
         interface_ids = []
         from_interface = self
         interface = self.ligacao_front
@@ -294,9 +340,9 @@ class Interface(BaseModel):
         elif marca == 2:
             regex = "^(Int)\s[0-9]+$"
         elif marca == 3:
-            regex = "^(Fa|Gi|Te|Serial)[0-9]+(/[0-9]+(/[0-9]+)?)?$"
+            regex = "^(Fa|Gi|Te|Seriali|Eth)[0-9]+(/[0-9]+(/[0-9]+)?)?$"
         elif marca == 4:
-            regex = "^(interface)\s[0-9]+(.[0-9]+)?$"
+            regex = "^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$"
         elif marca == 5:
             regex = "^(eth)[0-9]+(/[0-9]+)?$"
         elif marca == 8:
@@ -365,9 +411,9 @@ class Interface(BaseModel):
         elif marca == 2:
             regex = "^(Int)\s[0-9]+$"
         elif marca == 3:
-            regex = "^(Fa|Gi|Te|Serial)[0-9]+(/[0-9]+(/[0-9]+)?)?$"
+            regex = "^(Fa|Gi|Te|Serial|Eth)[0-9]+(/[0-9]+(/[0-9]+)?)?$"
         elif marca == 4:
-            regex = "^(interface)\s[0-9]+(.[0-9]+)?$"
+            regex = "^(interface)\s[0-9]+(/[0-9]+.[0-9]+)?$"
         elif marca == 5:
             regex = "^(eth)[0-9]+(/[0-9]+)?$"
         elif marca == 8:
