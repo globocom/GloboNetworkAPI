@@ -306,6 +306,7 @@ error_messages = {
     378: u'Rack nao pode ser incluido',
     379: u'Rack nao existe',
     380: u'Arquivo de configuracao do equipamento %s criado',
+    381: u'Nome %s ja existe.',
 }
 
 

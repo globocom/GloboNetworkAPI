@@ -28,74 +28,143 @@ from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_min
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_RACK
+from networkapi.rack.resource.GeraConfig import autoprovision_splf
+from networkapi.ip.models import Ip, IpEquipamento
 
-
-def gera_config(rack, equip):
+def gera_config(rack):
 
     num_rack = rack.numero
-    if equip=='Sw1':
-        id_equip = rack.id_sw1.id
-        nome_equip = rack.id_sw1.nome
-    elif equip=='Sw2':
-        id_equip = rack.id_sw2.id
-        nome_equip = rack.id_sw2.nome
-    else:
-        id_equip = rack.id_ilo.id
-        nome_equip = rack.id_ilo.nome
+    id_lf1 = rack.id_sw1.id
+    name_lf1 = rack.id_sw1.nome
+    id_lf2 = rack.id_sw2.id
+    name_lf2 = rack.id_sw2.nome
+    id_oob = rack.id_ilo.id
+    name_oob = rack.id_ilo.nome
 
-    nome_rot = None
-    nome_rot_spn_core1 = None
-    nome_rot_spn_core2 = None
-    int_equip1 = None
-    int_equip2 = None
-    int_spn_core1 = None
-    int_spn_core2 = None
-    nome_spn_core1 = None
-    nome_spn_core2 = None
-    id_spn_core1 = None
-    id_spn_core2 = None
-    var = False
+    name_sp1=None   
+    name_sp2=None   
+    name_sp3=None   
+    name_sp4=None   
+    int_sp1=None   
+    int_sp2=None   
+    int_sp3=None   
+    int_sp4=None   
+    int_lf1_sp1=None   
+    int_lf1_sp2=None   
+    int_lf2_sp3=None   
+    int_lf2_sp4=None   
+    roteiro_leaf=None   
+    roteiro_spine=None
+    ip_mgmtlf1=None
+    ip_mgmtlf2=None
+    int_oob_mgmtlf1=None
+    int_oob_mgmtlf2=None
 
-    #Interface
-    interfaces = Interface.search(id_equip)
+    PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
+    PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
+
+    msg = ""
+
+    #Interface leaf01
+    interfaces = Interface.search(id_lf1)
     for interface in interfaces:
         try:
             sw = interface.get_switch_and_router_interface_from_host_interface(None)
-            if int_equip1 == None: 
-                int_equip1 = interface.interface
-                nome_spn_core1 = sw.equipamento.nome
-                id_spn_core1 = sw.equipamento.id
-                int_spn_core1 =  sw.interface
-            else:
-                int_equip2 = interface.interface
-                nome_spn_core2 = sw.equipamento.nome
-                id_spn_core2 = sw.equipamento.id
-                int_spn_core2 =  sw.interface  
+            if sw.equipamento.nome.split('-')[2]=='1': 
+                int_lf1_sp1 = interface.interface
+                name_sp1 = sw.equipamento.nome
+                id_spn1 = sw.equipamento.id
+                int_sp1 =  sw.interface
+            elif sw.equipamento.nome.split('-')[2]=='2':
+                int_lf1_sp2 = interface.interface
+                name_sp2 = sw.equipamento.nome
+                id_sp2 = sw.equipamento.id
+                int_sp2 =  sw.interface 
+            elif sw.equipamento.nome.split('-')[0]=='OOB':
+                int_oob_mgmtlf1 = sw.interface
         except InterfaceNotFoundError:
-            pass
+            msg = "Erro ao buscar as interfaces do Leaf 01."
 
-    #Roteiros
-    rot_equip = EquipamentoRoteiro.search(None, id_equip)
-    for rot in rot_equip:
-        if (rot.roteiro.tipo_roteiro.tipo=="backup"):#trocar: "configuracao"
-            nome_rot = rot.roteiro.roteiro
-    rot_spn_core1 = EquipamentoRoteiro.search(None, id_spn_core1)
-    for rot1 in rot_spn_core1:
-        if (rot1.roteiro.tipo_roteiro.tipo=="backup"):#trocar: "configuracao"
-            nome_rot_spn_core1 = rot1.roteiro.roteiro
-    rot_spn_core2 = EquipamentoRoteiro.search(None, id_spn_core2)
-    for rot2 in rot_spn_core2:
-        if (rot2.roteiro.tipo_roteiro.tipo=="backup"):#trocar: "configuracao"
-            nome_rot_spn_core2 = rot2.roteiro.roteiro
+    #Interface leaf02
+    interfaces = Interface.search(id_lf2)
+    for interface in interfaces:
+        try:
+            sw = interface.get_switch_and_router_interface_from_host_interface(None)
+            if sw.equipamento.nome.split('-')[2]=='3':
+                int_lf2_sp3 = interface.interface
+                name_sp3 = sw.equipamento.nome
+                id_spn3 = sw.equipamento.id
+                int_sp3 =  sw.interface
+            elif sw.equipamento.nome.split('-')[2]=='4':
+                int_lf2_sp4 = interface.interface
+                name_sp4 = sw.equipamento.nome
+                id_spn4 = sw.equipamento.id
+                int_sp4 =  sw.interface
+            elif sw.equipamento.nome.split('-')[0]=='OOB':
+                int_oob_mgmtlf2 = sw.interface
+        except InterfaceNotFoundError:
+            msg = "Erro ao buscar as interfaces do Leaf 02."
 
-    #int1 = str(id_spn_core2) +'-'+ nome_rot_spn_core2 #str(id_spn_core2)
-    #raise InvalidValueError(None, 'int1', int1)
+    #Roteiro LF
+    try:
+        rot_equip = EquipamentoRoteiro.search(None, id_lf1)
+        for rot in rot_equip:
+            if (rot.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
+                roteiro_leaf = rot.roteiro.roteiro
+        roteiro_leaf = roteiro_leaf.lower()+".txt"
+    except:
+        msg = "Erro ao buscar o roteiro do Leaf."
+    FILEINLF=PATH_TO_GUIDE+roteiro_leaf
 
-    if not nome_rot==None and not int_equip1==None and not nome_spn_core1==None and not int_spn_core1==None and not int_equip2==None and not nome_spn_core2==None and not int_spn_core2==None and not nome_rot_spn_core1==None and not nome_rot_spn_core2==None:
-       #var = Script(num_rack, nome_equip, nome_rot, int_equip1, nome_spn_core1, int_spn_core1, nome_rot_spn_core1, int_equip2, nome_spn_core2, int_spn_core2, nome_rot_spn_core2)
-       var = True
+    #Roteiro SPN
+    try:
+        rot_equip2 = EquipamentoRoteiro.search(None, id_spn1)
+        for rot2 in rot_equip2:
+            if (rot2.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
+                roteiro_spine = rot2.roteiro.roteiro
+        roteiro_spine = roteiro_spine.lower()+".txt"
+    except:
+        msg = "Erro ao buscar o roteiro do Spine."
 
-    return var
+    FILEINSP=PATH_TO_GUIDE+roteiro_spine    
+
+
+    #Ip LF
+    try:
+        ipLF = IpEquipamento()
+        ips = ipLF.list_by_equip(id_lf1)
+        for ip in ips:
+            ip_mgmtlf1 = Ip.get_by_pk(ip.ip.id)
+        if not ip_mgmtlf1==None:
+            ip_mgmtlf1 = str(ip_mgmtlf1.oct1)+'.'+str(ip_mgmtlf1.oct2)+'.'+str(ip_mgmtlf1.oct3)+'.'+str(ip_mgmtlf1.oct4)
+    except:
+        msg = "Erro ao buscar o ip de gerencia do leaf 01"
+
+    #Ip LF02
+    try:
+        ips2 = ipLF.list_by_equip(id_lf2)
+        for ip2 in ips2:
+            ip_mgmtlf2 = Ip.get_by_pk(ip2.ip.id)
+        if not ip_mgmtlf2==None:
+            ip_mgmtlf2 = str(ip_mgmtlf2.oct1)+'.'+str(ip_mgmtlf2.oct2)+'.'+str(ip_mgmtlf2.oct3)+'.'+str(ip_mgmtlf2.oct4)
+    except:
+        msg = "Erro ao buscar o ip de gerencia do leaf 02"
+
+    """
+    #Ip OOB
+    ips3 = ipLF.list_by_equip(id_oob)
+    for ip3 in ips3:
+        ip_mgmt = Ip.get_by_pk(ip3.ip.id)
+    if not ip_mgmt==None:
+        ip_mgmt = str(ip_mgmt.oct1)+'.'+str(ip_mgmt.oct2)+'.'+str(ip_mgmt.oct3)+'.'+str(ip_mgmt.oct4) 
+    """
+
+    if name_lf1==None or name_lf2==None or name_oob==None or name_sp1==None or name_sp2==None or name_sp3==None or name_sp4==None or int_sp1==None or int_sp2==None or int_sp3==None or int_sp4==None or int_lf1_sp1==None or int_lf1_sp2==None or int_lf2_sp3==None or int_lf2_sp4==None or roteiro_leaf==None or roteiro_spine==None or ip_mgmtlf1==None or ip_mgmtlf2==None or int_oob_mgmtlf1==None or int_oob_mgmtlf2==None:
+        return msg
+    else:
+        msg = autoprovision_splf(num_rack, FILEINLF, FILEINSP, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
+        return msg
+
 
 
 class RackConfigResource(RestResource):
@@ -120,29 +189,19 @@ class RackConfigResource(RestResource):
 
             rack = Rack()
             rack = rack.get_by_pk(rack_id)
-            var1 = False
-	    var2 = False
-            var3 = False
- 
-            #if not is_valid_int_greater_zero_param(rack.numero):
-             #   self.log.error(
-              #      u'Parameter id_vlan is invalid. Value: %s.', rack.numero)
-               # raise InvalidValueError(None, 'str', rack.numero)
+            var = False
 
-            if not rack.id_sw1==None:
-                var1 = gera_config(rack, 'Sw1')
-            if not rack.id_sw2==None:            
-                var2 = gera_config(rack, 'Sw2')
-            if not rack.id_ilo==None:
-                var3 = gera_config(rack, 'Ilo')
+            #chamada script  
+            msg = gera_config(rack)
+            if msg==None:
+                var = True
 
-            rack.__dict__.update(id=rack_id, config_sw1=var1, config_sw2=var2, config_ilo=var3)
+            rack.__dict__.update(id=rack_id, config_sw1=var)
             rack.save(user) 
 
             success_map = dict()
-            success_map['equip1'] = str(var1)
-            success_map['equip2'] = str(var2)
-            success_map['equip3'] = str(var3)
+            success_map['rack_conf'] = msg
+           
             map = dict()
             map['sucesso'] = success_map
                         

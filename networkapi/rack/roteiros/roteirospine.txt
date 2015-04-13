@@ -1,0 +1,70 @@
+system-view
+interface INTERFACE
+  description LEAFNAME INT_LF_DESCRIP
+  undo shutdown
+  interface INTERFACE.VLANFELEAF
+    vlan-type dot1q VLANFELEAF
+    ip binding vpn-instance FEVrf
+    description LEAFNAME FEVrf
+    ip address IPSPINEIPV4
+    ipv6 enable
+    ipv6 address IPSPINEIPV6
+    undo shutdown
+  interface INTERFACE.VLANBORDALEAF
+    vlan-type dot1q VLANBORDALEAF
+    ip binding vpn-instance BordaVrf
+    description LEAFNAME BordaVrf
+    ip address IPSPINEIPV4
+    ipv6 enable
+    ipv6 address IPSPINEIPV6
+    undo shutdown
+  interface INTERFACE.VLANBELEAF
+    vlan-type dot1q VLANBELEAF
+    ip binding vpn-instance BEVrf
+    description LEAFNAME BEVrf
+    ip address IPSPINEIPV4
+    ipv6 enable
+    ipv6 address IPSPINEIPV6
+    undo shutdown
+  interface INTERFACE.VLANBORDACACHOSLEAF
+    vlan-type dot1q VLANBORDACACHOSLEAF
+    ip binding vpn-instance BordaCachosVrf
+    description LEAFNAME BordaCachosVrf
+    ip address IPSPINEIPV4
+    ipv6 enable
+    ipv6 address IPSPINEIPV6
+    undo shutdown
+bgp ASSPINE
+  ipv4-family vpn-instance FEVrf
+    peer IPNEIGHLEAFIPV4 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv6-family vpn-instance FEVrf
+    peer IPNEIGHLEAFIPV6 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv4-family vpn-instance BordaVrf
+    peer IPNEIGHLEAFIPV4 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv6-family vpn-instance BordaVrf
+    peer IPNEIGHLEAFIPV6 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv4-family vpn-instance BEVrf
+    peer IPNEIGHLEAFIPV4 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv6-family vpn-instance BEVrf
+    peer IPNEIGHLEAFIPV6 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv4-family vpn-instance BordaCachosVrf
+    peer IPNEIGHLEAFIPV4 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+  ipv6-family vpn-instance BordaCachosVrf
+    peer IPNEIGHLEAFIPV6 as-number ASLEAF
+    peer description LEAFNAME
+    undo shutdown
+commit

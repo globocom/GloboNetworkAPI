@@ -277,7 +277,7 @@ rack_add_resource = RackAddResource()
 find_rack_resource = RackFindResource()
 edit_rack_resource = RackEditResource()
 delete_rack_resource = RackDeleteResource()
-gerar_arq_config_rack_resource = RackConfigResource()
+gerar_config_rack_resource = RackConfigResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -1116,7 +1116,7 @@ urlpatterns += patterns('',
                            name='edit.rack'),
                        url(r'^rack/(?P<id_rack>[^/]+)/$', delete_rack_resource.handle_request,
                            name='delete.rack'),
-                       url(r'^rack/gerar-arq-config/(?P<id_rack>[^/]+)/$', gerar_arq_config_rack_resource.handle_request,
+                       url(r'^rack/gerar-configuracao/(?P<id_rack>[^/]+)/$', gerar_config_rack_resource.handle_request,
                            name='config.rack'),
                        )
 

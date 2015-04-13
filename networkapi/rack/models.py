@@ -53,6 +53,13 @@ class RackNumberDuplicatedValueError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+class RackNameDuplicatedError(RackError):
+
+    """Retorna exceção quando numero do rack for repetido."""
+
+    def __init__(self, cause, message=None):
+        RackError.__init__(self, cause, message)
+
 class RackNumberNotFoundError(RackError):
 
     """Retorna exceção quando rack nao for encontrado."""
@@ -66,6 +73,7 @@ class Rack(BaseModel):
 
     id = models.AutoField(primary_key=True, db_column='id_rack')
     numero = models.IntegerField(unique=True)
+    nome = models.CharField(max_length=4, unique=True)
     mac_sw1 = models.CharField(max_length=17, blank=True, null=True)
     mac_sw2 = models.CharField(max_length=17, blank=True, null=True)
     mac_ilo = models.CharField(max_length=17, blank=True, null=True)
@@ -75,6 +83,8 @@ class Rack(BaseModel):
     config_sw1 = models.BooleanField(default=False)
     config_sw2 = models.BooleanField(default=False)
     config_ilo = models.BooleanField(default=False)
+    create_vlan_amb = models.BooleanField(default=False)
+
 
     class Meta(BaseModel.Meta):
         db_table = u'racks'
@@ -121,6 +131,13 @@ class Rack(BaseModel):
         except ObjectDoesNotExist, e:
             pass
         
+        try:
+            Rack.objects.get(nome__iexact=self.nome)
+            raise RackNameDuplicatedError(
+                None, u'Nome %s ja existe.' % (self.nome))
+        except ObjectDoesNotExist, e:
+            pass
+
         try:
             return self.save(authenticated_user)
         except Exception, e:
