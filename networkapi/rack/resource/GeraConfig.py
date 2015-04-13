@@ -598,7 +598,7 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 #PATH_TO_GUIDE="/Users/alejandra/Dropbox/ProjetoTelecom/"
 #PATH_TO_CONFIG="/Users/alejandra/Dropbox/ProjetoTelecom/"
 #PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-#PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
+PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
 #### Variaveis que serão recebidas por parametro ###### >>>>>>>>>>
 
 #name_core1="OOB-CM-01"
