@@ -209,6 +209,7 @@ class RequestVipsResource(RestResource):
             try:
                 # save Resquest Vip
                 vip.save(user)
+                self.log.error(u'vip_map depois do save = %s', vip_map)
 
                 # save VipPortToPool, ServerPool and ServerPoolMember
                 vip.save_vips_and_ports(vip_map, user)

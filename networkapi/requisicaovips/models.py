@@ -1156,13 +1156,13 @@ class RequisicaoVips(BaseModel):
 
                 # Valid values ​​of port
                 for port in port_map:
-                    port_arr = port.get('port').split(':')
+                    port_arr = port.split(':')
                     if len(port_arr) < 2:
                         port = port_arr[0] + ':' + port_arr[0]
-                    if not is_valid_regex(port.get('port'), "[0-9]+:[0-9]+"):
+                    if not is_valid_regex(port, "[0-9]+:[0-9]+"):
                         self.log.error(
-                            u'The port parameter is not a valid value: %s.', port.get('port'))
-                        raise InvalidValueError(None, 'port', port.get('port'))
+                            u'The port parameter is not a valid value: %s.', port)
+                        raise InvalidValueError(None, 'port', port)
 
                     new_port_map.append(port)
 
@@ -1467,9 +1467,15 @@ class RequisicaoVips(BaseModel):
 
     def save_vips_and_ports(self, vip_map, user):
 
+        # Ports Vip
+        ports_vip_map = vip_map.get('portas_servicos')
+        ports_vip = ports_vip_map.get('porta')
+        reals = list()
+
         vip_port_list = list()
         pool_member_pks_removed = list()
-
+        
+        # Environment
         finalidade = vip_map.get('finalidade')
         cliente = vip_map.get('cliente')
         ambiente = vip_map.get('ambiente')
@@ -1489,36 +1495,30 @@ class RequisicaoVips(BaseModel):
 
         lb_method = vip_map.get('metodo_bal', '')
 
-        healthcheck_type = vip_map.get('healthcheck_type', '')
+        try:
+            healthcheck_type = vip_map.get('healthcheck_type', '')
+            healthcheck_request = vip_map.get('healthcheck', '')
+            
+            id_healthcheck_expect = vip_map.get('id_healthcheck_expect', '')
+            healthcheck_expect = HealthcheckExpect.get_by_pk(
+                            id_healthcheck_expect).match_list
 
-        healthcheck_type_upper = healthcheck_type.upper()
+            healthcheck_type_upper = healthcheck_type.upper()
 
-        healthcheck_query = Healthcheck.objects.filter(
-            healthcheck_type=healthcheck_type_upper
-        )
+            healthcheck_query = Healthcheck.objects.filter(
+                healthcheck_type=healthcheck_type_upper,
+                healthcheck_request=healthcheck_request,
+                healthcheck_expect=healthcheck_expect,
+                destination='*:*'
+            )
 
-        healthcheck_obj = healthcheck_query.uniqueResult()
+            healthcheck_obj = healthcheck_query.uniqueResult()        
 
-        # Ports Vip
-        ports_vip_map = vip_map.get('portas_servicos')
-        ports_vip = ports_vip_map.get('porta')
-        reals = list()
-        
-        # Environment
-        finalidade = vip_map.get('finalidade')
-        cliente = vip_map.get('cliente')
-        ambiente = vip_map.get('ambiente')
-        evip = EnvironmentVip.get_by_values(
-            finalidade,
-            cliente,
-            ambiente
-        )
-        env_query = Ambiente.objects.filter(
-            Q(vlan__networkipv4__ambient_vip=evip) |
-            Q(vlan__networkipv6__ambient_vip=evip)
-        )
-        environment_obj = env_query and env_query.uniqueResult() or None
-        
+        except Exception, e:
+            self.log.error(u'Falhou no healthcheck %s', e)
+            #TODO - consertar valor para criar uma nova entrada de healthcheck
+            healthcheck_obj = None
+    
         # Reals
         reals_map = vip_map.get('reals')
         if reals_map:
@@ -1535,9 +1535,12 @@ class RequisicaoVips(BaseModel):
             if reals_weights != None:
                 weights = reals_weights.get('reals_weight')
 
-        server_pool_pks = [port['server_pool_id'] for port in ports_vip if port.get('server_pool_id')]
+        #TODO - QUE PORRA E ESSA DE SERVER POOL ID NO MEIO DA PORTA DO VIP
+        # Ta dando erro aqui de AttributeError: 'unicode' object has no attribute 'get'
+        #server_pool_pks = [port['server_pool_id'] for port in ports_vip if port.get('server_pool_id')]
 
-        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
+        #server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
+        server_pools_to_remove = []
 
         for serv_pool_obj in server_pools_to_remove:
 
@@ -1560,12 +1563,20 @@ class RequisicaoVips(BaseModel):
 
         # save ServerPool and VipPortToPool
         for port_vip in ports_vip:
+            #TODO - VERIFICAR O QUE ELES ESTAO TENTANDO FAZER AQUI...
+            #port_to_vip = port_vip.get('port').split(':')
+            #... POR ENQUANTO FICA O PADRAO ANTIGO
+            port_to_vip = port_vip.split(':')
 
-            port_to_vip = port_vip.get('port').split(':')
-            server_pool_id = port_vip.get('server_pool_id')
+            #WTF???
+            #server_pool_id = port_vip.get('server_pool_id')
+            #coloquei abaixo valor 0 so para nao entrar no if server_pool_id logo mais a frente
+            server_pool_id = 0
+
             default_port = port_to_vip[1]
             vip_port = port_to_vip[0]
-            ip_vip = self.ip or self.ipv6
+            #TODO RETIRAR ISSO UMA VEZ QUE O POOL NAO ESTA MAIS LIGADO A VIP, PODE EXISTIR SOZINHO
+            #ip_vip = self.ip or self.ipv6
 
             if server_pool_id:
                 server_pool = ServerPool.objects.get(id=server_pool_id)
@@ -1576,7 +1587,9 @@ class RequisicaoVips(BaseModel):
 
             else:
                 server_pool = ServerPool()
-                server_pool.identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
+                #TODO RETIRAR ISSO UMA VEZ QUE O POOL NAO ESTA MAIS LIGADO A VIP, PODE EXISTIR SOZINHO
+                #server_pool.identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
+                server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
                 server_pool.environment = environment_obj
                 server_pool.pool_created = False
 
@@ -1584,7 +1597,7 @@ class RequisicaoVips(BaseModel):
                 vip_port_to_pool.requisicao_vip = self
 
             server_pool.default_port = default_port
-            server_pool.healthcheck = healthcheck_obj
+            #server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
             vip_port_to_pool.port_vip = vip_port
 

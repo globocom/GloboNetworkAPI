@@ -1,6 +1,24 @@
 Installing Globo NetworkAPI
 #####################
 
+
+Using pre-configured VM
+************************
+
+In order to use the pre-configured VM you need to have `vagrant <https://www.vagrantup.com/downloads.html>` and `VirtualBox <https://www.virtualbox.org/wiki/Downloads>` installed in your machine.
+
+After that, go to the directory you want to install and do::
+
+  git clone https://github.com/globocom/GloboNetworkAPI-WebUI
+  cd GloboNetworkAPI-WebUI
+  vagrant plugin install vagrant-omnibus
+  vagrant up
+
+After this you'll have the GloboNetworkAPI running on http://10.0.0.2:8000/
+
+Installing from scratch
+***********************
+
 Following examples were based on CentOS 7.0.1406 installation.
 
 All root passwords were configured to "default".
