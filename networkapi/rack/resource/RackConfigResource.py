@@ -31,7 +31,7 @@ from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi.rack.resource.GeraConfig import autoprovision_splf
 from networkapi.ip.models import Ip, IpEquipamento
 
-def gera_config(rack):
+def gera_config_lf_sp(rack):
 
     num_rack = rack.numero
     id_lf1 = rack.id_sw1.id
@@ -63,7 +63,7 @@ def gera_config(rack):
     PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
     PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
 
-    msg = ""
+    msg = None
 
     #Interface leaf01
     interfaces = Interface.search(id_lf1)
@@ -159,12 +159,60 @@ def gera_config(rack):
         ip_mgmt = str(ip_mgmt.oct1)+'.'+str(ip_mgmt.oct2)+'.'+str(ip_mgmt.oct3)+'.'+str(ip_mgmt.oct4) 
     """
 
-    if name_lf1==None or name_lf2==None or name_oob==None or name_sp1==None or name_sp2==None or name_sp3==None or name_sp4==None or int_sp1==None or int_sp2==None or int_sp3==None or int_sp4==None or int_lf1_sp1==None or int_lf1_sp2==None or int_lf2_sp3==None or int_lf2_sp4==None or roteiro_leaf==None or roteiro_spine==None or ip_mgmtlf1==None or ip_mgmtlf2==None or int_oob_mgmtlf1==None or int_oob_mgmtlf2==None:
-        return msg
-    else:
+    if msg==None:
         msg = autoprovision_splf(num_rack, FILEINLF, FILEINSP, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
-        return msg
 
+    return msg
+
+
+def gera_config_core(rack)
+
+    num_rack = rack.numero
+    id_oob = rack.id_ilo.id
+    name_oob = rack.id_ilo.nome
+    name_core1=None  
+    name_core2=None  
+    int_oob_core1=None  
+    int_oob_core2=None  
+    int_core1_oob=None  
+    int_core2_oob=None  
+    roteiro_core=None
+    msg = None
+
+    PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
+
+    #Roteiro Core
+    try:
+        rot_core = EquipamentoRoteiro.search(None, id_oob)
+        for rot3 in rot_core:
+            if (rot3.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
+                roteiro_core = rot3.roteiro.roteiro
+        roteiro_core = roteiro_core.lower()+".txt"
+    except:
+        msg = "Erro ao buscar o roteiro do Spine."
+    FILEINSP=PATH_TO_GUIDE+roteiro_core
+
+    #Interface OOB
+    interfaces = Interface.search(id_oob)
+    for interface in interfaces:
+        try:
+            sw = interface.get_switch_and_router_interface_from_host_interface(None)
+            if sw.equipamento.nome.split('-')[0]=='OOB':
+                if sw.equipamento.nome.split('-')[2]=='01':
+                    int_oob_core1 = interface.interface
+                    name_core1 = sw.equipamento.nome
+                    int_core1_oob =  sw.interface
+                elif sw.equipamento.nome.split('-')[2]=='02':
+                    int_oob_core2 = interface.interface
+                    name_core2 = sw.equipamento.nome
+                    int_core2_oob =  sw.interface 
+        except InterfaceNotFoundError:
+            msg = "Erro ao buscar as interfaces do OOB."
+
+     if msg==None:
+         msg = autoprovision_coreoob(num_rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
+
+     return msg
 
 
 class RackConfigResource(RestResource):
@@ -191,8 +239,10 @@ class RackConfigResource(RestResource):
             rack = rack.get_by_pk(rack_id)
             var = False
 
-            #chamada script  
-            msg = gera_config(rack)
+            #autoprovision_splf
+            msg1 = gera_config_lf_sp(rack)
+            msg2 = gera_config_core(rack)
+
             if msg==None:
                 var = True
 

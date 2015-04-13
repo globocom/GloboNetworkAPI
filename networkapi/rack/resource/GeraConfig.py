@@ -646,5 +646,6 @@ PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
 #FILEINCR=PATH_TO_GUIDE+"roteirocore.txt"
 
 #def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
-#autoprovision_coreoob(ID_RACK, FILEINCR, name_core1, name_core2, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob  )
+
+#def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
