@@ -1677,11 +1677,14 @@ class RequisicaoVips(BaseModel):
         for v_port in vip_ports:
             full_port = str(v_port.port_vip)
 
-            if not omit_port_real:
-                full_port += ':' + str(v_port.server_pool.default_port)
+            #if not omit_port_real:
+            #    full_port += ':' + str(v_port.server_pool.default_port)
+            full_port += ':' + str(v_port.server_pool.default_port)
 
             if full_port not in vip_port_list:
-                vip_port_list.append({'port': full_port, 'vip_port_id': v_port.id })
+                #TODO VERIFICAR
+                #vip_port_list.append({'porta': full_port, 'vip_port_id': v_port.id })
+                vip_port_list.append(full_port)
 
             members = v_port.server_pool.serverpoolmember_set.all()
 
