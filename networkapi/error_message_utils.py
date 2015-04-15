@@ -307,6 +307,7 @@ error_messages = {
     379: u'Rack nao existe',
     380: u'Arquivo de configuracao do equipamento %s criado',
     381: u'Nome %s ja existe.',
+    382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
 }
 
 

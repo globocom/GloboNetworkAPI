@@ -3,7 +3,7 @@ import pprint
 from netaddr import *
 import re
 import os
-
+from networkapi.rack.models import RackConfigError
 
 #substitui key's do dicionario que aparecem em filein, pelos respectivos valores, gerando o arquivo fileout (o restante do arquivo é copiado)
 def replace(filein,fileout, dicionario):
@@ -23,8 +23,7 @@ def replace(filein,fileout, dicionario):
         file_handle.write(file_string)
         file_handle.close()
     except:
-        return False
-    return True
+        raise RackConfigError(None,None, "Erro no template.")
 
 #divide a rede net em n subredes /bloco e retorna a subrede n
 def splitnetworkbyrack(net,bloco,posicao):
@@ -92,14 +91,14 @@ def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_
         variablestochangecore2["HSRP_PRIORITY"]="101"
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+".cfg"    #"-"+str(rack)+".cfg"
-    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+".cfg"    #"-"+str(rack)+".cfg"
+    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+"-"+HOSTNAME_RACK[1]+".cfg"    #"-"+str(rack)+".cfg"
+    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+"-"+HOSTNAME_RACK[1]+".cfg"    #"-"+str(rack)+".cfg"
 
     #gerando arquivos de saida
     replace(fileincore,fileoutcore1,variablestochangecore1)
     replace(fileincore,fileoutcore2,variablestochangecore2)
 
-
+    return True
 
 def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
 
@@ -115,6 +114,8 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     HOSTNAME_SP2=name_sp2
     HOSTNAME_SP3=name_sp3
     HOSTNAME_SP4=name_sp4
+
+    HOSTNAME_RACK=HOSTNAME_OOB.split("-", 1)
 
     IP_GERENCIA_LF1=ip_mgmtlf1
     IP_GERENCIA_LF2=ip_mgmtlf2
@@ -565,24 +566,21 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangeleaf2["IMAGE_SO_LF"]= IMAGE_SO_LF
 
 
-    fileoutspine1=PATH_TO_CONFIG+HOSTNAME_SP1+".cfg"
-    fileoutspine2=PATH_TO_CONFIG+HOSTNAME_SP2+".cfg"
-    fileoutspine3=PATH_TO_CONFIG+HOSTNAME_SP3+".cfg"
-    fileoutspine4=PATH_TO_CONFIG+HOSTNAME_SP4+".cfg"
+    fileoutspine1=PATH_TO_CONFIG+HOSTNAME_SP1+"-"+HOSTNAME_RACK[1]+".cfg"
+    fileoutspine2=PATH_TO_CONFIG+HOSTNAME_SP2+"-"+HOSTNAME_RACK[1]+".cfg"
+    fileoutspine3=PATH_TO_CONFIG+HOSTNAME_SP3+"-"+HOSTNAME_RACK[1]+".cfg"
+    fileoutspine4=PATH_TO_CONFIG+HOSTNAME_SP4+"-"+HOSTNAME_RACK[1]+".cfg"
     fileoutleaf1=PATH_TO_CONFIG+HOSTNAME_LF1+".cfg"
     fileoutleaf2=PATH_TO_CONFIG+HOSTNAME_LF2+".cfg"
 
-    r1 = replace(fileinspine,fileoutspine1,variablestochangespine1)
-    r2 = replace(fileinspine,fileoutspine2,variablestochangespine2)
-    r3 = replace(fileinspine,fileoutspine3,variablestochangespine3)
-    r4 = replace(fileinspine,fileoutspine4,variablestochangespine4)
-    r5 = replace(fileinleaf,fileoutleaf1,variablestochangeleaf1)
-    r6 = replace(fileinleaf,fileoutleaf2,variablestochangeleaf2)
+    replace(fileinspine,fileoutspine1,variablestochangespine1)
+    replace(fileinspine,fileoutspine2,variablestochangespine2)
+    replace(fileinspine,fileoutspine3,variablestochangespine3)
+    replace(fileinspine,fileoutspine4,variablestochangespine4)
+    replace(fileinleaf,fileoutleaf1,variablestochangeleaf1)
+    replace(fileinleaf,fileoutleaf2,variablestochangeleaf2)
 
-    if r1 and r2 and r3 and r4 and r5 and r6:
-        return None
-
-    return "Erro no Replace"
+    return True
 
 
 
