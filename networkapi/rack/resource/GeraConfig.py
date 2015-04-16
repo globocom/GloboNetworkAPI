@@ -5,6 +5,16 @@ import re
 import os
 from networkapi.rack.models import RackConfigError
 
+
+#### HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
+KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
+IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
+#### <<<<<
+
+PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
+PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
+
+
 #substitui key's do dicionario que aparecem em filein, pelos respectivos valores, gerando o arquivo fileout (o restante do arquivo é copiado)
 def replace(filein,fileout, dicionario):
     try:
@@ -33,7 +43,7 @@ def splitnetworkbyrack(net,bloco,posicao):
 def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     #roteiro para configuracao de core
-    fileincore=FILEINCR
+    fileincore=PATH_TO_GUIDE+FILEINCR
     
     #nome dos cores, do console de gerencia dos lf do rack, e do rack
     HOSTNAME_CORE1=name_core1
@@ -103,8 +113,8 @@ def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_
 def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
 
 
-    fileinleaf=FILEINLF
-    fileinspine=FILEINSP
+    fileinleaf=PATH_TO_GUIDE+FILEINLF
+    fileinspine=PATH_TO_GUIDE+FILEINSP
 
     HOSTNAME_LF1=name_lf1
     HOSTNAME_LF2=name_lf2
@@ -581,69 +591,4 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     replace(fileinleaf,fileoutleaf2,variablestochangeleaf2)
 
     return True
-
-
-
-
-#### HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
-KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
-IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
-#### <<<<<
-
-#### HARDCODED - PATH PARA OS ARQUIVOS: guide para os roteiros, config para os arquivos gerados
-#PATH_TO_GUIDE="/Users/sabino/scripts/"
-#PATH_TO_CONFIG="/Users/sabino/scripts/"
-#PATH_TO_GUIDE="/Users/alejandra/Dropbox/ProjetoTelecom/"
-#PATH_TO_CONFIG="/Users/alejandra/Dropbox/ProjetoTelecom/"
-#PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
-#### Variaveis que serão recebidas por parametro ###### >>>>>>>>>>
-
-#name_core1="OOB-CM-01"
-#name_core2="OOB-CM-02"
-
-#name_lf1="LF-CM-AD06-1"
-#name_lf2="LF-CM-AD06-2"
-#name_oob="OOB-CM-AD06"
-
-#name_sp1="SPN-CM-0"
-#name_sp2="SPN-CM-1"
-#name_sp3="SPN-CM-2"
-#name_sp4="SPN-CM-3"
-
-#ip_mgmtlf1="10.31.0.219"
-#ip_mgmtlf2="10.31.0.221"
-#ip_mgmt="10.31.0.254"
-
-
-
-#int_oob_core1 = "Ethernet1/5"
-#int_oob_core2 = "Ethernet1/7"
-#int_core1_oob = "Ethernet1/8"
-#int_core2_oob = "Ethernet1/9"
-
-##### Legenda: interface_local_remota
-#int_sp1_lf1="Ethernet1/2"
-#int_sp2_lf1="Ethernet1/1"
-#int_sp3_lf2="Ethernet1/7"
-#int_sp4_lf2="Ethernet1/5"
-
-#int_oob_mgmtlf1="10ge 1/0/1"
-#int_oob_mgmtlf2="10ge 1/0/1"
-
-#int_lf1_sp1="Ethernet2/1"
-#int_lf1_sp2="Ethernet2/2"
-#int_lf2_sp3="Ethernet2/1"
-#int_lf2_sp4="Ethernet2/2"
-
-
-#ID_RACK=8
-        
-#FILEINSP=PATH_TO_GUIDE+"roteirospine.txt"
-#FILEINLF=PATH_TO_GUIDE+"roteiroleaf.txt"
-#FILEINCR=PATH_TO_GUIDE+"roteirocore.txt"
-
-#def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
-
-#def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 

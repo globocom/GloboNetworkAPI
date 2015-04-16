@@ -19,19 +19,17 @@
 from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
+from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
 
-def gera_config_lf_sp(rack):
+def gera_config(rack):
 
     num_rack=None
     id_lf1=None
@@ -84,8 +82,6 @@ def gera_config_lf_sp(rack):
     except:
         raise RackConfigError(None,rack.nome,"Erro: Rack incompleto.")
 
-    PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-    PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
 
     #Interface leaf01
     try:
@@ -165,8 +161,7 @@ def gera_config_lf_sp(rack):
     if roteiro_leaf==None:
         raise RackConfigError(None,rack.nome,"Erro: O Roteiro do Leaf nao esta cadastrado")
 
-    roteiro_leaf = roteiro_leaf.lower()+".txt"
-    FILEINLF=PATH_TO_GUIDE+roteiro_leaf
+    FILEINLF = roteiro_leaf.lower()+".txt"
 
 
     #Roteiro SPN
@@ -181,8 +176,7 @@ def gera_config_lf_sp(rack):
     if roteiro_spine==None:
         raise RackConfigError(None,rack.nome,"Erro: O Roteiro do spine nao esta cadastrado")
 
-    roteiro_spine = roteiro_spine.lower()+".txt"
-    FILEINSP=PATH_TO_GUIDE+roteiro_spine
+    FILEINSP = roteiro_spine.lower()+".txt"
 
     #Roteiro Core
     try:
@@ -196,8 +190,7 @@ def gera_config_lf_sp(rack):
     if roteiro_core==None:
         raise RackConfigError(None,rack.nome,"Erro: O Roteiro do switch de gerencia nao esta cadastrado")
 
-    roteiro_core = roteiro_core.lower()+".txt"
-    FILEINCR=PATH_TO_GUIDE+roteiro_core
+    FILEINCR = roteiro_core.lower()+".txt"
 
 
     #Ip LF
@@ -239,56 +232,7 @@ def gera_config_lf_sp(rack):
 
     return False
 
-"""
-def gera_config_core(rack)
 
-    num_rack = rack.numero
-    id_oob = rack.id_ilo.id
-    name_oob = rack.id_ilo.nome
-    name_core1=None  
-    name_core2=None  
-    int_oob_core1=None  
-    int_oob_core2=None  
-    int_core1_oob=None  
-    int_core2_oob=None  
-    roteiro_core=None
-    msg = None
-
-    PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-
-    #Roteiro Core
-    try:
-        rot_core = EquipamentoRoteiro.search(None, id_oob)
-        for rot3 in rot_core:
-            if (rot3.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
-                roteiro_core = rot3.roteiro.roteiro
-        roteiro_core = roteiro_core.lower()+".txt"
-    except:
-        msg = "Erro ao buscar o roteiro do Spine."
-    FILEINSP=PATH_TO_GUIDE+roteiro_core
-
-    #Interface OOB
-    interfaces = Interface.search(id_oob)
-    for interface in interfaces:
-        try:
-            sw = interface.get_switch_and_router_interface_from_host_interface(None)
-            if sw.equipamento.nome.split('-')[0]=='OOB':
-                if sw.equipamento.nome.split('-')[2]=='01':
-                    int_oob_core1 = interface.interface
-                    name_core1 = sw.equipamento.nome
-                    int_core1_oob =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='02':
-                    int_oob_core2 = interface.interface
-                    name_core2 = sw.equipamento.nome
-                    int_core2_oob =  sw.interface 
-        except InterfaceNotFoundError:
-            msg = "Erro ao buscar as interfaces do OOB."
-
-     if msg==None:
-         msg = autoprovision_coreoob(num_rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
-
-     return msg
-"""
 
 class RackConfigResource(RestResource):
 
@@ -313,9 +257,8 @@ class RackConfigResource(RestResource):
             rack = rack.get_by_pk(rack_id)
             var = False
 
-            #autoprovision_splf
-            var = gera_config_lf_sp(rack)
-            #msg2 = gera_config_core(rack)    
+            #Chama o script para gerar os arquivos de configuracao
+            var = gera_config(rack)
 
             rack.__dict__.update(id=rack_id, config_sw1=var)
             rack.save(user) 
@@ -327,8 +270,6 @@ class RackConfigResource(RestResource):
                         
             return self.response(dumps_networkapi(map))
 
-        except InvalidValueError, e:
-            return self.response_error(269, e.param, e.value)
 
         except RackConfigError, e:
             return self.response_error(382, e.param, e.value)
