@@ -40,6 +40,220 @@ def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))
     return subnets[posicao]
 
+def dic_vlan_core(variablestochangecore, rack, name_core, name_rack): #int core: se eh o core1 ou core2
+    """
+    variablestochangecore: list
+    rack: Numero do Rack
+    name_core: Nome do Core
+    name_rack: Nome do rack
+    """
+ 
+    core = int(name_core.split("-")[2])
+
+    #valor base para as vlans e portchannels 
+    BASE_SO = 1000
+
+    #variavels para manipular as redes
+    SO_OOB_NETipv4 = {}
+    subSO_OOB_NETipv4={}
+
+    #rede para conectar cores aos racks
+    SO_OOB_NETipv4= IPNetwork('10.143.64.0/18') 
+
+    #Vlan para cadastrar
+    variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack 
+    variablestochangecore["VLAN_SO"]=str(BASE_SO+rack) 
+
+    #Rede para cadastrar  
+    subSO_OOB_NETipv4=list(SO_OOB_NETipv4.subnet(25)) 
+    variablestochangecore["REDE_IP"]=str(subSO_OOB_NETipv4[rack]).split("/")[0]
+    variablestochangecore["REDE_MASK"]=str(subSO_OOB_NETipv4[rack].prefixlen)
+    variablestochangecore["NETMASK"]=str(subSO_OOB_NETipv4[rack].netmask)
+    variablestochangecore["BROADCAST"]=str(subSO_OOB_NETipv4[rack].broadcast)
+                 
+    #cadastro ip 
+    ip = 124 + core
+    variablestochangecore["EQUIP_NAME"]=name_core 
+    variablestochangecore["IPCORE"]=str(subSO_OOB_NETipv4[rack][ip])
+
+    #ja cadastrado
+    variablestochangecore["IPHSRP"]=str(subSO_OOB_NETipv4[rack][1]) 
+    variablestochangecore["NUM_CHANNEL"]=str(BASE_SO+rack)
+    
+    return variablestochangecore
+    
+
+def dic_lf_spn(user, rack):
+
+    BASE_RACK = 120
+    BASE_AS = 65000
+
+    VLANBE = 2000
+    VLANFE = 2480
+    VLANBORDA = 2960
+    VLANBORDACACHOS = 3440
+
+    VLANBELEAF = {}
+    VLANFELEAF = {}
+    VLANBORDALEAF = {}
+    VLANBORDACACHOSLEAF = {}
+
+    CIDREBGP = {}
+    CIDRBE = {}
+    IPSPINEipv4 = {}
+    IPSPINEipv6 = {}
+    IPLEAFipv4 = {}
+    IPLEAFipv6 = {}
+    IPSIBGPipv4 = {}
+    IPSIBGPipv6 = {}
+    ASLEAF = {}
+    ########
+    VLANBELEAF = {}
+    VLANFELEAF = {}
+    VLANBORDALEAF = {}
+    VLANBORDACACHOSLEAF = {}
+    ########
+    CIDRBEipv4 = {}
+    PODSBEipv4 = {}
+    redesPODSBEipv4 = {}
+    PODSBEFEipv4 = {}
+    redesPODSBEFEipv4 = {}
+    PODSBEBOipv4 = {}
+    redesPODSBEBOipv4 = {}
+    PODSBECAipv4 = {}
+    redesPODSBECAipv4 = {}
+    redesHostsipv4 = {}
+    redeHostsBEipv4 = {}
+    redeHostsFEipv4 = {}
+    redeHostsBOipv4 = {}
+    redeHostsCAipv4 = {}
+    redeHostsFILERipv4 = {}
+    subnetsRackBEipv4 = {}
+    #
+    CIDRBEipv6 = {}
+    PODSBEipv6 = {}
+    redesPODSBEipv6 = {}
+    PODSBEFEipv6 = {}
+    redesPODSBEFEipv6 = {}
+    PODSBEBOipv6 = {}
+    redesPODSBEBOipv6 = {}
+    PODSBECAipv6 = {}
+    redesPODSBECAipv6 = {}
+    redesHostsipv6 = {}
+    redeHostsBEipv6 = {}
+    redeHostsFEipv6 = {}
+    redeHostsBOipv6 = {}
+    redeHostsCAipv6 = {}
+    redeHostsFILERipv6 = {}
+    subnetsRackBEipv6 = {}
+    subnetsRackFEipv4 = {}
+    redesPODSFEipv4 = {}
+    subnetsRackFEipv6 = {}
+    redesPODSFEipv6 = {}
+    #
+    IPSPINEipv4[rack]=[]
+    IPSPINEipv6[rack]=[]
+    IPLEAFipv4[rack]=[]
+    IPLEAFipv6[rack]=[]
+    IPSIBGPipv4[rack]=[]
+    IPSIBGPipv6[rack]=[]
+    VLANBELEAF[rack]=[]
+    VLANFELEAF[rack]=[]
+    VLANBORDALEAF[rack]=[]
+    VLANBORDACACHOSLEAF[rack]=[]
+    ASLEAF[rack]=[]
+    #
+    PODSBEipv4[rack]=[]
+    redesPODSBEipv4[rack]=[]
+    PODSBEFEipv4[rack]=[]
+    redesPODSBEFEipv4[rack]=[]
+    PODSBEBOipv4[rack]=[]
+    redesPODSBEBOipv4[rack]=[]
+    PODSBECAipv4[rack]=[]
+    redesPODSBECAipv4[rack]=[]
+    redesHostsipv4[rack]=[]
+    redeHostsBEipv4[rack]=[]
+    redeHostsFEipv4[rack]=[]
+    redeHostsBOipv4[rack]=[]
+    redeHostsCAipv4[rack]=[]
+    redeHostsFILERipv4[rack]=[]
+    subnetsRackBEipv4[rack] = []
+    #
+    PODSBEipv6[rack]=[]
+    redesPODSBEipv6[rack]=[]
+    PODSBEFEipv6[rack]=[]
+    redesPODSBEFEipv6[rack]=[]
+    PODSBEBOipv6[rack]=[]
+    redesPODSBEBOipv6[rack]=[]
+    PODSBECAipv6[rack]=[]
+    redesPODSBECAipv6[rack]=[]
+    redesHostsipv6[rack]=[]
+    redeHostsBEipv6[rack]=[]
+    redeHostsFEipv6[rack]=[]
+    redeHostsBOipv6[rack]=[]
+    redeHostsCAipv6[rack]=[]
+    redeHostsFILERipv6[rack]=[]
+    subnetsRackBEipv6[rack] = []
+    subnetsRackFEipv4[rack] = []
+    redesPODSFEipv4[rack] = []
+    subnetsRackFEipv6[rack] = []
+    redesPODSFEipv6[rack] = []
+
+    #CIDR sala 01 => 10.128.0.0/12
+    CIDRBE[0] = IPNetwork('10.128.0.0/12')
+    CIDREBGP[0] = IPNetwork('10.10.0.0/22')
+
+    SPINE1ipv4 = IPNetwork('10.0.0.0/24')
+    SPINE2ipv4 = IPNetwork('10.0.1.0/24')
+    SPINE3ipv4 = IPNetwork('10.0.2.0/24')
+    SPINE4ipv4 = IPNetwork('10.0.3.0/24')
+    #REDE subSPINE1ipv4[rack]
+    subSPINE1ipv4=list(SPINE1ipv4.subnet(31))
+    subSPINE2ipv4=list(SPINE2ipv4.subnet(31))
+    subSPINE3ipv4=list(SPINE3ipv4.subnet(31))
+    subSPINE4ipv4=list(SPINE4ipv4.subnet(31))
+
+    ########### BD ############ /environment/form
+
+    #Vlans BE RANGE
+    #Nome do ambiente BE +  + Nome do Rack
+    VLANBELEAF[rack].append(VLANBE+rack) #range
+    # rede subSPINE1ipv4[rack]
+    VLANBELEAF[rack].append(VLANBE+rack+BASE_RACK)
+    VLANBELEAF[rack].append(VLANBE+rack+2*BASE_RACK)
+    VLANBELEAF[rack].append(VLANBE+rack+3*BASE_RACK)
+    #Vlans FE RANGE
+    VLANFELEAF[rack].append(VLANFE+rack)
+    VLANFELEAF[rack].append(VLANFE+rack+BASE_RACK)
+    VLANFELEAF[rack].append(VLANFE+rack+2*BASE_RACK)
+    VLANFELEAF[rack].append(VLANFE+rack+3*BASE_RACK)
+    #Vlans BORDA RANGE
+    VLANBORDALEAF[rack].append(VLANBORDA+rack)
+    VLANBORDALEAF[rack].append(VLANBORDA+rack+BASE_RACK)
+    VLANBORDALEAF[rack].append(VLANBORDA+rack+2*BASE_RACK)
+    VLANBORDALEAF[rack].append(VLANBORDA+rack+3*BASE_RACK)
+    #Vlans BORDACACHOS RANGE
+    VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS+rack)
+    VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS+rack+BASE_RACK)
+    VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS+rack+2*BASE_RACK)
+    VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS+rack+3*BASE_RACK)
+
+    ########### BD ############
+    vlans = dict()
+    vlans['VLANBELEAF'] = VLANBELEAF
+    vlans['VLANFELEAF'] = VLANFELEAF
+    vlans['VLANBORDALEAF'] = VLANBORDALEAF
+    vlans['VLANBORDACACHOSLEAF'] = VLANBORDACACHOSLEAF
+
+    redes = dict()
+    redes['subSPINE1ipv4'] = subSPINE1ipv4
+    redes['subSPINE2ipv4'] = subSPINE2ipv4
+    redes['subSPINE3ipv4'] = subSPINE3ipv4
+    redes['subSPINE4ipv4'] = subSPINE4ipv4
+    
+    return vlans, redes
+
+
 def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     #roteiro para configuracao de core
@@ -57,52 +271,36 @@ def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_
     INTERFACE_CORE1  = int_core1_oob
     INTERFACE_CORE2  = int_core2_oob
 
-    #valor base para as vlans e portchannels 
-    BASE_SO = 1000
-
-    #variavels para manipular as redes
-    SO_OOB_NETipv4 = {}
-    subSO_OOB_NETipv4={}
-
-    #rede para conectar cores aos racks
-    SO_OOB_NETipv4= IPNetwork('10.143.64.0/18')
-    #gera 128 sub redes /25 
-    subSO_OOB_NETipv4=list(SO_OOB_NETipv4.subnet(25))
+    
 
     #gerando dicionarios para substituir paravras chaves do roteiro
     variablestochangecore1={}
     variablestochangecore2={}
 
-    variablestochangecore1["INT_OOB_DESCRIP"]= INT_OOBC2_DESCRIP
+    variablestochangecore1["INT_OOB_DESCRIP"]= INT_OOBC1_DESCRIP
     variablestochangecore1["INTERFACE_CORE"]= INTERFACE_CORE1
-    variablestochangecore1["IPCORE"]=str(subSO_OOB_NETipv4[rack][125])
-    variablestochangecore1["IPHSRP"]=str(subSO_OOB_NETipv4[rack][1]) 
-    variablestochangecore1["VLAN_SO"]=str(BASE_SO+rack)
     variablestochangecore1["HOSTNAME_RACK"]= HOSTNAME_RACK[1]
     variablestochangecore1["SO_HOSTNAME_OOB"]="SO_"+ HOSTNAME_RACK[1]
-    variablestochangecore1["NUM_CHANNEL"]=str(BASE_SO+rack)   
     if (1+rack)%2==0:
         variablestochangecore1["HSRP_PRIORITY"]="100"
     else:
-        variablestochangecore1["HSRP_PRIORITY"]="101"
-        
-    
+        variablestochangecore1["HSRP_PRIORITY"]="101"    
+
     variablestochangecore2["INT_OOB_DESCRIP"]= INT_OOBC2_DESCRIP
     variablestochangecore2["INTERFACE_CORE"]= INTERFACE_CORE2
-    variablestochangecore2["IPCORE"]= str(subSO_OOB_NETipv4[rack][126])
-    variablestochangecore2["IPHSRP"]= str(subSO_OOB_NETipv4[rack][1])
-    variablestochangecore2["VLAN_SO"]= str(BASE_SO+rack)
     variablestochangecore2["HOSTNAME_RACK"]= HOSTNAME_RACK[1]
     variablestochangecore2["SO_HOSTNAME_OOB"]= "SO_"+ HOSTNAME_RACK[1]
-    variablestochangecore2["NUM_CHANNEL"]= str(BASE_SO+rack)
     if(2+rack)%2==0:
         variablestochangecore2["HSRP_PRIORITY"]="100"
     else:
-        variablestochangecore2["HSRP_PRIORITY"]="101"
+        variablestochangecore2["HSRP_PRIORITY"]="101"    
+
+    variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack, HOSTNAME_CORE1, HOSTNAME_RACK[1])
+    variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack, HOSTNAME_CORE2, HOSTNAME_RACK[1])
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+"-"+HOSTNAME_RACK[1]+".cfg"    #"-"+str(rack)+".cfg"
-    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+"-"+HOSTNAME_RACK[1]+".cfg"    #"-"+str(rack)+".cfg"
+    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+"-"+HOSTNAME_RACK[1]+".cfg"    
+    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+"-"+HOSTNAME_RACK[1]+".cfg" 
 
     #gerando arquivos de saida
     replace(fileincore,fileoutcore1,variablestochangecore1)

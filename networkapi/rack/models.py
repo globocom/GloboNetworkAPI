@@ -69,12 +69,22 @@ class RackNumberNotFoundError(RackError):
 
 class RackConfigError(Exception):
 
-    """Retorna exceção quanda configuracao nao for criada."""
+    """Retorna exceção quao a configuracao nao for criada."""
 
     def __init__(self, cause, param=None, value=None):
         self.cause = cause
         self.param = param
         self.value = value
+
+class RackAplError(Exception):
+
+    """Retorna exceção quao a configuracao nao pode ser aplicada."""
+
+    def __init__(self, cause, param=None, value=None):
+        self.cause = cause
+        self.param = param
+        self.value = value
+
 
 class Rack(BaseModel):
 
