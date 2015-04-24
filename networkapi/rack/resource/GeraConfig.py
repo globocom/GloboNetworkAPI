@@ -244,6 +244,10 @@ def dic_lf_spn(user, rack):
     vlans['VLANFELEAF'] = VLANFELEAF
     vlans['VLANBORDALEAF'] = VLANBORDALEAF
     vlans['VLANBORDACACHOSLEAF'] = VLANBORDACACHOSLEAF
+    vlans['BE'] = [VLANBE, VLANFE]
+    vlans['FE'] = [VLANFE, VLANBORDA]
+    vlans['BORDA'] = [VLANBORDA, VLANBORDACACHOS]
+    vlans['BORDACACHOS'] = [VLANBORDACACHOS, 3921]
 
     redes = dict()
     redes['subSPINE1ipv4'] = subSPINE1ipv4

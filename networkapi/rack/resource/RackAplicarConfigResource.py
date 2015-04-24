@@ -16,6 +16,7 @@
 # limitations under the License.
 
 
+from netaddr import *
 from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
@@ -31,7 +32,7 @@ from networkapi.rack.resource.GeraConfig import dic_lf_spn, dic_vlan_core
 from networkapi.ip.models import NetworkIPv4, Ip, IpEquipamento
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
-from networkapi.ambiente.models import AmbienteLogico, DivisaoDc, GrupoL3, AmbienteError, Ambiente, AmbienteNotFoundError
+from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, AmbienteError, Ambiente, AmbienteNotFoundError
 from networkapi.settings import NETWORKIPV4_CREATE, VLAN_CREATE
 from networkapi.util import destroy_cache_function
 
@@ -148,10 +149,62 @@ def inserir_equip(user, variablestochangecore, rede_id):
     return 0
 
 
-def configurar_ambiente(user, divisaodc, rack):
+def configurar_ambiente(user, rack):
 
-    vlans, redes = dic_lf_spn(user, rack)
-    raise RackAplError(None, None, vlans)
+    vlans, redes = dic_lf_spn(user, rack.numero)
+
+    grupol3 = GrupoL3()
+    grupol3.nome = "RACK_"+rack.nome
+    grupol3.save(user)
+
+    divisaoDC = ['BE', 'FE', 'BORDA', 'BORDACACHOS']
+    amb_id = dict()
+
+    #cadastro dos ambientes
+    for divisaodc in divisaoDC: 
+        environment = Ambiente() 
+        environment.grupo_l3 = GrupoL3() 
+        environment.ambiente_logico = AmbienteLogico() 
+        environment.divisao_dc = DivisaoDc() 
+        environment.grupo_l3.id = grupol3.id
+        environment.ambiente_logico.id = environment.ambiente_logico.get_by_name("SPINELEAF").id 
+        environment.divisao_dc.id = environment.divisao_dc.get_by_name(divisaodc).id
+        environment.acl_path = None 
+        environment.ipv4_template = None
+        environment.ipv6_template = None 
+        vlan_name = "VLAN"+divisaodc+"LEAF"
+        environment.max_num_vlan_1 = vlans.get(divisaodc)[0] 
+        environment.min_num_vlan_1 = vlans.get(divisaodc)[1] - 1
+        environment.max_num_vlan_2 = vlans.get(divisaodc)[0] 
+        environment.min_num_vlan_2 = vlans.get(divisaodc)[1] - 1
+        environment.link = None 
+ 
+        environment.create(user)
+        
+        amb_id[divisaodc] = environment.id
+
+
+    #configuracao dos ambientes
+    subSPINE = ["subSPINE1ipv4", "subSPINE2ipv4", "subSPINE3ipv4", "subSPINE4ipv4"]
+    for divisaodc in divisaoDC:
+        for sub in subSPINE:
+            ip_config = IPConfig()
+            ip_config.subnet = str(redes.get(sub)[rack.numero])
+            ip_config.new_prefix = "31"
+            ip_config.type = IP_VERSION.IPv4[0]
+            tiporede = TipoRede()
+            tipo = tiporede.get_by_name("Ponto a ponto")
+            ip_config.network_type = tipo
+
+            ip_config.save(user)
+
+            config_environment = ConfigEnvironment()
+            config_environment.environment = Ambiente().get_by_pk(amb_id.get(divisaodc))
+            config_environment.ip_config = ip_config
+
+            config_environment.save(user)
+
+    #raise RackAplError(None, None, amb_id)
 
 
 class RackAplicarConfigResource(RestResource):
@@ -209,11 +262,11 @@ class RackAplicarConfigResource(RestResource):
             """
             #ambientes
             #BE - SPINE - LEAF
-            configurar_ambiente(user, 'BE', rack.numero)
+            configurar_ambiente(user, rack)
             
             #Atualizar flag na tabela
-            rack.__dict__.update(id=rack.id, create_vlan_amb=True)
-            rack.save(user)
+            #rack.__dict__.update(id=rack.id, create_vlan_amb=True)
+            #rack.save(user)
             
             success_map = dict()
             success_map['rack_conf'] = True
