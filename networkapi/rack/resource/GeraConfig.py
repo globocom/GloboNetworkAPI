@@ -62,7 +62,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 
     #Vlan para cadastrar
     variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack 
-    variablestochangecore["VLAN_SO"]=str(BASE_SO+rack) 
+    variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack) 
 
     #Rede para cadastrar  
     subSO_OOB_NETipv4=list(SO_OOB_NETipv4.subnet(25)) 
@@ -173,15 +173,6 @@ def dic_pods(user, rack):
     redesPODSBEBOipv4 = {}
     PODSBECAipv4 = {}
     redesPODSBECAipv4 = {}
-    redesHostsipv4 = {}
-    redeHostsBEipv4 = {}
-    redeHostsFEipv4 = {}
-    redeHostsBOipv4 = {}
-    redeHostsCAipv4 = {}
-    redeHostsFILERipv4 = {}
-    subnetsRackBEipv4 = {}
-    subnetsRackFEipv4 = {}
-    redesPODSFEipv4 = {}
 
     PODSBEipv4[rack]=[]
     redesPODSBEipv4[rack]=[]
@@ -191,17 +182,7 @@ def dic_pods(user, rack):
     redesPODSBEBOipv4[rack]=[]
     PODSBECAipv4[rack]=[]
     redesPODSBECAipv4[rack]=[]
-    redesHostsipv4[rack]=[]
-    redeHostsBEipv4[rack]=[]
-    redeHostsFEipv4[rack]=[]
-    redeHostsBOipv4[rack]=[]
-    redeHostsCAipv4[rack]=[]
-    redeHostsFILERipv4[rack]=[]
-    subnetsRackBEipv4[rack] = []
-    subnetsRackFEipv4[rack] = []
-    redesPODSFEipv4[rack] = []
-
-
+ 
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBEipv4 = IPNetwork('10.128.0.0/12')
     CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
@@ -284,8 +265,7 @@ def dic_hosts_cloud(rack):
     #VLANS CLoud
     # ambiente BE - MNGT_NETWORK - RACK_AAXX
     # 10.128.30.0/23
-
-    # vlans MNGT_BE ...
+    # vlans MNGT_BE/FE/BO/CA/FILER
         #PODS BE => /20 
     #Hosts => 10.128.30.0/23
     #IPNetwork('10.128.62.0/23')
@@ -414,17 +394,13 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
 
     IP_GERENCIA_LF1=ip_mgmtlf1
     IP_GERENCIA_LF2=ip_mgmtlf2
-    #IP_GERENCIA_OOB=ip_mgmtobb
-
-
+ 
     INTERFACE_SP1=int_sp1
     INTERFACE_SP2=int_sp2
     INTERFACE_SP3=int_sp3
     INTERFACE_SP4=int_sp4
     INTERFACE_OOB_LF1=int_oob_mgmtlf1
     INTERFACE_OOB_LF2=int_oob_mgmtlf2
-
-
 
     BASE_RACK = 120
     BASE_AS = 65000
@@ -455,18 +431,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     CIDRBEipv4 = {}
     PODSBEipv4 = {}
     redesPODSBEipv4 = {}
-    PODSBEFEipv4 = {}
-    redesPODSBEFEipv4 = {}
-    PODSBEBOipv4 = {}
-    redesPODSBEBOipv4 = {}
-    PODSBECAipv4 = {}
-    redesPODSBECAipv4 = {}
-    redesHostsipv4 = {}
-    redeHostsBEipv4 = {}
-    redeHostsFEipv4 = {}
-    redeHostsBOipv4 = {}
-    redeHostsCAipv4 = {}
-    redeHostsFILERipv4 = {}
+    #
     subnetsRackBEipv4 = {}
     #
     CIDRBEipv6 = {}
@@ -504,18 +469,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     #
     PODSBEipv4[rack]=[]
     redesPODSBEipv4[rack]=[]
-    PODSBEFEipv4[rack]=[]
-    redesPODSBEFEipv4[rack]=[]
-    PODSBEBOipv4[rack]=[]
-    redesPODSBEBOipv4[rack]=[]
-    PODSBECAipv4[rack]=[]
-    redesPODSBECAipv4[rack]=[]
-    redesHostsipv4[rack]=[]
-    redeHostsBEipv4[rack]=[]
-    redeHostsFEipv4[rack]=[]
-    redeHostsBOipv4[rack]=[]
-    redeHostsCAipv4[rack]=[]
-    redeHostsFILERipv4[rack]=[]
+    #
     subnetsRackBEipv4[rack] = []
     #
     PODSBEipv6[rack]=[]
@@ -566,7 +520,6 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
 
     IBGPToRLxLipv6 = IPNetwork('fdbe:0:0:1eaf:8100::/120')
     subIBGPToRLxLipv6 = list(IBGPToRLxLipv6.subnet(127))
-
 
 
     IPSPINEipv4[rack].append(subSPINE1ipv4[rack][0])
@@ -620,8 +573,6 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
 
     ############################################################################
     ############################################################################
-
-
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBEipv4 = IPNetwork('10.128.0.0/12')
     CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
@@ -635,6 +586,9 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
 
     #PODS BE => /20
     subnetteste=subnetsRackBEipv4[rack]
+
+    #dic_pods()
+    #dic_hosts()
 
     #    ::::::::::::::::::::::::::::::::::: FRONTEND
 
@@ -668,11 +622,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangeleaf2={}
     variablestochangecore1={}
     variablestochangecore2={}
-
-    #variablestochange.append()
-    #variablestochange={"VARREDE2",os.path.join( str(IPLEAF[rack][0]),str(31) )}
-
-    
+   
     variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])+" 255.255.255.254" 
     variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])+ " 127"
     variablestochangespine1["VLANBELEAF"]=str(VLANBELEAF[rack][0])
@@ -686,8 +636,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine1["INTERFACE"]=INTERFACE_SP1
     variablestochangespine1["LEAFNAME"]=HOSTNAME_LF1
     variablestochangespine1["INT_LF_DESCRIP"]=int_lf1_sp1 
-
-
+    #
     #
     variablestochangespine2["IPSPINEIPV4"]=str(IPSPINEipv4[rack][1])+" 255.255.255.254" 
     variablestochangespine2["IPSPINEIPV6"]=str(IPSPINEipv6[rack][1])+ " 127"

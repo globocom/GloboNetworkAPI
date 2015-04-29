@@ -57,25 +57,24 @@ def get_core_name(rack):
     return name_core1, name_core2
 
 
-
-def criar_vlan(user, variablestochangecore1):
+def criar_vlan(user, variablestochangecore1, ambientes):
 
     #get environment
     ambiente = Ambiente()
     divisaodc = DivisaoDc()
-    divisaodc = divisaodc.get_by_name("NA")
+    divisaodc = divisaodc.get_by_name(ambientes.get('DC'))
     ambiente_log = AmbienteLogico()
-    ambiente_log = ambiente_log.get_by_name("NA")
+    ambiente_log = ambiente_log.get_by_name(ambientes.get('LOG'))
     ambiente = ambiente.search(divisaodc.id, ambiente_log.id)
     for  amb in ambiente:
-        if amb.grupo_l3.nome=="REDENOVODC":
+        if amb.grupo_l3.nome==ambientes.get('L3'):
             id_ambiente = amb
 
     # set vlan
     vlan = Vlan()
     vlan.acl_file_name = None
     vlan.acl_file_name_v6 = None
-    vlan.num_vlan = variablestochangecore1.get("VLAN_SO")
+    vlan.num_vlan = variablestochangecore1.get("VLAN_NUM")
     vlan.nome = variablestochangecore1.get("VLAN_NAME")
     vlan.descricao = ""
     vlan.ambiente = id_ambiente
@@ -103,10 +102,10 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_type = tiporede.get_by_pk(net_id.id)
 
     network_ip = NetworkIPv4()
-    network_ip.oct1, network_ip.oct2, network_ip.oct3, network_ip.oct4 = str(variablestochangecore1["REDE_IP"]).split('.')
-    network_ip.block = variablestochangecore1["REDE_MASK"]
-    network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 = variablestochangecore1["NETMASK"].split('.')
-    network_ip.broadcast = variablestochangecore1["BROADCAST"]
+    network_ip.oct1, network_ip.oct2, network_ip.oct3, network_ip.oct4 = str(variablestochangecore1.get("REDE_IP")).split('.')
+    network_ip.block = variablestochangecore1.get("REDE_MASK")
+    network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 = str(variablestochangecore1.get("NETMASK")).split('.')
+    network_ip.broadcast = variablestochangecore1.get("BROADCAST")
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
@@ -126,6 +125,59 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
         return self.response_error(2, stdout + stderr)
  
     return network_ip.id
+
+
+def criar_ambiente(user, ambientes, ranges):
+
+    #ambiente cloud
+    environment = Ambiente()
+    environment.grupo_l3 = GrupoL3()
+    environment.ambiente_logico = AmbienteLogico()
+    environment.divisao_dc = DivisaoDc()
+
+    environment.grupo_l3.id = environment.grupo_l3.get_by_name(ambientes.get('L3')).id
+    environment.ambiente_logico.id = environment.ambiente_logico.get_by_name(ambientes.get('LOG')).id
+    environment.divisao_dc.id = environment.divisao_dc.get_by_name(ambientes.get('DC')).id
+
+    environment.acl_path = None
+    environment.ipv4_template = None
+    environment.ipv6_template = None
+
+    environment.max_num_vlan_1 = ranges.get('MAX')
+    environment.min_num_vlan_1 = ranges.get('MIN')
+    environment.max_num_vlan_2 = ranges.get('MAX')
+    environment.min_num_vlan_2 = ranges.get('MIN')
+
+    environment.link = " "
+
+    environment.create(user)
+
+
+def config_ambiente(user, hosts, ambientes):
+    #ip_config
+    ip_config = IPConfig()
+    ip_config.subnet = hosts.get("REDE")
+    ip_config.new_prefix = hosts.get("PREFIX")
+    ip_config.type = IP_VERSION.IPv4[0]
+    tiporede = TipoRede()
+    tipo = tiporede.get_by_name(hosts.get("TIPO"))
+    ip_config.network_type = tipo
+
+    ip_config.save(user)
+
+    #ambiente
+    config_environment = ConfigEnvironment()
+    amb_log = AmbienteLogico()
+    div = DivisaoDc()
+    amb_log = amb_log.get_by_name(ambientes.get("LOG"))
+    div = div.get_by_name(ambientes.get("DC"))
+    for j in Ambiente().search(div.id, amb_log.id):
+        if j.grupo_l3.nome==ambientes.get("L3"):
+            config_environment.environment = j
+            
+    config_environment.ip_config = ip_config
+
+    config_environment.save(user)
 
 
 def inserir_equip(user, variablestochangecore, rede_id):
@@ -149,7 +201,7 @@ def inserir_equip(user, variablestochangecore, rede_id):
     return 0
 
 
-def configurar_ambiente(user, rack):
+def ambiente_spn_lf(user, rack):
 
     vlans, redes = dic_lf_spn(user, rack.numero)
 
@@ -160,216 +212,105 @@ def configurar_ambiente(user, rack):
     grupol3.nome = "RACK_"+rack.nome
     grupol3.save(user)
 
-    grupol3_nome = "RACK_"+rack.nome
-    #cadastro dos ambientes
+    ambientes= dict()   
+    ambientes['L3']= "RACK_"+rack.nome
+
+    ranges=dict()
+    hosts=dict()
+    hosts['TIPO']= "Ponto a ponto"
+
     for divisaodc in divisaoDC: 
-        for i in spines:
-            environment = Ambiente() 
-            environment.grupo_l3 = GrupoL3() 
-            environment.ambiente_logico = AmbienteLogico() 
-            environment.divisao_dc = DivisaoDc() 
+        ambientes['DC']=divisaodc
+        for i in spines: 
 
-            ambiente_logico = "SPINE"+i+"LEAF"
-            environment.grupo_l3.id = environment.grupo_l3.get_by_name(grupol3_nome).id
-            environment.ambiente_logico.id = environment.ambiente_logico.get_by_name(ambiente_logico).id 
-            environment.divisao_dc.id = environment.divisao_dc.get_by_name(divisaodc).id
+            ambientes['LOG']= "SPINE"+i+"LEAF"
 
-            environment.acl_path = None 
-            environment.ipv4_template = None
-            environment.ipv6_template = None 
-
+            #cadastro dos ambientes
             vlan_name = "VLAN"+divisaodc+"LEAF"
-            environment.max_num_vlan_1 = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119 
-            environment.min_num_vlan_1 = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
-            environment.max_num_vlan_2 = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119
-            environment.min_num_vlan_2 = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
+            ranges['MAX'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119 
+            ranges['MIN'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
 
-            environment.link = " " 
- 
-            environment.create(user)
+            criar_ambiente(user, ambientes, ranges)
 
-    #configuracao dos ambientes
-    for divisaodc in divisaoDC:
-        for i in spines:
+            #configuracao do ambiente
             rede = "SPINE"+i[1]+"ipv4"
-            ip_config = IPConfig()
-            ip_config.subnet = redes.get(rede)
-            ip_config.new_prefix = "31"
-            ip_config.type = IP_VERSION.IPv4[0]
-            tiporede = TipoRede()
-            tipo = tiporede.get_by_name("Ponto a ponto")
-            ip_config.network_type = tipo
+            hosts['REDE'] = redes.get(rede)
+            hosts['PREFIX'] = "31"
 
-            ip_config.save(user)
-
-            config_environment = ConfigEnvironment()
-            amb = "SPINE"+i+"LEAF"
-            amb_log = AmbienteLogico()
-            amb_log = amb_log.get_by_name(amb) 
-            div = DivisaoDc()
-            div = div.get_by_name(divisaodc)
-            for j in Ambiente().search(div.id, amb_log.id):
-                if j.grupo_l3.nome==grupol3_nome:
-                    config_environment.environment = j
-            config_environment.ip_config = ip_config
-
-            config_environment.save(user)
-    #raise RackAplError(None, None, "OKOKOK")
+            ambientes['LOG']= "SPINE"+i+"LEAF"
+            config_ambiente(user, hosts, ambientes)
 
 
-
-def configurar_ambiente_2(user, rack):
+def ambiente_prod(user, rack):
 
     redes = dic_pods(user, rack.numero)
 
     divisaoDC = ['BE', 'BEFE', 'BEBORDA', 'BECACHOS']
     grupol3 = "RACK_"+rack.nome
+    ambiente_logico = "PRODUCAO"
 
-    #cadastro dos ambientes
+    ambientes= dict()   
+    ambientes['LOG']=ambiente_logico
+    ambientes['L3']= grupol3
+
+    ranges=dict()
+    hosts=dict()
+    hosts['TIPO']= "Rede invalida equipamentos"
+
     for divisaodc in divisaoDC:
-        environment = Ambiente()
-        environment.grupo_l3 = GrupoL3()
-        environment.ambiente_logico = AmbienteLogico()
-        environment.divisao_dc = DivisaoDc()
 
-        ambiente_logico = "PRODUCAO"
-        environment.grupo_l3.id = environment.grupo_l3.get_by_name(grupol3).id
-        environment.ambiente_logico.id = environment.ambiente_logico.get_by_name(ambiente_logico).id
-        environment.divisao_dc.id = environment.divisao_dc.get_by_name(divisaodc).id
+        ambientes['DC']=divisaodc
 
-        environment.acl_path = None
-        environment.ipv4_template = None
-        environment.ipv6_template = None
-
+        #criar ambiente
         vlan_min = divisaodc+"_VLAN_MIN"
         vlan_max = divisaodc+"_VLAN_MAX"
-        environment.max_num_vlan_1 = redes.get(vlan_max)
-        environment.min_num_vlan_1 = redes.get(vlan_min)
-        environment.max_num_vlan_2 = redes.get(vlan_max)
-        environment.min_num_vlan_2 = redes.get(vlan_min)
+        ranges['MAX']= redes.get(vlan_max)
+        ranges['MIN']= redes.get(vlan_min)
 
-        environment.link = " "
+        criar_ambiente(user, ambientes, ranges)
 
-        environment.create(user)
-
-    #configuracao dos ambientes
-    for divisaodc in divisaoDC:
+        #configuracao dos ambientes
         prefix = divisaodc+"_PREFIX"
         rede = divisaodc+"_REDE"
-        ip_config = IPConfig()
-        ip_config.subnet = redes.get(rede)
-        ip_config.new_prefix = redes.get(prefix)
-        ip_config.type = IP_VERSION.IPv4[0]
-        tiporede = TipoRede()
-        tipo = tiporede.get_by_name("Rede invalida equipamentos")
-        ip_config.network_type = tipo
+        hosts['PREFIX']= redes.get(prefix)
+        hosts['REDE']= redes.get(rede)
 
-        ip_config.save(user)
-
-        config_environment = ConfigEnvironment()
-        amb_log = AmbienteLogico()
-        amb_log = amb_log.get_by_name("PRODUCAO")
-        div = DivisaoDc()
-        div = div.get_by_name(divisaodc)
-        for j in Ambiente().search(div.id, amb_log.id):
-            if j.grupo_l3.nome==grupol3:
-                 config_environment.environment = j
-        config_environment.ip_config = ip_config
-
-        config_environment.save(user)
-    #raise RackAplError(None, None, "OKOKOK")
-
+        config_ambiente(user, hosts, ambientes)
 
 
 def ambiente_cloud(user, rack):
 
     hosts = dic_hosts_cloud(rack.numero)
-    
 
-    ambiente_logico = "MNGT_NETWORK"
+    ambientes= dict()
+    ambientes['DC']="BE"
+    ambientes['LOG']="MNGT_NETWORK"
+    ambientes['L3']= "RACK_"+rack.nome    
+ 
     amb_log = AmbienteLogico()
-    amb_log.nome = ambiente_logico
+    amb_log.nome = "MNGT_NETWORK"
     amb_log.save(user)
 
-    #ambiente cloud
-    environment = Ambiente()
-    environment.grupo_l3 = GrupoL3()
-    environment.ambiente_logico = AmbienteLogico()
-    environment.divisao_dc = DivisaoDc()
+    ranges=dict()
+    ranges['MAX']= hosts.get('VLAN_MNGT_FILER')
+    ranges['MIN']=hosts.get('VLAN_MNGT_BE')
 
-    grupol3 = "RACK_"+rack.nome
-    environment.grupo_l3.id = environment.grupo_l3.get_by_name(grupol3).id
-    environment.ambiente_logico.id = environment.ambiente_logico.get_by_name(ambiente_logico).id
-    environment.divisao_dc.id = environment.divisao_dc.get_by_name("BE").id
+    #criar ambiente cloud
+    criar_ambiente(user, ambientes, ranges)
 
-    environment.acl_path = None
-    environment.ipv4_template = None
-    environment.ipv6_template = None
-
-    vlan_min = "VLAN_MNGT_BE"
-    vlan_max = "VLAN_MNGT_FILER"
-    environment.max_num_vlan_1 = hosts.get(vlan_max)
-    environment.min_num_vlan_1 = hosts.get(vlan_min)
-    environment.max_num_vlan_2 = hosts.get(vlan_max)
-    environment.min_num_vlan_2 = hosts.get(vlan_min)
-
-    environment.link = " "
-
-    environment.create(user)
-
-   #configuracao dos ambientes
-    prefix = "PREFIX"
-    rede = "REDE"
-    ip_config = IPConfig()
-    ip_config.subnet = hosts.get(rede)
-    ip_config.new_prefix = hosts.get(prefix)
-    ip_config.type = IP_VERSION.IPv4[0]
-    tiporede = TipoRede()
-    tipo = tiporede.get_by_name("Rede invalida equipamentos")
-    ip_config.network_type = tipo
-
-    ip_config.save(user)
-
-    config_environment = ConfigEnvironment()
-    amb_log = AmbienteLogico()
-    amb_log = amb_log.get_by_name(ambiente_logico)
-    div = DivisaoDc()
-    div = div.get_by_name("BE")
-    for j in Ambiente().search(div.id, amb_log.id):
-        if j.grupo_l3.nome==grupol3:
-            config_environment.environment = j
-            ambiente_obj = j
-    config_environment.ip_config = ip_config
-
-    config_environment.save(user)
+    #configuracao do ambiente
+    hosts['TIPO']= "Rede invalida equipamentos"
+    config_ambiente(user, hosts, ambientes)
 
     #inserir vlans
     amb_cloud = ['BE','FE','BO','CA','FILER']
     for amb in amb_cloud: 
-        # set vlan
-        vlan = Vlan()
-        vlan.acl_file_name = None
-        vlan.acl_file_name_v6 = None
         numero = "VLAN_MNGT_"+amb
-        vlan.num_vlan = hosts.get(numero)
-        vlan.nome = "MNGT_"+amb
-        vlan.descricao = ""
-        vlan.ambiente = ambiente_obj
-        vlan.ativada = 0
-        vlan.acl_valida = 0
-        vlan.acl_valida_v6 = 0
-  
-        vlan.insert_vlan(user)
-
-        #ativar a vlan
-        vlan_command = VLAN_CREATE % int(vlan.id)
-        code, stdout, stderr = exec_script(vlan_command)
-        if code == 0:
-            vlan.activate(user)
-        else:
-            return self.response_error(2, stdout + stderr)
-
-        #rede
+        variables['VLAN_NUM'] = hosts.get(numero)
+        variables['VLAN_NAME'] = "MNGT_"+amb
+        
+        vlan = criar_vlan(user, variables, ambientes)
+        #criar rede
         criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
 
 
@@ -408,10 +349,16 @@ class RackAplicarConfigResource(RestResource):
             variablestochangecore2 = {}
             variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack.numero, name_core1, rack.nome)
             variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack.numero, name_core2, rack.nome)
+
             #######################################################################           VLAN Gerencia SO
+            ambientes=dict()
+            ambientes['DC']="NA"
+            ambientes['LOG']="NA"
+            ambientes['L3']="REDENOVODC"
+    
             try: 
                 #criar e ativar a vlan
-                vlan = criar_vlan(user, variablestochangecore1)
+                vlan = criar_vlan(user, variablestochangecore1, ambientes)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
@@ -425,12 +372,14 @@ class RackAplicarConfigResource(RestResource):
                 inserir_equip(user, variablestochangecore2, rede_id)            
             except:
                 raise RackAplError(None, rack.nome, "Erro ao inserir o core 1 e 2")
+                
             #######################################################################                  Ambientes
 
             #BE - SPINE - LEAF
-            configurar_ambiente(user, rack)
+            ambiente_spn_lf(user, rack)
+
             #PODS - PRODUCAO
-            configurar_ambiente_2(user, rack)            
+            ambiente_prod(user, rack)            
             """
             #Hosts - CLOUD
             ambiente_cloud(user, rack)
