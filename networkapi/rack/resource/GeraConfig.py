@@ -40,7 +40,7 @@ def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))
     return subnets[posicao]
 
-def dic_vlan_core(variablestochangecore, rack, name_core, name_rack): #int core: se eh o core1 ou core2
+def dic_vlan_core(variablestochangecore, rack, name_core, name_rack): 
     """
     variablestochangecore: list
     rack: Numero do Rack
@@ -93,111 +93,18 @@ def dic_lf_spn(user, rack):
     VLANBORDA = 2960
     VLANBORDACACHOS = 3440
 
-    VLANBELEAF = {}
-    VLANFELEAF = {}
-    VLANBORDALEAF = {}
-    VLANBORDACACHOSLEAF = {}
-
     CIDREBGP = {}
     CIDRBE = {}
-    IPSPINEipv4 = {}
-    IPSPINEipv6 = {}
-    IPLEAFipv4 = {}
-    IPLEAFipv6 = {}
-    IPSIBGPipv4 = {}
-    IPSIBGPipv6 = {}
-    ASLEAF = {}
     ########
     VLANBELEAF = {}
     VLANFELEAF = {}
     VLANBORDALEAF = {}
     VLANBORDACACHOSLEAF = {}
     ########
-    CIDRBEipv4 = {}
-    PODSBEipv4 = {}
-    redesPODSBEipv4 = {}
-    PODSBEFEipv4 = {}
-    redesPODSBEFEipv4 = {}
-    PODSBEBOipv4 = {}
-    redesPODSBEBOipv4 = {}
-    PODSBECAipv4 = {}
-    redesPODSBECAipv4 = {}
-    redesHostsipv4 = {}
-    redeHostsBEipv4 = {}
-    redeHostsFEipv4 = {}
-    redeHostsBOipv4 = {}
-    redeHostsCAipv4 = {}
-    redeHostsFILERipv4 = {}
-    subnetsRackBEipv4 = {}
-    #
-    CIDRBEipv6 = {}
-    PODSBEipv6 = {}
-    redesPODSBEipv6 = {}
-    PODSBEFEipv6 = {}
-    redesPODSBEFEipv6 = {}
-    PODSBEBOipv6 = {}
-    redesPODSBEBOipv6 = {}
-    PODSBECAipv6 = {}
-    redesPODSBECAipv6 = {}
-    redesHostsipv6 = {}
-    redeHostsBEipv6 = {}
-    redeHostsFEipv6 = {}
-    redeHostsBOipv6 = {}
-    redeHostsCAipv6 = {}
-    redeHostsFILERipv6 = {}
-    subnetsRackBEipv6 = {}
-    subnetsRackFEipv4 = {}
-    redesPODSFEipv4 = {}
-    subnetsRackFEipv6 = {}
-    redesPODSFEipv6 = {}
-    #
-    IPSPINEipv4[rack]=[]
-    IPSPINEipv6[rack]=[]
-    IPLEAFipv4[rack]=[]
-    IPLEAFipv6[rack]=[]
-    IPSIBGPipv4[rack]=[]
-    IPSIBGPipv6[rack]=[]
     VLANBELEAF[rack]=[]
     VLANFELEAF[rack]=[]
     VLANBORDALEAF[rack]=[]
     VLANBORDACACHOSLEAF[rack]=[]
-    ASLEAF[rack]=[]
-    #
-    PODSBEipv4[rack]=[]
-    redesPODSBEipv4[rack]=[]
-    PODSBEFEipv4[rack]=[]
-    redesPODSBEFEipv4[rack]=[]
-    PODSBEBOipv4[rack]=[]
-    redesPODSBEBOipv4[rack]=[]
-    PODSBECAipv4[rack]=[]
-    redesPODSBECAipv4[rack]=[]
-    redesHostsipv4[rack]=[]
-    redeHostsBEipv4[rack]=[]
-    redeHostsFEipv4[rack]=[]
-    redeHostsBOipv4[rack]=[]
-    redeHostsCAipv4[rack]=[]
-    redeHostsFILERipv4[rack]=[]
-    subnetsRackBEipv4[rack] = []
-    #
-    PODSBEipv6[rack]=[]
-    redesPODSBEipv6[rack]=[]
-    PODSBEFEipv6[rack]=[]
-    redesPODSBEFEipv6[rack]=[]
-    PODSBEBOipv6[rack]=[]
-    redesPODSBEBOipv6[rack]=[]
-    PODSBECAipv6[rack]=[]
-    redesPODSBECAipv6[rack]=[]
-    redesHostsipv6[rack]=[]
-    redeHostsBEipv6[rack]=[]
-    redeHostsFEipv6[rack]=[]
-    redeHostsBOipv6[rack]=[]
-    redeHostsCAipv6[rack]=[]
-    redeHostsFILERipv6[rack]=[]
-    subnetsRackBEipv6[rack] = []
-    subnetsRackFEipv4[rack] = []
-    redesPODSFEipv4[rack] = []
-    subnetsRackFEipv6[rack] = []
-    redesPODSFEipv6[rack] = []
 
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBE[0] = IPNetwork('10.128.0.0/12')
@@ -213,11 +120,8 @@ def dic_lf_spn(user, rack):
     subSPINE3ipv4=list(SPINE3ipv4.subnet(31))
     subSPINE4ipv4=list(SPINE4ipv4.subnet(31))
 
-    ########### BD ############ /environment/form
-
     #Vlans BE RANGE
-    #Nome do ambiente BE +  + Nome do Rack
-    VLANBELEAF[rack].append(VLANBE+rack) #range
+    VLANBELEAF[rack].append(VLANBE+rack) 
     # rede subSPINE1ipv4[rack]
     VLANBELEAF[rack].append(VLANBE+rack+BASE_RACK)
     VLANBELEAF[rack].append(VLANBE+rack+2*BASE_RACK)
@@ -250,13 +154,194 @@ def dic_lf_spn(user, rack):
     vlans['BORDACACHOS'] = [VLANBORDACACHOS, 3921]
 
     redes = dict()
-    redes['subSPINE1ipv4'] = subSPINE1ipv4
-    redes['subSPINE2ipv4'] = subSPINE2ipv4
-    redes['subSPINE3ipv4'] = subSPINE3ipv4
-    redes['subSPINE4ipv4'] = subSPINE4ipv4
+    redes['SPINE1ipv4'] = str(SPINE1ipv4)
+    redes['SPINE2ipv4'] = str(SPINE2ipv4)
+    redes['SPINE3ipv4'] = str(SPINE3ipv4)
+    redes['SPINE4ipv4'] = str(SPINE4ipv4)
     
     return vlans, redes
 
+
+def dic_pods(user, rack):
+
+    CIDRBEipv4 = {}
+    PODSBEipv4 = {}
+    redesPODSBEipv4 = {}
+    PODSBEFEipv4 = {}
+    redesPODSBEFEipv4 = {}
+    PODSBEBOipv4 = {}
+    redesPODSBEBOipv4 = {}
+    PODSBECAipv4 = {}
+    redesPODSBECAipv4 = {}
+    redesHostsipv4 = {}
+    redeHostsBEipv4 = {}
+    redeHostsFEipv4 = {}
+    redeHostsBOipv4 = {}
+    redeHostsCAipv4 = {}
+    redeHostsFILERipv4 = {}
+    subnetsRackBEipv4 = {}
+    subnetsRackFEipv4 = {}
+    redesPODSFEipv4 = {}
+
+    PODSBEipv4[rack]=[]
+    redesPODSBEipv4[rack]=[]
+    PODSBEFEipv4[rack]=[]
+    redesPODSBEFEipv4[rack]=[]
+    PODSBEBOipv4[rack]=[]
+    redesPODSBEBOipv4[rack]=[]
+    PODSBECAipv4[rack]=[]
+    redesPODSBECAipv4[rack]=[]
+    redesHostsipv4[rack]=[]
+    redeHostsBEipv4[rack]=[]
+    redeHostsFEipv4[rack]=[]
+    redeHostsBOipv4[rack]=[]
+    redeHostsCAipv4[rack]=[]
+    redeHostsFILERipv4[rack]=[]
+    subnetsRackBEipv4[rack] = []
+    subnetsRackFEipv4[rack] = []
+    redesPODSFEipv4[rack] = []
+
+
+    #CIDR sala 01 => 10.128.0.0/12
+    CIDRBEipv4 = IPNetwork('10.128.0.0/12')
+    CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
+
+
+    #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
+
+    #Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
+    subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack)
+    subnetsRackBEipv6[rack]=splitnetworkbyrack(CIDRBEipv6,55,rack)
+
+
+    #PODS BE => /20 
+    subnetteste=subnetsRackBEipv4[rack] 
+    PODSBEipv4[rack]=splitnetworkbyrack(subnetteste,20,0) 
+         # => 128 redes /27     # Vlan 2 a 129
+    redesPODSBEipv4[rack] = list(PODSBEipv4[rack].subnet(27)) 
+    #PODS BEFE => 10.128.16.0/21 
+    PODSBEFEipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,0)
+         # => 64 redes /27    # Vlan 130 a 193
+    redesPODSBEFEipv4[rack] = list(PODSBEFEipv4[rack].subnet(27))
+    #PODS BEBO => 10.128.24.0/22
+    PODSBEBOipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,0)
+         # => 64 redes /28    # Vlan 194 a 257
+    redesPODSBEBOipv4[rack]=list(PODSBEBOipv4[rack].subnet(28))
+    #PODS BECA => 10.128.28.0/23
+    PODSBECAipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,1),23,0)
+         # => 32 redes /28    # Vlan 258 a 289
+    redesPODSBECAipv4[rack]=list(PODSBECAipv4[rack].subnet(28))
+
+    redes = dict()
+    redes['BE_VLAN_MIN']= 2
+    redes['BE_VLAN_MAX']= 129
+    redes['BE_PREFIX']= str(redesPODSBEipv4[rack][0].prefixlen)
+    redes['BE_REDE']= str(PODSBEipv4[rack])
+
+    redes['BEFE_VLAN_MIN']= 130
+    redes['BEFE_VLAN_MAX']= 193
+    redes['BEFE_PREFIX']= str(redesPODSBEFEipv4[rack][0].prefixlen)
+    redes['BEFE_REDE']= str(PODSBEFEipv4[rack])
+
+    redes['BEBORDA_VLAN_MIN']= 194
+    redes['BEBORDA_VLAN_MAX']= 257
+    redes['BEBORDA_PREFIX']= str(redesPODSBEBOipv4[rack][0].prefixlen)
+    redes['BEBORDA_REDE']= str(PODSBEBOipv4[rack])
+
+    redes['BECACHOS_VLAN_MIN']= 258
+    redes['BECACHOS_VLAN_MAX']= 289
+    redes['BECACHOS_PREFIX']= str(redesPODSBECAipv4[rack][0].prefixlen)
+    redes['BECACHOS_REDE']= str(PODSBECAipv4[rack])
+
+    return redes
+
+
+def dic_hosts_cloud(rack):
+
+    subnetsRackBEipv4 = {}
+    subnetsRackBEipv4[rack] = []
+    redesHostsipv4={}
+    redesHostsipv4[rack]=[]
+    redeHostsBEipv4={}
+    redeHostsBEipv4[rack]=[]
+    redeHostsFEipv4={}
+    redeHostsFEipv4[rack]=[]
+    redeHostsBOipv4={}
+    redeHostsBOipv4[rack]=[]
+    redeHostsCAipv4={}
+    redeHostsCAipv4[rack]=[]
+    redeHostsFILERipv4={}
+    redeHostsFILERipv4[rack]=[]
+
+
+    #CIDR sala 01 => 10.128.0.0/12
+    CIDRBEipv4 = IPNetwork('10.128.0.0/12')
+    CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
+
+    subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack) #10.128.32.0/19
+    subnetteste=subnetsRackBEipv4[rack] #10.128.32.0/19
+
+    #VLANS CLoud
+    # ambiente BE - MNGT_NETWORK - RACK_AAXX
+    # 10.128.30.0/23
+
+    # vlans MNGT_BE ...
+        #PODS BE => /20 
+    #Hosts => 10.128.30.0/23
+    #IPNetwork('10.128.62.0/23')
+    redesHostsipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,1),23,1)
+    #Hosts BE => 10.128.30.0/24 => 256 endereços
+    #IPNetwork('10.128.62.0/24')
+    redeHostsBEipv4[rack]= splitnetworkbyrack(redesHostsipv4[rack],24,0)
+    #Hosts FE => 10.128.31.0/25 => 128 endereços
+    redeHostsFEipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,0)
+    #Hosts BO => 10.128.31.128/26 => 64 endereços
+    redeHostsBOipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,0)
+    #Hosts CA => 10.128.31.192/27 => 32 endereços
+    redeHostsCAipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,0)
+    #Hosts FILER => 10.128.15.224/27 => 32 endereços
+    redeHostsFILERipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,1)       
+
+    hosts=dict()
+    BE=dict()
+    FE=dict()
+    BO=dict()
+    CA= dict()
+    FILER=dict()
+    hosts['VLAN_MNGT_BE']=296
+    hosts['VLAN_MNGT_FE']=297
+    hosts['VLAN_MNGT_BO']=298
+    hosts['VLAN_MNGT_CA']=299
+    hosts['VLAN_MNGT_FILER']=300
+    hosts['PREFIX']=str(redesHostsipv4[rack].prefixlen)
+    hosts["REDE"]=str(redesHostsipv4[rack])
+    BE['REDE_IP']=str(redeHostsBEipv4[rack].ip)
+    BE['REDE_MASK']=redeHostsBEipv4[rack].prefixlen
+    BE['NETMASK']=str(redeHostsBEipv4[rack].netmask)
+    BE['BROADCAST']=str(redeHostsBEipv4[rack].broadcast)
+    hosts['BE']=BE
+    FE['REDE_IP']=str(redeHostsFEipv4[rack].ip)
+    FE['REDE_MASK']=redeHostsFEipv4[rack].prefixlen
+    FE['NETMASK']=str(redeHostsFEipv4[rack].netmask)
+    FE['BROADCAST']=str(redeHostsFEipv4[rack].broadcast)
+    hosts['FE']=FE
+    BO['REDE_IP']=str(redeHostsBOipv4[rack].ip)
+    BO['REDE_MASK']=redeHostsBOipv4[rack].prefixlen
+    BO['NETMASK']=str(redeHostsBOipv4[rack].netmask)
+    BO['BROADCAST']=str(redeHostsBOipv4[rack].broadcast)
+    hosts['BO']=BO
+    CA['REDE_IP']=str(redeHostsCAipv4[rack].ip)
+    CA['REDE_MASK']=redeHostsCAipv4[rack].prefixlen
+    CA['NETMASK']=str(redeHostsCAipv4[rack].netmask)
+    CA['BROADCAST']=str(redeHostsCAipv4[rack].broadcast)
+    hosts['CA']=CA
+    FILER['REDE_IP']=str(redeHostsFILERipv4[rack].ip)
+    FILER['REDE_MASK']=redeHostsFILERipv4[rack].prefixlen
+    FILER['NETMASK']=str(redeHostsFILERipv4[rack].netmask)
+    FILER['BROADCAST']=str(redeHostsFILERipv4[rack].broadcast)
+    hosts['FILER']=FILER
+
+    return hosts
 
 def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
@@ -274,8 +359,6 @@ def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_
     INT_OOBC2_DESCRIP = int_oob_core2
     INTERFACE_CORE1  = int_core1_oob
     INTERFACE_CORE2  = int_core2_oob
-
-    
 
     #gerando dicionarios para substituir paravras chaves do roteiro
     variablestochangecore1={}
@@ -550,39 +633,8 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack)
     subnetsRackBEipv6[rack]=splitnetworkbyrack(CIDRBEipv6,55,rack)
 
-
-
-    
     #PODS BE => /20
     subnetteste=subnetsRackBEipv4[rack]
-    #PODSBE.append(splitnetworkbyrack(subnetteste,20,0))
-    PODSBEipv4[rack]=splitnetworkbyrack(subnetteste,20,0)
-    # => 128 redes /27
-    redesPODSBEipv4[rack] = list(PODSBEipv4[rack].subnet(27))
-    #PODS BEFE => 10.128.16.0/21 
-    PODSBEFEipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,0)
-    # => 64 redes /27
-    redesPODSBEFEipv4[rack] = list(PODSBEFEipv4[rack].subnet(27))
-    #PODS BEBO => 10.128.24.0/22
-    PODSBEBOipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,0)
-    # => 64 redes /28
-    redesPODSBEBOipv4[rack]=list(PODSBEBOipv4[rack].subnet(28))
-    #PODS BECA => 10.128.28.0/23
-    PODSBECAipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,1),23,0)
-    # => 32 redes /28
-    redesPODSBECAipv4[rack]=list(PODSBECAipv4[rack].subnet(28))
-    #Hosts => 10.128.30.0/23
-    redesHostsipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,1),23,1)
-    #Hosts BE => 10.128.30.0/24 => 256 endereços
-    redeHostsBEipv4[rack]= splitnetworkbyrack(redesHostsipv4[rack],24,0)
-    #Hosts FE => 10.128.31.0/25 => 128 endereços
-    redeHostsFEipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,0)
-    #Hosts BO => 10.128.31.128/26 => 64 endereços
-    redeHostsBOipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,0)
-    #Hosts CA => 10.128.31.192/27 => 32 endereços
-    redeHostsCAipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,0)
-    #Hosts FILER => 10.128.15.224/27 => 32 endereços
-        
 
     #    ::::::::::::::::::::::::::::::::::: FRONTEND
 
