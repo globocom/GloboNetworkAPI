@@ -73,13 +73,22 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'networkapi.log.CommonAdminEmailHandler'
-        }
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+        },
     },
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['null'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     }
 }
@@ -151,6 +160,7 @@ TEMPLATE_LOADERS = (
 
 if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
+        'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         #        'django.contrib.sessions.middleware.SessionMiddleware',
         #        'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -159,6 +169,7 @@ if LOG_SHOW_SQL:
     )
 else:
     MIDDLEWARE_CLASSES = (
+        'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
         #        'django.contrib.sessions.middleware.SessionMiddleware',
