@@ -28,12 +28,12 @@ from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.distributedlock import distributedlock, LOCK_RACK
-from networkapi.rack.resource.GeraConfig import dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
-from networkapi.ip.models import NetworkIPv4, Ip, IpEquipamento
+from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip, IpEquipamento
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, AmbienteError, Ambiente, AmbienteNotFoundError
-from networkapi.settings import NETWORKIPV4_CREATE, VLAN_CREATE
+from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, VLAN_CREATE
 from networkapi.util import destroy_cache_function
 
 
@@ -55,7 +55,6 @@ def get_core_name(rack):
         raise RackAplError(None,rack.nome,"Erro ao buscar os nomes do Core associado ao Switch de gerencia.")
 
     return name_core1, name_core2
-
 
 def criar_vlan(user, variablestochangecore1, ambientes):
 
@@ -94,6 +93,47 @@ def criar_vlan(user, variablestochangecore1, ambientes):
 
     return vlan
 
+def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
+
+    tiporede = TipoRede()
+    net_id = tiporede.get_by_name(tipo_rede)
+    network_type = tiporede.get_by_pk(net_id.id)
+
+    network_ip = NetworkIPv6()
+    network_ip.vlan = vlan
+    network_ip.network_type = network_type
+    network_ip.ambient_vip = None
+    network_ip.block = variablestochangecore1.get("REDE_MASK")
+
+    len_ip_ipv6 = len(str(variablestochangecore1.get("REDE_IP")).split(':'))
+    len_mask = len(str(variablestochangecore1.get("NETMASK")).split(':'))
+    
+    while(8-len_ip_ipv6>0):#8-6=2--8-7=1--8-8=0
+        len_ip_ipv6 = len_ip_ipv6 + 1
+        variablestochangecore1['REDE_IP'] = variablestochangecore1.get("REDE_IP")+":"
+
+    while(8-len_mask>0):
+        len_mask = len_mask + 1
+        variablestochangecore1['NETMASK'] = variablestochangecore1.get("NETMASK")+":"
+
+    network_ip.bloco1, network_ip.bloco2, network_ip.bloco3, network_ip.bloco4, network_ip.bloco5, network_ip.bloco6, network_ip.bloco7, network_ip.bloco8 = str(variablestochangecore1.get("REDE_IP")).split(':')
+    network_ip.mask1, network_ip.mask2, network_ip.mask3, network_ip.mask4, network_ip.mask5, network_ip.mask6, network_ip.mask7, network_ip.mask8 = str(variablestochangecore1.get("NETMASK")).split(':')
+    
+    #destroy_cache_function([vlan.id])
+    network_ip.save(user)    
+
+    #ativar a rede
+    # Make command
+    command = NETWORKIPV6_CREATE % int(network_ip.id)
+    code, stdout, stderr = exec_script(command)
+    if code == 0:
+        # Change column 'active = 1'
+        net = NetworkIPv6.get_by_pk(network_ip.id)
+        net.activate(user)
+    else:
+        return self.response_error(2, stdout + stderr)
+ 
+    return network_ip.id
 
 def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
 
@@ -126,7 +166,6 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
  
     return network_ip.id
 
-
 def criar_ambiente(user, ambientes, ranges):
 
     #ambiente cloud
@@ -152,13 +191,15 @@ def criar_ambiente(user, ambientes, ranges):
 
     environment.create(user)
 
-
 def config_ambiente(user, hosts, ambientes):
     #ip_config
     ip_config = IPConfig()
     ip_config.subnet = hosts.get("REDE")
     ip_config.new_prefix = hosts.get("PREFIX")
-    ip_config.type = IP_VERSION.IPv4[0]
+    if hosts.get("VERSION")=="ipv4":
+        ip_config.type = IP_VERSION.IPv4[0]
+    elif hosts.get("VERSION")=="ipv6":
+        ip_config.type = IP_VERSION.IPv6[0]
     tiporede = TipoRede()
     tipo = tiporede.get_by_name(hosts.get("TIPO"))
     ip_config.network_type = tipo
@@ -178,7 +219,6 @@ def config_ambiente(user, hosts, ambientes):
     config_environment.ip_config = ip_config
 
     config_environment.save(user)
-
 
 def inserir_equip(user, variablestochangecore, rede_id):
     
@@ -200,10 +240,9 @@ def inserir_equip(user, variablestochangecore, rede_id):
 
     return 0
 
-
 def ambiente_spn_lf(user, rack):
 
-    vlans, redes = dic_lf_spn(user, rack.numero)
+    vlans, redes, ipv6 = dic_lf_spn(user, rack.numero)
 
     divisaoDC = ['BE', 'FE', 'BORDA', 'BORDACACHOS']
     spines = ['01', '02', '03', '04']
@@ -218,6 +257,7 @@ def ambiente_spn_lf(user, rack):
     ranges=dict()
     hosts=dict()
     hosts['TIPO']= "Ponto a ponto"
+    ipv6['TIPO']= "Ponto a ponto"
 
     for divisaodc in divisaoDC: 
         ambientes['DC']=divisaodc
@@ -238,12 +278,18 @@ def ambiente_spn_lf(user, rack):
             hosts['PREFIX'] = "31"
 
             ambientes['LOG']= "SPINE"+i+"LEAF"
+            hosts['VERSION']="ipv4"
             config_ambiente(user, hosts, ambientes)
 
+            rede_ipv6 = "SPINE"+i[1]+"ipv6"
+            ipv6['REDE']= ipv6.get(rede_ipv6)
+            ipv6['PREFIX']="127"
+            ipv6['VERSION']="ipv6"
+            config_ambiente(user, ipv6, ambientes)
 
 def ambiente_prod(user, rack):
 
-    redes = dic_pods(user, rack.numero)
+    redes, ipv6 = dic_pods(rack.numero)
 
     divisaoDC = ['BE', 'BEFE', 'BEBORDA', 'BECACHOS']
     grupol3 = "RACK_"+rack.nome
@@ -256,6 +302,7 @@ def ambiente_prod(user, rack):
     ranges=dict()
     hosts=dict()
     hosts['TIPO']= "Rede invalida equipamentos"
+    ipv6['TIPO']= "Rede invalida equipamentos"
 
     for divisaodc in divisaoDC:
 
@@ -272,25 +319,26 @@ def ambiente_prod(user, rack):
         #configuracao dos ambientes
         prefix = divisaodc+"_PREFIX"
         rede = divisaodc+"_REDE"
+
         hosts['PREFIX']= redes.get(prefix)
         hosts['REDE']= redes.get(rede)
-
+        hosts['VERSION']="ipv4"
         config_ambiente(user, hosts, ambientes)
 
+        ipv6['PREFIX']=ipv6.get(prefix)
+        ipv6['REDE']=ipv6.get(rede)
+        ipv6['VERSION']="ipv6"
+        config_ambiente(user, ipv6, ambientes)
 
 def ambiente_cloud(user, rack):
 
-    hosts = dic_hosts_cloud(rack.numero)
+    hosts, ipv6 = dic_hosts_cloud(rack.numero)
 
     ambientes= dict()
     ambientes['DC']="BE"
     ambientes['LOG']="MNGT_NETWORK"
     ambientes['L3']= "RACK_"+rack.nome    
  
-    amb_log = AmbienteLogico()
-    amb_log.nome = "MNGT_NETWORK"
-    amb_log.save(user)
-
     ranges=dict()
     ranges['MAX']= hosts.get('VLAN_MNGT_FILER')
     ranges['MIN']=hosts.get('VLAN_MNGT_BE')
@@ -300,20 +348,64 @@ def ambiente_cloud(user, rack):
 
     #configuracao do ambiente
     hosts['TIPO']= "Rede invalida equipamentos"
+    hosts['VERSION']= "ipv4"
     config_ambiente(user, hosts, ambientes)
+    #ipv6
+    ipv6['TIPO']= "Rede invalida equipamentos"
+    ipv6['VERSION']="ipv6"
+    config_ambiente(user, ipv6, ambientes)
 
     #inserir vlans
     amb_cloud = ['BE','FE','BO','CA','FILER']
+    variables=dict()
     for amb in amb_cloud: 
         numero = "VLAN_MNGT_"+amb
         variables['VLAN_NUM'] = hosts.get(numero)
-        variables['VLAN_NAME'] = "MNGT_"+amb
+        variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
         
         vlan = criar_vlan(user, variables, ambientes)
         #criar rede
         criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
+        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
 
+def ambiente_prod_fe(user, rack):
 
+    redes, ranges, ipv6 = dic_fe_prod(rack.numero)
+
+    ambientes= dict()
+    ambientes['LOG']="PRODUCAO"
+    ambientes['L3']= "RACK_"+rack.nome
+    ambientes['DC']="FE"
+
+    redes['TIPO']= "Rede invalida equipamentos"
+    ipv6['TIPO']= "Rede invalida equipamentos"
+
+    #criar ambiente
+    criar_ambiente(user, ambientes, ranges)
+
+    #configuracao dos ambientes
+    redes['VERSION']="ipv4"
+    config_ambiente(user, redes, ambientes)
+
+    ipv6['VERSION']="ipv6"
+    config_ambiente(user, ipv6, ambientes)
+
+def ambiente_borda(user,rack):
+
+    redes, ipv6 = dic_borda(rack.numero)
+
+    ranges=dict()
+    ranges['MAX']=None
+    ranges['MIN']=None
+
+    ambientes=dict()   
+    ambientes['LOG'] = "PRODUCAO"
+    ambientes['L3']= "RACK_"+rack.nome
+    amb_list= ['BORDA_DSR','BORDA_DMZ', 'BORDACACHOS']
+
+    for amb in amb_list:
+        ambientes['DC']=amb
+        criar_ambiente(user, ambientes,ranges)
 
 class RackAplicarConfigResource(RestResource):
 
@@ -344,7 +436,7 @@ class RackAplicarConfigResource(RestResource):
 
             #variaveis
             name_core1, name_core2 =  get_core_name(rack)
-            """
+            
             variablestochangecore1 = {}
             variablestochangecore2 = {}
             variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack.numero, name_core1, rack.nome)
@@ -378,13 +470,17 @@ class RackAplicarConfigResource(RestResource):
             #BE - SPINE - LEAF
             ambiente_spn_lf(user, rack)
 
-            #PODS - PRODUCAO
+            #BE - PRODUCAO
             ambiente_prod(user, rack)            
-            """
-            #Hosts - CLOUD
+
+            #BE - Hosts - CLOUD
             ambiente_cloud(user, rack)
+            
+            #FE 
+            ambiente_prod_fe(user, rack)
 
             #######################################################################   Atualizar flag na tabela
+
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
             rack.save(user)
             

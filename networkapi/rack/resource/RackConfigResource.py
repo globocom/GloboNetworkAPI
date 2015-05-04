@@ -87,19 +87,22 @@ def gera_config(rack):
     try:
         interfaces = Interface.search(id_lf1)
         for interface in interfaces:
-            sw = interface.get_switch_and_router_interface_from_host_interface(None)
-            if sw.equipamento.nome.split('-')[2]=='1': 
-                int_lf1_sp1 = interface.interface
-                name_sp1 = sw.equipamento.nome
-                id_spn1 = sw.equipamento.id
-                int_sp1 =  sw.interface
-            elif sw.equipamento.nome.split('-')[2]=='2':
-                int_lf1_sp2 = interface.interface
-                name_sp2 = sw.equipamento.nome
-                id_sp2 = sw.equipamento.id
-                int_sp2 =  sw.interface 
-            elif sw.equipamento.nome.split('-')[0]=='OOB':
-                int_oob_mgmtlf1 = sw.interface
+            try: 
+                sw = interface.get_switch_and_router_interface_from_host_interface(None)
+                if sw.equipamento.nome.split('-')[2]=='1': 
+                    int_lf1_sp1 = interface.interface
+                    name_sp1 = sw.equipamento.nome
+                    id_spn1 = sw.equipamento.id
+                    int_sp1 =  sw.interface
+                elif sw.equipamento.nome.split('-')[2]=='2':
+                    int_lf1_sp2 = interface.interface
+                    name_sp2 = sw.equipamento.nome
+                    id_sp2 = sw.equipamento.id
+                    int_sp2 =  sw.interface 
+                elif sw.equipamento.nome.split('-')[0]=='OOB':
+                    int_oob_mgmtlf1 = sw.interface
+            except:
+                pass
     except InterfaceNotFoundError:
         raise RackConfigError(None,rack.nome,"Erro ao buscar as interfaces associadas ao Leaf 01.")
 
@@ -110,19 +113,22 @@ def gera_config(rack):
     try:
         interfaces1 = Interface.search(id_lf2)
         for interface1 in interfaces1:
-            sw = interface1.get_switch_and_router_interface_from_host_interface(None)
-            if sw.equipamento.nome.split('-')[2]=='3':
-                int_lf2_sp3 = interface1.interface
-                name_sp3 = sw.equipamento.nome
-                id_spn3 = sw.equipamento.id
-                int_sp3 =  sw.interface
-            elif sw.equipamento.nome.split('-')[2]=='4':
-                int_lf2_sp4 = interface1.interface
-                name_sp4 = sw.equipamento.nome
-                id_spn4 = sw.equipamento.id
-                int_sp4 =  sw.interface
-            elif sw.equipamento.nome.split('-')[0]=='OOB':
-                int_oob_mgmtlf2 = sw.interface
+            try:
+                sw = interface1.get_switch_and_router_interface_from_host_interface(None)
+                if sw.equipamento.nome.split('-')[2]=='3':
+                    int_lf2_sp3 = interface1.interface
+                    name_sp3 = sw.equipamento.nome
+                    id_spn3 = sw.equipamento.id
+                    int_sp3 =  sw.interface
+                elif sw.equipamento.nome.split('-')[2]=='4':
+                    int_lf2_sp4 = interface1.interface
+                    name_sp4 = sw.equipamento.nome
+                    id_spn4 = sw.equipamento.id
+                    int_sp4 =  sw.interface
+                elif sw.equipamento.nome.split('-')[0]=='OOB':
+                    int_oob_mgmtlf2 = sw.interface
+            except:
+                pass
     except InterfaceNotFoundError:
         raise RackConfigError(None,rack.nome,"Erro ao buscar as interfaces associadas ao Leaf 02.")
 
@@ -133,16 +139,19 @@ def gera_config(rack):
     try:
         interfaces2 = Interface.search(id_oob)
         for interface2 in interfaces2:
-            sw = interface2.get_switch_and_router_interface_from_host_interface(None)
-            if sw.equipamento.nome.split('-')[0]=='OOB':
-                if sw.equipamento.nome.split('-')[2]=='01':
-                    int_oob_core1 = interface2.interface
-                    name_core1 = sw.equipamento.nome
-                    int_core1_oob =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='02':
-                    int_oob_core2 = interface2.interface
-                    name_core2 = sw.equipamento.nome
-                    int_core2_oob =  sw.interface 
+            try:
+                sw = interface2.get_switch_and_router_interface_from_host_interface(None)
+                if sw.equipamento.nome.split('-')[0]=='OOB':
+                    if sw.equipamento.nome.split('-')[2]=='01':
+                        int_oob_core1 = interface2.interface
+                        name_core1 = sw.equipamento.nome
+                        int_core1_oob =  sw.interface
+                    elif sw.equipamento.nome.split('-')[2]=='02':
+                        int_oob_core2 = interface2.interface
+                        name_core2 = sw.equipamento.nome
+                        int_core2_oob =  sw.interface
+            except:
+                pass 
     except InterfaceNotFoundError:
         raise RackConfigError(None,rack.nome,"Erro ao buscar as interfaces associadas ao Switch de gerencia.")
 
