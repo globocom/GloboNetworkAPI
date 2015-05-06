@@ -603,6 +603,44 @@ class RequisicaoVips(BaseModel):
                 None, 'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
 
+        priority_pools = []
+
+        # Define priority for Healthcheck
+        priority_keys = {"HTTP": 1, "TCP": 2, "UDP": 3}
+
+        if self.id:
+            pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self)
+
+        else:
+            pool_ids = []
+            for port_to_pool in data.get('vip_ports_to_pools', []):
+                pool_ids.append(port_to_pool.get('server_pool'))
+
+            pools = ServerPool.objects.filter(id__in=pool_ids)
+
+        for pool in pools:
+
+            try:
+                # Avoid Pool without Old Healthcheck Data From Database
+                healthcheck = pool.healthcheck
+            except Healthcheck.DoesNotExist:
+                continue
+
+            priority = priority_keys.get(healthcheck.healthcheck_type, 3)
+            priority_pools.append((priority, pool.id, pool))
+
+        if priority_pools:
+            priority_number, priority_pool_id, priority_pool = min(priority_pools)
+            healthcheck_type = priority_pool.healthcheck.healthcheck_type
+            healthcheck = priority_pool.healthcheck.healthcheck_expect
+            maxcon = str(priority_pool.default_limit)
+            method_bal = priority_pool.lb_method
+            self.add_variable('healthcheck_type', healthcheck_type)
+            self.add_variable('metodo_bal', method_bal)
+            self.add_variable('maxcon', maxcon)
+            if healthcheck:
+                self.add_variable('healthcheck', healthcheck)
+
         # Host
         host_name = data.get('host')
         if host_name is not None:
