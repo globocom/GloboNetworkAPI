@@ -209,7 +209,6 @@ class RequestVipsResource(RestResource):
             try:
                 # save Resquest Vip
                 vip.save(user)
-                self.log.error(u'vip_map depois do save = %s', vip_map)
 
                 # save VipPortToPool, ServerPool and ServerPoolMember
                 vip.save_vips_and_ports(vip_map, user)
@@ -289,7 +288,7 @@ class RequestVipsResource(RestResource):
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
             return self.response_error(1)
 
-    @deprecated(new_uri='api/vip/request/update/')
+    @deprecated(new_uri='api/vip/request/save/<pk>/')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT change request VIP.
 
