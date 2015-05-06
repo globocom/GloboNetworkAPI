@@ -9,7 +9,7 @@ In order to use the pre-configured VM you need to have `vagrant <https://www.vag
 
 After that, go to the directory you want to install and do::
 
-  git clone https://github.com/globocom/GloboNetworkAPI-WebUI
+  git clone https://github.com/globocom/GloboNetworkAPI
   cd GloboNetworkAPI-WebUI
   vagrant plugin install vagrant-omnibus
   vagrant up
