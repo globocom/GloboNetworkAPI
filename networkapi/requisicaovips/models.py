@@ -1504,18 +1504,28 @@ class RequisicaoVips(BaseModel):
         return ip, equip, evip
 
     def save_vips_and_ports(self, vip_map, user):
-
         # Ports Vip
         ports_vip_map = vip_map.get('portas_servicos')
         ports_vip = ports_vip_map.get('porta')
         reals = list()
 
+        #Check if one of the req pools is marked as created. Raises an error if so.
+        vip_ports_pks = []
+        for port_vip in ports_vip:
+            vip_ports_pks.append(port_vip.split(':')[0])
+        server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip__in=vip_ports_pks)
+        for server_pool in server_pools:
+            if server_pool.pool_created:
+                raise Exception(
+                e, u'The pool is created and thus cannot be edited.')
+        
         vip_port_list = list()
         pool_member_pks_removed = list()
 
         finalidade = vip_map.get('finalidade')
         cliente = vip_map.get('cliente')
         ambiente = vip_map.get('ambiente')
+
 
         evip = EnvironmentVip.get_by_values(
             finalidade,
@@ -1575,90 +1585,67 @@ class RequisicaoVips(BaseModel):
             if reals_weights != None:
                 weights = reals_weights.get('reals_weight')
 
-        # Remove server pools
-        server_pool_pks = []
-        for port in ports_vip:
-            if isinstance(port, dict):
-                server_pool_id = port.get('server_pool_id')
-                if server_pool_id:
-                    server_pool_pks.append(server_pool_id)
-
-        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
-
-        for serv_pool_obj in server_pools_to_remove:
-
-            vip_port_by_server_pool = VipPortToPool.objects.filter(server_pool=serv_pool_obj)
-            related_vip_serv_pool = vip_port_by_server_pool.exclude(requisicao_vip=self)
-
-            if related_vip_serv_pool:
-                raise RequestVipServerPoolConstraintError(None)
-
-            for vip_port_obj in vip_port_by_server_pool:
-                vip_port_obj.delete(user)
-
-            related_members_pool = serv_pool_obj.serverpoolmember_set.all()
-
-            for member in related_members_pool:
-                pool_member_pks_removed.append(member.id)
-                member.delete(user)
-
-            serv_pool_obj.delete(user)
-        # Remove server pools
 
         # save ServerPool and VipPortToPool
         for port_vip in ports_vip:
 
-            if isinstance(port_vip, dict):
-                port_to_vip = port_vip.get('port').split(':')
-                server_pool_id = port_vip.get('server_pool_id')
-            else:
-                port_to_vip = port_vip.split(':')
-                server_pool_id = None
-
+            port_to_vip = port_vip.split(':')
             default_port = port_to_vip[1]
             vip_port = port_to_vip[0]
             ip_vip = self.ip or self.ipv6
-
-            if server_pool_id:
-                server_pool = ServerPool.objects.get(id=server_pool_id)
-                vip_port_to_pool = VipPortToPool.objects.filter(
-                    server_pool=server_pool,
-                    requisicao_vip=self
-                ).uniqueResult()
-
-            else:
+            
+            #Procura se já existe o pool
+            server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip=vip_port)
+            
+            if server_pools.count() == 0:
                 server_pool = ServerPool()
-                #TODO RETIRAR ISSO UMA VEZ QUE O POOL NAO ESTA MAIS LIGADO A VIP, PODE EXISTIR SOZINHO
-                #server_pool.identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
                 server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
                 server_pool.environment = environment_obj
                 server_pool.pool_created = False
 
                 vip_port_to_pool = VipPortToPool()
                 vip_port_to_pool.requisicao_vip = self
+                vip_port_to_pool.port_vip = vip_port
+
+            elif server_pools.count() == 1:
+                server_pool = server_pools.uniqueResult()
+                vip_port_to_pool = VipPortToPool.objects.filter(
+                    server_pool=server_pool,
+                    requisicao_vip=self
+                ).uniqueResult()
+
+            else:
+                raise Exception(
+                e, u'Unexpected error while searching for existing pool.')
 
             server_pool.default_port = default_port
             if healthcheck_obj != None:
                 server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
-            vip_port_to_pool.port_vip = vip_port
 
             server_pool.save(user)
-
+            
             vip_port_to_pool.server_pool = server_pool
             vip_port_to_pool.save(user)
 
             vip_port_list.append({'port_vip': vip_port, 'server_pool': server_pool})
 
+        # delete Pools not in port_vip provided above
+        #TODO: Nao vai deletar a principio. Checar se vai deletar caso nao esteja em outra req?
+#        server_pool_pks = []
+#        for v_port in vip_port_list:
+#            server_pool_pks.append(v_port['port_vip'])
+#        
+#        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
+        
         # save ServerPoolMember
         for i in range(0, len(reals)):
-
+            
             weight = ''
             port_real = reals[i].get('port_real')
             port_vip = reals[i].get('port_vip')
             ip_id = reals[i].get('id_ip')
-            server_pool_member_id = reals[i].get('server_pool_member_id')
-
+            
             # Valid port real
             if not is_valid_int_greater_zero_param(port_real):
                 self.log.error(
@@ -1689,16 +1676,21 @@ class RequisicaoVips(BaseModel):
                 if i < len(weights):
                     weight = weights[i]
 
-            if server_pool_member_id and server_pool_member_id not in pool_member_pks_removed:
-                server_pool_member = ServerPoolMember.objects.get(
-                    id=server_pool_member_id
-                )
+            #procura se já existe o member
+            if server_pool.id != None:
+                server_pool_members = ServerPoolMember.objects.filter(ip=ip_id, port_real=port_real, server_pool=server_pool.id)
 
-            else:
+            if server_pool_members.count() == 0:
                 server_pool_member = ServerPoolMember()
                 server_pool_member.server_pool = server_pool
                 server_pool_member.ip = ipv4
                 server_pool_member.ipv6 = ipv6
+
+            elif server_pool_members.count() == 1:
+                server_pool_member = server_pool_members.uniqueResult()
+            else:
+                raise Exception(
+                e, u'Unexpected error while searching for existing member.')
 
             server_pool_member.port_real = port_real
             server_pool_member.priority = priority
