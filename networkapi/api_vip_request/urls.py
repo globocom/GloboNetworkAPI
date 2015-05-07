@@ -8,4 +8,5 @@ urlpatterns = patterns(
     url(r'^vip/request/add/pools/$', 'add_pools'),
     url(r'^vip/request/delete/(?P<delete_pools>\d+)/$', 'delete'),
     url(r'^vip/list/environment/by/environment/vip/(?P<environment_vip_id>\d+)/$', 'list_environment_by_environment_vip'),
+    url(r'^vip/request/get/(?P<pk>\d+)/$', 'get_by_pk'),
 )

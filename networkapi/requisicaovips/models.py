@@ -603,6 +603,44 @@ class RequisicaoVips(BaseModel):
                 None, 'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
 
+        priority_pools = []
+
+        # Define priority for Healthcheck
+        priority_keys = {"HTTP": 1, "TCP": 2, "UDP": 3}
+
+        if self.id:
+            pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self)
+
+        else:
+            pool_ids = []
+            for port_to_pool in data.get('vip_ports_to_pools', []):
+                pool_ids.append(port_to_pool.get('server_pool'))
+
+            pools = ServerPool.objects.filter(id__in=pool_ids)
+
+        for pool in pools:
+
+            try:
+                # Avoid Pool without Old Healthcheck Data From Database
+                healthcheck = pool.healthcheck
+            except Healthcheck.DoesNotExist:
+                continue
+
+            priority = priority_keys.get(healthcheck.healthcheck_type, 3)
+            priority_pools.append((priority, pool.id, pool))
+
+        if priority_pools:
+            priority_number, priority_pool_id, priority_pool = min(priority_pools)
+            healthcheck_type = priority_pool.healthcheck.healthcheck_type
+            healthcheck = priority_pool.healthcheck.healthcheck_expect
+            maxcon = str(priority_pool.default_limit)
+            method_bal = priority_pool.lb_method
+            self.add_variable('healthcheck_type', healthcheck_type)
+            self.add_variable('metodo_bal', method_bal)
+            self.add_variable('maxcon', maxcon)
+            if healthcheck:
+                self.add_variable('healthcheck', healthcheck)
+
         # Host
         host_name = data.get('host')
         if host_name is not None:
@@ -1466,19 +1504,31 @@ class RequisicaoVips(BaseModel):
         return ip, equip, evip
 
     def save_vips_and_ports(self, vip_map, user):
-
         # Ports Vip
         ports_vip_map = vip_map.get('portas_servicos')
         ports_vip = ports_vip_map.get('porta')
         reals = list()
 
+        #Check if one of the req pools is marked as created. Raises an error if so.
+        vip_ports_pks = []
+        for port_vip in ports_vip:
+            vip_ports_pks.append(port_vip.split(':')[0])
+
+        server_pools_antes = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip__in=vip_ports_pks)
+
+        for server_pool in server_pools_antes:
+            if server_pool.pool_created:
+                raise RequestVipServerPoolConstraintError(
+                    None,
+                    'ServerPool %s ja esta indicado como criado no equipamento nao pode ser alterado.' % server_pool.identifier)
+
         vip_port_list = list()
         pool_member_pks_removed = list()
-        
-        # Environment
+
         finalidade = vip_map.get('finalidade')
         cliente = vip_map.get('cliente')
         ambiente = vip_map.get('ambiente')
+
 
         evip = EnvironmentVip.get_by_values(
             finalidade,
@@ -1515,8 +1565,11 @@ class RequisicaoVips(BaseModel):
             healthcheck_obj = healthcheck_query.uniqueResult()        
 
         except Exception, e:
-            self.log.error(u'Falhou no healthcheck %s', e)
+            #Falhou no healthcheck
+            #O codigo acima procura um HT ja existente, mas nao acha.
+            #Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
             #TODO - consertar valor para criar uma nova entrada de healthcheck
+            
             healthcheck_obj = None
     
         # Reals
@@ -1535,88 +1588,93 @@ class RequisicaoVips(BaseModel):
             if reals_weights != None:
                 weights = reals_weights.get('reals_weight')
 
-        #TODO - QUE PORRA E ESSA DE SERVER POOL ID NO MEIO DA PORTA DO VIP
-        # Ta dando erro aqui de AttributeError: 'unicode' object has no attribute 'get'
-        #server_pool_pks = [port['server_pool_id'] for port in ports_vip if port.get('server_pool_id')]
-
-        #server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
-        server_pools_to_remove = []
-
-        for serv_pool_obj in server_pools_to_remove:
-
-            vip_port_by_server_pool = VipPortToPool.objects.filter(server_pool=serv_pool_obj)
-            related_vip_serv_pool = vip_port_by_server_pool.exclude(requisicao_vip=self)
-
-            if related_vip_serv_pool:
-                raise RequestVipServerPoolConstraintError(None)
-
-            for vip_port_obj in vip_port_by_server_pool:
-                vip_port_obj.delete(user)
-
-            related_members_pool = serv_pool_obj.serverpoolmember_set.all()
-
-            for member in related_members_pool:
-                pool_member_pks_removed.append(member.id)
-                member.delete(user)
-
-            serv_pool_obj.delete(user)
 
         # save ServerPool and VipPortToPool
         for port_vip in ports_vip:
-            #TODO - VERIFICAR O QUE ELES ESTAO TENTANDO FAZER AQUI...
-            #port_to_vip = port_vip.get('port').split(':')
-            #... POR ENQUANTO FICA O PADRAO ANTIGO
+
             port_to_vip = port_vip.split(':')
-
-            #WTF???
-            #server_pool_id = port_vip.get('server_pool_id')
-            #coloquei abaixo valor 0 so para nao entrar no if server_pool_id logo mais a frente
-            server_pool_id = 0
-
             default_port = port_to_vip[1]
             vip_port = port_to_vip[0]
-            #TODO RETIRAR ISSO UMA VEZ QUE O POOL NAO ESTA MAIS LIGADO A VIP, PODE EXISTIR SOZINHO
-            #ip_vip = self.ip or self.ipv6
+            ip_vip = self.ip or self.ipv6
+            
+            #Procura se já existe o pool
+            server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip=vip_port)
+            
+            if server_pools.count() == 0:
+                server_pool = ServerPool()
 
-            if server_pool_id:
-                server_pool = ServerPool.objects.get(id=server_pool_id)
+                #Try to get a unique identifier for server pool
+                server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
+                if ServerPool.objects.filter(identifier = server_pool.identifier):
+                    name_not_found = 1
+                    retry = 2
+                    while name_not_found:
+                        server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + str(retry) + '_' + vip_port
+                        retry += 1
+                        if not ServerPool.objects.filter(identifier = server_pool.identifier):
+                            name_not_found=0
+
+                server_pool.environment = environment_obj
+                server_pool.pool_created = False
+
+                vip_port_to_pool = VipPortToPool()
+                vip_port_to_pool.requisicao_vip = self
+                vip_port_to_pool.port_vip = vip_port
+
+            elif server_pools.count() == 1:
+                server_pool = server_pools.uniqueResult()
                 vip_port_to_pool = VipPortToPool.objects.filter(
                     server_pool=server_pool,
                     requisicao_vip=self
                 ).uniqueResult()
 
             else:
-                server_pool = ServerPool()
-                #TODO RETIRAR ISSO UMA VEZ QUE O POOL NAO ESTA MAIS LIGADO A VIP, PODE EXISTIR SOZINHO
-                #server_pool.identifier = 'VIP' + str(self.id) + '_' + ip_vip.ip_formated + '_' + vip_port
-                server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
-                server_pool.environment = environment_obj
-                server_pool.pool_created = False
-
-                vip_port_to_pool = VipPortToPool()
-                vip_port_to_pool.requisicao_vip = self
+                raise RequisicaoVipsError(None, u'Unexpected error while searching for existing pool.')
 
             server_pool.default_port = default_port
-            #server_pool.healthcheck = healthcheck_obj
+            if healthcheck_obj != None:
+                server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
-            vip_port_to_pool.port_vip = vip_port
 
             server_pool.save(user)
-
+            
             vip_port_to_pool.server_pool = server_pool
             vip_port_to_pool.save(user)
 
             vip_port_list.append({'port_vip': vip_port, 'server_pool': server_pool})
 
-        # save ServerPoolMember
-        for i in range(0, len(reals)):
+        # delete Pools not in port_vip provided above
+        vip_ports_pks = []
+        for v_port in vip_port_list:
+            vip_ports_pks.append(v_port['port_vip'])
+        
+        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(vipporttopool__port_vip__in=vip_ports_pks)
+        for sp in server_pools_to_remove:
+            self.log.debug("Removendo pool da porta %s"%sp.default_port)
+            vip_port_to_pool = VipPortToPool.objects.filter(
+                    server_pool=sp,
+                    requisicao_vip=self
+                ).uniqueResult()
 
+            vip_port_to_pool.delete(user)
+            
+            #Removing unused ServerPool
+            #Safe to remove because server pools are not created (tested earlier)
+            vip_port_to_pool = VipPortToPool.objects.filter(
+                    server_pool=sp)
+            if not vip_port_to_pool:
+                self.log.info("Removing unused ServerPool %s %s" % (sp.id, sp.identifier) )
+                sp.delete(user)
+
+        # save ServerPoolMember
+        server_pool_member_pks = []
+        for i in range(0, len(reals)):
+            
             weight = ''
             port_real = reals[i].get('port_real')
             port_vip = reals[i].get('port_vip')
             ip_id = reals[i].get('id_ip')
-            server_pool_member_id = reals[i].get('server_pool_member_id')
-
+            
             # Valid port real
             if not is_valid_int_greater_zero_param(port_real):
                 self.log.error(
@@ -1647,16 +1705,20 @@ class RequisicaoVips(BaseModel):
                 if i < len(weights):
                     weight = weights[i]
 
-            if server_pool_member_id and server_pool_member_id not in pool_member_pks_removed:
-                server_pool_member = ServerPoolMember.objects.get(
-                    id=server_pool_member_id
-                )
+            #procura se já existe o member
+            if server_pool.id != None:
+                server_pool_members = ServerPoolMember.objects.filter(ip=ip_id, port_real=port_real, server_pool=server_pool.id)
 
-            else:
+            if server_pool_members.count() == 0:
                 server_pool_member = ServerPoolMember()
                 server_pool_member.server_pool = server_pool
                 server_pool_member.ip = ipv4
                 server_pool_member.ipv6 = ipv6
+
+            elif server_pool_members.count() == 1:
+                server_pool_member = server_pool_members.uniqueResult()
+            else:
+                raise RequisicaoVipsError(None, u'Unexpected error while searching for existing pool.')
 
             server_pool_member.port_real = port_real
             server_pool_member.priority = priority
@@ -1664,8 +1726,16 @@ class RequisicaoVips(BaseModel):
             server_pool_member.limit = 0
 
             server_pool_member.save(user)
+            
+            server_pool_member_pks.append(server_pool_member.id)
+            
+        #delete members
+        server_pool_members_to_delete = ServerPoolMember.objects.filter(server_pool__in=server_pools_antes).exclude(id__in=server_pool_member_pks)
+        for spm in server_pool_members_to_delete:
+            self.log.debug("Removendo server_pool_member %s"%spm.ip)
+            spm.delete(user)
 
-    def get_vips_and_reals(self, id_vip, omit_port_real=False):
+    def get_vips_and_reals(self, id_vip):
 
         vip_ports = VipPortToPool.get_by_vip_id(id_vip)
 
@@ -1675,15 +1745,9 @@ class RequisicaoVips(BaseModel):
         reals_weight = list()
 
         for v_port in vip_ports:
-            full_port = str(v_port.port_vip)
-
-            #if not omit_port_real:
-            #    full_port += ':' + str(v_port.server_pool.default_port)
-            full_port += ':' + str(v_port.server_pool.default_port)
+            full_port = str(v_port.port_vip) + ':' + str(v_port.server_pool.default_port)
 
             if full_port not in vip_port_list:
-                #TODO VERIFICAR
-                #vip_port_list.append({'porta': full_port, 'vip_port_id': v_port.id })
                 vip_port_list.append(full_port)
 
             members = v_port.server_pool.serverpoolmember_set.all()
@@ -1720,13 +1784,18 @@ class RequisicaoVips(BaseModel):
 
         vip_ports = VipPortToPool.objects.filter(requisicao_vip=self)
         server_pool_list = list()
+
         for vip_port in vip_ports:
-            server_pool_members = ServerPoolMember.objects.filter(
-                server_pool=vip_port.server_pool)
-            for server_pool_member in server_pool_members:
-                server_pool_member.delete(user)
-            vip_port.delete(user)
-            server_pool_list.append(vip_port.server_pool)
+            #Only deletes pool if it is not in use in any other vip request
+            server_pools_still_used = VipPortToPool.objects.filter(server_pool=vip_port.server_pool).exclude(requisicao_vip=self)
+
+            if not server_pools_still_used:
+                server_pool_members = ServerPoolMember.objects.filter(
+                    server_pool=vip_port.server_pool)
+                for server_pool_member in server_pool_members:
+                    server_pool_member.delete(user)
+                vip_port.delete(user)
+                server_pool_list.append(vip_port.server_pool)
 
         for server_pool in server_pool_list:
             server_pool.delete(user)

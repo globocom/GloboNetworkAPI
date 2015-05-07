@@ -28,7 +28,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
 from networkapi.settings import VIP_REMOVE
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, RequisicaoVips, ServerPool, VipPortToPool
 from networkapi.healthcheckexpect.models import HealthcheckExpectError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 
@@ -120,8 +120,24 @@ class RemoveVipResource(RestResource):
                     vip.vip_criado = 0
                     vip.save(user)
 
-                    map = dict()
-                    map['sucesso'] = success_map
+                    #Marks the server pool as not created if the
+                    # server pool is not used in another already created vip request
+                    server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip.id)
+
+                    for server_pool in server_pools:
+                        #Checks if server pool is still used in another created vip request
+                        server_pools_still_used = VipPortToPool.objects.filter(server_pool=server_pool).exclude(requisicao_vip=vip.id)
+                        vip_with_server_pool_is_created = 0
+                        for server_pool_still_used in server_pools_still_used:
+                            if server_pool_still_used.requisicao_vip.vip_criado:
+                                vip_with_server_pool_is_created = 1 
+
+                        if not vip_with_server_pool_is_created and server_pool.pool_created:
+                            server_pool.pool_created = 0
+                            server_pool.save(user)
+
+                        map = dict()
+                        map['sucesso'] = success_map
 
                 else:
                     return self.response_error(2, stdout + stderr)
