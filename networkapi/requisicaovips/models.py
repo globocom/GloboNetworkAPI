@@ -1621,8 +1621,7 @@ class RequisicaoVips(BaseModel):
                 ).uniqueResult()
 
             else:
-                raise Exception(
-                e, u'Unexpected error while searching for existing pool.')
+                raise RequisicaoVipsError(None, u'Unexpected error while searching for existing pool.')
 
             server_pool.default_port = default_port
             if healthcheck_obj != None:
@@ -1695,8 +1694,7 @@ class RequisicaoVips(BaseModel):
             elif server_pool_members.count() == 1:
                 server_pool_member = server_pool_members.uniqueResult()
             else:
-                raise Exception(
-                e, u'Unexpected error while searching for existing member.')
+                raise RequisicaoVipsError(None, u'Unexpected error while searching for existing pool.')
 
             server_pool_member.port_real = port_real
             server_pool_member.priority = priority
