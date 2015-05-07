@@ -79,7 +79,7 @@ class EventLog(BaseModel):
 
     @classmethod
     def uniqueUsers(cls):
-        userlist = Usuario.objects.all()
+        userlist = Usuario.objects.all().order_by('user')
 
         return userlist
 
