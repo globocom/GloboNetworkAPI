@@ -28,7 +28,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
 from networkapi.settings import VIP_CREATE
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, RequisicaoVips, ServerPool
 from networkapi.healthcheckexpect.models import HealthcheckExpectError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 
@@ -142,6 +142,13 @@ class CreateVipResource(RestResource):
 
                 vip.vip_criado = 1
                 vip.save(user)
+
+                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip.id)
+
+                for server_pool in server_pools:
+                    if not server_pool.pool_created:
+                        server_pool.pool_created = 1
+                        server_pool.save(user)
 
                 map = dict()
                 map['sucesso'] = success_map

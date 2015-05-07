@@ -1521,9 +1521,6 @@ class RequisicaoVips(BaseModel):
                 raise RequestVipServerPoolConstraintError(
                     None,
                     'ServerPool %s ja esta indicado como criado no equipamento nao pode ser alterado.' % server_pool.identifier)
-                #raise Exception(
-                #e, u'The pool is created and thus cannot be edited.')
-
 
         vip_port_list = list()
         pool_member_pks_removed = list()
@@ -1605,7 +1602,18 @@ class RequisicaoVips(BaseModel):
             
             if server_pools.count() == 0:
                 server_pool = ServerPool()
+
+                #Try to get a unique identifier for server pool
                 server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
+                if ServerPool.objects.filter(identifier = server_pool.identifier):
+                    name_not_found = 1
+                    retry = 2
+                    while name_not_found:
+                        server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + str(retry) + '_' + vip_port
+                        retry += 1
+                        if not ServerPool.objects.filter(identifier = server_pool.identifier):
+                            name_not_found=0
+
                 server_pool.environment = environment_obj
                 server_pool.pool_created = False
 
@@ -1650,8 +1658,14 @@ class RequisicaoVips(BaseModel):
 
             vip_port_to_pool.delete(user)
             
-            #TODO: remove se nao estiver em outra requisicaos
-        
+            #Removing unused ServerPool
+            #Safe to remove because server pools are not created (tested earlier)
+            vip_port_to_pool = VipPortToPool.objects.filter(
+                    server_pool=sp)
+            if not vip_port_to_pool:
+                self.log.info("Removing unused ServerPool %s %s" % (sp.id, sp.identifier) )
+                sp.delete(user)
+
         # save ServerPoolMember
         server_pool_member_pks = []
         for i in range(0, len(reals)):
@@ -1770,13 +1784,18 @@ class RequisicaoVips(BaseModel):
 
         vip_ports = VipPortToPool.objects.filter(requisicao_vip=self)
         server_pool_list = list()
+
         for vip_port in vip_ports:
-            server_pool_members = ServerPoolMember.objects.filter(
-                server_pool=vip_port.server_pool)
-            for server_pool_member in server_pool_members:
-                server_pool_member.delete(user)
-            vip_port.delete(user)
-            server_pool_list.append(vip_port.server_pool)
+            #Only deletes pool if it is not in use in any other vip request
+            server_pools_still_used = VipPortToPool.objects.filter(server_pool=vip_port.server_pool).exclude(requisicao_vip=self)
+
+            if not server_pools_still_used:
+                server_pool_members = ServerPoolMember.objects.filter(
+                    server_pool=vip_port.server_pool)
+                for server_pool_member in server_pool_members:
+                    server_pool_member.delete(user)
+                vip_port.delete(user)
+                server_pool_list.append(vip_port.server_pool)
 
         for server_pool in server_pool_list:
             server_pool.delete(user)
