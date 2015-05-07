@@ -1650,7 +1650,7 @@ class RequisicaoVips(BaseModel):
 
             vip_port_to_pool.delete(user)
             
-            #TODO: remove se nao estiver em outra req
+            #TODO: remove se nao estiver em outra requisicaos
         
         # save ServerPoolMember
         server_pool_member_pks = []
