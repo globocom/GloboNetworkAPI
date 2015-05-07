@@ -1514,9 +1514,9 @@ class RequisicaoVips(BaseModel):
         for port_vip in ports_vip:
             vip_ports_pks.append(port_vip.split(':')[0])
 
-        server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip__in=vip_ports_pks)
+        server_pools_antes = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip__in=vip_ports_pks)
 
-        for server_pool in server_pools:
+        for server_pool in server_pools_antes:
             if server_pool.pool_created:
                 raise RequestVipServerPoolConstraintError(
                     None,
@@ -1637,14 +1637,24 @@ class RequisicaoVips(BaseModel):
             vip_port_list.append({'port_vip': vip_port, 'server_pool': server_pool})
 
         # delete Pools not in port_vip provided above
-        #TODO: Nao vai deletar a principio. Checar se vai deletar caso nao esteja em outra req?
-#        server_pool_pks = []
-#        for v_port in vip_port_list:
-#            server_pool_pks.append(v_port['port_vip'])
-#        
-#        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(id__in=server_pool_pks)
+        vip_ports_pks = []
+        for v_port in vip_port_list:
+            vip_ports_pks.append(v_port['port_vip'])
+        
+        server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(vipporttopool__port_vip__in=vip_ports_pks)
+        for sp in server_pools_to_remove:
+            self.log.debug("Removendo pool da porta %s"%sp.default_port)
+            vip_port_to_pool = VipPortToPool.objects.filter(
+                    server_pool=sp,
+                    requisicao_vip=self
+                ).uniqueResult()
+
+            vip_port_to_pool.delete(user)
+            
+            #TODO: remove se nao estiver em outra req
         
         # save ServerPoolMember
+        server_pool_member_pks = []
         for i in range(0, len(reals)):
             
             weight = ''
@@ -1704,6 +1714,14 @@ class RequisicaoVips(BaseModel):
             server_pool_member.limit = 0
 
             server_pool_member.save(user)
+            
+            server_pool_member_pks.append(server_pool_member.id)
+            
+        #delete members
+        server_pool_members_to_delete = ServerPoolMember.objects.filter(server_pool__in=server_pools_antes).exclude(id__in=server_pool_member_pks)
+        for spm in server_pool_members_to_delete:
+            self.log.debug("Removendo server_pool_member %s"%spm.ip)
+            spm.delete(user)
 
     def get_vips_and_reals(self, id_vip):
 
