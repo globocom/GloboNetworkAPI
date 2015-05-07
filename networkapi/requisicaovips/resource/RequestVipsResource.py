@@ -472,6 +472,10 @@ class RequestVipsResource(RestResource):
                     # update ServerPool, VipPortToPool, ServerPoolMembers
                     vip.save_vips_and_ports(vip_map, user)
 
+                except RequestVipServerPoolConstraintError, e:
+                    self.log.error(e.message)
+                    return self.response_error(381, e.message)
+
                 except Exception, e:
                     if isinstance(e, IntegrityError):
                         # Duplicate value for Port Vip, Port Real and IP

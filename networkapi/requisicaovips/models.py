@@ -1513,12 +1513,18 @@ class RequisicaoVips(BaseModel):
         vip_ports_pks = []
         for port_vip in ports_vip:
             vip_ports_pks.append(port_vip.split(':')[0])
+
         server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip__in=vip_ports_pks)
+
         for server_pool in server_pools:
             if server_pool.pool_created:
-                raise Exception(
-                e, u'The pool is created and thus cannot be edited.')
-        
+                raise RequestVipServerPoolConstraintError(
+                    None,
+                    'ServerPool %s ja esta indicado como criado no equipamento nao pode ser alterado.' % server_pool.identifier)
+                #raise Exception(
+                #e, u'The pool is created and thus cannot be edited.')
+
+
         vip_port_list = list()
         pool_member_pks_removed = list()
 
