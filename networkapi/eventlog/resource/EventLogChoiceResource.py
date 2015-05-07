@@ -81,7 +81,7 @@ class EventLogChoiceResource(RestResource):
 
             functionalities = Functionality.objects
 
-            acoes = ['Cadastrar', 'Alterar', 'Remover']
+            acoes = ['Alterar', 'Cadastrar', 'Remover']
             usuarios = EventLog.uniqueUsers()
 
             funcionalidades = functionalities.all()
