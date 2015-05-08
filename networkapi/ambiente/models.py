@@ -939,7 +939,7 @@ class IPConfig(BaseModel):
             config_environment = ConfigEnvironment.objects.filter(
                 environment=environment_id).values('ip_config').query
 
-            return IPConfig.objects.filter(id=config_environment)
+            return IPConfig.objects.filter(id__in=config_environment)
 
             return
         except ObjectDoesNotExist, e:
