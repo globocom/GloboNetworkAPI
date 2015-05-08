@@ -322,6 +322,7 @@ class NetworkIPv4(BaseModel):
         network_found = None
         stop = False
         internal_network_type = None
+        type_ipv4 = IP_VERSION.IPv4[0]
 
         try:
 
@@ -334,6 +335,13 @@ class NetworkIPv4(BaseModel):
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
 
+            # Find all networks ralated to environment
+            nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
+
+            # Cast to API class
+            networksv4 = set([(IPv4Network(
+                        '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
+
             # For each configuration founded in environment
             for config in configs:
 
@@ -343,14 +351,6 @@ class NetworkIPv4(BaseModel):
 
                 # Need to be IPv4
                 if config.ip_config.type == IP_VERSION.IPv4[0]:
-
-                    # Find all networks ralated to environment
-                    nets = NetworkIPv4.objects.filter(
-                        vlan__ambiente__id=self.vlan.ambiente.id)
-
-                    # Cast to API class
-                    networksv4 = set([(IPv4Network(
-                        '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
 
                     net4 = IPv4Network(config.ip_config.subnet)
 
@@ -365,6 +365,11 @@ class NetworkIPv4(BaseModel):
 
                         # Checks if the network generated is UNUSED
                         if subnet not in networksv4:
+
+                            #Checks if it is subnet/supernet of any existing network
+                            in_range = network_in_range(self.vlan, subnet, type_ipv4)
+                            if not in_range:
+                                continue
 
                             # If not this will be USED
                             network_found = subnet
@@ -1388,6 +1393,7 @@ class NetworkIPv6(BaseModel):
         network_found = None
         stop = False
         internal_network_type = None
+        type_ipv6 = IP_VERSION.IPv6[0]
 
         try:
 
@@ -1399,6 +1405,12 @@ class NetworkIPv6(BaseModel):
             if len(configs) == 0:
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
+
+            # Cast to API class
+            networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3,
+                                                                           net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
+
+            net6 = IPv6Network(config.ip_config.subnet)
 
             # For each configuration founded in environment
             for config in configs:
@@ -1414,12 +1426,6 @@ class NetworkIPv6(BaseModel):
                     nets = NetworkIPv6.objects.filter(
                         vlan__ambiente__id=self.vlan.ambiente.id)
 
-                    # Cast to API class
-                    networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3,
-                                                                                   net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
-
-                    net6 = IPv6Network(config.ip_config.subnet)
-
                     if prefix is not None:
                         new_prefix = int(prefix)
                     else:
@@ -1432,6 +1438,10 @@ class NetworkIPv6(BaseModel):
 
                         # Checks if the network generated is UNUSED
                         if subnet not in networksv6:
+
+                            in_range = network_in_range(self.vlan, subnet, type_ipv6)
+                            if not in_range:
+                                continue
 
                             # If not this will be USED
                             network_found = subnet
@@ -2386,3 +2396,72 @@ class Ipv6Equipament(BaseModel):
         # If ip has no other equipment, than he will be removed to
         if self.ip.ipv6equipament_set.count() == 0:
             self.ip.delete(authenticated_user)
+
+def network_in_range(vlan, network, version):
+    # Get all vlans environments from equipments of the current
+    # environment
+
+    equips = list()
+    envs = list()
+    env_filters = list()
+    envs_aux = list()
+    ids_exclude = list()
+    ids_all = list()
+
+    ambiente = vlan.ambiente
+    filter = ambiente.filter
+    equipment_types = TipoEquipamento.objects.filter(filterequiptype__filter=filter)
+
+    #Get all equipments from the environment being tested
+    #that are not supposed to be filtered
+    #(not the same type of the equipment type of a filter of the environment)
+    for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types):
+        equips.append(env.equipamento)
+
+    #Get all environment that the equipments above are included
+    for equip in equips:
+        for env in equip.equipamentoambiente_set.all():
+            if not env.ambiente_id in envs_aux:
+                envs.append(env.ambiente)
+                envs_aux.append(env.ambiente_id)
+
+    #Check in all vlans from all environments above
+    #if there is a network that is sub or super network of the current
+    #network being tested
+    for env in envs:
+        for vlan_obj in env.vlan_set.all():
+            ids_all.append(vlan_obj.id)
+            is_subnet = verify_subnet(vlan_obj, network, version)
+            if is_subnet:
+                return False
+
+    return True
+
+
+def verify_subnet(vlan, network, version):
+
+    from networkapi.infrastructure.ipaddr import IPNetwork
+
+    if version == IP_VERSION.IPv4[0]:
+        vlan_net = vlan.networkipv4_set.all()
+    else:
+        vlan_net = vlan.networkipv6_set.all()
+
+    # One vlan may have many networks, iterate over it
+    for net in vlan_net:
+        if version == IP_VERSION.IPv4[0]:
+            ip = "%s.%s.%s.%s/%s" % (net.oct1,
+                                     net.oct2, net.oct3, net.oct4, net.block)
+        else:
+            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+                                                 net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
+
+        ip_net = IPNetwork(ip)
+        # If some network, inside this vlan, is subnet of network search param
+        if ip_net in network or network in ip_net:
+            # This vlan must be in vlans founded, don't need to continue
+            # checking
+            return True
+
+    # If don't found any subnet return False
+    return False
