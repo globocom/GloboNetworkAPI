@@ -565,6 +565,8 @@ class Vlan(BaseModel):
         @raise VlanError: Erro ao cadastrar Vlan
         """
 
+        from networkapi.equipamento.models import TipoEquipamento
+
         try:
             self.get_by_number_and_environment(self.num_vlan, self.ambiente)
             ambiente = "%s - %s - %s" % (self.ambiente.divisao_dc.nome,
@@ -575,24 +577,34 @@ class Vlan(BaseModel):
             pass
 
         ambiente = self.ambiente
+        filter = ambiente.filter
+        equipment_types = TipoEquipamento.objects.filter(filterequiptype__filter=filter)
 
         equips = list()
         envs = list()
+        envs_aux = list()
 
-        for env in ambiente.equipamentoambiente_set.all():
+        #Get all equipments from the environment being tested
+        #that are not supposed to be filtered
+        #(not the same type of the equipment type of a filter of the environment)
+        for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types):
             equips.append(env.equipamento)
 
+        #Get all environment that the equipments above are included
         for equip in equips:
             for env in equip.equipamentoambiente_set.all():
-                if not env in envs:
+                if not env.ambiente_id in envs_aux:
                     envs.append(env.ambiente)
+                    envs_aux.append(env.ambiente_id)
 
+        #Check in all vlans from all environments above
+        #if there is a vlan with the same vlan number of the
+        #vlan being tested
         for env in envs:
             for vlan in env.vlan_set.all():
                 if int(vlan.num_vlan) == int(self.num_vlan):
-                    if self.ambiente.filter_id == None or vlan.ambiente.filter_id == None or int(vlan.ambiente.filter_id) != int(self.ambiente.filter_id):
-                        raise VlanNumberEnvironmentNotAvailableError(
-                            None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
+                    raise VlanNumberEnvironmentNotAvailableError(
+                        None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
 
         try:
             self.get_by_name(self.nome)
