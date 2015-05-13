@@ -431,7 +431,7 @@ class RackAplicarConfigResource(RestResource):
             rack = rack.get_by_pk(rack_id)
 
             #Validar configuracao
-            if not rack.config_sw1:
+            if not rack.config:
                 raise RackAplError(None, rack.nome, "Os arquivos de configuracao devem ser gerados antes.")
 
             #variaveis

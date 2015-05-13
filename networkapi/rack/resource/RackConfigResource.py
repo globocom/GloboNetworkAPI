@@ -269,7 +269,7 @@ class RackConfigResource(RestResource):
             #Chama o script para gerar os arquivos de configuracao
             var = gera_config(rack)
 
-            rack.__dict__.update(id=rack_id, config_sw1=var)
+            rack.__dict__.update(id=rack_id, config=var)
             rack.save(user) 
 
             success_map = dict()

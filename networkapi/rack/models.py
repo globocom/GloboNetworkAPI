@@ -99,9 +99,7 @@ class Rack(BaseModel):
     id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
     id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
     id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
-    config_sw1 = models.BooleanField(default=False)
-    config_sw2 = models.BooleanField(default=False)
-    config_ilo = models.BooleanField(default=False)
+    config = models.BooleanField(default=False)
     create_vlan_amb = models.BooleanField(default=False)
 
 
