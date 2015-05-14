@@ -177,6 +177,8 @@ def save_server_pool_member(user, sp, list_server_pool_member):
             if sp.healthcheck_id:
                 spm.healthcheck = sp.healthcheck
 
+            spm.save(user)
+
             #execute script to create real if pool already created
             if sp.pool_created:
                 command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
@@ -184,7 +186,6 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                 if code != 0:
                     raise exceptions.ScriptCreatePoolException()
 
-            spm.save(user)
 
 
 def exec_script_check_poolmember_by_pool(pool_id):
