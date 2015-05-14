@@ -120,11 +120,12 @@ def save_server_pool_member(user, sp, list_server_pool_member):
     if del_smp:
         for obj in del_smp:
 
-            #execute script remove real
-            command = settings.POOL_REAL_REMOVE % (obj.server_pool_id, obj.ip_id if obj.ip else obj.ipv6_id, obj.port_real)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                raise exceptions.ScriptCreatePoolException()
+            #execute script remove real if pool already created
+            if sp.pool_created:
+                command = settings.POOL_REAL_REMOVE % (obj.server_pool_id, obj.ip_id if obj.ip else obj.ipv6_id, obj.port_real)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    raise exceptions.ScriptCreatePoolException()
 
             obj.delete(user)
 
@@ -176,13 +177,14 @@ def save_server_pool_member(user, sp, list_server_pool_member):
             if sp.healthcheck_id:
                 spm.healthcheck = sp.healthcheck
 
-            spm.save(user)
+            #execute script to create real if pool already created
+            if sp.pool_created:
+                command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    raise exceptions.ScriptCreatePoolException()
 
-            #execute script create real
-            command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                raise exceptions.ScriptCreatePoolException()
+            spm.save(user)
 
 
 def exec_script_check_poolmember_by_pool(pool_id):
