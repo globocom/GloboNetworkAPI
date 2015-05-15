@@ -82,7 +82,7 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
                 raise exceptions.UpdateEnvironmentServerPoolMemberException()
 
         #Pool already created, it is not possible to change Pool Identifier
-        if(old_identifier != sp.identifier and sp.pool_created):
+        if(old_identifier != identifier and sp.pool_created):
             raise exceptions.CreatedPoolIdentifierException()
 
         sp.default_port = default_port
@@ -93,20 +93,33 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
         sp.identifier = identifier
         sp.save(user)
 
-        #Applies new member limits in pool
-        #First check if all member limits are the same of "default"
-        #Todo - new method
         sp.default_limit = maxconn
         sp.save(user)
-        if(old_maxconn != sp.default_limit and sp.pool_created):
-            transaction.commit()
-            command = settings.POOL_MANAGEMENT_LIMITS % (sp.id)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                sp.default_limit = old_maxconn
-                sp.save(user)
+
+        #If exists pool member, checks if all them have the same maxconn
+        #before changing default maxconn of pool
+        if(len(sp.serverpoolmember_set.all()) > 0):
+            if(old_maxconn != sp.default_limit and sp.pool_created):
+
+                for serverpoolmember in sp.serverpoolmember_set.all():
+                    if serverpoolmember.limit != old_maxconn:
+                        raise exceptions.ScriptAlterLimitPoolDiffMembersException()
+                    else:
+                        serverpoolmember.limit = maxconn
+                        serverpoolmember.save(user)
+
                 transaction.commit()
-                raise exceptions.ScriptAlterLimitPoolException()
+                command = settings.POOL_MANAGEMENT_LIMITS % (sp.id)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    sp.default_limit = old_maxconn
+                    for serverpoolmember in sp.serverpoolmember_set.all():
+                        serverpoolmember.limit = old_maxconn
+                        serverpoolmember.save(user)
+
+                    sp.save(user)
+                    transaction.commit()
+                    raise exceptions.ScriptAlterLimitPoolException()
 
         #Applies new healthcheck in pool
         #Todo - new method

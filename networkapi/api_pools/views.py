@@ -825,7 +825,7 @@ def save(request):
         default_port = request.DATA.get('default_port')
         environment = long(request.DATA.get('environment'))
         balancing = request.DATA.get('balancing')
-        maxconn = request.DATA.get('maxconn')
+        maxconn = request.DATA.get('maxcom')
 
         id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
