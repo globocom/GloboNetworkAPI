@@ -63,8 +63,11 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
     if id:
         sp = ServerPool.objects.get(id=id)
 
-        # storage old healthcheck
+        # storage old healthcheck and lb method
+        old_identifier = sp.identifier
         old_healthcheck = Healthcheck.objects.get(id=sp.healthcheck.id)
+        old_lb_method =  sp.lb_method
+        old_maxconn = sp.default_limit
 
         #valid change environment
         if sp.environment and sp.environment.id != env.id:
@@ -79,14 +82,34 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
                 raise exceptions.UpdateEnvironmentServerPoolMemberException()
 
         sp.default_port = default_port
-        sp.healthcheck = hc
-        sp.lb_method = balancing
-        sp.identifier = identifier
         sp.environment = env
-        sp.default_limit = maxconn
         sp.save(user)
 
+        #Pool already created, it is not possible to change Pool Identifier
+        sp.identifier = identifier
+        sp.save(user)
+        if(old_identifier != sp.identifier and sp.pool_created):
+            raise exceptions.CreatedPoolIdentifierException()
+
+        #Applies new member limits in pool
+        #First check if all member limits are the same of "default"
+        #Todo - new method
+        sp.default_limit = maxconn
+        sp.save(user)
+        if(old_maxconn != sp.default_limit and sp.pool_created):
+            transaction.commit()
+            command = settings.POOL_MANAGEMENT_LIMITS % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                sp.default_limit = old_maxconn
+                sp.save(user)
+                transaction.commit()
+                raise exceptions.ScriptAlterLimitPoolException()
+
         #Applies new healthcheck in pool
+        #Todo - new method
+        sp.healthcheck = hc
+        sp.save(user)
         if(old_healthcheck.id != hc.id and sp.pool_created):
             transaction.commit()
             command = settings.POOL_HEALTHCHECK % (sp.id)
@@ -97,6 +120,19 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
                 transaction.commit()
                 raise exceptions.ScriptCreatePoolException()
             
+        #Applies new lb method in pool
+        #Todo - new method
+        sp.lb_method = balancing
+        sp.save(user)
+        if(old_lb_method != sp.lb_method and sp.pool_created):
+            transaction.commit()
+            command = settings.POOL_MANAGEMENT_LB_METHOD % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                sp.lb_method = old_lb_method
+                sp.save(user)
+                transaction.commit()
+                raise exceptions.ScriptCreatePoolException()
 
 
     else:

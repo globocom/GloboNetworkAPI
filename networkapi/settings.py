@@ -277,6 +277,10 @@ POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
 # Script to Managemant Status Pool Members
 POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
 
+# Script to Managemant Status Pool Members
+POOL_MANAGEMENT_LB_METHOD = "gerador_vips --pool %s --lb_method"
+POOL_MANAGEMENT_LIMITS = "gerador_vips --pool %s --maxconn"
+
 
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'

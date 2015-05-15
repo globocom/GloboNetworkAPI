@@ -824,7 +824,7 @@ def save(request):
         default_port = request.DATA.get('default_port')
         environment = long(request.DATA.get('environment'))
         balancing = request.DATA.get('balancing')
-        maxcom = request.DATA.get('maxcom')
+        maxconn = request.DATA.get('maxconn')
 
         id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
@@ -870,7 +870,7 @@ def save(request):
 
         # Save Server pool
         sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
-                                                  maxcom, id_pool_member_noempty)
+                                                  maxconn, id_pool_member_noempty)
 
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
