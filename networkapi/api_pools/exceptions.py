@@ -29,7 +29,7 @@ class InvalidIdentifierPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Identifier already exists.'
 
-class CreatedIdentifierPoolException(APIException):
+class CreatedPoolIdentifierException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Pool already created. Cannot change Identifier.'
 
@@ -71,6 +71,10 @@ class ScriptEnablePoolException(APIException):
 class ScriptDisablePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute disable script for pool.'
+
+class ScriptAlterLimitPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute limits script for pool.'
 
 
 class PoolConstraintVipException(APIException):
