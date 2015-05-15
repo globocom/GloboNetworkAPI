@@ -28,7 +28,7 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLErro
 
 from networkapi.log import Log
 
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_text
+from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_option
 
 from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError
 from django.forms.models import model_to_dict
@@ -114,7 +114,7 @@ class EnvironmentVipSearchResource(RestResource):
                     if finalidade is not None:
 
                         # finalidade_txt can NOT be greater than 50
-                        if not is_valid_string_maxsize(finalidade, 50, True) or not is_valid_text(finalidade):
+                        if not is_valid_string_maxsize(finalidade, 50, True) or not is_valid_option(finalidade):
                             self.log.error(
                                 u'Parameter finalidade_txt is invalid. Value: %s.', finalidade)
                             raise InvalidValueError(
@@ -125,7 +125,7 @@ class EnvironmentVipSearchResource(RestResource):
                     if cliente is not None:
 
                         # cliente_txt can NOT be greater than 50
-                        if not is_valid_string_maxsize(cliente, 50, True) or not is_valid_text(cliente):
+                        if not is_valid_string_maxsize(cliente, 50, True) or not is_valid_option(cliente):
                             self.log.error(
                                 u'Parameter cliente_txt is invalid. Value: %s.', cliente)
                             raise InvalidValueError(
@@ -136,7 +136,7 @@ class EnvironmentVipSearchResource(RestResource):
                     if ambiente_p44 is not None:
 
                         # ambiente_p44_txt can NOT be greater than 50
-                        if not is_valid_string_maxsize(ambiente_p44, 50, True) or not is_valid_text(ambiente_p44):
+                        if not is_valid_string_maxsize(ambiente_p44, 50, True) or not is_valid_option(ambiente_p44):
                             self.log.error(
                                 u'Parameter ambiente_p44_txt is invalid. Value: %s.', ambiente_p44)
                             raise InvalidValueError(

@@ -17,6 +17,7 @@
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 
 from networkapi.api_pools import exceptions
 from networkapi.healthcheckexpect.models import Healthcheck
@@ -24,7 +25,16 @@ from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ipv6, Ip
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
+from networkapi.ambiente.models import IP_VERSION
 
+from networkapi.log import Log
+
+log = Log(__name__)
+
+#Todo
+#Not to be used alone like this
+#User has to specifically choose an existing healthcheck in order to use the same healthcheck
+#between pools
 def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck_request):
     try:
         # Query HealthCheck table for one equal this
@@ -38,6 +48,13 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
 
     return hc
 
+def create_healthcheck(user, identifier, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination):
+    hc = Healthcheck(identifier='', healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
+                     healthcheck_expect=healthcheck_expect, destination='*:*')
+    hc.save(user)
+
+    return hc
+
 
 def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxcom, id_pool_member):
     # Save Server pool
@@ -46,11 +63,13 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
     if id:
         sp = ServerPool.objects.get(id=id)
 
-        # storage old healthcheck id
-        old_healthcheck_id = sp.healthcheck_id
+        # storage old healthcheck
+        old_healthcheck = Healthcheck.objects.get(id=sp.healthcheck.id)
 
         #valid change environment
         if sp.environment and sp.environment.id != env.id:
+            if sp.pool_created:
+                raise exceptions.UpdateEnvironmentPoolCreatedException()
             del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member)
             vip = sp.vipporttopool_set.count()
             if vip > 0:
@@ -65,12 +84,27 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
         sp.identifier = identifier
         sp.environment = env
         sp.default_limit = maxcom
+        sp.save(user)
+
+        #Applies new healthcheck in pool
+        if(old_healthcheck.id != hc.id and sp.pool_created):
+            transaction.commit()
+            command = settings.POOL_HEALTHCHECK % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                sp.healthcheck = old_healthcheck
+                sp.save(user)
+                transaction.commit()
+                raise exceptions.ScriptCreatePoolException()
+            
+
+
     else:
         sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
                         environment=env, pool_created=False, lb_method=balancing, default_limit=maxcom)
-    sp.save(user)
+        sp.save(user)
 
-    return sp, old_healthcheck_id
+    return sp, old_healthcheck.id
 
 
 def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight, id_pool_member, id_equips):
@@ -120,14 +154,17 @@ def save_server_pool_member(user, sp, list_server_pool_member):
     if del_smp:
         for obj in del_smp:
 
+            obj.delete(user)
+
             #execute script remove real if pool already created
+            #commit transaction after each successful script call
             if sp.pool_created:
                 command = settings.POOL_REAL_REMOVE % (obj.server_pool_id, obj.ip_id if obj.ip else obj.ipv6_id, obj.port_real)
                 code, _, _ = exec_script(command)
                 if code != 0:
                     raise exceptions.ScriptCreatePoolException()
+                transaction.commit()
 
-            obj.delete(user)
 
     if list_server_pool_member:
         for dic in list_server_pool_member:
@@ -163,28 +200,30 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                 spm.limit = sp.default_limit
                 spm.port_real = dic['port_real']
 
-                #execute script remove real
-                command = settings.POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
-                code, _, _ = exec_script(command)
-                if code != 0:
-                    raise exceptions.ScriptCreatePoolException()
-
             else:
                 spm = ServerPoolMember(server_pool=sp, identifier=dic['nome_equips'], ip=ip_object, ipv6=ipv6_object,
                                        priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
                                        port_real=dic['port_real'])
 
-            if sp.healthcheck_id:
-                spm.healthcheck = sp.healthcheck
+                spm.save(user)
 
-            spm.save(user)
+                #execute script to create real if pool already created
+                #commits transaction. Rolls back if script returns error
+                if sp.pool_created:
+                    transaction.commit()
+                    #def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
+                    #spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
+                    command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+                    code, _, _ = exec_script(command)
+                    if code != 0:
+                        spm.delete(user)
+                        transaction.commit()
+                        raise exceptions.ScriptCreatePoolException()
 
-            #execute script to create real if pool already created
-            if sp.pool_created:
-                command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-                code, _, _ = exec_script(command)
-                if code != 0:
-                    raise exceptions.ScriptCreatePoolException()
+
+            #if sp.healthcheck_id:
+            #    spm.healthcheck = sp.healthcheck
+
 
 
 

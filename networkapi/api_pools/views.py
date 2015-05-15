@@ -27,7 +27,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools
+    prepare_to_save_reals, manager_pools, create_healthcheck
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -56,6 +56,7 @@ log = Log(__name__)
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def pool_list(request):
+
     """
     List all code snippets, or create a new snippet.
     """
@@ -793,7 +794,6 @@ def save_reals(request):
 
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
-
         return Response()
 
     except exceptions.ScriptAddPoolException, exception:
@@ -847,8 +847,18 @@ def save(request):
         if has_identifier.count() > 0:
             raise exceptions.InvalidIdentifierPoolException()
 
-        # Ger or create new health check
-        hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request)
+        # Get or create new health check
+        #Gets current healthcheck
+        current_healthcheck_id = ServerPool.objects.filter(id=id).healthcheck_id
+        current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
+        healthcheck = current_healthcheck
+        if (current_healthcheck.healthcheck_type != healthcheck_type
+            or current_healthcheck.healthcheck_request != healthcheck_request
+            or current_healthcheck.healthcheck_expect != healthcheck_expect
+            or current_healthcheck.destination != "*:*"):
+
+            #hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request)
+            healthcheck = create_healthcheck(request.user, healthcheck_identifier, healthcheck_expect, healthcheck_type, healthcheck_request)
 
         # Remove empty values from list
         id_pool_member_noempty = [x for x in id_pool_member if x != '']
@@ -857,7 +867,7 @@ def save(request):
         env = Ambiente.objects.get(id=environment)
 
         # Save Server pool
-        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, hc, env, balancing,
+        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
                                                   maxcom, id_pool_member_noempty)
 
         # Prepare and valid to save reals

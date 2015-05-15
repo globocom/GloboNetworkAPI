@@ -265,6 +265,7 @@ VIP_REMOVE = 'gerador_vips -i %d --remove'
 """
 POOL_CREATE = 'gerador_vips --pool %s --cria'
 POOL_REMOVE = 'gerador_vips --pool %s --remove'
+POOL_HEALTHCHECK = 'gerador_vips --pool %s --healthcheck'
 POOL_REAL_CREATE = 'gerador_vips --pool %s --id_ip %s --port_ip %s --add'
 POOL_REAL_REMOVE = 'gerador_vips --pool %s --id_ip %s --port_ip %s --del'
 POOL_REAL_ENABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --ena'

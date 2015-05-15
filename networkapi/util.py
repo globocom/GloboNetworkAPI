@@ -267,7 +267,7 @@ def is_valid_text(param, required=True):
     elif required == False and (param == None or param == ''):
         return True
 
-    pattern = r"^[a-zA-Z\\-_\\\-\\ ]*$"
+    pattern = r"^[a-zA-Z0-9\\-_\\\-\\ ]*$"
     return re.match(pattern, param)
 
 

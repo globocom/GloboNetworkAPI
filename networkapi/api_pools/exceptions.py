@@ -78,6 +78,9 @@ class UpdateEnvironmentVIPException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Ambiente nao pode ser alterado pois o server pool esta associado com um ou mais VIP.'
 
+class UpdateEnvironmentPoolCreatedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Ambiente nao pode ser alterado pois o server pool ja esta criado no equipamento.'
 
 class UpdateEnvironmentServerPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
