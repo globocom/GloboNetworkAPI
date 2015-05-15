@@ -849,7 +849,7 @@ def save(request):
 
         # Get or create new health check
         #Gets current healthcheck
-        current_healthcheck_id = ServerPool.objects.filter(id=id).healthcheck_id
+        current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
         current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
         healthcheck = current_healthcheck
         if (current_healthcheck.healthcheck_type != healthcheck_type
@@ -857,8 +857,10 @@ def save(request):
             or current_healthcheck.healthcheck_expect != healthcheck_expect
             or current_healthcheck.destination != "*:*"):
 
+            healthcheck_identifier = ''
+            healthcheck_destination = '*:*'
             #hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request)
-            healthcheck = create_healthcheck(request.user, healthcheck_identifier, healthcheck_expect, healthcheck_type, healthcheck_request)
+            healthcheck = create_healthcheck(request.user, healthcheck_identifier, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination)
 
         # Remove empty values from list
         id_pool_member_noempty = [x for x in id_pool_member if x != '']
