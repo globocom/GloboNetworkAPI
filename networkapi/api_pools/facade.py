@@ -56,7 +56,7 @@ def create_healthcheck(user, identifier, healthcheck_expect, healthcheck_type, h
     return hc
 
 
-def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxcom, id_pool_member):
+def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member):
     # Save Server pool
     old_healthcheck_id = None
 
@@ -83,7 +83,7 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
         sp.lb_method = balancing
         sp.identifier = identifier
         sp.environment = env
-        sp.default_limit = maxcom
+        sp.default_limit = maxconn
         sp.save(user)
 
         #Applies new healthcheck in pool
@@ -101,7 +101,7 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
 
     else:
         sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
-                        environment=env, pool_created=False, lb_method=balancing, default_limit=maxcom)
+                        environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn)
         sp.save(user)
 
     return sp, old_healthcheck.id
