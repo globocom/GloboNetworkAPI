@@ -189,23 +189,24 @@ def list_all_members_by_pool(request, id_server_pool):
         
         serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
         
-        stdout = exec_script_check_poolmember_by_pool(id_server_pool)
-        script_out = json.loads( stdout )
-        
-        if type(script_out)!=type(dict()) or len(script_out[id_server_pool].keys()) != len(serializer_pools.data):
-            raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
-
-        for pm in serializer_pools.data:
-            abc = script_out[id_server_pool]["%d"%pm["id"]]
-            status = False
-            if abc in [3,7]:
-                status = True
-            elif abc in [0,1,2,4,5,6]:
-                status = False
-            else:
-                raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
+        if total > 0:
+            stdout = exec_script_check_poolmember_by_pool(id_server_pool)
+            script_out = json.loads( stdout )
             
-            pm["pool_enabled"] = status
+            if type(script_out)!=type(dict()) or len(script_out[id_server_pool].keys())!=total:
+                raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
+    
+            for pm in serializer_pools.data:
+                abc = script_out[id_server_pool]["%d"%pm["id"]]
+                status = False
+                if abc in [3,7]:
+                    status = True
+                elif abc in [0,1,2,4,5,6]:
+                    status = False
+                else:
+                    raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
+                
+                pm["pool_enabled"] = status
             
         data["server_pool_members"] = serializer_pools.data
         data["total"] = total
