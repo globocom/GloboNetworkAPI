@@ -81,15 +81,17 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
             if len(del_smp) > 0:
                 raise exceptions.UpdateEnvironmentServerPoolMemberException()
 
-        sp.default_port = default_port
-        sp.environment = env
-        sp.save(user)
-
         #Pool already created, it is not possible to change Pool Identifier
-        sp.identifier = identifier
-        sp.save(user)
         if(old_identifier != sp.identifier and sp.pool_created):
             raise exceptions.CreatedPoolIdentifierException()
+
+        sp.default_port = default_port
+        sp.environment = env
+        sp.default_limit = old_maxconn
+        sp.healthcheck = old_healthcheck
+        sp.lb_method = old_lb_method
+        sp.identifier = identifier
+        sp.save(user)
 
         #Applies new member limits in pool
         #First check if all member limits are the same of "default"
