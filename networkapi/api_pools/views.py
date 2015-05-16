@@ -201,8 +201,10 @@ def list_all_members_by_pool(request, id_server_pool):
                 status = False
                 if abc in [3,7]:
                     status = True
+                    pm["member_status"] = abc
                 elif abc in [0,1,2,4,5,6]:
                     status = False
+                    pm["member_status"] = abc
                 else:
                     raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
                 
