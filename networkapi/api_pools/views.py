@@ -159,7 +159,7 @@ def pool_list_by_reqvip(request):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
@@ -189,26 +189,22 @@ def list_all_members_by_pool(request, id_server_pool):
         
         serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
         
-        if total > 0:
+        checkstatus=False
+        if request.QUERY_PARAMS.has_key("checkstatus") and request.QUERY_PARAMS["checkstatus"].upper()=="TRUE":
+            checkstatus=True
+
+        if total > 0 and checkstatus:
             stdout = exec_script_check_poolmember_by_pool(id_server_pool)
             script_out = json.loads( stdout )
             
-            if type(script_out)!=type(dict()) or len(script_out[id_server_pool].keys())!=total:
+            if not script_out.has_key(id_server_pool) or len(script_out[id_server_pool])!=total:
                 raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
     
             for pm in serializer_pools.data:
                 abc = script_out[id_server_pool]["%d"%pm["id"]]
-                status = False
-                if abc in [3,7]:
-                    status = True
-                    pm["member_status"] = abc
-                elif abc in [0,1,2,4,5,6]:
-                    status = False
-                    pm["member_status"] = abc
-                else:
+                if abc not in range(1,8):
                     raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
-                
-                pm["pool_enabled"] = status
+                pm["member_status"] = abc
             
         data["server_pool_members"] = serializer_pools.data
         data["total"] = total
