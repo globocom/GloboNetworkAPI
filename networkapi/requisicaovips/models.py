@@ -1616,7 +1616,6 @@ class RequisicaoVips(BaseModel):
 
                 server_pool.environment = environment_obj
                 server_pool.pool_created = False
-                server_pool.default_limit = vip_map.get('maxcon')
 
                 vip_port_to_pool = VipPortToPool()
                 vip_port_to_pool.requisicao_vip = self
@@ -1633,6 +1632,8 @@ class RequisicaoVips(BaseModel):
                 raise RequisicaoVipsError(None, u'Unexpected error while searching for existing pool.')
 
             server_pool.default_port = default_port
+            server_pool.default_limit = vip_map.get('maxcon')
+            
             if healthcheck_obj != None:
                 server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
@@ -1724,7 +1725,7 @@ class RequisicaoVips(BaseModel):
             server_pool_member.port_real = port_real
             server_pool_member.priority = priority
             server_pool_member.weight = weight or 0
-            server_pool_member.limit = 0
+            server_pool_member.limit = 0 or vip_map.get('maxcon')
 
             server_pool_member.save(user)
             
