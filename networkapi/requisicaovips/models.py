@@ -16,6 +16,7 @@
 # limitations under the License.
 
 from __future__ import with_statement
+from datetime import datetime
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields import NullBooleanField
@@ -2118,6 +2119,11 @@ class ServerPoolMember(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
         managed = True
+
+    def _get_last_status_update_formated(self):
+        return datetime.strptime(self.last_status_update, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y %H:%M:%S')
+
+    last_status_update_formated = property(_get_last_status_update_formated)
 
     def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
 

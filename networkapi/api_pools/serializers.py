@@ -70,6 +70,7 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
     #pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
 
     equipment_name = serializers.SerializerMethodField('get_name_equipment')
+    last_status_update_formated = serializers.Field(source='last_status_update_formated')
 
     ip = Ipv4Serializer()
     ipv6 = Ipv6Serializer()
@@ -88,6 +89,7 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'healthcheck',
                   'member_status',
                   'last_status_update',
+                  'last_status_update_formated',
                   'equipment_name',
                   )
 

@@ -178,6 +178,28 @@ def list_all_members_by_pool(request, id_server_pool):
         custom_search = request.DATA.get("custom_search")
 
         query_pools = ServerPoolMember.objects.filter(server_pool=id_server_pool)
+        total = query_pools.count()
+
+        checkstatus=False
+        if request.QUERY_PARAMS.has_key("checkstatus") and request.QUERY_PARAMS["checkstatus"].upper()=="TRUE":
+            checkstatus=True
+
+        if total > 0 and checkstatus:
+            stdout = exec_script_check_poolmember_by_pool(id_server_pool)
+            script_out = json.loads(stdout)
+
+            if id_server_pool not in script_out.keys() or len(script_out[id_server_pool]) != total:
+                raise exceptions.ScriptCheckStatusPoolMemberException(detail="Script did not return as expected.")
+
+            for pm in query_pools:
+                member_checked_status = script_out[id_server_pool][str(pm.id)]
+                if member_checked_status not in range(0, 8):
+                    raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
+
+                #Save to BD
+                pm.member_status = member_checked_status
+                pm.last_status_update = datetime.now()
+                pm.save(request.user)
         
         server_pools, total = build_query_to_datatable(
             query_pools,
@@ -189,30 +211,6 @@ def list_all_members_by_pool(request, id_server_pool):
         )
         
         serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
-
-        checkstatus=False
-        if request.QUERY_PARAMS.has_key("checkstatus") and request.QUERY_PARAMS["checkstatus"].upper()=="TRUE":
-            checkstatus=True
-
-        if total > 0 and checkstatus:
-            stdout = exec_script_check_poolmember_by_pool(id_server_pool)
-            script_out = json.loads( stdout )
-            
-            if not script_out.has_key(id_server_pool) or len(script_out[id_server_pool])!=total:
-                raise exceptions.ScriptCheckStatusPoolMemberException(detail="Script did not return as expected.")
-    
-            for pms in serializer_pools.data:
-                member_checked_status = script_out[id_server_pool]["%d"%pms["id"]]
-                if member_checked_status not in range(0,8):
-                    raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
-                pms["member_status"] = member_checked_status
-                pms["last_status_update"] = datetime.now()
-                
-                #Save to BD
-                pm = query_pools.get(id=pms["id"])
-                pm.member_status = pms["member_status"]
-                pm.last_status_update = pms["last_status_update"]
-                pm.save(request.user)
             
         data["server_pool_members"] = serializer_pools.data
         data["total"] = total
