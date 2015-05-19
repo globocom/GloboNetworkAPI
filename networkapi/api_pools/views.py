@@ -201,14 +201,14 @@ def list_all_members_by_pool(request, id_server_pool):
                 raise exceptions.ScriptCheckStatusPoolMemberException(detail="Script did not return as expected.")
     
             for pms in serializer_pools.data:
-                abc = script_out[id_server_pool]["%d"%pms["id"]]
-                if abc not in range(1,8):
+                member_checked_status = script_out[id_server_pool]["%d"%pms["id"]]
+                if member_checked_status not in range(0,8):
                     raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
-                pms["member_status"] = abc
+                pms["member_status"] = member_checked_status
                 
                 #Save to BD
                 pm = query_pools.get(id=pms["id"])
-                pm.member_status = abc
+                pm.member_status = member_checked_status
                 pm.save(request.user)
             
         data["server_pool_members"] = serializer_pools.data
