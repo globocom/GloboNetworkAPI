@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import json
+from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -209,6 +210,7 @@ def list_all_members_by_pool(request, id_server_pool):
                 #Save to BD
                 pm = query_pools.get(id=pms["id"])
                 pm.member_status = member_checked_status
+                pm.last_status_update = datetime.now()
                 pm.save(request.user)
             
         data["server_pool_members"] = serializer_pools.data

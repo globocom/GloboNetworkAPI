@@ -87,6 +87,7 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'port_real',
                   'healthcheck',
                   'member_status',
+                  'last_status_update',
                   'equipment_name',
                   )
 
