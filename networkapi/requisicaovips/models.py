@@ -1616,6 +1616,7 @@ class RequisicaoVips(BaseModel):
 
                 server_pool.environment = environment_obj
                 server_pool.pool_created = False
+                server_pool.default_limit = vip_map.get('maxcon')
 
                 vip_port_to_pool = VipPortToPool()
                 vip_port_to_pool.requisicao_vip = self
