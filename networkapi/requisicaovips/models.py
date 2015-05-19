@@ -2112,7 +2112,8 @@ class ServerPoolMember(BaseModel):
     limit = models.IntegerField()
     port_real = models.IntegerField(db_column='port')
     healthcheck = models.ForeignKey(Healthcheck, db_column='healthcheck_id_healthcheck', null=True)
-    member_status = models.IntegerField(db_column='status', default=False)
+    member_status = models.IntegerField(db_column='status', default=0)
+    last_status_update = models.DateTimeField(null=True)
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
