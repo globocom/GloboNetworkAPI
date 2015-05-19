@@ -86,7 +86,7 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'limit',
                   'port_real',
                   'healthcheck',
-#                  'pool_enabled',
+                  'member_status',
                   'equipment_name',
                   )
 
