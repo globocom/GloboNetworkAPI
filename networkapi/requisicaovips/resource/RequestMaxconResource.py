@@ -16,6 +16,8 @@
 # limitations under the License.
 
 from __future__ import with_statement
+from django.db import transaction
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.distributedlock import distributedlock, LOCK_VIP
@@ -38,7 +40,8 @@ from networkapi.requisicaovips.models import RequisicaoVips, \
     InvalidPriorityValueError, InvalidHealthcheckValueError, \
     InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, \
     InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidClienteValueError
+    InvalidTransbordoValueError, InvalidClienteValueError, ServerPoolMember, \
+    ServerPool
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, \
     is_valid_int_greater_equal_zero_param, clone
@@ -86,6 +89,13 @@ class RequestMaxconResource(RestResource):
             with distributedlock(LOCK_VIP % vip_id):
 
                 vip_old = clone(vip)
+                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+                server_pools_old = []
+                server_pools_members_old = []
+                for sp in server_pools:
+                    server_pools_old.append(sp)
+                    for spm in sp.serverpoolmember_set.all():
+                        server_pools_members_old.append(spm)
 
                 # Vip must be created
                 if not vip.vip_criado:
@@ -152,6 +162,20 @@ class RequestMaxconResource(RestResource):
 
                 vip.save(user, commit=True)
 
+                #update server pool limits table
+                #Fix #27
+                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+
+                for sp in server_pools:
+                    #If exists pool member, change default maxconn of pool and members
+                    if(len(sp.serverpoolmember_set.all()) > 0):
+                        #if(old_maxconn != sp.default_limit and sp.pool_created):
+                        sp.default_limit = maxcon
+                        sp.save(user, commit=True)
+                        for serverpoolmember in sp.serverpoolmember_set.all():
+                            serverpoolmember.limit = maxcon
+                            serverpoolmember.save(user, commit=True)
+
                 # gerador_vips -i <ID_REQUISICAO> --maxconn
                 command = 'gerador_vips -i %d --maxconn' % vip.id
                 code, stdout, stderr = exec_script(command)
@@ -166,7 +190,12 @@ class RequestMaxconResource(RestResource):
                     map['sucesso'] = success_map
                     return self.response(dumps_networkapi(map))
                 else:
+                    #TODO Check if is needed to update pool members separately
                     vip_old.save(user, commit=True)
+                    for sp in server_pools_old:
+                        sp.save(user, commit=True)
+                    for spm in server_pools_members_old:
+                        spm.save(user, commit=True)
                     return self.response_error(2, stdout + stderr)
 
         except XMLError, x:

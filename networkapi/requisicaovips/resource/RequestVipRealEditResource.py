@@ -105,6 +105,14 @@ class RequestVipRealEditResource(RestResource):
             # Clone vip
             vip_old = clone(vip)
 
+            server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+            server_pools_old = []
+            server_pools_members_old = []
+            for sp in server_pools:
+                server_pools_old.append(sp)
+                for spm in sp.serverpoolmember_set.all():
+                    server_pools_members_old.append(spm)
+
             # Get variables
             variables_map = vip.variables_to_map()
 
@@ -449,19 +457,12 @@ class RequestVipRealEditResource(RestResource):
                         # changes in database
                         if code != 0:
                             self.log.info('Code != 0, rollback changes')
-                            # save vip_old clone
-                            vip_old.save(user)
+                            vip_old.save(user, commit=True)
+                            for sp in server_pools_old:
+                                sp.save(user, commit=True)
+                            for spm in server_pools_members_old:
+                                spm.save(user, commit=True)
 
-                            # Remove all port and reals
-                            vip_old.delete_vips_and_reals(user)
-
-                            # save VipPortToPool, ServerPool and
-                            # ServerPoolMember
-                            vip_old.save_vips_and_ports(
-                                variables_map_old, user)
-
-                            # commit to rollback when script return error
-                            transaction.commit()
                             return self.response_error(2, stdout + stderr)
 
                 except Exception, e:
