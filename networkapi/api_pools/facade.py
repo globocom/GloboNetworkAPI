@@ -35,30 +35,26 @@ log = Log(__name__)
 #Not to be used alone like this
 #User has to specifically choose an existing healthcheck in order to use the same healthcheck
 #between pools
-def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck_request):
+def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination, identifier=''):
     try:
         # Query HealthCheck table for one equal this
-        hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
-                                     healthcheck_request=healthcheck_request)
+        if identifier == '':
+            hc = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
+                                     healthcheck_request=healthcheck_request, destination=healthcheck_destination)
+        else:
+            hc = Healthcheck.objects.get(identifier=identifier, healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
+                                     healthcheck_request=healthcheck_request, destination=healthcheck_destination)
     # Else, add a new one
     except ObjectDoesNotExist:
-        hc = Healthcheck(identifier='', healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
-                         healthcheck_expect=healthcheck_expect, destination='')
+        hc = Healthcheck(identifier=identifier, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
+                         healthcheck_expect=healthcheck_expect, destination=healthcheck_destination)
         hc.save(user)
 
     return hc
 
-def create_healthcheck(user, identifier, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination):
-    hc = Healthcheck(identifier='', healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
-                     healthcheck_expect=healthcheck_expect, destination='*:*')
-    hc.save(user)
-
-    return hc
-
-
 def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member):
     # Save Server pool
-    old_healthcheck_id = None
+    old_healthcheck = None
 
     if id:
         sp = ServerPool.objects.get(id=id)
@@ -155,7 +151,7 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
                         environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn)
         sp.save(user)
 
-    return sp, old_healthcheck.id
+    return sp, (old_healthcheck.id if old_healthcheck else None)
 
 
 def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight, id_pool_member, id_equips):
