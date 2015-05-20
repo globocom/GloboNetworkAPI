@@ -3,7 +3,7 @@ interface INTERFACE
   description LEAFNAME INT_LF_DESCRIP
   undo shutdown
   interface INTERFACE.VLANFELEAF
-    vlan-type dot1q VLANFELEAF
+    dot1q termination vid VLANFELEAF
     ip binding vpn-instance FEVrf
     description LEAFNAME FEVrf
     ip address IPSPINEIPV4
@@ -11,7 +11,7 @@ interface INTERFACE
     ipv6 address IPSPINEIPV6
     undo shutdown
   interface INTERFACE.VLANBORDALEAF
-    vlan-type dot1q VLANBORDALEAF
+    dot1q termination vid VLANBORDALEAF
     ip binding vpn-instance BordaVrf
     description LEAFNAME BordaVrf
     ip address IPSPINEIPV4
@@ -19,7 +19,7 @@ interface INTERFACE
     ipv6 address IPSPINEIPV6
     undo shutdown
   interface INTERFACE.VLANBELEAF
-    vlan-type dot1q VLANBELEAF
+    dot1q termination vid VLANBELEAF
     ip binding vpn-instance BEVrf
     description LEAFNAME BEVrf
     ip address IPSPINEIPV4
@@ -27,7 +27,7 @@ interface INTERFACE
     ipv6 address IPSPINEIPV6
     undo shutdown
   interface INTERFACE.VLANBORDACACHOSLEAF
-    vlan-type dot1q VLANBORDACACHOSLEAF
+    dot1q termination vid VLANBORDACACHOSLEAF
     ip binding vpn-instance BordaCachosVrf
     description LEAFNAME BordaCachosVrf
     ip address IPSPINEIPV4
