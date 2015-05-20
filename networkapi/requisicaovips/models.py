@@ -2121,7 +2121,11 @@ class ServerPoolMember(BaseModel):
         managed = True
 
     def _get_last_status_update_formated(self):
-        return datetime.strptime(self.last_status_update, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y %H:%M:%S')
+        formated = ''
+        if self.last_status_update:
+            formated = datetime.strptime(self.last_status_update, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y %H:%M:%S')
+
+        return formated
 
     last_status_update_formated = property(_get_last_status_update_formated)
 
