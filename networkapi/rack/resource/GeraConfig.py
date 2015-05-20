@@ -823,12 +823,12 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine4["INT_LF_DESCRIP"]=int_lf2_sp4
     #
     #
-    variablestochangeleaf1["IPLEAFSP1IPV4"]=os.path.join( str(IPLEAFipv4[rack][0]),str(31) )
-    variablestochangeleaf1["IPLEAFSP2IPV4"]=os.path.join( str(IPLEAFipv4[rack][1]),str(31) )
-    variablestochangeleaf1["IPIBGPIPV4"]=os.path.join( str(IPSIBGPipv4[rack][0]),str(31) )
-    variablestochangeleaf1["IPLEAFSP1IPV6"]=os.path.join( str(IPLEAFipv6[rack][0]),str(127) )
-    variablestochangeleaf1["IPLEAFSP2IPV6"]=os.path.join( str(IPLEAFipv6[rack][1]),str(127) )
-    variablestochangeleaf1["IPIBGPIPV6"]=os.path.join( str(IPSIBGPipv6[rack][0]),str(127) )
+    variablestochangeleaf1["IPLEAFSP1IPV4"]=str(IPLEAFipv4[rack][0])
+    variablestochangeleaf1["IPLEAFSP2IPV4"]=str(IPLEAFipv4[rack][1])
+    variablestochangeleaf1["IPIBGPIPV4"]=str(IPSIBGPipv4[rack][0])
+    variablestochangeleaf1["IPLEAFSP1IPV6"]=str(IPLEAFipv6[rack][0])
+    variablestochangeleaf1["IPLEAFSP2IPV6"]=str(IPLEAFipv6[rack][1])
+    variablestochangeleaf1["IPIBGPIPV6"]=str(IPSIBGPipv6[rack][0])
     variablestochangeleaf1["VLANBELEAFSP1"]=str(VLANBELEAF[rack][0])
     variablestochangeleaf1["VLANBELEAFSP2"]=str(VLANBELEAF[rack][1])
     variablestochangeleaf1["VLANFELEAFSP1"]=str(VLANFELEAF[rack][0])
@@ -871,12 +871,12 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangeleaf1["IMAGE_SO_LF"]= IMAGE_SO_LF
     #
     #
-    variablestochangeleaf2["IPLEAFSP1IPV4"]=os.path.join( str(IPLEAFipv4[rack][2]),str(31) )
-    variablestochangeleaf2["IPLEAFSP2IPV4"]=os.path.join( str(IPLEAFipv4[rack][3]),str(31) )
-    variablestochangeleaf2["IPIBGPIPV4"]=os.path.join( str(IPSIBGPipv4[rack][1]),str(31) )
-    variablestochangeleaf2["IPLEAFSP1IPV6"]=os.path.join( str(IPLEAFipv6[rack][2]),str(127) )
-    variablestochangeleaf2["IPLEAFSP2IPV6"]=os.path.join( str(IPLEAFipv6[rack][3]),str(127) )
-    variablestochangeleaf2["IPIBGPIPV6"]=os.path.join( str(IPSIBGPipv6[rack][1]),str(127) )
+    variablestochangeleaf2["IPLEAFSP1IPV4"]=str(IPLEAFipv4[rack][2])
+    variablestochangeleaf2["IPLEAFSP2IPV4"]=str(IPLEAFipv4[rack][3])
+    variablestochangeleaf2["IPIBGPIPV4"]=str(IPSIBGPipv4[rack][1])
+    variablestochangeleaf2["IPLEAFSP1IPV6"]=str(IPLEAFipv6[rack][2])
+    variablestochangeleaf2["IPLEAFSP2IPV6"]=str(IPLEAFipv6[rack][3])
+    variablestochangeleaf2["IPIBGPIPV6"]=str(IPSIBGPipv6[rack][1])
     variablestochangeleaf2["VLANBELEAFSP1"]=str(VLANBELEAF[rack][2])
     variablestochangeleaf2["VLANBELEAFSP2"]=str(VLANBELEAF[rack][3])
     variablestochangeleaf2["VLANFELEAFSP1"]=str(VLANFELEAF[rack][2])
