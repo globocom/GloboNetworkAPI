@@ -434,6 +434,9 @@ class RackAplicarConfigResource(RestResource):
             if not rack.config:
                 raise RackAplError(None, rack.nome, "Os arquivos de configuracao devem ser gerados antes.")
 
+            if rack.create_vlan_amb:
+                raise RackAplError(None, rack.nome, "As vlans, redes e ambientes ja foram criados.")
+
             #variaveis
             name_core1, name_core2 =  get_core_name(rack)
             
