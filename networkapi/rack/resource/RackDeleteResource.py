@@ -145,15 +145,19 @@ class RackDeleteResource(RestResource):
                     nome_lf_b = PATH_TO_CONFIG+nome_lf
                     nome_lf_a = PATH_TO_MV+nome_lf
                     shutil.move(nome_lf_b, nome_lf_a)
-                    nome_oob = OOB+"-0"+str(i)+"-CM-"+rack.nome+FORMATO
+                    nome_oob = OOB+"-0"+str(i)+"-ADD-"+rack.nome+FORMATO
                     nome_oob_b = PATH_TO_CONFIG+nome_oob
                     nome_oob_a = PATH_TO_MV+nome_oob
                     shutil.move(nome_oob_b, nome_oob_a)
                 for i in range(1,5):
-                    nome_spn = SPN+"-"+str(i)+"-CM-"+rack.nome+FORMATO
+                    nome_spn = SPN+"-"+str(i)+"-ADD-"+rack.nome+FORMATO
                     nome_spn_b = PATH_TO_CONFIG+nome_spn
                     nome_spn_a = PATH_TO_MV+nome_spn
                     shutil.move(nome_spn_b, nome_spn_a)
+                nome_oob = OOB+"-0"+str(i)+"-ADD-"+FORMATO
+                nome_oob_b = PATH_TO_CONFIG+nome_oob
+                nome_oob_a = PATH_TO_MV+nome_oob
+                shutil.move(nome_oob_b, nome_oob_a)
             except:
                 pass
 

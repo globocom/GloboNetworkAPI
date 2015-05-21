@@ -29,6 +29,32 @@ from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
 
+def buscar_roteiro(id_sw, tipo):
+
+    roteiros = EquipamentoRoteiro.search(None, id_sw)
+    for rot in roteiros:
+        if (rot.roteiro.tipo_roteiro.tipo==tipo): 
+            roteiro_eq = rot.roteiro.roteiro 
+
+    roteiro_eq=roteiro_eq.lower()+".txt"
+        
+    return roteiro_eq 
+
+def buscar_ip(id_sw):
+
+    ip_sw=None
+
+    ips = IpEquipamento()
+    ips = ips.list_by_equip(id_sw)
+
+    for ip in ips:
+        ip_sw = Ip.get_by_pk(ip.ip.id)
+
+    if not ip_sw==None:
+        ip_sw = str(ip_sw.oct1)+'.'+str(ip_sw.oct2)+'.'+str(ip_sw.oct3)+'.'+str(ip_sw.oct4)
+
+    return ip_sw
+
 def gera_config(rack):
 
     num_rack=None
@@ -37,6 +63,8 @@ def gera_config(rack):
     id_lf2=None
     name_lf2=None
     id_oob=None
+    id_core1=None
+    id_core2=None
 
     name_oob=None
     name_sp1=None   
@@ -54,10 +82,6 @@ def gera_config(rack):
     int_lf1_sp2=None   
     int_lf2_sp3=None   
     int_lf2_sp4=None   
-
-    roteiro_leaf=None   
-    roteiro_spine=None
-    roteiro_core=None
 
     ip_mgmtlf1=None
     ip_mgmtlf2=None
@@ -92,7 +116,7 @@ def gera_config(rack):
                 if sw.equipamento.nome.split('-')[2]=='1': 
                     int_lf1_sp1 = interface.interface
                     name_sp1 = sw.equipamento.nome
-                    id_spn1 = sw.equipamento.id
+                    id_sp1 = sw.equipamento.id
                     int_sp1 =  sw.interface
                 elif sw.equipamento.nome.split('-')[2]=='2':
                     int_lf1_sp2 = interface.interface
@@ -118,12 +142,12 @@ def gera_config(rack):
                 if sw.equipamento.nome.split('-')[2]=='3':
                     int_lf2_sp3 = interface1.interface
                     name_sp3 = sw.equipamento.nome
-                    id_spn3 = sw.equipamento.id
+                    id_sp3 = sw.equipamento.id
                     int_sp3 =  sw.interface
                 elif sw.equipamento.nome.split('-')[2]=='4':
                     int_lf2_sp4 = interface1.interface
                     name_sp4 = sw.equipamento.nome
-                    id_spn4 = sw.equipamento.id
+                    id_sp4 = sw.equipamento.id
                     int_sp4 =  sw.interface
                 elif sw.equipamento.nome.split('-')[0]=='OOB':
                     int_oob_mgmtlf2 = sw.interface
@@ -146,10 +170,12 @@ def gera_config(rack):
                         int_oob_core1 = interface2.interface
                         name_core1 = sw.equipamento.nome
                         int_core1_oob =  sw.interface
+                        id_core1 = sw.equipamento.id
                     elif sw.equipamento.nome.split('-')[2]=='02':
                         int_oob_core2 = interface2.interface
                         name_core2 = sw.equipamento.nome
                         int_core2_oob =  sw.interface
+                        id_core2 = sw.equipamento.id
             except:
                 pass 
     except InterfaceNotFoundError:
@@ -157,91 +183,81 @@ def gera_config(rack):
 
     if int_oob_core1==None or int_core1_oob==None or int_oob_core2==None or int_core2_oob==None:
         raise RackConfigError(None,rack.nome,"Erro: As interfaces do Switch de gerencia nao foram cadastradas.")
-
-    #Roteiro LF
+  
+    #Roteiro LF01
     try:
-        rot_equip = EquipamentoRoteiro.search(None, id_lf1)
-        for rot in rot_equip:
-            if (rot.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
-                roteiro_leaf = rot.roteiro.roteiro
+        FILEINLF1 = buscar_roteiro(id_lf1, "CONFIGURACAO")
     except:
-        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Leaf.")
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Leaf 01.")
 
-    if roteiro_leaf==None:
-        raise RackConfigError(None,rack.nome,"Erro: O Roteiro do Leaf nao esta cadastrado")
-
-    FILEINLF = roteiro_leaf.lower()+".txt"
-
-
-    #Roteiro SPN
+   #Roteiro LF02
     try:
-        rot_equip2 = EquipamentoRoteiro.search(None, id_spn1)
-        for rot2 in rot_equip2:
-            if (rot2.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
-                roteiro_spine = rot2.roteiro.roteiro
+        FILEINLF2 = buscar_roteiro(id_lf2, "CONFIGURACAO")    
     except:
-        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine.")
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Leaf 02.")
 
-    if roteiro_spine==None:
-        raise RackConfigError(None,rack.nome,"Erro: O Roteiro do spine nao esta cadastrado")
-
-    FILEINSP = roteiro_spine.lower()+".txt"
-
-    #Roteiro Core
+    #Roteiro SPN01
     try:
-        rot_core = EquipamentoRoteiro.search(None, id_oob)
-        for rot3 in rot_core:
-            if (rot3.roteiro.tipo_roteiro.tipo=="CONFIGURACAO"):
-                roteiro_core = rot3.roteiro.roteiro
+        FILEINSP1 = buscar_roteiro(id_sp1, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 01.")
+
+    #Roteiro SPN02
+    try:
+        FILEINSP2 = buscar_roteiro(id_sp2, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 02.")
+
+    #Roteiro SPN03
+    try:
+        FILEINSP3 = buscar_roteiro(id_sp3, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 03.")
+
+    #Roteiro SPN04
+    try:
+        FILEINSP4 = buscar_roteiro(id_sp4, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 04.")
+
+    #Roteiro Core 01
+    try:
+        FILEINCR1 = buscar_roteiro(id_core1, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Core 01.")
+
+    #Roteiro Core 02
+    try:
+        FILEINCR2 = buscar_roteiro(id_core2, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Core 02.")
+
+    #Roteiro OOB
+    try:
+        FILEINOOB = buscar_roteiro(id_oob, "CONFIGURACAO")    
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do switch de gerencia.")
 
-    if roteiro_core==None:
-        raise RackConfigError(None,rack.nome,"Erro: O Roteiro do switch de gerencia nao esta cadastrado")
-
-    FILEINCR = roteiro_core.lower()+".txt"
-
-
-    #Ip LF
+    #Ip LF01
     try:
-        ipLF = IpEquipamento()
-        ips = ipLF.list_by_equip(id_lf1)
-        for ip in ips:
-            ip_mgmtlf1 = Ip.get_by_pk(ip.ip.id)
-        if not ip_mgmtlf1==None:
-            ip_mgmtlf1 = str(ip_mgmtlf1.oct1)+'.'+str(ip_mgmtlf1.oct2)+'.'+str(ip_mgmtlf1.oct3)+'.'+str(ip_mgmtlf1.oct4)
+        ip_mgmtlf1 = buscar_ip(id_lf1)
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do leaf 01.")
 
-    if ip_mgmtlf1==None:
-        raise RackConfigError(None,rack.nome,"Erro: Ip de gerencia do leaf 01 nao foi cadastrado.")
-
     #Ip LF02
     try:
-        ips2 = ipLF.list_by_equip(id_lf2)
-        for ip2 in ips2:
-            ip_mgmtlf2 = Ip.get_by_pk(ip2.ip.id)
-        if not ip_mgmtlf2==None:
-            ip_mgmtlf2 = str(ip_mgmtlf2.oct1)+'.'+str(ip_mgmtlf2.oct2)+'.'+str(ip_mgmtlf2.oct3)+'.'+str(ip_mgmtlf2.oct4)
+        ip_mgmtlf2 = buscar_ip(id_lf2)
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do leaf 02.")
 
-    if ip_mgmtlf2==None:
-        raise RackConfigError(None,rack.nome,"Erro: Ip de gerencia do leaf 02 nao foi cadastrado.")
+    var1 = autoprovision_splf(num_rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
 
-
-
-    #chamada gera_config.py
-    var1 = autoprovision_splf(num_rack, FILEINLF, FILEINSP, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
-
-    var2 = autoprovision_coreoob(num_rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
+    var2 = autoprovision_coreoob(num_rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
 
     if var1 and var2:
         return True
 
     return False
-
-
 
 class RackConfigResource(RestResource):
 

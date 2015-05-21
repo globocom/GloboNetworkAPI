@@ -464,10 +464,12 @@ def dic_fe_prod(rack):
     ipv6['REDE']=str(subnetsRackFEipv6[rack])
     return redes, ranges, ipv6
 
-def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
+def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     #roteiro para configuracao de core
-    fileincore=PATH_TO_GUIDE+FILEINCR
+    fileincore1=PATH_TO_GUIDE+FILEINCR1
+    fileincore2=PATH_TO_GUIDE+FILEINCR2
+    fileinoob=PATH_TO_GUIDE+FILEINOOB 
     
     #nome dos cores, do console de gerencia dos lf do rack, e do rack
     HOSTNAME_CORE1=name_core1
@@ -524,16 +526,21 @@ def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_
     fileoutoob=PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
 
     #gerando arquivos de saida
-    replace(fileincore,fileoutcore1,variablestochangecore1)
-    replace(fileincore,fileoutcore2,variablestochangecore2)
+    replace(fileincore1,fileoutcore1,variablestochangecore1)
+    replace(fileincore2,fileoutcore2,variablestochangecore2)
+    replace(fileinoob,fileoutoob,variablestochangeoob)
 
     return True
 
-def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
+def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
 
 
-    fileinleaf=PATH_TO_GUIDE+FILEINLF
-    fileinspine=PATH_TO_GUIDE+FILEINSP
+    fileinleaf1=PATH_TO_GUIDE+FILEINLF1
+    fileinleaf2=PATH_TO_GUIDE+FILEINLF2
+    fileinspine1=PATH_TO_GUIDE+FILEINSP1
+    fileinspine2=PATH_TO_GUIDE+FILEINSP2
+    fileinspine3=PATH_TO_GUIDE+FILEINSP3
+    fileinspine4=PATH_TO_GUIDE+FILEINSP4
 
     HOSTNAME_LF1=name_lf1
     HOSTNAME_LF2=name_lf2
@@ -940,12 +947,12 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     fileoutleaf1=PATH_TO_CONFIG+HOSTNAME_LF1+".cfg"
     fileoutleaf2=PATH_TO_CONFIG+HOSTNAME_LF2+".cfg"
 
-    replace(fileinspine,fileoutspine1,variablestochangespine1)
-    replace(fileinspine,fileoutspine2,variablestochangespine2)
-    replace(fileinspine,fileoutspine3,variablestochangespine3)
-    replace(fileinspine,fileoutspine4,variablestochangespine4)
-    replace(fileinleaf,fileoutleaf1,variablestochangeleaf1)
-    replace(fileinleaf,fileoutleaf2,variablestochangeleaf2)
+    replace(fileinspine1,fileoutspine1,variablestochangespine1)
+    replace(fileinspine2,fileoutspine2,variablestochangespine2)
+    replace(fileinspine3,fileoutspine3,variablestochangespine3)
+    replace(fileinspine4,fileoutspine4,variablestochangespine4)
+    replace(fileinleaf1,fileoutleaf1,variablestochangeleaf1)
+    replace(fileinleaf2,fileoutleaf2,variablestochangeleaf2)
 
     return True
 
