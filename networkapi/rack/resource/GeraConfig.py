@@ -763,8 +763,8 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangecore1={}
     variablestochangecore2={}
    
-    variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])+" 255.255.255.254" 
-    variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])+ " 127"
+    variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])
+    variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])
     variablestochangespine1["VLANBELEAF"]=str(VLANBELEAF[rack][0])
     variablestochangespine1["VLANFELEAF"]=str(VLANFELEAF[rack][0])
     variablestochangespine1["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][0])
@@ -778,8 +778,8 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine1["INT_LF_DESCRIP"]=int_lf1_sp1 
     #
     #
-    variablestochangespine2["IPSPINEIPV4"]=str(IPSPINEipv4[rack][1])+" 255.255.255.254" 
-    variablestochangespine2["IPSPINEIPV6"]=str(IPSPINEipv6[rack][1])+ " 127"
+    variablestochangespine2["IPSPINEIPV4"]=str(IPSPINEipv4[rack][1])
+    variablestochangespine2["IPSPINEIPV6"]=str(IPSPINEipv6[rack][1])
     variablestochangespine2["VLANBELEAF"]=str(VLANBELEAF[rack][1])
     variablestochangespine2["VLANFELEAF"]=str(VLANFELEAF[rack][1])
     variablestochangespine2["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][1])
@@ -793,8 +793,8 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine2["INT_LF_DESCRIP"]=int_lf1_sp2 
     #
     #
-    variablestochangespine3["IPSPINEIPV4"]=str(IPSPINEipv4[rack][2])+" 255.255.255.254" 
-    variablestochangespine3["IPSPINEIPV6"]=str(IPSPINEipv6[rack][2])+ " 127"
+    variablestochangespine3["IPSPINEIPV4"]=str(IPSPINEipv4[rack][2])
+    variablestochangespine3["IPSPINEIPV6"]=str(IPSPINEipv6[rack][2])
     variablestochangespine3["VLANBELEAF"]=str(VLANBELEAF[rack][2])
     variablestochangespine3["VLANFELEAF"]=str(VLANFELEAF[rack][2])
     variablestochangespine3["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][2])
@@ -808,8 +808,8 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine3["INT_LF_DESCRIP"]=int_lf2_sp3  
     #
     #
-    variablestochangespine4["IPSPINEIPV4"]=str(IPSPINEipv4[rack][3])+" 255.255.255.254" 
-    variablestochangespine4["IPSPINEIPV6"]=str(IPSPINEipv6[rack][3])+ " 127"
+    variablestochangespine4["IPSPINEIPV4"]=str(IPSPINEipv4[rack][3])
+    variablestochangespine4["IPSPINEIPV6"]=str(IPSPINEipv6[rack][3])
     variablestochangespine4["VLANBELEAF"]=str(VLANBELEAF[rack][3])
     variablestochangespine4["VLANFELEAF"]=str(VLANFELEAF[rack][3])
     variablestochangespine4["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][3])
