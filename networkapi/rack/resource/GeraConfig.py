@@ -60,6 +60,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
     SO_OOB_NETipv4= IPNetwork('10.143.64.0/18') 
 
     #Vlan para cadastrar
+    variablestochangecore["VLAN_SO"]= str(BASE_SO+rack) 
     variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack 
     variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack) 
 
@@ -472,42 +473,55 @@ def autoprovision_coreoob(rack, FILEINCR, name_core1, name_core2, name_oob, int_
     HOSTNAME_CORE1=name_core1
     HOSTNAME_CORE2=name_core2
     HOSTNAME_OOB=name_oob
-    HOSTNAME_RACK = HOSTNAME_OOB.split("-",1)
+    HOSTNAME_RACK = HOSTNAME_OOB.split("-")
+
+    #valor base para as vlans e portchannels 
+    BASE_SO = 1000
 
     #interfaces de conexão entre os cores e o console
-    INT_OOBC1_DESCRIP = int_oob_core1
-    INT_OOBC2_DESCRIP = int_oob_core2
+    INT_OOBC1_UPLINK = int_oob_core1
+    INT_OOBC2_UPLINK = int_oob_core2
     INTERFACE_CORE1  = int_core1_oob
     INTERFACE_CORE2  = int_core2_oob
 
     #gerando dicionarios para substituir paravras chaves do roteiro
     variablestochangecore1={}
     variablestochangecore2={}
+    variablestochangeoob={}
 
-    variablestochangecore1["INT_OOB_DESCRIP"]= INT_OOBC1_DESCRIP
+    variablestochangeoob["INT_OOBC1_UPLINK"]= INT_OOBC1_UPLINK
+    variablestochangeoob["INT_OOBC2_UPLINK"]= INT_OOBC2_UPLINK
+    variablestochangeoob["INTERFACE_CORE1"]= INTERFACE_CORE1
+    variablestochangeoob["INTERFACE_CORE2"]= INTERFACE_CORE2
+    variablestochangeoob["HOSTNAME_CORE1"]= HOSTNAME_CORE1
+    variablestochangeoob["HOSTNAME_CORE2"]= HOSTNAME_CORE2
+
+    variablestochangecore1["INT_OOB_UPLINK"]= INT_OOBC1_UPLINK
     variablestochangecore1["INTERFACE_CORE"]= INTERFACE_CORE1
-    variablestochangecore1["HOSTNAME_RACK"]= HOSTNAME_RACK[1]
-    variablestochangecore1["SO_HOSTNAME_OOB"]="SO_"+ HOSTNAME_RACK[1]
+    variablestochangecore1["HOSTNAME_RACK"]= HOSTNAME_RACK[2]
+    variablestochangecore1["SO_HOSTNAME_OOB"]="SO_"+ HOSTNAME_RACK[2]
     if (1+rack)%2==0:
         variablestochangecore1["HSRP_PRIORITY"]="100"
     else:
         variablestochangecore1["HSRP_PRIORITY"]="101"    
 
-    variablestochangecore2["INT_OOB_DESCRIP"]= INT_OOBC2_DESCRIP
+    variablestochangecore2["INT_OOB_UPLINK"]= INT_OOBC2_UPLINK
     variablestochangecore2["INTERFACE_CORE"]= INTERFACE_CORE2
-    variablestochangecore2["HOSTNAME_RACK"]= HOSTNAME_RACK[1]
-    variablestochangecore2["SO_HOSTNAME_OOB"]= "SO_"+ HOSTNAME_RACK[1]
+    variablestochangecore2["HOSTNAME_RACK"]= HOSTNAME_RACK[2]
+    variablestochangecore2["SO_HOSTNAME_OOB"]= "SO_"+ HOSTNAME_RACK[2]
     if(2+rack)%2==0:
         variablestochangecore2["HSRP_PRIORITY"]="100"
     else:
         variablestochangecore2["HSRP_PRIORITY"]="101"    
 
-    variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack, HOSTNAME_CORE1, HOSTNAME_RACK[1])
-    variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack, HOSTNAME_CORE2, HOSTNAME_RACK[1])
+    variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
+    variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack, HOSTNAME_CORE2, HOSTNAME_RACK[2])
+    variablestochangeoob = dic_vlan_core(variablestochangeoob, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+"-"+HOSTNAME_RACK[1]+".cfg"    
-    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+"-"+HOSTNAME_RACK[1]+".cfg" 
+    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"    
+    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutoob=PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
 
     #gerando arquivos de saida
     replace(fileincore,fileoutcore1,variablestochangecore1)
@@ -530,7 +544,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     HOSTNAME_SP3=name_sp3
     HOSTNAME_SP4=name_sp4
 
-    HOSTNAME_RACK=HOSTNAME_OOB.split("-", 1)
+    HOSTNAME_RACK=HOSTNAME_OOB.split("-")
 
     IP_GERENCIA_LF1=ip_mgmtlf1
     IP_GERENCIA_LF2=ip_mgmtlf2
@@ -775,7 +789,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine1["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][0])
     variablestochangespine1["INTERFACE"]=INTERFACE_SP1
     variablestochangespine1["LEAFNAME"]=HOSTNAME_LF1
-    variablestochangespine1["INT_LF_DESCRIP"]=int_lf1_sp1 
+    variablestochangespine1["INT_LF_UPLINK"]=int_lf1_sp1 
     #
     #
     variablestochangespine2["IPSPINEIPV4"]=str(IPSPINEipv4[rack][1])
@@ -790,7 +804,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine2["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][1])
     variablestochangespine2["INTERFACE"]=INTERFACE_SP2
     variablestochangespine2["LEAFNAME"]=HOSTNAME_LF1  
-    variablestochangespine2["INT_LF_DESCRIP"]=int_lf1_sp2 
+    variablestochangespine2["INT_LF_UPLINK"]=int_lf1_sp2 
     #
     #
     variablestochangespine3["IPSPINEIPV4"]=str(IPSPINEipv4[rack][2])
@@ -805,7 +819,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine3["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][2])
     variablestochangespine3["INTERFACE"]=INTERFACE_SP3
     variablestochangespine3["LEAFNAME"]=HOSTNAME_LF2
-    variablestochangespine3["INT_LF_DESCRIP"]=int_lf2_sp3  
+    variablestochangespine3["INT_LF_UPLINK"]=int_lf2_sp3  
     #
     #
     variablestochangespine4["IPSPINEIPV4"]=str(IPSPINEipv4[rack][3])
@@ -820,7 +834,7 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangespine4["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][3])
     variablestochangespine4["INTERFACE"]=INTERFACE_SP4
     variablestochangespine4["LEAFNAME"]=HOSTNAME_LF2 
-    variablestochangespine4["INT_LF_DESCRIP"]=int_lf2_sp4
+    variablestochangespine4["INT_LF_UPLINK"]=int_lf2_sp4
     #
     #
     variablestochangeleaf1["IPLEAFSP1IPV4"]=str(IPLEAFipv4[rack][0])
@@ -919,10 +933,10 @@ def autoprovision_splf(rack,FILEINLF,FILEINSP,name_lf1, name_lf2, name_oob, name
     variablestochangeleaf2["IMAGE_SO_LF"]= IMAGE_SO_LF
 
 
-    fileoutspine1=PATH_TO_CONFIG+HOSTNAME_SP1+"-"+HOSTNAME_RACK[1]+".cfg"
-    fileoutspine2=PATH_TO_CONFIG+HOSTNAME_SP2+"-"+HOSTNAME_RACK[1]+".cfg"
-    fileoutspine3=PATH_TO_CONFIG+HOSTNAME_SP3+"-"+HOSTNAME_RACK[1]+".cfg"
-    fileoutspine4=PATH_TO_CONFIG+HOSTNAME_SP4+"-"+HOSTNAME_RACK[1]+".cfg"
+    fileoutspine1=PATH_TO_CONFIG+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutspine2=PATH_TO_CONFIG+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutspine3=PATH_TO_CONFIG+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutspine4=PATH_TO_CONFIG+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutleaf1=PATH_TO_CONFIG+HOSTNAME_LF1+".cfg"
     fileoutleaf2=PATH_TO_CONFIG+HOSTNAME_LF2+".cfg"
 
