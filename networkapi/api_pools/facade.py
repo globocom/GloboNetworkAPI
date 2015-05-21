@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 
 from networkapi.api_pools import exceptions
@@ -44,11 +44,21 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
         else:
             hc = Healthcheck.objects.get(identifier=identifier, healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
                                      healthcheck_request=healthcheck_request, destination=healthcheck_destination)
+
     # Else, add a new one
     except ObjectDoesNotExist:
         hc = Healthcheck(identifier=identifier, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
                          healthcheck_expect=healthcheck_expect, destination=healthcheck_destination)
         hc.save(user)
+
+    #Get the fisrt occureny and warn if redundant HCs are present
+    except MultipleObjectsReturned:
+        if identifier == '':
+            hc = Healthcheck.objects.filter(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
+                                         healthcheck_request=healthcheck_request, destination=healthcheck_destination).order_by('id')[0]
+        else:
+            hc = Healthcheck.objects.filter(identifier=identifier, healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
+                                         healthcheck_request=healthcheck_request, destination=healthcheck_destination).order_by('id')[0]
 
     return hc
 
