@@ -63,6 +63,7 @@ class RackEditResource(RestResource):
             # Get XML data
             id_rack = rack_map.get('id_rack')
             number = rack_map.get('number')
+            name = rack_map.get('name')
             mac_address_sw1 = rack_map.get('mac_address_sw1')
             mac_address_sw2 = rack_map.get('mac_address_sw2')
             mac_address_ilo = rack_map.get('mac_address_ilo')
@@ -73,7 +74,7 @@ class RackEditResource(RestResource):
             racks = Rack()
 
             with distributedlock(LOCK_RACK % id_rack):
-                racks.__dict__.update(id=id_rack, numero=number, mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
+                racks.__dict__.update(id=id_rack, nome=name, numero=number, mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
                 if not id_sw1==None:
                     id_sw1 = int(id_sw1)
                     racks.id_sw1 = Equipamento.get_by_pk(id_sw1)
