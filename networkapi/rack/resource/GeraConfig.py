@@ -4,16 +4,7 @@ from netaddr import *
 import re
 import os
 from networkapi.rack.models import RackConfigError
-
-
-#### HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
-KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
-IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
-#### <<<<<
-
-PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
-
+from networkapi import settings
 
 #substitui key's do dicionario que aparecem em filein, pelos respectivos valores, gerando o arquivo fileout (o restante do arquivo é copiado)
 def replace(filein,fileout, dicionario):
@@ -467,9 +458,9 @@ def dic_fe_prod(rack):
 def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     #roteiro para configuracao de core
-    fileincore1=PATH_TO_GUIDE+FILEINCR1
-    fileincore2=PATH_TO_GUIDE+FILEINCR2
-    fileinoob=PATH_TO_GUIDE+FILEINOOB 
+    fileincore1=settings.PATH_TO_GUIDE+FILEINCR1
+    fileincore2=settings.PATH_TO_GUIDE+FILEINCR2
+    fileinoob=settings.PATH_TO_GUIDE+FILEINOOB 
     
     #nome dos cores, do console de gerencia dos lf do rack, e do rack
     HOSTNAME_CORE1=name_core1
@@ -521,9 +512,9 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     variablestochangeoob = dic_vlan_core(variablestochangeoob, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-    fileoutcore1=PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"    
-    fileoutcore2=PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutoob=PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
+    fileoutcore1=settings.PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"    
+    fileoutcore2=settings.PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutoob=settings.PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
 
     #gerando arquivos de saida
     replace(fileincore1,fileoutcore1,variablestochangecore1)
@@ -535,12 +526,12 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
 def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
 
 
-    fileinleaf1=PATH_TO_GUIDE+FILEINLF1
-    fileinleaf2=PATH_TO_GUIDE+FILEINLF2
-    fileinspine1=PATH_TO_GUIDE+FILEINSP1
-    fileinspine2=PATH_TO_GUIDE+FILEINSP2
-    fileinspine3=PATH_TO_GUIDE+FILEINSP3
-    fileinspine4=PATH_TO_GUIDE+FILEINSP4
+    fileinleaf1=settings.PATH_TO_GUIDE+FILEINLF1
+    fileinleaf2=settings.PATH_TO_GUIDE+FILEINLF2
+    fileinspine1=settings.PATH_TO_GUIDE+FILEINSP1
+    fileinspine2=settings.PATH_TO_GUIDE+FILEINSP2
+    fileinspine3=settings.PATH_TO_GUIDE+FILEINSP3
+    fileinspine4=settings.PATH_TO_GUIDE+FILEINSP4
 
     HOSTNAME_LF1=name_lf1
     HOSTNAME_LF2=name_lf2
@@ -888,8 +879,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf1["INTERFACE_SP2"]= INTERFACE_SP2
     variablestochangeleaf1["HOSTNAME_OOB"]= HOSTNAME_OOB
     variablestochangeleaf1["INTERFACE_OOB"]= INTERFACE_OOB_LF1
-    variablestochangeleaf1["KICKSTART_SO_LF"]= KICKSTART_SO_LF
-    variablestochangeleaf1["IMAGE_SO_LF"]= IMAGE_SO_LF
+    variablestochangeleaf1["KICKSTART_SO_LF"]= settings.KICKSTART_SO_LF
+    variablestochangeleaf1["IMAGE_SO_LF"]= settings.IMAGE_SO_LF
     #
     #
     variablestochangeleaf2["IPLEAFSP1IPV4"]=str(IPLEAFipv4[rack][2])
@@ -936,16 +927,16 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2["INTERFACE_SP2"]= INTERFACE_SP4
     variablestochangeleaf2["HOSTNAME_OOB"]= HOSTNAME_OOB
     variablestochangeleaf2["INTERFACE_OOB"]= INTERFACE_OOB_LF2
-    variablestochangeleaf2["KICKSTART_SO_LF"]= KICKSTART_SO_LF
-    variablestochangeleaf2["IMAGE_SO_LF"]= IMAGE_SO_LF
+    variablestochangeleaf2["KICKSTART_SO_LF"]= settings.KICKSTART_SO_LF
+    variablestochangeleaf2["IMAGE_SO_LF"]= settings.IMAGE_SO_LF
 
 
-    fileoutspine1=PATH_TO_CONFIG+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutspine2=PATH_TO_CONFIG+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutspine3=PATH_TO_CONFIG+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutspine4=PATH_TO_CONFIG+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutleaf1=PATH_TO_CONFIG+HOSTNAME_LF1+".cfg"
-    fileoutleaf2=PATH_TO_CONFIG+HOSTNAME_LF2+".cfg"
+    fileoutspine1=settings.PATH_TO_CONFIG+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutspine2=settings.PATH_TO_CONFIG+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutspine3=settings.PATH_TO_CONFIG+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutspine4=settings.PATH_TO_CONFIG+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+    fileoutleaf1=settings.PATH_TO_CONFIG+HOSTNAME_LF1+".cfg"
+    fileoutleaf2=settings.PATH_TO_CONFIG+HOSTNAME_LF2+".cfg"
 
     replace(fileinspine1,fileoutspine1,variablestochangespine1)
     replace(fileinspine2,fileoutspine2,variablestochangespine2)

@@ -34,12 +34,6 @@ from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi import settings
 import shutil 
 
-PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
-PATH_TO_MV = "/opt/app/GloboNetworkAPI/networkapi/rack/delete/"
-LEAF = "LF-CM"
-OOB = "OOB-CM"
-SPN = "SPN-CM"
-FORMATO = ".cfg"
 
 def desativar_remover_vlan_rede(user, rack):
 
@@ -141,22 +135,22 @@ class RackDeleteResource(RestResource):
             # Mover os arquivos de configuracao que foram gerados
             try:
                 for i in range(1,3):
-                    nome_lf = LEAF+"-"+rack.nome+"-"+str(i)+FORMATO
-                    nome_lf_b = PATH_TO_CONFIG+nome_lf
-                    nome_lf_a = PATH_TO_MV+nome_lf
+                    nome_lf = settings.LEAF+"-"+rack.nome+"-"+str(i)+settings.FORMATO
+                    nome_lf_b = settings.PATH_TO_CONFIG+nome_lf
+                    nome_lf_a = settings.PATH_TO_MV+nome_lf
                     shutil.move(nome_lf_b, nome_lf_a)
-                    nome_oob = OOB+"-0"+str(i)+"-ADD-"+rack.nome+FORMATO
-                    nome_oob_b = PATH_TO_CONFIG+nome_oob
-                    nome_oob_a = PATH_TO_MV+nome_oob
+                    nome_oob = settings.OOB+"-0"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
+                    nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
+                    nome_oob_a = settings.PATH_TO_MV+nome_oob
                     shutil.move(nome_oob_b, nome_oob_a)
                 for i in range(1,5):
-                    nome_spn = SPN+"-"+str(i)+"-ADD-"+rack.nome+FORMATO
-                    nome_spn_b = PATH_TO_CONFIG+nome_spn
-                    nome_spn_a = PATH_TO_MV+nome_spn
+                    nome_spn = settings.SPN+"-"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
+                    nome_spn_b = settings.PATH_TO_CONFIG+nome_spn
+                    nome_spn_a = settings.PATH_TO_MV+nome_spn
                     shutil.move(nome_spn_b, nome_spn_a)
-                nome_oob = OOB+"-0"+str(i)+"-ADD-"+FORMATO
-                nome_oob_b = PATH_TO_CONFIG+nome_oob
-                nome_oob_a = PATH_TO_MV+nome_oob
+                nome_oob = settings.OOB+"-0"+str(i)+"-ADD-"+settings.FORMATO
+                nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
+                nome_oob_a = settings.PATH_TO_MV+nome_oob
                 shutil.move(nome_oob_b, nome_oob_a)
             except:
                 pass

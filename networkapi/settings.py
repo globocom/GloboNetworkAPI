@@ -322,3 +322,20 @@ sys.setdefaultencoding('utf-8')
 # O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
 # O terceiro parâmetro é o nível de detalhamento do Log.
 Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
+
+###################################
+# PATH RACKS
+###################################
+#### HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
+KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
+IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
+#### <<<<<
+
+PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
+PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
+
+PATH_TO_MV = "/opt/app/GloboNetworkAPI/networkapi/rack/delete/"
+LEAF = "LF-CM"
+OOB = "OOB-CM"
+SPN = "SPN-CM"
+FORMATO = ".cfg"
