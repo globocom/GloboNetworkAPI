@@ -1,9 +1,9 @@
 Installing Globo NetworkAPI
-#####################
+###########################
 
 
 Using pre-configured VM
-************************
+***********************
 
 In order to use the pre-configured VM you need to have `vagrant <https://www.vagrantup.com/downloads.html>` and `VirtualBox <https://www.virtualbox.org/wiki/Downloads>` installed in your machine.
 
@@ -69,7 +69,7 @@ Create a VirtualEnv
 
 
 Install Dependencies 
-***************************
+********************
 
 You will need the following packages in order to install the next python packages via ``pip``::
 

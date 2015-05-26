@@ -1,5 +1,5 @@
 Globo NetworkAPI API Docs
-===================
+=========================
 
 .. toctree::
 
