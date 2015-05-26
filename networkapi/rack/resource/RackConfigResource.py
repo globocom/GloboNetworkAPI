@@ -113,12 +113,12 @@ def gera_config(rack):
         for interface in interfaces:
             try: 
                 sw = interface.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[2]=='1': 
+                if sw.equipamento.nome.split('-')[2]=='01': 
                     int_lf1_sp1 = interface.interface
                     name_sp1 = sw.equipamento.nome
                     id_sp1 = sw.equipamento.id
                     int_sp1 =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='2':
+                elif sw.equipamento.nome.split('-')[2]=='02':
                     int_lf1_sp2 = interface.interface
                     name_sp2 = sw.equipamento.nome
                     id_sp2 = sw.equipamento.id
@@ -139,12 +139,12 @@ def gera_config(rack):
         for interface1 in interfaces1:
             try:
                 sw = interface1.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[2]=='3':
+                if sw.equipamento.nome.split('-')[2]=='03':
                     int_lf2_sp3 = interface1.interface
                     name_sp3 = sw.equipamento.nome
                     id_sp3 = sw.equipamento.id
                     int_sp3 =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='4':
+                elif sw.equipamento.nome.split('-')[2]=='04':
                     int_lf2_sp4 = interface1.interface
                     name_sp4 = sw.equipamento.nome
                     id_sp4 = sw.equipamento.id

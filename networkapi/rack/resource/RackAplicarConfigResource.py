@@ -35,7 +35,7 @@ from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, AmbienteError, Ambiente, AmbienteNotFoundError
 from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, VLAN_CREATE
 from networkapi.util import destroy_cache_function
-
+from networkapi import settings
 
 def get_core_name(rack):
 
@@ -45,14 +45,20 @@ def get_core_name(rack):
     try:
         interfaces2 = Interface.search(rack.id_ilo.id)
         for interface2 in interfaces2:
-            sw = interface2.get_switch_and_router_interface_from_host_interface(None)
-            if sw.equipamento.nome.split('-')[0]=='OOB':
-                if sw.equipamento.nome.split('-')[2]=='01':
-                    name_core1 = sw.equipamento.nome
-                elif sw.equipamento.nome.split('-')[2]=='02':
-                    name_core2 = sw.equipamento.nome
-    except InterfaceNotFoundError:
-        raise RackAplError(None,rack.nome,"Erro ao buscar os nomes do Core associado ao Switch de gerencia.")
+            try:
+                sw = interface2.get_switch_and_router_interface_from_host_interface(None)
+
+                if sw.equipamento.nome.split('-')[0]=='OOB':
+                    if sw.equipamento.nome.split('-')[2]=='01':
+                        name_core1 = sw.equipamento.nome
+                    elif sw.equipamento.nome.split('-')[2]=='02':
+                        name_core2 = sw.equipamento.nome
+
+            except InterfaceNotFoundError:
+                next
+
+    except e:
+        raise RackAplError(None,rack.nome,"Erro ao buscar os nomes do Core associado ao Switch de gerencia %s" % rack.id_ilo.id)
 
     return name_core1, name_core2
 
@@ -68,7 +74,6 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     for  amb in ambiente:
         if amb.grupo_l3.nome==ambientes.get('L3'):
             id_ambiente = amb
-
     # set vlan
     vlan = Vlan()
     vlan.acl_file_name = None
@@ -104,19 +109,25 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
     network_ip.block = variablestochangecore1.get("REDE_MASK")
+    
+    while str(variablestochangecore1.get("REDE_IP")).endswith(":"):
+        variablestochangecore1['REDE_IP'] = variablestochangecore1['REDE_IP'][:-1]
+
+    while str(variablestochangecore1.get("NETMASK")).endswith(":"):
+        variablestochangecore1['NETMASK'] = variablestochangecore1['NETMASK'][:-1]
 
     len_ip_ipv6 = len(str(variablestochangecore1.get("REDE_IP")).split(':'))
     len_mask = len(str(variablestochangecore1.get("NETMASK")).split(':'))
-    
+
     while(8-len_ip_ipv6>0):#8-6=2--8-7=1--8-8=0
         len_ip_ipv6 = len_ip_ipv6 + 1
-        variablestochangecore1['REDE_IP'] = variablestochangecore1.get("REDE_IP")+":"
+        variablestochangecore1['REDE_IP'] = variablestochangecore1.get("REDE_IP")+":0"
 
     while(8-len_mask>0):
         len_mask = len_mask + 1
-        variablestochangecore1['NETMASK'] = variablestochangecore1.get("NETMASK")+":"
+        variablestochangecore1['NETMASK'] = variablestochangecore1.get("NETMASK")+":0"
 
-    network_ip.bloco1, network_ip.bloco2, network_ip.bloco3, network_ip.bloco4, network_ip.bloco5, network_ip.bloco6, network_ip.bloco7, network_ip.bloco8 = str(variablestochangecore1.get("REDE_IP")).split(':')
+    network_ip.block1, network_ip.block2, network_ip.block3, network_ip.block4, network_ip.block5, network_ip.block6, network_ip.block7, network_ip.block8 = str(variablestochangecore1.get("REDE_IP")).split(':')
     network_ip.mask1, network_ip.mask2, network_ip.mask3, network_ip.mask4, network_ip.mask5, network_ip.mask6, network_ip.mask7, network_ip.mask8 = str(variablestochangecore1.get("NETMASK")).split(':')
     
     #destroy_cache_function([vlan.id])
@@ -447,9 +458,9 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################           VLAN Gerencia SO
             ambientes=dict()
-            ambientes['DC']="NA"
-            ambientes['LOG']="NA"
-            ambientes['L3']="REDENOVODC"
+            ambientes['DC']=settings.DIVISAODC_MGMT
+            ambientes['LOG']=settings.AMBLOG_MGMT
+            ambientes['L3']=settings.GRPL3_MGMT
     
             try: 
                 #criar e ativar a vlan
