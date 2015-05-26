@@ -16,20 +16,16 @@
 # limitations under the License.
 
 
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-from networkapi.ambiente.models import IPConfig, ConfigEnvironment, Ambiente, GrupoL3 
-from networkapi.equipamento.models import Equipamento
+from networkapi.ambiente.models import ConfigEnvironment, Ambiente, GrupoL3
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi import settings
 import shutil 

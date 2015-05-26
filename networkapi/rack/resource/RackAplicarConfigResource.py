@@ -16,23 +16,19 @@
 # limitations under the License.
 
 
-from netaddr import *
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.infrastructure.script_utils import exec_script
-from networkapi.infrastructure.ipaddr import IPNetwork, IPv6Network, IPv4Network
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
-from networkapi.distributedlock import distributedlock, LOCK_RACK
+from networkapi.equipamento.models import Equipamento
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip, IpEquipamento
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
-from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, AmbienteError, Ambiente, AmbienteNotFoundError
+from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, VLAN_CREATE
 from networkapi.util import destroy_cache_function
 from networkapi import settings

@@ -1,8 +1,6 @@
 #coding=utf-8
-import pprint
-from netaddr import *
+from netaddr import IPNetwork
 import re
-import os
 from networkapi.rack.models import RackConfigError
 from networkapi import settings
 

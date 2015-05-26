@@ -16,16 +16,14 @@
 # limitations under the License.
 
 
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, Rack , RackError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
+from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
 
