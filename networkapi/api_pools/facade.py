@@ -52,7 +52,8 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
         hc.save(user)
 
     #Get the fisrt occureny and warn if redundant HCs are present
-    except MultipleObjectsReturned:
+    except MultipleObjectsReturned, e:
+        log.warning("Multiple healthcheck entries found for the given parameters")
         if identifier == '':
             hc = Healthcheck.objects.filter(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
                                          healthcheck_request=healthcheck_request, destination=healthcheck_destination).order_by('id')[0]

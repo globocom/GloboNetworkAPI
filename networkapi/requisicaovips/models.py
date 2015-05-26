@@ -627,12 +627,13 @@ class RequisicaoVips(BaseModel):
             except Healthcheck.DoesNotExist:
                 continue
 
-            priority = priority_keys.get(healthcheck.healthcheck_type, 3)
+            priority = priority_keys.get(healthcheck.healthcheck_type, 2)
             priority_pools.append((priority, pool.id, pool))
 
         if priority_pools:
-            priority_number, priority_pool_id, priority_pool = min(priority_pools)
+            priority_number, priority_pool_id, priority_pool = min(priority_pools, key=lambda itens: itens[0])
             healthcheck_type = priority_pool.healthcheck.healthcheck_type
+            #TODO: verify if it is not healthcheck_request instead of healthcheck_expect
             healthcheck = priority_pool.healthcheck.healthcheck_expect
             maxcon = str(priority_pool.default_limit)
             method_bal = priority_pool.lb_method
@@ -2058,7 +2059,8 @@ class ServerPool(BaseModel):
     )
 
     identifier = models.CharField(
-        max_length=200
+        max_length=200,
+        db_column='identifier'
     )
 
     healthcheck = models.ForeignKey(
@@ -2082,13 +2084,11 @@ class ServerPool(BaseModel):
     environment = models.ForeignKey(
         Ambiente,
         db_column='ambiente_id_ambiente',
-        null=True
     )
 
     lb_method = models.CharField(
         max_length=50,
         db_column='lb_method',
-        null=True
     )
 
     log = Log('ServerPool')
