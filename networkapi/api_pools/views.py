@@ -850,11 +850,15 @@ def save(request):
             has_identifier = has_identifier.exclude(id=id)
 
         if has_identifier.count() > 0:
-            raise exceptions.InvalidIdentifierPoolException()
+            raise exceptions.InvalidIdentifierAlreadyPoolException()
+
+        #Valid fist caracter is not is number
+        if identifier[0].isdigit():
+            raise exceptions.InvalidIdentifierFistDigitPoolException()
 
         # Get or create new health check
         #Gets current healthcheck
-        current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
+        current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id if ServerPool.objects.get(id=id).healthcheck else None
         current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
         healthcheck = current_healthcheck
         if (current_healthcheck.healthcheck_type != healthcheck_type
@@ -890,30 +894,34 @@ def save(request):
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(sp.id, status=status.HTTP_201_CREATED)
 
     except exceptions.ScriptAddPoolException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
-    except exceptions.InvalidIdentifierPoolException, exception:
-        log.error(exception)
+    except exceptions.InvalidIdentifierAlreadyPoolException, exception:
+        log.error(exception.default_detail)
+        raise exception
+
+    except exceptions.InvalidIdentifierFistDigitPoolException, exception:
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.UpdateEnvironmentVIPException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.UpdateEnvironmentServerPoolMemberException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.IpNotFoundByEnvironment, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.InvalidRealPoolException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except Exception, exception:

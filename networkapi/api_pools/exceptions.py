@@ -25,9 +25,14 @@ class InvalidIdVipException(APIException):
     default_detail = 'Invalid id for VIP.'
 
 
-class InvalidIdentifierPoolException(APIException):
+class InvalidIdentifierAlreadyPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Identifier already exists.'
+
+
+class InvalidIdentifierFistDigitPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'The first character of the identifier field can not be a number.'
 
 class CreatedPoolIdentifierException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
