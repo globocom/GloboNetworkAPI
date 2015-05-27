@@ -20,11 +20,10 @@ from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
+from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.equipamento.models import Equipamento
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 
@@ -63,6 +62,7 @@ class RackEditResource(RestResource):
             # Get XML data
             id_rack = rack_map.get('id_rack')
             number = rack_map.get('number')
+            name = rack_map.get('name')
             mac_address_sw1 = rack_map.get('mac_address_sw1')
             mac_address_sw2 = rack_map.get('mac_address_sw2')
             mac_address_ilo = rack_map.get('mac_address_ilo')
@@ -73,7 +73,7 @@ class RackEditResource(RestResource):
             racks = Rack()
 
             with distributedlock(LOCK_RACK % id_rack):
-                racks.__dict__.update(id=id_rack, numero=number, mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
+                racks.__dict__.update(id=id_rack, nome=name, numero=number, mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
                 if not id_sw1==None:
                     id_sw1 = int(id_sw1)
                     racks.id_sw1 = Equipamento.get_by_pk(id_sw1)

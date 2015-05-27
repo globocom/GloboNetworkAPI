@@ -627,12 +627,13 @@ class RequisicaoVips(BaseModel):
             except Healthcheck.DoesNotExist:
                 continue
 
-            priority = priority_keys.get(healthcheck.healthcheck_type, 3)
+            priority = priority_keys.get(healthcheck.healthcheck_type, 2)
             priority_pools.append((priority, pool.id, pool))
 
         if priority_pools:
-            priority_number, priority_pool_id, priority_pool = min(priority_pools)
+            priority_number, priority_pool_id, priority_pool = min(priority_pools, key=lambda itens: itens[0])
             healthcheck_type = priority_pool.healthcheck.healthcheck_type
+            #TODO: verify if it is not healthcheck_request instead of healthcheck_expect
             healthcheck = priority_pool.healthcheck.healthcheck_expect
             maxcon = str(priority_pool.default_limit)
             method_bal = priority_pool.lb_method
@@ -1548,14 +1549,23 @@ class RequisicaoVips(BaseModel):
 
         try:
             healthcheck_type = vip_map.get('healthcheck_type', '')
-            healthcheck_request = vip_map.get('healthcheck', '')
-            
-            id_healthcheck_expect = vip_map.get('id_healthcheck_expect', '')
-            healthcheck_expect = HealthcheckExpect.get_by_pk(
-                            id_healthcheck_expect).match_list
-
             healthcheck_type_upper = healthcheck_type.upper()
+            healthcheck_request = vip_map.get('healthcheck', '')
+            healthcheck_expect = ''
+            id_healthcheck_expect = vip_map.get('id_healthcheck_expect', '')
 
+            if id_healthcheck_expect and id_healthcheck_expect != '':
+                healthcheck_expect = HealthcheckExpect.get_by_pk(
+                                id_healthcheck_expect).match_list
+
+            if healthcheck_request == None:
+                healthcheck_request = ''
+            healthcheck_request = healthcheck_request.replace(chr(10), '\\n').replace(chr(13), '\\r')
+            if healthcheck_expect == None:
+                healthcheck_expect = ''
+            healthcheck_expect  = healthcheck_expect.replace(chr(10), '\\n').replace(chr(13), '\\r')
+
+            #look for a HT with the given values
             healthcheck_query = Healthcheck.objects.filter(
                 healthcheck_type=healthcheck_type_upper,
                 healthcheck_request=healthcheck_request,
@@ -1563,15 +1573,19 @@ class RequisicaoVips(BaseModel):
                 destination='*:*'
             )
 
-            healthcheck_obj = healthcheck_query.uniqueResult()        
+            healthcheck_obj = healthcheck_query.uniqueResult()
 
-        except Exception, e:
-            #Falhou no healthcheck
+        except ObjectDoesNotExist, e:
             #O codigo acima procura um HT ja existente, mas nao acha.
             #Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
-            #TODO - consertar valor para criar uma nova entrada de healthcheck
-            
-            healthcheck_obj = None
+            self.log.debug("Criando um novo Healthcheck, pois o desejado ainda não existe")
+            healthcheck_obj = Healthcheck()
+            healthcheck_obj.healthcheck_type=healthcheck_type_upper
+            healthcheck_obj.healthcheck_request=healthcheck_request
+            healthcheck_obj.healthcheck_expect=healthcheck_expect
+            healthcheck_obj.destination='*:*'
+
+            healthcheck_obj.save(user)
     
         # Reals
         reals_map = vip_map.get('reals')
@@ -2058,12 +2072,14 @@ class ServerPool(BaseModel):
     )
 
     identifier = models.CharField(
-        max_length=200
+        max_length=200,
+        db_column='identifier'
     )
 
     healthcheck = models.ForeignKey(
         Healthcheck,
-        db_column='healthcheck_id_healthcheck'
+        db_column='healthcheck_id_healthcheck',
+        default=1
     )
 
     default_port = models.IntegerField(
@@ -2082,13 +2098,11 @@ class ServerPool(BaseModel):
     environment = models.ForeignKey(
         Ambiente,
         db_column='ambiente_id_ambiente',
-        null=True
     )
 
     lb_method = models.CharField(
         max_length=50,
         db_column='lb_method',
-        null=True
     )
 
     log = Log('ServerPool')

@@ -53,6 +53,13 @@ class RackNumberDuplicatedValueError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+class RackNameDuplicatedError(RackError):
+
+    """Retorna exceção quando numero do rack for repetido."""
+
+    def __init__(self, cause, message=None):
+        RackError.__init__(self, cause, message)
+
 class RackNumberNotFoundError(RackError):
 
     """Retorna exceção quando rack nao for encontrado."""
@@ -60,21 +67,41 @@ class RackNumberNotFoundError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+class RackConfigError(Exception):
+
+    """Retorna exceção quao a configuracao nao for criada."""
+
+    def __init__(self, cause, param=None, value=None):
+        self.cause = cause
+        self.param = param
+        self.value = value
+
+class RackAplError(Exception):
+
+    """Retorna exceção quao a configuracao nao pode ser aplicada."""
+
+    def __init__(self, cause, param=None, value=None):
+        self.cause = cause
+        self.param = param
+        self.value = value
+
+
 class Rack(BaseModel):
 
     log = Log('Rack')
 
     id = models.AutoField(primary_key=True, db_column='id_rack')
     numero = models.IntegerField(unique=True)
+    nome = models.CharField(max_length=4, unique=True)
     mac_sw1 = models.CharField(max_length=17, blank=True, null=True)
     mac_sw2 = models.CharField(max_length=17, blank=True, null=True)
     mac_ilo = models.CharField(max_length=17, blank=True, null=True)
     id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
     id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
     id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
-    config_sw1 = models.BooleanField(default=False)
-    config_sw2 = models.BooleanField(default=False)
-    config_ilo = models.BooleanField(default=False)
+    config = models.BooleanField(default=False)
+    create_vlan_amb = models.BooleanField(default=False)
+
 
     class Meta(BaseModel.Meta):
         db_table = u'racks'
@@ -121,6 +148,13 @@ class Rack(BaseModel):
         except ObjectDoesNotExist, e:
             pass
         
+        try:
+            Rack.objects.get(nome__iexact=self.nome)
+            raise RackNameDuplicatedError(
+                None, u'Nome %s ja existe.' % (self.nome))
+        except ObjectDoesNotExist, e:
+            pass
+
         try:
             return self.save(authenticated_user)
         except Exception, e:

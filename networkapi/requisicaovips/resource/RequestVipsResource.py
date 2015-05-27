@@ -474,7 +474,7 @@ class RequestVipsResource(RestResource):
 
                 except RequestVipServerPoolConstraintError, e:
                     self.log.error(e.message)
-                    return self.response_error(381, e.message)
+                    return self.response_error(384, e.message)
 
                 except Exception, e:
                     if isinstance(e, IntegrityError):

@@ -1,5 +1,5 @@
 Definitions
-#############
+###########
 
 .. contents::
    :depth: 5
@@ -88,7 +88,7 @@ So, in order to be managed, an :ref:`equipment_ref` has to be part of at least o
 .. _equipment-type_ref:
 
 Equipment Type
----------------
+--------------
 
 This is field for categorizing the :ref:`equipment_ref`. It is also used in :ref:`filter_ref`.
 
@@ -96,7 +96,7 @@ This is field for categorizing the :ref:`equipment_ref`. It is also used in :ref
 .. _filter_ref:
 
 Filter
--------
+------
 
 Filters are used to permit an :ref:`equipment_ref` of a specific :ref:`equipment-type_ref` to be part of more than one :ref:`environment_ref` that has overlapping vlans and/or networks.
 
@@ -117,7 +117,7 @@ The allocated IPs are used for documentation pourposes and for automatic allocat
 .. _interface_ref:
 
 Interface
-----------
+---------
 
 Represents the physical interfaces that :ref:`equipment_ref` may have and the connections between them.
 

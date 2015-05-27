@@ -193,7 +193,7 @@ class Healthcheck(BaseModel):
     healthcheck_type = models.CharField(max_length=45)
     healthcheck_request = models.CharField(max_length=500)
     healthcheck_expect = models.CharField(max_length=200)
-    destination = models.CharField(max_length=45)
+    destination = models.CharField(max_length=45, default='*:*')
 
 
     log = Log('Healthcheck')

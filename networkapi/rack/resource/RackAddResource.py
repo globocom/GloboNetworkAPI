@@ -20,11 +20,10 @@ from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
+from networkapi.rack.models import RackNameDuplicatedError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.equipamento.models import Equipamento
 
 
@@ -62,6 +61,7 @@ class RackAddResource(RestResource):
 
             # Get XML data
             number = rack_map.get('number')
+            name = rack_map.get('name')
             mac_address_sw1 = rack_map.get('mac_address_sw1')
             mac_address_sw2 = rack_map.get('mac_address_sw2')
             mac_address_ilo = rack_map.get('mac_address_ilo')
@@ -73,6 +73,7 @@ class RackAddResource(RestResource):
 
             # set variables
             rack.numero = number
+            rack.nome = name
             rack.mac_sw1 = mac_address_sw1
             rack.mac_sw2 = mac_address_sw2
             rack.mac_ilo = mac_address_ilo
@@ -97,7 +98,7 @@ class RackAddResource(RestResource):
             
             rack_map = dict()
             rack_map['rack'] = model_to_dict(
-                rack, exclude=["numero", "mac_sw1", "mac_sw2","mac_ilo", "id_sw1", "id_sw2", "id_ilo"])
+                rack, exclude=["numero", "nome","mac_sw1", "mac_sw2","mac_ilo", "id_sw1", "id_sw2", "id_ilo"])
 
             return self.response(dumps_networkapi(rack_map))
 
@@ -106,6 +107,9 @@ class RackAddResource(RestResource):
 
         except RackNumberDuplicatedValueError:
             return self.response_error(376, number)
+
+        except RackNameDuplicatedError:
+            return self.response_error(381, name)
 
         except UserNotAuthorizedError:
             return self.not_authorized()

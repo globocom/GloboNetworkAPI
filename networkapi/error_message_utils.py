@@ -306,7 +306,10 @@ error_messages = {
     378: u'Rack nao pode ser incluido',
     379: u'Rack nao existe',
     380: u'Arquivo de configuracao do equipamento %s criado',
-    381: u'Erro ao editar ServerPool: %s',
+    381: u'Nome %s ja existe.',
+    382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
+    383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
+    384: u'Erro ao editar ServerPool: %s',
 }
 
 

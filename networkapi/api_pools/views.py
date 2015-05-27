@@ -28,7 +28,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools, create_healthcheck
+    prepare_to_save_reals, manager_pools
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -848,6 +848,9 @@ def save(request):
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
         if id:
             has_identifier = has_identifier.exclude(id=id)
+            #current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
+            #current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
+            #healthcheck = current_healthcheck
 
         if has_identifier.count() > 0:
             raise exceptions.InvalidIdentifierAlreadyPoolException()
@@ -856,20 +859,9 @@ def save(request):
         if identifier[0].isdigit():
             raise exceptions.InvalidIdentifierFistDigitPoolException()
 
-        # Get or create new health check
-        #Gets current healthcheck
-        current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id if ServerPool.objects.get(id=id).healthcheck else None
-        current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
-        healthcheck = current_healthcheck
-        if (current_healthcheck.healthcheck_type != healthcheck_type
-            or current_healthcheck.healthcheck_request != healthcheck_request
-            or current_healthcheck.healthcheck_expect != healthcheck_expect
-            or current_healthcheck.destination != "*:*"):
-
-            healthcheck_identifier = ''
-            healthcheck_destination = '*:*'
-            #hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request)
-            healthcheck = create_healthcheck(request.user, healthcheck_identifier, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination)
+        healthcheck_identifier = ''
+        healthcheck_destination = '*:*'
+        healthcheck = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination, healthcheck_identifier)
 
         # Remove empty values from list
         id_pool_member_noempty = [x for x in id_pool_member if x != '']
