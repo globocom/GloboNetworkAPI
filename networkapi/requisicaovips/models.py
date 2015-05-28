@@ -1549,14 +1549,23 @@ class RequisicaoVips(BaseModel):
 
         try:
             healthcheck_type = vip_map.get('healthcheck_type', '')
-            healthcheck_request = vip_map.get('healthcheck', '')
-            
-            id_healthcheck_expect = vip_map.get('id_healthcheck_expect', '')
-            healthcheck_expect = HealthcheckExpect.get_by_pk(
-                            id_healthcheck_expect).match_list
-
             healthcheck_type_upper = healthcheck_type.upper()
+            healthcheck_request = vip_map.get('healthcheck', '')
+            healthcheck_expect = ''
+            id_healthcheck_expect = vip_map.get('id_healthcheck_expect', '')
 
+            if id_healthcheck_expect and id_healthcheck_expect != '':
+                healthcheck_expect = HealthcheckExpect.get_by_pk(
+                                id_healthcheck_expect).match_list
+
+            if healthcheck_request == None:
+                healthcheck_request = ''
+            healthcheck_request = healthcheck_request.replace(chr(10), '\\n').replace(chr(13), '\\r')
+            if healthcheck_expect == None:
+                healthcheck_expect = ''
+            healthcheck_expect  = healthcheck_expect.replace(chr(10), '\\n').replace(chr(13), '\\r')
+
+            #look for a HT with the given values
             healthcheck_query = Healthcheck.objects.filter(
                 healthcheck_type=healthcheck_type_upper,
                 healthcheck_request=healthcheck_request,
@@ -1564,15 +1573,19 @@ class RequisicaoVips(BaseModel):
                 destination='*:*'
             )
 
-            healthcheck_obj = healthcheck_query.uniqueResult()        
+            healthcheck_obj = healthcheck_query.uniqueResult()
 
-        except Exception, e:
-            #Falhou no healthcheck
+        except ObjectDoesNotExist, e:
             #O codigo acima procura um HT ja existente, mas nao acha.
             #Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
-            #TODO - consertar valor para criar uma nova entrada de healthcheck
-            
-            healthcheck_obj = None
+            self.log.debug("Criando um novo Healthcheck, pois o desejado ainda não existe")
+            healthcheck_obj = Healthcheck()
+            healthcheck_obj.healthcheck_type=healthcheck_type_upper
+            healthcheck_obj.healthcheck_request=healthcheck_request
+            healthcheck_obj.healthcheck_expect=healthcheck_expect
+            healthcheck_obj.destination='*:*'
+
+            healthcheck_obj.save(user)
     
         # Reals
         reals_map = vip_map.get('reals')
@@ -2065,7 +2078,8 @@ class ServerPool(BaseModel):
 
     healthcheck = models.ForeignKey(
         Healthcheck,
-        db_column='healthcheck_id_healthcheck'
+        db_column='healthcheck_id_healthcheck',
+        default=1
     )
 
     default_port = models.IntegerField(
