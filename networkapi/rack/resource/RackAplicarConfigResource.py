@@ -122,19 +122,8 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     
     #destroy_cache_function([vlan.id])
     network_ip.save(user)    
-
-    #ativar a rede
-    # Make command
-    command = NETWORKIPV6_CREATE % int(network_ip.id)
-    code, stdout, stderr = exec_script(command)
-    if code == 0:
-        # Change column 'active = 1'
-        net = NetworkIPv6.get_by_pk(network_ip.id)
-        net.activate(user)
-    else:
-        return self.response_error(2, stdout + stderr)
  
-    return network_ip.id
+    return network_ip
 
 def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
 
@@ -153,19 +142,8 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
 
     destroy_cache_function([vlan.id])
     network_ip.save(user)
-
-    #ativar a rede
-    # Make command
-    command = NETWORKIPV4_CREATE % int(network_ip.id)
-    code, stdout, stderr = exec_script(command)
-    if code == 0:
-        # Change column 'active = 1'
-        net = NetworkIPv4.get_by_pk(network_ip.id)
-        net.activate(user)
-    else:
-        return self.response_error(2, stdout + stderr)
  
-    return network_ip.id
+    return network_ip
 
 def criar_ambiente(user, ambientes, ranges):
 
@@ -331,7 +309,7 @@ def ambiente_prod(user, rack):
         ipv6['VERSION']="ipv6"
         config_ambiente(user, ipv6, ambientes)
 
-def ambiente_cloud(user, rack, vlans):
+def ambiente_cloud(user, rack, vlan_list, network_list):
 
     hosts, ipv6 = dic_hosts_cloud(rack.numero)
 
@@ -365,12 +343,14 @@ def ambiente_cloud(user, rack, vlans):
         variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
         
         vlan = criar_vlan(user, variables, ambientes)
-        vlans.append(vlan.id)
+        vlan_list.append(vlan)
         #criar rede
-        criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
-        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
+        networkipv4 = criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
+        network_list.append(networkipv4)
+        networkipv6 = criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
+        network_list.append(networkipv6)
 
-    return vlans
+    return vlan_list, network_list
 
 def ambiente_prod_fe(user, rack):
 
@@ -411,23 +391,30 @@ def ambiente_borda(user,rack):
         ambientes['DC']=amb
         criar_ambiente(user, ambientes,ranges)
 
-def ativar_vlan(user, vlans):
+def ativar_vlans(user, vlan_list):
 
-    vl = Vlan()
-    for id_vlan in vlans:
-        vlan = vl.get_by_pk(id_vlan)
+    for vlan in vlan_list:
         vlan.activate(user)
+
+def activate_networks(user, network_list):
+
+    for network in network_list:
+        network.activate(user)
 
 def aplicar(rack):
 
     path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
     arquivos = glob.glob(path_config)
     for var in arquivos: 
-        name_equipaments = var.split('/')[-1][:-4]        
-        (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
+        name_equipaments = var.split('/')[-1][:-4]      
 
-    if erro:
-        raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+        #Check if file is config relative to this rack
+        if rack.nome in name_equipaments:
+            #Apply config only in spines. Leaves already have all necessary config in startup
+            if (name_equipaments.split('-')[3] == 'ADD'):
+                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
+                if erro:
+                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
 
 class RackAplicarConfigResource(RestResource):
 
@@ -462,7 +449,8 @@ class RackAplicarConfigResource(RestResource):
             #variaveis
             name_core1, name_core2 =  get_core_name(rack)
             
-            vlans = []
+            vlan_list = []
+            network_list = []
 
             variablestochangecore1 = {}
             variablestochangecore2 = {}
@@ -478,18 +466,19 @@ class RackAplicarConfigResource(RestResource):
             try: 
                 #criar a vlan
                 vlan = criar_vlan(user, variablestochangecore1, ambientes)
-                vlans.append(vlan.id)
+                vlan_list.append(vlan)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
                 #criar e ativar a rede
-                rede_id = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
+                network = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
+                network_list.append(network)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
             try:
                 #inserir os Core
-                inserir_equip(user, variablestochangecore1, rede_id)           
-                inserir_equip(user, variablestochangecore2, rede_id)            
+                inserir_equip(user, variablestochangecore1, network.id)           
+                inserir_equip(user, variablestochangecore2, network.id)            
             except:
                 raise RackAplError(None, rack.nome, "Erro ao inserir o core 1 e 2")
                 
@@ -502,7 +491,7 @@ class RackAplicarConfigResource(RestResource):
             ambiente_prod(user, rack)            
 
             #BE - Hosts - CLOUD
-            vlans = ambiente_cloud(user, rack, vlans)
+            vlan_list, network_list = ambiente_cloud(user, rack, vlan_list, network_list)
             
             #FE 
             ambiente_prod_fe(user, rack)
@@ -513,7 +502,8 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################                Ativar Vlan
 
-            ativar_vlan(user, vlans)
+            ativar_vlans(user, vlan_list)
+            activate_networks(user, network_list)
 
             #######################################################################   Atualizar flag na tabela
 

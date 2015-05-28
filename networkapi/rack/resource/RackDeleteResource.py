@@ -34,7 +34,7 @@ import shutil
 def desativar_remover_vlan_rede(user, rack):
 
     nome = "_"+rack.nome
-    vlans = Vlan.objects.all()
+    vlans = Vlan.objects.all().filter(nome__contains=nome)
 
     for vlan in vlans:
 
@@ -106,6 +106,20 @@ def remover_ambiente(user, rack):
         if amb_l3.nome == nome_rack:
             amb_l3.delete(user)
 
+def aplicar(rack):
+
+    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
+    arquivos = glob.glob(path_config)
+    for var in arquivos: 
+        name_equipaments = var.split('/')[-1][:-4]      
+        #Check if file is config relative to this rack
+        if rack.nome in name_equipaments:
+            #Apply config only in spines. Leaves already have all necessary config in startup
+            if (name_equipaments.split('-')[3] == 'DEL'):
+                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
+                if erro:
+                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+
 class RackDeleteResource(RestResource):
 
     log = Log('RackDeleteResource')
@@ -131,7 +145,7 @@ class RackDeleteResource(RestResource):
             # Mover os arquivos de configuracao que foram gerados
             try:
                 for i in range(1,3):
-                    nome_lf = settings.LEAF+"-"+rack.nome+"-"+str(i)+settings.FORMATO
+                    nome_lf = settings.LEAF+"-"+rack.nome+"-0"+str(i)+settings.FORMATO
                     nome_lf_b = settings.PATH_TO_CONFIG+nome_lf
                     nome_lf_a = settings.PATH_TO_MV+nome_lf
                     shutil.move(nome_lf_b, nome_lf_a)
@@ -140,11 +154,12 @@ class RackDeleteResource(RestResource):
                     nome_oob_a = settings.PATH_TO_MV+nome_oob
                     shutil.move(nome_oob_b, nome_oob_a)
                 for i in range(1,5):
-                    nome_spn = settings.SPN+"-"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
+                    nome_spn = settings.SPN+"-0"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
                     nome_spn_b = settings.PATH_TO_CONFIG+nome_spn
                     nome_spn_a = settings.PATH_TO_MV+nome_spn
                     shutil.move(nome_spn_b, nome_spn_a)
-                nome_oob = settings.OOB+"-0"+str(i)+"-ADD-"+settings.FORMATO
+
+                nome_oob = settings.OOB+"-"+rack.nome+"-01"+settings.FORMATO
                 nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
                 nome_oob_a = settings.PATH_TO_MV+nome_oob
                 shutil.move(nome_oob_b, nome_oob_a)
@@ -153,11 +168,17 @@ class RackDeleteResource(RestResource):
 
             # Remover as Vlans, redes e ambientes
             try:
-                desativar_remover_vlan_rede(user, rack)
-                remover_ambiente(user, rack)
+                # Do not remove now. Needs a specific table that tells all environments
+                # that are attached to each rack
+                #Removing environment automatically removes all vlans
+                #desativar_remover_vlan_rede(user, rack)
+                #remover_ambiente(user, rack)
             except:
                 raise RackError(None, u'Failed to remove the Vlans and Environments.')    
             
+            #Run script to remove rack config from spines and core oobm
+            aplicar(rack)
+
             # Remover Rack            
             with distributedlock(LOCK_RACK % rack_id):
 
