@@ -70,7 +70,7 @@ networkapi.cvs module
 networkapi.environment_settings module
 --------------------------------------
 
-.. automodule:: networkapi.environment_settings
+.. automodule:: networkapi.settings
     :members:
     :undoc-members:
     :show-inheritance:

@@ -30,7 +30,7 @@ Create a specific User/Group
 
 ::
 
-	useradd -m -U networkapi 
+	useradd -m -U networkapi
 	passwd networkapi
 	visudo
 		networkapi      ALL=(ALL)       ALL
@@ -53,7 +53,7 @@ In this example we are downloading code to ``/opt/app``::
 We are exporting this variable below to better document the install process::
 
 	export NETWORKAPI_FOLDER=/opt/app/GloboNetworkAPI/
-	echo "export NETWORKAPI_FOLDER=/opt/app/GloboNetworkAPI/" >> ~/.bashrc 
+	echo "export NETWORKAPI_FOLDER=/opt/app/GloboNetworkAPI/" >> ~/.bashrc
 
 
 Create a VirtualEnv
@@ -65,10 +65,10 @@ Create a VirtualEnv
 	sudo easy_install pip
 	virtualenv ~/virtualenvs/networkapi_env
 	source ~/virtualenvs/networkapi_env/bin/activate
-	echo "source ~/virtualenvs/networkapi_env/bin/activate" >> ~/.bashrc 
+	echo "source ~/virtualenvs/networkapi_env/bin/activate" >> ~/.bashrc
 
 
-Install Dependencies 
+Install Dependencies
 ********************
 
 You will need the following packages in order to install the next python packages via ``pip``::
@@ -76,7 +76,7 @@ You will need the following packages in order to install the next python package
 	sudo yum install mysql
 	sudo yum install mysql-devel
 	sudo yum install gcc
-	
+
 Install the packages listed on ``$NETWORKAPI_FOLDER/requirements.txt`` file:
 
 ::
@@ -99,7 +99,7 @@ Install Memcached
 You can run memcached locally or you can set file variable ``CACHE_BACKEND`` to use a remote memcached farm in file ``$NETWORKAPI_FOLDER/networkapi/environment_settings.py``.
 
 In case you need to run locally::
-	
+
 	sudo yum install memcached
 	sudo systemctl start memcached
 	sudo systemctl enable memcached
@@ -110,14 +110,14 @@ MySQL Server Configuration
 For details on MySQL installation, check `MySQL Documentation <http://dev.mysql.com/doc/refman/5.1/en/installing.html>`_.
 
 ::
-	
+
 	sudo yum install mariadb-server mariadb
 	sudo systemctl start mariadb.service
 	sudo systemctl enable mariadb.service
 	sudo /usr/bin/mysql_secure_installation
 
 Test installation and create a telecom database::
-	
+
 	mysql -u root -p<password>
 	CREATE user 'telecom' IDENTIFIED BY '<password>';
 	GRANT ALL ON *.* TO 'telecom'@'%';
@@ -130,7 +130,7 @@ Create the necessary tables::
 If you want to load into your database the environment used for documentation examples::
 
 	mysql -u <user> -p <password> -h <host> <dbname> < $NETWORKAPI_FOLDER/dev/load_example_environment.sql
- 
+
 Configure the Globo NetworkAPI code to use your MySQL instance:
 
 File ``$NETWORKAPI_FOLDER/networkapi/environment_settings.py``::
@@ -174,6 +174,98 @@ LDAP Server Configuration
 If you want to use LDAP authentication, configure the following variables in ``FILE``:
 
 !TODO
+
+Integrate with Queue
+********************
+
+Install Dependencies::
+
+	Apache ActiveMQ
+
+Apache ActiveMQ ™ is the most popular and powerful open source messaging and Integration Patterns server. `Apache ActiveMQ Getting Started <http://activemq.apache.org/getting-started.html>`_.
+
+Example configuration on ``settings.py``::
+
+	QUEUE_DESTINATION = "/topic/queue_name"
+	QUEUE_BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false"
+
+Usage::
+
+	from queue_tools import queue_keys
+	from queue_tools.queue_manager import QueueManager
+
+	# Create new queue manager
+	queue_manager = QueueManager()
+
+	# Dict is the message body
+	obj_to_queue = {
+    	 "id_vlan": <vlan_id>,
+    	 "num_vlan": <num_vlan>,
+    	 "id_environment": <environment_id>,
+    	 "networks_ipv4": [
+    	  {
+    	   "id": <id>,
+    	   "ip_formated": "<oct1>.<oct2>.<oct3>.<oct4>/<block>"
+    	  }
+    	 ],
+    	 "networks_ipv6": [
+    	  {
+    	   "id": <id>,
+    	   "ip_formated": "<oct1>.<oct2>.<oct3>.<oct4>.<oct5>.<oct6>.<oct7>.<oct8>/<block>"
+    	  }
+    	 ],
+    	 "description": queue_keys.VLAN_REMOVE,
+	}
+
+	# Add in memory temporary on queue to sent
+	queue_manager.append(obj_to_queue)
+
+	# sent to consumer
+	queue_manager.send()
+
+Output::
+
+	$VAR1 = {
+    	 'id_vlan' => <id>,
+    	 "num_vlan" => <num_vlan>,
+    	 "id_environment" => <environment_id>,
+    	 "networks_ipv4" => [
+    	  {
+    	   "id" => <id>,
+    	   "ip_formated" => "<oct1>.<oct2>.<oct3>.<oct4>/<block>"
+    	  }
+    	 ],
+    	 "networks_ipv6" => [
+    	  {
+    	   "id" => <id>,
+    	   "ip_formated" => "<oct1>.<oct2>.<oct3>.<oct4>.<oct5>.<oct6>.<oct7>.<oct8>/<block>"
+    	  }
+    	 ],
+    	 'description' => 'remove'
+    	};
+
+Features that use the ``QueueManager.py``::
+
+	Vlan  remove()
+	uri: vlan/<id_vlan>/remove/
+
+	Vlan  create_ipv4()
+	uri: vlan/v4/create/
+
+	Vlan  create_ipv6()
+	uri: vlan/v6/create/
+
+	Vlan  create_acl()
+	uri: vlan/create/acl/
+
+	Vlan  create_script_acl()
+	uri: vlan/create/script/acl/
+
+	Vlan  create_vlan()
+	uri: vlan/create/
+
+	Vlan  criar()
+	uri: vlan/<id_vlan>/criar/
 
 Working with Documentation
 **************************

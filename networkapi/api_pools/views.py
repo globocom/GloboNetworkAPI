@@ -823,7 +823,7 @@ def save_reals(request):
 def save(request):
 
     try:
-        # TODO: ADD VALIDATION
+
         id = request.DATA.get('id')
         identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')

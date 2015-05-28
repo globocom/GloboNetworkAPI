@@ -21,6 +21,8 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
 from networkapi.log import Log
+from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.vlan.models import Vlan, VlanError, VlanNotFoundError, \
@@ -31,6 +33,7 @@ from networkapi import settings, error_message_utils
 from networkapi.distributedlock import distributedlock, LOCK_VLAN
 from networkapi.equipamento.models import Equipamento
 from networkapi.error_message_utils import error_messages
+from networkapi.vlan.serializers import VlanSerializer
 
 
 class VlanRemoveResource(RestResource):
@@ -88,6 +91,7 @@ class VlanRemoveResource(RestResource):
                         u'User does not have permission to perform the operation.')
                     return self.not_authorized()
 
+
             with distributedlock(LOCK_VLAN % vlan_id):
 
                 # Business Rules
@@ -96,10 +100,10 @@ class VlanRemoveResource(RestResource):
                     network_errors = []
 
                     for net4 in vlan.networkipv4_set.all():
+
                         if net4.active:
                             try:
-                                command = settings.NETWORKIPV4_REMOVE % int(
-                                    net4.id)
+                                command = settings.NETWORKIPV4_REMOVE % int(net4.id)
 
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
@@ -111,10 +115,10 @@ class VlanRemoveResource(RestResource):
                                 pass
 
                     for net6 in vlan.networkipv6_set.all():
+
                         if net6.active:
                             try:
-                                command = settings.NETWORKIPV6_REMOVE % int(
-                                    net6.id)
+                                command = settings.NETWORKIPV6_REMOVE % int(net6.id)
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
                                     net6.deactivate(user, True)
@@ -133,9 +137,11 @@ class VlanRemoveResource(RestResource):
                         None, 'Cant remove vlan because its inactive.')
 
                 # Execute script
+                vlan_id = vlan.id
+                environment_id = vlan.ambiente.id
 
                 # navlan -i <ID_REQUISICAO> --remove
-                command = settings.VLAN_REMOVE % vlan.id
+                command = settings.VLAN_REMOVE % vlan_id
                 code, stdout, stderr = exec_script(command)
 
                 # Return XML
@@ -147,7 +153,20 @@ class VlanRemoveResource(RestResource):
 
                     map = dict()
                     map['sucesso'] = success_map
+
+                    #Set as deactivate
                     vlan.remove(user)
+
+                    # Send to Queue
+                    queue_manager = QueueManager()
+
+                    serializer = VlanSerializer(vlan)
+                    data_to_queue = serializer.data
+                    data_to_queue.update({'description': queue_keys.VLAN_REMOVE})
+                    queue_manager.append(data_to_queue)
+
+                    queue_manager.send()
+
                     return self.response(dumps_networkapi(map))
                 else:
                     return self.response_error(2, stdout + stderr)

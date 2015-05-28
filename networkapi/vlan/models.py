@@ -142,6 +142,18 @@ class VlanCantDeallocate(VlanError):
         VlanError.__init__(self, cause, message)
 
 
+class TipoRedeNotFoundError(VlanError):
+    pass
+
+
+class TipoRedeUsedByVlanError(VlanError):
+    pass
+
+
+class TipoRedeNameDuplicatedError(VlanError):
+    pass
+
+
 class TipoRede(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_tipo_rede')
     tipo_rede = models.CharField(max_length=100)
