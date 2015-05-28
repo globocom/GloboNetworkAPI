@@ -32,6 +32,8 @@ from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, 
 from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, VLAN_CREATE
 from networkapi.util import destroy_cache_function
 from networkapi import settings
+import commands
+import glob
 
 def get_core_name(rack):
 
@@ -83,14 +85,6 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     vlan.acl_valida_v6 = 0
 
     vlan.insert_vlan(user)
-
-    #ativar a vlan
-    vlan_command = VLAN_CREATE % int(vlan.id)
-    code, stdout, stderr = exec_script(vlan_command)
-    if code == 0:
-        vlan.activate(user)
-    else:
-        return self.response_error(2, stdout + stderr)
 
     return vlan
 
@@ -337,7 +331,7 @@ def ambiente_prod(user, rack):
         ipv6['VERSION']="ipv6"
         config_ambiente(user, ipv6, ambientes)
 
-def ambiente_cloud(user, rack):
+def ambiente_cloud(user, rack, vlans):
 
     hosts, ipv6 = dic_hosts_cloud(rack.numero)
 
@@ -371,9 +365,12 @@ def ambiente_cloud(user, rack):
         variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
         
         vlan = criar_vlan(user, variables, ambientes)
+        vlans.append(vlan.id)
         #criar rede
         criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
         criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
+
+    return vlans
 
 def ambiente_prod_fe(user, rack):
 
@@ -414,6 +411,24 @@ def ambiente_borda(user,rack):
         ambientes['DC']=amb
         criar_ambiente(user, ambientes,ranges)
 
+def ativar_vlan(user, vlans):
+
+    vl = Vlan()
+    for id_vlan in vlans:
+        vlan = vl.get_by_pk(id_vlan)
+        vlan.activate(user)
+
+def aplicar(rack):
+
+    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
+    arquivos = glob.glob(path_config)
+    for var in arquivos: 
+        name_equipaments = var.split('/')[-1][:-4]        
+        (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
+
+    if erro:
+        raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+
 class RackAplicarConfigResource(RestResource):
 
     log = Log('RackAplicarConfigResource')
@@ -447,6 +462,8 @@ class RackAplicarConfigResource(RestResource):
             #variaveis
             name_core1, name_core2 =  get_core_name(rack)
             
+            vlans = []
+
             variablestochangecore1 = {}
             variablestochangecore2 = {}
             variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack.numero, name_core1, rack.nome)
@@ -459,8 +476,9 @@ class RackAplicarConfigResource(RestResource):
             ambientes['L3']=settings.GRPL3_MGMT
     
             try: 
-                #criar e ativar a vlan
+                #criar a vlan
                 vlan = criar_vlan(user, variablestochangecore1, ambientes)
+                vlans.append(vlan.id)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
@@ -475,7 +493,7 @@ class RackAplicarConfigResource(RestResource):
             except:
                 raise RackAplError(None, rack.nome, "Erro ao inserir o core 1 e 2")
                 
-            #######################################################################                  Ambientes
+            #######################################################################                   Ambientes
 
             #BE - SPINE - LEAF
             ambiente_spn_lf(user, rack)
@@ -484,10 +502,18 @@ class RackAplicarConfigResource(RestResource):
             ambiente_prod(user, rack)            
 
             #BE - Hosts - CLOUD
-            ambiente_cloud(user, rack)
+            vlans = ambiente_cloud(user, rack, vlans)
             
             #FE 
             ambiente_prod_fe(user, rack)
+
+            #######################################################################                   Backuper
+
+            aplicar(rack)
+
+            #######################################################################                Ativar Vlan
+
+            ativar_vlan(user, vlans)
 
             #######################################################################   Atualizar flag na tabela
 
