@@ -173,6 +173,7 @@ class RackDeleteResource(RestResource):
                 #Removing environment automatically removes all vlans
                 #desativar_remover_vlan_rede(user, rack)
                 #remover_ambiente(user, rack)
+                pass
             except:
                 raise RackError(None, u'Failed to remove the Vlans and Environments.')    
             
