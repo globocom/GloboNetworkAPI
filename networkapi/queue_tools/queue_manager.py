@@ -88,4 +88,4 @@ class QueueManager(object):
 
         except Exception, e:
             LOGGER.error(u"QueueManagerError - Error on sending objects from queue.")
-            LOGGER.error(e)
+            LOGGER.debug(e)
