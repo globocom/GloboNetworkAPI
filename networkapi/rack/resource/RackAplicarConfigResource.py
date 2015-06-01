@@ -18,9 +18,8 @@
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError
+from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.infrastructure.script_utils import exec_script
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Equipamento
@@ -29,7 +28,6 @@ from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
-from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, VLAN_CREATE
 from networkapi.util import destroy_cache_function
 from networkapi import settings
 import commands
@@ -209,7 +207,7 @@ def inserir_equip(user, variablestochangecore, rede_id):
     ip.save_ipv4(equip.id, user, rede)
 
     if ip.id is None:
-        return self.response_error(2, stdout + stderr)
+        raise RackAplError (None, None, "Erro ao inserir os equipamentos")
 
     # Delete vlan's cache
     destroy_cache_function([rede.vlan_id])
@@ -405,6 +403,7 @@ def aplicar(rack):
 
     path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
     arquivos = glob.glob(path_config)
+
     for var in arquivos: 
         name_equipaments = var.split('/')[-1][:-4]      
 
@@ -415,6 +414,14 @@ def aplicar(rack):
                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
                 if erro:
                     raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+
+def environment_rack(user, network_list, rack):
+
+    for net in network_list:
+        ambienteRack = EnvironmentRack()
+        ambienteRack.ambiente = net
+        ambienteRack.rack = rack
+        ambienteRack.save(user)
 
 class RackAplicarConfigResource(RestResource):
 
@@ -496,14 +503,18 @@ class RackAplicarConfigResource(RestResource):
             #FE 
             ambiente_prod_fe(user, rack)
 
+            #Borda
+            ambiente_borda(user, rack)
+
             #######################################################################                   Backuper
 
             aplicar(rack)
 
-            #######################################################################                Ativar Vlan
+            #######################################################################         Ativar Vlan e Rede
 
             ativar_vlans(user, vlan_list)
             activate_networks(user, network_list)
+            environment_rack(user, network_list, rack)
 
             #######################################################################   Atualizar flag na tabela
 
@@ -527,7 +538,7 @@ class RackAplicarConfigResource(RestResource):
             return self.not_authorized()
 
         except RackNumberNotFoundError:
-            return self.response_error(379, id_rack)
+            return self.response_error(379, rack_id)
 
         except RackError:
             return self.response_error(1)

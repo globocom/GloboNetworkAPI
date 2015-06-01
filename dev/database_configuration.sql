@@ -1237,6 +1237,31 @@ DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
 
+-- -----------------------------------------------------
+-- Table `telecom`.`ambiente_rack`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`ambiente_rack` (
+  `id_ambienterack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  `id_rack` INT(10) NOT NULL,
+  PRIMARY KEY (`id_ambienterack`),
+  UNIQUE INDEX `ambiente_rack_unique` (`id_ambiente` ASC, `id_rack` ASC),
+  INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
+  INDEX `fk_ambiente_rack_rack` (`id_rack` ASC),
+  CONSTRAINT `fk_ambiente_rack_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_rack_rack`
+    FOREIGN KEY (`id_rack`)
+    REFERENCES `telecom`.`racks` (`id_rack`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
 
 LOCK TABLES `tipo_config` WRITE;
 INSERT INTO `tipo_config` VALUES (1,'Switch1'),(2,'Switch2'),(3,'Console');

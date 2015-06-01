@@ -19,7 +19,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError
+from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError, EnvironmentRack
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.log import Log
@@ -31,7 +31,8 @@ from networkapi import settings
 import shutil 
 
 
-def desativar_remover_vlan_rede(user, rack):
+
+def desativar_vlan_rede(user, rack):
 
     nome = "_"+rack.nome
     vlans = Vlan.objects.all().filter(nome__contains=nome)
@@ -82,29 +83,25 @@ def desativar_remover_vlan_rede(user, rack):
                 if code == 0:
                     vlan.remove(user)
 
-            vlan.delete(user)            
+def remover_ambiente_rack(user, rack):
 
-def remover_ambiente(user, rack):
+    lista_amb = []
 
-    ip_config_list = []
+    lista_amb_rack = EnvironmentRack.objects.all().filter(rack__contains=rack.id)
 
-    config_ambs = ConfigEnvironment()
-    ambientes_l3 = GrupoL3.objects.all()
-    ambiente = Ambiente()
-    ambientes = Ambiente.objects.all()
+    for var in lista_amb_rack:
+        lista_amb.append(var.ambiente)
+        var.delete(user)
 
-    nome_rack = "RACK_"+rack.nome
+    return lista_amb
 
-    nome_l3 = "RACK_"+rack.nome
+def remover_ambiente(user, lista_amb_rack):
 
-    for amb in ambientes:
-        if amb.grupo_l3.nome==nome_l3:
-            id_amb_l3 = amb.grupo_l3.id
-            ambiente.remove(user, amb.id)
+    for amb in lista_amb_rack:
+        amb_gl3 = amb.grupo_l3
+        amb.remove(user, amb.id)
 
-    for amb_l3 in ambientes_l3:
-        if amb_l3.nome == nome_rack:
-            amb_l3.delete(user)
+    amb_gl3.delete(user)
 
 def aplicar(rack):
 
@@ -132,7 +129,7 @@ class RackDeleteResource(RestResource):
         try:
             self.log.info("Remove Delete")
 
-            # User permission
+            ########################################################                                     User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
@@ -142,7 +139,7 @@ class RackDeleteResource(RestResource):
             rack = Rack()
             rack = rack.get_by_pk(rack_id)
 
-            # Mover os arquivos de configuracao que foram gerados
+            ######################################################## Mover os arquivos de configuracao que foram gerados
             try:
                 for i in range(1,3):
                     nome_lf = settings.LEAF+"-"+rack.nome+"-0"+str(i)+settings.FORMATO
@@ -166,21 +163,19 @@ class RackDeleteResource(RestResource):
             except:
                 pass
 
-            # Remover as Vlans, redes e ambientes
+            ########################################################                 Remover as Vlans, redes e ambientes
             try:
-                # Do not remove now. Needs a specific table that tells all environments
-                # that are attached to each rack
                 #Removing environment automatically removes all vlans
-                #desativar_remover_vlan_rede(user, rack)
-                #remover_ambiente(user, rack)
-                pass
+                desativar_vlan_rede(user, rack)
+                lista_amb_rack = remover_ambiente_rack(user, rack)
+                remover_ambiente(user, lista_amb_rack)
             except:
                 raise RackError(None, u'Failed to remove the Vlans and Environments.')    
             
-            #Run script to remove rack config from spines and core oobm
+            ########################################################         Remove rack config from spines and core oob
             aplicar(rack)
 
-            # Remover Rack            
+            ########################################################                                         Remove Rack
             with distributedlock(LOCK_RACK % rack_id):
 
                 try:
