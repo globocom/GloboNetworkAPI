@@ -20,7 +20,11 @@ import base64
 
 from django.conf import settings
 
+from networkapi.log import Log
 from networkapi.extra_logging import local, REQUEST_ID_HEADER, NO_REQUEST_ID, NO_REQUEST_USER
+
+
+logger = Log(__name__)
 
 
 def get_identity(request):
@@ -36,8 +40,24 @@ def get_identity(request):
 
 
 def get_username(request):
+
     user_key = "HTTP_NETWORKAPI_USERNAME"
-    return request.META.get(user_key, NO_REQUEST_USER)
+    auth_key = "HTTP_AUTHORIZATION"
+    encoding = 'iso-8859-1'
+    username = NO_REQUEST_USER
+
+    if user_key in request.META:
+        username = request.META.get(user_key)
+        request.is_api = False
+
+    elif auth_key in request.META:
+        authorization = request.META.get(auth_key, b'')
+        auth = authorization.encode(encoding).split()
+        auth_parts = base64.b64decode(auth[1]).decode(encoding).partition(':')
+        username = auth_parts[0].upper()
+        request.is_api = True
+
+    return username
 
 
 class ExtraLoggingMiddleware(object):
@@ -50,6 +70,23 @@ class ExtraLoggingMiddleware(object):
         local.request_user = username
         local.request_path = request.get_full_path()
         request.id = identity
+
+        logger.rest(u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data))
+
+    def process_response(self, request, response):
+
+        if 399 < response.status_code < 600:
+            logger.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
+        else:
+            logger.debug(u'Requisição concluída com sucesso.')
+
+        logger.debug(u'FIM da requisição.')
+
+        return response
+
+    def process_exception(self, request, exception):
+
+        logger.error(u'Erro não esperado.')
 
 
 
