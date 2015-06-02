@@ -70,7 +70,6 @@ class RestResource(object):
         """
         response = None
         try:
-            self.log.rest(u'INICIO da requisição %s. XML: [%s].' % (request.method, request.raw_post_data))
 
             username, password, user_ldap = self.read_user_data(request)
 
@@ -109,15 +108,11 @@ class RestResource(object):
             if response is not None:
                 if response.status_code == 200:
                     transaction.commit()
-                    self.log.debug(u'Requisição concluída com sucesso.')
                 else:
                     transaction.rollback()
-                    self.log.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
             else:
                 transaction.rollback()
                 self.log.debug(u'Requisição concluída com falha.')
-
-            self.log.debug(u'FIM da requisição.')
 
         return response
 
