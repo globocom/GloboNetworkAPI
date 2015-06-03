@@ -43,7 +43,8 @@ class QueueManager(object):
         """
         self._queue = []
         self._queue_destination = getattr(settings, 'QUEUE_DESTINATION', None) or "/topic/networkapi_queue"
-        self._broker_uri = getattr(settings, 'QUEUE_BROKER_URI', None) or "tcp://localhost:61613"
+        self._broker_uri = getattr(settings, 'QUEUE_BROKER_URI', None) or "tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1"
+        self._broker_timeout = getattr(settings, 'QUEUE_BROKER_CONNECT_TIMEOUT', None) or 2
 
     def append(self, dict_obj):
         """
@@ -78,7 +79,7 @@ class QueueManager(object):
 
             configuration = StompConfig(uri=self._broker_uri)
             client = Stomp(configuration)
-            client.connect()
+            client.connect(connectTimeout=self._broker_timeout)
 
             for message in self._queue:
                 serialized_message = json.dumps(message, ensure_ascii=False)

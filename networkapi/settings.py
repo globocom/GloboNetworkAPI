@@ -312,8 +312,8 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 #       QUEUE SETTINGS
 ##################################
 QUEUE_DESTINATION = u"/topic/networkapi_queue"
-QUEUE_BROKER_URI = u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=false"
-
+QUEUE_BROKER_URI = u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e"
+QUEUE_BROKER_CONNECT_TIMEOUT = 2
 
 ###################################
 #    PATH ACLS
