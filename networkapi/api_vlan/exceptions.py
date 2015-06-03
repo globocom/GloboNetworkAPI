@@ -14,3 +14,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from rest_framework.exceptions import APIException
+from rest_framework import status
+
+
+class VlanDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Vlan Does Not Exist.'
+
+
+class InvalidIdVlanException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Vlan.'
