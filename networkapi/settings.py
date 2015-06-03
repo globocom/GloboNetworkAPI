@@ -339,10 +339,10 @@ KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
 IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 #### <<<<<
 
-PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
+PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
+PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
 
-PATH_TO_MV = "/opt/app/GloboNetworkAPI/networkapi/rack/delete/"
+PATH_TO_MV = "/vagrant/networkapi/rack/delete/"
 LEAF = "LF-CM"
 OOB = "OOB-CM"
 SPN = "SPN-CM"

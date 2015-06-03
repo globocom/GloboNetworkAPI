@@ -30,7 +30,6 @@ from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.util import destroy_cache_function
 from networkapi import settings
-import commands
 import glob
 
 def get_core_name(rack):
@@ -78,7 +77,7 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     vlan.nome = variablestochangecore1.get("VLAN_NAME")
     vlan.descricao = ""
     vlan.ambiente = id_ambiente
-    vlan.ativada = 0
+    vlan.ativada = 1
     vlan.acl_valida = 0
     vlan.acl_valida_v6 = 0
 
@@ -96,6 +95,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
+    network_ip.active = 1
     network_ip.block = variablestochangecore1.get("REDE_MASK")
     
     while str(variablestochangecore1.get("REDE_IP")).endswith(":"):
@@ -117,8 +117,8 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
 
     network_ip.block1, network_ip.block2, network_ip.block3, network_ip.block4, network_ip.block5, network_ip.block6, network_ip.block7, network_ip.block8 = str(variablestochangecore1.get("REDE_IP")).split(':')
     network_ip.mask1, network_ip.mask2, network_ip.mask3, network_ip.mask4, network_ip.mask5, network_ip.mask6, network_ip.mask7, network_ip.mask8 = str(variablestochangecore1.get("NETMASK")).split(':')
-    
-    #destroy_cache_function([vlan.id])
+
+    destroy_cache_function([vlan.id])
     network_ip.save(user)    
  
     return network_ip
@@ -137,6 +137,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
+    network_ip.active = 1
 
     destroy_cache_function([vlan.id])
     network_ip.save(user)
@@ -167,6 +168,8 @@ def criar_ambiente(user, ambientes, ranges):
     environment.link = " "
 
     environment.create(user)
+
+    return environment
 
 def config_ambiente(user, hosts, ambientes):
     #ip_config
@@ -217,7 +220,7 @@ def inserir_equip(user, variablestochangecore, rede_id):
 
     return 0
 
-def ambiente_spn_lf(user, rack):
+def ambiente_spn_lf(user, rack, environment_list):
 
     vlans, redes, ipv6 = dic_lf_spn(user, rack.numero)
 
@@ -247,7 +250,8 @@ def ambiente_spn_lf(user, rack):
             ranges['MAX'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119 
             ranges['MIN'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
 
-            criar_ambiente(user, ambientes, ranges)
+            env = criar_ambiente(user, ambientes, ranges)
+            environment_list.append(env)
 
             #configuracao do ambiente
             rede = "SPINE"+i[1]+"ipv4"
@@ -264,7 +268,9 @@ def ambiente_spn_lf(user, rack):
             ipv6['VERSION']="ipv6"
             config_ambiente(user, ipv6, ambientes)
 
-def ambiente_prod(user, rack):
+    return environment_list
+
+def ambiente_prod(user, rack, environment_list):
 
     redes, ipv6 = dic_pods(rack.numero)
 
@@ -291,7 +297,8 @@ def ambiente_prod(user, rack):
         ranges['MAX']= redes.get(vlan_max)
         ranges['MIN']= redes.get(vlan_min)
 
-        criar_ambiente(user, ambientes, ranges)
+        env = criar_ambiente(user, ambientes, ranges)
+        environment_list.append(env)
 
         #configuracao dos ambientes
         prefix = divisaodc+"_PREFIX"
@@ -307,7 +314,9 @@ def ambiente_prod(user, rack):
         ipv6['VERSION']="ipv6"
         config_ambiente(user, ipv6, ambientes)
 
-def ambiente_cloud(user, rack, vlan_list, network_list):
+    return environment_list
+
+def ambiente_cloud(user, rack, environment_list):
 
     hosts, ipv6 = dic_hosts_cloud(rack.numero)
 
@@ -321,7 +330,8 @@ def ambiente_cloud(user, rack, vlan_list, network_list):
     ranges['MIN']=hosts.get('VLAN_MNGT_BE')
 
     #criar ambiente cloud
-    criar_ambiente(user, ambientes, ranges)
+    env = criar_ambiente(user, ambientes, ranges)
+    environment_list.append(env)
 
     #configuracao do ambiente
     hosts['TIPO']= "Rede invalida equipamentos"
@@ -341,16 +351,13 @@ def ambiente_cloud(user, rack, vlan_list, network_list):
         variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
         
         vlan = criar_vlan(user, variables, ambientes)
-        vlan_list.append(vlan)
         #criar rede
-        networkipv4 = criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
-        network_list.append(networkipv4)
-        networkipv6 = criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
-        network_list.append(networkipv6)
+        criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
+        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
 
-    return vlan_list, network_list
+    return environment_list
 
-def ambiente_prod_fe(user, rack):
+def ambiente_prod_fe(user, rack, environment_list):
 
     redes, ranges, ipv6 = dic_fe_prod(rack.numero)
 
@@ -363,7 +370,8 @@ def ambiente_prod_fe(user, rack):
     ipv6['TIPO']= "Rede invalida equipamentos"
 
     #criar ambiente
-    criar_ambiente(user, ambientes, ranges)
+    env = criar_ambiente(user, ambientes, ranges)
+    environment_list.append(env)
 
     #configuracao dos ambientes
     redes['VERSION']="ipv4"
@@ -372,9 +380,9 @@ def ambiente_prod_fe(user, rack):
     ipv6['VERSION']="ipv6"
     config_ambiente(user, ipv6, ambientes)
 
-def ambiente_borda(user,rack):
+    return environment_list
 
-    redes, ipv6 = dic_borda(rack.numero)
+def ambiente_borda(user,rack, environment_list):
 
     ranges=dict()
     ranges['MAX']=None
@@ -387,17 +395,10 @@ def ambiente_borda(user,rack):
 
     for amb in amb_list:
         ambientes['DC']=amb
-        criar_ambiente(user, ambientes,ranges)
+        env = criar_ambiente(user, ambientes,ranges)
+        environment_list.append(env)
 
-def ativar_vlans(user, vlan_list):
-
-    for vlan in vlan_list:
-        vlan.activate(user)
-
-def activate_networks(user, network_list):
-
-    for network in network_list:
-        network.activate(user)
+    return environment_list
 
 def aplicar(rack):
 
@@ -410,16 +411,16 @@ def aplicar(rack):
         #Check if file is config relative to this rack
         if rack.nome in name_equipaments:
             #Apply config only in spines. Leaves already have all necessary config in startup
-            if (name_equipaments.split('-')[3] == 'ADD'):
+            if "ADD" in name_equipaments:
                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
                 if erro:
                     raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
 
-def environment_rack(user, network_list, rack):
+def environment_rack(user, environment_list, rack):
 
-    for net in network_list:
+    for env in environment_list:
         ambienteRack = EnvironmentRack()
-        ambienteRack.ambiente = net
+        ambienteRack.ambiente = env
         ambienteRack.rack = rack
         ambienteRack.save(user)
 
@@ -433,8 +434,6 @@ class RackAplicarConfigResource(RestResource):
         URL: rack/aplicar-config/id_rack
         """
         try:
-
-            self.log.info("APLICAR")
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -455,9 +454,8 @@ class RackAplicarConfigResource(RestResource):
 
             #variaveis
             name_core1, name_core2 =  get_core_name(rack)
-            
-            vlan_list = []
-            network_list = []
+
+            environment_list = []
 
             variablestochangecore1 = {}
             variablestochangecore2 = {}
@@ -470,16 +468,14 @@ class RackAplicarConfigResource(RestResource):
             ambientes['LOG']=settings.AMBLOG_MGMT
             ambientes['L3']=settings.GRPL3_MGMT
     
-            try: 
-                #criar a vlan
+            try:
+                #criar e ativar a vlan
                 vlan = criar_vlan(user, variablestochangecore1, ambientes)
-                vlan_list.append(vlan)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
                 #criar e ativar a rede
                 network = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
-                network_list.append(network)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
             try:
@@ -492,35 +488,28 @@ class RackAplicarConfigResource(RestResource):
             #######################################################################                   Ambientes
 
             #BE - SPINE - LEAF
-            ambiente_spn_lf(user, rack)
+            environment_list = ambiente_spn_lf(user, rack, environment_list)
 
             #BE - PRODUCAO
-            ambiente_prod(user, rack)            
+            environment_list = ambiente_prod(user, rack, environment_list)
 
             #BE - Hosts - CLOUD
-            vlan_list, network_list = ambiente_cloud(user, rack, vlan_list, network_list)
+            environment_list = ambiente_cloud(user, rack, environment_list)
             
             #FE 
-            ambiente_prod_fe(user, rack)
+            environment_list = ambiente_prod_fe(user, rack, environment_list)
 
             #Borda
-            ambiente_borda(user, rack)
+            environment_list = ambiente_borda(user, rack, environment_list)
 
             #######################################################################                   Backuper
 
             aplicar(rack)
-
-            #######################################################################         Ativar Vlan e Rede
-
-            ativar_vlans(user, vlan_list)
-            activate_networks(user, network_list)
-            environment_rack(user, network_list, rack)
-
-            #######################################################################   Atualizar flag na tabela
+            environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
             rack.save(user)
-            
+
             success_map = dict()
             success_map['rack_conf'] = True
             map = dict()
