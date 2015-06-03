@@ -14,3 +14,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from rest_framework.permissions import BasePermission
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+
+
+class Read(BasePermission):
+
+    def has_permission(self, request, view):
+        return has_perm(
+            request.user,
+            AdminPermission.VLAN_MANAGEMENT,
+            AdminPermission.READ_OPERATION
+        )
+
+
+class Write(BasePermission):
+
+    def has_permission(self, request, view):
+        return has_perm(
+            request.user,
+            AdminPermission.VLAN_MANAGEMENT,
+            AdminPermission.WRITE_OPERATION
+        )
