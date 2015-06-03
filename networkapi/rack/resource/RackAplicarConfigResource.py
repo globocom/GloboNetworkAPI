@@ -31,6 +31,7 @@ from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, 
 from networkapi.util import destroy_cache_function
 from networkapi import settings
 import glob
+import commands
 
 def get_core_name(rack):
 
