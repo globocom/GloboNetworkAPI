@@ -556,6 +556,7 @@ urlpatterns = patterns('',
     url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
+    url(api_prefix, include('networkapi.api_vlan.urls')),
 )
 
 urlpatterns += patterns('',
