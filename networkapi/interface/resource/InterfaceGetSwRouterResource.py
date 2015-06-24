@@ -69,9 +69,7 @@ class InterfaceGetSwRouterResource(RestResource):
             interface = Interface()
             equip_interface = interface.search(equip_id)
             interface_list = []
-
-            interface_list.append()
-
+            
             for var in equip_interface:
                 try:
                     interface_list.append(get_new_interface_map(var.get_switch_and_router_interface_from_host_interface(None)))
