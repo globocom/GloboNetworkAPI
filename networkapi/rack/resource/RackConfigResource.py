@@ -181,7 +181,7 @@ def gera_config(rack):
 
     if int_oob_core1==None or int_core1_oob==None or int_oob_core2==None or int_core2_oob==None:
         raise RackConfigError(None,rack.nome,"Erro: As interfaces do Switch de gerencia nao foram cadastradas.")
-  
+
     #Roteiro LF01
     try:
         FILEINLF1 = buscar_roteiro(id_lf1, "CONFIGURACAO")

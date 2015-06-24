@@ -22,7 +22,7 @@ def replace(filein,fileout, dicionario):
         file_handle.write(file_string)
         file_handle.close()
     except:
-        raise RackConfigError(None,None, "Erro no template. Arquivo de entrada %s." %(filein))
+        raise RackConfigError(None,None, "Erro no template. Arquivo de entrada %s nao encontrado." %(filein))
 #divide a rede net em n subredes /bloco e retorna a subrede n
 def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))

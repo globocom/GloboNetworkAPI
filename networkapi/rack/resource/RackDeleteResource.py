@@ -25,10 +25,11 @@ from networkapi.infrastructure.script_utils import exec_script
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
-from networkapi.ambiente.models import ConfigEnvironment, Ambiente, GrupoL3
+from networkapi.ambiente.models import Ambiente, GrupoL3
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi import settings
-import shutil 
+import shutil
+import glob
 
 
 
@@ -87,7 +88,7 @@ def remover_ambiente_rack(user, rack):
 
     lista_amb = []
 
-    lista_amb_rack = EnvironmentRack.objects.all().filter(rack__contains=rack.id)
+    lista_amb_rack = EnvironmentRack.objects.all().filter(rack__exact=rack.id)
 
     for var in lista_amb_rack:
         lista_amb.append(var.ambiente)
@@ -95,13 +96,15 @@ def remover_ambiente_rack(user, rack):
 
     return lista_amb
 
-def remover_ambiente(user, lista_amb_rack):
+def remover_ambiente(user, lista_amb, rack):
 
-    for amb in lista_amb_rack:
-        amb_gl3 = amb.grupo_l3
+    for amb in lista_amb:
         amb.remove(user, amb.id)
 
-    amb_gl3.delete(user)
+    nome = "RACK_"+rack.nome
+    grupo_l3 = GrupoL3()
+    grupo_l3 = grupo_l3.get_by_name(nome)
+    grupo_l3.delete(user)
 
 def aplicar(rack):
 
@@ -112,10 +115,19 @@ def aplicar(rack):
         #Check if file is config relative to this rack
         if rack.nome in name_equipaments:
             #Apply config only in spines. Leaves already have all necessary config in startup
-            if (name_equipaments.split('-')[3] == 'DEL'):
+            if "DEL" in name_equipaments:
                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
                 if erro:
                     raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+
+def remover_vlan_so(user, rack):
+
+    nome = "VLAN_SO_"+rack.nome
+
+    vlan = Vlan()
+    vlan = vlan.get_by_name(nome)
+    vlan.delete(user)
+
 
 class RackDeleteResource(RestResource):
 
@@ -127,7 +139,7 @@ class RackDeleteResource(RestResource):
         URL: rack/id_rack/
         """
         try:
-            self.log.info("Remove Delete")
+            self.log.info("Delete Rack")
 
             ########################################################                                     User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -165,12 +177,12 @@ class RackDeleteResource(RestResource):
 
             ########################################################                 Remover as Vlans, redes e ambientes
             try:
-                #Removing environment automatically removes all vlans
                 desativar_vlan_rede(user, rack)
-                lista_amb_rack = remover_ambiente_rack(user, rack)
-                remover_ambiente(user, lista_amb_rack)
+                lista_amb = remover_ambiente_rack(user, rack)
+                remover_ambiente(user, lista_amb, rack)
+                remover_vlan_so(user, rack)
             except:
-                raise RackError(None, u'Failed to remove the Vlans and Environments.')    
+                raise RackError(None, u'Failed to remove the Vlans and Environments.')
             
             ########################################################         Remove rack config from spines and core oob
             aplicar(rack)

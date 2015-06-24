@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
 from networkapi.equipamento.models import Equipamento
-from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import Ambiente, AmbienteError
 
 
 class RackError(Exception):
@@ -170,3 +170,19 @@ class EnvironmentRack(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'ambiente_rack'
         managed = True
+
+
+    @classmethod
+    def get_by_rack(cls, rack_id):
+
+        """"Get Environment by racks id.
+        @return: Environment.
+        """
+        try:
+            return EnvironmentRack.objects.get(rack__iexact=rack_id)
+        except ObjectDoesNotExist, e:
+            raise RackError(
+                e, u'Dont there is a Environment by rack = %s.' % rack_id)
+        except Exception, e:
+            cls.log.error(u'Failure to search the Environment.')
+            raise AmbienteError(e, u'Failure to search the Environment.')
