@@ -179,7 +179,7 @@ class EnvironmentRack(BaseModel):
         @return: Environment.
         """
         try:
-            return EnvironmentRack.objects.get(rack__iexact=rack_id)
+            return EnvironmentRack.objects.filter(rack=rack_id)
         except ObjectDoesNotExist, e:
             raise RackError(
                 e, u'Dont there is a Environment by rack = %s.' % rack_id)

@@ -268,6 +268,8 @@ from networkapi.rack.resource.RackAplicarConfigResource import RackAplicarConfig
 from networkapi.rack.resource.ListEnvironmentRackResource import ListEnvironmentRackResource
 from networkapi.rack.resource.GetRackResource import GetRackResource
 
+from networkapi.rackservers.resource.ServerTypeListResource import ServerTypeListResource
+
 check_action = CheckAction()
 
 
@@ -275,6 +277,7 @@ check_action = CheckAction()
 # from django.contrib import admin
 # admin.autodiscover()
 
+server_type_list_resource = ServerTypeListResource()
 
 rack_add_resource = RackAddResource()
 find_rack_resource = RackFindResource()
@@ -1135,11 +1138,10 @@ urlpatterns += patterns('',
                            name='aplicar.rack'),
                        url(r'^rack/find/(?P<nome>[^/]+)/$', get_rack_resource.handle_request,
                            name='get.rack'),
-                       #url(r'^rack/list-rack-environment/(?P<id_rack>[^/]+)/$', list_environment_rack_resource.handle_request,
-                       #    name='env.rack'),
-
-
-
+                       url(r'^rack/list-rack-environment/(?P<nome_rack>[^/]+)/$', list_environment_rack_resource.handle_request,
+                           name='env.rack'),
+                       url(r'^rackservers/lista-tipo-servidores[/]?$', server_type_list_resource.handle_request,
+                           name='typelist.rackservers'),
                        )
 
 

@@ -18,49 +18,39 @@
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.exception import InvalidValueError
-from django.forms.models import model_to_dict
+from networkapi.rackservers.models import ServerType
 
-class GetRackResource(RestResource):
 
-    log = Log('GetRackResource')
+class ServerTypeListResource(RestResource):
+
+    log = Log('ServerTypeListResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        """Handles GET requests to find all Racks
+        """Treat requests GET to list all Server Type.
 
-        URLs: /rack/find/
+        URL: rackservers/lista-tipo-servidores
         """
-
-        self.log.info('Get Rack')
-
         try:
 
+            self.log.info("GET to list all Server Type")
+
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT , AdminPermission.READ_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
-                return self.not_authorized()
+                raise UserNotAuthorizedError(None)
 
-            # Get XML data
-            nome = kwargs.get('nome')
-            rack_map = []
+            map_list = []
+            for server_type in ServerType.objects.all():
+                server_tp = {
+                    'id': server_type.id, 'nome': server_type.nome}
+                map_list.append(server_tp)
 
-            racks = Rack.objects.all().filter(nome__exact=nome)
-
-            for var in racks:
-                rack_map.append(model_to_dict(var))
-
-            return self.response(dumps_networkapi({'rack': rack_map}))
+            return self.response(dumps_networkapi({'tipo_servidor': map_list}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
-        except RackError:
-            return self.response_error(1)
-
-        except InvalidValueError, e:
-            return self.response_error(269, e.param, e.value)
