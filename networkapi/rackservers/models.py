@@ -63,3 +63,12 @@ class RackServers(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'racksservers'
         managed = True
+
+
+    def inserir (self, authenticated_user):
+
+        try:
+            return self.save(authenticated_user)
+        except Exception, e:
+            self.log.error(u'Falha ao inserir o Servidor.')
+            raise RackServersError(e, u'Falha ao inserir o Servidor.')
