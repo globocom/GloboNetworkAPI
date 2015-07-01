@@ -1250,6 +1250,19 @@ AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
+-- -----------------------------------------------------
+-- Table `telecom`.`tipo_interfaces`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interfaces` (
+  `id_tipointerface` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(20) CHARACTER SET 'latin1' NOT NULL,
+  PRIMARY KEY (`id_tipo_interfaces`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8
+COMMENT = 'Tipo da interface (access, trunk)';
+
+
 LOCK TABLES `grupos` WRITE;
 INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');
 UNLOCK TABLES;

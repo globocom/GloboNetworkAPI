@@ -102,6 +102,18 @@ class InterfaceProtectedError(InterfaceError):
         InterfaceError.__init__(self, cause, message)
 
 
+class TipoInterface(BaseModel):
+
+    id = models.AutoField(primary_key=True, db_column='id_tipointerface')
+    tipo = models.CharField(unique=True, max_length=20)
+
+    log = Log('Tipo de Interface')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'tipo_interfaces'
+        managed = True
+
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)
@@ -520,3 +532,6 @@ class Interface(BaseModel):
             i.save(authenticated_user)
 
         super(Interface, self).delete(authenticated_user)
+
+
+
