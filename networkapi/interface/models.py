@@ -104,13 +104,13 @@ class InterfaceProtectedError(InterfaceError):
 
 class TipoInterface(BaseModel):
 
-    id = models.AutoField(primary_key=True, db_column='id_tipointerface')
+    id = models.AutoField(primary_key=True, db_column='id_tipo_interface')
     tipo = models.CharField(unique=True, max_length=20)
 
     log = Log('Tipo de Interface')
 
     class Meta(BaseModel.Meta):
-        db_table = u'tipo_interfaces'
+        db_table = u'tipo_interface'
         managed = True
 
 
@@ -124,6 +124,8 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
+    vlans = models.CharField(max_length=200, blank=True, null=True,)
+    tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True)
 
     log = Log('Interface')
 

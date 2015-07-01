@@ -623,6 +623,8 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
   `id_interface` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ligacao_front` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_ligacao_back` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `vlans` VARCHAR(200) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  `id_tipo_interface` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY (`id_interface`),
   UNIQUE INDEX `uniq_interface_id_equip` (`interface` ASC, `id_equip` ASC),
   INDEX `fk_interfaces_equipamentos` (`id_equip` ASC),
@@ -640,6 +642,10 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
   CONSTRAINT `fk_interfaces_interfaces_front`
     FOREIGN KEY (`id_ligacao_front`)
     REFERENCES `telecom`.`interfaces` (`id_interface`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_interfaces_tipo`
+    FOREIGN KEY (`id_tipo_interface`)
+    REFERENCES `telecom`.`interfaces` (`id_tipo_interface`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -1251,16 +1257,21 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_interfaces`
+-- Table `telecom`.`tipo_interface`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interfaces` (
-  `id_tipointerface` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `tipo` VARCHAR(20) CHARACTER SET 'latin1' NOT NULL,
-  PRIMARY KEY (`id_tipo_interfaces`))
+CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interface` (
+  `id_tipo_interface` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`id_tipo_interface`),
+  UNIQUE INDEX `tipo_unique` (`tipo` ASC))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
-DEFAULT CHARACTER SET = utf8
-COMMENT = 'Tipo da interface (access, trunk)';
+DEFAULT CHARACTER SET = utf8;
+
+
+LOCK TABLES `tipo_interface` WRITE;
+INSERT INTO `tipo_interface` (`tipo`) VALUES ('access');
+INSERT INTO `tipo_interface` (`tipo`) VALUES ('trunk');
 
 
 LOCK TABLES `grupos` WRITE;
