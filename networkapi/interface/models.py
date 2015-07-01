@@ -23,6 +23,7 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_regex
 from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import Equipamento, TipoEquipamento
+from networkapi.ambiente.models import Ambiente
 
 
 class InterfaceError(Exception):
@@ -125,7 +126,7 @@ class Interface(BaseModel):
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
     vlans = models.CharField(max_length=200, blank=True, null=True,)
-    tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True)
+    tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
 
     log = Log('Interface')
 
@@ -537,3 +538,14 @@ class Interface(BaseModel):
 
 
 
+class EnvironmentInterface(BaseModel):
+
+    log = Log('EnvironmentInterface')
+
+    id = models.AutoField(primary_key=True, db_column='id_int_ambiente')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    interface = models.ForeignKey(Interface, db_column='id_interface')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'interface_do_ambiente'
+        managed = True

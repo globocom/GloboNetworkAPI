@@ -1269,6 +1269,32 @@ AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
+-- -----------------------------------------------------
+-- Table `telecom`.`interface_do_ambiente`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`interface_do_ambiente` (
+  `id_int_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  `id_interface` INT(10) NOT NULL,
+  PRIMARY KEY (`id_int_ambiente`),
+  UNIQUE INDEX `interface_do_ambiente_unique` (`id_ambiente` ASC, `id_interface` ASC),
+  INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
+  INDEX `fk_ambiente_rack_interface` (`id_interface` ASC),
+  CONSTRAINT `fk_ambiente_rack_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_rack_interface`
+    FOREIGN KEY (`id_interface`)
+    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
+
 LOCK TABLES `tipo_interface` WRITE;
 INSERT INTO `tipo_interface` (`tipo`) VALUES ('access');
 INSERT INTO `tipo_interface` (`tipo`) VALUES ('trunk');
