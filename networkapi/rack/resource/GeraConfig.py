@@ -464,7 +464,7 @@ def dic_fe_prod(rack):
     ipv6['REDE']=str(subnetsRackFEipv6[rack])
     return redes, ranges, ipv6
 
-def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
+def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     #roteiro para configuracao de core
     fileincore1=PATH_TO_GUIDE+FILEINCR1
@@ -476,6 +476,8 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     HOSTNAME_CORE2=name_core2
     HOSTNAME_OOB=name_oob
     HOSTNAME_RACK = HOSTNAME_OOB.split("-")
+    HOSTNAME_LF1 = name_lf1
+    HOSTNAME_LF2 = name_lf2
 
     #valor base para as vlans e portchannels 
     BASE_SO = 1000
@@ -486,17 +488,26 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     INTERFACE_CORE1  = int_core1_oob
     INTERFACE_CORE2  = int_core2_oob
 
+    #ip de gerencia do oob
+    IP_GERENCIA_OOB = ip_mgmtoob
+
     #gerando dicionarios para substituir paravras chaves do roteiro
     variablestochangecore1={}
     variablestochangecore2={}
     variablestochangeoob={}
 
+    variablestochangeoob["OWN_IP_MGMT"]= IP_GERENCIA_OOB
     variablestochangeoob["INT_OOBC1_UPLINK"]= INT_OOBC1_UPLINK
     variablestochangeoob["INT_OOBC2_UPLINK"]= INT_OOBC2_UPLINK
     variablestochangeoob["INTERFACE_CORE1"]= INTERFACE_CORE1
     variablestochangeoob["INTERFACE_CORE2"]= INTERFACE_CORE2
     variablestochangeoob["HOSTNAME_CORE1"]= HOSTNAME_CORE1
     variablestochangeoob["HOSTNAME_CORE2"]= HOSTNAME_CORE2
+    variablestochangeoob["HOSTNAME_OOB"]= HOSTNAME_OOB
+    variablestochangeoob["HOSTNAME_LF1"]= HOSTNAME_LF1
+    variablestochangeoob["HOSTNAME_LF2"]= HOSTNAME_LF2
+    variablestochangeoob["VLAN_SO"]=str(BASE_SO+rack)
+
 
     variablestochangecore1["INT_OOB_UPLINK"]= INT_OOBC1_UPLINK
     variablestochangecore1["INTERFACE_CORE"]= INTERFACE_CORE1
@@ -655,12 +666,12 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
 
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBE[0] = IPNetwork('10.128.0.0/12')
-    CIDREBGP[0] = IPNetwork('10.10.0.0/22')
+    CIDREBGP[0] = IPNetwork('10.126.0.0/22')
 
-    SPINE1ipv4 = IPNetwork('10.0.0.0/24')
-    SPINE2ipv4 = IPNetwork('10.0.1.0/24')
-    SPINE3ipv4 = IPNetwork('10.0.2.0/24')
-    SPINE4ipv4 = IPNetwork('10.0.3.0/24')
+    SPINE1ipv4 = IPNetwork('10.126.0.0/24')
+    SPINE2ipv4 = IPNetwork('10.126.1.0/24')
+    SPINE3ipv4 = IPNetwork('10.126.2.0/24')
+    SPINE4ipv4 = IPNetwork('10.126.3.0/24')
     subSPINE1ipv4=list(SPINE1ipv4.subnet(31))
     subSPINE2ipv4=list(SPINE2ipv4.subnet(31))
     subSPINE3ipv4=list(SPINE3ipv4.subnet(31))
@@ -676,7 +687,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     subSPINE4ipv6=list(SPINE4ipv6.subnet(127))
 
 
-    IBGPToRLxLipv4 = IPNetwork('10.0.4.0/24')
+    IBGPToRLxLipv4 = IPNetwork('10.126.4.0/24')
     subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
 
     IBGPToRLxLipv6 = IPNetwork('fdbe:0:0:1eaf:8100::/120')
