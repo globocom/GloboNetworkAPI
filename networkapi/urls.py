@@ -196,6 +196,7 @@ from networkapi.grupo.resource.GroupUserAddResource import GroupUserAddResource
 from networkapi.interface.resource.InterfaceResource import InterfaceResource
 from networkapi.interface.resource.InterfaceGetResource import InterfaceGetResource
 from networkapi.interface.resource.InterfaceDisconnectResource import InterfaceDisconnectResource
+from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
 
@@ -490,6 +491,7 @@ network_type_resource = NetworkTypeResource()
 interface_resource = InterfaceResource()
 interface_get_resource = InterfaceGetResource()
 interface_disconnect_resource = InterfaceDisconnectResource()
+interface_type_get_all_resource = InterfaceTypeGetAllResource()
 
 authenticate_resource = AuthenticateResource()
 
@@ -1125,6 +1127,8 @@ urlpatterns += patterns('',
                            name='config.rack'),
                        url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
                            name='aplicar.rack'),
+                       url(r'^interface/get-type[/]?$', interface_type_get_all_resource.handle_request,
+                           name='interface.gettype'),
                        )
 
 
