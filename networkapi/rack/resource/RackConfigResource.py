@@ -16,16 +16,14 @@
 # limitations under the License.
 
 
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, Rack , RackError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
+from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
 
@@ -114,12 +112,12 @@ def gera_config(rack):
         for interface in interfaces:
             try: 
                 sw = interface.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[2]=='1': 
+                if sw.equipamento.nome.split('-')[2]=='01' or sw.equipamento.nome.split('-')[2]=='1': 
                     int_lf1_sp1 = interface.interface
                     name_sp1 = sw.equipamento.nome
                     id_sp1 = sw.equipamento.id
                     int_sp1 =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='2':
+                elif sw.equipamento.nome.split('-')[2]=='02' or sw.equipamento.nome.split('-')[2]=='2':
                     int_lf1_sp2 = interface.interface
                     name_sp2 = sw.equipamento.nome
                     id_sp2 = sw.equipamento.id
@@ -140,12 +138,12 @@ def gera_config(rack):
         for interface1 in interfaces1:
             try:
                 sw = interface1.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[2]=='3':
+                if sw.equipamento.nome.split('-')[2]=='03' or sw.equipamento.nome.split('-')[2]=='3':
                     int_lf2_sp3 = interface1.interface
                     name_sp3 = sw.equipamento.nome
                     id_sp3 = sw.equipamento.id
                     int_sp3 =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='4':
+                elif sw.equipamento.nome.split('-')[2]=='04' or sw.equipamento.nome.split('-')[2]=='4':
                     int_lf2_sp4 = interface1.interface
                     name_sp4 = sw.equipamento.nome
                     id_sp4 = sw.equipamento.id
@@ -167,12 +165,12 @@ def gera_config(rack):
             try:
                 sw = interface2.get_switch_and_router_interface_from_host_interface(None)
                 if sw.equipamento.nome.split('-')[0]=='OOB':
-                    if sw.equipamento.nome.split('-')[2]=='01':
+                    if sw.equipamento.nome.split('-')[2]=='01' or sw.equipamento.nome.split('-')[2]=='1':
                         int_oob_core1 = interface2.interface
                         name_core1 = sw.equipamento.nome
                         int_core1_oob =  sw.interface
                         id_core1 = sw.equipamento.id
-                    elif sw.equipamento.nome.split('-')[2]=='02':
+                    elif sw.equipamento.nome.split('-')[2]=='02' or sw.equipamento.nome.split('-')[2]=='2':
                         int_oob_core2 = interface2.interface
                         name_core2 = sw.equipamento.nome
                         int_core2_oob =  sw.interface
@@ -184,7 +182,7 @@ def gera_config(rack):
 
     if int_oob_core1==None or int_core1_oob==None or int_oob_core2==None or int_core2_oob==None:
         raise RackConfigError(None,rack.nome,"Erro: As interfaces do Switch de gerencia nao foram cadastradas.")
-  
+
     #Roteiro LF01
     try:
         FILEINLF1 = buscar_roteiro(id_lf1, "CONFIGURACAO")
@@ -256,7 +254,6 @@ def gera_config(rack):
         ip_mgmtoob = buscar_ip(id_oob)
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do oob.")
-
 
     var1 = autoprovision_splf(num_rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
 
