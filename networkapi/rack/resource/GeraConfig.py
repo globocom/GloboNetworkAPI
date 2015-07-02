@@ -678,7 +678,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     subSPINE4ipv6=list(SPINE4ipv6.subnet(127))
 
 
-    IBGPToRLxLipv4 = IPNetwork('10.0.4.0/24')
+    IBGPToRLxLipv4 = IPNetwork('10.126.4.0/24')
     subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
 
     IBGPToRLxLipv6 = IPNetwork('fdbe:0:0:1eaf:8100::/120')
