@@ -1268,7 +1268,17 @@ class IpEquipamento(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome},
+
+            request_vip_list_id = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                for vptpin in svm.server_pool.vipporttopool_set.all():
+                    request_vip_list_id.add(vptpin.requisicao_vip_id)
+
+            request_vip_list_id = list(request_vip_list_id)
+            request_vip_list_id = ', '.join(str(vip_id) for vip_id in request_vip_list_id)
+
+            raise IpEquipCantDissociateFromVip({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'vip_ids': request_vip_list_id},
                                                "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP." % (self.equipamento.nome))
 
         super(IpEquipamento, self).delete(authenticated_user)
@@ -2226,8 +2236,6 @@ class Ipv6(BaseModel):
             raise IpCantBeRemovedFromVip(e.cause, e.message)
         except IpEquipmentNotFoundError, e:
             raise IpEquipmentNotFoundError(None, e.message)
-        except Exception, e:
-            raise Exception(None, e.message)
 
 
 class Ipv6Equipament(BaseModel):
@@ -2400,7 +2408,17 @@ class Ipv6Equipament(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome},
+
+            request_vip_list_id = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                for vptpin in svm.server_pool.vipporttopool_set.all():
+                    request_vip_list_id.add(vptpin.requisicao_vip_id)
+
+            request_vip_list_id = list(request_vip_list_id)
+            request_vip_list_id = ', '.join(str(vip_id) for vip_id in request_vip_list_id)
+
+            raise IpEquipCantDissociateFromVip({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'vip_ids': request_vip_list_id},
                                                "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP" % (self.equipamento.nome))
 
         super(Ipv6Equipament, self).delete(authenticated_user)

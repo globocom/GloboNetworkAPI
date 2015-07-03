@@ -73,7 +73,7 @@ class IPv6DeleteResource(RestResource):
         except IpCantBeRemovedFromVip, e:
             return self.response_error(319, "ip", 'ipv6', id_ip)
         except IpEquipCantDissociateFromVip, e:
-            return self.response_error(352, e.cause['ip'], e.cause['equip_name'], e.cause['vip_id'])
+            return self.response_error(352, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('vip_ids'))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except IpEquipmentNotFoundError, e:
