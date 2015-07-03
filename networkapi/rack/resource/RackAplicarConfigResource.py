@@ -16,26 +16,22 @@
 # limitations under the License.
 
 
-from netaddr import *
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.infrastructure.script_utils import exec_script
-from networkapi.infrastructure.ipaddr import IPNetwork, IPv6Network, IPv4Network
+from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
-from networkapi.distributedlock import distributedlock, LOCK_RACK
+from networkapi.equipamento.models import Equipamento
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip, IpEquipamento
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
-from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, AmbienteError, Ambiente, AmbienteNotFoundError
-from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, VLAN_CREATE
+from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.util import destroy_cache_function
-
+from networkapi import settings
+import glob
+import commands
 
 def get_core_name(rack):
 
@@ -45,14 +41,20 @@ def get_core_name(rack):
     try:
         interfaces2 = Interface.search(rack.id_ilo.id)
         for interface2 in interfaces2:
-            sw = interface2.get_switch_and_router_interface_from_host_interface(None)
-            if sw.equipamento.nome.split('-')[0]=='OOB':
-                if sw.equipamento.nome.split('-')[2]=='01':
-                    name_core1 = sw.equipamento.nome
-                elif sw.equipamento.nome.split('-')[2]=='02':
-                    name_core2 = sw.equipamento.nome
-    except InterfaceNotFoundError:
-        raise RackAplError(None,rack.nome,"Erro ao buscar os nomes do Core associado ao Switch de gerencia.")
+            try:
+                sw = interface2.get_switch_and_router_interface_from_host_interface(None)
+
+                if sw.equipamento.nome.split('-')[0]=='OOB':
+                    if sw.equipamento.nome.split('-')[2]=='01':
+                        name_core1 = sw.equipamento.nome
+                    elif sw.equipamento.nome.split('-')[2]=='02':
+                        name_core2 = sw.equipamento.nome
+
+            except InterfaceNotFoundError:
+                next
+
+    except e:
+        raise RackAplError(None,rack.nome,"Erro ao buscar os nomes do Core associado ao Switch de gerencia %s" % rack.id_ilo.id)
 
     return name_core1, name_core2
 
@@ -68,7 +70,6 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     for  amb in ambiente:
         if amb.grupo_l3.nome==ambientes.get('L3'):
             id_ambiente = amb
-
     # set vlan
     vlan = Vlan()
     vlan.acl_file_name = None
@@ -77,19 +78,11 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     vlan.nome = variablestochangecore1.get("VLAN_NAME")
     vlan.descricao = ""
     vlan.ambiente = id_ambiente
-    vlan.ativada = 0
+    vlan.ativada = 1
     vlan.acl_valida = 0
     vlan.acl_valida_v6 = 0
 
     vlan.insert_vlan(user)
-
-    #ativar a vlan
-    vlan_command = VLAN_CREATE % int(vlan.id)
-    code, stdout, stderr = exec_script(vlan_command)
-    if code == 0:
-        vlan.activate(user)
-    else:
-        return self.response_error(2, stdout + stderr)
 
     return vlan
 
@@ -103,37 +96,33 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
+    network_ip.active = 1
     network_ip.block = variablestochangecore1.get("REDE_MASK")
+    
+    while str(variablestochangecore1.get("REDE_IP")).endswith(":"):
+        variablestochangecore1['REDE_IP'] = variablestochangecore1['REDE_IP'][:-1]
+
+    while str(variablestochangecore1.get("NETMASK")).endswith(":"):
+        variablestochangecore1['NETMASK'] = variablestochangecore1['NETMASK'][:-1]
 
     len_ip_ipv6 = len(str(variablestochangecore1.get("REDE_IP")).split(':'))
     len_mask = len(str(variablestochangecore1.get("NETMASK")).split(':'))
-    
+
     while(8-len_ip_ipv6>0):#8-6=2--8-7=1--8-8=0
         len_ip_ipv6 = len_ip_ipv6 + 1
-        variablestochangecore1['REDE_IP'] = variablestochangecore1.get("REDE_IP")+":"
+        variablestochangecore1['REDE_IP'] = variablestochangecore1.get("REDE_IP")+":0"
 
     while(8-len_mask>0):
         len_mask = len_mask + 1
-        variablestochangecore1['NETMASK'] = variablestochangecore1.get("NETMASK")+":"
+        variablestochangecore1['NETMASK'] = variablestochangecore1.get("NETMASK")+":0"
 
-    network_ip.bloco1, network_ip.bloco2, network_ip.bloco3, network_ip.bloco4, network_ip.bloco5, network_ip.bloco6, network_ip.bloco7, network_ip.bloco8 = str(variablestochangecore1.get("REDE_IP")).split(':')
+    network_ip.block1, network_ip.block2, network_ip.block3, network_ip.block4, network_ip.block5, network_ip.block6, network_ip.block7, network_ip.block8 = str(variablestochangecore1.get("REDE_IP")).split(':')
     network_ip.mask1, network_ip.mask2, network_ip.mask3, network_ip.mask4, network_ip.mask5, network_ip.mask6, network_ip.mask7, network_ip.mask8 = str(variablestochangecore1.get("NETMASK")).split(':')
-    
-    #destroy_cache_function([vlan.id])
-    network_ip.save(user)    
 
-    #ativar a rede
-    # Make command
-    command = NETWORKIPV6_CREATE % int(network_ip.id)
-    code, stdout, stderr = exec_script(command)
-    if code == 0:
-        # Change column 'active = 1'
-        net = NetworkIPv6.get_by_pk(network_ip.id)
-        net.activate(user)
-    else:
-        return self.response_error(2, stdout + stderr)
+    destroy_cache_function([vlan.id])
+    network_ip.save(user)    
  
-    return network_ip.id
+    return network_ip
 
 def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
 
@@ -149,22 +138,12 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
+    network_ip.active = 1
 
     destroy_cache_function([vlan.id])
     network_ip.save(user)
-
-    #ativar a rede
-    # Make command
-    command = NETWORKIPV4_CREATE % int(network_ip.id)
-    code, stdout, stderr = exec_script(command)
-    if code == 0:
-        # Change column 'active = 1'
-        net = NetworkIPv4.get_by_pk(network_ip.id)
-        net.activate(user)
-    else:
-        return self.response_error(2, stdout + stderr)
  
-    return network_ip.id
+    return network_ip
 
 def criar_ambiente(user, ambientes, ranges):
 
@@ -190,6 +169,8 @@ def criar_ambiente(user, ambientes, ranges):
     environment.link = " "
 
     environment.create(user)
+
+    return environment
 
 def config_ambiente(user, hosts, ambientes):
     #ip_config
@@ -230,7 +211,7 @@ def inserir_equip(user, variablestochangecore, rede_id):
     ip.save_ipv4(equip.id, user, rede)
 
     if ip.id is None:
-        return self.response_error(2, stdout + stderr)
+        raise RackAplError (None, None, "Erro ao inserir os equipamentos")
 
     # Delete vlan's cache
     destroy_cache_function([rede.vlan_id])
@@ -240,7 +221,7 @@ def inserir_equip(user, variablestochangecore, rede_id):
 
     return 0
 
-def ambiente_spn_lf(user, rack):
+def ambiente_spn_lf(user, rack, environment_list):
 
     vlans, redes, ipv6 = dic_lf_spn(user, rack.numero)
 
@@ -270,7 +251,8 @@ def ambiente_spn_lf(user, rack):
             ranges['MAX'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119 
             ranges['MIN'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
 
-            criar_ambiente(user, ambientes, ranges)
+            env = criar_ambiente(user, ambientes, ranges)
+            environment_list.append(env)
 
             #configuracao do ambiente
             rede = "SPINE"+i[1]+"ipv4"
@@ -287,7 +269,9 @@ def ambiente_spn_lf(user, rack):
             ipv6['VERSION']="ipv6"
             config_ambiente(user, ipv6, ambientes)
 
-def ambiente_prod(user, rack):
+    return environment_list
+
+def ambiente_prod(user, rack, environment_list):
 
     redes, ipv6 = dic_pods(rack.numero)
 
@@ -314,7 +298,8 @@ def ambiente_prod(user, rack):
         ranges['MAX']= redes.get(vlan_max)
         ranges['MIN']= redes.get(vlan_min)
 
-        criar_ambiente(user, ambientes, ranges)
+        env = criar_ambiente(user, ambientes, ranges)
+        environment_list.append(env)
 
         #configuracao dos ambientes
         prefix = divisaodc+"_PREFIX"
@@ -330,7 +315,9 @@ def ambiente_prod(user, rack):
         ipv6['VERSION']="ipv6"
         config_ambiente(user, ipv6, ambientes)
 
-def ambiente_cloud(user, rack):
+    return environment_list
+
+def ambiente_cloud(user, rack, environment_list):
 
     hosts, ipv6 = dic_hosts_cloud(rack.numero)
 
@@ -344,7 +331,8 @@ def ambiente_cloud(user, rack):
     ranges['MIN']=hosts.get('VLAN_MNGT_BE')
 
     #criar ambiente cloud
-    criar_ambiente(user, ambientes, ranges)
+    env = criar_ambiente(user, ambientes, ranges)
+    environment_list.append(env)
 
     #configuracao do ambiente
     hosts['TIPO']= "Rede invalida equipamentos"
@@ -368,7 +356,9 @@ def ambiente_cloud(user, rack):
         criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
         criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
 
-def ambiente_prod_fe(user, rack):
+    return environment_list
+
+def ambiente_prod_fe(user, rack, environment_list):
 
     redes, ranges, ipv6 = dic_fe_prod(rack.numero)
 
@@ -381,7 +371,8 @@ def ambiente_prod_fe(user, rack):
     ipv6['TIPO']= "Rede invalida equipamentos"
 
     #criar ambiente
-    criar_ambiente(user, ambientes, ranges)
+    env = criar_ambiente(user, ambientes, ranges)
+    environment_list.append(env)
 
     #configuracao dos ambientes
     redes['VERSION']="ipv4"
@@ -390,9 +381,9 @@ def ambiente_prod_fe(user, rack):
     ipv6['VERSION']="ipv6"
     config_ambiente(user, ipv6, ambientes)
 
-def ambiente_borda(user,rack):
+    return environment_list
 
-    redes, ipv6 = dic_borda(rack.numero)
+def ambiente_borda(user,rack, environment_list):
 
     ranges=dict()
     ranges['MAX']=None
@@ -405,7 +396,34 @@ def ambiente_borda(user,rack):
 
     for amb in amb_list:
         ambientes['DC']=amb
-        criar_ambiente(user, ambientes,ranges)
+        env = criar_ambiente(user, ambientes,ranges)
+        environment_list.append(env)
+
+    return environment_list
+
+def aplicar(rack):
+
+    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
+    arquivos = glob.glob(path_config)
+
+    for var in arquivos: 
+        name_equipaments = var.split('/')[-1][:-4]      
+
+        #Check if file is config relative to this rack
+        if rack.nome in name_equipaments:
+            #Apply config only in spines. Leaves already have all necessary config in startup
+            if "ADD" in name_equipaments:
+                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
+                if erro:
+                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+
+def environment_rack(user, environment_list, rack):
+
+    for env in environment_list:
+        ambienteRack = EnvironmentRack()
+        ambienteRack.ambiente = env
+        ambienteRack.rack = rack
+        ambienteRack.save(user)
 
 class RackAplicarConfigResource(RestResource):
 
@@ -417,8 +435,6 @@ class RackAplicarConfigResource(RestResource):
         URL: rack/aplicar-config/id_rack
         """
         try:
-
-            self.log.info("APLICAR")
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -439,7 +455,9 @@ class RackAplicarConfigResource(RestResource):
 
             #variaveis
             name_core1, name_core2 =  get_core_name(rack)
-            
+
+            environment_list = []
+
             variablestochangecore1 = {}
             variablestochangecore2 = {}
             variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack.numero, name_core1, rack.nome)
@@ -447,46 +465,52 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################           VLAN Gerencia SO
             ambientes=dict()
-            ambientes['DC']="NA"
-            ambientes['LOG']="NA"
-            ambientes['L3']="REDENOVODC"
+            ambientes['DC']=settings.DIVISAODC_MGMT
+            ambientes['LOG']=settings.AMBLOG_MGMT
+            ambientes['L3']=settings.GRPL3_MGMT
     
-            try: 
+            try:
                 #criar e ativar a vlan
                 vlan = criar_vlan(user, variablestochangecore1, ambientes)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
                 #criar e ativar a rede
-                rede_id = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
+                network = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
             try:
                 #inserir os Core
-                inserir_equip(user, variablestochangecore1, rede_id)           
-                inserir_equip(user, variablestochangecore2, rede_id)            
+                inserir_equip(user, variablestochangecore1, network.id)           
+                inserir_equip(user, variablestochangecore2, network.id)            
             except:
                 raise RackAplError(None, rack.nome, "Erro ao inserir o core 1 e 2")
                 
-            #######################################################################                  Ambientes
+            #######################################################################                   Ambientes
 
             #BE - SPINE - LEAF
-            ambiente_spn_lf(user, rack)
+            environment_list = ambiente_spn_lf(user, rack, environment_list)
 
             #BE - PRODUCAO
-            ambiente_prod(user, rack)            
+            environment_list = ambiente_prod(user, rack, environment_list)
 
             #BE - Hosts - CLOUD
-            ambiente_cloud(user, rack)
+            environment_list = ambiente_cloud(user, rack, environment_list)
             
             #FE 
-            ambiente_prod_fe(user, rack)
+            environment_list = ambiente_prod_fe(user, rack, environment_list)
 
-            #######################################################################   Atualizar flag na tabela
+            #Borda
+            environment_list = ambiente_borda(user, rack, environment_list)
+
+            #######################################################################                   Backuper
+
+            aplicar(rack)
+            environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
             rack.save(user)
-            
+
             success_map = dict()
             success_map['rack_conf'] = True
             map = dict()
@@ -504,7 +528,7 @@ class RackAplicarConfigResource(RestResource):
             return self.not_authorized()
 
         except RackNumberNotFoundError:
-            return self.response_error(379, id_rack)
+            return self.response_error(379, rack_id)
 
         except RackError:
             return self.response_error(1)

@@ -267,7 +267,7 @@ def is_valid_text(param, required=True):
     elif required == False and (param == None or param == ''):
         return True
 
-    pattern = r"^[a-zA-Z\\-_\\\-\\ ]*$"
+    pattern = r"^[a-zA-Z0-9\\-_\\\-\\ ]*$"
     return re.match(pattern, param)
 
 
@@ -569,17 +569,19 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
 
 
 def deprecated(new_uri=None):
-    '''This is a decorator which can be used to mark functions
+    """This is a decorator which can be used to mark functions
         as deprecated. It will result in a warning being emitted
         when the function is used.
-    '''
+    """
     def outer(fun):
         @functools.wraps(fun)
         def inner(*args, **kwargs):
+            import os
             from networkapi.log import Log
-            log = Log(fun.func_code.co_filename)
+            basename = os.path.basename(fun.func_code.co_filename)
+            log = Log(basename)
             message = "%s:%s: %s is deprecated. Use the new rest API." % (
-                fun.func_code.co_filename,
+                basename,
                 fun.func_code.co_firstlineno + 1,
                 fun.__name__,
             )

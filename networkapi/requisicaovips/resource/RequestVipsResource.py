@@ -288,7 +288,7 @@ class RequestVipsResource(RestResource):
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
             return self.response_error(1)
 
-    @deprecated(new_uri='api/vip/request/update/')
+    @deprecated(new_uri='api/vip/request/save/<pk>/')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT change request VIP.
 
@@ -471,6 +471,10 @@ class RequestVipsResource(RestResource):
                     vip.save(user)
                     # update ServerPool, VipPortToPool, ServerPoolMembers
                     vip.save_vips_and_ports(vip_map, user)
+
+                except RequestVipServerPoolConstraintError, e:
+                    self.log.error(e.message)
+                    return self.response_error(384, e.message)
 
                 except Exception, e:
                     if isinstance(e, IntegrityError):

@@ -1,11 +1,10 @@
 #coding=utf-8
 from netaddr import IPNetwork
 import re
-import os
 from networkapi.rack.models import RackConfigError
 from networkapi import settings
 
-#substitui key's do dicionario que aparecem em filein, pelos respectivos valores, gerando o arquivo fileout (o restante do arquivo é copiado)
+
 def replace(filein,fileout, dicionario):
     try:
         # Read contents from file as a single string
@@ -25,7 +24,7 @@ def replace(filein,fileout, dicionario):
     except:
         raise RackConfigError(None,None, "Erro no template. Arquivo de entrada %s nao encontrado." %(filein))
 
-#divide a rede net em n subredes /bloco e retorna a subrede n
+
 def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))
     return subnets[posicao]
@@ -523,6 +522,7 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     variablestochangeoob = dic_vlan_core(variablestochangeoob, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
+
     fileoutcore1=settings.PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutcore2=settings.PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutoob=settings.PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"

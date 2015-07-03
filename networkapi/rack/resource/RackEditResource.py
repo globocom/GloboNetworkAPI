@@ -20,11 +20,10 @@ from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
+from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.equipamento.models import Equipamento
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 

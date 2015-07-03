@@ -67,9 +67,10 @@ class Ipv6Serializer(serializers.ModelSerializer):
 
 class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
-    pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
+    #pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
 
     equipment_name = serializers.SerializerMethodField('get_name_equipment')
+    last_status_update_formated = serializers.Field(source='last_status_update_formated')
 
     ip = Ipv4Serializer()
     ipv6 = Ipv6Serializer()
@@ -86,13 +87,16 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'limit',
                   'port_real',
                   'healthcheck',
-                  'pool_enabled',
+                  'member_status',
+                  'last_status_update',
+                  'last_status_update_formated',
                   'equipment_name',
                   )
 
     def check_pool_member_enabled(self, obj):
 
         command = POOL_REAL_CHECK % (obj.server_pool.id, obj.ip.id, obj.port_real)
+
 
         code, _, _ = exec_script(command)
 

@@ -201,6 +201,12 @@ def gera_config(rack):
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 01.")
 
+    #Roteiro SPN01
+    try:
+        FILEINSP1 = buscar_roteiro(id_sp1, "CONFIGURACAO")    
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 01.")
+
     #Roteiro SPN02
     try:
         FILEINSP2 = buscar_roteiro(id_sp2, "CONFIGURACAO")    

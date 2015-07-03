@@ -17,8 +17,7 @@
 
 
 from django.conf.urls.defaults import *
-
-
+from django.http import HttpResponse
 from networkapi.equipamento.resource import EquipmentGetIpsByAmbiente
 
 from networkapi.vlan.resource.VlanResource import VlanResource
@@ -1110,7 +1109,10 @@ urlpatterns += patterns('',
                        )
 
 
+# Healthcheck
 urlpatterns += patterns('',
+                       url(r'^healthcheck$',
+                           lambda _: HttpResponse("WORKING")),
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
                        url(r'^rack/find[/]?$', find_rack_resource.handle_request,

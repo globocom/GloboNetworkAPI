@@ -683,7 +683,7 @@ class Ambiente(BaseModel):
     def create(self, authenticated_user):
         """Efetua a inclusão de um novo o Ambiente.
 
-        @return: Nothing
+        @return: Id new Environment
 
         @raise AmbienteError: Falha ao inserir um Ambiente.
 
@@ -720,7 +720,8 @@ class Ambiente(BaseModel):
                     raise FilterNotFoundError(
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
 
-            self.save(authenticated_user)
+            return self.save(authenticated_user)
+
         except FilterNotFoundError, e:
             raise e
         except AmbienteDuplicatedError, e:
@@ -939,7 +940,7 @@ class IPConfig(BaseModel):
             config_environment = ConfigEnvironment.objects.filter(
                 environment=environment_id).values('ip_config').query
 
-            return IPConfig.objects.filter(id=config_environment)
+            return IPConfig.objects.filter(id__in=config_environment)
 
             return
         except ObjectDoesNotExist, e:

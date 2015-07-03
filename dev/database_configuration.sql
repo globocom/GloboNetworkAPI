@@ -1168,6 +1168,26 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
+-- -----------------------------------------------------
+-- Table `telecom`.`option2config`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`option2config` (
+  `id_option2config` INT(11) NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(80) CHARACTER SET 'latin1' NULL DEFAULT NULL,
+  `value` VARCHAR(150) CHARACTER SET 'latin1' NULL DEFAULT NULL,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id_option2config`),
+  INDEX `fk_option2config_ambiente_idx` (`id_ambiente` ASC),
+  UNIQUE INDEX `option2config_unique` (`id_ambiente` ASC, `type` ASC, `value` ASC),
+  CONSTRAINT `fk_option2config_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
 
 -- -----------------------------------------------------
 -- Table `telecom`.`racks`
@@ -1181,9 +1201,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
   `id_equip1` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
-  `config_sw1` TINYINT(4) NOT NULL DEFAULT '0',
-  `config_sw2` TINYINT(4) NOT NULL DEFAULT '0',
-  `config_ilo` TINYINT(4) NOT NULL DEFAULT '0',
+  `config` tinyint(1) NOT NULL,
   INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
   INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
   INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
@@ -1207,22 +1225,30 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_config`
+-- Table `telecom`.`ambiente_rack`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_config` (
-  `id_tipo_config` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `tipo_equip` VARCHAR(20) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci',
-  PRIMARY KEY (`id_tipo_config`))
+CREATE TABLE IF NOT EXISTS `telecom`.`ambiente_rack` (
+  `id_ambienterack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  `id_rack` INT(10) NOT NULL,
+  PRIMARY KEY (`id_ambienterack`),
+  UNIQUE INDEX `ambiente_rack_unique` (`id_ambiente` ASC, `id_rack` ASC),
+  INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
+  INDEX `fk_ambiente_rack_rack` (`id_rack` ASC),
+  CONSTRAINT `fk_ambiente_rack_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_rack_rack`
+    FOREIGN KEY (`id_rack`)
+    REFERENCES `telecom`.`racks` (`id_rack`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_unicode_ci;
+DEFAULT CHARACTER SET = utf8;
 
-
-
-LOCK TABLES `tipo_config` WRITE;
-INSERT INTO `tipo_config` VALUES (1,'Switch1'),(2,'Switch2'),(3,'Console');
-UNLOCK TABLES;
 
 LOCK TABLES `grupos` WRITE;
 INSERT INTO `grupos` VALUES (1,'Administrators','S','S','S','S'),(2,'Guests','S','N','N','N');

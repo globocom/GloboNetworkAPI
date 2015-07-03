@@ -16,35 +16,27 @@
 # limitations under the License.
 
 
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError, EnvironmentRack
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-from networkapi.ambiente.models import IPConfig, ConfigEnvironment, Ambiente, GrupoL3 
-from networkapi.equipamento.models import Equipamento
+from networkapi.ambiente.models import Ambiente, GrupoL3
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi import settings
-import shutil 
+import shutil
+import glob
 
-PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
-PATH_TO_MV = "/opt/app/GloboNetworkAPI/networkapi/rack/delete/"
-LEAF = "LF-CM"
-OOB = "OOB-CM"
-SPN = "SPN-CM"
-FORMATO = ".cfg"
 
-def desativar_remover_vlan_rede(user, rack):
+
+def desativar_vlan_rede(user, rack):
 
     nome = "_"+rack.nome
-    vlans = Vlan.objects.all()
+    vlans = Vlan.objects.all().filter(nome__contains=nome)
 
     for vlan in vlans:
 
@@ -92,29 +84,50 @@ def desativar_remover_vlan_rede(user, rack):
                 if code == 0:
                     vlan.remove(user)
 
-            vlan.delete(user)            
+def remover_ambiente_rack(user, rack):
 
-def remover_ambiente(user, rack):
+    lista_amb = []
 
-    ip_config_list = []
+    lista_amb_rack = EnvironmentRack.objects.all().filter(rack__exact=rack.id)
 
-    config_ambs = ConfigEnvironment()
-    ambientes_l3 = GrupoL3.objects.all()
-    ambiente = Ambiente()
-    ambientes = Ambiente.objects.all()
+    for var in lista_amb_rack:
+        lista_amb.append(var.ambiente)
+        var.delete(user)
 
-    nome_rack = "RACK_"+rack.nome
+    return lista_amb
 
-    nome_l3 = "RACK_"+rack.nome
+def remover_ambiente(user, lista_amb, rack):
 
-    for amb in ambientes:
-        if amb.grupo_l3.nome==nome_l3:
-            id_amb_l3 = amb.grupo_l3.id
-            ambiente.remove(user, amb.id)
+    for amb in lista_amb:
+        amb.remove(user, amb.id)
 
-    for amb_l3 in ambientes_l3:
-        if amb_l3.nome == nome_rack:
-            amb_l3.delete(user)
+    nome = "RACK_"+rack.nome
+    grupo_l3 = GrupoL3()
+    grupo_l3 = grupo_l3.get_by_name(nome)
+    grupo_l3.delete(user)
+
+def aplicar(rack):
+
+    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
+    arquivos = glob.glob(path_config)
+    for var in arquivos: 
+        name_equipaments = var.split('/')[-1][:-4]      
+        #Check if file is config relative to this rack
+        if rack.nome in name_equipaments:
+            #Apply config only in spines. Leaves already have all necessary config in startup
+            if "DEL" in name_equipaments:
+                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
+                if erro:
+                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+
+def remover_vlan_so(user, rack):
+
+    nome = "VLAN_SO_"+rack.nome
+
+    vlan = Vlan()
+    vlan = vlan.get_by_name(nome)
+    vlan.delete(user)
+
 
 class RackDeleteResource(RestResource):
 
@@ -126,9 +139,9 @@ class RackDeleteResource(RestResource):
         URL: rack/id_rack/
         """
         try:
-            self.log.info("Remove Delete")
+            self.log.info("Delete Rack")
 
-            # User permission
+            ########################################################                                     User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
@@ -138,37 +151,43 @@ class RackDeleteResource(RestResource):
             rack = Rack()
             rack = rack.get_by_pk(rack_id)
 
-            # Mover os arquivos de configuracao que foram gerados
+            ######################################################## Mover os arquivos de configuracao que foram gerados
             try:
                 for i in range(1,3):
-                    nome_lf = LEAF+"-"+rack.nome+"-"+str(i)+FORMATO
-                    nome_lf_b = PATH_TO_CONFIG+nome_lf
-                    nome_lf_a = PATH_TO_MV+nome_lf
+                    nome_lf = settings.LEAF+"-"+rack.nome+"-0"+str(i)+settings.FORMATO
+                    nome_lf_b = settings.PATH_TO_CONFIG+nome_lf
+                    nome_lf_a = settings.PATH_TO_MV+nome_lf
                     shutil.move(nome_lf_b, nome_lf_a)
-                    nome_oob = OOB+"-0"+str(i)+"-ADD-"+rack.nome+FORMATO
-                    nome_oob_b = PATH_TO_CONFIG+nome_oob
-                    nome_oob_a = PATH_TO_MV+nome_oob
+                    nome_oob = settings.OOB+"-0"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
+                    nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
+                    nome_oob_a = settings.PATH_TO_MV+nome_oob
                     shutil.move(nome_oob_b, nome_oob_a)
                 for i in range(1,5):
-                    nome_spn = SPN+"-"+str(i)+"-ADD-"+rack.nome+FORMATO
-                    nome_spn_b = PATH_TO_CONFIG+nome_spn
-                    nome_spn_a = PATH_TO_MV+nome_spn
+                    nome_spn = settings.SPN+"-0"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
+                    nome_spn_b = settings.PATH_TO_CONFIG+nome_spn
+                    nome_spn_a = settings.PATH_TO_MV+nome_spn
                     shutil.move(nome_spn_b, nome_spn_a)
-                nome_oob = OOB+"-0"+str(i)+"-ADD-"+FORMATO
-                nome_oob_b = PATH_TO_CONFIG+nome_oob
-                nome_oob_a = PATH_TO_MV+nome_oob
+
+                nome_oob = settings.OOB+"-"+rack.nome+"-01"+settings.FORMATO
+                nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
+                nome_oob_a = settings.PATH_TO_MV+nome_oob
                 shutil.move(nome_oob_b, nome_oob_a)
             except:
                 pass
 
-            # Remover as Vlans, redes e ambientes
+            ########################################################                 Remover as Vlans, redes e ambientes
             try:
-                desativar_remover_vlan_rede(user, rack)
-                remover_ambiente(user, rack)
+                desativar_vlan_rede(user, rack)
+                lista_amb = remover_ambiente_rack(user, rack)
+                remover_ambiente(user, lista_amb, rack)
+                remover_vlan_so(user, rack)
             except:
-                raise RackError(None, u'Failed to remove the Vlans and Environments.')    
+                raise RackError(None, u'Failed to remove the Vlans and Environments.')
             
-            # Remover Rack            
+            ########################################################         Remove rack config from spines and core oob
+            aplicar(rack)
+
+            ########################################################                                         Remove Rack
             with distributedlock(LOCK_RACK % rack_id):
 
                 try:

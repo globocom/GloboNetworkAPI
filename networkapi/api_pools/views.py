@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import json
+from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -56,6 +57,7 @@ log = Log(__name__)
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def pool_list(request):
+
     """
     List all code snippets, or create a new snippet.
     """
@@ -158,7 +160,7 @@ def pool_list_by_reqvip(request):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
@@ -176,7 +178,29 @@ def list_all_members_by_pool(request, id_server_pool):
         custom_search = request.DATA.get("custom_search")
 
         query_pools = ServerPoolMember.objects.filter(server_pool=id_server_pool)
+        total = query_pools.count()
 
+        checkstatus=False
+        if request.QUERY_PARAMS.has_key("checkstatus") and request.QUERY_PARAMS["checkstatus"].upper()=="TRUE":
+            checkstatus=True
+
+        if total > 0 and checkstatus:
+            stdout = exec_script_check_poolmember_by_pool(id_server_pool)
+            script_out = json.loads(stdout)
+
+            if id_server_pool not in script_out.keys() or len(script_out[id_server_pool]) != total:
+                raise exceptions.ScriptCheckStatusPoolMemberException(detail="Script did not return as expected.")
+
+            for pm in query_pools:
+                member_checked_status = script_out[id_server_pool][str(pm.id)]
+                if member_checked_status not in range(0, 8):
+                    raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
+
+                #Save to BD
+                pm.member_status = member_checked_status
+                pm.last_status_update = datetime.now()
+                pm.save(request.user)
+        
         server_pools, total = build_query_to_datatable(
             query_pools,
             asorting_cols,
@@ -185,9 +209,9 @@ def list_all_members_by_pool(request, id_server_pool):
             start_record,
             end_record
         )
-
+        
         serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
-
+            
         data["server_pool_members"] = serializer_pools.data
         data["total"] = total
 
@@ -775,7 +799,6 @@ def save_reals(request):
 
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
-
         return Response()
 
     except exceptions.ScriptAddPoolException, exception:
@@ -800,13 +823,13 @@ def save_reals(request):
 def save(request):
 
     try:
-        # TODO: ADD VALIDATION
+
         id = request.DATA.get('id')
         identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
         environment = long(request.DATA.get('environment'))
         balancing = request.DATA.get('balancing')
-        maxcom = request.DATA.get('maxcom')
+        maxconn = request.DATA.get('maxcom')
 
         id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
@@ -825,12 +848,16 @@ def save(request):
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
         if id:
             has_identifier = has_identifier.exclude(id=id)
+            #current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
+            #current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
+            #healthcheck = current_healthcheck
 
         if has_identifier.count() > 0:
             raise exceptions.InvalidIdentifierPoolException()
 
-        # Ger or create new health check
-        hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request)
+        healthcheck_identifier = ''
+        healthcheck_destination = '*:*'
+        healthcheck = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination, healthcheck_identifier)
 
         # Remove empty values from list
         id_pool_member_noempty = [x for x in id_pool_member if x != '']
@@ -839,8 +866,8 @@ def save(request):
         env = Ambiente.objects.get(id=environment)
 
         # Save Server pool
-        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, hc, env, balancing,
-                                                  maxcom, id_pool_member_noempty)
+        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
+                                                  maxconn, id_pool_member_noempty)
 
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,

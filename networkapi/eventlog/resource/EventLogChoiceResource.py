@@ -47,9 +47,9 @@ def UsersList(ul):
     data = list()
     for item in ul:
         user = dict()
-        user['id_usuario'] = item.usuario.id
-        user['nome'] = item.usuario.nome
-        user['usuario'] = item.usuario.user
+        user['id_usuario'] = item.id
+        user['nome'] = item.nome
+        user['usuario'] = item.user
         data.append(user)
     data.insert(0, {'id_usuario': '0', 'nome': '-', 'usuario': '-'})
     return data
@@ -81,8 +81,9 @@ class EventLogChoiceResource(RestResource):
 
             functionalities = Functionality.objects
 
-            acoes = ['Cadastrar', 'Alterar', 'Remover']
+            acoes = ['Alterar', 'Cadastrar', 'Remover']
             usuarios = EventLog.uniqueUsers()
+
             funcionalidades = functionalities.all()
 
             usuarios = UsersList(usuarios)

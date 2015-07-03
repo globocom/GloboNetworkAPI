@@ -30,7 +30,7 @@ DATABASES = {
         'HOST': 'localhost',
         'NAME': 'telecom',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'password',
         'PORT': '3306',
         'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
     }
@@ -73,13 +73,22 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'networkapi.log.CommonAdminEmailHandler'
-        }
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+        },
     },
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['null'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     }
 }
@@ -138,6 +147,7 @@ LOG_LEVEL = logging.DEBUG
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
 LOG_USE_STDOUT = False
+LOG_SHOW_TRACEBACK = False
 
 VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
@@ -151,6 +161,7 @@ TEMPLATE_LOADERS = (
 
 if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
+        'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         #        'django.contrib.sessions.middleware.SessionMiddleware',
         #        'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -159,6 +170,7 @@ if LOG_SHOW_SQL:
     )
 else:
     MIDDLEWARE_CLASSES = (
+        'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
         #        'django.contrib.sessions.middleware.SessionMiddleware',
@@ -254,8 +266,9 @@ VIP_REMOVE = 'gerador_vips -i %d --remove'
 """
 POOL_CREATE = 'gerador_vips --pool %s --cria'
 POOL_REMOVE = 'gerador_vips --pool %s --remove'
-POOL_REAL_CREATE = 'gerador_vips -p %s --id_ip %s --port_ip %s --add'
-POOL_REAL_REMOVE = 'gerador_vips -p %s --id_ip %s --port_ip %s --del'
+POOL_HEALTHCHECK = 'gerador_vips --pool %s --healthcheck'
+POOL_REAL_CREATE = 'gerador_vips --pool %s --id_ip %s --port_ip %s --add'
+POOL_REAL_REMOVE = 'gerador_vips --pool %s --id_ip %s --port_ip %s --del'
 POOL_REAL_ENABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --ena'
 POOL_REAL_DISABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --dis'
 POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
@@ -264,6 +277,10 @@ POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
 
 # Script to Managemant Status Pool Members
 POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
+
+# Script to Managemant Status Pool Members
+POOL_MANAGEMENT_LB_METHOD = "gerador_vips --pool %s --lb_method"
+POOL_MANAGEMENT_LIMITS = "gerador_vips --pool %s --maxconn"
 
 
 # VIP REAL
@@ -291,6 +308,14 @@ VIP_REALS_v4_CHECK = 'gerador_vips -i %s --id_ip %s --port_ip %s --port_vip %s -
 VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s --chk'
 
 
+
+##################################
+#       QUEUE SETTINGS
+##################################
+QUEUE_DESTINATION = u"/topic/networkapi_queue"
+QUEUE_BROKER_URI = u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e"
+QUEUE_BROKER_CONNECT_TIMEOUT = 2
+
 ###################################
 #    PATH ACLS
 ###################################
@@ -306,3 +331,25 @@ sys.setdefaultencoding('utf-8')
 # O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
 # O terceiro parâmetro é o nível de detalhamento do Log.
 Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
+
+###################################
+# PATH RACKS
+###################################
+#### HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
+KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
+IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
+#### <<<<<
+
+PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
+PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
+
+PATH_TO_MV = "/vagrant/networkapi/rack/delete/"
+LEAF = "LF-CM"
+OOB = "OOB-CM"
+SPN = "SPN-CM"
+FORMATO = ".cfg"
+
+DIVISAODC_MGMT="NA"
+AMBLOG_MGMT="NA"
+GRPL3_MGMT="REDENOVODC"
+

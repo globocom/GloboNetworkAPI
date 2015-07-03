@@ -17,14 +17,18 @@
 
 
 import glob
-import sys
 import os
 import logging
 import traceback
-import time
 from logging.handlers import TimedRotatingFileHandler, codecs
 import re
+from django.conf import settings
+
 from django.utils.log import AdminEmailHandler
+
+import sys
+import time
+from networkapi.extra_logging.filters import ExtraLoggingFilter
 
 
 def convert_to_utf8(object):
@@ -117,7 +121,6 @@ class MultiprocessTimedRotatingFileHandler(TimedRotatingFileHandler):
 class Log(object):
 
     """Classe responsável por encapsular a API de logging.
-
     Encapsula as funcionalidades da API de logging de forma a adicionar o 
     nome do módulo nas mensagens que forem impressas.
     """
@@ -132,11 +135,11 @@ class Log(object):
     _LOG_LEVEL = logging.DEBUG
 
     # Define o formato do log padrão
-    _LOG_FORMAT = '%(asctime)s %(filename)-12s %(levelname)-8s %(message)s'
+    _LOG_FORMAT = '%(asctime)s %(request_user)-6s %(request_path)-8s %(request_id)-6s %(levelname)-6s - %(message)s'
 
     _USE_STDOUT = True
 
-    _MAX_LINE_SIZE = 500
+    _MAX_LINE_SIZE = 2048
 
     _PATTERN_XML_PASSWORD = [
         "<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
@@ -162,6 +165,11 @@ class Log(object):
 
         # obtém o logger
         self.logger = logging.getLogger()
+
+        my_filter = ExtraLoggingFilter('extra_logging')
+
+        self.logger.addFilter(my_filter)
+
         # se não inicializou os handlers inicializa
         if len(self.logger.handlers) == 0:
             log_dir = os.path.split(log_file_name)[0]
@@ -172,11 +180,14 @@ class Log(object):
                                                       backupCount=number_of_days_to_log,
                                                       encoding='utf-8')
             fmt = NetworkAPILogFormatter(log_format)
+
+            fh.addFilter(my_filter)
             fh.setFormatter(fmt)
             self.logger.setLevel(log_level)
             self.logger.addHandler(fh)
             if use_stdout:
                 sh = logging.StreamHandler(sys.stdout)
+                sh.addFilter(my_filter)
                 sh.setFormatter(fmt)
                 self.logger.addHandler(sh)
 
@@ -227,8 +238,11 @@ class Log(object):
         try:
             get_lock()
             msg = str(msg) % args
+
+            show_traceback = getattr(settings, "LOG_SHOW_TRACEBACK", True)
+
             self.logger.error(
-                msg, extra={'module_name': self.module_name}, exc_info=True)
+                msg, extra={'module_name': self.module_name}, exc_info=show_traceback)
         finally:
             release_lock()
 
@@ -247,7 +261,6 @@ class Log(object):
 class CommonAdminEmailHandler(AdminEmailHandler):
 
     """An exception log handler that e-mails log entries to site admins.
-
     If the request is passed as the first argument to the log record,
     request data will be provided in the
     """

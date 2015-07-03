@@ -22,7 +22,6 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.usuario.models import Usuario
 from networkapi.log import Log
 
-
 class EventLogError(Exception):
 
     """Representa um erro ocorrido durante acesso à tabela event_log."""
@@ -80,8 +79,8 @@ class EventLog(BaseModel):
 
     @classmethod
     def uniqueUsers(cls):
-        userlist = EventLog.objects.only(
-            'usuario').filter().group_by('id_user')
+        userlist = Usuario.objects.all().order_by('user')
+
         return userlist
 
 
