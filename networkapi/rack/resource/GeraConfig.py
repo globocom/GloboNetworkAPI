@@ -4,7 +4,7 @@ import re
 from networkapi.rack.models import RackConfigError
 from networkapi import settings
 
-#substitui key's do dicionario que aparecem em filein, pelos respectivos valores, gerando o arquivo fileout (o restante do arquivo é copiado)
+
 def replace(filein,fileout, dicionario):
     try:
         # Read contents from file as a single string
@@ -15,7 +15,7 @@ def replace(filein,fileout, dicionario):
         for key in dicionario:
         # Use RE package to allow for replacement (also allowing for (multiline) REGEX)
             file_string = (re.sub(key, dicionario[key], file_string))
-    
+
         # Write contents to file.
         # Using mode 'w' truncates the file.
         file_handle = open(fileout, 'w')
@@ -23,22 +23,23 @@ def replace(filein,fileout, dicionario):
         file_handle.close()
     except:
         raise RackConfigError(None,None, "Erro no template. Arquivo de entrada %s nao encontrado." %(filein))
-#divide a rede net em n subredes /bloco e retorna a subrede n
+
+
 def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))
     return subnets[posicao]
 
-def dic_vlan_core(variablestochangecore, rack, name_core, name_rack): 
+def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
     """
     variablestochangecore: list
     rack: Numero do Rack
     name_core: Nome do Core
     name_rack: Nome do rack
     """
- 
+
     core = int(name_core.split("-")[2])
 
-    #valor base para as vlans e portchannels 
+    #valor base para as vlans e portchannels
     BASE_SO = 1000
 
     #variavels para manipular as redes
@@ -46,30 +47,30 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
     subSO_OOB_NETipv4={}
 
     #rede para conectar cores aos racks
-    SO_OOB_NETipv4= IPNetwork('10.143.64.0/18') 
+    SO_OOB_NETipv4= IPNetwork('10.143.64.0/18')
 
     #Vlan para cadastrar
-    variablestochangecore["VLAN_SO"]= str(BASE_SO+rack) 
-    variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack 
-    variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack) 
+    variablestochangecore["VLAN_SO"]= str(BASE_SO+rack)
+    variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack
+    variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack)
 
-    #Rede para cadastrar  
-    subSO_OOB_NETipv4=list(SO_OOB_NETipv4.subnet(25)) 
+    #Rede para cadastrar
+    subSO_OOB_NETipv4=list(SO_OOB_NETipv4.subnet(25))
     variablestochangecore["REDE_IP"]=str(subSO_OOB_NETipv4[rack]).split("/")[0]
     variablestochangecore["REDE_MASK"]=str(subSO_OOB_NETipv4[rack].prefixlen)
     variablestochangecore["NETMASK"]=str(subSO_OOB_NETipv4[rack].netmask)
     variablestochangecore["BROADCAST"]=str(subSO_OOB_NETipv4[rack].broadcast)
-                 
-    #cadastro ip 
+
+    #cadastro ip
     ip = 124 + core
-    variablestochangecore["EQUIP_NAME"]=name_core 
+    variablestochangecore["EQUIP_NAME"]=name_core
     variablestochangecore["IPCORE"]=str(subSO_OOB_NETipv4[rack][ip])
 
     #ja cadastrado
-    variablestochangecore["IPHSRP"]=str(subSO_OOB_NETipv4[rack][1]) 
+    variablestochangecore["IPHSRP"]=str(subSO_OOB_NETipv4[rack][1])
     variablestochangecore["NUM_CHANNEL"]=str(BASE_SO+rack)
-    
-    return variablestochangecore 
+
+    return variablestochangecore
 
 def dic_lf_spn(user, rack):
 
@@ -96,12 +97,12 @@ def dic_lf_spn(user, rack):
 
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBE[0] = IPNetwork('10.128.0.0/12')
-    CIDREBGP[0] = IPNetwork('10.10.0.0/22')
+    CIDREBGP[0] = IPNetwork('10.126.0.0/22')
 
-    SPINE1ipv4 = IPNetwork('10.0.0.0/24')
-    SPINE2ipv4 = IPNetwork('10.0.1.0/24')
-    SPINE3ipv4 = IPNetwork('10.0.2.0/24')
-    SPINE4ipv4 = IPNetwork('10.0.3.0/24')
+    SPINE1ipv4 = IPNetwork('10.126.0.0/24')
+    SPINE2ipv4 = IPNetwork('10.126.1.0/24')
+    SPINE3ipv4 = IPNetwork('10.126.2.0/24')
+    SPINE4ipv4 = IPNetwork('10.126.3.0/24')
     #REDE subSPINE1ipv4[rack]
     subSPINE1ipv4=list(SPINE1ipv4.subnet(31))
     subSPINE2ipv4=list(SPINE2ipv4.subnet(31))
@@ -118,7 +119,7 @@ def dic_lf_spn(user, rack):
     subSPINE4ipv6=list(SPINE4ipv6.subnet(127))
 
     #Vlans BE RANGE
-    VLANBELEAF[rack].append(VLANBE+rack) 
+    VLANBELEAF[rack].append(VLANBE+rack)
     # rede subSPINE1ipv4[rack]
     VLANBELEAF[rack].append(VLANBE+rack+BASE_RACK)
     VLANBELEAF[rack].append(VLANBE+rack+2*BASE_RACK)
@@ -155,7 +156,7 @@ def dic_lf_spn(user, rack):
     redes['SPINE2ipv4'] = str(SPINE2ipv4)
     redes['SPINE3ipv4'] = str(SPINE3ipv4)
     redes['SPINE4ipv4'] = str(SPINE4ipv4)
-    
+
     ipv6 = dict()
     ipv6['SPINE1ipv6'] = str(SPINE1ipv6)
     ipv6['SPINE2ipv6'] = str(SPINE2ipv6)
@@ -187,7 +188,7 @@ def dic_pods(rack):
     redesPODSBEBOipv4[rack]=[]
     PODSBECAipv4[rack]=[]
     redesPODSBECAipv4[rack]=[]
- 
+
     PODSBEipv6 = {}
     redesPODSBEipv6 = {}
     PODSBEFEipv6 = {}
@@ -219,16 +220,16 @@ def dic_pods(rack):
     subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack)
     subnetsRackBEipv6[rack]=splitnetworkbyrack(CIDRBEipv6,55,rack)
 
-    #PODS BE => /20 
-    subnetteste=subnetsRackBEipv4[rack] 
+    #PODS BE => /20
+    subnetteste=subnetsRackBEipv4[rack]
     subnetteste_ipv6=subnetsRackBEipv6[rack]
 
     PODSBEipv4[rack]=splitnetworkbyrack(subnetteste,20,0)
     PODSBEipv6[rack]=splitnetworkbyrack(subnetteste_ipv6,57,0)
          # => 128 redes /27     # Vlan 2 a 129
     redesPODSBEipv4[rack] = list(PODSBEipv4[rack].subnet(27))
-    redesPODSBEipv6[rack] = list(PODSBEipv6[rack].subnet(64)) 
-    #PODS BEFE => 10.128.16.0/21 
+    redesPODSBEipv6[rack] = list(PODSBEipv6[rack].subnet(64))
+    #PODS BEFE => 10.128.16.0/21
     PODSBEFEipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,0)
     PODSBEFEipv6[rack]=splitnetworkbyrack(subnetteste_ipv6,57,1)
          # => 64 redes /27    # Vlan 130 a 193
@@ -325,7 +326,7 @@ def dic_hosts_cloud(rack):
     # ambiente BE - MNGT_NETWORK - RACK_AAXX
     # 10.128.30.0/23
     # vlans MNGT_BE/FE/BO/CA/FILER
-        #PODS BE => /20 
+        #PODS BE => /20
     #Hosts => 10.128.30.0/23
     redesHostsipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,1),23,1)
     redesHostsipv6[rack]=subnetteste_ipv6
@@ -342,7 +343,7 @@ def dic_hosts_cloud(rack):
     redeHostsCAipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,0)
     redeHostsCAipv6[rack]= splitnetworkbyrack(subnetteste_ipv6,64,6)
     #Hosts FILER => 10.128.15.224/27 => 32 endereços
-    redeHostsFILERipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,1)       
+    redeHostsFILERipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,1)
     redeHostsFILERipv6[rack]= splitnetworkbyrack(subnetteste_ipv6,64,7)
 
     hosts=dict()
@@ -416,10 +417,10 @@ def dic_hosts_cloud(rack):
     FILER_ipv6['REDE_MASK']=redeHostsFILERipv6[rack].prefixlen
     FILER_ipv6['NETMASK']=str(redeHostsFILERipv6[rack].netmask)
     FILER_ipv6['BROADCAST']=str(redeHostsFILERipv6[rack].broadcast)
-    ipv6['FILER']=FILER_ipv6   
+    ipv6['FILER']=FILER_ipv6
     return hosts, ipv6
 
-def dic_fe_prod(rack):    
+def dic_fe_prod(rack):
 
     CIDRFEipv4 = {}
     CIDRFEipv4[rack] = []
@@ -453,20 +454,22 @@ def dic_fe_prod(rack):
     ipv6['REDE']=str(subnetsRackFEipv6[rack])
     return redes, ranges, ipv6
 
-def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
+def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     #roteiro para configuracao de core
     fileincore1=settings.PATH_TO_GUIDE+FILEINCR1
     fileincore2=settings.PATH_TO_GUIDE+FILEINCR2
-    fileinoob=settings.PATH_TO_GUIDE+FILEINOOB 
-    
+    fileinoob=settings.PATH_TO_GUIDE+FILEINOOB
+
     #nome dos cores, do console de gerencia dos lf do rack, e do rack
     HOSTNAME_CORE1=name_core1
     HOSTNAME_CORE2=name_core2
     HOSTNAME_OOB=name_oob
     HOSTNAME_RACK = HOSTNAME_OOB.split("-")
+    HOSTNAME_LF1 = name_lf1
+    HOSTNAME_LF2 = name_lf2
 
-    #valor base para as vlans e portchannels 
+    #valor base para as vlans e portchannels
     BASE_SO = 1000
 
     #interfaces de conexão entre os cores e o console
@@ -475,17 +478,26 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     INTERFACE_CORE1  = int_core1_oob
     INTERFACE_CORE2  = int_core2_oob
 
+    #ip de gerencia do oob
+    IP_GERENCIA_OOB = ip_mgmtoob
+
     #gerando dicionarios para substituir paravras chaves do roteiro
     variablestochangecore1={}
     variablestochangecore2={}
     variablestochangeoob={}
 
+    variablestochangeoob["OWN_IP_MGMT"]= IP_GERENCIA_OOB
     variablestochangeoob["INT_OOBC1_UPLINK"]= INT_OOBC1_UPLINK
     variablestochangeoob["INT_OOBC2_UPLINK"]= INT_OOBC2_UPLINK
     variablestochangeoob["INTERFACE_CORE1"]= INTERFACE_CORE1
     variablestochangeoob["INTERFACE_CORE2"]= INTERFACE_CORE2
     variablestochangeoob["HOSTNAME_CORE1"]= HOSTNAME_CORE1
     variablestochangeoob["HOSTNAME_CORE2"]= HOSTNAME_CORE2
+    variablestochangeoob["HOSTNAME_OOB"]= HOSTNAME_OOB
+    variablestochangeoob["HOSTNAME_LF1"]= HOSTNAME_LF1
+    variablestochangeoob["HOSTNAME_LF2"]= HOSTNAME_LF2
+    variablestochangeoob["VLAN_SO"]=str(BASE_SO+rack)
+
 
     variablestochangecore1["INT_OOB_UPLINK"]= INT_OOBC1_UPLINK
     variablestochangecore1["INTERFACE_CORE"]= INTERFACE_CORE1
@@ -494,7 +506,7 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     if (1+rack)%2==0:
         variablestochangecore1["HSRP_PRIORITY"]="100"
     else:
-        variablestochangecore1["HSRP_PRIORITY"]="101"    
+        variablestochangecore1["HSRP_PRIORITY"]="101"
 
     variablestochangecore2["INT_OOB_UPLINK"]= INT_OOBC2_UPLINK
     variablestochangecore2["INTERFACE_CORE"]= INTERFACE_CORE2
@@ -503,14 +515,15 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     if(2+rack)%2==0:
         variablestochangecore2["HSRP_PRIORITY"]="100"
     else:
-        variablestochangecore2["HSRP_PRIORITY"]="101"    
+        variablestochangecore2["HSRP_PRIORITY"]="101"
 
     variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
     variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack, HOSTNAME_CORE2, HOSTNAME_RACK[2])
     variablestochangeoob = dic_vlan_core(variablestochangeoob, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-    fileoutcore1=settings.PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"    
+
+    fileoutcore1=settings.PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutcore2=settings.PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutoob=settings.PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
 
@@ -544,7 +557,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
 
     IP_GERENCIA_LF1=ip_mgmtlf1
     IP_GERENCIA_LF2=ip_mgmtlf2
- 
+
     INTERFACE_SP1=int_sp1
     INTERFACE_SP2=int_sp2
     INTERFACE_SP3=int_sp3
@@ -562,7 +575,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
 
 
     # STRUCTURE: IPSPINE[rack][spine]: ip a configurar no spine 'spine' relativo à leaf do rack 'rack'
-    # STRUCTURE: IPLEAF[rack][spine]: ip a configurar na leaf do rack 'rack' relativo ao spine 'spine' 
+    # STRUCTURE: IPLEAF[rack][spine]: ip a configurar na leaf do rack 'rack' relativo ao spine 'spine'
     CIDREBGP = {}
     CIDRBE = {}
     IPSPINEipv4 = {}
@@ -644,12 +657,12 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
 
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBE[0] = IPNetwork('10.128.0.0/12')
-    CIDREBGP[0] = IPNetwork('10.10.0.0/22')
+    CIDREBGP[0] = IPNetwork('10.126.0.0/22')
 
-    SPINE1ipv4 = IPNetwork('10.0.0.0/24')
-    SPINE2ipv4 = IPNetwork('10.0.1.0/24')
-    SPINE3ipv4 = IPNetwork('10.0.2.0/24')
-    SPINE4ipv4 = IPNetwork('10.0.3.0/24')
+    SPINE1ipv4 = IPNetwork('10.126.0.0/24')
+    SPINE2ipv4 = IPNetwork('10.126.1.0/24')
+    SPINE3ipv4 = IPNetwork('10.126.2.0/24')
+    SPINE4ipv4 = IPNetwork('10.126.3.0/24')
     subSPINE1ipv4=list(SPINE1ipv4.subnet(31))
     subSPINE2ipv4=list(SPINE2ipv4.subnet(31))
     subSPINE3ipv4=list(SPINE3ipv4.subnet(31))
@@ -665,7 +678,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     subSPINE4ipv6=list(SPINE4ipv6.subnet(127))
 
 
-    IBGPToRLxLipv4 = IPNetwork('10.0.4.0/24')
+    IBGPToRLxLipv4 = IPNetwork('10.126.4.0/24')
     subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
 
     IBGPToRLxLipv6 = IPNetwork('fdbe:0:0:1eaf:8100::/120')
@@ -676,11 +689,11 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     IPSPINEipv4[rack].append(subSPINE2ipv4[rack][0])
     IPSPINEipv4[rack].append(subSPINE3ipv4[rack][0])
     IPSPINEipv4[rack].append(subSPINE4ipv4[rack][0])
-    #  
+    #
     IPLEAFipv4[rack].append(subSPINE1ipv4[rack][1])
     IPLEAFipv4[rack].append(subSPINE2ipv4[rack][1])
     IPLEAFipv4[rack].append(subSPINE3ipv4[rack][1])
-    IPLEAFipv4[rack].append(subSPINE4ipv4[rack][1])   
+    IPLEAFipv4[rack].append(subSPINE4ipv4[rack][1])
     #
     IPSIBGPipv4[rack].append(subIBGPToRLxLipv4[rack][0])
     IPSIBGPipv4[rack].append(subIBGPToRLxLipv4[rack][1])
@@ -689,11 +702,11 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     IPSPINEipv6[rack].append(subSPINE2ipv6[rack][0])
     IPSPINEipv6[rack].append(subSPINE3ipv6[rack][0])
     IPSPINEipv6[rack].append(subSPINE4ipv6[rack][0])
-    #  
+    #
     IPLEAFipv6[rack].append(subSPINE1ipv6[rack][1])
     IPLEAFipv6[rack].append(subSPINE2ipv6[rack][1])
     IPLEAFipv6[rack].append(subSPINE3ipv6[rack][1])
-    IPLEAFipv6[rack].append(subSPINE4ipv6[rack][1])   
+    IPLEAFipv6[rack].append(subSPINE4ipv6[rack][1])
     #
     IPSIBGPipv6[rack].append(subIBGPToRLxLipv6[rack][0])
     IPSIBGPipv6[rack].append(subIBGPToRLxLipv6[rack][1])
@@ -772,7 +785,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2={}
     variablestochangecore1={}
     variablestochangecore2={}
-   
+
     variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])
     variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])
     variablestochangespine1["VLANBELEAF"]=str(VLANBELEAF[rack][0])
@@ -785,7 +798,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine1["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][0])
     variablestochangespine1["INTERFACE"]=INTERFACE_SP1
     variablestochangespine1["LEAFNAME"]=HOSTNAME_LF1
-    variablestochangespine1["INT_LF_UPLINK"]=int_lf1_sp1 
+    variablestochangespine1["INT_LF_UPLINK"]=int_lf1_sp1
     #
     #
     variablestochangespine2["IPSPINEIPV4"]=str(IPSPINEipv4[rack][1])
@@ -799,8 +812,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine2["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][1])
     variablestochangespine2["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][1])
     variablestochangespine2["INTERFACE"]=INTERFACE_SP2
-    variablestochangespine2["LEAFNAME"]=HOSTNAME_LF1  
-    variablestochangespine2["INT_LF_UPLINK"]=int_lf1_sp2 
+    variablestochangespine2["LEAFNAME"]=HOSTNAME_LF1
+    variablestochangespine2["INT_LF_UPLINK"]=int_lf1_sp2
     #
     #
     variablestochangespine3["IPSPINEIPV4"]=str(IPSPINEipv4[rack][2])
@@ -815,7 +828,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine3["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][2])
     variablestochangespine3["INTERFACE"]=INTERFACE_SP3
     variablestochangespine3["LEAFNAME"]=HOSTNAME_LF2
-    variablestochangespine3["INT_LF_UPLINK"]=int_lf2_sp3  
+    variablestochangespine3["INT_LF_UPLINK"]=int_lf2_sp3
     #
     #
     variablestochangespine4["IPSPINEIPV4"]=str(IPSPINEipv4[rack][3])
@@ -829,7 +842,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine4["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][3])
     variablestochangespine4["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][3])
     variablestochangespine4["INTERFACE"]=INTERFACE_SP4
-    variablestochangespine4["LEAFNAME"]=HOSTNAME_LF2 
+    variablestochangespine4["LEAFNAME"]=HOSTNAME_LF2
     variablestochangespine4["INT_LF_UPLINK"]=int_lf2_sp4
     #
     #
