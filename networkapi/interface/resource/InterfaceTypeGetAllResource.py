@@ -23,6 +23,7 @@ from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.interface.models import TipoInterface
 from django.forms.models import model_to_dict
+from networkapi.exception import InvalidValueError
 
 
 
@@ -31,11 +32,9 @@ class InterfaceTypeGetAllResource(RestResource):
     log = Log('InterfaceTypeGetAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-
-        """Treat requests POST to list all .
+        """Treat requests GET to list all .
         URL: interface/get-type/
         """
-
         try:
 
             # User permission
@@ -58,6 +57,10 @@ class InterfaceTypeGetAllResource(RestResource):
 
         except GrupoError:
            return self.response_error(1)
+
+        except InvalidValueError, e:
+            return self.response_error(369, e.param, e.value)
+
 
 
     def get_envs(self, tipos_interface):

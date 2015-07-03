@@ -1127,8 +1127,8 @@ urlpatterns += patterns('',
                            name='config.rack'),
                        url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
                            name='aplicar.rack'),
-                       url(r'^interface/get-type[/]?$', interface_type_get_all_resource.handle_request,
-                           name='interface.gettype'),
+                       url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
+                           name='interfacetype.get'),
                        )
 
 
