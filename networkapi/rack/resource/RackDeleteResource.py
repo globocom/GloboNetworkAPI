@@ -19,9 +19,8 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError, EnvironmentRack
+from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError, EnvironmentRack, RackAplError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.infrastructure.script_utils import exec_script
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
@@ -30,6 +29,7 @@ from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi import settings
 import shutil
 import glob
+import commands
 
 
 
@@ -39,24 +39,18 @@ def desativar_vlan_rede(user, rack):
     vlans = Vlan.objects.all().filter(nome__contains=nome)
 
     for vlan in vlans:
-
         if nome in vlan.nome:
             network_errors = []
-         
-            for net4 in vlan.networkipv4_set.all(): 
+
+            for net4 in vlan.networkipv4_set.all():
                 for ip in net4.ip_set.all():
                     ip.delete(user)
 
-                if net4.active: 
-                    try: 
-                        command = settings.NETWORKIPV4_REMOVE % int(net4.id) 
-                        code, stdout, stderr = exec_script(command) 
-                        if code == 0: 
-                            net4.deactivate(user, True)
-                        else: 
-                            network_errors.append(str(net4.id)) 
-                    except Exception, e: 
-                        network_errors.append(str(net4.id)) 
+                if net4.active:
+                    try:
+                        net4.deactivate(user, True)
+                    except Exception, e:
+                        network_errors.append(str(net4.id))
                         pass
 
             for net6 in vlan.networkipv6_set.all():
@@ -65,12 +59,7 @@ def desativar_vlan_rede(user, rack):
 
                 if net6.active:
                     try:
-                        command = settings.NETWORKIPV6_REMOVE % int(net6.id)
-                        code, stdout, stderr = exec_script(command)
-                        if code == 0:
-                            net6.deactivate(user, True)
-                        else:
-                            network_errors.append(str(net6.id))
+                        net6.deactivate(user, True)
                     except Exception, e:
                         network_errors.append(str(net6.id))
                         pass
@@ -79,10 +68,7 @@ def desativar_vlan_rede(user, rack):
                 raise VlanNetworkError(None, message=', '.join(network_errors))
 
             if vlan.ativada:
-                command = settings.VLAN_REMOVE % vlan.id
-                code, stdout, stderr = exec_script(command)
-                if code == 0:
-                    vlan.remove(user)
+                vlan.remove(user)
 
 def remover_ambiente_rack(user, rack):
 
@@ -127,7 +113,6 @@ def remover_vlan_so(user, rack):
     vlan = Vlan()
     vlan = vlan.get_by_name(nome)
     vlan.delete(user)
-
 
 class RackDeleteResource(RestResource):
 
@@ -207,7 +192,7 @@ class RackDeleteResource(RestResource):
             return self.not_authorized()
 
         except RackNumberNotFoundError:
-            return self.response_error(379, id_rack)
+            return self.response_error(379, rack_id)
 
         except RackError:
             return self.response_error(1)
@@ -218,3 +203,5 @@ class RackDeleteResource(RestResource):
         except VlanInactiveError, e:
             return self.response_error(368)
 
+        except RackAplError, e:
+            return self.response_error(383, e.param, e.value)
