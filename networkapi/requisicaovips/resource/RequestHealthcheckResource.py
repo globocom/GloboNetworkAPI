@@ -212,8 +212,10 @@ class RequestHealthcheckResource(RestResource):
                 server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
                 if healthcheck == None:
                     healthcheck = ''
-                if healthcheck_expect == None:
+                if id_healthcheck_expect == None:
                     healthcheck_expect = ''
+                else:
+                    healthcheck_expect = healthcheck_expect.expect_string
                 healthcheck_identifier = ''
                 healthcheck_destination = '*:*'
                 hc = get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
