@@ -210,12 +210,18 @@ class RequestHealthcheckResource(RestResource):
                 #Put old call to work with new pool features
                 #This call is deprecated
                 server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+                if healthcheck == None:
+                    healthcheck = ''
+                if healthcheck_expect == None:
+                    healthcheck_expect = ''
                 healthcheck_identifier = ''
                 healthcheck_destination = '*:*'
                 hc = get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
                 #Applies new healthcheck in pool
                 #Todo - new method
+                old_healthchecks = []
                 for sp in server_pools:
+                    old_healthchecks.append(sp.healthcheck)
                     sp.healthcheck = hc
                     sp.save(user, commit=True)
 
@@ -233,6 +239,10 @@ class RequestHealthcheckResource(RestResource):
                     map['sucesso'] = success_map
                     return self.response(dumps_networkapi(map))
                 else:
+                    old_healthchecks.reverse()
+                    for sp in server_pools:
+                        sp.healthcheck = old_healthchecks.pop()
+                        sp.save(user, commit=True)
                     vip_old.save(user, commit=True)
                     return self.response_error(2, stdout + stderr)
 
