@@ -32,9 +32,10 @@ def buscar_roteiro(id_sw, tipo):
     roteiros = EquipamentoRoteiro.search(None, id_sw)
     for rot in roteiros:
         if (rot.roteiro.tipo_roteiro.tipo==tipo): 
-            roteiro_eq = rot.roteiro.roteiro 
-
-    roteiro_eq=roteiro_eq.lower()+".txt"
+            roteiro_eq = rot.roteiro.roteiro
+    roteiro_eq = roteiro_eq.lower()
+    if not '.txt' in roteiro_eq:
+        roteiro_eq=roteiro_eq+".txt"
         
     return roteiro_eq 
 
