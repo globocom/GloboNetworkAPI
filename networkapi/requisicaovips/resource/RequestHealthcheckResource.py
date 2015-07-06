@@ -212,7 +212,7 @@ class RequestHealthcheckResource(RestResource):
                 server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
                 healthcheck_identifier = ''
                 healthcheck_destination = '*:*'
-                hc = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
+                hc = get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
                 #Applies new healthcheck in pool
                 #Todo - new method
                 for sp in server_pools:
