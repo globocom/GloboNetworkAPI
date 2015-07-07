@@ -22,7 +22,8 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import Ipv6, IpError, NetworkIPv4Error,\
-    IpNotFoundError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip
+    IpNotFoundError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
+    IpCantRemoveFromServerPool
 from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
@@ -72,8 +73,10 @@ class IPv6DeleteResource(RestResource):
 
         except IpCantBeRemovedFromVip, e:
             return self.response_error(319, "ip", 'ipv6', id_ip)
+        except IpCantRemoveFromServerPool, e:
+            return self.response_error(385, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('server_pool_ids'))
         except IpEquipCantDissociateFromVip, e:
-            return self.response_error(352, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('vip_ids'))
+            return self.response_error(352, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('vip_id'))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except IpEquipmentNotFoundError, e:

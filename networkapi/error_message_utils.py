@@ -279,7 +279,7 @@ error_messages = {
     349: u"O filtro %s não pode ser desassociado do ambiente pois está em uso.",
     350: u'Permissão %s não cadastrada.',
     351: u'Permissão Administrativa com função %s já cadastrada.',
-    352: u"Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nas requisições vips %s e o equipamento é o único balanceador associado a este ip.",
+    352: u"Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado na requisição vip %s e o equipamento é o único balanceador associado a este ip.",
     353: u'Valores duplicados para Porta Real, Porta Vip e IP do Real na mesma Requisição VIP.',
     354: u'Não foi possível excluir o ip de id %s pois ele está sendo usado em uma requisição VIP.',
     355: u'Não foi possível excluir a rede de id %s pois há um ip nela sendo usado em uma requisição VIP.',
@@ -310,6 +310,7 @@ error_messages = {
     382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
     383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
     384: u'Erro ao editar ServerPool: %s',
+    385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools %s.',
 }
 
 
