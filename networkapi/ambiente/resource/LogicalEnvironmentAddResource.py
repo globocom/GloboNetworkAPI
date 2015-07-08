@@ -62,11 +62,6 @@ class LogicalEnvironmentAddResource(RestResource):
             # Get XML data
             name = logical_environment_map.get('name')
 
-            # Valid name
-            if not is_valid_string_minsize(name, 2) or not is_valid_string_maxsize(name, 80) or not is_valid_regex(name, '^[-0-9a-zA-Z]+$'):
-                self.log.error(u'Parameter name is invalid. Value: %s', name)
-                raise InvalidValueError(None, 'name', name)
-
             try:
                 AmbienteLogico.get_by_name(name)
                 raise AmbienteLogicoNameDuplicatedError(
