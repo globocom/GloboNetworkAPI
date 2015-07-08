@@ -310,7 +310,7 @@ error_messages = {
     382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
     383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
     384: u'Erro ao editar ServerPool: %s',
-    385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools %s.',
+    385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools (id:identifier) %s.',
 }
 
 

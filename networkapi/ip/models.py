@@ -1276,16 +1276,17 @@ class IpEquipamento(BaseModel):
 
         if self.ip.serverpoolmember_set.count() > 0:
 
-            server_pool_ids = set()
+            server_pool_identifiers = set()
 
             for svm in self.ip.serverpoolmember_set.all():
-                server_pool_ids.add(svm.server_pool.id)
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
 
-            server_pool_ids = list(server_pool_ids)
-            server_pool_ids = ', '.join(str(server_pool_id) for server_pool_id in server_pool_ids)
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
 
-            raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_ids': server_pool_ids},
-                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools %s" % (self.equipamento.nome, server_pool_ids))
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(IpEquipamento, self).delete(authenticated_user)
 
@@ -2415,16 +2416,17 @@ class Ipv6Equipament(BaseModel):
 
         if self.ip.serverpoolmember_set.count() > 0:
 
-            server_pool_ids = set()
+            server_pool_identifiers = set()
 
             for svm in self.ip.serverpoolmember_set.all():
-                server_pool_ids.add(svm.server_pool.id)
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
 
-            server_pool_ids = list(server_pool_ids)
-            server_pool_ids = ', '.join(str(server_pool_id) for server_pool_id in server_pool_ids)
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
 
-            raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_ids': server_pool_ids},
-                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools %s" % (self.equipamento.nome, server_pool_ids))
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(Ipv6Equipament, self).delete(authenticated_user)
 
