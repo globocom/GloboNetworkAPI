@@ -32,9 +32,10 @@ def buscar_roteiro(id_sw, tipo):
     roteiros = EquipamentoRoteiro.search(None, id_sw)
     for rot in roteiros:
         if (rot.roteiro.tipo_roteiro.tipo==tipo): 
-            roteiro_eq = rot.roteiro.roteiro 
-
-    roteiro_eq=roteiro_eq.lower()+".txt"
+            roteiro_eq = rot.roteiro.roteiro
+    roteiro_eq = roteiro_eq.lower()
+    if not '.txt' in roteiro_eq:
+        roteiro_eq=roteiro_eq+".txt"
         
     return roteiro_eq 
 
@@ -83,6 +84,7 @@ def gera_config(rack):
 
     ip_mgmtlf1=None
     ip_mgmtlf2=None
+    ip_mgmtoob=None
 
     int_oob_mgmtlf1=None
     int_oob_mgmtlf2=None
@@ -254,9 +256,15 @@ def gera_config(rack):
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do leaf 02.")
 
+    #Ip OOB
+    try:
+        ip_mgmtoob = buscar_ip(id_oob)
+    except:
+        raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do oob.")
+
     var1 = autoprovision_splf(num_rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
 
-    var2 = autoprovision_coreoob(num_rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
+    var2 = autoprovision_coreoob(num_rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
 
     if var1 and var2:
         return True
