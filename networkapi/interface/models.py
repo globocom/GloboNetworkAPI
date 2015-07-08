@@ -114,6 +114,16 @@ class TipoInterface(BaseModel):
         db_table = u'tipo_interface'
         managed = True
 
+    @classmethod
+    def get_by_pk(cls, id):
+        try:
+            return TipoInterface.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a TipoInterface with id = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o tipo de interface.')
+            raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
 
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')

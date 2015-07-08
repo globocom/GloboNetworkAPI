@@ -17,24 +17,16 @@
 
 from __future__ import with_statement
 from networkapi.rest import RestResource
-
 from networkapi.auth import has_perm
-
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
 from networkapi.admin_permission import AdminPermission
-
 from networkapi.log import Log
-
 from networkapi.grupo.models import GrupoError
-
-from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
-
+from networkapi.interface.models import TipoInterface, Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
 from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError
 from django.forms.models import model_to_dict
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
-
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_boolean_param, convert_string_or_int_to_boolean
 
 
@@ -134,12 +126,8 @@ class InterfaceResource(RestResource):
             Equipamento.get_by_pk(id_equipamento)
 
             # Verify permission
-            if not has_perm(user,
-                            AdminPermission.EQUIPMENT_MANAGEMENT,
-                            AdminPermission.WRITE_OPERATION,
-                            None,
-                            id_equipamento,
-                            AdminPermission.EQUIP_WRITE_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,
+                            id_equipamento, AdminPermission.EQUIP_WRITE_OPERATION):
                 return self.not_authorized()
 
             # Valid name value
@@ -193,6 +181,9 @@ class InterfaceResource(RestResource):
             else:
                 ligacao_back = None
 
+            tipo_interface = interface_map.get('id_int_type')
+            tipo_interface = TipoInterface.get_by_pk(tipo_interface)
+
             # Cria a interface conforme dados recebidos no XML
             interface = Interface(
                 interface=nome,
@@ -200,7 +191,8 @@ class InterfaceResource(RestResource):
                 descricao=descricao,
                 ligacao_front=ligacao_front,
                 ligacao_back=ligacao_back,
-                equipamento=Equipamento(id=id_equipamento)
+                equipamento=Equipamento(id=id_equipamento),
+                tipo=tipo_interface
             )
 
             interface.create(user)
