@@ -226,6 +226,13 @@ class IpEquipCantDissociateFromVip(IpError):
         IpError.__init__(self, cause, message)
 
 
+class IpCantRemoveFromServerPool(IpError):
+    """Returns exception when trying to dissociate ip and equipment, but equipment is the last balancer for Vip Request"""
+
+    def __init__(self, cause, message=None):
+        IpError.__init__(self, cause, message)
+
+
 class NetworkIPv4(BaseModel):
 
     id = models.AutoField(primary_key=True)
@@ -1113,7 +1120,7 @@ class Ip(BaseModel):
                 #
                 #     ambienteequip.delete(authenticated_user)
 
-                ie.delete(authenticated_user)
+                    ie.delete(authenticated_user)
             super(Ip, self).delete(authenticated_user)
 
         except EquipamentoAmbienteNotFoundError, e:
@@ -1268,8 +1275,18 @@ class IpEquipamento(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome},
-                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP." % (self.equipamento.nome))
+
+            server_pool_identifiers = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
+
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
+
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(IpEquipamento, self).delete(authenticated_user)
 
@@ -2226,8 +2243,6 @@ class Ipv6(BaseModel):
             raise IpCantBeRemovedFromVip(e.cause, e.message)
         except IpEquipmentNotFoundError, e:
             raise IpEquipmentNotFoundError(None, e.message)
-        except Exception, e:
-            raise Exception(None, e.message)
 
 
 class Ipv6Equipament(BaseModel):
@@ -2400,8 +2415,18 @@ class Ipv6Equipament(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome},
-                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP" % (self.equipamento.nome))
+
+            server_pool_identifiers = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
+
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
+
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(Ipv6Equipament, self).delete(authenticated_user)
 
