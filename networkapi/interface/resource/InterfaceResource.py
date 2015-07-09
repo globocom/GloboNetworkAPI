@@ -67,12 +67,8 @@ class InterfaceResource(RestResource):
                 raise InvalidValueError(None, 'interface_name', interface_name)
 
             # Check permission
-            if not has_perm(user,
-                            AdminPermission.EQUIPMENT_MANAGEMENT,
-                            AdminPermission.READ_OPERATION,
-                            None,
-                            equipment_id,
-                            AdminPermission.EQUIP_READ_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION, None,
+                            equipment_id, AdminPermission.EQUIP_READ_OPERATION):
                 return self.not_authorized()
 
             # Check interface and call search method
@@ -451,6 +447,7 @@ class InterfaceResource(RestResource):
         int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
         int_map['equipamento_nome'] = interface.equipamento.nome
         int_map['marca'] = interface.equipamento.modelo.marca_id
+        int_map['tipo'] = interface.tipo.id
         if interface.ligacao_front is not None:
             int_map['nome_ligacao_front'] = interface.ligacao_front.interface
             int_map[
