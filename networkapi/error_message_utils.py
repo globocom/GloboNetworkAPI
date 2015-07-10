@@ -311,6 +311,10 @@ error_messages = {
     383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
     384: u'Erro ao editar ServerPool: %s',
     385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools (id:identifier) %s.',
+    386: u'Não foi possível excluir a rede de id %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s.',
+    387: u'Não foi possível excluir a vlan de id %s pois ela possui a rede de id %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s.',
+    389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s.',
+    390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
 }
 
 
