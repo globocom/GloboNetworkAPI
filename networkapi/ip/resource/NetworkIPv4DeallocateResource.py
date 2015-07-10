@@ -88,9 +88,10 @@ class NetworkIPv4DeallocateResource(RestResource):
                     server_pool_identifiers = ', '.join(server_pool_name_list)
 
                     ip_formated = mount_ipv4_string(ipv4)
+                    network_ipv4_ip = mount_ipv4_string(network_ipv4)
 
-                    raise IpCantRemoveFromServerPool({'ip': ip_formated, 'network_id': network_ipv4_id, 'server_pool_identifiers': server_pool_identifiers},
-                                               "Não foi possível excluir a rede de id %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s" % (network_ipv4_id, ip_formated, server_pool_identifiers))
+                    raise IpCantRemoveFromServerPool({'ip': ip_formated, 'network_ip': network_ipv4_ip, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s" % (network_ipv4_ip, ip_formated, server_pool_identifiers))
 
             with distributedlock(LOCK_NETWORK_IPV4 % network_ipv4_id):
 
@@ -106,7 +107,7 @@ class NetworkIPv4DeallocateResource(RestResource):
                 return self.response(dumps_networkapi({}))
 
         except IpCantRemoveFromServerPool, e:
-            return self.response_error(386, e.cause.get('network_id'), e.cause.get('ip'), e.cause.get('server_pool_identifiers'))
+            return self.response_error(386, e.cause.get('network_ip'), e.cause.get('ip'), e.cause.get('server_pool_identifiers'))
         except EquipamentoAmbienteNotFoundError, e:
             return self.response_error(320)
         except IpCantBeRemovedFromVip, e:

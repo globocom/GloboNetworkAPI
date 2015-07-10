@@ -89,10 +89,12 @@ class VlanDeallocateResource(RestResource):
                         server_pool_identifiers = ', '.join(server_pool_name_list)
 
                         ip_formated = mount_ipv4_string(ipv4)
+                        vlan_name = vlan.nome
+                        network_ip = mount_ipv4_string(netv4)
 
-                        raise IpCantRemoveFromServerPool({'ip': ip_formated, 'vlan_id': id_vlan, 'network_id': netv4.id, 'server_pool_identifiers': server_pool_identifiers},
-                            "Não foi possível excluir a vlan de id %s pois ela possui a rede de id %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s" %
-                            (id_vlan, netv4.id, ip_formated, server_pool_identifiers))
+                        raise IpCantRemoveFromServerPool({'ip': ip_formated, 'vlan_name': vlan_name, 'network_ip': network_ip, 'server_pool_identifiers': server_pool_identifiers},
+                            "Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s" %
+                            (vlan_name, network_ip, ip_formated, server_pool_identifiers))
 
 
                     for ip_equip in ipv4.ipequipamento_set.all():
@@ -116,10 +118,12 @@ class VlanDeallocateResource(RestResource):
                         server_pool_identifiers = ', '.join(server_pool_name_list)
 
                         ip_formated = mount_ipv6_string(ip)
+                        vlan_name = vlan.nome
+                        network_ip = mount_ipv6_string(netv6)
 
-                        raise IpCantRemoveFromServerPool({'ip': ip_formated, 'vlan_id': id_vlan, 'network_id': netv6.id, 'server_pool_identifiers': server_pool_identifiers},
-                            "Não foi possível excluir a vlan de id %s pois ela possui a rede de id %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s" %
-                            (id_vlan, netv6.id, ip_formated, server_pool_identifiers))
+                        raise IpCantRemoveFromServerPool({'ip': ip_formated, 'vlan_name': vlan_name, 'network_ip': network_ip, 'server_pool_identifiers': server_pool_identifiers},
+                            "Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s" %
+                            (vlan_name, network_ip, ip_formated, server_pool_identifiers))
 
                     for ip_equip in ip.ipv6equipament_set.all():
                         equip_id_list.append(ip_equip.equipamento_id)
@@ -134,7 +138,7 @@ class VlanDeallocateResource(RestResource):
                 return self.response(dumps_networkapi({}))
 
         except IpCantRemoveFromServerPool, e:
-            return self.response_error(387, e.cause.get('vlan_id'), e.cause.get('network_id'), e.cause.get('ip'), e.cause.get('server_pool_identifiers'))
+            return self.response_error(387, e.cause.get('vlan_name'), e.cause.get('network_ip'), e.cause.get('ip'), e.cause.get('server_pool_identifiers'))
         except EquipamentoAmbienteNotFoundError, e:
             return self.response_error(320)
         except InvalidValueError, e:
