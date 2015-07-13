@@ -70,19 +70,14 @@ class RequisicaoVipDeleteResource(RestResource):
 
             with distributedlock(LOCK_VIP % vip_id):
                 try:
-
+                    vip.delete_vips_and_reals(user)
+                    vip.delete(user)
                     if ipv4 and not keep_ip:
                         if not self.is_ipv4_in_use(ipv4, vip_id):
-                            vip.delete_vips_and_reals(user)
-                            vip.delete(user)
                             ipv4.delete(user)
-
                     if ipv6 and not keep_ip:
                         if not self.is_ipv6_in_use(ipv6, vip_id):
-                            vip.delete_vips_and_reals(user)
-                            vip.delete(user)
                             ipv6.delete(user)
-
                 except IpCantRemoveFromServerPool, e:
                     raise e
                 except IpCantBeRemovedFromVip, e:
@@ -112,78 +107,24 @@ class RequisicaoVipDeleteResource(RestResource):
 
     def is_ipv4_in_use(self, ipv4, vip_id):
 
-        server_pool_member_list = ServerPoolMember.objects.filter(ip=ipv4).exclude(server_pool__vipporttopool__requisicao_vip__id=vip_id)
+        is_in_use = True
+        pool_member_count = ServerPoolMember.objects.filter(ip=ipv4).exclude(
+            server_pool__vipporttopool__requisicao_vip__id=vip_id).count()
+        vip_count = RequisicaoVips.get_by_ipv4_id(
+            ipv4.id).exclude(pk=vip_id).count()
+        if vip_count == 0 and pool_member_count == 0:
+            is_in_use = False
 
-        if server_pool_member_list.count() > 0:
-
-            server_pool_name_list = set()
-
-            for member in server_pool_member_list:
-                item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
-                server_pool_name_list.add(item)
-
-            server_pool_name_list = list(server_pool_name_list)
-            server_pool_identifiers = ', '.join(server_pool_name_list)
-
-            ip_formated = mount_ipv4_string(ipv4)
-
-            raise IpCantRemoveFromServerPool({'vip_id': vip_id, 'ip': ip_formated, 'server_pool_identifiers': server_pool_identifiers},
-                "Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s." % (vip_id, ip_formated, server_pool_identifiers))
-
-        vip_list = RequisicaoVips.get_by_ipv4_id(ipv4.id).exclude(pk=vip_id)
-
-        if vip_list.count() > 0:
-
-            vip_id_list = set()
-
-            for vip in vip_list:
-                vip_id_list.add(str(vip.id))
-
-            vip_id_list = list(vip_id_list)
-            vip_id_identifiers = ', '.join(vip_id_list)
-
-            ip_formated = mount_ipv4_string(ipv4)
-
-            raise IpCantBeRemovedFromVip({'vip_id': vip_id, 'vip_id_identifiers': vip_id_identifiers, 'ip': ip_formated},
-                "Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s." % (vip_id, vip_id_identifiers, ip_formated))
-
-        return False
+        return is_in_use
 
     def is_ipv6_in_use(self, ipv6, vip_id):
 
-        server_pool_member_list = ServerPoolMember.objects.filter(ipv6=ipv6).exclude(server_pool__vipporttopool__requisicao_vip__ipv6=vip_id)
+        is_in_use = True
+        pool_member_count = ServerPoolMember.objects.filter(ipv6=ipv6).exclude(
+            server_pool__vipporttopool__requisicao_vip__ipv6=vip_id).count()
+        vip_count = RequisicaoVips.get_by_ipv6_id(
+            ipv6.id).exclude(pk=vip_id).count()
+        if vip_count == 0 and pool_member_count == 0:
+            is_in_use = False
 
-        if server_pool_member_list.count() > 0:
-
-            server_pool_name_list = set()
-
-            for member in server_pool_member_list:
-                item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
-                server_pool_name_list.add(item)
-
-            server_pool_name_list = list(server_pool_name_list)
-            server_pool_identifiers = ', '.join(server_pool_name_list)
-
-            ip_formated = mount_ipv6_string(ipv6)
-
-            raise IpCantRemoveFromServerPool({'vip_id': vip_id, 'ip': ip_formated, 'server_pool_identifiers': server_pool_identifiers},
-                "Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s." % (vip_id, ip_formated, server_pool_identifiers))
-
-        vip_list = RequisicaoVips.get_by_ipv6_id(ipv6.id).exclude(pk=vip_id)
-
-        if vip_list.count() > 0:
-
-            vip_id_list = set()
-
-            for vip in vip_list:
-                vip_id_list.add(str(vip.id))
-
-            vip_id_list = list(vip_id_list)
-            vip_id_identifiers = ', '.join(vip_id_list)
-
-            ip_formated = mount_ipv6_string(ipv6)
-
-            raise IpCantBeRemovedFromVip({'vip_id': vip_id, 'vip_id_identifiers': vip_id_identifiers, 'ip': ip_formated},
-                "Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s." % (vip_id, vip_id_identifiers, ip_formated))
-
-        return False
+        return is_in_use
