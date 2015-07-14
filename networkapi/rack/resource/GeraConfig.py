@@ -47,7 +47,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
     subSO_OOB_NETipv4={}
 
     #rede para conectar cores aos racks
-    SO_OOB_NETipv4= IPNetwork('10.143.64.0/18')
+    SO_OOB_NETipv4= IPNetwork('10.143.0.0/18')
 
     #Vlan para cadastrar
     variablestochangecore["VLAN_SO"]= str(BASE_SO+rack)
