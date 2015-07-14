@@ -63,14 +63,15 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
 
     return hc
 
-def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member):
+def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member, servicedownaction):
     # Save Server pool
     old_healthcheck = None
 
     if id:
         sp = ServerPool.objects.get(id=id)
 
-        # storage old healthcheck and lb method
+        # storage old healthcheck , lb method and service-down-action
+        old_servicedownaction = sp.servicedownaction
         old_identifier = sp.identifier
         old_healthcheck = Healthcheck.objects.get(id=sp.healthcheck.id)
         old_lb_method =  sp.lb_method
@@ -156,10 +157,23 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
                 transaction.commit()
                 raise exceptions.ScriptCreatePoolException()
 
+        #Applies new service-down-action in pool
+        #Todo - new method
+        sp.servicedownaction = servicedownaction
+        sp.save(user)
+        if(old_servicedownaction != sp.servicedownaction and sp.pool_created):
+            transaction.commit()
+            command = settings.POOL_SERVICEDOWNACTION % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                sp.servicedownaction = old_servicedownaction
+                sp.save(user)
+                transaction.commit()
+                raise exceptions.ScriptAlterServiceDownActionException()
 
     else:
         sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
-                        environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn)
+                        environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn, servicedownaction=servicedownaction)
         sp.save(user)
 
     return sp, (old_healthcheck.id if old_healthcheck else None)

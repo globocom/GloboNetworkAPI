@@ -17,8 +17,7 @@
 
 import json
 from datetime import datetime
-
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.conf import settings
@@ -48,6 +47,7 @@ from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
 from networkapi.api_pools.models import OpcaoPoolAmbiente
+from networkapi.api_pools.models import OptionPool
 
 
 log = Log(__name__)
@@ -830,6 +830,7 @@ def save(request):
         environment = long(request.DATA.get('environment'))
         balancing = request.DATA.get('balancing')
         maxconn = request.DATA.get('maxcom')
+        servicedownaction_id = request.DATA.get('service-down-action')
 
         id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
@@ -843,6 +844,22 @@ def save(request):
         healthcheck_type = request.DATA.get('healthcheck_type')
         healthcheck_request = request.DATA.get('healthcheck_request')
         healthcheck_expect = request.DATA.get('healthcheck_expect')
+
+        #Servicedownaction was not given
+        try:
+            if servicedownaction_id is None:
+                servicedownactions = OptionPool.get_all_by_type_and_environment('service-down-action', environment )
+                #assert isinstance((servicedownactions.filter(name='none')).id, object)
+                servicedownaction_id= (servicedownactions.get(name='none')).id
+
+        except ObjectDoesNotExist:
+              log.warning("Service-Down-Action none option not found")
+              raise exceptions.InvalidServiceDownActionException()
+
+        except MultipleObjectsReturned, e:
+            log.warning("Multiple service-down-action entries found for the given parameters")
+            raise exceptions.InvalidServiceDownActionException()
+
 
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
@@ -867,7 +884,7 @@ def save(request):
 
         # Save Server pool
         sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
-                                                  maxconn, id_pool_member_noempty)
+                                                  maxconn, id_pool_member_noempty, servicedownaction_id)
 
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
