@@ -19,14 +19,15 @@
 
 from django.db import models
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from networkapi.log import Log
 
 from networkapi.models.BaseModel import BaseModel
 from networkapi.filter.models import Filter, FilterNotFoundError
 from _mysql_exceptions import OperationalError
-from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError, \
+    EnvironmentEnvironmentVipNotFoundError, EnvironmentEnvironmentVipError, EnvironmentEnvironmentVipDuplicatedError
 from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is_valid_text
 from networkapi.filter.models import CannotDissociateFilterError
 from django.forms.models import model_to_dict
@@ -1107,3 +1108,53 @@ class ConfigEnvironment(BaseModel):
             self.log.error(u'Error saving ConfigEnvironment: %r' % str(e))
             raise ConfigEnvironmentDuplicateError(
                 e, u'Error saving duplicate Environment Configuration.')
+
+
+class EnvironmentEnvironmentVip(BaseModel):
+
+    environment = models.ForeignKey(Ambiente)
+    environment_vip = models.ForeignKey(EnvironmentVip)
+
+    log = Log('EnvironmentEnvironmentVip')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'environment_environment_vip'
+        managed = True
+        unique_together = ('environment', 'environment_vip')
+
+    @classmethod
+    def get_by_environment_environment_vip(self, environment_id, environment_vip_id):
+        """Search all EnvironmentEnvironmentVip by Environment ID and EnvironmentVip ID
+
+        @return: all EnvironmentEnvironmentVip
+
+        @raise EnvironmentEnvironmentVipError: Error finding EnvironmentEnvironmentVipError by Environment ID and EnvironmentVip ID.
+        @raise EnvironmentEnvironmentVipNotFoundError: ConfigEnvironment not found in database.
+        @raise OperationalError: Error when made find.
+
+        """
+        try:
+            return EnvironmentEnvironmentVip.objects.filter(environment__id=environment_id, environment_vip__id=environment_vip_id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise EnvironmentEnvironmentVipNotFoundError(
+                e, u'Can not find a EnvironmentEnvironmentVipNotFoundError with Environment ID = {} and EnvironmentVIP ID = {}'.format(environment_id, environment_vip_id))
+        except OperationalError, e:
+            self.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            self.log.error(u'Error finding ConfigEnvironment.')
+            raise EnvironmentEnvironmentVipError(
+                e, u'Error finding EnvironmentEnvironmentVipError.')
+
+    def validate(self):
+        """Validates whether Environment is already associated with EnvironmentVip
+
+            @raise EnvironmentEnvironmentVipDuplicatedError: if Environment is already associated with EnvironmentVip
+        """
+        try:
+            EnvironmentEnvironmentVip.objects.get(environment=self.environment, environment_vip=self.environment_vip)
+        except ObjectDoesNotExist:
+            pass
+        except MultipleObjectsReturned:
+            raise EnvironmentEnvironmentVipDuplicatedError(None, u'Environment already registered for the environment vip.')

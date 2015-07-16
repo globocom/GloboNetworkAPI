@@ -1449,8 +1449,7 @@ class RequisicaoVips(BaseModel):
 
                 dict_div_4 = dict()
                 dict_div_4['divisao_dc'] = net.vlan.ambiente.divisao_dc_id
-                dict_div_4[
-                    'ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
+                dict_div_4['ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
 
                 if dict_div_4 not in lista_amb_div_4:
                     lista_amb_div_4.append(dict_div_4)

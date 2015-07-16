@@ -28,39 +28,48 @@ from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
 
 
-def get_envs(self, user, no_blocks=False):
+def get_environment_related_with_environment_vip(self, user, no_blocks=False):
+
     try:
 
         # Commons Validations
-
         # User permission
         if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
             return self.not_authorized()
 
-        # Business Rules
+        environment_list = []
 
-        # Get all environments in DB
-        environments = Ambiente.objects.all().order_by("divisao_dc__nome", "ambiente_logico__nome",
-                                                       "grupo_l3__nome").select_related("grupo_l3", "ambiente_logico", "divisao_dc", "filter")
+        env_list_net_v4_related = Ambiente.objects.filter(vlan__networkipv4__ambient_vip__id__isnull=False)\
+            .order_by('divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome')\
+            .select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')\
+            .distinct()
 
-        lists = []
+        env_list_net_v6_related = Ambiente.objects.filter(vlan__networkipv6__ambient_vip__id__isnull=False)\
+            .order_by('divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome')\
+            .select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')\
+            .distinct()
 
-        for env in environments:
-            if env.blockrules_set.count() == 0 or not no_blocks:
-                env_map = model_to_dict(env)
-                env_map["grupo_l3_name"] = env.grupo_l3.nome
-                env_map["ambiente_logico_name"] = env.ambiente_logico.nome
-                env_map["divisao_dc_name"] = env.divisao_dc.nome
-                if env.filter is not None:
-                    env_map["filter_name"] = env.filter.name
-                lists.append(env_map)
+        environment_list.extend(env_list_net_v4_related)
+        environment_list.extend(env_list_net_v6_related)
 
-        # Return XML
-        environment_list = dict()
-        environment_list["ambiente"] = lists
-        return self.response(dumps_networkapi(environment_list))
+        environment_list_dict = []
 
-    except GrupoError:
+        for environment in environment_list:
+            if environment.blockrules_set.count() == 0 or not no_blocks:
+                env_map = model_to_dict(environment)
+                env_map["grupo_l3_name"] = environment.grupo_l3.nome
+                env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
+                env_map["divisao_dc_name"] = environment.divisao_dc.nome
+                if environment.filter is not None:
+                        env_map["filter_name"] = environment.filter.name
+
+                environment_list_dict.append(env_map)
+
+        response = {'ambiente': environment_list_dict}
+
+        return self.response(dumps_networkapi(response))
+
+    except Exception as error:
         return self.response_error(1)
 
 
@@ -74,7 +83,7 @@ class EnvironmentListResource(RestResource):
         URL: /ambiente/list/
         """
 
-        return get_envs(self, user)
+        return get_environment_related_with_environment_vip(self, user)
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to list all Environments without blocks.
@@ -82,4 +91,4 @@ class EnvironmentListResource(RestResource):
         URL: /ambiente/list_no_blocks/
         """
 
-        return get_envs(self, user, True)
+        return get_environment_related_with_environment_vip(self, user, True)
