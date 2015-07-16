@@ -831,7 +831,7 @@ def save(request):
         balancing = request.DATA.get('balancing')
         maxconn = request.DATA.get('maxcom')
 
-        id_pool_member = request.DATA.get('id_pool_member')
+        id_pool_member = [""]
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
@@ -847,6 +847,8 @@ def save(request):
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
         if id:
+            #Existing pool member is only valid in existing pools. New pools cannot  use them
+            id_pool_member = request.DATA.get('id_pool_member')
             has_identifier = has_identifier.exclude(id=id)
             #current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
             #current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
