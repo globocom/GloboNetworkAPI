@@ -831,7 +831,8 @@ def save(request):
         balancing = request.DATA.get('balancing')
         maxconn = request.DATA.get('maxcom')
 
-        id_pool_member = [""]
+        #id_pool_member is cleaned below
+        id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
         ports_reals = request.DATA.get('ports_reals')
@@ -846,6 +847,8 @@ def save(request):
 
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
+        #Cleans id_pool_member. It should be used only with existing pool
+        id_pool_member = ["" for x in id_pool_member]
         if id:
             #Existing pool member is only valid in existing pools. New pools cannot  use them
             id_pool_member = request.DATA.get('id_pool_member')
