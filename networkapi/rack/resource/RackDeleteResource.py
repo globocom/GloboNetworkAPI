@@ -89,8 +89,11 @@ def remover_ambiente(user, lista_amb, rack):
 
     nome = "RACK_"+rack.nome
     grupo_l3 = GrupoL3()
-    grupo_l3 = grupo_l3.get_by_name(nome)
-    grupo_l3.delete(user)
+    try:
+        grupo_l3 = grupo_l3.get_by_name(nome)
+        grupo_l3.delete(user)
+    except:
+        pass
 
 def aplicar(rack):
 
@@ -111,8 +114,11 @@ def remover_vlan_so(user, rack):
     nome = "VLAN_SO_"+rack.nome
 
     vlan = Vlan()
-    vlan = vlan.get_by_name(nome)
-    vlan.delete(user)
+    try:
+        vlan = vlan.get_by_name(nome)
+        vlan.delete(user)
+    except:
+        pass
 
 class RackDeleteResource(RestResource):
 

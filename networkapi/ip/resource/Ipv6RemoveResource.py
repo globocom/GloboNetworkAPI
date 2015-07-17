@@ -18,7 +18,8 @@
 from __future__ import with_statement
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 
-from networkapi.ip.models import Equipamento, Ipv6, Ipv6Equipament, IpNotFoundError, IpEquipmentNotFoundError, IpEquipamentoDuplicatedError, IpError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip
+from networkapi.ip.models import Equipamento, Ipv6, Ipv6Equipament, IpNotFoundError, IpEquipmentNotFoundError, IpEquipamentoDuplicatedError, IpError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
+    IpCantRemoveFromServerPool
 
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
 
@@ -33,7 +34,7 @@ from networkapi.log import Log
 from networkapi.grupo.models import GrupoError
 
 from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function
+    destroy_cache_function, mount_ipv6_string
 
 from networkapi.exception import InvalidValueError
 
@@ -85,6 +86,7 @@ class Ipv6RemoveResource(RestResource):
                     raise UserNotAuthorizedError(None)
 
                 ip = Ipv6().get_by_pk(ipv6_id)
+                equipament = Equipamento().get_by_pk(equip_id)
                 # Delete vlan's cache
                 destroy_cache_function([ip.networkipv6.vlan_id])
 
@@ -94,37 +96,43 @@ class Ipv6RemoveResource(RestResource):
                 # Remove Ipv6Equipament
                 ipv6_equipament = Ipv6Equipament()
 
-                if ServerPoolMember.objects.filter(ipv6=ip).count() != 0:
-                    # IP associated with VIP
-                    return self.response_error(354, ipv6_id)
+                server_pool_member_list = ServerPoolMember.objects.filter(ipv6=ip)
+
+                if server_pool_member_list.count() != 0:
+                    # IP associated with Server Pool
+
+                    server_pool_name_list = set()
+                    for member in server_pool_member_list:
+                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        server_pool_name_list.add(item)
+
+                    server_pool_name_list = list(server_pool_name_list)
+                    server_pool_identifiers = ', '.join(server_pool_name_list)
+
+                    raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(ip), 'equip_name': equipament.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (equipament.nome, server_pool_identifiers))
 
                 ipv6_equipament.remove(user, ipv6_id, equip_id)
 
                 return self.response(dumps_networkapi({}))
 
+        except IpCantRemoveFromServerPool, e:
+            return self.response_error(385, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('server_pool_identifiers'))
         except IpCantBeRemovedFromVip, e:
             return self.response_error(319, "ip", 'ipv6', ipv6_id)
-
         except IpEquipCantDissociateFromVip, e:
             return self.response_error(352, e.cause['ip'], e.cause['equip_name'], e.cause['vip_id'])
-
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
-
         except IpNotFoundError:
             return self.response_error(119)
-
         except EquipamentoNotFoundError:
             return self.response_error(117, equip_id)
-
         except IpEquipmentNotFoundError:
             return self.response_error(288)
-
         except IpEquipamentoDuplicatedError:
             return self.response_error(120)
-
         except UserNotAuthorizedError:
             return self.not_authorized()
-
         except (IpError, EquipamentoError, GrupoError, IntegrityError), e:
             return self.response_error(1)

@@ -73,7 +73,7 @@ def gera_config(rack):
     name_core1=None
     name_core2=None
 
-    int_sp1=None   
+    int_sp1=None
     int_sp2=None   
     int_sp3=None   
     int_sp4=None   
