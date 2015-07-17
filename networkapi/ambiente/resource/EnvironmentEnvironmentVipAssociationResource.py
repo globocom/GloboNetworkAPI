@@ -99,11 +99,11 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except EnvironmentNotFoundError:
-            return self.response_error(289)
+            return self.response_error(112)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
         except EnvironmentEnvironmentVipDuplicatedError:
-            return self.response_error(290)
+            return self.response_error(392)
         except Exception, error:
             return self.response_error(1)
 
@@ -161,9 +161,9 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except EnvironmentEnvironmentVipNotFoundError:
-            return self.response_error(291)
+            return self.response_error(393)
         except EnvironmentNotFoundError:
-            return self.response_error(289)
+            return self.response_error(112)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
         except Exception, error:

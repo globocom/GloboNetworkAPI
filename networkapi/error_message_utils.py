@@ -315,6 +315,8 @@ error_messages = {
     387: u'Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s.',
     389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s.',
     390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
+    392: u'Environment is already associated with the environment vip',
+    393: u'Environment is not associated with the environment vip',
 }
 
 
