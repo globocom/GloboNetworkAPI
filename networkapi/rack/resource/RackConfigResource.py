@@ -26,6 +26,10 @@ from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
+from networkapi import settings
+from foreman.client import Foreman, ForemanException
+from netaddr import IPNetwork
+from requests.exceptions import RequestException
 
 def buscar_roteiro(id_sw, tipo):
 
@@ -262,6 +266,49 @@ def gera_config(rack):
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do oob.")
 
+    #begin - Create Foreman entries for rack switches
+    foreman = Foreman(settings.FOREMAN_URL, (settings.FOREMAN_USERNAME, settings.FOREMAN_PASSWORD), api_version=2)
+
+    #for each switch, check the switch ip against foreman know networks, finds foreman hostgroup
+    # based on model and brand and inserts the host in foreman
+    # if host already exists, delete and recreate with new information
+    for [switch, mac] in [[rack.id_sw1, rack.mac_sw1], [rack.id_sw2, rack.mac_sw2], [rack.id_ilo, rack.mac_ilo]]:
+        #Get all foremand subnets and compare with the IP address of the switches until find it
+        if mac == None:
+            raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There is no mac address." % (switch.nome)))
+
+        ip = buscar_ip(switch.id)
+        model_name = switch.modelo.nome
+        switch_cadastrado=0
+        for subnet in foreman.subnets.index()['results']:
+            network = IPNetwork(ip+'/'+subnet['mask']).network
+            #check if switches ip network is the same as subnet['subnet']['network'] e subnet['subnet']['mask']
+            if network.__str__() == subnet['network']:
+                subnet_id = subnet['id']
+                hosts = foreman.hosts.index(search=switch.nome)['results']
+                if len(hosts) == 1:
+                    foreman.hosts.destroy(id=hosts[0]['id'])
+                elif len(hosts) > 1:
+                    raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There are multiple entries with the sam name." % (switch.nome)))
+
+                #Lookup foreman hostgroup
+                #By definition, hostgroup should be Marca+"_"+Modelo
+                hostgroup_name = switch.modelo.marca.nome+"_"+switch.modelo.nome
+                hostgroups = foreman.hostgroups.index(search=hostgroup_name)
+                if len(hostgroups['results']) == 0:
+                    raise RackConfigError(None, rack.nome, "Could not create entry for %s. Could not find hostgroup %s in foreman." % (switch.nome, hostgroup_name))
+                elif len(hostgroups['results'])>1:
+                    raise RackConfigError(None, rack.nome, "Could not create entry for %s. Multiple hostgroups %s found in Foreman." % (switch.nome, hostgroup_name))
+                else:
+                    hostgroup_id = hostgroups['results'][0]['id']
+
+                host = foreman.hosts.create(host={'name': switch.nome, 'ip': ip, 'mac': mac, 'environment_id': settings.FOREMAN_ENVIRONMENT_ID, 'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id, 'build': 'true'})
+                switch_cadastrado=1
+                
+        if not switch_cadastrado:
+            raise RackConfigError(None, rack.nome, "Unknown error. Could not create entry for %s in foreman." % (switch.nome))
+    #end - Create Foreman entries for rack switches
+
     var1 = autoprovision_splf(num_rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
 
     var2 = autoprovision_coreoob(num_rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
@@ -322,3 +369,8 @@ class RackConfigResource(RestResource):
 
         except InterfaceNotFoundError:
             return self.response_error(141)
+
+        except ForemanException, e:
+            return self.response_error(385, e.res)
+        except RequestException, e:
+            return self.response_error(385, e)
