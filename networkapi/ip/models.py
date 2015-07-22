@@ -1435,6 +1435,10 @@ class NetworkIPv6(BaseModel):
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
 
+            # Find all networks ralated to environment
+            nets = NetworkIPv6.objects.filter(
+                vlan__ambiente__id=self.vlan.ambiente.id)
+
             # Cast to API class
             networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3,
                                                                            net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
@@ -1450,10 +1454,6 @@ class NetworkIPv6(BaseModel):
 
                 # Need to be IPv6
                 if config.ip_config.type == IP_VERSION.IPv6[0]:
-
-                    # Find all networks ralated to environment
-                    nets = NetworkIPv6.objects.filter(
-                        vlan__ambiente__id=self.vlan.ambiente.id)
 
                     if prefix is not None:
                         new_prefix = int(prefix)
