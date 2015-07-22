@@ -1443,8 +1443,6 @@ class NetworkIPv6(BaseModel):
             networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3,
                                                                            net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
 
-            net6 = IPv6Network(config.ip_config.subnet)
-
             # For each configuration founded in environment
             for config in configs:
 
@@ -1454,6 +1452,8 @@ class NetworkIPv6(BaseModel):
 
                 # Need to be IPv6
                 if config.ip_config.type == IP_VERSION.IPv6[0]:
+
+                    net6 = IPv6Network(config.ip_config.subnet)
 
                     if prefix is not None:
                         new_prefix = int(prefix)
