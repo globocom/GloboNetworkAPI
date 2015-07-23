@@ -40,7 +40,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
     core = int(name_core.split("-")[2])
 
     #valor base para as vlans e portchannels
-    BASE_SO = 1000
+    BASE_SO = 1010
 
     #variavels para manipular as redes
     SO_OOB_NETipv4 = {}
