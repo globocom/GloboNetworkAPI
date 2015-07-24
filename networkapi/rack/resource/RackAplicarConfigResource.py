@@ -406,16 +406,26 @@ def aplicar(rack):
     path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
     arquivos = glob.glob(path_config)
 
+    #Get all files and search for equipments of the rack
     for var in arquivos: 
         name_equipaments = var.split('/')[-1][:-4]      
-
-        #Check if file is config relative to this rack
-        if rack.nome in name_equipaments:
-            #Apply config only in spines. Leaves already have all necessary config in startup
-            if "ADD" in name_equipaments:
-                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
-                if erro:
-                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+        for nome in name_equipaments:
+            #Check if file is config relative to this rack
+            if rack.nome in nome:
+                #Apply config only in spines. Leaves already have all necessary config in startup
+                if "ADD" in nome:
+                    #Check if equipment in under maintenance. If so, does not aplly on it
+                    try:
+                        equip = Equipamento.get_by_name(nome)
+                        if not equip.maintenance:
+                            (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, nome))
+                            if erro:
+                                raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+                    except RackAplError, e:
+                        raise e
+                    except:
+                        #Error equipment not found, do nothing
+                        pass
 
 def environment_rack(user, environment_list, rack):
 

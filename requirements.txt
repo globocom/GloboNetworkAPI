@@ -6,3 +6,4 @@ djangorestframework==2.4.3
 requests==2.4.3
 netaddr==0.7.14
 stompest==2.1.6
+python-foreman==0.3.1
