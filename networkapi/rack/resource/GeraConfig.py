@@ -40,14 +40,14 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
     core = int(name_core.split("-")[2])
 
     #valor base para as vlans e portchannels
-    BASE_SO = 1000
+    BASE_SO = 1010
 
     #variavels para manipular as redes
     SO_OOB_NETipv4 = {}
     subSO_OOB_NETipv4={}
 
     #rede para conectar cores aos racks
-    SO_OOB_NETipv4= IPNetwork('10.143.64.0/18')
+    SO_OOB_NETipv4= IPNetwork('10.143.0.0/18')
 
     #Vlan para cadastrar
     variablestochangecore["VLAN_SO"]= str(BASE_SO+rack)
@@ -75,7 +75,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 def dic_lf_spn(user, rack):
 
     BASE_RACK = 120
-    BASE_AS = 65000
+    BASE_AS = 65100
 
     VLANBE = 2000
     VLANFE = 2480
@@ -566,7 +566,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     INTERFACE_OOB_LF2=int_oob_mgmtlf2
 
     BASE_RACK = 120
-    BASE_AS = 65000
+    BASE_AS = 65100
 
     VLANBE = 2000
     VLANFE = 2480
@@ -792,7 +792,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine1["VLANFELEAF"]=str(VLANFELEAF[rack][0])
     variablestochangespine1["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][0])
     variablestochangespine1["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][0])
-    variablestochangespine1["ASSPINE"]=str(64600)
+    variablestochangespine1["ASSPINE"]=str(64601)
     variablestochangespine1["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine1["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][0])
     variablestochangespine1["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][0])
@@ -807,7 +807,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine2["VLANFELEAF"]=str(VLANFELEAF[rack][1])
     variablestochangespine2["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][1])
     variablestochangespine2["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][1])
-    variablestochangespine2["ASSPINE"]=str(64601)
+    variablestochangespine2["ASSPINE"]=str(64602)
     variablestochangespine2["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine2["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][1])
     variablestochangespine2["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][1])
@@ -822,7 +822,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine3["VLANFELEAF"]=str(VLANFELEAF[rack][2])
     variablestochangespine3["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][2])
     variablestochangespine3["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][2])
-    variablestochangespine3["ASSPINE"]=str(64602)
+    variablestochangespine3["ASSPINE"]=str(64603)
     variablestochangespine3["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine3["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][2])
     variablestochangespine3["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][2])
@@ -837,7 +837,7 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine4["VLANFELEAF"]=str(VLANFELEAF[rack][3])
     variablestochangespine4["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][3])
     variablestochangespine4["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][3])
-    variablestochangespine4["ASSPINE"]=str(64603)
+    variablestochangespine4["ASSPINE"]=str(64604)
     variablestochangespine4["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine4["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][3])
     variablestochangespine4["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][3])
@@ -861,8 +861,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"]=str(VLANBORDACACHOSLEAF[rack][0])
     variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"]=str(VLANBORDACACHOSLEAF[rack][1])
     variablestochangeleaf1["ASLEAF"]=str(ASLEAF[rack][0])
-    variablestochangeleaf1["ASSPINE1"]=str(64600)
-    variablestochangeleaf1["ASSPINE2"]=str(64601)
+    variablestochangeleaf1["ASSPINE1"]=str(64601)
+    variablestochangeleaf1["ASSPINE2"]=str(64602)
     variablestochangeleaf1["IPNEIGHSPINE1IPV4"]=str(IPSPINEipv4[rack][0])
     variablestochangeleaf1["IPNEIGHSPINE2IPV4"]=str(IPSPINEipv4[rack][1])
     variablestochangeleaf1["IPNEIGHIBGPIPV4"]=str(IPSIBGPipv4[rack][1])
@@ -909,8 +909,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2["VLANBORDACACHOSLEAFSP1"]=str(VLANBORDACACHOSLEAF[rack][2])
     variablestochangeleaf2["VLANBORDACACHOSLEAFSP2"]=str(VLANBORDACACHOSLEAF[rack][3])
     variablestochangeleaf2["ASLEAF"]=str(ASLEAF[rack][0])
-    variablestochangeleaf2["ASSPINE1"]=str(64602)
-    variablestochangeleaf2["ASSPINE2"]=str(64603)
+    variablestochangeleaf2["ASSPINE1"]=str(64603)
+    variablestochangeleaf2["ASSPINE2"]=str(64604)
     variablestochangeleaf2["IPNEIGHSPINE1IPV4"]=str(IPSPINEipv4[rack][2])
     variablestochangeleaf2["IPNEIGHSPINE2IPV4"]=str(IPSPINEipv4[rack][3])
     variablestochangeleaf2["IPNEIGHIBGPIPV4"]=str(IPSIBGPipv4[rack][0])
