@@ -20,6 +20,7 @@
 from django.db import models
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.db.models.query_utils import Q
 
 from networkapi.log import Log
 
@@ -608,6 +609,15 @@ class EnvironmentVip(BaseModel):
 
         return evip_list
 
+    @classmethod
+    def get_environment_vips_by_environment_id(cls, environment_id):
+        environment_vip_list_id = EnvironmentVip.objects.filter(
+            Q(networkipv4__vlan__ambiente__id=environment_id) |
+            Q(networkipv6__vlan__ambiente__id=environment_id)).distinct()
+
+        return environment_vip_list_id
+
+
 
 class Ambiente(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_ambiente')
@@ -1158,3 +1168,8 @@ class EnvironmentEnvironmentVip(BaseModel):
             pass
         except MultipleObjectsReturned:
             raise EnvironmentEnvironmentVipDuplicatedError(None, u'Environment already registered for the environment vip.')
+
+    @classmethod
+    def get_env_envvip_list_by_environment_vip_list_id(cls, environment_vip_list_id):
+        environment_environment_list = EnvironmentEnvironmentVip.objects.filter(environment_vip__id__in=environment_vip_list_id)
+        return environment_environment_list

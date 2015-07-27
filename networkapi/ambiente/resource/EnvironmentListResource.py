@@ -52,6 +52,8 @@ def get_environment_related_with_environment_vip(self, user, no_blocks=False):
         environment_list.extend(env_list_net_v4_related)
         environment_list.extend(env_list_net_v6_related)
 
+        environment_list = set(environment_list)
+
         environment_list_dict = []
 
         for environment in environment_list:

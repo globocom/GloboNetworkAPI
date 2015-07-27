@@ -155,3 +155,11 @@ class EnvironmentEnvironmentVipError(CustomException):
 
     def __init__(self, cause, message=None):
         CustomException.__init__(self, cause, message)
+
+
+class EnvironmentEnvironmentServerPoolRequestVipLinked(CustomException):
+
+    """returns exception to EnvironmentEnvironmentVip error."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)

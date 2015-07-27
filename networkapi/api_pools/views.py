@@ -26,6 +26,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedException
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools
@@ -910,6 +911,10 @@ def save(request):
         raise exception
 
     except exceptions.InvalidRealPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except UpdateEnvironmentPoolCreatedException, exception:
         log.error(exception)
         raise exception
 

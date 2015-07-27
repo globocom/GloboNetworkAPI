@@ -317,6 +317,7 @@ error_messages = {
     390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
     392: u'Environment is already associated with the environment vip',
     393: u'Environment is not associated with the environment vip',
+    394: u'O ambiente %s não pode ser desvinculado pois existem server pools relacionados a ele que estão sendo usados nas requisições vips: %s.',
 }
 
 

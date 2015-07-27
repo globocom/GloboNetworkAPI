@@ -1816,6 +1816,29 @@ class RequisicaoVips(BaseModel):
         for server_pool in server_pool_list:
             server_pool.delete(user)
 
+    @classmethod
+    def get_vip_request_is_related_with_server_pool(cls, environment_environment_vip):
+
+        environment = environment_environment_vip.environment
+        environment_vip = environment_environment_vip.environment_vip
+
+        request_vip_list = set()
+
+        server_pool_list_id = ServerPoolMember.objects.filter(
+            Q(server_pool__environment=environment),
+            Q(ip__networkipv4__ambient_vip=environment_vip) |
+            Q(ipv6__networkipv6__ambient_vip=environment_vip)
+        ).values('server_pool').distinct()
+
+        server_pool_list = [server_pool.get('server_pool') for server_pool in server_pool_list_id]
+        vip_port_to_pool_list = VipPortToPool.objects.filter(server_pool__in=server_pool_list)
+
+        for vipporttopool in vip_port_to_pool_list:
+            request_vip_list.add(vipporttopool.requisicao_vip)
+
+        request_vip_list = list(request_vip_list)
+        return request_vip_list
+
 
 class OptionVip(BaseModel):
     id = models.AutoField(primary_key=True)
