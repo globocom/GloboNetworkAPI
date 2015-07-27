@@ -197,6 +197,7 @@ from networkapi.interface.resource.InterfaceResource import InterfaceResource
 from networkapi.interface.resource.InterfaceGetResource import InterfaceGetResource
 from networkapi.interface.resource.InterfaceDisconnectResource import InterfaceDisconnectResource
 from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
+from networkapi.interface.resource.InterfaceGetSwRouterResource import InterfaceGetSwRouterResource
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
 
@@ -265,6 +266,7 @@ from networkapi.rack.resource.RackEditResource import RackEditResource
 from networkapi.rack.resource.RackDeleteResource import RackDeleteResource
 from networkapi.rack.resource.RackConfigResource import RackConfigResource
 from networkapi.rack.resource.RackAplicarConfigResource import RackAplicarConfigResource
+from networkapi.rack.resource.RackListAllResource import RackListAllResource
 
 check_action = CheckAction()
 
@@ -280,6 +282,7 @@ edit_rack_resource = RackEditResource()
 delete_rack_resource = RackDeleteResource()
 gerar_config_rack_resource = RackConfigResource()
 aplicar_config_rack_resource = RackAplicarConfigResource()
+list_all_racks_resource = RackListAllResource()
 
 
 vlan_resource = VlanResource()
@@ -492,6 +495,7 @@ interface_resource = InterfaceResource()
 interface_get_resource = InterfaceGetResource()
 interface_disconnect_resource = InterfaceDisconnectResource()
 interface_type_get_all_resource = InterfaceTypeGetAllResource()
+interface_get_sw_router_resource = InterfaceGetSwRouterResource()
 
 authenticate_resource = AuthenticateResource()
 
@@ -973,6 +977,8 @@ urlpatterns += patterns('',
                            interface_resource.handle_request, name='interface.search.by.interface.equipment'),
                        url(r'^interface/(?P<nome_interface>.+?)/equipment/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request, {
                            'new': True}, name='interface.search.by.interface.equipment.new'),
+                       url(r'^int/getbyidequip/(?P<id_equipamento>[^/]+)/$', interface_get_sw_router_resource.handle_request,
+                           name='interface.get_sw_router'),
 
                        url(r'^authenticate/$', authenticate_resource.handle_request,
                            name='user.authenticate'),
@@ -1117,7 +1123,9 @@ urlpatterns += patterns('',
                            lambda _: HttpResponse("WORKING")),
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
-                       url(r'^rack/find[/]?$', find_rack_resource.handle_request,
+                       url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
+                           name='find.rack'),
+                       url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
                            name='find.rack'),
                        url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
                            name='edit.rack'),
@@ -1129,6 +1137,7 @@ urlpatterns += patterns('',
                            name='aplicar.rack'),
                        url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
                            name='interfacetype.get'),
+
                        )
 
 

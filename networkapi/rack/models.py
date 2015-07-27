@@ -120,6 +120,22 @@ class Rack(BaseModel):
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
 
+    def get_by_name(cls, name):
+        """"Get  Rack id.
+
+        @return: Rack.
+
+        @raise RackNumberNotFoundError: Rack is not registered.
+        @raise RackError: Failed to search for the Rack.
+        """
+        try:
+            return Rack.objects.filter(nome=name).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise RackNumberNotFoundError(e, u'Dont there is the Rack %s.' % name)
+        except Exception, e:
+            cls.log.error(u'Failure to search the Rack.')
+            raise RackError(e, u'Failure to search the Rack.')
+
     def get_by_id(cls, number):
         """"Get  Rack number.
 

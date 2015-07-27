@@ -310,6 +310,7 @@ error_messages = {
     382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
     383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
     384: u'Erro ao editar ServerPool: %s',
+    385: u'O Rack, que o servidor está, não foi cadastrado.',
 }
 
 
