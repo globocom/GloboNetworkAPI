@@ -29,7 +29,7 @@ from networkapi.ip.models import Ip, IpEquipamento
 from networkapi import settings
 from netaddr import IPNetwork
 from requests.exceptions import RequestException
-if settings.USE_FOREMAN
+if settings.USE_FOREMAN:
     from foreman.client import Foreman, ForemanException
 
 def buscar_roteiro(id_sw, tipo):
