@@ -27,9 +27,10 @@ from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
 from networkapi import settings
-from foreman.client import Foreman, ForemanException
 from netaddr import IPNetwork
 from requests.exceptions import RequestException
+if settings.USE_FOREMAN
+    from foreman.client import Foreman, ForemanException
 
 def buscar_roteiro(id_sw, tipo):
 
