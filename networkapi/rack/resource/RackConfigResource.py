@@ -318,7 +318,7 @@ class RackConfigResource(RestResource):
             return self.response_error(379, id_rack)
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(382)
 
         except InterfaceNotFoundError:
             return self.response_error(141)

@@ -186,3 +186,17 @@ class EnvironmentRack(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'ambiente_rack'
         managed = True
+
+    def get_by_rack(cls, id):
+        """"
+        @return: Environments.
+        @raise RackNumberNotFoundError: Rack is not registered.
+        @raise RackError: Failed to search for the Rack.
+        """
+        try:
+            return EnvironmentRack.objects.filter(rack=id)
+        except ObjectDoesNotExist, e:
+            raise RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+        except Exception, e:
+            cls.log.error(u'Failure to search the Rack.')
+            raise RackError(e, u'Failure to search the Rack.')

@@ -315,6 +315,8 @@ error_messages = {
     389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s.',
     390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
     391: u'O Rack, que o servidor está, não foi cadastrado.',
+    400: u'Nao foi possivel adicionar o Rack',
+    401: u'As mudancas nao foram salvas',
 }
 
 

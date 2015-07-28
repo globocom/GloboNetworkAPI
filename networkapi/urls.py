@@ -267,6 +267,7 @@ from networkapi.rack.resource.RackDeleteResource import RackDeleteResource
 from networkapi.rack.resource.RackConfigResource import RackConfigResource
 from networkapi.rack.resource.RackAplicarConfigResource import RackAplicarConfigResource
 from networkapi.rack.resource.RackListAllResource import RackListAllResource
+from networkapi.rack.resource.RackEnvironmentResource import RackEnvironmentResource
 
 check_action = CheckAction()
 
@@ -283,7 +284,7 @@ delete_rack_resource = RackDeleteResource()
 gerar_config_rack_resource = RackConfigResource()
 aplicar_config_rack_resource = RackAplicarConfigResource()
 list_all_racks_resource = RackListAllResource()
-
+list_rack_environment_resource = RackEnvironmentResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -1137,7 +1138,8 @@ urlpatterns += patterns('',
                            name='aplicar.rack'),
                        url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
                            name='interfacetype.get'),
-
+                       url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
+                           name='interfacetype.get'),
                        )
 
 

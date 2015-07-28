@@ -101,5 +101,5 @@ class RackEditResource(RestResource):
             return self.not_authorized()
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(401)
 

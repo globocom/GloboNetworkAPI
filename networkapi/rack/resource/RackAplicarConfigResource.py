@@ -469,11 +469,11 @@ class RackAplicarConfigResource(RestResource):
             ambientes['LOG']=settings.AMBLOG_MGMT
             ambientes['L3']=settings.GRPL3_MGMT
     
-            try:
+            #try:
                 #criar e ativar a vlan
-                vlan = criar_vlan(user, variablestochangecore1, ambientes)
-            except:
-                raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
+            vlan = criar_vlan(user, variablestochangecore1, ambientes)
+        #    except:
+         #       raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
                 #criar e ativar a rede
                 network = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
@@ -531,6 +531,6 @@ class RackAplicarConfigResource(RestResource):
             return self.response_error(379, rack_id)
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(383)
 
 
