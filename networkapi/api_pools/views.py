@@ -22,6 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.conf import settings
+from django.forms.models import model_to_dict
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -30,6 +31,7 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools
+from networkapi.api_vip_request.facade import server_pool_ips_can_associate_with_vip_request
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -798,9 +800,27 @@ def save_reals(request):
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
 
+        for vipporttopool in sp.vipporttopool_set.all():
+
+            obj_req_vip = vipporttopool.requisicao_vip
+            variables = obj_req_vip.variables_to_map()
+
+            # set a dynamic attributes to run above validation
+            obj_req_vip.finalidade = variables.get('finalidade')
+            obj_req_vip.cliente = variables.get('cliente')
+            obj_req_vip.ambiente = variables.get('ambiente')
+
+            server_pool_ips_can_associate_with_vip_request(obj_req_vip)
+
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
         return Response()
+
+    except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
+        log.error(exception)
+        if exception.custom_message:
+            raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(exception.custom_message)
+        raise exception
 
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)
@@ -1037,6 +1057,47 @@ def management_pools(request):
     except ValueError, exception:
         log.error(exception)
         raise exceptions.InvalidIdPoolMemberException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def list_environment_environment_vip_related(request):
+
+    try:
+        environment_list = []
+
+        env_list_net_v4_related = Ambiente.objects.filter(vlan__networkipv4__ambient_vip__id__isnull=False)\
+            .order_by('divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome')\
+            .select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')\
+            .distinct()
+
+        env_list_net_v6_related = Ambiente.objects.filter(vlan__networkipv6__ambient_vip__id__isnull=False)\
+            .order_by('divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome')\
+            .select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')\
+            .distinct()
+
+        environment_list.extend(env_list_net_v4_related)
+        environment_list.extend(env_list_net_v6_related)
+
+        environment_list = set(environment_list)
+
+        environment_list_dict = []
+
+        for environment in environment_list:
+            if environment.blockrules_set.count() == 0:
+                env_map = model_to_dict(environment)
+                env_map["grupo_l3_name"] = environment.grupo_l3.nome
+                env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
+                env_map["divisao_dc_name"] = environment.divisao_dc.nome
+                if environment.filter is not None:
+                        env_map["filter_name"] = environment.filter.name
+
+                environment_list_dict.append(env_map)
+
+        return Response(environment_list_dict)
 
     except Exception, exception:
         log.error(exception)

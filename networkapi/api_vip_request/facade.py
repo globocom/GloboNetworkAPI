@@ -20,6 +20,7 @@ from django.forms import model_to_dict
 from networkapi.ambiente.models import EnvironmentEnvironmentVip
 
 from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.error_message_utils import error_messages
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
 from networkapi.log import Log
 from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
@@ -213,7 +214,7 @@ def _get_server_pool_ips_list(vip_request, ip_type='ipv4'):
 
     ip_list = []
 
-    for vip_pool in vip_request.vip_ports_to_pools:
+    for vip_pool in vip_request.vipporttopool_set.all():
 
         server_pool_member_list = vip_pool.server_pool.serverpoolmember_set.all()
 
@@ -238,11 +239,14 @@ def server_pool_ips_can_associate_with_vip_request(vip_request):
             ip = ip_dict.get('ip')
             server_pool = ip_dict.get('server_pool')
 
-            if ip.networkipv4.ambient_vip is None:
-                env_vip_network_unlink = 'O ip {} do server pool {} não pode ser adicionado ao vip pois sua rede não possui ambiente vip.'
-                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(env_vip_network_unlink.format(ip.ip_formated, server_pool.identifier))
+            validation_params = _get_validation_params(ip, server_pool, env_vip_description, 'ipv4')
 
-            validation_params = _get_validation_params(ip, server_pool, env_vip_description,  'ipv4')
+            if ip.networkipv4.ambient_vip is None:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(395).format(ip.ip_formated, server_pool.identifier),
+                    error_messages.get(396).format(ip.ip_formated, server_pool.identifier)
+                )
+
             EnvironmentEnvironmentVip.get_by_environment_environment_vip(ip.networkipv4.vlan.ambiente.id, ip.networkipv4.ambient_vip.id)
 
         ipv6_list = _get_server_pool_ips_list(vip_request, 'ipv6')
@@ -252,17 +256,23 @@ def server_pool_ips_can_associate_with_vip_request(vip_request):
             ip = ip_dict.get('ip')
             server_pool = ip_dict.get('server_pool')
 
-            if ip.networkipv6.ambient_vip is None:
-                env_vip_network_unlink = 'O ip {} do server pool {} não pode ser adicionado ao vip pois sua rede não possui ambiente vip.'
-                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(env_vip_network_unlink.format(ip.ip_formated, server_pool.identifier))
-
             validation_params = _get_validation_params(ip, server_pool, env_vip_description, 'ipv6')
+
+            if ip.networkipv6.ambient_vip is None:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(395).format(ip.ip_formated, server_pool.identifier),
+                    error_messages.get(396).format(ip.ip_formated, server_pool.identifier)
+                )
+
             EnvironmentEnvironmentVip.get_by_environment_environment_vip(ip.networkipv6.vlan.ambiente.id, ip.networkipv6.ambient_vip.id)
 
     except EnvironmentEnvironmentVipNotFoundError, error:
         log.error(error)
-        env_env_vip_unlink = 'O ip {} do server pool {} não pode ser adicionado ao vip pois não existe permissão entre o ambiente {} e o ambiente vip {}.'
-        raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(env_env_vip_unlink.format(*validation_params))
+
+        raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+            error_messages.get(397).format(*validation_params),
+            error_messages.get(398).format(*validation_params)
+        )
     except Exception, error:
         log.error(error)
         raise error

@@ -82,18 +82,6 @@ class EquipmentGetIpsByAmbiente(RestResource):
                     if network_ipv6.vlan.ambiente == env_envvip.environment and network_ipv6.ambient_vip == env_envvip.environment_vip:
                         lista_ipsv6_equip.add(ipequip.ip)
 
-           # # Get all IPV4's Equipment
-           #  for ipequip in equip.ipequipamento_set.select_related().all():
-           #      if ipequip.ip not in lista_ips_equip:
-           #              if ipequip.ip.networkipv4.vlan.ambiente.divisao_dc.id == ambiente.divisao_dc.id and ipequip.ip.networkipv4.vlan.ambiente.ambiente_logico.id == ambiente.ambiente_logico.id:
-           #                  lista_ips_equip.append(ipequip.ip)
-           #
-           #  # Get all IPV6'S Equipment
-           #  for ipequip in equip.ipv6equipament_set.select_related().all():
-           #      if ipequip.ip not in lista_ipsv6_equip:
-           #              if ipequip.ip.networkipv6.vlan.ambiente.divisao_dc.id == ambiente.divisao_dc.id and ipequip.ip.networkipv6.vlan.ambiente.ambiente_logico.id == ambiente.ambiente_logico.id:
-           #                  lista_ipsv6_equip.append(ipequip.ip)
-
             # lists and dicts for return
             lista_ip_entregue = list()
             lista_ip6_entregue = list()

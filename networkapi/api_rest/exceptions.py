@@ -23,5 +23,11 @@ class ScriptException(APIException):
 
 
 class EnvironmentEnvironmentVipNotBoundedException(APIException):
+
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'There is no link between environment and environment vip.'
+
+    def __init__(self, detail, custom_message=None):
+        APIException.__init__(self, detail)
+        self.custom_message = custom_message
+

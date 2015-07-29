@@ -279,12 +279,8 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                         transaction.commit()
                         raise exceptions.ScriptCreatePoolException()
 
-
             #if sp.healthcheck_id:
             #    spm.healthcheck = sp.healthcheck
-
-
-
             list_pool_member.append(spm)
 
     return list_pool_member
