@@ -16,6 +16,7 @@
 # limitations under the License.
 
 
+from django.core.exceptions import ObjectDoesNotExist
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
