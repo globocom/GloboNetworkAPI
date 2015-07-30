@@ -22,7 +22,7 @@ from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotF
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
@@ -460,11 +460,29 @@ def aplicar(rack):
 
 def environment_rack(user, environment_list, rack):
 
+    #Insert all environments in environment rack table
+    #Insert rack switches in rack environments
     for env in environment_list:
-        ambienteRack = EnvironmentRack()
-        ambienteRack.ambiente = env
-        ambienteRack.rack = rack
-        ambienteRack.save(user)
+        try:
+            ambienteRack = EnvironmentRack()
+            ambienteRack.ambiente = env
+            ambienteRack.rack = rack
+            ambienteRack.create(user)
+        except EnvironmentRackDuplicatedError:
+            pass
+
+        for switch in [rack.id_sw1, rack.id_sw2]:
+            try:
+                equipamento_ambiente = EquipamentoAmbiente()
+                equipamento_ambiente.ambiente = env
+                equipamento_ambiente.equipamento = switch
+                equipamento_ambiente.is_router = True
+                equipamento_ambiente.create(user)
+            except EquipamentoAmbienteDuplicatedError:
+                pass
+
+
+
 
 class RackAplicarConfigResource(RestResource):
 
