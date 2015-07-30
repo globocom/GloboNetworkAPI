@@ -29,6 +29,7 @@ from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.util import destroy_cache_function
+from networkapi.filter.models import Filter
 from networkapi import settings
 import glob
 import commands
@@ -145,7 +146,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
  
     return network_ip
 
-def criar_ambiente(user, ambientes, ranges, acl_path=None):
+def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None):
 
     #ambiente cloud
     environment = Ambiente()
@@ -167,6 +168,15 @@ def criar_ambiente(user, ambientes, ranges, acl_path=None):
     environment.min_num_vlan_2 = ranges.get('MIN')
 
     environment.link = " "
+
+    if filter is not None:
+        try:
+            filter_obj = Filter.objects.get(nome__iexact=filter)
+        except ObjectDoesNotExist, e:
+            filter = None
+            pass
+
+    environment.filter = filter
 
     environment.create(user)
 
@@ -301,7 +311,7 @@ def ambiente_prod(user, rack, environment_list):
         ranges['MAX']= redes.get(vlan_max)
         ranges['MIN']= redes.get(vlan_min)
 
-        env = criar_ambiente(user, ambientes, ranges, acl_path)
+        env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores")
         environment_list.append(env)
 
         #configuracao dos ambientes
@@ -335,7 +345,7 @@ def ambiente_cloud(user, rack, environment_list):
     aclpath = 'BECLOUD'
 
     #criar ambiente cloud
-    env = criar_ambiente(user, ambientes, ranges, aclpath)
+    env = criar_ambiente(user, ambientes, ranges, aclpath, "Servidores")
     environment_list.append(env)
 
     #configuracao do ambiente
@@ -377,7 +387,7 @@ def ambiente_prod_fe(user, rack, environment_list):
     acl_path = 'FECLOUD'
 
     #criar ambiente
-    env = criar_ambiente(user, ambientes, ranges, acl_path)
+    env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores")
     environment_list.append(env)
 
     #configuracao dos ambientes
@@ -417,7 +427,7 @@ def ambiente_borda(user,rack, environment_list):
         ranges['MIN']= ranges_vlans.get(vlan_min)
 
         ambientes['DC']= divisaodc
-        env = criar_ambiente(user, ambientes,ranges, acl_path)
+        env = criar_ambiente(user, ambientes,ranges, acl_path, "Servidores")
         environment_list.append(env)
 
     return environment_list
