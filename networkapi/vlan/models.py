@@ -618,12 +618,10 @@ class Vlan(BaseModel):
                     raise VlanNumberEnvironmentNotAvailableError(
                         None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
 
-        try:
-            self.get_by_name(self.nome)
+        # Name VLAN can not be duplicated in the environment
+        if self.existVlanNameInEnvironment():
             raise VlanNameDuplicatedError(
-                None, "Já existe uma VLAN cadastrada com o nome %s" % self.nome)
-        except VlanNotFoundError:
-            pass
+                None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
             return self.save(authenticated_user)
@@ -688,12 +686,10 @@ class Vlan(BaseModel):
                             None, "Um dos equipamentos associados com o ambiente desta Vlan também está associado com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos ambientes se necessário.")
 
         if change_name:
-            try:
-                self.get_by_name(self.nome)
+            # Name VLAN can not be duplicated in the environment
+            if self.existVlanNameInEnvironment():
                 raise VlanNameDuplicatedError(
-                    None, "Já existe uma VLAN cadastrada com o nome %s" % self.nome)
-            except VlanNotFoundError:
-                pass
+                    None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
             return self.save(authenticated_user)

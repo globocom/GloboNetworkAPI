@@ -497,6 +497,7 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     variablestochangeoob["HOSTNAME_LF1"]= HOSTNAME_LF1
     variablestochangeoob["HOSTNAME_LF2"]= HOSTNAME_LF2
     variablestochangeoob["VLAN_SO"]=str(BASE_SO+rack)
+    variablestochangeoob["HOSTNAME_RACK"]= HOSTNAME_RACK[2]
 
 
     variablestochangecore1["INT_OOB_UPLINK"]= INT_OOBC1_UPLINK
