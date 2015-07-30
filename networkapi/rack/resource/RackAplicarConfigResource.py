@@ -172,7 +172,7 @@ def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None):
 
     if filter is not None:
         try:
-            filter_obj = Filter.objects.get(nome__iexact=filter)
+            filter_obj = Filter.objects.get(name__iexact=filter)
         except ObjectDoesNotExist, e:
             filter = None
             pass
