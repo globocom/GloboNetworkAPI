@@ -169,16 +169,14 @@ def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None):
     environment.min_num_vlan_2 = ranges.get('MIN')
 
     environment.link = " "
-    filter_obj = None
-    
+
     if filter is not None:
         try:
             filter_obj = Filter.objects.get(name__iexact=filter)
+            environment.filter = filter_obj
         except ObjectDoesNotExist, e:
-            filter_obj = None
             pass
 
-    environment.filter = filter_obj
 
     environment.create(user)
 
