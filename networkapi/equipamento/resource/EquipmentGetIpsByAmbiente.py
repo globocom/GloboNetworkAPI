@@ -65,21 +65,20 @@ class EquipmentGetIpsByAmbiente(RestResource):
             lista_ipsv6_equip = set()
 
             environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(id_ambiente)
-            environment_vip_list_id = [environment_vip.id for environment_vip in environment_vip_list]
-            env_envvip_list = EnvironmentEnvironmentVip.get_env_envvip_list_by_environment_vip_list_id(environment_vip_list_id)
+            environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
 
             # # Get all IPV4's Equipment
-            for env_envvip in env_envvip_list:
+            for environment in environment_list_related:
                 for ipequip in equip.ipequipamento_set.select_related().all():
                     network_ipv4 = ipequip.ip.networkipv4
-                    if network_ipv4.vlan.ambiente == env_envvip.environment and network_ipv4.ambient_vip == env_envvip.environment_vip:
+                    if network_ipv4.vlan.ambiente == environment:
                         lista_ips_equip.add(ipequip.ip)
 
             # # Get all IPV6's Equipment
-            for env_envvip in env_envvip_list:
+            for environment in environment_list_related:
                 for ipequip in equip.ipv6equipament_set.select_related().all():
                     network_ipv6 = ipequip.ip.networkipv6
-                    if network_ipv6.vlan.ambiente == env_envvip.environment and network_ipv6.ambient_vip == env_envvip.environment_vip:
+                    if network_ipv6.vlan.ambiente == environment:
                         lista_ipsv6_equip.add(ipequip.ip)
 
             # lists and dicts for return

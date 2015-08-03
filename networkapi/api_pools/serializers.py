@@ -112,8 +112,11 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
         ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
 
-        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+        for ipequip in ip_equipment_set.select_related():
+            if ipequip.equipamento.nome == obj.identifier:
+                return obj.identifier
 
+        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
         equipment = ip_equipment_obj.equipamento
 
         return equipment.nome

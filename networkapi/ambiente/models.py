@@ -618,7 +618,6 @@ class EnvironmentVip(BaseModel):
         return environment_vip_list_id
 
 
-
 class Ambiente(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_ambiente')
     grupo_l3 = models.ForeignKey(GrupoL3, db_column='id_grupo_l3')
@@ -1170,6 +1169,26 @@ class EnvironmentEnvironmentVip(BaseModel):
             raise EnvironmentEnvironmentVipDuplicatedError(None, u'Environment already registered for the environment vip.')
 
     @classmethod
-    def get_env_envvip_list_by_environment_vip_list_id(cls, environment_vip_list_id):
-        environment_environment_list = EnvironmentEnvironmentVip.objects.filter(environment_vip__id__in=environment_vip_list_id)
-        return environment_environment_list
+    def get_server_pool_member_by_environment_environment_vip(cls, environment_environment_vip):
+
+        from networkapi.requisicaovips.models import ServerPoolMember
+
+        environment = environment_environment_vip.environment
+
+        server_pool_member_list = ServerPoolMember.objects.filter(
+            Q(ip__networkipv4__vlan__ambiente=environment) |
+            Q(ipv6__networkipv6__vlan__ambiente=environment))
+
+        return server_pool_member_list
+
+    @classmethod
+    def get_environment_list_by_environment_vip_list(cls, environment_vip_list):
+        env_envivip_list = EnvironmentEnvironmentVip.objects.filter(environment_vip__in=environment_vip_list).distinct()
+        environment_list = [env_envivip.environment for env_envivip in env_envivip_list]
+        return environment_list
+
+    @classmethod
+    def get_environment_list_by_environment_vip(cls, environment_vip):
+        env_envivip_list = EnvironmentEnvironmentVip.objects.filter(environment_vip=environment_vip)
+        environment_list = [env_envivip.environment for env_envivip in env_envivip_list]
+        return environment_list

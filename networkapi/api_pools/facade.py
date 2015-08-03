@@ -22,10 +22,9 @@ from django.db import transaction
 from networkapi.api_pools import exceptions
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.ip.models import Ipv6, Ip
+from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
-from networkapi.ambiente.models import IP_VERSION
 
 from networkapi.log import Log
 
@@ -62,6 +61,7 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
                                          healthcheck_request=healthcheck_request, destination=healthcheck_destination).order_by('id')[0]
 
     return hc
+
 
 def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member):
     # Save Server pool
@@ -224,25 +224,15 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                     raise exceptions.ScriptCreatePoolException()
                 transaction.commit()
 
-
     if list_server_pool_member:
         for dic in list_server_pool_member:
-
+        #
             ip_object = None
             ipv6_object = None
             if len(dic['ip']) <= 15:
                 ip_object = Ip.get_by_pk(dic['id'])
-
-                if sp.environment.divisao_dc.id != ip_object.networkipv4.vlan.ambiente.divisao_dc.id \
-                        or sp.environment.ambiente_logico.id != ip_object.networkipv4.vlan.ambiente.ambiente_logico.id:
-                    raise exceptions.IpNotFoundByEnvironment()
-
             else:
                 ipv6_object = Ipv6.get_by_pk(dic['id'])
-
-                if sp.environment.divisao_dc.id != ipv6_object.networkipv6.vlan.ambiente.divisao_dc.id \
-                        or sp.environment.ambiente_logico.id != ipv6_object.networkipv6.vlan.ambiente.ambiente_logico.id:
-                    raise exceptions.IpNotFoundByEnvironment()
 
             id_pool = sp.id
             id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id

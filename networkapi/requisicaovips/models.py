@@ -16,11 +16,8 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from datetime import datetime
 from django.db import models
 from django.db.models import Q
-from django.db.models.fields import NullBooleanField
-from networkapi.log import Log
 from networkapi.healthcheckexpect.models import HealthcheckExpect
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
@@ -28,7 +25,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from _mysql_exceptions import OperationalError
 from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
-import re
 from string import upper
 from networkapi.util import is_valid_ip, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_option, is_valid_regex, is_valid_ipv6, is_valid_ipv4, \
     mount_ipv4_string, mount_ipv6_string
@@ -1815,29 +1811,6 @@ class RequisicaoVips(BaseModel):
 
         for server_pool in server_pool_list:
             server_pool.delete(user)
-
-    @classmethod
-    def get_vip_request_is_related_with_server_pool(cls, environment_environment_vip):
-
-        environment = environment_environment_vip.environment
-        environment_vip = environment_environment_vip.environment_vip
-
-        request_vip_list = set()
-
-        server_pool_list_id = ServerPoolMember.objects.filter(
-            Q(server_pool__environment=environment),
-            Q(ip__networkipv4__ambient_vip=environment_vip) |
-            Q(ipv6__networkipv6__ambient_vip=environment_vip)
-        ).values('server_pool').distinct()
-
-        server_pool_list = [server_pool.get('server_pool') for server_pool in server_pool_list_id]
-        vip_port_to_pool_list = VipPortToPool.objects.filter(server_pool__in=server_pool_list)
-
-        for vipporttopool in vip_port_to_pool_list:
-            request_vip_list.add(vipporttopool.requisicao_vip)
-
-        request_vip_list = list(request_vip_list)
-        return request_vip_list
 
 
 class OptionVip(BaseModel):

@@ -317,11 +317,8 @@ error_messages = {
     390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
     392: u'Environment is already associated with the environment vip',
     393: u'Environment is not associated with the environment vip',
-    394: u'O ambiente %s não pode ser desvinculado pois existem server pools relacionados a ele que estão sendo usados nas requisições vips: %s.',
-    395: u'O ip {} do server pool {} não pode ser adicionado ao vip pois sua rede não possui ambiente vip.',
-    396: u'A operação não pode ser realizada pois a rede do ip {} do server pool {} não possui ambiente vip.',
-    397: u'O ip {} do server pool {} não pode ser adicionado ao vip pois não existe permissão entre o ambiente "{}" e o ambiente vip "{}".',
-    398: u'A operação no ip {} do pool {} não pode ser realizada pois não existe permissão entre o ambiente "{}" e o ambiente vip "{}".'
+    394: u'O ambiente %s não pode ser desvinculado pois existem server pools com reals vinculados a este ambiente.',
+    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".'
 }
 
 

@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError, OptionVipNotFoundError, EnvironmentVipNotFoundError, OptionVipError, EnvironmentVipError, OptionVipEnvironmentVipError, OptionVipEnvironmentVipDuplicatedError, OptionVipEnvironmentVipNotFoundError, \
     EnvironmentEnvironmentVipNotFoundError, EnvironmentNotFoundError, EnvironmentEnvironmentVipDuplicatedError, \
-    EnvironmentEnvironmentVipError, EnvironmentEnvironmentServerPoolRequestVipLinked
+    EnvironmentEnvironmentVipError, EnvironmentEnvironmentServerPoolLinked
 from networkapi.log import Log
 from networkapi.requisicaovips.models import OptionVip, OptionVipEnvironmentVip, RequisicaoVips
 from networkapi.rest import RestResource, UserNotAuthorizedError
@@ -76,7 +76,6 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
             with distributedlock(LOCK_ENVIRONMENT_VIP % environment_vip_id):
 
                 # Business Rules
-
                 # Set new values
                 environment_environment_vip = EnvironmentEnvironmentVip()
                 environment_environment_vip.environment = environment
@@ -141,20 +140,16 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
 
             # Existing Environment ID
             environment = Ambiente.get_by_pk(environment_id)
-
             # Existing EnvironmentVip ID
             environment_vip = EnvironmentVip.get_by_pk(environment_vip_id)
-
             # Business Rules
-
-            # Find
             environment_environment_vip = EnvironmentEnvironmentVip().get_by_environment_environment_vip(environment.id, environment_vip.id)
+            server_pool_list = EnvironmentEnvironmentVip.get_server_pool_member_by_environment_environment_vip(environment_environment_vip)
 
-            request_vip_list = RequisicaoVips.get_vip_request_is_related_with_server_pool(environment_environment_vip)
-
-            if request_vip_list:
-                cause = self._get_cause(environment, request_vip_list)
-                raise EnvironmentEnvironmentServerPoolRequestVipLinked(cause)
+            # Valid integraty between environment/environmentvip related with reals
+            # if exists reals fot this environment then raise a exception
+            if server_pool_list:
+                raise EnvironmentEnvironmentServerPoolLinked({'environment': environment.name})
 
             # Delete
             environment_environment_vip.delete(user)
@@ -172,25 +167,7 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
             return self.response_error(112)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
-        except EnvironmentEnvironmentServerPoolRequestVipLinked, error:
-            return self.response_error(394, error.cause.get('environment'), error.cause.get('vip_request_description'))
+        except EnvironmentEnvironmentServerPoolLinked, error:
+            return self.response_error(394, error.cause.get('environment'))
         except Exception, error:
             return self.response_error(1)
-
-    def _get_cause(self, environment, request_vip_list):
-
-        description_vip_list = []
-        cause = {}
-
-        for vip_request in request_vip_list:
-            if vip_request.ip:
-                vip_desc = '{}-{}'.format(vip_request.id, vip_request.ip.descricao or '')
-                description_vip_list.append(vip_desc)
-            else:
-                vip_desc = '{}-{}'.format(vip_request.id, vip_request.ipv6.descricao or '')
-                description_vip_list.append(vip_desc)
-
-        cause['vip_request_description'] = ', '.join(description_vip_list)
-        cause['environment'] = environment.name
-
-        return cause

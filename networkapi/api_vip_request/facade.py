@@ -17,11 +17,11 @@
  limitations under the License.
  """
 from django.forms import model_to_dict
-from networkapi.ambiente.models import EnvironmentEnvironmentVip
-
+from networkapi.api_pools.views import reals_can_associate_server_pool
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.error_message_utils import error_messages
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
+from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
 from networkapi.log import Log
 from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
 from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool
@@ -118,13 +118,14 @@ def save(request):
 
     obj_req_vip = req_vip_serializer.object
 
+    # valid if pools member can linked by environment/environment vip relationship rule
+    server_pool_ips_can_associate_with_vip_request(obj_req_vip)
+
     obj_req_vip.filter_valid = True
     obj_req_vip.validado = False
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
     obj_req_vip.save(user)
-
-    server_pool_ips_can_associate_with_vip_request(obj_req_vip)
 
     for v_port in obj_req_vip.vip_ports_to_pools:
         v_port.requisicao_vip = obj_req_vip
@@ -175,6 +176,9 @@ def update(request, pk):
         if not vip_port_serializer.is_valid():
             raise api_exceptions.ValidationException("Invalid Port Vip To Pool")
 
+        # valid if pools member can linked by environment/environment vip relationship rule
+        server_pool_ips_can_associate_with_vip_request(obj_req_vip)
+
         vip_port_to_pool_pks = [port['id'] for port in vip_ports if port.get('id')]
 
         vip_port_to_pool_to_remove = VipPortToPool.objects.filter(
@@ -185,8 +189,6 @@ def update(request, pk):
 
         for v_port_to_del in vip_port_to_pool_to_remove:
             v_port_to_del.delete(user)
-
-        server_pool_ips_can_associate_with_vip_request(obj_req_vip)
 
         for vip_port in vip_ports:
             vip_port_obj = VipPortToPool()
@@ -210,69 +212,61 @@ def set_l7_filter_for_vip(obj_req_vip):
         )
 
 
-def _get_server_pool_ips_list(vip_request, ip_type='ipv4'):
+def _get_server_pool_list(vip_request):
 
-    ip_list = []
+    server_pool_list = set()
 
     for vip_pool in vip_request.vipporttopool_set.all():
+        server_pool_list.add(vip_pool.server_pool)
 
-        server_pool_member_list = vip_pool.server_pool.serverpoolmember_set.all()
+    for vip_pool in vip_request.vip_ports_to_pools:
+        server_pool_list.add(vip_pool.server_pool)
 
-        for pool_member in server_pool_member_list:
-            if ip_type == 'ipv4' and pool_member.ip:
-                ip_list.append({'ip': pool_member.ip, 'server_pool': pool_member.server_pool})
-            elif ip_type == 'ipv6' and pool_member.ipv6:
-                ip_list.append({'ip': pool_member.ipv6, 'server_pool': pool_member.server_pool})
+    return list(server_pool_list)
 
-    return ip_list
+
+def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip):
+
+    try:
+        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip(environment_vip)
+
+        ipv4_list, ipv6_list = [], []
+
+        for server_pool_member in server_pool_member_list:
+            if server_pool_member.ip:
+                ipv4_list.append(server_pool_member.ip)
+            else:
+                ipv6_list.append(server_pool_member.ipv6)
+
+        for ipv4 in ipv4_list:
+            environment = Ambiente.objects.filter(vlan__networkipv4__ip=ipv4).uniqueResult()
+            if environment not in environment_list_related:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip.name)
+                )
+
+        for ipv6 in ipv6_list:
+            environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=ipv6).uniqueResult()
+            if environment not in environment_list_related:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(396) % (server_pool.environment.name, ipv6.ip_formated, environment_vip.name)
+                )
+
+    except Exception, error:
+        log.error(error)
+        raise error
 
 
 def server_pool_ips_can_associate_with_vip_request(vip_request):
 
-    env_vip_description = '{} - {} - {} '.format(vip_request.finalidade, vip_request.cliente, vip_request.ambiente)
-    validation_params = {}
-
     try:
-        ipv4_list = _get_server_pool_ips_list(vip_request, 'ipv4')
+        environment_vip = EnvironmentVip.get_by_values(vip_request.finalidade, vip_request.cliente, vip_request.ambiente)
+        server_pool_list = _get_server_pool_list(vip_request)
 
-        for ip_dict in ipv4_list:
-            ip = ip_dict.get('ip')
-            server_pool = ip_dict.get('server_pool')
+        for server_pool in server_pool_list:
+            server_pool_member_list = server_pool.serverpoolmember_set.all()
+            _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip)
 
-            validation_params = _get_validation_params(ip, server_pool, env_vip_description, 'ipv4')
-
-            if ip.networkipv4.ambient_vip is None:
-                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                    error_messages.get(395).format(ip.ip_formated, server_pool.identifier),
-                    error_messages.get(396).format(ip.ip_formated, server_pool.identifier)
-                )
-
-            EnvironmentEnvironmentVip.get_by_environment_environment_vip(ip.networkipv4.vlan.ambiente.id, ip.networkipv4.ambient_vip.id)
-
-        ipv6_list = _get_server_pool_ips_list(vip_request, 'ipv6')
-
-        for ip_dict in ipv6_list:
-
-            ip = ip_dict.get('ip')
-            server_pool = ip_dict.get('server_pool')
-
-            validation_params = _get_validation_params(ip, server_pool, env_vip_description, 'ipv6')
-
-            if ip.networkipv6.ambient_vip is None:
-                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                    error_messages.get(395).format(ip.ip_formated, server_pool.identifier),
-                    error_messages.get(396).format(ip.ip_formated, server_pool.identifier)
-                )
-
-            EnvironmentEnvironmentVip.get_by_environment_environment_vip(ip.networkipv6.vlan.ambiente.id, ip.networkipv6.ambient_vip.id)
-
-    except EnvironmentEnvironmentVipNotFoundError, error:
-        log.error(error)
-
-        raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-            error_messages.get(397).format(*validation_params),
-            error_messages.get(398).format(*validation_params)
-        )
     except Exception, error:
         log.error(error)
         raise error
