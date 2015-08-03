@@ -254,23 +254,24 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                                        priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
                                        port_real=dic['port_real'])
 
-                spm.save(user)
+            spm.save(user)
 
-                #execute script to create real if pool already created
-                #commits transaction. Rolls back if script returns error
-                if sp.pool_created:
+            #execute script to create real if pool already created
+            #commits transaction. Rolls back if script returns error
+            if sp.pool_created:
+                transaction.commit()
+                #def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
+                #spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
+                command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    spm.delete(user)
                     transaction.commit()
-                    #def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
-                    #spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
-                    command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-                    code, _, _ = exec_script(command)
-                    if code != 0:
-                        spm.delete(user)
-                        transaction.commit()
-                        raise exceptions.ScriptCreatePoolException()
+                    raise exceptions.ScriptCreatePoolException()
 
             #if sp.healthcheck_id:
             #    spm.healthcheck = sp.healthcheck
+
             list_pool_member.append(spm)
 
     return list_pool_member
