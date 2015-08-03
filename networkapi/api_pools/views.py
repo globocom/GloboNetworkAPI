@@ -1084,7 +1084,7 @@ def list_environment_environment_vip_related(request):
         environment_list_dict = []
 
         for environment in environment_list:
-            if environment.blockrules_set.count() == 0:
+            if environment.blockrules_set.count() == 0: #TODO verificar a regra
                 env_map = model_to_dict(environment)
                 env_map["grupo_l3_name"] = environment.grupo_l3.nome
                 env_map["ambiente_logico_name"] = environment.ambiente_logico.nome

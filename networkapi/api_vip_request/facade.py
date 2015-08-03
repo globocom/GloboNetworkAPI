@@ -176,9 +176,6 @@ def update(request, pk):
         if not vip_port_serializer.is_valid():
             raise api_exceptions.ValidationException("Invalid Port Vip To Pool")
 
-        # valid if pools member can linked by environment/environment vip relationship rule
-        server_pool_ips_can_associate_with_vip_request(obj_req_vip)
-
         vip_port_to_pool_pks = [port['id'] for port in vip_ports if port.get('id')]
 
         vip_port_to_pool_to_remove = VipPortToPool.objects.filter(
@@ -186,6 +183,9 @@ def update(request, pk):
         ).exclude(
             id__in=vip_port_to_pool_pks
         )
+
+        # valid if pools member can linked by environment/environment vip relationship rule
+        server_pool_ips_can_associate_with_vip_request(obj_req_vip, vip_port_to_pool_to_remove)
 
         for v_port_to_del in vip_port_to_pool_to_remove:
             v_port_to_del.delete(user)
@@ -216,9 +216,11 @@ def _get_server_pool_list(vip_request):
 
     server_pool_list = set()
 
+    # server pool already related
     for vip_pool in vip_request.vipporttopool_set.all():
         server_pool_list.add(vip_pool.server_pool)
 
+    # server pool to add
     for vip_pool in vip_request.vip_ports_to_pools:
         server_pool_list.add(vip_pool.server_pool)
 
@@ -257,15 +259,28 @@ def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_po
         raise error
 
 
-def server_pool_ips_can_associate_with_vip_request(vip_request):
+def _get_server_pool_list_by_vip_port_to_pool(vip_port_to_pool_to_remove):
+    server_pool_exclude_list = set()
+
+    for vip_port_to_pool in vip_port_to_pool_to_remove:
+        server_pool_exclude_list.add(vip_port_to_pool.server_pool)
+
+    return list(server_pool_exclude_list)
+
+
+def server_pool_ips_can_associate_with_vip_request(vip_request, vip_port_to_pool_to_remove=[]):
 
     try:
         environment_vip = EnvironmentVip.get_by_values(vip_request.finalidade, vip_request.cliente, vip_request.ambiente)
-        server_pool_list = _get_server_pool_list(vip_request)
 
-        for server_pool in server_pool_list:
-            server_pool_member_list = server_pool.serverpoolmember_set.all()
-            _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip)
+        server_pool_list_add_list = _get_server_pool_list(vip_request)
+        server_pool_list_remove_list = _get_server_pool_list_by_vip_port_to_pool(vip_port_to_pool_to_remove)
+
+        for server_pool in server_pool_list_add_list:
+
+            if server_pool not in server_pool_list_remove_list:
+                server_pool_member_list = server_pool.serverpoolmember_set.all()
+                _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip)
 
     except Exception, error:
         log.error(error)
