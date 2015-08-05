@@ -196,13 +196,9 @@ from networkapi.grupo.resource.GroupUserAddResource import GroupUserAddResource
 from networkapi.interface.resource.InterfaceResource import InterfaceResource
 from networkapi.interface.resource.InterfaceGetResource import InterfaceGetResource
 from networkapi.interface.resource.InterfaceDisconnectResource import InterfaceDisconnectResource
-<<<<<<< HEAD
 from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
 from networkapi.interface.resource.InterfaceGetSwRouterResource import InterfaceGetSwRouterResource
 from networkapi.interface.resource.InterfaceEnvironmentResource import InterfaceEnvironmentResource
-=======
-from networkapi.interface.resource.InterfaceGetSwRouterResource import InterfaceGetSwRouterResource
->>>>>>> 6e324abd5925e11f36fa3fdb87d4e3a7776fa5c6
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
 
@@ -271,10 +267,8 @@ from networkapi.rack.resource.RackEditResource import RackEditResource
 from networkapi.rack.resource.RackDeleteResource import RackDeleteResource
 from networkapi.rack.resource.RackConfigResource import RackConfigResource
 from networkapi.rack.resource.RackAplicarConfigResource import RackAplicarConfigResource
-from networkapi.rack.resource.ListEnvironmentRackResource import ListEnvironmentRackResource
-from networkapi.rack.resource.GetRackResource import GetRackResource
-
-from networkapi.rackservers.resource.ServerTypeListResource import ServerTypeListResource
+from networkapi.rack.resource.RackListAllResource import RackListAllResource
+from networkapi.rack.resource.RackEnvironmentResource import RackEnvironmentResource
 
 check_action = CheckAction()
 
@@ -283,7 +277,6 @@ check_action = CheckAction()
 # from django.contrib import admin
 # admin.autodiscover()
 
-server_type_list_resource = ServerTypeListResource()
 
 rack_add_resource = RackAddResource()
 find_rack_resource = RackFindResource()
@@ -291,8 +284,8 @@ edit_rack_resource = RackEditResource()
 delete_rack_resource = RackDeleteResource()
 gerar_config_rack_resource = RackConfigResource()
 aplicar_config_rack_resource = RackAplicarConfigResource()
-list_environment_rack_resource = ListEnvironmentRackResource()
-get_rack_resource = GetRackResource()
+list_all_racks_resource = RackListAllResource()
+list_rack_environment_resource = RackEnvironmentResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -1131,7 +1124,6 @@ urlpatterns += patterns('',
 urlpatterns += patterns('',
                        url(r'^healthcheck$',
                            lambda _: HttpResponse("WORKING")),
-
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
                        url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
@@ -1146,12 +1138,12 @@ urlpatterns += patterns('',
                            name='config.rack'),
                        url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
                            name='aplicar.rack'),
-                       url(r'^rack/find/(?P<nome>[^/]+)/$', get_rack_resource.handle_request,
-                           name='get.rack'),
-                       url(r'^rack/list-rack-environment/(?P<nome_rack>[^/]+)/$', list_environment_rack_resource.handle_request,
-                           name='env.rack'),
-                       url(r'^rackservers/lista-tipo-servidores[/]?$', server_type_list_resource.handle_request,
-                           name='typelist.rackservers'),
+                       url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
+                           name='interfacetype.get'),
+                       url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
+                           name='interfacetype.get'),
+                       url(r'^interface/associar-ambiente[/]?$', interface_environment_resource.handle_request,
+                           name='interface.associar'),
                        )
 
 

@@ -210,7 +210,6 @@ INSTALLED_APPS = (
     'networkapi.blockrules',
     'networkapi.config',
     'networkapi.rack',
-    'networkapi.rackservers',
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
