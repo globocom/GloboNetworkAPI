@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
 from networkapi.equipamento.models import Equipamento
-from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import Ambiente, AmbienteError
 
 
 class RackError(Exception):
@@ -187,16 +187,17 @@ class EnvironmentRack(BaseModel):
         db_table = u'ambiente_rack'
         managed = True
 
-    def get_by_rack(cls, id):
-        """"
-        @return: Environments.
-        @raise RackNumberNotFoundError: Rack is not registered.
-        @raise RackError: Failed to search for the Rack.
+    @classmethod
+    def get_by_rack(cls, rack_id):
+
+        """"Get Environment by racks id.
+        @return: Environment.
         """
         try:
-            return EnvironmentRack.objects.filter(rack=id)
+            return EnvironmentRack.objects.filter(rack=rack_id)
         except ObjectDoesNotExist, e:
-            raise RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+            raise RackError(
+                e, u'Dont there is a Environment by rack = %s.' % rack_id)
         except Exception, e:
-            cls.log.error(u'Failure to search the Rack.')
-            raise RackError(e, u'Failure to search the Rack.')
+            cls.log.error(u'Failure to search the Environment.')
+            raise AmbienteError(e, u'Failure to search the Environment.')

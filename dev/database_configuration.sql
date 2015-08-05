@@ -1201,6 +1201,7 @@ DEFAULT CHARACTER SET = utf8;
 CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
   `id_rack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `numero` INT(10) UNSIGNED NOT NULL,
+  `nome` VARCHAR(4) NOT NULL UNIQUE,
   `mac_sw1` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `mac_sw2` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `mac_ilo` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
@@ -1208,6 +1209,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
   `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
   `config` tinyint(1) NOT NULL,
+  `create_vlan_amb` tinyint(1) NOT NULL,
   INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
   INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
   INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
