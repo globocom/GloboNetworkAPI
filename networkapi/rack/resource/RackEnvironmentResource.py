@@ -34,6 +34,7 @@ def get_environment_map(environment):
     environment_map['nome_divisao'] = environment.divisao_dc.nome
     environment_map['nome_ambiente_logico'] = environment.ambiente_logico.nome
     environment_map['nome_grupo_l3'] = environment.grupo_l3.nome
+    #environment_map['']
 
     return environment_map
 
@@ -68,7 +69,8 @@ class RackEnvironmentResource(RestResource):
                 envs = model_to_dict(envs)
                 amb = Ambiente()
                 ambiente = amb.get_by_pk(envs['ambiente'])
-                environment_list.append(get_environment_map(ambiente))
+                if "PROD" in ambiente.ambiente_logico.nome:
+                    environment_list.append(get_environment_map(ambiente))
 
             return self.response(dumps_networkapi({'ambiente': environment_list}))
 

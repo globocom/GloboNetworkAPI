@@ -559,3 +559,14 @@ class EnvironmentInterface(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'interface_do_ambiente'
         managed = True
+
+    def create(self, authenticated_user):
+        """Add new interface_do_ambiente"""
+
+        try:
+            return self.save(authenticated_user)
+
+        except Exception, e:
+            self.log.error(u'Failed to add environment for the interface.')
+            raise InterfaceError(
+                e, u'Failed to add environment for the interface.')

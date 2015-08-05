@@ -22,12 +22,14 @@ from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkap
 from networkapi.admin_permission import AdminPermission
 from networkapi.log import Log
 from networkapi.grupo.models import GrupoError
-from networkapi.interface.models import TipoInterface, Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
+from networkapi.interface.models import EnvironmentInterface, TipoInterface, Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
 from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError
 from django.forms.models import model_to_dict
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_boolean_param, convert_string_or_int_to_boolean
+from networkapi.ambiente.models import Ambiente
+
 
 
 class InterfaceResource(RestResource):
@@ -192,6 +194,20 @@ class InterfaceResource(RestResource):
             )
 
             interface.create(user)
+
+            #envs = interface_map.get('ambientes')
+            #raise InvalidValueError(None, 'envs', envs)
+            #if envs is not None:
+            #amb_int = EnvironmentInterface()
+            #interface = Interface()
+            #ambiente = Ambiente()
+            #amb_int.interface = interface.get_by_pk(int)
+
+            # set variables
+            #for var in envs:
+            #    amb_int.ambiente = ambiente.get_by_pk(var)
+             #   id = amb_int.save(user)
+                #amb_int_list.append(id)
 
             # Monta dict para response
             networkapi_map = dict()
@@ -431,6 +447,9 @@ class InterfaceResource(RestResource):
         map['nome'] = interface.interface
         map['protegida'] = interface.protegida
         map['descricao'] = interface.descricao
+        map['tipo'] = interface.tipo
+        map['id_equipamento'] = interface.equipamento_id
+
         if interface.ligacao_front is None:
             map['id_ligacao_front'] = ''
         else:
@@ -439,7 +458,6 @@ class InterfaceResource(RestResource):
             map['id_ligacao_back'] = ''
         else:
             map['id_ligacao_back'] = interface.ligacao_back_id
-        map['id_equipamento'] = interface.equipamento_id
         return map
 
     def get_new_interface_map(self, interface):
