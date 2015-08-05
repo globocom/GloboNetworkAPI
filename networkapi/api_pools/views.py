@@ -878,7 +878,7 @@ def save(request):
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
         # Save reals
-        save_server_pool_member(request.user, sp, list_server_pool_member)
+        pool_member = save_server_pool_member(request.user, sp, list_server_pool_member)
 
         # Check if someone is using the old healthcheck
         # If not, delete it to keep the database clean
@@ -887,7 +887,7 @@ def save(request):
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(pool_member)
 
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)
