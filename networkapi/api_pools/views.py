@@ -887,7 +887,7 @@ def save(request):
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
-        return Response(pool_member)
+        return Response(sp)
 
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)
