@@ -31,9 +31,9 @@ from networkapi.ambiente.models import Ambiente
 def get_environment_map(environment):
     environment_map = dict()
     environment_map['id'] = environment.id
-    environment_map['nome_divisao'] = environment.divisao_dc.nome
-    environment_map['nome_ambiente_logico'] = environment.ambiente_logico.nome
-    environment_map['nome_grupo_l3'] = environment.grupo_l3.nome
+    environment_map['divisao_dc_name'] = environment.divisao_dc.nome
+    environment_map['ambiente_logico_name'] = environment.ambiente_logico.nome
+    environment_map['grupo_l3_name'] = environment.grupo_l3.nome
     #environment_map['']
 
     return environment_map
