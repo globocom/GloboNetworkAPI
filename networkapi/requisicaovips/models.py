@@ -2074,7 +2074,8 @@ class ServerPool(BaseModel):
     healthcheck = models.ForeignKey(
         Healthcheck,
         db_column='healthcheck_id_healthcheck',
-        default=1
+        default=1,
+        null=True #This attribute is here to not raise a exception
     )
 
     default_port = models.IntegerField(
