@@ -17,15 +17,15 @@
 
 
 from __future__ import with_statement
-from networkapi.rest import RestResource
+from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.admin_permission import AdminPermission
 from networkapi.log import Log
-from networkapi.grupo.models import GrupoError
 from networkapi.ambiente.models import Ambiente
-from networkapi.interface.models import EnvironmentInterface, Interface
+from networkapi.interface.models import EnvironmentInterface, Interface, InterfaceError
 from networkapi.exception import InvalidValueError
+
 
 
 class InterfaceEnvironmentResource(RestResource):
@@ -33,12 +33,11 @@ class InterfaceEnvironmentResource(RestResource):
     log = Log('InterfaceEnvironmentResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        #"""Treat requests POST to add Rack.
-#
- #       URL: interface/associar-ambiente/
-  #      """
+        """Treat requests POST to add Rack.
 
-        #try:
+        URL: interface/associar-ambiente/
+        """
+        try:
             self.log.info("Associa interface aos ambientes")
 
             # User permission
@@ -48,7 +47,7 @@ class InterfaceEnvironmentResource(RestResource):
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
-                xml_map, attrs_map = loads(request.raw_post_data)
+            xml_map, attrs_map = loads(request.raw_post_data)
 
             # XML data format
             networkapi_map = xml_map.get('networkapi')
@@ -60,30 +59,27 @@ class InterfaceEnvironmentResource(RestResource):
                 return self.response_error(3, u'There is no value to the interface tag  of XML request.')
 
             # Get XML data
-            envs = interface_map.get('ambientes')
-            int = interface_map.get('interface')
+            env = interface_map.get('ambiente')
+            interface = interface_map.get('interface')
 
-            amb_int_list = []
             amb_int = EnvironmentInterface()
-            interface = Interface()
-            ambiente = Ambiente()
-            amb_int.interface = interface.get_by_pk(int)
+            interfaces = Interface()
+            amb = Ambiente()
 
-            # set variables
-            for var in envs:
-                amb_int.ambiente = ambiente.get_by_pk(str(var))
-                #id = amb_int.save(user)
-                amb_int_list.append(id)
+            amb_int.interface = interfaces.get_by_pk(int(interface))
+            amb_int.ambiente = amb.get_by_pk(int(env))
+
+            amb_int.create(user)
 
             amb_int_map = dict()
-            amb_int_map['interface_ambiente'] = amb_int_list
+            amb_int_map['interface_ambiente'] = amb_int
 
             return self.response(dumps_networkapi(amb_int_map))
 
-        #except InvalidValueError, e:
-         #   return self.response_error(269, e.param, e.value)
-        #except XMLError, x:
-         #   self.log.error(u'Erro ao ler o XML da requisição.')
-          #  return self.response_error(3, x)
-        #except InterfaceError:
-         #   return self.response_error(1)
+        except InvalidValueError, e:
+            return self.response_error(269, e.param, e.value)
+        except XMLError, x:
+            self.log.error(u'Erro ao ler o XML da requisição.')
+            return self.response_error(3, x)
+        except InterfaceError:
+           return self.response_error(1)

@@ -579,8 +579,7 @@ class EnvironmentInterface(BaseModel):
 
         try:
             return self.save(authenticated_user)
-
         except Exception, e:
-            self.log.error(u'Failed to add environment for the interface.')
+            self.log.error(u'Failed to add interface_do_ambiente.')
             raise InterfaceError(
-                e, u'Failed to add environment for the interface.')
+                e, u'Failed to add interface_do_ambiente.')

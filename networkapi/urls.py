@@ -982,6 +982,8 @@ urlpatterns += patterns('',
                            'new': True}, name='interface.search.by.interface.equipment.new'),
                        url(r'^int/getbyidequip/(?P<id_equipamento>[^/]+)/$', interface_get_sw_router_resource.handle_request,
                            name='interface.get_sw_router'),
+                       url(r'^int/associar-ambiente[/]?$', interface_environment_resource.handle_request,
+                           name='interface.associar'),
 
                        url(r'^authenticate/$', authenticate_resource.handle_request,
                            name='user.authenticate'),
@@ -1142,8 +1144,6 @@ urlpatterns += patterns('',
                            name='interfacetype.get'),
                        url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
                            name='interfacetype.get'),
-                       url(r'^interface/associar-ambiente[/]?$', interface_environment_resource.handle_request,
-                           name='interface.associar'),
                        )
 
 
