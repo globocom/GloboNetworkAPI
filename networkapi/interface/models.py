@@ -125,6 +125,20 @@ class TipoInterface(BaseModel):
             cls.log.error(u'Falha ao pesquisar o tipo de interface.')
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
 
+    @classmethod
+    def get_by_name(cls, name):
+        """"Get TipoInterface by tipo.
+        @return: TipoInterface.
+        """
+        try:
+            return TipoInterface.objects.get(tipo__iexact=name)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a TipoInterface with tipo = %s.' % name)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o tipo de interface.')
+            raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)

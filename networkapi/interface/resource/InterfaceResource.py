@@ -94,9 +94,9 @@ class InterfaceResource(RestResource):
         URL: /interface/ 
 
         """
-
         # Obtém dados do request e verifica acesso
         try:
+
             # Obtém os dados do xml do request
             xml_map, attrs_map = loads(request.raw_post_data)
 
@@ -179,8 +179,10 @@ class InterfaceResource(RestResource):
             else:
                 ligacao_back = None
 
-            tipo_interface = interface_map.get('id_int_type')
-            tipo_interface = TipoInterface.get_by_pk(tipo_interface)
+            tipo_interface = interface_map.get('tipo')
+            tipo_interface = TipoInterface.get_by_name(tipo_interface)
+
+            vlan = interface_map.get('vlan')
 
             # Cria a interface conforme dados recebidos no XML
             interface = Interface(
@@ -190,7 +192,8 @@ class InterfaceResource(RestResource):
                 ligacao_front=ligacao_front,
                 ligacao_back=ligacao_back,
                 equipamento=Equipamento(id=id_equipamento),
-                tipo=tipo_interface
+                tipo=tipo_interface,
+                vlans=vlan
             )
 
             interface.create(user)
@@ -233,6 +236,7 @@ class InterfaceResource(RestResource):
             return self.response_error(187, nome, id_equipamento)
         except (InterfaceError, GrupoError, EquipamentoError):
             return self.response_error(1)
+
 
     def handle_put(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de uma interface.
