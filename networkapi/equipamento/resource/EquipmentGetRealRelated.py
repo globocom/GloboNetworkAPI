@@ -68,22 +68,24 @@ class EquipmentGetRealRelated(RestResource):
 
                 for server_pool_member in ip.serverpoolmember_set.all():
                     server_pool_id = server_pool_member.server_pool_id
-                    vip_port_to_pool = VipPortToPool.objects.get(
+                    vip_port_to_pool = VipPortToPool.objects.filter(
                         server_pool__id=server_pool_id)
-                    vip = RequisicaoVips.get_by_pk(
-                        vip_port_to_pool.requisicao_vip.id)
 
-                    if vip.id not in vip_dict:
-                        vip_dict = {str(vip.id): list()}
+                    for vptp in vip_port_to_pool:
+                        vip = RequisicaoVips.get_by_pk(
+                            vptp.requisicao_vip.id)
 
-                    host_name = vip.variables_to_map()['host']
+                        if vip.id not in vip_dict:
+                            vip_dict = {str(vip.id): list()}
 
-                    map_dicts.append({'server_pool_member_id': server_pool_member.id,
-                                      'id_vip': vip.id,
-                                      'host_name': host_name,
-                                      'port_vip': vip_port_to_pool.port_vip,
-                                      'port_real': server_pool_member.port_real,
-                                      'ip': mount_ipv4_string(ip)})
+                        host_name = vip.variables_to_map()['host']
+
+                        map_dicts.append({'server_pool_member_id': server_pool_member.id,
+                                          'id_vip': vip.id,
+                                          'host_name': host_name,
+                                          'port_vip': vptp.port_vip,
+                                          'port_real': server_pool_member.port_real,
+                                          'ip': mount_ipv4_string(ip)})
 
             # IPV6
             for ip_equip in equipment.ipv6equipament_set.all():
@@ -93,22 +95,24 @@ class EquipmentGetRealRelated(RestResource):
 
                 for server_pool_member in ip.serverpoolmember_set.all():
                     server_pool_id = server_pool_member.server_pool_id
-                    vip_port_to_pool = VipPortToPool.objects.get(
+                    vip_port_to_pool = VipPortToPool.objects.filter(
                         server_pool__id=server_pool_id)
-                    vip = RequisicaoVips.get_by_pk(
-                        vip_port_to_pool.requisicao_vip.id)
 
-                    if vip.id not in vip_dict:
-                        vip_dict = {str(vip.id): list()}
+                    for vptp in vip_port_to_pool:
+                        vip = RequisicaoVips.get_by_pk(
+                            vptp.requisicao_vip.id)
 
-                    host_name = vip.variables_to_map()['host']
+                        if vip.id not in vip_dict:
+                            vip_dict = {str(vip.id): list()}
 
-                    map_dicts.append({'server_pool_member_id': server_pool_member.id,
-                                      'id_vip': vip.id,
-                                      'host_name': host_name,
-                                      'port_vip': vip_port_to_pool.port_vip,
-                                      'port_real': server_pool_member.port_real,
-                                      'ip': mount_ipv6_string(ip)})
+                        host_name = vip.variables_to_map()['host']
+
+                        map_dicts.append({'server_pool_member_id': server_pool_member.id,
+                                          'id_vip': vip.id,
+                                          'host_name': host_name,
+                                          'port_vip': vptp.port_vip,
+                                          'port_real': server_pool_member.port_real,
+                                          'ip': mount_ipv6_string(ip)})
 
             vip_map = dict()
             vip_map["vips"] = map_dicts
