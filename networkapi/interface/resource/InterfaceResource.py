@@ -451,9 +451,9 @@ class InterfaceResource(RestResource):
         map['nome'] = interface.interface
         map['protegida'] = interface.protegida
         map['descricao'] = interface.descricao
-        map['tipo'] = interface.tipo
+        map['tipo'] = interface.tipo.tipo
         map['id_equipamento'] = interface.equipamento_id
-
+        map['vlan'] = interface.vlans
         if interface.ligacao_front is None:
             map['id_ligacao_front'] = ''
         else:
@@ -469,7 +469,8 @@ class InterfaceResource(RestResource):
         int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
         int_map['equipamento_nome'] = interface.equipamento.nome
         int_map['marca'] = interface.equipamento.modelo.marca_id
-        int_map['tipo'] = interface.tipo.id
+        int_map['tipo'] = interface.tipo.tipo
+        int_map['vlan'] = interface.vlans
         if interface.ligacao_front is not None:
             int_map['nome_ligacao_front'] = interface.ligacao_front.interface
             int_map[

@@ -34,7 +34,10 @@ def get_environment_map(environment):
     environment_map['divisao_dc_name'] = environment.divisao_dc.nome
     environment_map['ambiente_logico_name'] = environment.ambiente_logico.nome
     environment_map['grupo_l3_name'] = environment.grupo_l3.nome
-    #environment_map['']
+    if not environment.min_num_vlan_1==None and not environment.max_num_vlan_2==None:
+        environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_2)
+    else:
+        environment_map['range'] = "Nao definido"
 
     return environment_map
 
@@ -63,8 +66,6 @@ class RackEnvironmentResource(RestResource):
             id = kwargs.get('rack_id')
             env = EnvironmentRack()
             environments = env.get_by_rack(id)
-            self.log.info(str(environments))
-            #rack = model_to_dict(rack)
             for envs in environments:
                 envs = model_to_dict(envs)
                 amb = Ambiente()

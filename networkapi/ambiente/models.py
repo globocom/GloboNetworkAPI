@@ -609,27 +609,20 @@ class EnvironmentVip(BaseModel):
 
 
 class Ambiente(BaseModel):
+
     id = models.AutoField(primary_key=True, db_column='id_ambiente')
     grupo_l3 = models.ForeignKey(GrupoL3, db_column='id_grupo_l3')
-    ambiente_logico = models.ForeignKey(
-        AmbienteLogico, db_column='id_ambiente_logic')
+    ambiente_logico = models.ForeignKey(AmbienteLogico, db_column='id_ambiente_logic')
     divisao_dc = models.ForeignKey(DivisaoDc, db_column='id_divisao')
     filter = models.ForeignKey(Filter, db_column='id_filter', null=True)
-    acl_path = models.CharField(
-        max_length=250, db_column='acl_path', null=True)
-    ipv4_template = models.CharField(
-        max_length=250, db_column='ipv4_template', null=True)
-    ipv6_template = models.CharField(
-        max_length=250, db_column='ipv6_template', null=True)
+    acl_path = models.CharField(max_length=250, db_column='acl_path', null=True)
+    ipv4_template = models.CharField(max_length=250, db_column='ipv4_template', null=True)
+    ipv6_template = models.CharField(max_length=250, db_column='ipv6_template', null=True)
     link = models.CharField(max_length=200, blank=True)
-    min_num_vlan_1 = models.IntegerField(
-        blank=True, null=True, db_column='min_num_vlan_1')
-    max_num_vlan_1 = models.IntegerField(
-        blank=True, null=True, db_column='max_num_vlan_1')
-    min_num_vlan_2 = models.IntegerField(
-        blank=True, null=True, db_column='min_num_vlan_2')
-    max_num_vlan_2 = models.IntegerField(
-        blank=True, null=True, db_column='max_num_vlan_2')
+    min_num_vlan_1 = models.IntegerField(blank=True, null=True, db_column='min_num_vlan_1')
+    max_num_vlan_1 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_1')
+    min_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='min_num_vlan_2')
+    max_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_2')
 
     log = Log('Ambiente')
 
