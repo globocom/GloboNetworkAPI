@@ -873,8 +873,7 @@ def save(request):
         # Save Server pool
         sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
                                                   maxconn, id_pool_member_noempty)
-        data = dict ()
-        data['pool'] = sp.id
+
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
@@ -887,6 +886,17 @@ def save(request):
             pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
+
+        #Return data
+        data = dict ()
+        data['pool'] = sp.id
+        serializer_server_pool = ServerPoolSerializer(sp)
+        data["server_pool"] = serializer_server_pool.data
+        serializer_server_pool_member = ServerPoolMemberSerializer(
+            pool_member,
+            many=True
+        )
+        data["server_pool_members"] = serializer_server_pool_member.data
 
         return Response(data)
 
