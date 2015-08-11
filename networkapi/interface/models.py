@@ -507,6 +507,8 @@ class Interface(BaseModel):
             interface.interface = nome
             interface.descricao = kwargs['descricao']
             interface.protegida = kwargs['protegida']
+            interface.tipo = kwargs['tipo']
+            interface.vlans = kwargs['vlans']
 
             return interface.save(authenticated_user)
 

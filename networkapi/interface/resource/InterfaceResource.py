@@ -28,8 +28,6 @@ from django.forms.models import model_to_dict
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_boolean_param, convert_string_or_int_to_boolean
-from networkapi.ambiente.models import Ambiente
-
 
 
 class InterfaceResource(RestResource):
@@ -198,21 +196,6 @@ class InterfaceResource(RestResource):
 
             interface.create(user)
 
-            #envs = interface_map.get('ambientes')
-            #raise InvalidValueError(None, 'envs', envs)
-            #if envs is not None:
-            #amb_int = EnvironmentInterface()
-            #interface = Interface()
-            #ambiente = Ambiente()
-            #amb_int.interface = interface.get_by_pk(int)
-
-            # set variables
-            #for var in envs:
-            #    amb_int.ambiente = ambiente.get_by_pk(var)
-             #   id = amb_int.save(user)
-                #amb_int_list.append(id)
-
-            # Monta dict para response
             networkapi_map = dict()
             interface_map = dict()
 
@@ -241,8 +224,7 @@ class InterfaceResource(RestResource):
     def handle_put(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de uma interface.
 
-        URL: /interface/<id_interface>/ 
-
+        URL: /interface/<id_interface>/
         """
 
         # Get request data and check permission
@@ -323,6 +305,11 @@ class InterfaceResource(RestResource):
                 else:
                     id_ligacao_back = int(id_ligacao_back)
 
+            tipo = interface_map.get('tipo')
+            tipo = TipoInterface.get_by_name(tipo)
+
+            vlan = interface_map.get('vlan')
+
             with distributedlock(LOCK_INTERFACE % id_interface):
 
                 # Update interface
@@ -332,7 +319,9 @@ class InterfaceResource(RestResource):
                                  protegida=protegida,
                                  descricao=descricao,
                                  ligacao_front_id=id_ligacao_front,
-                                 ligacao_back_id=id_ligacao_back
+                                 ligacao_back_id=id_ligacao_back,
+                                 tipo=tipo,
+                                 vlans=vlan
                                  )
 
                 return self.response(dumps_networkapi({}))
