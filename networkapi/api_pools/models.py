@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from networkapi.ambiente.models import Ambiente
 from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
-from networkapi.exception import InvalidValueError, OptionPoolEnvironmentDuplicatedError, OptionPoolError, OptionPoolNotFoundError \
+from networkapi.exception import InvalidValueError, OptionPoolEnvironmentDuplicatedError, OptionPoolError, OptionPoolNotFoundError, \
     OptionPoolEnvironmentNotFoundError, OptionPoolEnvironmentError
 from networkapi.util import is_valid_string_maxsize, is_valid_option
 from _mysql_exceptions import OperationalError
