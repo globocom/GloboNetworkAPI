@@ -168,14 +168,14 @@ class OptionPool (BaseModel):
 class OptionPoolEnvironment(BaseModel):
 
 
-    id = models.AutoField(primary_key=True, db_column='id_opcaopool_ambiente_xref')
-    option = models.ForeignKey(OptionPool, db_column='id_opcoespool')
-    environment = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    id = models.AutoField(primary_key=True, db_column='id_optionpool_environment_xref')
+    option = models.ForeignKey(OptionPool, db_column='id_optionspool')
+    environment = models.ForeignKey(Ambiente, db_column='id_environment')
 
     log = Log('OptionPoolEnvironment')
 
     class Meta(BaseModel.Meta):
-        db_table = u'optionspool_ambiente_xref'
+        db_table = u'optionspool_environment_xref'
         managed = True
         unique_together = ('option', 'environment')
 

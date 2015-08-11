@@ -848,7 +848,7 @@ def save(request):
         #Servicedownaction was not given
         try:
             if servicedownaction_id is None:
-                servicedownactions = OptionPool.get_all_by_type_and_environment('service-down-action', environment )
+                servicedownactions = OptionPool.get_all_by_type_and_environment('ServiceDownAction', environment )
                 #assert isinstance((servicedownactions.filter(name='none')).id, object)
                 servicedownaction_id= (servicedownactions.get(name='none')).id
 
