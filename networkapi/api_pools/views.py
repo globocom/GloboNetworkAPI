@@ -823,7 +823,7 @@ def save_reals(request):
 def save(request):
 
     try:
-        # TODO: ADD VALIDATION
+
         id = request.DATA.get('id')
         identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
@@ -832,6 +832,7 @@ def save(request):
         maxconn = request.DATA.get('maxcom')
         servicedownaction_id = request.DATA.get('service-down-action')
 
+        #id_pool_member is cleaned below
         id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
@@ -863,7 +864,11 @@ def save(request):
 
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
+        #Cleans id_pool_member. It should be used only with existing pool
+        id_pool_member = ["" for x in id_pool_member]
         if id:
+            #Existing pool member is only valid in existing pools. New pools cannot  use them
+            id_pool_member = request.DATA.get('id_pool_member')
             has_identifier = has_identifier.exclude(id=id)
             #current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
             #current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
@@ -890,7 +895,7 @@ def save(request):
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
         # Save reals
-        save_server_pool_member(request.user, sp, list_server_pool_member)
+        pool_member = save_server_pool_member(request.user, sp, list_server_pool_member)
 
         # Check if someone is using the old healthcheck
         # If not, delete it to keep the database clean
@@ -899,7 +904,18 @@ def save(request):
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
-        return Response(status=status.HTTP_201_CREATED)
+        #Return data
+        data = dict ()
+        data['pool'] = sp.id
+        serializer_server_pool = ServerPoolSerializer(sp)
+        data["server_pool"] = serializer_server_pool.data
+        serializer_server_pool_member = ServerPoolMemberSerializer(
+            pool_member,
+            many=True
+        )
+        data["server_pool_members"] = serializer_server_pool_member.data
+
+        return Response(data)
 
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)

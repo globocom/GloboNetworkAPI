@@ -22,7 +22,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
 from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
 from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckExpectNotFoundError, HealthcheckExpectError
+from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect, HealthcheckExpectNotFoundError, HealthcheckExpectError
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
 from networkapi.ip.models import IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError
@@ -33,7 +33,8 @@ from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsNotFo
     InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, \
     InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, \
     InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidPriorityValueError
+    InvalidTransbordoValueError, InvalidPriorityValueError, ServerPool
+from networkapi.api_pools.facade import get_or_create_healthcheck
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, clone
 from string import upper
@@ -206,6 +207,26 @@ class RequestHealthcheckResource(RestResource):
 
                 # Executar script
 
+                #Put old call to work with new pool features
+                #This call is deprecated
+                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+                if healthcheck == None:
+                    healthcheck = ''
+                if id_healthcheck_expect == None:
+                    healthcheck_expect = ''
+                else:
+                    healthcheck_expect = healthcheck_expect.expect_string
+                healthcheck_identifier = ''
+                healthcheck_destination = '*:*'
+                hc = get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
+                #Applies new healthcheck in pool
+                #Todo - new method
+                old_healthchecks = []
+                for sp in server_pools:
+                    old_healthchecks.append(sp.healthcheck)
+                    sp.healthcheck = hc
+                    sp.save(user, commit=True)
+
                 # gerador_vips -i <ID_REQUISICAO> --healthcheck
                 command = 'gerador_vips -i %d --healthcheck' % vip.id
                 code, stdout, stderr = exec_script(command)
@@ -220,6 +241,10 @@ class RequestHealthcheckResource(RestResource):
                     map['sucesso'] = success_map
                     return self.response(dumps_networkapi(map))
                 else:
+                    old_healthchecks.reverse()
+                    for sp in server_pools:
+                        sp.healthcheck = old_healthchecks.pop()
+                        sp.save(user, commit=True)
                     vip_old.save(user, commit=True)
                     return self.response_error(2, stdout + stderr)
 

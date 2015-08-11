@@ -14,6 +14,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.queue_manager import QueueManager
 
 from networkapi.rest import RestResource
 from networkapi.log import Log
@@ -32,6 +34,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import IP_VERSION
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.vlan.models import VlanNotFoundError, AclNotFoundError
+from networkapi.vlan.serializers import VlanSerializer
 
 logger = logging.getLogger('VlanCreateScript')
 
@@ -97,6 +100,16 @@ class VlanCreateScriptAclResource(RestResource):
 
             scriptAclCvs(
                 acl_name, vlan_formated, environment, network_type, user, template_name)
+
+            # Send to Queue
+            queue_manager = QueueManager()
+
+            serializer = VlanSerializer(vlan)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.VLAN_CREATE_SCRIPT_ACL})
+            queue_manager.append(data_to_queue)
+
+            queue_manager.send()
 
             return self.response(dumps_networkapi({'vlan': vlan_formated}))
 

@@ -19,13 +19,10 @@ from __future__ import with_statement
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from networkapi.log import Log
-from networkapi.semaforo.model import Semaforo
 from networkapi.models.BaseModel import BaseModel
-from _mysql_exceptions import OperationalError
-from networkapi.infrastructure.ipaddr import IPNetwork
-from networkapi.util import clone
-from networkapi.filter.models import verify_subnet_and_equip
 from networkapi.equipamento.models import Equipamento
+from networkapi.ambiente.models import Ambiente
+
 
 class RackError(Exception):
 
@@ -93,9 +90,9 @@ class Rack(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_rack')
     numero = models.IntegerField(unique=True)
     nome = models.CharField(max_length=4, unique=True)
-    mac_sw1 = models.CharField(max_length=17, blank=True, null=True)
-    mac_sw2 = models.CharField(max_length=17, blank=True, null=True)
-    mac_ilo = models.CharField(max_length=17, blank=True, null=True)
+    mac_sw1 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw1')
+    mac_sw2 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw2')
+    mac_ilo = models.CharField(max_length=17, blank=True, null=True, db_column='mac_ilo')
     id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
     id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
     id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
@@ -121,8 +118,7 @@ class Rack(BaseModel):
             raise RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
         except Exception, e:
             cls.log.error(u'Failure to search the Rack.')
-            raise RackError(e, u'Failure to search the Rack.') 
-
+            raise RackError(e, u'Failure to search the Rack.')
 
     def get_by_id(cls, number):
         """"Get  Rack number.
@@ -161,15 +157,85 @@ class Rack(BaseModel):
             self.log.error(u'Falha ao inserir Rack.')
             raise RackError(e, u'Falha ao inserir Rack.')
 
+class EnvironmentRackError(Exception):
+
+    """EnvironmentRack table errors"""
+
+    def __init__(self, cause, message=None):
+        self.cause = cause
+        self.message = message
+
+    def __str__(self):
+        msg = u'Cause: %s, Message: %s' % (self.cause, self.message)
+        return msg.encode('utf-8', 'replace')
+
+class EnvironmentRackDuplicatedError(EnvironmentRackError):
+
+    """Exception when environment and rack are already associated."""
+
+    def __init__(self, cause, message=None):
+        EnvironmentRackError.__init__(self, cause, message)
+
+class EnvironmentRackNotFoundError(EnvironmentRackError):
+
+    """EnvironmentRack not found."""
+
+    def __init__(self, cause, message=None):
+        EnvironmentRackError.__init__(self, cause, message)
 
 
-class Tipo_Config(BaseModel):
+class EnvironmentRack(BaseModel):
 
-    log = Log('Tipo_Config')
+    log = Log('EnvironmentRack')
 
-    id = models.AutoField(primary_key=True, db_column='id_tipo_config')
-    tipo_equip = models.CharField(max_length=20)
+    id = models.AutoField(primary_key=True, db_column='id_ambienterack')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    rack = models.ForeignKey(Rack, db_column='id_rack')
 
     class Meta(BaseModel.Meta):
-        db_table = u'tipo_config'
+        db_table = u'ambiente_rack'
         managed = True
+
+    def create(self, authenticated_user):
+        '''Insert a new associoation between rack and environment
+
+        @return: Nothing
+
+        @raise AmbienteNotFoundError: Ambiente does not exists.
+
+        @raise EnvironmentRackDuplicatedError: Rack already related to environment
+
+        @raise EnvironmentRackError: Not able to complete.
+        '''
+
+        self.ambiente = Ambiente().get_by_pk(self.ambiente.id)
+        self.rack = Rack().get_by_pk(self.rack.id)
+
+        try:
+            exist = EnvironmentRack().get_by_rack_environment(
+                self.rack.id, self.ambiente.id)
+            raise EnvironmentRackDuplicatedError(
+                None, u'EnvironmentRack already registered for rack and environment.')
+        except EnvironmentRackNotFoundError:
+            pass
+
+        try:
+            self.save(authenticated_user)
+        except Exception, e:
+            self.log.error(u'Error trying to insert EnvironmentRack: %s/%s.' %
+                           (self.rack.id, self.ambiente.id))
+            raise EnvironmentRackError(
+                e, u'Error trying to insert EnvironmentRack: %s/%s.' % (self.rack.id, self.ambiente.id))
+
+
+    def get_by_rack_environment(self, rack_id, environment_id):
+        try:
+            return EnvironmentRack.objects.get(ambiente__id=environment_id, rack__id=rack_id)
+        except ObjectDoesNotExist, e:
+            raise EnvironmentRackNotFoundError(
+                e, u'There is no EnvironmentRack with rack = %s and environment = %s.' % (rack_id, environment_id))
+        except Exception, e:
+            self.log.error(u'Error trying to search EnvironmentRack %s/%s.' %(rack_id, environment_id))
+            raise EnvironmentRackError(
+                e, u'Error trying to search EnvironmentRack.')
+

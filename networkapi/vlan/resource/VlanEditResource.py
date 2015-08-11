@@ -20,6 +20,8 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.log import Log
+from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize,\
     destroy_cache_function
@@ -31,6 +33,7 @@ import re
 from networkapi.settings import VLAN_CREATE
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.equipamento.models import Equipamento
+from networkapi.vlan.serializers import VlanSerializer
 
 
 class VlanEditResource(RestResource):
@@ -330,7 +333,18 @@ class VlanEditResource(RestResource):
             else:
                 return self.response_error(2, stdout + stderr)
 
+            # Send to Queue
+            queue_manager = QueueManager()
+
+            serializer = VlanSerializer(vlan)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.VLAN_CREATE_VLAN})
+            queue_manager.append(data_to_queue)
+
+            queue_manager.send()
+
             return self.response(dumps_networkapi({}))
+
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except AmbienteNotFoundError, e:

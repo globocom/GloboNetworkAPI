@@ -23,13 +23,14 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.infrastructure.ipaddr import IPAddress
 from networkapi.ip.models import Ip, IpEquipamento, IpNotFoundError, IpEquipamentoDuplicatedError, IpError, \
-    NetworkIPv4NotFoundError, IpNotAvailableError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip
+    NetworkIPv4NotFoundError, IpNotAvailableError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
+    IpCantRemoveFromServerPool
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import VlanNotFoundError, VlanError
 from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_ipv4,\
-    is_valid_string_maxsize, is_valid_string_minsize, destroy_cache_function
+    is_valid_string_maxsize, is_valid_string_minsize, destroy_cache_function, mount_ipv4_string
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_IP_EQUIPMENT
 from django.db.utils import IntegrityError
@@ -279,20 +280,37 @@ class IpResource(RestResource):
             with distributedlock(LOCK_IP_EQUIPMENT % (ip_id, equip_id)):
 
                 ipv4 = Ip.get_by_pk(ip_id)
+                equipament = Equipamento.get_by_pk(equip_id)
+
                 # Delete vlan's cache
                 destroy_cache_function([ipv4])
 
                 # delete equipment's cache
                 destroy_cache_function([equip_id], True)
 
-                if ServerPoolMember.objects.filter(ip=ipv4).count() != 0:
-                    # IP associated with VIP
-                    return self.response_error(354, ip_id)
+                server_pool_member_list = ServerPoolMember.objects.filter(ip=ipv4)
+
+                if server_pool_member_list.count() != 0:
+                    # IP associated with Server Pool
+
+                    server_pool_name_list = set()
+
+                    for member in server_pool_member_list:
+                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        server_pool_name_list.add(item)
+
+                    server_pool_name_list = list(server_pool_name_list)
+                    server_pool_identifiers = ', '.join(server_pool_name_list)
+
+                    raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(ipv4), 'equip_name': equipament.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (equipament.nome, server_pool_identifiers))
 
                 remove_ip_equipment(ip_id, equip_id, user)
 
                 return self.response(dumps_networkapi({}))
 
+        except IpCantRemoveFromServerPool, e:
+            return self.response_error(385, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('server_pool_identifiers'))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except EquipamentoNotFoundError, e:

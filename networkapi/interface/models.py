@@ -340,7 +340,7 @@ class Interface(BaseModel):
         elif marca == 2:
             regex = "^(Int)\s[0-9]+$"
         elif marca == 3:
-            regex = "^(Fa|Gi|Te|Seriali|Eth)[0-9]+(/[0-9]+(/[0-9]+)?)?$"
+            regex = "^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$"
         elif marca == 4:
             regex = "^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$"
         elif marca == 5:
@@ -411,7 +411,7 @@ class Interface(BaseModel):
         elif marca == 2:
             regex = "^(Int)\s[0-9]+$"
         elif marca == 3:
-            regex = "^(Fa|Gi|Te|Serial|Eth)[0-9]+(/[0-9]+(/[0-9]+)?)?$"
+            regex = "^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$"
         elif marca == 4:
             regex = "^(interface)\s[0-9]+(/[0-9]+.[0-9]+)?$"
         elif marca == 5:

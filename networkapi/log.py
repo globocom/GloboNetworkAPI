@@ -22,6 +22,7 @@ import logging
 import traceback
 from logging.handlers import TimedRotatingFileHandler, codecs
 import re
+from django.conf import settings
 
 from django.utils.log import AdminEmailHandler
 
@@ -237,8 +238,11 @@ class Log(object):
         try:
             get_lock()
             msg = str(msg) % args
+
+            show_traceback = getattr(settings, "LOG_SHOW_TRACEBACK", True)
+
             self.logger.error(
-                msg, extra={'module_name': self.module_name}, exc_info=True)
+                msg, extra={'module_name': self.module_name}, exc_info=show_traceback)
         finally:
             release_lock()
 

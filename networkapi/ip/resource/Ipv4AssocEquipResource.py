@@ -148,8 +148,15 @@ class Ipv4AssocEquipResource(RestResource):
                                 for fet in FilterEquipType.objects.filter(filter=vlan.ambiente.filter.id):
                                     tp_equip_list_two.append(fet.equiptype)
 
+                                #Equipment type should be in both filters
                                 if equip.tipo_equipamento not in tp_equip_list_one or equip.tipo_equipamento not in tp_equip_list_two:
                                     flag_vlan_error = True
+
+                                    #Out of band network is never trunked, it is only in mgmt interface
+                                    # allow it - not a good thing to to, but is very specific
+                                    if vlan.ambiente.divisao_dc.nome == 'OOB-CM' or vlan_atual.ambiente.divisao_dc.nome == 'OOB-CM':
+                                        flag_vlan_error = False
+                                        
 
                             ## Filter case 3 - end ##
 

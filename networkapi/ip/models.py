@@ -226,6 +226,13 @@ class IpEquipCantDissociateFromVip(IpError):
         IpError.__init__(self, cause, message)
 
 
+class IpCantRemoveFromServerPool(IpError):
+    """Returns exception when trying to dissociate ip and equipment, but equipment is the last balancer for Vip Request"""
+
+    def __init__(self, cause, message=None):
+        IpError.__init__(self, cause, message)
+
+
 class NetworkIPv4(BaseModel):
 
     id = models.AutoField(primary_key=True)
@@ -251,6 +258,12 @@ class NetworkIPv4(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'redeipv4'
         managed = True
+
+    def _get_formated_ip(self):
+        "Returns formated ip."
+        return '%s.%s.%s.%s/%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.block)
+
+    ip_formated = property(_get_formated_ip)
 
     @classmethod
     def get_by_pk(self, id):
@@ -363,8 +376,13 @@ class NetworkIPv4(BaseModel):
                     # For each subnet generated with configs
                     for subnet in net4.iter_subnets(new_prefix=new_prefix):
 
+                        net_found = True
+                        for network in networksv4:
+                            if subnet in network:
+                                net_found = False
+
                         # Checks if the network generated is UNUSED
-                        if subnet not in networksv4:
+                        if net_found:
 
                             #Checks if it is subnet/supernet of any existing network
                             in_range = network_in_range(self.vlan, subnet, type_ipv4)
@@ -1107,7 +1125,7 @@ class Ip(BaseModel):
                 #
                 #     ambienteequip.delete(authenticated_user)
 
-                ie.delete(authenticated_user)
+                    ie.delete(authenticated_user)
             super(Ip, self).delete(authenticated_user)
 
         except EquipamentoAmbienteNotFoundError, e:
@@ -1262,8 +1280,18 @@ class IpEquipamento(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome},
-                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP." % (self.equipamento.nome))
+
+            server_pool_identifiers = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
+
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
+
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(IpEquipamento, self).delete(authenticated_user)
 
@@ -1322,6 +1350,12 @@ class NetworkIPv6(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'redeipv6'
         managed = True
+
+    def _get_formated_ip(self):
+        "Returns formated ip."
+        return '%s.%s.%s.%s.%s.%s.%s.%s/%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8,  self.block)
+
+    ip_formated = property(_get_formated_ip)
 
     @classmethod
     def get_by_pk(self, id):
@@ -1406,11 +1440,13 @@ class NetworkIPv6(BaseModel):
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
 
+            # Find all networks ralated to environment
+            nets = NetworkIPv6.objects.filter(
+                vlan__ambiente__id=self.vlan.ambiente.id)
+
             # Cast to API class
             networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3,
                                                                            net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
-
-            net6 = IPv6Network(config.ip_config.subnet)
 
             # For each configuration founded in environment
             for config in configs:
@@ -1422,9 +1458,7 @@ class NetworkIPv6(BaseModel):
                 # Need to be IPv6
                 if config.ip_config.type == IP_VERSION.IPv6[0]:
 
-                    # Find all networks ralated to environment
-                    nets = NetworkIPv6.objects.filter(
-                        vlan__ambiente__id=self.vlan.ambiente.id)
+                    net6 = IPv6Network(config.ip_config.subnet)
 
                     if prefix is not None:
                         new_prefix = int(prefix)
@@ -2214,8 +2248,6 @@ class Ipv6(BaseModel):
             raise IpCantBeRemovedFromVip(e.cause, e.message)
         except IpEquipmentNotFoundError, e:
             raise IpEquipmentNotFoundError(None, e.message)
-        except Exception, e:
-            raise Exception(None, e.message)
 
 
 class Ipv6Equipament(BaseModel):
@@ -2388,8 +2420,18 @@ class Ipv6Equipament(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome},
-                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP" % (self.equipamento.nome))
+
+            server_pool_identifiers = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
+
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
+
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(Ipv6Equipament, self).delete(authenticated_user)
 

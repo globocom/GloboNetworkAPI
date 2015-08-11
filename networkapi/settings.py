@@ -147,6 +147,7 @@ LOG_LEVEL = logging.DEBUG
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
 LOG_USE_STDOUT = False
+LOG_SHOW_TRACEBACK = True
 
 VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
@@ -308,6 +309,14 @@ VIP_REALS_v4_CHECK = 'gerador_vips -i %s --id_ip %s --port_ip %s --port_vip %s -
 VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s --chk'
 
 
+
+##################################
+#       QUEUE SETTINGS
+##################################
+QUEUE_DESTINATION = u"/topic/networkapi_queue"
+QUEUE_BROKER_URI = u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e"
+QUEUE_BROKER_CONNECT_TIMEOUT = 2
+
 ###################################
 #    PATH ACLS
 ###################################
@@ -332,10 +341,10 @@ KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
 IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 #### <<<<<
 
-PATH_TO_GUIDE = "/opt/app/GloboNetworkAPI/networkapi/rack/roteiros/"
-PATH_TO_CONFIG = "/opt/app/GloboNetworkAPI/networkapi/rack/configuracao/"
+PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
+PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
 
-PATH_TO_MV = "/opt/app/GloboNetworkAPI/networkapi/rack/delete/"
+PATH_TO_MV = "/vagrant/networkapi/rack/delete/"
 LEAF = "LF-CM"
 OOB = "OOB-CM"
 SPN = "SPN-CM"
@@ -345,3 +354,9 @@ DIVISAODC_MGMT="NA"
 AMBLOG_MGMT="NA"
 GRPL3_MGMT="REDENOVODC"
 
+### FOREMAN
+USE_FOREMAN=False
+FOREMAN_URL="http://foreman_server"
+FOREMAN_USERNAME="admin"
+FOREMAN_PASSWORD="password"
+FOREMAN_HOSTS_ENVIRONMENT_ID=1

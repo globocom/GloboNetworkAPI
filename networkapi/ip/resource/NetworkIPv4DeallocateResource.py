@@ -22,9 +22,9 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function
+    destroy_cache_function, mount_ipv4_string
 from networkapi.exception import InvalidValueError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, IpEquipamento
+from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, IpEquipamento, IpCantRemoveFromServerPool
 from networkapi.requisicaovips.models import RequisicaoVips
 from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV4
 from networkapi.ip.models import IpCantBeRemovedFromVip
@@ -72,9 +72,26 @@ class NetworkIPv4DeallocateResource(RestResource):
             network_ipv4 = NetworkIPv4().get_by_pk(network_ipv4_id)
 
             for ipv4 in network_ipv4.ip_set.all():
-                if ServerPoolMember.objects.filter(ip=ipv4).count() != 0:
-                    # IP associated with VIP
-                    return self.response_error(355, network_ipv4_id)
+
+                server_pool_member_list = ServerPoolMember.objects.filter(ip=ipv4)
+
+                if server_pool_member_list.count() != 0:
+
+                    # IP associated with Server Pool
+                    server_pool_name_list = set()
+
+                    for member in server_pool_member_list:
+                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        server_pool_name_list.add(item)
+
+                    server_pool_name_list = list(server_pool_name_list)
+                    server_pool_identifiers = ', '.join(server_pool_name_list)
+
+                    ip_formated = mount_ipv4_string(ipv4)
+                    network_ipv4_ip = mount_ipv4_string(network_ipv4)
+
+                    raise IpCantRemoveFromServerPool({'ip': ip_formated, 'network_ip': network_ipv4_ip, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s" % (network_ipv4_ip, ip_formated, server_pool_identifiers))
 
             with distributedlock(LOCK_NETWORK_IPV4 % network_ipv4_id):
 
@@ -89,6 +106,8 @@ class NetworkIPv4DeallocateResource(RestResource):
                 # Return nothing
                 return self.response(dumps_networkapi({}))
 
+        except IpCantRemoveFromServerPool, e:
+            return self.response_error(386, e.cause.get('network_ip'), e.cause.get('ip'), e.cause.get('server_pool_identifiers'))
         except EquipamentoAmbienteNotFoundError, e:
             return self.response_error(320)
         except IpCantBeRemovedFromVip, e:

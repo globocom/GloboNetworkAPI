@@ -526,6 +526,7 @@ class Equipamento(BaseModel):
     modelo = models.ForeignKey(Modelo, db_column='id_modelo')
     nome = models.CharField(unique=True, max_length=50)
     grupos = models.ManyToManyField(EGrupo, through='EquipamentoGrupo')
+    maintenance = models.BooleanField(db_column='maintenance')
 
     log = Log('Equipamento')
 
@@ -597,6 +598,9 @@ class Equipamento(BaseModel):
             self.tipo_equipamento.id)
 
         self.modelo = Modelo.get_by_pk(self.modelo.id)
+
+        if self.maintenance is None:
+            self.maintenance = False
 
         try:
             self.get_by_name(self.nome)
