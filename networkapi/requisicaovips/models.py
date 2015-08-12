@@ -16,11 +16,8 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from datetime import datetime
 from django.db import models
 from django.db.models import Q
-from django.db.models.fields import NullBooleanField
-from networkapi.log import Log
 from networkapi.healthcheckexpect.models import HealthcheckExpect
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
@@ -28,7 +25,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from _mysql_exceptions import OperationalError
 from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
-import re
 from string import upper
 from networkapi.util import is_valid_ip, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
     is_valid_string_maxsize, is_valid_string_minsize, is_valid_option, is_valid_regex, is_valid_ipv6, is_valid_ipv4, \
@@ -1434,8 +1430,7 @@ class RequisicaoVips(BaseModel):
 
                 dict_div_4 = dict()
                 dict_div_4['divisao_dc'] = net.vlan.ambiente.divisao_dc_id
-                dict_div_4[
-                    'ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
+                dict_div_4['ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
 
                 if dict_div_4 not in lista_amb_div_4:
                     lista_amb_div_4.append(dict_div_4)
@@ -2076,7 +2071,8 @@ class ServerPool(BaseModel):
     healthcheck = models.ForeignKey(
         Healthcheck,
         db_column='healthcheck_id_healthcheck',
-        default=1
+        default=1,
+        null=True #This attribute is here to not raise a exception
     )
 
     servicedownaction = models.ForeignKey(

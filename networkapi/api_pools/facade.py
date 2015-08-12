@@ -22,10 +22,9 @@ from django.db import transaction
 from networkapi.api_pools import exceptions
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.ip.models import Ipv6, Ip
+from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
-from networkapi.ambiente.models import IP_VERSION
 
 from networkapi.log import Log
 
@@ -238,25 +237,15 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                     raise exceptions.ScriptCreatePoolException()
                 transaction.commit()
 
-
     if list_server_pool_member:
         for dic in list_server_pool_member:
-
+        #
             ip_object = None
             ipv6_object = None
             if len(dic['ip']) <= 15:
                 ip_object = Ip.get_by_pk(dic['id'])
-
-                if sp.environment.divisao_dc.id != ip_object.networkipv4.vlan.ambiente.divisao_dc.id \
-                        or sp.environment.ambiente_logico.id != ip_object.networkipv4.vlan.ambiente.ambiente_logico.id:
-                    raise exceptions.IpNotFoundByEnvironment()
-
             else:
                 ipv6_object = Ipv6.get_by_pk(dic['id'])
-
-                if sp.environment.divisao_dc.id != ipv6_object.networkipv6.vlan.ambiente.divisao_dc.id \
-                        or sp.environment.ambiente_logico.id != ipv6_object.networkipv6.vlan.ambiente.ambiente_logico.id:
-                    raise exceptions.IpNotFoundByEnvironment()
 
             id_pool = sp.id
             id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
@@ -278,26 +267,23 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                                        priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
                                        port_real=dic['port_real'])
 
-                spm.save(user)
+            spm.save(user)
 
-                #execute script to create real if pool already created
-                #commits transaction. Rolls back if script returns error
-                if sp.pool_created:
+            #execute script to create real if pool already created
+            #commits transaction. Rolls back if script returns error
+            if sp.pool_created:
+                transaction.commit()
+                #def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
+                #spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
+                command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    spm.delete(user)
                     transaction.commit()
-                    #def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
-                    #spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
-                    command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-                    code, _, _ = exec_script(command)
-                    if code != 0:
-                        spm.delete(user)
-                        transaction.commit()
-                        raise exceptions.ScriptCreatePoolException()
-
+                    raise exceptions.ScriptCreatePoolException()
 
             #if sp.healthcheck_id:
             #    spm.healthcheck = sp.healthcheck
-
-
 
             list_pool_member.append(spm)
 
