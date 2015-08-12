@@ -193,7 +193,7 @@ class OptionPoolSerializer(serializers.ModelSerializer):
 class OptionPoolEnvironmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = OptionPoolEnvironment
-        depth = 2
+        depth = 1
         fields = ('id',
                   'option',
                   'environment'

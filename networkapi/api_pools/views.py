@@ -1119,11 +1119,6 @@ def list_option_by_pk(request, option_id):
 
         return Response(serializer_options.data)
 
-
-    except exceptions.InvalidIdOptionPoolRequestException, exception:
-        log.error(exception)
-        raise exception
-
     except OptionPool.DoesNotExist, exception:
         log.error(exception)
         raise exception
@@ -1188,13 +1183,9 @@ def list_environment_options_by_pk(request, environment_option_id):
 
         return Response(serializer_options.data)
 
-    except exceptions.InvalidIdOptionPoolRequestException, exception:
-        log.error(exception)
-        raise exception
-
     except OptionPoolEnvironment.DoesNotExist, exception:
         log.error(exception)
-        raise exception
+        raise exceptions.OptionPoolEnvironmentDoesNotExistException
 
     except Exception, exception:
         log.error(exception)
