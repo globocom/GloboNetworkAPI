@@ -5,8 +5,8 @@ CREATE TABLE `optionspool` (
   PRIMARY KEY (`id_optionspool`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO optionspool (type,description)
-SELECT tipo_opcao, nome_opcao_txt FROM telecom.opcoesvip where tipo_opcao = 'HealthCheck';
+INSERT INTO optionspool (type,description) 
+SELECT tipo_opcao, nome_opcao_txt FROM opcoesvip where tipo_opcao = 'HealthCheck';
 
 INSERT INTO optionspool (type,description) values ('HealthCheck', 'HTTPS');
 INSERT INTO optionspool (type,description) values ('ServiceDownAction', 'none');

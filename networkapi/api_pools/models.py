@@ -51,16 +51,16 @@ class OpcaoPoolAmbiente(BaseModel):
 
 
 class OptionPool (BaseModel):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, db_column='id_optionspool')
     type = models.CharField(
         max_length=50, blank=False, db_column='type')
     name = models.CharField(
-        max_length=50, blank=False, db_column='name')
+        max_length=50, blank=False, db_column='description')
 
     log = Log('OptionPool')
 
     class Meta(BaseModel.Meta):
-        db_table = u'optionpool'
+        db_table = u'optionspool'
         managed = True
 
     def valid_option_pool(self, optionpool_map):

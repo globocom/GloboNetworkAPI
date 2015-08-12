@@ -851,7 +851,9 @@ def save(request):
             if servicedownaction_id is None:
                 servicedownactions = OptionPool.get_all_by_type_and_environment('ServiceDownAction', environment )
                 #assert isinstance((servicedownactions.filter(name='none')).id, object)
-                servicedownaction_id= (servicedownactions.get(name='none')).id
+                servicedownaction = (servicedownactions.get(name='none'))
+            else:
+                servicedownaction = OptionPool.get_by_pk(servicedownaction_id)
 
         except ObjectDoesNotExist:
               log.warning("Service-Down-Action none option not found")
@@ -889,7 +891,7 @@ def save(request):
 
         # Save Server pool
         sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
-                                                  maxconn, id_pool_member_noempty, servicedownaction_id)
+                                                  maxconn, id_pool_member_noempty, servicedownaction)
 
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
