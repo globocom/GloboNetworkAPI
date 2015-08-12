@@ -1078,18 +1078,55 @@ def management_pools(request):
 def list_all_options(request):
 
     try:
-        data = dict()
+
+        type=''
+
+        if request.QUERY_PARAMS.has_key("type"):
+            type = str(request.QUERY_PARAMS["type"])
 
         options = OptionPool.objects.all()
+
+        if type:
+            options = options.filter(type=type)
 
         serializer_options = OptionPoolSerializer(
             options,
             many=True
         )
 
-        data["OptionPool"] = serializer_options.data
+        return Response(serializer_options.data)
 
-        return Response(data)
+    except OptionPool.DoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.OptionPoolDoesNotExistException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def list_option_by_pk(request, option_id):
+
+    try:
+        data = dict()
+
+        options = OptionPool.objects.get(id=option_id)
+        serializer_options = OptionPoolSerializer(
+            options,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+
+
+    except exceptions.InvalidIdOptionPoolRequestException, exception:
+        log.error(exception)
+        raise exception
+
+    except OptionPool.DoesNotExist, exception:
+        log.error(exception)
+        raise exception
 
     except Exception, exception:
         log.error(exception)
@@ -1100,8 +1137,6 @@ def list_all_options(request):
 def list_all_environment_options(request):
 
     try:
-        data = dict()
-
         environment_id=''
         option_id = ''
         option_type=''
@@ -1131,9 +1166,35 @@ def list_all_environment_options(request):
             many=True
         )
 
-        data["OptionPoolEnvironment"] = serializer_options.data
+        return Response(serializer_options.data)
 
-        return Response(data)
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def list_environment_options_by_pk(request, environment_option_id):
+
+    try:
+
+        environment_options = OptionPoolEnvironment.objects.get(id=environment_option_id)
+
+        serializer_options = OptionPoolEnvironmentSerializer(
+            environment_options,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+
+    except exceptions.InvalidIdOptionPoolRequestException, exception:
+        log.error(exception)
+        raise exception
+
+    except OptionPoolEnvironment.DoesNotExist, exception:
+        log.error(exception)
+        raise exception
 
     except Exception, exception:
         log.error(exception)
