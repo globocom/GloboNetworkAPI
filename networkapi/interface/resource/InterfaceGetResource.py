@@ -36,7 +36,7 @@ def get_new_interface_map(interface):
     int_map['marca'] = interface.equipamento.modelo.marca_id
     int_map['protegida'] = interface.protegida
     int_map['tipo'] = interface.tipo.tipo
-    int_map['vlan'] = interface.vlans
+    int_map['vlan'] = interface.vlan_nativa
     if interface.ligacao_front is not None:
         int_map['nome_ligacao_front'] = interface.ligacao_front.interface
         int_map[

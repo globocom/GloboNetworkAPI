@@ -149,7 +149,7 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
-    vlans = models.CharField(max_length=200, blank=True, null=True,)
+    vlan_nativa = models.CharField(max_length=200, blank=True, null=True)
     tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
 
     log = Log('Interface')
@@ -508,7 +508,7 @@ class Interface(BaseModel):
             interface.descricao = kwargs['descricao']
             interface.protegida = kwargs['protegida']
             interface.tipo = kwargs['tipo']
-            interface.vlans = kwargs['vlans']
+            interface.vlan_nativa = kwargs['vlan_nativa']
 
             return interface.save(authenticated_user)
 
@@ -571,6 +571,7 @@ class EnvironmentInterface(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_int_ambiente')
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
     interface = models.ForeignKey(Interface, db_column='id_interface')
+    vlans = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta(BaseModel.Meta):
         db_table = u'interface_do_ambiente'
