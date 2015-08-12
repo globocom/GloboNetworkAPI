@@ -51,13 +51,21 @@ WHERE opcoesvip.tipo_opcao = 'HealthCheck' and
 optionspool.id_optionspool = '1' ;
 
 
+INSERT INTO optionspool_environment_xref (id_environment, id_optionspool)
+SELECT distinct vlans.id_ambiente, 5
+FROM opcoesvip_ambiente_xref
+INNER JOIN ambientevip ON ambientevip.id = opcoesvip_ambiente_xref.id_ambiente
+INNER JOIN redeipv4 ON redeipv4.id_ambientevip = ambientevip.id
+INNER JOIN vlans ON vlans.id_vlan = redeipv4.id_vlan
+INNER JOIN opcoesvip ON opcoesvip_ambiente_xref.id_opcoesvip = opcoesvip.id
+INNER JOIN optionspool ON opcoesvip.nome_opcao_txt = optionspool.description
+WHERE opcoesvip.tipo_opcao = 'HealthCheck' and 
+optionspool.id_optionspool = '1' ;
+
+
 
 
 ALTER TABLE `server_pool` ADD COLUMN `service-down-action_id` INT(11) DEFAULT 5  AFTER `healthcheck_id_healthcheck` ; 
-
-
-
-
 
 
 
