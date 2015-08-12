@@ -39,7 +39,7 @@ DATABASES = {
 from networkapi.models.models_signal_receiver import *
 
 # Aplicação rodando em modo Debug
-DEBUG = True
+DEBUG = False
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'

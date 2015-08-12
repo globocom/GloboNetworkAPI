@@ -131,3 +131,20 @@ class ScriptManagementPoolException(APIException):
 class InvalidStatusPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid status for Pool Member.'
+
+
+class OptionPoolDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Option Pool Does Not Exist.'
+
+class InvalidIdOptionPoolRequestException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Option Pool Request.'
+
+class OptionPoolEnvironmentDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Environment Option Pool Does Not Exist.'
+
+class InvalidIdOptionPoolEnvironmentRequestException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Environment Option Pool Request.'
