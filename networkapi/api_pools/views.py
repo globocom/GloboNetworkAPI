@@ -17,8 +17,7 @@
 
 import json
 from datetime import datetime
-
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.conf import settings
@@ -41,13 +40,14 @@ from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param
+from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, is_valid_healthcheck_destination
 from networkapi.log import Log
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
 from networkapi.api_pools.models import OpcaoPoolAmbiente
+from networkapi.api_pools.models import OptionPool
 
 
 log = Log(__name__)
@@ -830,6 +830,7 @@ def save(request):
         environment = long(request.DATA.get('environment'))
         balancing = request.DATA.get('balancing')
         maxconn = request.DATA.get('maxcom')
+        servicedownaction_id = request.DATA.get('service-down-action')
 
         #id_pool_member is cleaned below
         id_pool_member = request.DATA.get('id_pool_member')
@@ -844,6 +845,25 @@ def save(request):
         healthcheck_type = request.DATA.get('healthcheck_type')
         healthcheck_request = request.DATA.get('healthcheck_request')
         healthcheck_expect = request.DATA.get('healthcheck_expect')
+        healthcheck_destination = request.DATA.get('healthcheck_destination')
+
+        #Servicedownaction was not given
+        try:
+            if servicedownaction_id is None:
+                servicedownactions = OptionPool.get_all_by_type_and_environment('ServiceDownAction', environment )
+                #assert isinstance((servicedownactions.filter(name='none')).id, object)
+                servicedownaction = (servicedownactions.get(name='none'))
+            else:
+                servicedownaction = OptionPool.get_by_pk(servicedownaction_id)
+
+        except ObjectDoesNotExist:
+              log.warning("Service-Down-Action none option not found")
+              raise exceptions.InvalidServiceDownActionException()
+
+        except MultipleObjectsReturned, e:
+            log.warning("Multiple service-down-action entries found for the given parameters")
+            raise exceptions.InvalidServiceDownActionException()
+
 
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
@@ -861,7 +881,12 @@ def save(request):
             raise exceptions.InvalidIdentifierPoolException()
 
         healthcheck_identifier = ''
-        healthcheck_destination = '*:*'
+        if healthcheck_destination is None:
+            healthcheck_destination = '*:*'
+
+        if not is_valid_healthcheck_destination(healthcheck_destination):
+            raise api_exceptions.NetworkAPIException() 
+
         healthcheck = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination, healthcheck_identifier)
 
         # Remove empty values from list
@@ -872,7 +897,7 @@ def save(request):
 
         # Save Server pool
         sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
-                                                  maxconn, id_pool_member_noempty)
+                                                  maxconn, id_pool_member_noempty, servicedownaction)
 
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,

@@ -130,6 +130,7 @@ class ServerPoolSerializer(serializers.ModelSerializer):
             'default_port',
             'default_limit',
             'healthcheck',
+            'servicedownaction',
             'environment',
             'pool_created',
             'lb_method'

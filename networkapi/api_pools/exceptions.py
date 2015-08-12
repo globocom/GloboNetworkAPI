@@ -20,6 +20,11 @@ class InvalidIdEnvironmentException(APIException):
     default_detail = 'Invalid id for Environment.'
 
 
+class InvalidServiceDownActionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid value for Service-Down-Action.'
+
+
 class InvalidIdVipException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for VIP.'
@@ -41,6 +46,10 @@ class InvalidIdPoolMemberException(APIException):
 class ScriptRemovePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute remove script for pool.'
+
+class ScriptAlterServiceDownActionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute service-down-action script for pool.'
 
 
 class ScriptCreatePoolException(APIException):

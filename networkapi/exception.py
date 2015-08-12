@@ -118,6 +118,54 @@ class OptionVipEnvironmentVipDuplicatedError(OptionVipEnvironmentVipError):
         OptionVipEnvironmentVipError.__init__(self, cause, message)
 
 
+class OptionPoolError(CustomException):
+
+    """Represents an error occurred during access to tables related to Option Pool."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
+
+class OptionPoolNotFoundError(OptionPoolError):
+
+    """returns exception to Option pool research by primary key."""
+
+    def __init__(self, cause, message=None):
+        OptionPoolError.__init__(self, cause, message)
+
+
+class OptionPoolEnvironmentError(CustomException):
+
+    """Represents an error occurred during access to tables related to OptionPoolEnvironmentVip."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
+
+class OptionPoolEnvironmentNotFoundError(OptionPoolEnvironmentError):
+
+    """returns exception to OptionPoolEnvironmentVip research by primary key."""
+
+    def __init__(self, cause, message=None):
+        OptionPoolEnvironmentError.__init__(self, cause, message)
+
+
+class OptionPoolEnvironmentDuplicatedError(OptionPoolEnvironmentError):
+
+    """returns exception if OptionPool is already associated with EnvironmentVip."""
+
+    def __init__(self, cause, message=None):
+        OptionPoolEnvironmentError.__init__(self, cause, message)
+
+class OptionPoolServiceDownNoneError(CustomException):
+
+    """returns exception if OptionPool service-down-action "none" option does not exists."""
+
+    def __init__(self, cause, message=None):
+        OptionPoolServiceDownNoneError.__init__(self, cause, message)
+
+
+
 class NetworkInactiveError(CustomException):
 
     """Returns exception when trying to disable a network disabled"""
