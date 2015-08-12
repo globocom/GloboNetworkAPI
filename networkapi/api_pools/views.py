@@ -35,7 +35,7 @@ from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
-    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, OptionPoolSerializer
+    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, OptionPoolSerializer, OptionPoolEnvironmentSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -47,7 +47,7 @@ from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
 from networkapi.api_pools.models import OpcaoPoolAmbiente
-from networkapi.api_pools.models import OptionPool
+from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
 
 
 log = Log(__name__)
@@ -1075,7 +1075,6 @@ def management_pools(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def list_all_options(request):
 
     try:
@@ -1088,10 +1087,55 @@ def list_all_options(request):
             many=True
         )
 
-        data["optionpool"] = serializer_options.data
+        data["OptionPool"] = serializer_options.data
 
         return Response(data)
 
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def list_all_environment_options(request):
+
+    try:
+        data = dict()
+
+        environment_id=''
+        option_id = ''
+        option_type=''
+
+        if request.QUERY_PARAMS.has_key("environment_id"):
+            environment_id=int(request.QUERY_PARAMS["environment_id"])
+
+        if request.QUERY_PARAMS.has_key("option_id"):
+            option_id = int(request.QUERY_PARAMS["option_id"])
+
+        if request.QUERY_PARAMS.has_key("option_type"):
+            option_type = str(request.QUERY_PARAMS["option_type"])
+
+        environment_options = OptionPoolEnvironment.objects.all()
+
+        if environment_id:
+            environment_options = environment_options.filter(environment=environment_id)
+
+        if option_id:
+            environment_options = environment_options.filter(option=option_id)            
+
+        if option_type:
+            environment_options = environment_options.filter(option__type=option_type)
+
+        serializer_options = OptionPoolEnvironmentSerializer(
+            environment_options,
+            many=True
+        )
+
+        data["OptionPoolEnvironment"] = serializer_options.data
+
+        return Response(data)
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+

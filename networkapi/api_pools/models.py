@@ -168,7 +168,7 @@ class OptionPool (BaseModel):
 class OptionPoolEnvironment(BaseModel):
 
 
-    id = models.AutoField(primary_key=True, db_column='id_optionpool_environment_xref')
+    id = models.AutoField(primary_key=True, db_column='id_optionspool_environment_xref')
     option = models.ForeignKey(OptionPool, db_column='id_optionspool')
     environment = models.ForeignKey(Ambiente, db_column='id_environment')
 
