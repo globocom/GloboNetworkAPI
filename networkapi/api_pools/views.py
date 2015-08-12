@@ -1092,15 +1092,14 @@ def list_environment_environment_vip_related(request):
         environment_list_dict = []
 
         for environment in environment_list:
-            if environment.blockrules_set.count() == 0: #TODO verificar a regra
-                env_map = model_to_dict(environment)
-                env_map["grupo_l3_name"] = environment.grupo_l3.nome
-                env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
-                env_map["divisao_dc_name"] = environment.divisao_dc.nome
-                if environment.filter is not None:
-                        env_map["filter_name"] = environment.filter.name
+            env_map = model_to_dict(environment)
+            env_map["grupo_l3_name"] = environment.grupo_l3.nome
+            env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
+            env_map["divisao_dc_name"] = environment.divisao_dc.nome
+            if environment.filter is not None:
+                    env_map["filter_name"] = environment.filter.name
 
-                environment_list_dict.append(env_map)
+            environment_list_dict.append(env_map)
 
         return Response(environment_list_dict)
 
