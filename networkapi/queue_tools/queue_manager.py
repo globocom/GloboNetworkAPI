@@ -42,9 +42,9 @@ class QueueManager(object):
 
         """
         self._queue = []
-        self._queue_destination = getattr(settings, 'QUEUE_DESTINATION', None) or "/topic/networkapi_queue"
-        self._broker_uri = getattr(settings, 'QUEUE_BROKER_URI', None) or "tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1"
-        self._broker_timeout = getattr(settings, 'QUEUE_BROKER_CONNECT_TIMEOUT', None) or 2
+        self._queue_destination = getattr(settings, 'BROKER_DESTINATION', None) or "/topic/networkapi_queue"
+        self._broker_uri = getattr(settings, 'BROKER_URI', None) or "tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1"
+        self._broker_timeout = getattr(settings, 'BROKER_CONNECT_TIMEOUT', None) or 2
 
     def append(self, dict_obj):
         """
