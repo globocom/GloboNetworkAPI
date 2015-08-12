@@ -1095,3 +1095,29 @@ def list_all_options(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def list_option_by_pk(request, pk):
+
+    try:
+        data = dict()
+
+        options = OptionPool.objects.get(id=pk)
+
+        return Response(data)
+
+
+    except exceptions.InvalidIdOptionPoolRequestException, exception:
+        log.error(exception)
+        raise exception
+
+    except OptionPool.DoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.OptionPoolDoesNotExistException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
