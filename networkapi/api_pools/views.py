@@ -869,7 +869,11 @@ def save(request):
             #healthcheck = current_healthcheck
 
         if has_identifier.count() > 0:
-            raise exceptions.InvalidIdentifierPoolException()
+            raise exceptions.InvalidIdentifierAlreadyPoolException()
+
+        #Valid fist caracter is not is number
+        if identifier[0].isdigit():
+            raise exceptions.InvalidIdentifierFistDigitPoolException()
 
         healthcheck_identifier = ''
         healthcheck_destination = '*:*'
@@ -901,34 +905,38 @@ def save(request):
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(sp.id, status=status.HTTP_201_CREATED)
 
     except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
         log.error(exception)
         raise exception
 
     except exceptions.ScriptAddPoolException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
-    except exceptions.InvalidIdentifierPoolException, exception:
-        log.error(exception)
+    except exceptions.InvalidIdentifierAlreadyPoolException, exception:
+        log.error(exception.default_detail)
+        raise exception
+
+    except exceptions.InvalidIdentifierFistDigitPoolException, exception:
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.UpdateEnvironmentVIPException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.UpdateEnvironmentServerPoolMemberException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.IpNotFoundByEnvironment, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.InvalidRealPoolException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except UpdateEnvironmentPoolCreatedException, exception:
