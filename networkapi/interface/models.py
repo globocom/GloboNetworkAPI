@@ -139,6 +139,18 @@ class TipoInterface(BaseModel):
             cls.log.error(u'Falha ao pesquisar o tipo de interface.')
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
 
+class PortChannel(BaseModel):
+
+    log = Log('PortChannel')
+
+    id = models.AutoField(primary_key=True, db_column='id_port_channel')
+    nome = models.CharField(max_length=10, unique=True)
+    lacp = models.BooleanField(default=1)
+
+    class Meta(BaseModel.Meta):
+        db_table = u'interface_do_ambiente'
+        managed = True
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)
@@ -149,8 +161,9 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
-    vlan_nativa = models.CharField(max_length=200, blank=True, null=True)
+    vlan_nativa = models.CharField(max_length=200, blank=True, null=True, default=1)
     tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
+    channel = models.ForeignKey(PortChannel, db_column='id_channel', blank=True, null=True)
 
     log = Log('Interface')
 
@@ -586,3 +599,4 @@ class EnvironmentInterface(BaseModel):
             self.log.error(u'Failed to add interface_do_ambiente.')
             raise InterfaceError(
                 e, u'Failed to add interface_do_ambiente.')
+
