@@ -22,7 +22,7 @@ from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, VipPortToPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.equipamento.models import Equipamento
-from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool
+from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool, OptionPool
 from networkapi.settings import POOL_REAL_CHECK
 
 
@@ -179,6 +179,15 @@ class OpcaoPoolAmbienteSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'opcao_pool',
                   'ambiente'
+                 )
+
+class OptionPoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OptionPool
+        depth = 1
+        fields = ('id',
+                  'type',
+                  'name'
                  )
 
 

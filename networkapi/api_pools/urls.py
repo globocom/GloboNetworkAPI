@@ -28,4 +28,6 @@ urlpatterns = patterns('networkapi.api_pools.views',
     url(r'^pools/check/status/by/vip/(?P<vip_id>[^/]+)/$', 'chk_status_poolmembers_by_vip'),
 
     url(r'^pools/management/$', 'management_pools'),
+
+    url(r'^/pools/options/$', 'list_all_options'),
 )

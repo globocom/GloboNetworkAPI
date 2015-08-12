@@ -35,7 +35,7 @@ from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
-    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer
+    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, OptionPoolSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -1068,6 +1068,29 @@ def management_pools(request):
     except ValueError, exception:
         log.error(exception)
         raise exceptions.InvalidIdPoolMemberException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def list_all_options(request):
+
+    try:
+        data = dict()
+
+        options = OptionPool.objects.all()
+
+        serializer_options = OptionPoolSerializer(
+            options,
+            many=True
+        )
+
+        data["optionpool"] = serializer_options.data
+
+        return Response(data)
 
     except Exception, exception:
         log.error(exception)
