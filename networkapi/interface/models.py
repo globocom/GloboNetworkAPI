@@ -148,8 +148,16 @@ class PortChannel(BaseModel):
     lacp = models.BooleanField(default=1)
 
     class Meta(BaseModel.Meta):
-        db_table = u'interface_do_ambiente'
+        db_table = u'port_channel'
         managed = True
+
+    def create(self, authenticated_user):
+        """Add new port channel"""
+        try:
+            return self.save(authenticated_user)
+        except Exception, e:
+            self.log.error(u'Failed to add port channel.')
+            raise InterfaceError(e, u'Failed to add port channel.')
 
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
@@ -458,6 +466,7 @@ class Interface(BaseModel):
         nome = kwargs['interface']
         marca = interface.equipamento.modelo.marca.id if interface.equipamento.tipo_equipamento.id != 2 else 0
 
+
         if marca == 0:
             regex = "^([a-zA-Z0-9-_/ ]+(:)?){1,6}$"
         elif marca == 2:
@@ -507,6 +516,7 @@ class Interface(BaseModel):
         except KeyError:
             pass
 
+
         try:
             # Check if interface name already exists for this equipment
             try:
@@ -522,6 +532,7 @@ class Interface(BaseModel):
             interface.protegida = kwargs['protegida']
             interface.tipo = kwargs['tipo']
             interface.vlan_nativa = kwargs['vlan_nativa']
+            interface.channel = kwargs['channel']
 
             return interface.save(authenticated_user)
 

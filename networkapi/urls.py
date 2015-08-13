@@ -199,6 +199,7 @@ from networkapi.interface.resource.InterfaceDisconnectResource import InterfaceD
 from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
 from networkapi.interface.resource.InterfaceGetSwRouterResource import InterfaceGetSwRouterResource
 from networkapi.interface.resource.InterfaceEnvironmentResource import InterfaceEnvironmentResource
+from networkapi.interface.resource.InterfaceChannelResource import InterfaceChannelResource
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
 
@@ -499,6 +500,7 @@ interface_disconnect_resource = InterfaceDisconnectResource()
 interface_type_get_all_resource = InterfaceTypeGetAllResource()
 interface_get_sw_router_resource = InterfaceGetSwRouterResource()
 interface_environment_resource = InterfaceEnvironmentResource()
+interface_channel_resource = InterfaceChannelResource()
 
 authenticate_resource = AuthenticateResource()
 
@@ -1144,6 +1146,8 @@ urlpatterns += patterns('',
                            name='interfacetype.get'),
                        url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
                            name='interfacetype.get'),
+                       url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
+                           name='channel.add'),
                        )
 
 
