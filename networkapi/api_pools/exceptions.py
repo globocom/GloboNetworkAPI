@@ -148,3 +148,8 @@ class OptionPoolEnvironmentDoesNotExistException(APIException):
 class InvalidIdOptionPoolEnvironmentRequestException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Environment Option Pool Request.'
+
+class ScriptAddPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute add script for pool option.'
+

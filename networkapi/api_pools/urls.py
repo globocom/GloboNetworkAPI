@@ -34,4 +34,6 @@ urlpatterns = patterns('networkapi.api_pools.views',
     url(r'^pools/environment_options/$', 'list_all_environment_options'),
     url(r'^pools/environment_options/(?P<environment_option_id>\d+)/$', 'list_environment_options_by_pk'),
 
+    url(r'^pools/options/form/$', 'save_pool_option'),
+
 )

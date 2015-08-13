@@ -20,11 +20,13 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 
 from networkapi.api_pools import exceptions
+from networkapi.api_pools.models import OptionPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ipv6, Ip
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
+
 from networkapi.ambiente.models import IP_VERSION
 
 from networkapi.log import Log
@@ -377,3 +379,21 @@ def manager_pools(request):
             old_member.save(request.user, commit=True)
 
         raise exception
+
+
+def save_option_pool(user,id,type, description):
+
+
+    if id:
+        sp = OptionPool.objects.get(id=id)
+
+        sp.type = type
+        sp.description = description
+        sp.save(user)
+
+
+    else:
+        sp = ServerPool(type=type, description=description)
+        sp.save(user)
+
+    return sp
