@@ -49,6 +49,8 @@ from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission
     ScriptCreatePermission, ScriptAlterPermission
 from networkapi.api_pools.models import OpcaoPoolAmbiente
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
+from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_option
+from networkapi.exception import InvalidValueError
 
 log = Log(__name__)
 
@@ -1187,11 +1189,24 @@ def list_environment_options_by_pk(request, environment_option_id):
 def save_pool_option(request):
     try:
 
-        id = request.DATA.get('id')
-        type = request.DATA.get('Type')
-        description = request.DATA.get('Description')
+        #log.warning("RECEBEU %s" % request.DATA)
+        type = request.DATA.get('type')
+        description = request.DATA.get('name')
 
-        po = save_option_pool(request.user, id, type, description)
+
+        # tipo_opcao can NOT be greater than 50
+        if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
+            log.error(
+                u'Parameter tipo_opcao is invalid. Value: %s.', type)
+            raise InvalidValueError(None, 'type', type)
+
+        # nome_opcao_txt can NOT be greater than 50
+        if not is_valid_string_maxsize(description, 50, True) or not is_valid_option(description):
+            log.error(
+                u'Parameter nome_opcao_txt is invalid. Value: %s.', description)
+            raise InvalidValueError(None, 'name', description)
+
+        po = save_option_pool(request.user, type, description)
 
         serializer_options = OptionPoolSerializer(
             po,
@@ -1207,3 +1222,52 @@ def save_pool_option(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['DELETE'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def delete_pool_option(request,option_id):
+    """
+	Delete options Pools by id.
+	"""
+
+    try:
+
+        #ids = request.DATA.get('id')
+
+        pool_option = OptionPool.objects.get(id=option_id)
+
+        try:
+            #TODO AFTER INTEGRATION MODEL OPTIONPOOL
+            #if ServerPool.objects.filter(healthcheck=option_id):
+            #    raise exceptions.OptionPoolConstraintPoolException()
+
+            if ServerPool.objects.filter(servicedownaction=option_id):
+                raise exceptions.OptionPoolConstraintPoolException()
+
+
+
+            pool_option.delete(request.user)
+
+        except OptionPool.DoesNotExist:
+            pass
+
+        return Response("Option Pool deleted")
+
+    except exceptions.OptionPoolConstraintPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.ScriptDeletePoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception)
+        raise exceptions.ScriptDeletePoolException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+

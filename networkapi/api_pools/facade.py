@@ -381,10 +381,10 @@ def manager_pools(request):
         raise exception
 
 
-def save_option_pool(user,id,type, description):
+def save_option_pool(user, type, description):
 
 
-    if id:
+    '''if id:
         sp = OptionPool.objects.get(id=id)
 
         sp.type = type
@@ -392,8 +392,9 @@ def save_option_pool(user,id,type, description):
         sp.save(user)
 
 
-    else:
-        sp = ServerPool(type=type, description=description)
-        sp.save(user)
+    else:'''
+
+    sp = OptionPool(type=type, name=description)
+    sp.save(user)
 
     return sp
