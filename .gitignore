@@ -17,3 +17,5 @@ dist
 build
 .vagrant*
 *.idea*
+*.db
+sqldump_vm_teste.sql
