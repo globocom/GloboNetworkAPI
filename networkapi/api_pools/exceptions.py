@@ -160,3 +160,7 @@ class OptionPoolConstraintPoolException(APIException):
 class ScriptDeletePoolOptionException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute delete script for pool option.'
+
+class ScriptModifyPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute modify script for pool option.'

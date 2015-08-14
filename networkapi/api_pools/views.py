@@ -27,7 +27,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools, save_option_pool
+    prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -1166,14 +1166,77 @@ def __delete_pool_option(request,option_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
-@api_view(['GET', 'DELETE'])
+@api_view(['PUT'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def __modify_pool_option(request,option_id):
+    """
+	Delete options Pools by id.
+	"""
+    try:
+        data = dict()
+
+        OptionPool.objects.get(id=option_id)
+
+        try:
+            type = request.DATA.get('type')
+            description = request.DATA.get('name')
+
+
+            # tipo_opcao can NOT be greater than 50
+            if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
+                log.error(
+                    u'Parameter tipo_opcao is invalid. Value: %s.', type)
+                raise InvalidValueError(None, 'type', type)
+
+            # nome_opcao_txt can NOT be greater than 50
+            if not is_valid_string_maxsize(description, 50, True) or not is_valid_option(description):
+                log.error(
+                    u'Parameter nome_opcao_txt is invalid. Value: %s.', description)
+                raise InvalidValueError(None, 'name', description)
+
+            po = update_option_pool(request.user, option_id, type, description)
+
+            serializer_options = OptionPoolSerializer(
+                po,
+                many=False
+            )
+
+        except OptionPool.DoesNotExist:
+            pass
+
+        return Response(serializer_options.data)
+
+    except OptionPool.DoesNotExist, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.ScriptModifyPoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.OptionPoolConstraintPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception)
+        raise exceptions.ScriptDeletePoolException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET', 'DELETE', 'PUT'])
 @permission_classes((IsAuthenticated, Read, Write, ScriptAlterPermission))
 def list_option_by_pk(request, option_id):
     if request.method == 'GET':
         return __list_option_by_pk_get(request, option_id)
     elif request.method == 'DELETE':
         return __delete_pool_option(request, option_id)
-
+    elif request.method == 'PUT':
+        return __modify_pool_option(request, option_id)
 
 
 

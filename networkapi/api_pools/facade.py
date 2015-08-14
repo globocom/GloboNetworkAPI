@@ -398,3 +398,15 @@ def save_option_pool(user, type, description):
     sp.save(user)
 
     return sp
+
+
+def update_option_pool(user, option_id, type, description):
+
+    sp = OptionPool.objects.get(id=option_id)
+
+    sp.type = type
+    sp.name=description
+
+    sp.save(user)
+
+    return sp

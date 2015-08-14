@@ -36,7 +36,7 @@ urlpatterns = patterns('networkapi.api_pools.views',
 
     url(r'^pools/options/save/$', 'save_pool_option'),
     #url(r'^pools/options/form/(?P<option_id>\d+)/$', 'modify_pool_option'),
-    url(r'^pools/options/delete/(?P<option_id>\d+)/$', 'delete_pool_option'),
+    #url(r'^pools/options/delete/(?P<option_id>\d+)/$', 'delete_pool_option'),
 
 
 
