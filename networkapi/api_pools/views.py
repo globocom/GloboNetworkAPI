@@ -1099,7 +1099,7 @@ def list_all_options(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-def list_option_by_pk(request, option_id):
+def __list_option_by_pk_get(request, *args):
     try:
         data = dict()
 
@@ -1118,6 +1118,63 @@ def list_option_by_pk(request, option_id):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
+
+@api_view(['DELETE'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def __delete_pool_option(request,option_id):
+    """
+	Delete options Pools by id.
+	"""
+
+    try:
+
+        #ids = request.DATA.get('id')
+
+        pool_option = OptionPool.objects.get(id=option_id)
+
+        try:
+            #TODO AFTER INTEGRATION MODEL OPTIONPOOL
+            #if ServerPool.objects.filter(healthcheck=option_id):
+            #    raise exceptions.OptionPoolConstraintPoolException()
+
+            if ServerPool.objects.filter(servicedownaction=option_id):
+                raise exceptions.OptionPoolConstraintPoolException()
+
+
+
+            pool_option.delete(request.user)
+
+        except OptionPool.DoesNotExist:
+            pass
+
+        return Response("Option Pool deleted")
+
+    except exceptions.OptionPoolConstraintPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.ScriptDeletePoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception)
+        raise exceptions.ScriptDeletePoolException()
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET', 'DELETE'])
+@permission_classes((IsAuthenticated))
+def list_option_by_pk(request, option_id):
+    if request.method == 'GET':
+        return __list_option_by_pk_get(request, option_id)
+    elif request.method == 'DELETE':
+        return __delete_pool_option(request, option_id)
+
+
 
 
 @api_view(['GET'])
@@ -1223,51 +1280,4 @@ def save_pool_option(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
-
-@api_view(['DELETE'])
-@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
-@commit_on_success
-def delete_pool_option(request,option_id):
-    """
-	Delete options Pools by id.
-	"""
-
-    try:
-
-        #ids = request.DATA.get('id')
-
-        pool_option = OptionPool.objects.get(id=option_id)
-
-        try:
-            #TODO AFTER INTEGRATION MODEL OPTIONPOOL
-            #if ServerPool.objects.filter(healthcheck=option_id):
-            #    raise exceptions.OptionPoolConstraintPoolException()
-
-            if ServerPool.objects.filter(servicedownaction=option_id):
-                raise exceptions.OptionPoolConstraintPoolException()
-
-
-
-            pool_option.delete(request.user)
-
-        except OptionPool.DoesNotExist:
-            pass
-
-        return Response("Option Pool deleted")
-
-    except exceptions.OptionPoolConstraintPoolException, exception:
-        log.error(exception)
-        raise exception
-
-    except exceptions.ScriptDeletePoolOptionException, exception:
-        log.error(exception)
-        raise exception
-
-    except ScriptError, exception:
-        log.error(exception)
-        raise exceptions.ScriptDeletePoolException()
-
-    except Exception, exception:
-        log.error(exception)
-        raise api_exceptions.NetworkAPIException()
 
