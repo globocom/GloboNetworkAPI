@@ -321,8 +321,7 @@ class InterfaceResource(RestResource):
                                  ligacao_front_id=id_ligacao_front,
                                  ligacao_back_id=id_ligacao_back,
                                  tipo=tipo,
-                                 vlan_nativa=vlan
-                                 )
+                                 vlan_nativa=vlan)
 
                 return self.response(dumps_networkapi({}))
 
@@ -443,6 +442,8 @@ class InterfaceResource(RestResource):
         map['tipo'] = interface.tipo.tipo
         map['id_equipamento'] = interface.equipamento_id
         map['vlan'] = interface.vlan_nativa
+        if interface.channel is not None:
+            map['channel'] = interface.channel.nome
         if interface.ligacao_front is None:
             map['id_ligacao_front'] = ''
         else:
@@ -460,13 +461,13 @@ class InterfaceResource(RestResource):
         int_map['marca'] = interface.equipamento.modelo.marca_id
         int_map['tipo'] = interface.tipo.tipo
         int_map['vlan'] = interface.vlan_nativa
+        if interface.channel is not None:
+            int_map['channel'] = interface.channel.nome
         if interface.ligacao_front is not None:
             int_map['nome_ligacao_front'] = interface.ligacao_front.interface
-            int_map[
-                'nome_equip_l_front'] = interface.ligacao_front.equipamento.nome
+            int_map['nome_equip_l_front'] = interface.ligacao_front.equipamento.nome
         if interface.ligacao_back is not None:
             int_map['nome_ligacao_back'] = interface.ligacao_back.interface
-            int_map[
-                'nome_equip_l_back'] = interface.ligacao_back.equipamento.nome
+            int_map['nome_equip_l_back'] = interface.ligacao_back.equipamento.nome
 
         return int_map

@@ -31,6 +31,7 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 def get_new_interface_map(interface):
     int_map = model_to_dict(interface)
+    int_map['nome'] = interface.interface
     int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
     int_map['equipamento_nome'] = interface.equipamento.nome
     int_map['marca'] = interface.equipamento.modelo.marca_id
@@ -39,11 +40,12 @@ def get_new_interface_map(interface):
     int_map['vlan'] = interface.vlan_nativa
     if interface.ligacao_front is not None:
         int_map['nome_ligacao_front'] = interface.ligacao_front.interface
-        int_map[
-            'nome_equip_l_front'] = interface.ligacao_front.equipamento.nome
+        int_map['nome_equip_l_front'] = interface.ligacao_front.equipamento.nome
+        int_map['id_ligacao_front'] = interface.ligacao_front.id
     if interface.ligacao_back is not None:
         int_map['nome_ligacao_back'] = interface.ligacao_back.interface
         int_map['nome_equip_l_back'] = interface.ligacao_back.equipamento.nome
+        int_map['id_ligacao_back'] = interface.ligacao_back.id
 
     return int_map
 

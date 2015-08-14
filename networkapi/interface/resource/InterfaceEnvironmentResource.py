@@ -25,6 +25,7 @@ from networkapi.log import Log
 from networkapi.ambiente.models import Ambiente
 from networkapi.interface.models import EnvironmentInterface, Interface, InterfaceError
 from networkapi.exception import InvalidValueError
+from django.forms.models import model_to_dict
 
 
 
@@ -128,3 +129,51 @@ class InterfaceEnvironmentResource(RestResource):
             return self.response_error(3, x)
         except InterfaceError:
            return self.response_error(1)
+
+    def handle_get(self, request, user, *args, **kwargs):
+        """Handles GET requests to find EnvironmentInterface.
+
+        URLs: int/get-env-by-interface/<id_interface>
+        """
+        self.log.info('buscando os ambientes associados a uma interface')
+
+        try:
+
+            # User permission
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT , AdminPermission.READ_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
+                return self.not_authorized()
+
+            # Get XML data
+            interface = kwargs.get('id_interface')
+
+            int_ambiente = EnvironmentInterface.get_by_interface(int(interface))
+
+            ambiente_map = []
+
+            for ids in int_ambiente:
+                ambiente_map.append(self.get_environment_map(ids.ambiente))
+
+            return self.response(dumps_networkapi({'ambiente': ambiente_map}))
+
+        except InvalidValueError, e:
+            return self.response_error(269, e.param, e.value)
+        except XMLError, x:
+            self.log.error(u'Erro ao ler o XML da requisição.')
+            return self.response_error(3, x)
+        except InterfaceError:
+           return self.response_error(1)
+
+    def get_environment_map(self, environment):
+        environment_map = dict()
+        environment_map['id'] = environment.id
+        environment_map['divisao_dc_name'] = environment.divisao_dc.nome
+        environment_map['ambiente_logico_name'] = environment.ambiente_logico.nome
+        environment_map['grupo_l3_name'] = environment.grupo_l3.nome
+        if not environment.min_num_vlan_1==None and not environment.max_num_vlan_2==None:
+            environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_2)
+        else:
+            environment_map['range'] = "Nao definido"
+
+        return environment_map

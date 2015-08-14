@@ -532,7 +532,10 @@ class Interface(BaseModel):
             interface.protegida = kwargs['protegida']
             interface.tipo = kwargs['tipo']
             interface.vlan_nativa = kwargs['vlan_nativa']
-            interface.channel = kwargs['channel']
+            try:
+                interface.channel = kwargs['channel']
+            except:
+                pass
 
             return interface.save(authenticated_user)
 
@@ -611,3 +614,13 @@ class EnvironmentInterface(BaseModel):
             raise InterfaceError(
                 e, u'Failed to add interface_do_ambiente.')
 
+    @classmethod
+    def get_by_interface(cls, id):
+        try:
+            return EnvironmentInterface.objects.all().filter(interface_id=id)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a EnvironmentInterface with interface id = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar interfaces neste ambiente.')
+            raise InterfaceError(e, u'Falha ao pesquisar interfaces neste ambiente.')

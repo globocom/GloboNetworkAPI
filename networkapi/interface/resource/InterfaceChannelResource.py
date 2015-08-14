@@ -17,15 +17,13 @@
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError, loads
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface
-from networkapi.equipamento.models import Equipamento
-from django.forms.models import model_to_dict
+from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface
 from networkapi.exception import InvalidValueError
 from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.ambiente.models import Ambiente
 
 
 
@@ -64,15 +62,21 @@ class InterfaceChannelResource(RestResource):
             interfaces = channel_map.get('interfaces')
             nome = channel_map.get('nome')
             lacp = channel_map.get('lacp')
+            int_type = channel_map.get('int_type')
+            vlan = channel_map.get('vlan')
+            envs = channel_map.get('envs')
 
             port_channel = PortChannel()
             interface = Interface()
+            amb = Ambiente()
 
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
             port_channel.create(user)
 
             interfaces = str(interfaces).split('-')
+
+            int_type = TipoInterface.get_by_name(str(int_type))
 
             for var in interfaces:
                 if not var=="":
@@ -94,9 +98,21 @@ class InterfaceChannelResource(RestResource):
                                      descricao=interf.descricao,
                                      ligacao_front_id=ligacao_front_id,
                                      ligacao_back_id=ligacao_back_id,
-                                     tipo=interf.tipo,
-                                     vlan_nativa=interf.vlan_nativa,
+                                     tipo=int_type,
+                                     vlan_nativa=vlan,
                                      channel=port_channel)
+
+                    if "trunk" in int_type.tipo:
+                        interface_list = EnvironmentInterface.objects.all().filter(interface__exact=interf.id)
+                        for int_env in interface_list:
+                            int_env.delete(user)
+
+                        for env in envs:
+                            amb_int = EnvironmentInterface()
+                            amb_int.interface = interface.get_by_pk(interf.id)
+                            amb_int.ambiente = amb.get_by_pk(int(env))
+                            amb_int.create(user)
+
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel
