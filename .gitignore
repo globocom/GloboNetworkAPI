@@ -16,3 +16,4 @@ _build
 dist
 build
 .vagrant*
+*.idea*
