@@ -1099,7 +1099,7 @@ def list_all_options(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-def __list_option_by_pk_get(request, *args):
+def __list_option_by_pk_get(request, option_id):
     try:
         data = dict()
 
