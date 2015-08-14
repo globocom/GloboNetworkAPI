@@ -3,6 +3,7 @@ CREATE TABLE `optionspool` (
   `type` varchar(200) NOT NULL,
   `description` varchar(200) NOT NULL,
   PRIMARY KEY (`id_optionspool`)
+  UNIQUE KEY `optionspool_unique` (`type`,`description`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO optionspool (type,description) 
@@ -15,7 +16,8 @@ INSERT INTO optionspool (type,description) values ('ServiceDownAction', 'reset')
 INSERT INTO optionspool (type,description) values ('ServiceDownAction', 'reselect');
 
 
-
+alter table opcoesvip ADD CONSTRAINT `opcoesvip_unique`
+UNIQUE (`tipo_opcao`,`nome_opcao_txt`);
 
 
 CREATE TABLE `optionspool_environment_xref` (
