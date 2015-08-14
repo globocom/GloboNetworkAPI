@@ -1167,7 +1167,7 @@ def __delete_pool_option(request,option_id):
         raise api_exceptions.NetworkAPIException()
 
 @api_view(['GET', 'DELETE'])
-@permission_classes((IsAuthenticated))
+@permission_classes((IsAuthenticated, Read, Write, ScriptAlterPermission))
 def list_option_by_pk(request, option_id):
     if request.method == 'GET':
         return __list_option_by_pk_get(request, option_id)
