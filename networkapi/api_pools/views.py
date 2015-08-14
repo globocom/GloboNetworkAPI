@@ -1148,7 +1148,7 @@ def __delete_pool_option(request,option_id):
         except OptionPool.DoesNotExist:
             pass
 
-        return Response("Option Pool deleted")
+        return Response({"id":option_id})
 
     except exceptions.OptionPoolConstraintPoolException, exception:
         log.error(exception)
