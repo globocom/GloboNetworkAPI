@@ -27,7 +27,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools
+    prepare_to_save_reals, manager_pools, save_option_pool
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -40,7 +40,8 @@ from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, is_valid_healthcheck_destination
+from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, \
+    is_valid_healthcheck_destination
 from networkapi.log import Log
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.api_pools import exceptions
@@ -48,7 +49,8 @@ from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission
     ScriptCreatePermission, ScriptAlterPermission
 from networkapi.api_pools.models import OpcaoPoolAmbiente
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
-
+from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_option
+from networkapi.exception import InvalidValueError
 
 log = Log(__name__)
 
@@ -57,7 +59,6 @@ log = Log(__name__)
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def pool_list(request):
-
     """
     List all code snippets, or create a new snippet.
     """
@@ -131,7 +132,6 @@ def pool_list_by_reqvip(request):
 
         query_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=id_vip)
 
-
         server_pools, total = build_query_to_datatable(
             query_pools,
             asorting_cols,
@@ -164,7 +164,6 @@ def pool_list_by_reqvip(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_all_members_by_pool(request, id_server_pool):
-
     try:
 
         if not is_valid_int_greater_zero_param(id_server_pool):
@@ -180,9 +179,9 @@ def list_all_members_by_pool(request, id_server_pool):
         query_pools = ServerPoolMember.objects.filter(server_pool=id_server_pool)
         total = query_pools.count()
 
-        checkstatus=False
-        if request.QUERY_PARAMS.has_key("checkstatus") and request.QUERY_PARAMS["checkstatus"].upper()=="TRUE":
-            checkstatus=True
+        checkstatus = False
+        if request.QUERY_PARAMS.has_key("checkstatus") and request.QUERY_PARAMS["checkstatus"].upper() == "TRUE":
+            checkstatus = True
 
         if total > 0 and checkstatus:
             stdout = exec_script_check_poolmember_by_pool(id_server_pool)
@@ -194,13 +193,14 @@ def list_all_members_by_pool(request, id_server_pool):
             for pm in query_pools:
                 member_checked_status = script_out[id_server_pool][str(pm.id)]
                 if member_checked_status not in range(0, 8):
-                    raise exceptions.ScriptCheckStatusPoolMemberException(detail="Status script did not return as expected.")
+                    raise exceptions.ScriptCheckStatusPoolMemberException(
+                        detail="Status script did not return as expected.")
 
-                #Save to BD
+                # Save to BD
                 pm.member_status = member_checked_status
                 pm.last_status_update = datetime.now()
                 pm.save(request.user)
-        
+
         server_pools, total = build_query_to_datatable(
             query_pools,
             asorting_cols,
@@ -209,9 +209,9 @@ def list_all_members_by_pool(request, id_server_pool):
             start_record,
             end_record
         )
-        
+
         serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
-            
+
         data["server_pool_members"] = serializer_pools.data
         data["total"] = total
 
@@ -234,7 +234,6 @@ def list_all_members_by_pool(request, id_server_pool):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def get_equipamento_by_ip(request, id_ip):
-
     try:
 
         if not is_valid_int_greater_zero_param(id_ip):
@@ -268,8 +267,8 @@ def get_equipamento_by_ip(request, id_ip):
 @commit_on_success
 def delete(request):
     """
-    Delete Pools by list id.
-    """
+	Delete Pools by list id.
+	"""
 
     try:
 
@@ -335,8 +334,8 @@ def delete(request):
 @commit_on_success
 def remove(request):
     """
-    Remove Pools by list id running script and update to not created.
-    """
+	Remove Pools by list id running script and update to not created.
+	"""
 
     try:
 
@@ -384,8 +383,8 @@ def remove(request):
 @commit_on_success
 def create(request):
     """
-    Create Pools by list id running script and update to created.
-    """
+	Create Pools by list id running script and update to created.
+	"""
 
     try:
 
@@ -432,7 +431,6 @@ def create(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def healthcheck_list(request):
-
     try:
         data = dict()
 
@@ -456,7 +454,6 @@ def healthcheck_list(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def get_by_pk(request, id_server_pool):
-
     try:
 
         if not is_valid_int_greater_zero_param(id_server_pool):
@@ -500,8 +497,8 @@ def get_by_pk(request, id_server_pool):
 @commit_on_success
 def enable(request):
     """
-    Create Pools by list id running script and update to created.
-    """
+	Create Pools by list id running script and update to created.
+	"""
 
     try:
 
@@ -555,8 +552,8 @@ def enable(request):
 @commit_on_success
 def disable(request):
     """
-    Create Pools by list id running script and update to created.
-    """
+	Create Pools by list id running script and update to created.
+	"""
 
     try:
 
@@ -609,7 +606,6 @@ def disable(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def get_opcoes_pool_by_ambiente(request):
-
     try:
 
         id_ambiente = request.DATA.get('id_environment')
@@ -634,7 +630,6 @@ def get_opcoes_pool_by_ambiente(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_by_environment(request, environment_id):
-
     try:
 
         data = dict()
@@ -677,7 +672,6 @@ def list_by_environment(request, environment_id):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def get_requisicoes_vip_by_pool(request, id_server_pool):
-
     try:
         data = dict()
 
@@ -717,7 +711,6 @@ def get_requisicoes_vip_by_pool(request, id_server_pool):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_pool_members(request, pool_id):
-
     try:
 
         data = dict()
@@ -752,7 +745,6 @@ def list_pool_members(request, pool_id):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_by_environment_vip(request, environment_vip_id):
-
     try:
 
         env_vip = EnvironmentVip.objects.get(id=environment_vip_id)
@@ -774,11 +766,11 @@ def list_by_environment_vip(request, environment_vip_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
 @commit_on_success
 def save_reals(request):
-
     try:
         id_server_pool = request.DATA.get('id_server_pool')
 
@@ -817,11 +809,11 @@ def save_reals(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
 @commit_on_success
 def save(request):
-
     try:
 
         id = request.DATA.get('id')
@@ -832,7 +824,7 @@ def save(request):
         maxconn = request.DATA.get('maxcom')
         servicedownaction_id = request.DATA.get('service-down-action')
 
-        #id_pool_member is cleaned below
+        # id_pool_member is cleaned below
         id_pool_member = request.DATA.get('id_pool_member')
         ip_list_full = request.DATA.get('ip_list_full')
         priorities = request.DATA.get('priorities')
@@ -847,18 +839,18 @@ def save(request):
         healthcheck_expect = request.DATA.get('healthcheck_expect')
         healthcheck_destination = request.DATA.get('healthcheck_destination')
 
-        #Servicedownaction was not given
+        # Servicedownaction was not given
         try:
             if servicedownaction_id is None:
-                servicedownactions = OptionPool.get_all_by_type_and_environment('ServiceDownAction', environment )
-                #assert isinstance((servicedownactions.filter(name='none')).id, object)
+                servicedownactions = OptionPool.get_all_by_type_and_environment('ServiceDownAction', environment)
+                # assert isinstance((servicedownactions.filter(name='none')).id, object)
                 servicedownaction = (servicedownactions.get(name='none'))
             else:
                 servicedownaction = OptionPool.get_by_pk(servicedownaction_id)
 
         except ObjectDoesNotExist:
-              log.warning("Service-Down-Action none option not found")
-              raise exceptions.InvalidServiceDownActionException()
+            log.warning("Service-Down-Action none option not found")
+            raise exceptions.InvalidServiceDownActionException()
 
         except MultipleObjectsReturned, e:
             log.warning("Multiple service-down-action entries found for the given parameters")
@@ -867,15 +859,15 @@ def save(request):
 
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
-        #Cleans id_pool_member. It should be used only with existing pool
+        # Cleans id_pool_member. It should be used only with existing pool
         id_pool_member = ["" for x in id_pool_member]
         if id:
-            #Existing pool member is only valid in existing pools. New pools cannot  use them
+            # Existing pool member is only valid in existing pools. New pools cannot  use them
             id_pool_member = request.DATA.get('id_pool_member')
             has_identifier = has_identifier.exclude(id=id)
-            #current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
-            #current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
-            #healthcheck = current_healthcheck
+        # current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
+        # current_healthcheck = Healthcheck.objects.get(id=current_healthcheck_id)
+        # healthcheck = current_healthcheck
 
         if has_identifier.count() > 0:
             raise exceptions.InvalidIdentifierPoolException()
@@ -885,9 +877,10 @@ def save(request):
             healthcheck_destination = '*:*'
 
         if not is_valid_healthcheck_destination(healthcheck_destination):
-            raise api_exceptions.NetworkAPIException() 
+            raise api_exceptions.NetworkAPIException()
 
-        healthcheck = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request, healthcheck_destination, healthcheck_identifier)
+        healthcheck = get_or_create_healthcheck(request.user, healthcheck_expect, healthcheck_type, healthcheck_request,
+                                                healthcheck_destination, healthcheck_identifier)
 
         # Remove empty values from list
         id_pool_member_noempty = [x for x in id_pool_member if x != '']
@@ -896,7 +889,8 @@ def save(request):
         env = Ambiente.objects.get(id=environment)
 
         # Save Server pool
-        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env, balancing,
+        sp, old_healthcheck_id = save_server_pool(request.user, id, identifier, default_port, healthcheck, env,
+                                                  balancing,
                                                   maxconn, id_pool_member_noempty, servicedownaction)
 
         # Prepare and valid to save reals
@@ -912,8 +906,8 @@ def save(request):
             if pools_using_healthcheck == 0:
                 Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
 
-        #Return data
-        data = dict ()
+        # Return data
+        data = dict()
         data['pool'] = sp.id
         serializer_server_pool = ServerPoolSerializer(sp)
         data["server_pool"] = serializer_server_pool.data
@@ -975,10 +969,9 @@ def list_environments_with_pools(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, Read, ))
+@permission_classes((IsAuthenticated, Read,))
 @commit_on_success
 def chk_status_poolmembers_by_pool(request, pool_id):
-
     try:
 
         if not is_valid_int_greater_zero_param(pool_id):
@@ -1008,11 +1001,11 @@ def chk_status_poolmembers_by_pool(request, pool_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def chk_status_poolmembers_by_vip(request, vip_id):
-
     try:
         if not is_valid_int_greater_zero_param(vip_id):
             raise exceptions.InvalidIdVipException()
@@ -1038,7 +1031,6 @@ def chk_status_poolmembers_by_vip(request, vip_id):
 @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
 @commit_on_success
 def management_pools(request):
-
     try:
 
         manager_pools(request)
@@ -1073,13 +1065,13 @@ def management_pools(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def list_all_options(request):
-
     try:
 
-        type=''
+        type = ''
 
         if request.QUERY_PARAMS.has_key("type"):
             type = str(request.QUERY_PARAMS["type"])
@@ -1104,10 +1096,10 @@ def list_all_options(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def list_option_by_pk(request, option_id):
-
     try:
         data = dict()
 
@@ -1127,17 +1119,17 @@ def list_option_by_pk(request, option_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def list_all_environment_options(request):
-
     try:
-        environment_id=''
+        environment_id = ''
         option_id = ''
-        option_type=''
+        option_type = ''
 
         if request.QUERY_PARAMS.has_key("environment_id"):
-            environment_id=int(request.QUERY_PARAMS["environment_id"])
+            environment_id = int(request.QUERY_PARAMS["environment_id"])
 
         if request.QUERY_PARAMS.has_key("option_id"):
             option_id = int(request.QUERY_PARAMS["option_id"])
@@ -1151,7 +1143,7 @@ def list_all_environment_options(request):
             environment_options = environment_options.filter(environment=environment_id)
 
         if option_id:
-            environment_options = environment_options.filter(option=option_id)            
+            environment_options = environment_options.filter(option=option_id)
 
         if option_type:
             environment_options = environment_options.filter(option__type=option_type)
@@ -1171,7 +1163,6 @@ def list_all_environment_options(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def list_environment_options_by_pk(request, environment_option_id):
-
     try:
 
         environment_options = OptionPoolEnvironment.objects.get(id=environment_option_id)
@@ -1186,6 +1177,95 @@ def list_environment_options_by_pk(request, environment_option_id):
     except OptionPoolEnvironment.DoesNotExist, exception:
         log.error(exception)
         raise exceptions.OptionPoolEnvironmentDoesNotExistException
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def save_pool_option(request):
+    try:
+
+        #log.warning("RECEBEU %s" % request.DATA)
+        type = request.DATA.get('type')
+        description = request.DATA.get('name')
+
+
+        # tipo_opcao can NOT be greater than 50
+        if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
+            log.error(
+                u'Parameter tipo_opcao is invalid. Value: %s.', type)
+            raise InvalidValueError(None, 'type', type)
+
+        # nome_opcao_txt can NOT be greater than 50
+        if not is_valid_string_maxsize(description, 50, True) or not is_valid_option(description):
+            log.error(
+                u'Parameter nome_opcao_txt is invalid. Value: %s.', description)
+            raise InvalidValueError(None, 'name', description)
+
+        po = save_option_pool(request.user, type, description)
+
+        serializer_options = OptionPoolSerializer(
+            po,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+
+    except exceptions.ScriptAddPoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['DELETE'])
+@permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
+@commit_on_success
+def delete_pool_option(request,option_id):
+    """
+	Delete options Pools by id.
+	"""
+
+    try:
+
+        #ids = request.DATA.get('id')
+
+        pool_option = OptionPool.objects.get(id=option_id)
+
+        try:
+            #TODO AFTER INTEGRATION MODEL OPTIONPOOL
+            #if ServerPool.objects.filter(healthcheck=option_id):
+            #    raise exceptions.OptionPoolConstraintPoolException()
+
+            if ServerPool.objects.filter(servicedownaction=option_id):
+                raise exceptions.OptionPoolConstraintPoolException()
+
+
+
+            pool_option.delete(request.user)
+
+        except OptionPool.DoesNotExist:
+            pass
+
+        return Response("Option Pool deleted")
+
+    except exceptions.OptionPoolConstraintPoolException, exception:
+        log.error(exception)
+        raise exception
+
+    except exceptions.ScriptDeletePoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except ScriptError, exception:
+        log.error(exception)
+        raise exceptions.ScriptDeletePoolException()
 
     except Exception, exception:
         log.error(exception)
