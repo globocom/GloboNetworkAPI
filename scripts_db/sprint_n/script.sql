@@ -27,6 +27,7 @@ CREATE TABLE `optionspool_environment_xref` (
   PRIMARY KEY (`id_optionspool_environment_xref`),
   KEY `fk_options_id_optionspool_idx` (`id_optionspool`),
   KEY `fk_options_id_environment_idx` (`id_environment`),
+  UNIQUE KEY `optionspool_environment_unique` (`id_optionspool`,`id_environment`),
   CONSTRAINT `fk_options_id_optionspool` FOREIGN KEY (`id_optionspool`) REFERENCES `optionspool` (`id_optionspool`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_options_id_environment` FOREIGN KEY (`id_environment`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
