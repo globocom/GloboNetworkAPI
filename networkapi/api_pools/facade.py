@@ -411,6 +411,14 @@ def update_option_pool(user, option_id, type, description):
 
     return sp
 
+def delete_option_pool(user, option_id):
+
+    pool_option=  OptionPool.objects.get(id=option_id)
+
+    pool_option.delete(user)
+
+    return option_id
+
 
 def save_environment_option_pool(user, option_id, environment_id):
 
@@ -428,3 +436,25 @@ def save_environment_option_pool(user, option_id, environment_id):
     ope.save(user)
 
     return ope
+
+
+def update_environment_option_pool(user, environment_option_id, option_id, environment_id):
+
+    ope=OptionPoolEnvironment.objects.get(id=environment_option_id)
+    op=OptionPool.objects.get(id=option_id)
+    env=Ambiente.objects.get(id=environment_id)
+
+    ope.option = op
+    ope.environment = env
+
+    ope.save(user)
+
+    return ope
+
+def delete_environment_option_pool(user, environment_option_id):
+
+    ope=OptionPoolEnvironment.objects.get(id=environment_option_id)
+    ope.delete(user)
+
+    return environment_option_id
+

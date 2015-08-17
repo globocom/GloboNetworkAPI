@@ -27,7 +27,8 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool
+    prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
+    update_environment_option_pool, delete_environment_option_pool, delete_option_pool
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -1129,9 +1130,7 @@ def __delete_pool_option(request,option_id):
 
     try:
 
-        #ids = request.DATA.get('id')
-
-        pool_option = OptionPool.objects.get(id=option_id)
+        OptionPool.objects.get(id=option_id)
 
         try:
             #TODO AFTER INTEGRATION MODEL OPTIONPOOL
@@ -1143,12 +1142,12 @@ def __delete_pool_option(request,option_id):
 
 
 
-            pool_option.delete(request.user)
+            po=delete_option_pool(request.user, option_id)
+
+            return Response({"id":po})
 
         except ObjectDoesNotExist:
             pass
-
-        return Response({"id":option_id})
 
     except exceptions.OptionPoolConstraintPoolException, exception:
         log.error(exception)
@@ -1174,7 +1173,6 @@ def __modify_pool_option(request,option_id):
 	Delete options Pools by id.
 	"""
     try:
-        data = dict()
 
         OptionPool.objects.get(id=option_id)
 
@@ -1218,10 +1216,6 @@ def __modify_pool_option(request,option_id):
     except exceptions.OptionPoolConstraintPoolException, exception:
         log.error(exception)
         raise exception
-
-    except ScriptError, exception:
-        log.error(exception)
-        raise exceptions.ScriptDeletePoolException()
 
     except Exception, exception:
         log.error(exception)
@@ -1346,9 +1340,77 @@ def __list_environment_options_by_pk(request, environment_option_id):
 
 
 def __update_environment_options_by_pk(request, environment_option_id):
-    return
+    try:
+
+        OptionPoolEnvironment.objects.get(id=environment_option_id)
+
+
+        try:
+
+            option_id = request.DATA.get('option_id')
+            environment_id = request.DATA.get('environment_id')
+
+            try:
+                OptionPool.objects.get(id=option_id)
+            except ObjectDoesNotExist, exception:
+                log.error(exception)
+                raise exceptions.OptionPoolDoesNotExistException
+            try:
+                Ambiente.objects.get(id=environment_id)
+            except ObjectDoesNotExist, exception:
+                log.error(exception)
+                raise exceptions.EnvironmentDoesNotExistException
+
+            epo = update_environment_option_pool(request.user, environment_option_id, option_id, environment_id)
+
+            serializer_options = OptionPoolEnvironmentSerializer(
+                epo,
+                many=False
+            )
+
+            return Response(serializer_options.data)
+
+        except ObjectDoesNotExist:
+            pass
+
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.OptionPoolEnvironmentDoesNotExistException
+
+    except exceptions.ScriptModifyEnvironmentPoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
 def __delete_environment_options_by_pk(request, environment_option_id):
-    return
+
+    try:
+
+        OptionPoolEnvironment.objects.get(id=environment_option_id)
+
+        try:
+            depo=delete_environment_option_pool(request.user, environment_option_id)
+
+            return Response({"id":depo})
+
+        except ObjectDoesNotExist:
+            pass
+
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.OptionPoolEnvironmentDoesNotExistException
+
+    except exceptions.ScriptDeleteEnvironmentPoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['GET', 'DELETE', 'PUT'])
@@ -1371,7 +1433,6 @@ def save_environment_options(request):
 
         option_id = request.DATA.get('option_id')
         environment_id = request.DATA.get('environment_id')
-        log.warning("RECEBEU %s" % request.DATA)
 
         try:
             OptionPool.objects.get(id=option_id)
