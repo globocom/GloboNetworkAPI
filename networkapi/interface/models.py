@@ -23,6 +23,7 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_regex
 from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import Equipamento, TipoEquipamento
+from networkapi.ambiente.models import Ambiente
 
 
 class InterfaceError(Exception):
@@ -102,6 +103,42 @@ class InterfaceProtectedError(InterfaceError):
         InterfaceError.__init__(self, cause, message)
 
 
+class TipoInterface(BaseModel):
+
+    id = models.AutoField(primary_key=True, db_column='id_tipo_interface')
+    tipo = models.CharField(unique=True, max_length=20)
+
+    log = Log('Tipo de Interface')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'tipo_interface'
+        managed = True
+
+    @classmethod
+    def get_by_pk(cls, id):
+        try:
+            return TipoInterface.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a TipoInterface with id = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o tipo de interface.')
+            raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
+
+    @classmethod
+    def get_by_name(cls, name):
+        """"Get TipoInterface by tipo.
+        @return: TipoInterface.
+        """
+        try:
+            return TipoInterface.objects.get(tipo__iexact=name)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a TipoInterface with tipo = %s.' % name)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o tipo de interface.')
+            raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)
@@ -112,6 +149,8 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
+    vlan_nativa = models.CharField(max_length=200, blank=True, null=True)
+    tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
 
     log = Log('Interface')
 
@@ -468,6 +507,8 @@ class Interface(BaseModel):
             interface.interface = nome
             interface.descricao = kwargs['descricao']
             interface.protegida = kwargs['protegida']
+            interface.tipo = kwargs['tipo']
+            interface.vlan_nativa = kwargs['vlan_nativa']
 
             return interface.save(authenticated_user)
 
@@ -520,3 +561,28 @@ class Interface(BaseModel):
             i.save(authenticated_user)
 
         super(Interface, self).delete(authenticated_user)
+
+
+
+class EnvironmentInterface(BaseModel):
+
+    log = Log('EnvironmentInterface')
+
+    id = models.AutoField(primary_key=True, db_column='id_int_ambiente')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    interface = models.ForeignKey(Interface, db_column='id_interface')
+    vlans = models.CharField(max_length=200, blank=True, null=True)
+
+    class Meta(BaseModel.Meta):
+        db_table = u'interface_do_ambiente'
+        managed = True
+
+    def create(self, authenticated_user):
+        """Add new interface_do_ambiente"""
+
+        try:
+            return self.save(authenticated_user)
+        except Exception, e:
+            self.log.error(u'Failed to add interface_do_ambiente.')
+            raise InterfaceError(
+                e, u'Failed to add interface_do_ambiente.')

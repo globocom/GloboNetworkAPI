@@ -17,24 +17,16 @@
 
 from __future__ import with_statement
 from networkapi.rest import RestResource
-
 from networkapi.auth import has_perm
-
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
 from networkapi.admin_permission import AdminPermission
-
 from networkapi.log import Log
-
 from networkapi.grupo.models import GrupoError
-
-from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
-
+from networkapi.interface.models import EnvironmentInterface, TipoInterface, Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
 from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError
 from django.forms.models import model_to_dict
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
-
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_boolean_param, convert_string_or_int_to_boolean
 
 
@@ -75,12 +67,8 @@ class InterfaceResource(RestResource):
                 raise InvalidValueError(None, 'interface_name', interface_name)
 
             # Check permission
-            if not has_perm(user,
-                            AdminPermission.EQUIPMENT_MANAGEMENT,
-                            AdminPermission.READ_OPERATION,
-                            None,
-                            equipment_id,
-                            AdminPermission.EQUIP_READ_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION, None,
+                            equipment_id, AdminPermission.EQUIP_READ_OPERATION):
                 return self.not_authorized()
 
             # Check interface and call search method
@@ -104,9 +92,9 @@ class InterfaceResource(RestResource):
         URL: /interface/ 
 
         """
-
         # Obtém dados do request e verifica acesso
         try:
+
             # Obtém os dados do xml do request
             xml_map, attrs_map = loads(request.raw_post_data)
 
@@ -134,12 +122,8 @@ class InterfaceResource(RestResource):
             Equipamento.get_by_pk(id_equipamento)
 
             # Verify permission
-            if not has_perm(user,
-                            AdminPermission.EQUIPMENT_MANAGEMENT,
-                            AdminPermission.WRITE_OPERATION,
-                            None,
-                            id_equipamento,
-                            AdminPermission.EQUIP_WRITE_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,
+                            id_equipamento, AdminPermission.EQUIP_WRITE_OPERATION):
                 return self.not_authorized()
 
             # Valid name value
@@ -193,6 +177,11 @@ class InterfaceResource(RestResource):
             else:
                 ligacao_back = None
 
+            tipo_interface = interface_map.get('tipo')
+            tipo_interface = TipoInterface.get_by_name(tipo_interface)
+
+            vlan = interface_map.get('vlan')
+
             # Cria a interface conforme dados recebidos no XML
             interface = Interface(
                 interface=nome,
@@ -200,12 +189,13 @@ class InterfaceResource(RestResource):
                 descricao=descricao,
                 ligacao_front=ligacao_front,
                 ligacao_back=ligacao_back,
-                equipamento=Equipamento(id=id_equipamento)
+                equipamento=Equipamento(id=id_equipamento),
+                tipo=tipo_interface,
+                vlan_nativa=vlan
             )
 
             interface.create(user)
 
-            # Monta dict para response
             networkapi_map = dict()
             interface_map = dict()
 
@@ -230,11 +220,11 @@ class InterfaceResource(RestResource):
         except (InterfaceError, GrupoError, EquipamentoError):
             return self.response_error(1)
 
+
     def handle_put(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de uma interface.
 
-        URL: /interface/<id_interface>/ 
-
+        URL: /interface/<id_interface>/
         """
 
         # Get request data and check permission
@@ -315,6 +305,11 @@ class InterfaceResource(RestResource):
                 else:
                     id_ligacao_back = int(id_ligacao_back)
 
+            tipo = interface_map.get('tipo')
+            tipo = TipoInterface.get_by_name(tipo)
+
+            vlan = interface_map.get('vlan')
+
             with distributedlock(LOCK_INTERFACE % id_interface):
 
                 # Update interface
@@ -324,7 +319,9 @@ class InterfaceResource(RestResource):
                                  protegida=protegida,
                                  descricao=descricao,
                                  ligacao_front_id=id_ligacao_front,
-                                 ligacao_back_id=id_ligacao_back
+                                 ligacao_back_id=id_ligacao_back,
+                                 tipo=tipo,
+                                 vlan_nativa=vlan
                                  )
 
                 return self.response(dumps_networkapi({}))
@@ -443,6 +440,9 @@ class InterfaceResource(RestResource):
         map['nome'] = interface.interface
         map['protegida'] = interface.protegida
         map['descricao'] = interface.descricao
+        map['tipo'] = interface.tipo.tipo
+        map['id_equipamento'] = interface.equipamento_id
+        map['vlan'] = interface.vlan_nativa
         if interface.ligacao_front is None:
             map['id_ligacao_front'] = ''
         else:
@@ -451,7 +451,6 @@ class InterfaceResource(RestResource):
             map['id_ligacao_back'] = ''
         else:
             map['id_ligacao_back'] = interface.ligacao_back_id
-        map['id_equipamento'] = interface.equipamento_id
         return map
 
     def get_new_interface_map(self, interface):
@@ -459,6 +458,8 @@ class InterfaceResource(RestResource):
         int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
         int_map['equipamento_nome'] = interface.equipamento.nome
         int_map['marca'] = interface.equipamento.modelo.marca_id
+        int_map['tipo'] = interface.tipo.tipo
+        int_map['vlan'] = interface.vlan_nativa
         if interface.ligacao_front is not None:
             int_map['nome_ligacao_front'] = interface.ligacao_front.interface
             int_map[

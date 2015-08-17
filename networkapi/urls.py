@@ -198,6 +198,9 @@ from networkapi.grupo.resource.GroupUserAddResource import GroupUserAddResource
 from networkapi.interface.resource.InterfaceResource import InterfaceResource
 from networkapi.interface.resource.InterfaceGetResource import InterfaceGetResource
 from networkapi.interface.resource.InterfaceDisconnectResource import InterfaceDisconnectResource
+from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
+from networkapi.interface.resource.InterfaceGetSwRouterResource import InterfaceGetSwRouterResource
+from networkapi.interface.resource.InterfaceEnvironmentResource import InterfaceEnvironmentResource
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
 
@@ -266,7 +269,9 @@ from networkapi.rack.resource.RackEditResource import RackEditResource
 from networkapi.rack.resource.RackDeleteResource import RackDeleteResource
 from networkapi.rack.resource.RackConfigResource import RackConfigResource
 from networkapi.rack.resource.RackAplicarConfigResource import RackAplicarConfigResource
-
+from networkapi.rack.resource.RackListAllResource import RackListAllResource
+from networkapi.rack.resource.RackEnvironmentResource import RackEnvironmentResource
+from networkapi.rack.resource.RackGetByEquipResource import RackGetByEquipResource
 check_action = CheckAction()
 
 
@@ -281,7 +286,9 @@ edit_rack_resource = RackEditResource()
 delete_rack_resource = RackDeleteResource()
 gerar_config_rack_resource = RackConfigResource()
 aplicar_config_rack_resource = RackAplicarConfigResource()
-
+list_all_racks_resource = RackListAllResource()
+list_rack_environment_resource = RackEnvironmentResource()
+get_rack_by_equip_resource = RackGetByEquipResource()
 
 vlan_resource = VlanResource()
 vlan_list_resource = VlanListResource()
@@ -495,6 +502,9 @@ network_type_resource = NetworkTypeResource()
 interface_resource = InterfaceResource()
 interface_get_resource = InterfaceGetResource()
 interface_disconnect_resource = InterfaceDisconnectResource()
+interface_type_get_all_resource = InterfaceTypeGetAllResource()
+interface_get_sw_router_resource = InterfaceGetSwRouterResource()
+interface_environment_resource = InterfaceEnvironmentResource()
 
 authenticate_resource = AuthenticateResource()
 
@@ -981,6 +991,10 @@ urlpatterns += patterns('',
                            interface_resource.handle_request, name='interface.search.by.interface.equipment'),
                        url(r'^interface/(?P<nome_interface>.+?)/equipment/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request, {
                            'new': True}, name='interface.search.by.interface.equipment.new'),
+                       url(r'^int/getbyidequip/(?P<id_equipamento>[^/]+)/$', interface_get_sw_router_resource.handle_request,
+                           name='interface.get_sw_router'),
+                       url(r'^int/associar-ambiente[/]?$', interface_environment_resource.handle_request,
+                           name='interface.associar'),
 
                        url(r'^authenticate/$', authenticate_resource.handle_request,
                            name='user.authenticate'),
@@ -1125,7 +1139,9 @@ urlpatterns += patterns('',
                            lambda _: HttpResponse("WORKING")),
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
-                       url(r'^rack/find[/]?$', find_rack_resource.handle_request,
+                       url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
+                           name='find.rack'),
+                       url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
                            name='find.rack'),
                        url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
                            name='edit.rack'),
@@ -1135,6 +1151,12 @@ urlpatterns += patterns('',
                            name='config.rack'),
                        url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
                            name='aplicar.rack'),
+                       url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
+                           name='interfacetype.get'),
+                       url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
+                           name='interfacetype.get'),
+                       url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
+                           name='rack.get.equip.id'),
                        )
 
 

@@ -213,7 +213,7 @@ class RackDeleteResource(RestResource):
             return self.response_error(379, rack_id)
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(378)
 
         except VlanNetworkError, e:
             return self.response_error(369, e.message)

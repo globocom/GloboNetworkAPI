@@ -16,7 +16,6 @@
 # limitations under the License.
 
 
-from django.forms.models import model_to_dict
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import Rack , RackError
@@ -24,11 +23,11 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
+from django.forms.models import model_to_dict
 
+class GetRackResource(RestResource):
 
-class RackFindResource(RestResource):
-
-    log = Log('RackFindResource')
+    log = Log('GetRackResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all Racks
@@ -36,7 +35,7 @@ class RackFindResource(RestResource):
         URLs: /rack/find/
         """
 
-        self.log.info('Find all Racks')
+        self.log.info('Get Rack')
 
         try:
 
@@ -46,15 +45,22 @@ class RackFindResource(RestResource):
                     u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            nome = kwargs.get('rack_name')
-            rack = Rack()
-            rack = rack.get_by_name(nome)
-            rack = model_to_dict(rack)
+            # Get XML data
+            nome = kwargs.get('nome')
+            rack_map = []
 
-            return self.response(dumps_networkapi({'rack': rack}))
+            racks = Rack.objects.all().filter(nome__exact=nome)
+
+            for var in racks:
+                rack_map.append(model_to_dict(var))
+
+            return self.response(dumps_networkapi({'rack': rack_map}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
         except RackError:
-            return self.response_error(379)
+            return self.response_error(1)
+
+        except InvalidValueError, e:
+            return self.response_error(269, e.param, e.value)
