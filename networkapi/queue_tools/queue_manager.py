@@ -26,7 +26,7 @@ from stompest.config import StompConfig
 from stompest.sync import Stomp
 
 
-LOGGER = logging.getLogger.log(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class QueueManager(object):
