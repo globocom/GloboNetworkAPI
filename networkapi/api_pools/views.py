@@ -27,7 +27,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool
+    prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool
 from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
@@ -959,7 +959,7 @@ def list_environments_with_pools(request):
 
         return Response(serializer_pools.data)
 
-    except EnvironmentVip.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
         raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
 
@@ -989,7 +989,7 @@ def chk_status_poolmembers_by_pool(request, pool_id):
         log.error(exception)
         raise exceptions.ScriptCheckStatusPoolMemberException()
 
-    except ServerPool.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
         raise exceptions.PoolDoesNotExistException()
 
@@ -1045,7 +1045,7 @@ def management_pools(request):
         log.error(exception)
         raise exceptions.ScriptManagementPoolException()
 
-    except ServerPool.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
         raise exceptions.PoolDoesNotExistException()
 
@@ -1088,7 +1088,7 @@ def list_all_options(request):
 
         return Response(serializer_options.data)
 
-    except OptionPool.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
         raise exceptions.OptionPoolDoesNotExistException()
 
@@ -1111,9 +1111,9 @@ def __list_option_by_pk_get(request, option_id):
 
         return Response(serializer_options.data)
 
-    except OptionPool.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
-        raise exception
+        raise exceptions.OptionPoolDoesNotExistException
 
     except Exception, exception:
         log.error(exception)
@@ -1145,7 +1145,7 @@ def __delete_pool_option(request,option_id):
 
             pool_option.delete(request.user)
 
-        except OptionPool.DoesNotExist:
+        except ObjectDoesNotExist:
             pass
 
         return Response({"id":option_id})
@@ -1202,14 +1202,14 @@ def __modify_pool_option(request,option_id):
                 many=False
             )
 
-        except OptionPool.DoesNotExist:
+        except ObjectDoesNotExist:
             pass
 
         return Response(serializer_options.data)
 
-    except OptionPool.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
-        raise exception
+        raise exceptions.OptionPoolDoesNotExistException
 
     except exceptions.ScriptModifyPoolOptionException, exception:
         log.error(exception)
@@ -1237,6 +1237,48 @@ def list_option_by_pk(request, option_id):
         return __delete_pool_option(request, option_id)
     elif request.method == 'PUT':
         return __modify_pool_option(request, option_id)
+
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def save_pool_option(request):
+    try:
+
+        #log.warning("RECEBEU %s" % request.DATA)
+        type = request.DATA.get('type')
+        description = request.DATA.get('name')
+
+
+        # tipo_opcao can NOT be greater than 50
+        if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
+            log.error(
+                u'Parameter tipo_opcao is invalid. Value: %s.', type)
+            raise InvalidValueError(None, 'type', type)
+
+        # nome_opcao_txt can NOT be greater than 50
+        if not is_valid_string_maxsize(description, 50, True) or not is_valid_option(description):
+            log.error(
+                u'Parameter nome_opcao_txt is invalid. Value: %s.', description)
+            raise InvalidValueError(None, 'name', description)
+
+        po = save_option_pool(request.user, type, description)
+
+        serializer_options = OptionPoolSerializer(
+            po,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+
+    except exceptions.ScriptAddPoolOptionException, exception:
+        log.error(exception)
+        raise exception
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 
 
@@ -1282,7 +1324,7 @@ def list_all_environment_options(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-def list_environment_options_by_pk(request, environment_option_id):
+def __list_environment_options_by_pk(request, environment_option_id):
     try:
 
         environment_options = OptionPoolEnvironment.objects.get(id=environment_option_id)
@@ -1294,7 +1336,7 @@ def list_environment_options_by_pk(request, environment_option_id):
 
         return Response(serializer_options.data)
 
-    except OptionPoolEnvironment.DoesNotExist, exception:
+    except ObjectDoesNotExist, exception:
         log.error(exception)
         raise exceptions.OptionPoolEnvironmentDoesNotExistException
 
@@ -1303,41 +1345,58 @@ def list_environment_options_by_pk(request, environment_option_id):
         raise api_exceptions.NetworkAPIException()
 
 
+def __update_environment_options_by_pk(request, environment_option_id):
+    return
+def __delete_environment_options_by_pk(request, environment_option_id):
+    return
+
+
+@api_view(['GET', 'DELETE', 'PUT'])
+@permission_classes((IsAuthenticated, Read, Write, ScriptAlterPermission))
+def environment_options_by_pk(request, environment_option_id):
+    if request.method == 'GET':
+        return __list_environment_options_by_pk(request, environment_option_id)
+    elif request.method == 'DELETE':
+        return __delete_environment_options_by_pk(request, environment_option_id)
+    elif request.method == 'PUT':
+        return __update_environment_options_by_pk(request, environment_option_id)
+
+
+
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
-def save_pool_option(request):
+def save_environment_options(request):
     try:
 
-        #log.warning("RECEBEU %s" % request.DATA)
-        type = request.DATA.get('type')
-        description = request.DATA.get('name')
+        option_id = request.DATA.get('option_id')
+        environment_id = request.DATA.get('environment_id')
+        log.warning("RECEBEU %s" % request.DATA)
 
+        try:
+            OptionPool.objects.get(id=option_id)
+        except ObjectDoesNotExist, exception:
+            log.error(exception)
+            raise exceptions.OptionPoolDoesNotExistException
+        try:
+            Ambiente.objects.get(id=environment_id)
+        except ObjectDoesNotExist, exception:
+            log.error(exception)
+            raise exceptions.EnvironmentDoesNotExistException
 
-        # tipo_opcao can NOT be greater than 50
-        if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
-            log.error(
-                u'Parameter tipo_opcao is invalid. Value: %s.', type)
-            raise InvalidValueError(None, 'type', type)
+        epo = save_environment_option_pool(request.user, option_id, environment_id)
 
-        # nome_opcao_txt can NOT be greater than 50
-        if not is_valid_string_maxsize(description, 50, True) or not is_valid_option(description):
-            log.error(
-                u'Parameter nome_opcao_txt is invalid. Value: %s.', description)
-            raise InvalidValueError(None, 'name', description)
-
-        po = save_option_pool(request.user, type, description)
-
-        serializer_options = OptionPoolSerializer(
-            po,
+        serializer_options = OptionPoolEnvironmentSerializer(
+            epo,
             many=False
         )
 
         return Response(serializer_options.data)
 
-    except exceptions.ScriptAddPoolOptionException, exception:
+    except exceptions.ScriptAddEnvironmentPoolOptionException, exception:
         log.error(exception)
         raise exception
+
 
     except Exception, exception:
         log.error(exception)

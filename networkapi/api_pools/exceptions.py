@@ -137,6 +137,10 @@ class OptionPoolDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Option Pool Does Not Exist.'
 
+class EnvironmentDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Environment Does Not Exist.'
+
 class InvalidIdOptionPoolRequestException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Option Pool Request.'
@@ -152,6 +156,10 @@ class InvalidIdOptionPoolEnvironmentRequestException(APIException):
 class ScriptAddPoolOptionException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute add script for pool option.'
+
+class ScriptAddEnvironmentPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute add script for environment pool option.'
 
 class OptionPoolConstraintPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

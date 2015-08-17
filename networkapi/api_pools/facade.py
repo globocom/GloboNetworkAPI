@@ -19,8 +19,9 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 
+from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
-from networkapi.api_pools.models import OptionPool
+from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ipv6, Ip
@@ -28,7 +29,6 @@ from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
 
 from networkapi.ambiente.models import IP_VERSION
-
 from networkapi.log import Log
 
 log = Log(__name__)
@@ -410,3 +410,21 @@ def update_option_pool(user, option_id, type, description):
     sp.save(user)
 
     return sp
+
+
+def save_environment_option_pool(user, option_id, environment_id):
+
+
+    op=OptionPool.objects.get(id=option_id)
+    env=Ambiente.objects.get(id=environment_id)
+
+
+#    log.warning("objetos buscados %s %s", serializer_options.data, serializer_env.data)
+
+    ope= OptionPoolEnvironment()
+
+    ope.environment=env
+    ope.option=op
+    ope.save(user)
+
+    return ope
