@@ -611,6 +611,17 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
+-- -----------------------------------------------------
+-- Table `telecom`.`tipo_interface`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interface` (
+  `id_tipo_interface` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`id_tipo_interface`),
+  UNIQUE INDEX `tipo_unique` (`tipo` ASC))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
 
 -- -----------------------------------------------------
 -- Table `telecom`.`interfaces`
@@ -646,7 +657,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
     ON UPDATE CASCADE,
   CONSTRAINT `fk_interfaces_interfaces_tipo`
     FOREIGN KEY (`id_tipo_interface`)
-    REFERENCES `telecom`.`interfaces` (`id_tipo_interface`)
+    REFERENCES `telecom`.`tipo_interface` (`id_tipo_interface`)
     ON UPDATE CASCADE)
   CONSTRAINT `fk_interfaces_interfaces_channel`
     FOREIGN KEY (`id_channel`)
@@ -1258,19 +1269,6 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ambiente_rack` (
     REFERENCES `telecom`.`racks` (`id_rack`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
-AUTO_INCREMENT = 1
-DEFAULT CHARACTER SET = utf8;
-
-
--- -----------------------------------------------------
--- Table `telecom`.`tipo_interface`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interface` (
-  `id_tipo_interface` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `tipo` VARCHAR(20) NOT NULL,
-  PRIMARY KEY (`id_tipo_interface`),
-  UNIQUE INDEX `tipo_unique` (`tipo` ASC))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;

@@ -51,6 +51,10 @@ def get_envs(self, user, no_blocks=False):
                 env_map["grupo_l3_name"] = env.grupo_l3.nome
                 env_map["ambiente_logico_name"] = env.ambiente_logico.nome
                 env_map["divisao_dc_name"] = env.divisao_dc.nome
+                if not env.min_num_vlan_1==None and not env.max_num_vlan_2==None:
+                    env_map['range'] = str(env.min_num_vlan_1) + " - " + str(env.max_num_vlan_2)
+                else:
+                    env_map['range'] = "Nao definido"
                 if env.filter is not None:
                     env_map["filter_name"] = env.filter.name
                 lists.append(env_map)
