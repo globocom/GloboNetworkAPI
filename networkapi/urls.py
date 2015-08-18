@@ -1086,7 +1086,9 @@ urlpatterns += patterns('',
                            name='network.ipv6.add'),
                        url(r'^network/ipv6/(?P<id_network_ipv6>[^/]+)/deallocate/$',
                            network_ipv6_deallocate_resource.handle_request, name='network.ipv6.deallocate'),
+                       )
 
+urlpatterns += patterns('',
                        url(r'^environmentvip/$', environment_vip_resource.handle_request,
                            name='environment.vip.add'),
                        url(r'^environmentvip/all/', environment_vip_resource.handle_request,

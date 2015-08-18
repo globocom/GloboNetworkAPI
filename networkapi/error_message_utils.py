@@ -318,7 +318,7 @@ error_messages = {
     392: u'Environment is already associated with the environment vip',
     393: u'Environment is not associated with the environment vip',
     394: u'O ambiente %s não pode ser desvinculado pois existem server pools com reals vinculados a este ambiente.',
-    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".'
+    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".',
     397: u'O Rack, que o servidor está, não foi cadastrado.',
     400: u'Nao foi possivel adicionar o Rack',
     401: u'As mudancas nao foram salvas',
