@@ -180,6 +180,16 @@ class PortChannel(BaseModel):
             cls.log.error(u'Failure to search the Group L3.')
             raise AmbienteError(e, u'Failure to search the Group L3.')
 
+    def delete(self, authenticated_user):
+        '''Override Django method to remove port channel.
+        '''
+        id = self.id
+        interfaces = Interface.objects.all().filter(channel=id)
+        for interface in interfaces:
+            interface.channel = None
+            interface.save(authenticated_user)
+        super(PortChannel, self).delete(authenticated_user)
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)

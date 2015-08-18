@@ -26,9 +26,6 @@ from networkapi.util import convert_string_or_int_to_boolean
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
 
-
-
-
 class InterfaceChannelResource(RestResource):
 
     log = Log('InterfaceChannelResource')
@@ -139,6 +136,7 @@ class InterfaceChannelResource(RestResource):
         # Get request data and check permission
 
         try:
+            self.log.info("Get Channel")
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -167,3 +165,38 @@ class InterfaceChannelResource(RestResource):
             return self.response_error(3, x)
         except InterfaceError:
            return self.response_error(1)
+
+    def handle_delete(self, request, user, *args, **kwargs):
+        """Trata uma requisição DELETE para excluir um port channel
+
+        URL: /channel/delete/<channel_name>/
+
+        """
+        # Get request data and check permission
+        try:
+            self.log.info("Delete Channel")
+
+            # User permission
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
+                self.log.error(u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(None)
+
+            channel_name = kwargs.get('channel_name')
+
+            channel = PortChannel.get_by_name(str(channel_name))
+
+            channel.delete(user)
+
+            return self.response(dumps_networkapi({}))
+
+        except InvalidValueError, e:
+            return self.response_error(269, e.param, e.value)
+        except XMLError, x:
+            self.log.error(u'Erro ao ler o XML da requisição.')
+            return self.response_error(3, x)
+        except InterfaceNotFoundError:
+            return self.response_error(141)
+        except InterfaceUsedByOtherInterfaceError:
+            return self.response_error(214, id_interface)
+        except (InterfaceError, GrupoError, EquipamentoError):
+            return self.response_error(1)
