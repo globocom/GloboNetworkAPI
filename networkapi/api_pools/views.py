@@ -1526,7 +1526,6 @@ def reals_can_associate_server_pool(server_pool, list_server_pool_member):
     except Exception, error:
         log.error(error)
         raise error
-=======
 
 def __update_environment_options_by_pk(request, environment_option_id):
     try:
@@ -1652,5 +1651,3 @@ def save_environment_options(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
-
->>>>>>> feature/service-down-action
