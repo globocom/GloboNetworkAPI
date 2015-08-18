@@ -24,6 +24,7 @@ from networkapi.interface.models import PortChannel, Interface, InterfaceError, 
 from networkapi.exception import InvalidValueError
 from networkapi.util import convert_string_or_int_to_boolean
 from networkapi.ambiente.models import Ambiente
+from django.forms.models import model_to_dict
 
 
 
@@ -65,7 +66,6 @@ class InterfaceChannelResource(RestResource):
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')
             envs = channel_map.get('envs')
-
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
@@ -81,21 +81,21 @@ class InterfaceChannelResource(RestResource):
             for var in interfaces:
                 if not var=="":
                     interf = interface.get_by_pk(int(var))
-
-                    if interf.ligacao_front is not None:
-                        ligacao_front_id = interf.ligacao_front.id
+                    sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
+                    if sw_router.ligacao_front is not None:
+                        ligacao_front_id = sw_router.ligacao_front.id
                     else:
                         ligacao_front_id = None
-                    if interf.ligacao_back is not None:
-                        ligacao_back_id = interf.ligacao_back.id
+                    if sw_router.ligacao_back is not None:
+                        ligacao_back_id = sw_router.ligacao_back.id
                     else:
                         ligacao_back_id = None
 
                     Interface.update(user,
-                                     interf.id,
-                                     interface=interf.interface,
-                                     protegida=interf.protegida,
-                                     descricao=interf.descricao,
+                                     sw_router.id,
+                                     interface=sw_router.interface,
+                                     protegida=sw_router.protegida,
+                                     descricao=sw_router.descricao,
                                      ligacao_front_id=ligacao_front_id,
                                      ligacao_back_id=ligacao_back_id,
                                      tipo=int_type,
@@ -103,21 +103,62 @@ class InterfaceChannelResource(RestResource):
                                      channel=port_channel)
 
                     if "trunk" in int_type.tipo:
-                        interface_list = EnvironmentInterface.objects.all().filter(interface__exact=interf.id)
+
+                        interface_list = EnvironmentInterface.objects.all().filter(interface=sw_router.id)
                         for int_env in interface_list:
                             int_env.delete(user)
-
-                        for env in envs:
+                        if not type(envs)==unicode:
+                            for env in envs:
+                                amb_int = EnvironmentInterface()
+                                amb_int.interface = sw_router
+                                amb_int.ambiente = amb.get_by_pk(int(env))
+                                amb_int.create(user)
+                        else:
                             amb_int = EnvironmentInterface()
-                            amb_int.interface = interface.get_by_pk(interf.id)
-                            amb_int.ambiente = amb.get_by_pk(int(env))
+                            amb_int.interface = sw_router
+                            amb_int.ambiente = amb.get_by_pk(int(envs))
                             amb_int.create(user)
-
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel
 
             return self.response(dumps_networkapi({'port_channel': port_channel_map}))
+
+        except InvalidValueError, e:
+            return self.response_error(269, e.param, e.value)
+        except XMLError, x:
+            self.log.error(u'Erro ao ler o XML da requisição.')
+            return self.response_error(3, x)
+        except InterfaceError:
+           return self.response_error(1)
+
+    def handle_get(self, request, user, *args, **kwargs):
+        """Trata uma requisição PUT para alterar informações de um channel.
+        URL: channel/get-by-name/
+        """
+        # Get request data and check permission
+
+        try:
+
+            # User permission
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(None)
+
+            # Get XML data
+            xml_map, attrs_map = loads(request.raw_post_data)
+
+            networkapi_map = xml_map.get('networkapi')
+            if networkapi_map is None:
+                return self.response_error(3, u'There is no networkapi tag in XML request.')
+
+            channel_name = kwargs.get('channel_name')
+
+            channel = PortChannel.get_by_name(channel_name)
+            channel = model_to_dict(channel)
+
+            return self.response(dumps_networkapi({'channel': channel}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)

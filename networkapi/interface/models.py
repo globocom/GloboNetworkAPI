@@ -159,6 +159,27 @@ class PortChannel(BaseModel):
             self.log.error(u'Failed to add port channel.')
             raise InterfaceError(e, u'Failed to add port channel.')
 
+    @classmethod
+    def get_by_pk(cls, id):
+        try:
+            return PortChannel.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(e, u'Can not find a Channel with id = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o Channel.')
+            raise InterfaceError(e, u'Falha ao pesquisar o interface.')
+
+    @classmethod
+    def get_by_name(cls, name):
+        try:
+            return PortChannel.objects.get(nome__iexact=name)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a Channel with name = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Failure to search the Group L3.')
+            raise AmbienteError(e, u'Failure to search the Group L3.')
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)

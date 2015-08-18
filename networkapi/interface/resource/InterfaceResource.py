@@ -444,6 +444,13 @@ class InterfaceResource(RestResource):
         map['vlan'] = interface.vlan_nativa
         if interface.channel is not None:
             map['channel'] = interface.channel.nome
+        elif interface.ligacao_front is not None:
+            try:
+                sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
+                if sw_router.channel is not None:
+                    map['channel'] = sw_router.channel.nome
+            except:
+                pass
         if interface.ligacao_front is None:
             map['id_ligacao_front'] = ''
         else:
@@ -463,6 +470,13 @@ class InterfaceResource(RestResource):
         int_map['vlan'] = interface.vlan_nativa
         if interface.channel is not None:
             int_map['channel'] = interface.channel.nome
+        elif interface.ligacao_front is not None:
+            try:
+                sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
+                if sw_router.channel is not None:
+                    int_map['channel'] = sw_router.channel.nome
+            except:
+                pass
         if interface.ligacao_front is not None:
             int_map['nome_ligacao_front'] = interface.ligacao_front.interface
             int_map['nome_equip_l_front'] = interface.ligacao_front.equipamento.nome

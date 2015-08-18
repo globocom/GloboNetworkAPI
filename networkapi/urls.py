@@ -1145,15 +1145,18 @@ urlpatterns += patterns('',
                            name='config.rack'),
                        url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
                            name='aplicar.rack'),
+                       url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
+                           name='rack.get.equip.id'),
                        url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
                            name='interfacetype.get'),
                        url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
                            name='interfacetype.get'),
                        url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
                            name='channel.add'),
-                       url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
-                           name='rack.get.equip.id'),
-
+                       url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
+                           name='channel.edit'),
+                       url(r'^channel/get-by-name[/]?$', interface_channel_resource.handle_request,
+                           name='channel.get'),
                        )
 
 
