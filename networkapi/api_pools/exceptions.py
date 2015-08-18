@@ -142,6 +142,10 @@ class OptionPoolDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Option Pool Does Not Exist.'
 
+class EnvironmentDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Environment Does Not Exist.'
+
 class InvalidIdOptionPoolRequestException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Option Pool Request.'
@@ -153,3 +157,29 @@ class OptionPoolEnvironmentDoesNotExistException(APIException):
 class InvalidIdOptionPoolEnvironmentRequestException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Environment Option Pool Request.'
+
+class ScriptAddPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute add script for pool option.'
+
+class ScriptAddEnvironmentPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute add script for environment pool option.'
+
+class OptionPoolConstraintPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'OptionPool can not be deleted because it is associated with a Pool.'
+
+class ScriptDeletePoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute delete script for pool option.'
+
+class ScriptModifyPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute modify script for pool option.'
+
+class ScriptDeleteEnvironmentPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute delete script for environment pool option.'
+
+
