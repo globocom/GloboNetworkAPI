@@ -233,7 +233,6 @@ def list_all_members_by_pool(request, id_server_pool):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def get_equipamento_by_ip(request, id_ip):
     try:
 
@@ -430,7 +429,6 @@ def create(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def healthcheck_list(request):
     try:
         data = dict()
@@ -453,7 +451,6 @@ def healthcheck_list(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def get_by_pk(request, id_server_pool):
     try:
 
@@ -629,7 +626,6 @@ def get_opcoes_pool_by_ambiente(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def list_by_environment(request, environment_id):
     try:
 
@@ -710,7 +706,6 @@ def get_requisicoes_vip_by_pool(request, id_server_pool):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def list_pool_members(request, pool_id):
     try:
 
@@ -744,7 +739,6 @@ def list_pool_members(request, pool_id):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-@commit_on_success
 def list_by_environment_vip(request, environment_vip_id):
     try:
 
@@ -971,7 +965,6 @@ def list_environments_with_pools(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read,))
-@commit_on_success
 def chk_status_poolmembers_by_pool(request, pool_id):
     try:
 
@@ -1102,7 +1095,6 @@ def list_all_options(request):
 @permission_classes((IsAuthenticated, Read))
 def __list_option_by_pk_get(request, option_id):
     try:
-        data = dict()
 
         options = OptionPool.objects.get(id=option_id)
         serializer_options = OptionPoolSerializer(

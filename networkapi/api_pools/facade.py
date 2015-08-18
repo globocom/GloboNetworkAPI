@@ -415,6 +415,12 @@ def delete_option_pool(user, option_id):
 
     pool_option=  OptionPool.objects.get(id=option_id)
 
+    environment_options = OptionPoolEnvironment.objects.all()
+    environment_options = environment_options.filter(option=option_id)
+
+    for eop in environment_options:
+        eop.delete(user)
+
     pool_option.delete(user)
 
     return option_id
