@@ -1396,7 +1396,6 @@ def __list_environment_options_by_pk(request, environment_option_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
-<<<<<<< HEAD
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def get_available_ips_to_add_server_pool(request, equip_name, id_ambiente):
