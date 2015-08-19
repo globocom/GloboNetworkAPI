@@ -40,11 +40,15 @@ def get_new_interface_map(interface):
     int_map['vlan'] = interface.vlan_nativa
     if interface.channel is not None:
         int_map['channel'] = interface.channel.nome
+        int_map['lacp'] = interface.channel.lacp
+        int_map['id_channel'] = interface.channel.id
     elif interface.ligacao_front is not None:
         try:
             sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
             if sw_router.channel is not None:
                 int_map['channel'] = sw_router.channel.nome
+                int_map['lacp'] = sw_router.channel.lacp
+                int_map['id_channel'] = sw_router.channel.id
         except:
             pass
     if interface.ligacao_front is not None:
@@ -64,14 +68,15 @@ class InterfaceGetResource(RestResource):
     log = Log('InterfaceGetResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        """Treat GET requests to list interface by ID
+        """Treat GET requests to list interface by ID or by channel
 
         URL: interface/<id_interface>/get/
+             interface/get-by-channel/<channel_name>/
         """
 
         try:
 
-            # Business Validations
+            self.log.info("GET Interface")
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
@@ -80,13 +85,22 @@ class InterfaceGetResource(RestResource):
                 raise UserNotAuthorizedError(None)
 
             # Get id_interface param
-            id_interface = kwargs.get('id_interface')
+            interface = kwargs.get('id_interface')
+            channel = kwargs.get('channel_name')
+
+            id_interface = None
 
             # Valid Interface ID
-            if not is_valid_int_greater_zero_param(id_interface):
-                self.log.error(
-                    u'The id_interface parameter is not a valid value: %s.', id_interface)
-                raise InvalidValueError(None, 'id_interface', id_interface)
+            if interface is not None:
+                if not is_valid_int_greater_zero_param(interface):
+                    self.log.error(u'The id_interface parameter is not a valid value: %s.', interface)
+                    raise InvalidValueError(None, 'id_interface', interface)
+                id_interface = interface
+
+            if channel is not None:
+                interfaces = Interface.objects.all().filter(channel__nome=channel)
+                for interf in interfaces:
+                    id_interface = interf.id
 
             # Checks if interface exists in database
             interface = Interface.get_by_pk(id_interface)

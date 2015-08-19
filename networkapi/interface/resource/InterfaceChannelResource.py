@@ -200,3 +200,87 @@ class InterfaceChannelResource(RestResource):
             return self.response_error(214, id_interface)
         except (InterfaceError, GrupoError, EquipamentoError):
             return self.response_error(1)
+
+    def handle_put(self, request, user, *args, **kwargs):
+        """Treat requests POST to add Rack.
+
+        URL: channel/editar/
+        """
+        try:
+            self.log.info("Editar Channel")
+
+            # User permission
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
+                raise UserNotAuthorizedError(None)
+
+            # Load XML data
+            xml_map, attrs_map = loads(request.raw_post_data)
+
+            # XML data format
+            networkapi_map = xml_map.get('networkapi')
+            if networkapi_map is None:
+                return self.response_error(3, u'There is no value to the networkapi tag  of XML request.')
+
+            channel_map = networkapi_map.get('channel')
+            if channel_map is None:
+                return self.response_error(3, u'There is no value to the channel tag  of XML request.')
+
+            # Get XML data
+            id_channel = channel_map.get('id_channel')
+            nome = channel_map.get('nome')
+            lacp = channel_map.get('lacp')
+            int_type = channel_map.get('int_type')
+            vlan = channel_map.get('vlan')
+            envs = channel_map.get('envs')
+
+            port_channel = PortChannel()
+            interface = Interface()
+            amb = Ambiente()
+
+            #buscar interfaces do channel
+            interfaces = Interface.objects.all().filter(channel__id=id_channel)
+
+            #update channel
+            port_channel = PortChannel.get_by_pk(id_channel)
+            port_channel.nome = str(nome)
+            port_channel.lacp = convert_string_or_int_to_boolean(lacp)
+            port_channel.save(user)
+
+            int_type = TipoInterface.get_by_name(str(int_type))
+
+            #update interfaces
+            for var in interfaces:
+                var.tipo = int_type
+                var.vlan_nativa = vlan
+                var.save(user)
+
+                if "trunk" in int_type.tipo:
+                    interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
+                    for int_env in interface_list:
+                        int_env.delete(user)
+                    if not type(envs)==unicode:
+                        for env in envs:
+                            amb_int = EnvironmentInterface()
+                            amb_int.interface = var
+                            amb_int.ambiente = amb.get_by_pk(int(env))
+                            amb_int.create(user)
+                    else:
+                        amb_int = EnvironmentInterface()
+                        amb_int.interface = var
+                        amb_int.ambiente = amb.get_by_pk(int(envs))
+                        amb_int.create(user)
+
+            port_channel_map = dict()
+            port_channel_map['port_channel'] = port_channel
+
+            return self.response(dumps_networkapi({'port_channel': port_channel_map}))
+
+        except InvalidValueError, e:
+            return self.response_error(269, e.param, e.value)
+        except XMLError, x:
+            self.log.error(u'Erro ao ler o XML da requisição.')
+            return self.response_error(3, x)
+        except InterfaceError:
+           return self.response_error(1)

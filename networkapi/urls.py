@@ -973,6 +973,8 @@ urlpatterns += patterns('',
                            name='interface.update.remove.by.pk'),
                        url(r'^interface/(?P<id_interface>[^/]+)/get/$', interface_get_resource.handle_request,
                            name='interface.get.by.pk'),
+                       url(r'^interface/get-by-channel/(?P<channel_name>[^/]+)[/]?$', interface_get_resource.handle_request,
+                           name='interface.get.by.pk'),
                        url(r'^interface/equipamento/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request,
                            name='interface.search.by.equipment'),
                        url(r'^interface/equipment/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request, {
@@ -1118,19 +1120,18 @@ urlpatterns += patterns('',
                        url(r'^filter/(?P<id_filter>[^/]+)/dissociate/(?P<id_equip_type>[^/]+)/$',
                            filter_dissociate_one.handle_request, name='filter.dissociate.one'),
 
+                       )
+
+
+# Healthcheck
+urlpatterns += patterns('',
                        url(r'^eventlog/find/$', eventlog_find_resource.handle_request,
                            name='eventlog.find'),
                        url(r'^eventlog/choices/$', eventlog_choice_resource.handle_request,
                            name='eventlog.choices'),
                        url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
                            name='eventlog.version'),
-                       )
-
-
-# Healthcheck
-urlpatterns += patterns('',
-                       url(r'^healthcheck$',
-                           lambda _: HttpResponse("WORKING")),
+                       url(r'^healthcheck$',lambda _: HttpResponse("WORKING")),
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
                        url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
@@ -1151,12 +1152,12 @@ urlpatterns += patterns('',
                            name='interfacetype.get'),
                        url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
                            name='interfacetype.get'),
+                       url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
+                           name='channel.edit'),
                        url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
                            name='channel.add'),
                        url(r'^channel/delete/(?P<channel_name>[^/]+)/$', interface_channel_resource.handle_request,
                            name='channel.delete'),
-                       url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
-                           name='channel.edit'),
                        url(r'^channel/get-by-name[/]?$', interface_channel_resource.handle_request,
                            name='channel.get'),
                        )
