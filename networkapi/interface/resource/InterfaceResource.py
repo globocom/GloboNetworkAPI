@@ -442,13 +442,19 @@ class InterfaceResource(RestResource):
         map['tipo'] = interface.tipo.tipo
         map['id_equipamento'] = interface.equipamento_id
         map['vlan'] = interface.vlan_nativa
+        map['sw_router'] = None
         if interface.channel is not None:
             map['channel'] = interface.channel.nome
+            map['lacp'] = interface.channel.lacp
+            map['id_channel'] = interface.channel.id
+            map['sw_router'] = True
         elif interface.ligacao_front is not None:
             try:
                 sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
                 if sw_router.channel is not None:
                     map['channel'] = sw_router.channel.nome
+                    map['lacp'] = sw_router.channel.lacp
+                    map['id_channel'] = sw_router.channel.id
             except:
                 pass
         if interface.ligacao_front is None:
@@ -468,13 +474,19 @@ class InterfaceResource(RestResource):
         int_map['marca'] = interface.equipamento.modelo.marca_id
         int_map['tipo'] = interface.tipo.tipo
         int_map['vlan'] = interface.vlan_nativa
+        int_map['sw_router'] = None
         if interface.channel is not None:
             int_map['channel'] = interface.channel.nome
+            int_map['lacp'] = interface.channel.lacp
+            int_map['id_channel'] = interface.channel.id
+            int_map['sw_router'] = True
         elif interface.ligacao_front is not None:
             try:
                 sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
                 if sw_router.channel is not None:
                     int_map['channel'] = sw_router.channel.nome
+                    int_map['lacp'] = sw_router.channel.lacp
+                    int_map['id_channel'] = sw_router.channel.id
             except:
                 pass
         if interface.ligacao_front is not None:

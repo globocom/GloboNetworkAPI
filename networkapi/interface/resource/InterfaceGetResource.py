@@ -38,10 +38,12 @@ def get_new_interface_map(interface):
     int_map['protegida'] = interface.protegida
     int_map['tipo'] = interface.tipo.tipo
     int_map['vlan'] = interface.vlan_nativa
+    int_map['sw_router'] = None
     if interface.channel is not None:
         int_map['channel'] = interface.channel.nome
         int_map['lacp'] = interface.channel.lacp
         int_map['id_channel'] = interface.channel.id
+        int_map['sw_router'] = True
     elif interface.ligacao_front is not None:
         try:
             sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
