@@ -19,7 +19,7 @@ import json
 import types
 
 import logging
-
+from networkapi.log import Log
 
 from django.conf import settings
 from stompest.config import StompConfig
@@ -33,6 +33,7 @@ class QueueManager(object):
     """
         Object to manager objects sent to queue
     """
+    log = Log(__name__)
 
     def __init__(self):
         """
@@ -44,7 +45,7 @@ class QueueManager(object):
         self._queue = []
         self._queue_destination = getattr(settings, 'BROKER_DESTINATION', None) or "/topic/networkapi_queue"
         self._broker_uri = getattr(settings, 'BROKER_URI', None) or "tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1"
-        self._broker_timeout = getattr(settings, 'BROKER_CONNECT_TIMEOUT', None) or 2
+        self._broker_timeout = float(getattr(settings, 'BROKER_CONNECT_TIMEOUT', None) or 2)
 
     def append(self, dict_obj):
         """
@@ -63,8 +64,8 @@ class QueueManager(object):
             self._queue.append(dict_obj)
 
         except Exception, e:
-            LOGGER.error(u"QueueManagerError - Error on appending objects to queue.")
-            LOGGER.error(e)
+            self.log.error(u"QueueManagerError - Error on appending objects to queue.")
+            self.log.error(e)
 
     def send(self):
 
@@ -88,5 +89,5 @@ class QueueManager(object):
             client.disconnect()
 
         except Exception, e:
-            LOGGER.error(u"QueueManagerError - Error on sending objects from queue.")
-            LOGGER.debug(e)
+            self.log.error(u"QueueManagerError - Error on sending objects from queue.")
+            self.log.debug(e)

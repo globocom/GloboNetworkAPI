@@ -2077,7 +2077,8 @@ class ServerPool(BaseModel):
 
     servicedownaction = models.ForeignKey(
         OptionPool,
-        db_column='service-down-action_id'
+        db_column='service-down-action_id',
+        default=5
     )
 
     default_port = models.IntegerField(
