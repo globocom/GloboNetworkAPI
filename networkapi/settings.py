@@ -48,7 +48,7 @@ CACHE_BACKEND = 'memcached://localhost:11211/'
 SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
 
 # Armazena a raiz do projeto.
-SITE_ROOT = os.path.realpath(__file__ + "/../../../../")
+SITE_ROOT = os.path.abspath(__file__ + '/../../')
 
 TEMPLATE_DEBUG = DEBUG
 
@@ -154,9 +154,9 @@ EQUIPMENT_CACHE_TIME = None
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-    #     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    #     'django.template.loaders.eggs.Loader',
 )
 
 if LOG_SHOW_SQL:
@@ -344,6 +344,19 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 
 PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
 PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
+
+TFTP_SERVER_ADDR = "10.31.0.8"
+TFTPBOOT_FILES_PATH = "/vagrant/networkapi/"
+
+CONFIG_TEMPLATE_PATH = "/vagrant/networkapi/config_templates/"
+CONFIG_FILES_REL_PATH = "networkapi/generated_config/"
+APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
+
+INTERFACE_REL_PATH = "interface/"
+INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+INTERFACE_REL_PATH
+INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
+INTERFACE_TOAPPLY_PATH = CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
+
 
 PATH_TO_MV = "/vagrant/networkapi/rack/delete/"
 LEAF = "LF-CM"
