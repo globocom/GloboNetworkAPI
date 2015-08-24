@@ -234,6 +234,7 @@ class InterfaceChannelResource(RestResource):
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')
             envs = channel_map.get('envs')
+            ids_interface = channel_map.get('ids_interface')
 
             port_channel = PortChannel()
             interface = Interface()
@@ -241,9 +242,21 @@ class InterfaceChannelResource(RestResource):
 
             #buscar interfaces do channel
             interfaces = Interface.objects.all().filter(channel__id=id_channel)
+            ids_list = []
+            for i in interfaces:
+                ids_list.append(i.id)
+
+
+            ids_interface = [ int(x) for x in ids_interface ]
+            ids_list = [ int(y) for y in ids_list ]
+            desassociar = set(ids_list) - set(ids_interface)
+            for item in desassociar:
+                item = interface.get_by_pk(int(item))
+                item.channel = None
+                item.save(user)
 
             #update channel
-            port_channel = PortChannel.get_by_pk(id_channel)
+            port_channel = port_channel.get_by_pk(id_channel)
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
             port_channel.save(user)
@@ -251,7 +264,10 @@ class InterfaceChannelResource(RestResource):
             int_type = TipoInterface.get_by_name(str(int_type))
 
             #update interfaces
-            for var in interfaces:
+            for var in ids_interface:
+                var = interface.get_by_pk(int(var))
+                if var.channel is None:
+                    var.channel = port_channel
                 var.tipo = int_type
                 var.vlan_nativa = vlan
                 var.save(user)
@@ -260,17 +276,18 @@ class InterfaceChannelResource(RestResource):
                     interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
                     for int_env in interface_list:
                         int_env.delete(user)
-                    if not type(envs)==unicode:
-                        for env in envs:
+                    if envs is not None:
+                        if not type(envs)==unicode:
+                            for env in envs:
+                                amb_int = EnvironmentInterface()
+                                amb_int.interface = var
+                                amb_int.ambiente = amb.get_by_pk(int(env))
+                                amb_int.create(user)
+                        else:
                             amb_int = EnvironmentInterface()
                             amb_int.interface = var
-                            amb_int.ambiente = amb.get_by_pk(int(env))
+                            amb_int.ambiente = amb.get_by_pk(int(envs))
                             amb_int.create(user)
-                    else:
-                        amb_int = EnvironmentInterface()
-                        amb_int.interface = var
-                        amb_int.ambiente = amb.get_by_pk(int(envs))
-                        amb_int.create(user)
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel

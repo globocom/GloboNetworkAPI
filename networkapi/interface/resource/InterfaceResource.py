@@ -441,6 +441,7 @@ class InterfaceResource(RestResource):
         map['descricao'] = interface.descricao
         map['tipo'] = interface.tipo.tipo
         map['id_equipamento'] = interface.equipamento_id
+        map['equipamento_nome'] = interface.equipamento.nome
         map['vlan'] = interface.vlan_nativa
         map['sw_router'] = None
         if interface.channel is not None:
@@ -469,6 +470,7 @@ class InterfaceResource(RestResource):
 
     def get_new_interface_map(self, interface):
         int_map = model_to_dict(interface)
+        int_map['nome'] = interface.interface
         int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
         int_map['equipamento_nome'] = interface.equipamento.nome
         int_map['marca'] = interface.equipamento.modelo.marca_id
