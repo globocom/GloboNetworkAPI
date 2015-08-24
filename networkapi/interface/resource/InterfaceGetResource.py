@@ -91,6 +91,7 @@ class InterfaceGetResource(RestResource):
             channel = kwargs.get('channel_name')
 
             id_interface = None
+            equipInterface_list = []
 
             # Valid Interface ID
             if interface is not None:
@@ -102,7 +103,8 @@ class InterfaceGetResource(RestResource):
             if channel is not None:
                 interfaces = Interface.objects.all().filter(channel__nome=channel)
                 for interf in interfaces:
-                    id_interface = interf.id
+                    equipInterface_list.append(get_new_interface_map(interf))
+                return self.response(dumps_networkapi({'interface': equipInterface_list}))
 
             # Checks if interface exists in database
             interface = Interface.get_by_pk(id_interface)
