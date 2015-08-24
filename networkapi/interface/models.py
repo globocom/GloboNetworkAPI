@@ -139,6 +139,57 @@ class TipoInterface(BaseModel):
             cls.log.error(u'Falha ao pesquisar o tipo de interface.')
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
 
+class PortChannel(BaseModel):
+
+    log = Log('PortChannel')
+
+    id = models.AutoField(primary_key=True, db_column='id_port_channel')
+    nome = models.CharField(max_length=10, unique=True)
+    lacp = models.BooleanField(default=1)
+
+    class Meta(BaseModel.Meta):
+        db_table = u'port_channel'
+        managed = True
+
+    def create(self, authenticated_user):
+        """Add new port channel"""
+        try:
+            return self.save(authenticated_user)
+        except Exception, e:
+            self.log.error(u'Failed to add port channel.')
+            raise InterfaceError(e, u'Failed to add port channel.')
+
+    @classmethod
+    def get_by_pk(cls, id):
+        try:
+            return PortChannel.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(e, u'Can not find a Channel with id = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o Channel.')
+            raise InterfaceError(e, u'Falha ao pesquisar o interface.')
+
+    @classmethod
+    def get_by_name(cls, name):
+        try:
+            return PortChannel.objects.get(nome__iexact=name)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a Channel with name = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Failure to search the Group L3.')
+            raise AmbienteError(e, u'Failure to search the Group L3.')
+
+    def delete(self, authenticated_user):
+        '''Override Django method to remove port channel.
+        '''
+        id = self.id
+        interfaces = Interface.objects.all().filter(channel=id)
+        for interface in interfaces:
+            interface.channel = None
+            interface.save(authenticated_user)
+        super(PortChannel, self).delete(authenticated_user)
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)
@@ -149,8 +200,9 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
-    vlan_nativa = models.CharField(max_length=200, blank=True, null=True)
+    vlan_nativa = models.CharField(max_length=200, blank=True, null=True, default=1)
     tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
+    channel = models.ForeignKey(PortChannel, db_column='id_channel', blank=True, null=True)
 
     log = Log('Interface')
 
@@ -445,6 +497,7 @@ class Interface(BaseModel):
         nome = kwargs['interface']
         marca = interface.equipamento.modelo.marca.id if interface.equipamento.tipo_equipamento.id != 2 else 0
 
+
         if marca == 0:
             regex = "^([a-zA-Z0-9-_/ ]+(:)?){1,6}$"
         elif marca == 2:
@@ -494,6 +547,7 @@ class Interface(BaseModel):
         except KeyError:
             pass
 
+
         try:
             # Check if interface name already exists for this equipment
             try:
@@ -509,6 +563,10 @@ class Interface(BaseModel):
             interface.protegida = kwargs['protegida']
             interface.tipo = kwargs['tipo']
             interface.vlan_nativa = kwargs['vlan_nativa']
+            try:
+                interface.channel = kwargs['channel']
+            except:
+                pass
 
             return interface.save(authenticated_user)
 
@@ -586,3 +644,14 @@ class EnvironmentInterface(BaseModel):
             self.log.error(u'Failed to add interface_do_ambiente.')
             raise InterfaceError(
                 e, u'Failed to add interface_do_ambiente.')
+
+    @classmethod
+    def get_by_interface(cls, id):
+        try:
+            return EnvironmentInterface.objects.all().filter(interface_id=id)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find a EnvironmentInterface with interface id = %s.' % id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar interfaces neste ambiente.')
+            raise InterfaceError(e, u'Falha ao pesquisar interfaces neste ambiente.')

@@ -58,6 +58,10 @@ def get_envs(self, user, no_blocks=False):
                 if env.filter is not None:
                     env_map["filter_name"] = env.filter.name
                 lists.append(env_map)
+                if not env.min_num_vlan_1==None and not env.max_num_vlan_2==None:
+                    env_map['range'] = str(env.min_num_vlan_1) + " - " + str(env.max_num_vlan_2)
+                else:
+                    env_map['range'] = "Nao definido"
 
         # Return XML
         environment_list = dict()
