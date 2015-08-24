@@ -33,6 +33,7 @@ LOCK_GROUP_VIRTUAL = "group_virtual"
 LOCK_GROUP_L3 = "group_l3:%s"
 LOCK_PERM = "perm:%s"
 LOCK_INTERFACE = "interface:%s"
+LOCK_INTERFACE_EQUIP_CONFIG = "interface_equipment:%s"
 LOCK_IP_EQUIPMENT = "ip_equipment:%s:%s"
 LOCK_IPV4 = "ipv4:%s"
 LOCK_NETWORK_IPV4 = "network_ipv4:%s"
@@ -51,6 +52,7 @@ LOCK_USER_GROUP = "user_group:%s:%s"
 LOCK_USER = "user:%s"
 LOCK_VLAN = "vlan:%s"
 LOCK_RACK = "rack:%s"
+
 
 # Adjusts settings
 from django.core.cache import cache

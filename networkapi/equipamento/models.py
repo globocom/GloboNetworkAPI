@@ -995,7 +995,7 @@ class EquipamentoAcesso(BaseModel):
                 e, u'Failure to search the EquipamentoAcesso.')
 
     @classmethod
-    def search(cls, ugroups=None):
+    def search(cls, ugroups=None, equipamento=None, protocolo=None):
         """Efetua a pesquisa das informações de acesso a equipamentos
         @return: Um queryset contendo as informações de aceso a equipamentos cadastrados
         @raise EquipamentoError: Falha ao pesquisar as informações de acesso a equipamentos.
@@ -1005,6 +1005,13 @@ class EquipamentoAcesso(BaseModel):
             if ugroups is not None:
                 results = results.filter(
                     equipamento__grupos__direitosgrupoequipamento__ugrupo__in=ugroups, equipamento__grupos__direitosgrupoequipamento__escrita='1')
+
+            if equipamento is not None:
+                results = results.filter(equipamento=equipamento)
+
+            if tipo_acesso is not None:
+                results = results.filter(tipo_acesso__protocolo=protocolo)
+
             return results
         except Exception, e:
             cls.log.error(
@@ -1112,7 +1119,7 @@ class EquipamentoRoteiro(BaseModel):
         unique_together = ('equipamento', 'roteiro')
 
     @classmethod
-    def search(cls, ugroups=None, equip_id=None):
+    def search(cls, ugroups=None, equip_id=None, roteiro_type=None):
         try:
             er = EquipamentoRoteiro.objects.all()
 
@@ -1122,6 +1129,9 @@ class EquipamentoRoteiro(BaseModel):
 
             if equip_id is not None:
                 er = er.filter(equipamento__id=equip_id)
+
+            if roteiro_type is not None:
+                er = er.filter(roteiro__tipo_roteiro__tipo=roteiro_type)
 
             return er
 
