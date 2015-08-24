@@ -59,4 +59,29 @@ def deploy_interface_configuration(request, id_interface):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+@api_view(['PUT'])
+@permission_classes((IsAuthenticated, DeployConfig))
+def deploy_interface_configuration(request, id_channel):
+    """
+    Deploy interface channel configuration on equipment(s)
+    """
+
+    try:
+        data = facade.generate_and_deploy_channel_config(request.user, id_channel)
+
+        return Response(data)
+
+    except exceptions.InvalidIdInterfaceException, exception:
+        raise exception
+    except exceptions.UnsupportedEquipmentException, exception:
+        raise exception
+    except exceptions.InterfaceTemplateException, exception:
+        raise exception
+    except InterfaceNotFoundError:
+        raise exceptions.InvalidIdInterfaceException
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+
 

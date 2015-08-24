@@ -190,6 +190,15 @@ class PortChannel(BaseModel):
             interface.save(authenticated_user)
         super(PortChannel, self).delete(authenticated_user)
 
+    def list_interfaces(self):
+        '''Override Django method to remove port channel.
+        '''
+        try:
+            return Interface.objects.all().filter(channel=self)
+        except ObjectDoesNotExist, e:
+            raise InterfaceNotFoundError(
+                e, u'Can not find interfaces for channel: %s.' % self.id)
+
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     interface = models.CharField(unique=True, max_length=20)

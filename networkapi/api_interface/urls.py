@@ -19,4 +19,5 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns('networkapi.api_interface.views',
     url(r'^interface/(?P<id_interface>[^/]+)/deployconfig/$', 'deploy_interface_configuration'),
+    url(r'^interface/channel/(?P<id_interface>[^/]+)/deployconfig/$', 'deploy_channel_configuration'),
 )
