@@ -61,7 +61,7 @@ def deploy_interface_configuration(request, id_interface):
 
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, DeployConfig))
-def deploy_interface_configuration(request, id_channel):
+def deploy_channel_configuration(request, id_channel):
     """
     Deploy interface channel configuration on equipment(s)
     """

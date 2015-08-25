@@ -209,7 +209,7 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
-    vlan_nativa = models.CharField(max_length=200, blank=True, null=True, default=1)
+    vlan_nativa = models.CharField(max_length=200, blank=True, null=True, db_column='vlan_nativa', default=1)
     tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
     channel = models.ForeignKey(PortChannel, db_column='id_channel', blank=True, null=True)
 
@@ -470,6 +470,9 @@ class Interface(BaseModel):
                 raise BackLinkNotFoundError(
                     e, u'Backend interface does not exist')
 
+        if self.vlan_nativa is None:
+            self.vlan_nativa = 1
+            
         try:
             # Check if interface name already exists for this equipment
             if Interface.objects.filter(equipamento=self.equipamento, interface__iexact=self.interface).count() > 0:
