@@ -828,7 +828,7 @@ def save(request):
         environment = long(request.DATA.get('environment'))
         balancing = request.DATA.get('balancing')
         maxconn = request.DATA.get('maxcom')
-        servicedownaction_id = request.DATA.get('service-down-action')
+        servicedownaction_id = request.DATA.get('servicedownaction')
 
         # id_pool_member is cleaned below
         id_pool_member = request.DATA.get('id_pool_member')
