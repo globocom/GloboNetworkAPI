@@ -34,8 +34,8 @@ def get_environment_map(environment):
     environment_map['divisao_dc_name'] = environment.divisao_dc.nome
     environment_map['ambiente_logico_name'] = environment.ambiente_logico.nome
     environment_map['grupo_l3_name'] = environment.grupo_l3.nome
-    if not environment.min_num_vlan_1==None and not environment.max_num_vlan_2==None:
-        environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_2)
+    if not environment.min_num_vlan_1==None and not environment.max_num_vlan_1==None:
+        environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_1)
     else:
         environment_map['range'] = "Nao definido"
 
