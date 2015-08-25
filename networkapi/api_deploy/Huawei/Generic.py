@@ -16,6 +16,7 @@
 # limitations under the License.
 
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.log import Log
 
 log = Log(__name__)
 

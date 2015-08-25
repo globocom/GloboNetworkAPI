@@ -28,7 +28,7 @@ from networkapi.log import Log
 from networkapi.interface.models import Interface, PortChannel
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.api_interface import exceptions
-from networkapi.equipamento.models import EquipamentoRoteiro
+from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.roteiro.models import TipoRoteiro
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 
@@ -101,7 +101,7 @@ def _generate_config_file(interfaces_list):
     for interface in interfaces_list:
         if interface.equipamento.nome not in equipment_interfaces:
             log.error("Error trying to configure multiple interfaces in different equipments in same call.")
-            raise exceptions.InterfaceTemplateException
+            raise exceptions.InvalidIdInterfaceException
 
     config_to_be_saved = ""
     equipment_id = interfaces_list[0].equipamento.id
@@ -110,37 +110,26 @@ def _generate_config_file(interfaces_list):
     filename_out = "int_id_"+str(interfaces_list[0].id)+"_config_"+str(request_id)
     filename_out = INTERFACE_CONFIG_FILES_PATH+filename_out
 
-    for TEMPLATE_TYPE in [TEMPLATE_TYPE_INT]:
-        try:
-            equipment_template = (EquipamentoRoteiro.search(None, equipment_id, TEMPLATE_TYPE)).uniqueResult()
-        except:
-            log.error("Template type %s not found." % TEMPLATE_TYPE)
-            raise exceptions.InterfaceTemplateException()
+    int_template_file = _load_template_file(equipment_id, TEMPLATE_TYPE_INT)
+    channels_configured = {}
 
-        filename_in = INTERFACE_CONFIG_TEMPLATE_PATH+"/"+equipment_template.roteiro.roteiro
+    for interface in interfaces_list:
+        key_dict = _generate_dict(interface)
 
-
-        # Read contents from file
-        try:
-            file_handle = open(filename_in, 'r')
-            template_file = Template ( file_handle.read() )
-            file_handle.close()
-        except IOError, e:
-            log.error("Error opening template file for read: %s" % filename_in)
-            raise e
-        except Exception, e:
-            log.error("Syntax error when parsing template: %s " % e)
-            raise e
-            #TemplateSyntaxError
-
-        for interface in interfaces_list:
-            key_dict = _generate_dict(interface)
-
-            #Render the template
+        #If Interface is in channel, render the template for channel, only once
+        #for each channel
+        if interface.channel is not None:
             try:
-                config_to_be_saved += template_file.render( Context(key_dict) )
+                if interface.channel.id is not None and interface.channel.id not in channels_configured.keys():
+                    channel_template_file = _load_template_file(equipment_id, TEMPLATE_TYPE_CHANNEL)
+                    config_to_be_saved += channel_template_file.render( Context(key_dict) )
+                    channels_configured[interface.channel.id] = 1
+
+            #Render the template for interface
+                config_to_be_saved += int_template_file.render( Context(key_dict) )
             except KeyError, exception:
-                raise InvalidKeyException(exception)
+                log.error("Erro: %s " % exception)
+                raise exceptions.InvalidKeyException(exception)
 
     #Save new file
     try:
@@ -155,6 +144,30 @@ def _generate_config_file(interfaces_list):
     rel_file_to_deploy = INTERFACE_TOAPPLY_REL_PATH+filename_out
 
     return rel_file_to_deploy
+
+def _load_template_file(equipment_id, template_type):
+    try:
+        equipment_template = (EquipamentoRoteiro.search(None, equipment_id, template_type)).uniqueResult()
+    except:
+        log.error("Template type %s not found." % template_type)
+        raise exceptions.InterfaceTemplateException()
+
+    filename_in = INTERFACE_CONFIG_TEMPLATE_PATH+"/"+equipment_template.roteiro.roteiro
+
+    # Read contents from file
+    try:
+        file_handle = open(filename_in, 'r')
+        template_file = Template ( file_handle.read() )
+        file_handle.close()
+    except IOError, e:
+        log.error("Error opening template file for read: %s" % filename_in)
+        raise e
+    except Exception, e:
+        log.error("Syntax error when parsing template: %s " % e)
+        raise e
+        #TemplateSyntaxError
+
+    return template_file
 
 def _generate_dict(interface):
 
@@ -176,8 +189,12 @@ def _generate_dict(interface):
     key_dict["INTERFACE_TYPE"] = interface.tipo.tipo
     if interface.channel is not None:
         key_dict["BOOL_INTERFACE_IN_CHANNEL"] = 1
-        key_dict["PORTCHANNEL_NAME"] = interface.channel.name
-        key_dict["MCLAG_IDENTIFIER"] = int ( re.sub(r"[a-zA\-]", "", interface.channel.name) )
+        key_dict["PORTCHANNEL_NAME"] = interface.channel.nome
+        try:
+            key_dict["MCLAG_IDENTIFIER"] = int ( re.sub(r"[a-zA\-]", "", interface.channel.nome) )
+        except ValueError, e:
+            log.error("Error: invalid channel name")
+            raise e
         if interface.channel.lacp:
             key_dict["CHANNEL_LACP_MODE"] = "active"
         else:

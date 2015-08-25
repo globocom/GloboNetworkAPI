@@ -1306,9 +1306,9 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `telecom`.`port_channel` (
   `id_port_channel` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(10) NOT NULL UNIQUE,
+  `nome` VARCHAR(100) NOT NULL,
   `lacp` TINYINT(1) NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id_port_channel`),
+  PRIMARY KEY (`id_port_channel`))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;

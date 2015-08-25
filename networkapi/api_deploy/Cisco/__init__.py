@@ -14,26 +14,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.log import Log
-
-log = Log(__name__)
-
-def copyTftpToConfig (remote_conn,tftpserver,filename, vrf="vrf management"):
-	'''
-	Configuration Specific for cisco
-	'''
-	vrf = None
-	try:
-		if vrf is None:
-			stdin, stdout, stderr = remote_conn.exec_command('copy tftp://%s/%s running-config' %(tftpserver,filename))
-		else:
-			stdin, stdout, stderr = remote_conn.exec_command('copy tftp://%s/%s running-config %s' %(tftpserver,filename, vrf))
-		switch_output=stdout.readlines()
-	except:
-		log.error("Error copying/applying config file to equipment.", stderr)
-		raise api_exceptions.NetworkAPIException
-
-	return switch_output
-
