@@ -220,7 +220,6 @@ class InterfaceResource(RestResource):
         except (InterfaceError, GrupoError, EquipamentoError):
             return self.response_error(1)
 
-
     def handle_put(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de uma interface.
 

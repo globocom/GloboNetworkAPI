@@ -100,21 +100,21 @@ class InterfaceChannelResource(RestResource):
                                      channel=port_channel)
 
                     if "trunk" in int_type.tipo:
-
                         interface_list = EnvironmentInterface.objects.all().filter(interface=sw_router.id)
                         for int_env in interface_list:
                             int_env.delete(user)
-                        if not type(envs)==unicode:
-                            for env in envs:
+                        if envs is not None:
+                            if not type(envs)==unicode:
+                                for env in envs:
+                                    amb_int = EnvironmentInterface()
+                                    amb_int.interface = sw_router
+                                    amb_int.ambiente = amb.get_by_pk(int(env))
+                                    amb_int.create(user)
+                            else:
                                 amb_int = EnvironmentInterface()
                                 amb_int.interface = sw_router
-                                amb_int.ambiente = amb.get_by_pk(int(env))
+                                amb_int.ambiente = amb.get_by_pk(int(envs))
                                 amb_int.create(user)
-                        else:
-                            amb_int = EnvironmentInterface()
-                            amb_int.interface = sw_router
-                            amb_int.ambiente = amb.get_by_pk(int(envs))
-                            amb_int.create(user)
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel

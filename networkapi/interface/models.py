@@ -156,7 +156,7 @@ class PortChannel(BaseModel):
 
         # Checks if name is valid
         try:
-            if not is_valid_regex(self.nome, "^[0-9]+$"):
+            if not is_valid_regex(self.nome, "[a-z]+[-][0-9]+$"):
                 raise InvalidValueError(None, 'nome', self.nome)
         except Exception, e:
             raise InvalidValueError(None, e.param, e.value)
