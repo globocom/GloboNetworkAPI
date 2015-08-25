@@ -153,6 +153,14 @@ class PortChannel(BaseModel):
 
     def create(self, authenticated_user):
         """Add new port channel"""
+
+        # Checks if name is valid
+        try:
+            if not is_valid_regex(self.nome, "[a-z]+[-][0-9]+$"):
+                raise InvalidValueError(None, 'nome', self.nome)
+        except Exception, e:
+            raise InvalidValueError(None, e.param, e.value)
+
         try:
             return self.save(authenticated_user)
         except Exception, e:
