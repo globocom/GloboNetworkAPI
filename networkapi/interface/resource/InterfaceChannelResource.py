@@ -74,11 +74,13 @@ class InterfaceChannelResource(RestResource):
             interfaces = str(interfaces).split('-')
 
             int_type = TipoInterface.get_by_name(str(int_type))
-
             for var in interfaces:
                 if not var==("" or None):
                     interf = interface.get_by_pk(int(var))
-                    sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
+                    try:
+                        sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
+                    except:
+                        raise Exception("Interface não conectada.")
                     if sw_router.ligacao_front is not None:
                         ligacao_front_id = sw_router.ligacao_front.id
                     else:
