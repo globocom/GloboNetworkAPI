@@ -45,7 +45,7 @@ log = Log(__name__)
 #    return dictionary.get(key)
 
 
-def generate_and_deploy_interface_config(user, id_interface):
+def generate_and_deploy_interface_config_sync(user, id_interface):
 
     if not is_valid_int_greater_zero_param(id_interface):
         raise exceptions.InvalidIdInterfaceException()
@@ -61,7 +61,7 @@ def generate_and_deploy_interface_config(user, id_interface):
 
     return status_deploy
 
-def generate_and_deploy_channel_config(user, id_channel):
+def generate_and_deploy_channel_config_sync(user, id_channel):
 
     if not is_valid_int_greater_zero_param(id_channel):
         raise exceptions.InvalidIdInterfaceException()
