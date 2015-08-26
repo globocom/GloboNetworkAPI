@@ -46,17 +46,20 @@ def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tft
 		raise exceptions.InvalidFilenameException(rel_filename)
 
 	with distributedlock(lockvar):
-		applyConfig(equipment, rel_filename, acesso, tftpserver)
+		return applyConfig(equipment, rel_filename, equipment_access, tftpserver)
 
 def create_connnection(equipment,equipment_access, port=22):
+
+	if equipment_access==None:
+		try:
+			equipment_access = EquipamentoAcesso.search(None, equipment, "ssh").uniqueResult()
+		except e:
+			log.error("Access type %s not found for equipment %s." % ("ssh", equipment.nome))
+			raise exceptions.InvalidEquipmentAccessException()
+
 	device = equipment.nome
 	username = equipment_access.user
 	password = equipment_access.password
-
-	if equipment_access==None:
-		equipment_access = EquipamentoAcesso.search(equipment, "ssh")
-		if len(equipment_access) != 1:
-			raise exceptions.InvalidEquipmentAccessException()
 
 	remote_conn=paramiko.SSHClient()
 	remote_conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -74,7 +77,7 @@ def create_connnection(equipment,equipment_access, port=22):
 
 def load_module_for_equipment_config(equipment):
 	marca = equipment.modelo.marca.nome
-	module_name = "networkapi.api_deploy."+marca
+	module_name = "networkapi.api_deploy."+marca+".Generic"
 
 	try:
 		loaded_module = importlib.import_module(module_name, package=None)
@@ -94,7 +97,7 @@ def applyConfig(equipment,filename, equipment_access=None,tftpserver=None,port=2
 	equip_module = load_module_for_equipment_config(equipment)
 
 	remote_conn = create_connnection(equipment, equipment_access)
-	switch_output = equip_module.Generic.copyTftpToConfig(remote_conn,tftpserver,filename)
+	switch_output = equip_module.copyTftpToConfig(remote_conn,tftpserver,filename)
 	remote_conn.close()
 #	if(marca=='Cisco'):
 #		switch_output = CiscoGeneric.copyTftpToConfig(remote_conn,tftpserver,filename)
@@ -103,6 +106,5 @@ def applyConfig(equipment,filename, equipment_access=None,tftpserver=None,port=2
 #	else: 
 #		log.error('Equipment not supported.')
 #		remote_conn.close()
-
 	return switch_output
 	

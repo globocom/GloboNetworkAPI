@@ -1009,7 +1009,7 @@ class EquipamentoAcesso(BaseModel):
             if equipamento is not None:
                 results = results.filter(equipamento=equipamento)
 
-            if tipo_acesso is not None:
+            if protocolo is not None:
                 results = results.filter(tipo_acesso__protocolo=protocolo)
 
             return results

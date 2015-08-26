@@ -75,7 +75,7 @@ class InterfaceChannelResource(RestResource):
 
             int_type = TipoInterface.get_by_name(str(int_type))
             for var in interfaces:
-                if not var=="":
+                if not var==("" or None):
                     interf = interface.get_by_pk(int(var))
                     try:
                         sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)

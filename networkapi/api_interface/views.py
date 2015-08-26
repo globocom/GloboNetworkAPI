@@ -37,13 +37,13 @@ log = Log(__name__)
 
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, DeployConfig))
-def deploy_interface_configuration(request, id_interface):
+def deploy_interface_configuration_sync(request, id_interface):
     """
     Deploy interface configuration on equipment(s)
     """
 
     try:
-        data = facade.generate_and_deploy_interface_config(request.user, id_interface)
+        data = facade.generate_and_deploy_interface_config_sync(request.user, id_interface)
 
         return Response(data)
 
@@ -61,13 +61,13 @@ def deploy_interface_configuration(request, id_interface):
 
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, DeployConfig))
-def deploy_interface_configuration(request, id_channel):
+def deploy_channel_configuration_sync(request, id_channel):
     """
     Deploy interface channel configuration on equipment(s)
     """
 
     try:
-        data = facade.generate_and_deploy_channel_config(request.user, id_channel)
+        data = facade.generate_and_deploy_channel_config_sync(request.user, id_channel)
 
         return Response(data)
 

@@ -178,6 +178,8 @@ class InterfaceResource(RestResource):
                 ligacao_back = None
 
             tipo_interface = interface_map.get('tipo')
+            if tipo_interface == None:
+                tipo_interface = "Access"
             tipo_interface = TipoInterface.get_by_name(tipo_interface)
 
             vlan = interface_map.get('vlan')

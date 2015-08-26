@@ -357,4 +357,5 @@ class EquipmentFindResource(RestResource):
         except (EquipamentoError, GrupoError):
             return self.response_error(1)
         except BaseException, e:
+            self.log.error(e)
             return self.response_error(1)

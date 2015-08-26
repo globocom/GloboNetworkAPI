@@ -39,7 +39,7 @@ DATABASES = {
 from networkapi.models.models_signal_receiver import *
 
 # Aplicação rodando em modo Debug
-DEBUG = False
+DEBUG = True
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
@@ -345,17 +345,25 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
 PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
 
-TFTP_SERVER_ADDR = "10.31.0.8"
-TFTPBOOT_FILES_PATH = "/vagrant/networkapi/"
+###################
+# TEMPLATE CONFIG #
+###################
 
-CONFIG_TEMPLATE_PATH = "/vagrant/networkapi/config_templates/"
+TFTP_SERVER_ADDR = "10.31.0.8"
+TFTPBOOT_FILES_PATH = "/mnt/tftpboot/"
+
+CONFIG_TEMPLATE_PATH = "/mnt/config_templates/"
 CONFIG_FILES_REL_PATH = "networkapi/generated_config/"
 APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
 
 INTERFACE_REL_PATH = "interface/"
+#/mnt/config_templates/interface/
 INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+INTERFACE_REL_PATH
+#/mnt/tftpboot/networkapi/generated_config/interface/
 INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
-INTERFACE_TOAPPLY_PATH = CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
+#networkapi/generated_config/interface/
+INTERFACE_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
+###################
 
 
 PATH_TO_MV = "/vagrant/networkapi/rack/delete/"

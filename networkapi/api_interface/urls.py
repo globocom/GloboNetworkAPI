@@ -18,6 +18,6 @@
 from django.conf.urls import patterns, url
 
 urlpatterns = patterns('networkapi.api_interface.views',
-    url(r'^interface/(?P<id_interface>[^/]+)/deployconfig/$', 'deploy_interface_configuration'),
-    url(r'^interface/channel/(?P<id_interface>[^/]+)/deployconfig/$', 'deploy_channel_configuration'),
+    url(r'^interface/(?P<id_interface>[^/]+)/deploy_config_sync/$', 'deploy_interface_configuration_sync'),
+    url(r'^interface/channel/(?P<id_channel>[^/]+)/deploy_config_sync/$', 'deploy_channel_configuration_sync'),
 )
