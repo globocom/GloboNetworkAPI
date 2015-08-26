@@ -30,7 +30,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import AmbienteError, Ambiente, AmbienteNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VLAN
 import re
-from networkapi.settings import VLAN_CREATE
+from networkapi import settings, error_message_utils
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.equipamento.models import Equipamento
 from networkapi.vlan.serializers import VlanSerializer
@@ -320,7 +320,7 @@ class VlanEditResource(RestResource):
                 return self.response_error(122)
 
             # Make command
-            vlan_command = VLAN_CREATE % int(id_vlan)
+            vlan_command = settings.VLAN_CREATE % int(id_vlan)
 
             # Execute command
             code, stdout, stderr = exec_script(vlan_command)
@@ -338,8 +338,8 @@ class VlanEditResource(RestResource):
 
             serializer = VlanSerializer(vlan)
             data_to_queue = serializer.data
-            data_to_queue.update({'description': queue_keys.VLAN_CREATE_VLAN})
-            queue_manager.append(data_to_queue)
+            data_to_queue.update({'description': queue_keys.VLAN_ACTIVATE})
+            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
             queue_manager.send()
 

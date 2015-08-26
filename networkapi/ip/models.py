@@ -376,8 +376,13 @@ class NetworkIPv4(BaseModel):
                     # For each subnet generated with configs
                     for subnet in net4.iter_subnets(new_prefix=new_prefix):
 
+                        net_found = True
+                        for network in networksv4:
+                            if subnet in network:
+                                net_found = False
+
                         # Checks if the network generated is UNUSED
-                        if subnet not in networksv4:
+                        if net_found:
 
                             #Checks if it is subnet/supernet of any existing network
                             in_range = network_in_range(self.vlan, subnet, type_ipv4)

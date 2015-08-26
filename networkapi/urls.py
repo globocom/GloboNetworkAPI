@@ -92,6 +92,8 @@ from networkapi.ambiente.resource.EnvironmentVipSearchResource import Environmen
 from networkapi.ambiente.resource.RequestAllVipsEnviromentVipResource import RequestAllVipsEnviromentVipResource
 from networkapi.ambiente.resource.EnvironmentBlocks import EnvironmentBlocks
 from networkapi.ambiente.resource.EnvironmentConfigurationAddResource import EnvironmentConfigurationAddResource
+from networkapi.ambiente.resource.EnvironmentEnvironmentVipAssociationResource import EnvironmentEnvironmentVipAssociationResource
+from networkapi.ambiente.resource.EnvironmentAllGetByEnvironmentVipResource import EnvironmentAllGetByEnvironmentVipResource
 from networkapi.ambiente.models import IP_VERSION
 
 from networkapi.ambiente.resource.EnvironmentGetByIdResource import EnvironmentGetByIdResource
@@ -385,6 +387,9 @@ environment_configuration_remove_resource = EnvironmentConfigurationRemoveResour
 
 environment_equip_resource = AmbienteEquipamentoResource()
 
+environment_environment_vip_association = EnvironmentEnvironmentVipAssociationResource()
+environment_environment_vip_list = EnvironmentAllGetByEnvironmentVipResource()
+
 division_dc_add_resource = DivisionDcAddResource()
 division_dc_alter_remove_resource = DivisionDcAlterRemoveResource()
 division_dc_get_all_resource = DivisionDcGetAllResource()
@@ -568,6 +573,9 @@ urlpatterns = patterns('',
     url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
+    url(api_prefix, include('networkapi.api_vlan.urls')),
+    url(api_prefix, include('networkapi.api_network.urls')),
+    url(api_prefix, include('networkapi.api_interface.urls')),
 )
 
 urlpatterns += patterns('',
@@ -737,6 +745,10 @@ urlpatterns += patterns('',
                            environment_blocks.handle_request, name="environment.get.blocks"),
                        url(r'^environment/list_no_blocks/$',
                            environment_list_resource.handle_request, name='environment.list.no_blocks'),
+                       url(r'^environment/(?P<environment_id>[^/]+)/environmentvip/(?P<environment_vip_id>[^/]+)/$',
+                           environment_environment_vip_association.handle_request, name='environment.environmentvip.associate.disassociate'),
+                       url(r'^environment/environmentvip/(?P<environment_vip_id>[^/]+)/$',
+                           environment_environment_vip_list.handle_request, name='environment.environmentvip.list'),
 
                        url(r'^environment-vip/get/finality/$',
                            environment_vip_finality.handle_request, name='environemnt-vip.get.finality'),
@@ -1082,7 +1094,9 @@ urlpatterns += patterns('',
                            name='network.ipv6.add'),
                        url(r'^network/ipv6/(?P<id_network_ipv6>[^/]+)/deallocate/$',
                            network_ipv6_deallocate_resource.handle_request, name='network.ipv6.deallocate'),
+                       )
 
+urlpatterns += patterns('',
                        url(r'^environmentvip/$', environment_vip_resource.handle_request,
                            name='environment.vip.add'),
                        url(r'^environmentvip/all/', environment_vip_resource.handle_request,
@@ -1135,7 +1149,7 @@ urlpatterns += patterns('',
                        url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
                            name='rack.add'),
                        url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
-                           name='find.rack'),
+                           name='list.rack'),
                        url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
                            name='find.rack'),
                        url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,

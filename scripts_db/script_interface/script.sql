@@ -1,4 +1,4 @@
-ALTER TABLE `interfaces` ADD COLUMN `vlans` VARCHAR(200) ;
+ALTER TABLE `interfaces` ADD COLUMN `vlans` VARCHAR(400) DEFAULT NULL;
 
 
 ALTER TABLE `telecom`.`interfaces` ADD COLUMN `id_tipo_interface` INT UNSIGNED NOT NULL DEFAULT 1 AFTER `id_ligacao_back` , 

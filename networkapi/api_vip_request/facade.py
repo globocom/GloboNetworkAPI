@@ -17,8 +17,11 @@
  limitations under the License.
  """
 from django.forms import model_to_dict
-
+from networkapi.api_pools.views import reals_can_associate_server_pool
 from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.error_message_utils import error_messages
+from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
+from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
 from networkapi.log import Log
 from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
 from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool
@@ -115,6 +118,9 @@ def save(request):
 
     obj_req_vip = req_vip_serializer.object
 
+    # valid if pools member can linked by environment/environment vip relationship rule
+    server_pool_ips_can_associate_with_vip_request(obj_req_vip)
+
     obj_req_vip.filter_valid = True
     obj_req_vip.validado = False
     set_l7_filter_for_vip(obj_req_vip)
@@ -178,6 +184,9 @@ def update(request, pk):
             id__in=vip_port_to_pool_pks
         )
 
+        # valid if pools member can linked by environment/environment vip relationship rule
+        server_pool_ips_can_associate_with_vip_request(obj_req_vip, vip_port_to_pool_to_remove)
+
         for v_port_to_del in vip_port_to_pool_to_remove:
             v_port_to_del.delete(user)
 
@@ -201,3 +210,90 @@ def set_l7_filter_for_vip(obj_req_vip):
                 flat=True
             )
         )
+
+
+def _get_server_pool_list(vip_request):
+
+    server_pool_list = set()
+
+    # server pool already related
+    for vip_pool in vip_request.vipporttopool_set.all():
+        server_pool_list.add(vip_pool.server_pool)
+
+    # server pool to add
+    for vip_pool in vip_request.vip_ports_to_pools:
+        server_pool_list.add(vip_pool.server_pool)
+
+    return list(server_pool_list)
+
+
+def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip):
+
+    try:
+        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip(environment_vip)
+
+        ipv4_list, ipv6_list = [], []
+
+        for server_pool_member in server_pool_member_list:
+            if server_pool_member.ip:
+                ipv4_list.append(server_pool_member.ip)
+            else:
+                ipv6_list.append(server_pool_member.ipv6)
+
+        for ipv4 in ipv4_list:
+            environment = Ambiente.objects.filter(vlan__networkipv4__ip=ipv4).uniqueResult()
+            if environment not in environment_list_related:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip.name)
+                )
+
+        for ipv6 in ipv6_list:
+            environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=ipv6).uniqueResult()
+            if environment not in environment_list_related:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(396) % (server_pool.environment.name, ipv6.ip_formated, environment_vip.name)
+                )
+
+    except Exception, error:
+        log.error(error)
+        raise error
+
+
+def _get_server_pool_list_by_vip_port_to_pool(vip_port_to_pool_to_remove):
+    server_pool_exclude_list = set()
+
+    for vip_port_to_pool in vip_port_to_pool_to_remove:
+        server_pool_exclude_list.add(vip_port_to_pool.server_pool)
+
+    return list(server_pool_exclude_list)
+
+
+def server_pool_ips_can_associate_with_vip_request(vip_request, vip_port_to_pool_to_remove=[]):
+
+    try:
+        environment_vip = EnvironmentVip.get_by_values(vip_request.finalidade, vip_request.cliente, vip_request.ambiente)
+
+        server_pool_list_add_list = _get_server_pool_list(vip_request)
+        server_pool_list_remove_list = _get_server_pool_list_by_vip_port_to_pool(vip_port_to_pool_to_remove)
+
+        for server_pool in server_pool_list_add_list:
+
+            if server_pool not in server_pool_list_remove_list:
+                server_pool_member_list = server_pool.serverpoolmember_set.all()
+                _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip)
+
+    except Exception, error:
+        log.error(error)
+        raise error
+
+
+def _get_validation_params(ip, server_pool, env_vip_description, ip_type='ipv4'):
+
+    if ip_type == 'ipv4':
+        env = ip.networkipv4.vlan.ambiente
+        env_description = '{} - {} - {}'.format(env.divisao_dc.nome, env.ambiente_logico.nome, env.grupo_l3.nome)
+    else:
+        env = ip.networkipv6.vlan.ambiente
+        env_description = '{} - {} - {}'.format(env.divisao_dc.nome, env.ambiente_logico.nome, env.grupo_l3.nome)
+
+    return [ip.ip_formated, server_pool.identifier, env_description, env_vip_description]

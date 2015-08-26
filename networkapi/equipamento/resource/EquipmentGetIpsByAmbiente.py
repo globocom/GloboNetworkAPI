@@ -22,7 +22,7 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvironmentVip
 from networkapi.equipamento.models import Equipamento, EquipamentoError
 
 
@@ -61,20 +61,25 @@ class EquipmentGetIpsByAmbiente(RestResource):
              # Get Equipment
             equip = Equipamento.get_by_name(equip_name)
 
-            lista_ips_equip = list()
-            lista_ipsv6_equip = list()
+            lista_ips_equip = set()
+            lista_ipsv6_equip = set()
 
-           # Get all IPV4's Equipment
-            for ipequip in equip.ipequipamento_set.select_related().all():
-                if ipequip.ip not in lista_ips_equip:
-                        if ipequip.ip.networkipv4.vlan.ambiente.divisao_dc.id == ambiente.divisao_dc.id and ipequip.ip.networkipv4.vlan.ambiente.ambiente_logico.id == ambiente.ambiente_logico.id:
-                            lista_ips_equip.append(ipequip.ip)
+            environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(id_ambiente)
+            environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
 
-            # Get all IPV6'S Equipment
-            for ipequip in equip.ipv6equipament_set.select_related().all():
-                if ipequip.ip not in lista_ipsv6_equip:
-                        if ipequip.ip.networkipv6.vlan.ambiente.divisao_dc.id == ambiente.divisao_dc.id and ipequip.ip.networkipv6.vlan.ambiente.ambiente_logico.id == ambiente.ambiente_logico.id:
-                            lista_ipsv6_equip.append(ipequip.ip)
+            # # Get all IPV4's Equipment
+            for environment in environment_list_related:
+                for ipequip in equip.ipequipamento_set.select_related().all():
+                    network_ipv4 = ipequip.ip.networkipv4
+                    if network_ipv4.vlan.ambiente == environment:
+                        lista_ips_equip.add(ipequip.ip)
+
+            # # Get all IPV6's Equipment
+            for environment in environment_list_related:
+                for ipequip in equip.ipv6equipament_set.select_related().all():
+                    network_ipv6 = ipequip.ip.networkipv6
+                    if network_ipv6.vlan.ambiente == environment:
+                        lista_ipsv6_equip.add(ipequip.ip)
 
             # lists and dicts for return
             lista_ip_entregue = list()

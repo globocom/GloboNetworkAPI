@@ -163,7 +163,7 @@ class VlanRemoveResource(RestResource):
                     serializer = VlanSerializer(vlan)
                     data_to_queue = serializer.data
                     data_to_queue.update({'description': queue_keys.VLAN_REMOVE})
-                    queue_manager.append(data_to_queue)
+                    queue_manager.append({'action': queue_keys.VLAN_REMOVE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
                     queue_manager.send()
 

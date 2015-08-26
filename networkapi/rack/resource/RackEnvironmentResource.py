@@ -79,4 +79,4 @@ class RackEnvironmentResource(RestResource):
             return self.not_authorized()
 
         except RackError:
-            return self.response_error(391)
+            return self.response_error(397)

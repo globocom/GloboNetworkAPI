@@ -26,7 +26,7 @@ from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
 from networkapi.requisicaovips.models import RequisicaoVips,\
-    RequisicaoVipsNotFoundError, ServerPool
+    RequisicaoVipsNotFoundError, ServerPool, InvalidHealthcheckValueError
 
 
 class RequestVipGetByIdResource(RestResource):
@@ -85,27 +85,29 @@ class RequestVipGetByIdResource(RestResource):
             #Maxcon, lbmethod e hc
             vip_map['maxcon'] = 0
             vip_map['metodo_bal'] = ''
+            vip_map['healthcheck'] = ''
             vip_map['healthcheck_type'] = ''
 
             pools = []
             pool_to_use = None
 
             id_pools = vip.vipporttopool_set.values_list('server_pool_id', flat=True)
-            if len(id_pools)>0:
+            if len(id_pools) > 0:
                 pools = ServerPool.objects.filter(id__in=id_pools).order_by("id")
                 pool_to_use = pools[0]
                 for pool in pools:
-                    hc = pool.healthcheck.healthcheck_type
-                    if hc=="HTTP":
-                        pool_to_use = pool
-                        break
+                    if pool.healthcheck:
+                        hc = pool.healthcheck.healthcheck_type
+                        if hc == "HTTP":
+                            pool_to_use = pool
+                            break
 
             if pool_to_use:
                 vip_map['maxcon'] = pool_to_use.default_limit
                 vip_map['metodo_bal'] = pool_to_use.lb_method
-                vip_map['healthcheck_type'] = pool.healthcheck.healthcheck_type
+                vip_map['healthcheck_type'] = pool.healthcheck.healthcheck_type if pool.healthcheck else ''
                 if vip_map['healthcheck_type'] in ('HTTP', 'HTTPS'):
-                    vip_map['healthcheck'] = pool.healthcheck.healthcheck_request
+                    vip_map['healthcheck'] = pool.healthcheck.healthcheck_request if pool.healthcheck else ''
 
             if vip.healthcheck_expect is not None:
                 vip_map['id_healthcheck_expect'] = vip.healthcheck_expect.id

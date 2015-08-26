@@ -30,7 +30,7 @@ class MemcachedLock(object):
     Try to do same as threading.Lock, but using Memcached to store lock instance to do a distributed lock
     """
 
-    def __init__(self, key, client, timeout=60):
+    def __init__(self, key, client, timeout=600):
         self.key = "lock:%s" % key
         self.client = client
         self.timeout = timeout
