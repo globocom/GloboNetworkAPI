@@ -12,6 +12,6 @@ ALTER TABLE `interfaces` ADD `id_channel` INT(10) UNSIGNED DEFAULT NULL after id
 ALTER TABLE interfaces ADD INDEX `fk_interfaces_port_channel` (`id_channel` ASC),
  ADD CONSTRAINT `fk_interfaces_port_channel`
     FOREIGN KEY (`id_channel`)
-    REFERENCES `telecom`.`port_channel` (`id_port_channel`)
+    REFERENCES `port_channel` (`id_port_channel`)
     ON UPDATE CASCADE
     ON DELETE RESTRICT;
