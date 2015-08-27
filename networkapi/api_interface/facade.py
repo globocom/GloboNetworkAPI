@@ -107,8 +107,9 @@ def _generate_config_file(interfaces_list):
     equipment_id = interfaces_list[0].equipamento.id
 
     request_id = getattr(local, 'request_id', NO_REQUEST_ID)
-    filename_out = "int_id_"+str(interfaces_list[0].id)+"_config_"+str(request_id)
-    filename_out = INTERFACE_CONFIG_FILES_PATH+filename_out
+    filename_out = "int-d_"+str(interfaces_list[0].id)+"_config_"+str(request_id)
+    filename_to_save = INTERFACE_CONFIG_FILES_PATH+filename_out
+    rel_file_to_deploy = INTERFACE_TOAPPLY_REL_PATH+filename_out
 
     int_template_file = _load_template_file(equipment_id, TEMPLATE_TYPE_INT)
     channels_configured = {}
@@ -133,15 +134,13 @@ def _generate_config_file(interfaces_list):
 
     #Save new file
     try:
-        log.info("saving file %s" % filename_out)
-        file_handle = open(filename_out, 'w')
+        log.info("saving file %s" % filename_to_save)
+        file_handle = open(filename_to_save, 'w')
         file_handle.write(config_to_be_saved)
         file_handle.close()
     except IOError, e:
-        log.error("Error writing to config file: %s" % filename_out)
+        log.error("Error writing to config file: %s" % filename_to_save)
         raise e
-
-    rel_file_to_deploy = INTERFACE_TOAPPLY_REL_PATH+filename_out
 
     return rel_file_to_deploy
 

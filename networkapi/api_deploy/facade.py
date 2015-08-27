@@ -91,20 +91,11 @@ def applyConfig(equipment,filename, equipment_access=None,tftpserver=None,port=2
 
     if tftpserver == None:
     	tftpserver = TFTP_SERVER_ADDR
-
-	#marca = equipment.modelo.marca.nome
 	
 	equip_module = load_module_for_equipment_config(equipment)
 
 	remote_conn = create_connnection(equipment, equipment_access)
 	switch_output = equip_module.copyTftpToConfig(remote_conn,tftpserver,filename)
 	remote_conn.close()
-#	if(marca=='Cisco'):
-#		switch_output = CiscoGeneric.copyTftpToConfig(remote_conn,tftpserver,filename)
-#	elif(marca=='Huawei'):
-#		switch_output = HuaweiGeneric.copyTftpToConfig(remote_conn,tftpserver,filename)
-#	else: 
-#		log.error('Equipment not supported.')
-#		remote_conn.close()
 	return switch_output
 	
