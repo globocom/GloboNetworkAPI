@@ -19,25 +19,42 @@ from rest_framework.exceptions import APIException
 from rest_framework import status
 
 
+class CommandErrorException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Error: Error applying command on equipment. Equipment returned error status.'
+
 class ConnectionException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Failed trying to connect to equipment.'
 
-class InvalidFilenameException(APIException):
-	status_code = status.HTTP_400_BAD_REQUEST
+class InvalidCommandException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Error: Invalid command sent to equipment. Please check template or module used.'
 
-	def __init__(self, filename=None):
-	    self.default_detail = u'Invalid filename: ' % (filename)
+    def __init__(self, msg=None):
+        self.detail = u'Error: Invalid command sent to equipment. Equipment error: <<%s>>' % (msg)
 
 class InvalidEquipmentAccessException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No access or multiple accesses found for equipment.'
 
+class InvalidFilenameException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid filename.'
+
+    def __init__(self, filename=None):
+	    self.detail = u'Invalid filename: %s' % (filename)
+
 class LoadEquipmentModuleException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = u'Could not load equipment module: '
 
     def __init__(self, module_name=None):
-	    self.default_detail = u'Could not load equipment module: ' % (module_name)
+	    self.detail = u'Could not load equipment module: ' % (module_name)
+
+class UnableToVerifyResponse(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Error: Could not match equipment response in any known behavior. Please check config for status.'
 
 class UnsupportedEquipmentException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

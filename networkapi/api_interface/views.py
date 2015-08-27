@@ -57,7 +57,7 @@ def deploy_interface_configuration_sync(request, id_interface):
         raise exceptions.InvalidIdInterfaceException
     except Exception, exception:
         log.error(exception)
-        raise api_exceptions.NetworkAPIException()
+        raise exception
 
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, DeployConfig))
@@ -81,7 +81,7 @@ def deploy_channel_configuration_sync(request, id_channel):
         raise exceptions.InvalidIdInterfaceException
     except Exception, exception:
         log.error(exception)
-        raise api_exceptions.NetworkAPIException()
+        raise exception
 
 
 

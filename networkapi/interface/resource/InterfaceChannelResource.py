@@ -75,7 +75,7 @@ class InterfaceChannelResource(RestResource):
 
             int_type = TipoInterface.get_by_name(str(int_type))
             for var in interfaces:
-                if not var==("" or None):
+                if not var=="" and not var==None:
                     interf = interface.get_by_pk(int(var))
                     try:
                         sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
@@ -237,6 +237,12 @@ class InterfaceChannelResource(RestResource):
             vlan = channel_map.get('vlan')
             envs = channel_map.get('envs')
             ids_interface = channel_map.get('ids_interface')
+
+            if vlan is not None:
+                if int(vlan) < 1 or int(vlan) > 4096:
+                    raise InvalidValueError(None, "Vlan" , vlan)
+                if int(vlan) < 1 or 3967 < int(vlan) < 4048 or int(vlan)==4096:
+                    raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
 
             port_channel = PortChannel()
             interface = Interface()

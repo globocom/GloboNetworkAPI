@@ -480,6 +480,8 @@ class Interface(BaseModel):
 
         if self.vlan_nativa is None:
             self.vlan_nativa = 1
+        elif int(self.vlan_nativa) < 1 or 3967 < int(self.vlan_nativa) < 4048 or int(self.vlan_nativa)==4096:
+            raise InvalidValueError(None, "Vlan Nativa" ,"Intervalo reservado: 3968-4047 e 4094")
             
         try:
             # Check if interface name already exists for this equipment
@@ -583,6 +585,11 @@ class Interface(BaseModel):
             interface.protegida = kwargs['protegida']
             interface.tipo = kwargs['tipo']
             interface.vlan_nativa = kwargs['vlan_nativa']
+            if interface.vlan_nativa is not None:
+                if int(interface.vlan_nativa) < 1 or int(interface.vlan_nativa) > 4096:
+                    raise InvalidValueError(None, "Vlan" , interface.vlan_nativa)
+                if 3967 < int(interface.vlan_nativa) < 4048 or int(interface.vlan_nativa)==4096:
+                    raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
             try:
                 interface.channel = kwargs['channel']
             except:
@@ -591,6 +598,8 @@ class Interface(BaseModel):
             return interface.save(authenticated_user)
 
         except InterfaceForEquipmentDuplicatedError, e:
+            raise e
+        except InvalidValueError, e:
             raise e
         except Exception, e:
             cls.log.error(u'Falha ao alterar a interface')
