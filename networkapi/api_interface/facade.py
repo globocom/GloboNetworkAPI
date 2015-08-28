@@ -134,7 +134,6 @@ def _generate_config_file(interfaces_list):
 
     #Save new file
     try:
-        log.info("saving file %s" % filename_to_save)
         file_handle = open(filename_to_save, 'w')
         file_handle.write(config_to_be_saved)
         file_handle.close()
@@ -172,15 +171,12 @@ def _generate_dict(interface):
 
     #Check if it is a supported equipment interface
     if interface.equipamento.modelo.marca.nome not in SUPPORTED_EQUIPMENT_BRANDS:
-        log.info("%s" % interface.equipamento.modelo.marca.nome) 
         raise exceptions.UnsupportedEquipmentException()
 
     key_dict = {}
     #TODO Separate differet vendor support
     #Cisco Nexus 6001 dict
     key_dict["NATIVE_VLAN"] = interface.vlan_nativa
-    log.info ("%s" % interface)
-    log.info("%s" % interface.vlan_nativa)
     key_dict["VLAN_RANGE"] = get_vlan_range(interface)
     key_dict["USE_MCLAG"] = 1
     key_dict["INTERFACE_NAME"] = interface.interface
