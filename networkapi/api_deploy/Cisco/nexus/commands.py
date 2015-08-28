@@ -20,13 +20,12 @@ from networkapi.log import Log
 from networkapi.api_deploy import exceptions
 import re
 from time import sleep
-import unicodedata, string
 
 log = Log(__name__)
 
 ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|%|utility is occupied|'
 INVALID_REGEX = '.*([Ii]nvalid)'
-VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
+VALID_TFTP_PUT_MESSAGE = 'TFTP put operation was successful'
 
 validChars = "-_.()\r\n %s%s" % (string.ascii_letters, string.digits)
 
@@ -35,15 +34,15 @@ def removeDisallowedChars(data):
 	cleanedStr = unicodedata.normalize('NFKD', data).encode('ASCII', 'ignore')
 	return ''.join(c for c in cleanedStr if c in validChars)
 
-def copyTftpToConfig (channel, tftpserver, filename, vrf=None, destination="running-config"):
+def copyTftpToConfig (channel, tftpserver, filename, vrf="vrf management", destination="running-config"):
 	'''
-	Configuration for cisco ios - copy file from TFTP
+	Configuration Specific for cisco nexus - copy file from TFTP
 	'''
 
 	if vrf is None:
-		command = "copy tftp://%s/%s %s\n\n" %(tftpserver, filename, destination)
+		command = 'copy tftp://%s/%s %s\n\n' %(tftpserver, filename, destination)
 	else:
-		command = "copy tftp://%s/%s %s %s\n\n" %(tftpserver, filename, destination, vrf)
+		command = 'copy tftp://%s/%s %s %s\n\n' %(tftpserver, filename, destination, vrf)
 
 	log.info("sending command: %s" % command)
 
@@ -52,11 +51,11 @@ def copyTftpToConfig (channel, tftpserver, filename, vrf=None, destination="runn
 
 	return recv
 
-def ensure_privilege_level(channel, enable_pass, privilege_level=15):
+def ensure_privilege_level(channel, enable_pass, privilege_level=-1):
 
 	channel.send("show privilege\n")
-	recv = _waitString(channel, "Current privilege level is")
-	level = re.search('Current privilege level is ([0-9]+?).*', recv, re.DOTALL ).group(1)
+	recv = _waitString(channel, "Current privilege level:")
+	level = re.search('Current privilege level: (-[0-9]+?).*', recv, re.DOTALL ).group(1)
 
 	level = (level.split(' '))[-1]
 	if int(level) < privilege_level:
@@ -67,12 +66,12 @@ def ensure_privilege_level(channel, enable_pass, privilege_level=15):
 
 def _exec_command (remote_conn, command, success_regex, invalid_regex=INVALID_REGEX, error_regex=ERROR_REGEX):
 	'''
-	Send single command to equipment and than closes connection
+	Configuration Specific for cisco
 	'''
 	try:
 		stdin, stdout, stderr = remote_conn.exec_command('%s' %(command))
-	except Exception, e:
-		log.error("Error in connection. Cannot send command.", e)
+	except:
+		log.error("Error in connection. Cannot send command.", stderr)
 		raise api_exceptions.NetworkAPIException
 
 	equip_output_lines = stdout.readlines()
@@ -86,7 +85,6 @@ def _exec_command (remote_conn, command, success_regex, invalid_regex=INVALID_RE
 		return output_text
 	else:
 		raise exceptions.UnableToVerifyResponse()
-
 
 def _waitString(channel, wait_str_ok_regex, wait_str_failed_regex=ERROR_REGEX):
 

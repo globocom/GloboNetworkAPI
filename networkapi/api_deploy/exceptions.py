@@ -22,6 +22,8 @@ from rest_framework import status
 class CommandErrorException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Error: Error applying command on equipment. Equipment returned error status.'
+    def __init__(self, msg=None):
+        self.detail = u'Error: Error applying command on equipment. Equipment returned error status. <<%s>>' % (msg)
 
 class ConnectionException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
