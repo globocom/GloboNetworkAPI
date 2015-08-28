@@ -8,3 +8,4 @@ netaddr==0.7.14
 stompest==2.1.6
 python-foreman==0.3.1
 paramiko==1.15.2
+ecdsa==0.13
