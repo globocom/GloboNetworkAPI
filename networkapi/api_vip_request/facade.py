@@ -158,7 +158,7 @@ def update(request, pk):
     with distributedlock(LOCK_VIP % pk):
 
         obj_req_vip = req_vip_serializer.object
-        obj_req_vip.id = pk
+        obj_req_vip.id = int(pk)
         obj_req_vip.filter_valid = True
         obj_req_vip.validado = False
         set_l7_filter_for_vip(obj_req_vip)
