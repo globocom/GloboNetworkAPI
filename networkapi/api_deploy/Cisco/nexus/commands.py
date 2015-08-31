@@ -53,6 +53,7 @@ def copyTftpToConfig (channel, tftpserver, filename, vrf="vrf management", desti
 
 def ensure_privilege_level(channel, enable_pass, privilege_level=-1):
 
+	recv = _waitString(channel, ">|#")
 	channel.send("show privilege\n")
 	recv = _waitString(channel, "Current privilege level:")
 	level = re.search('Current privilege level: (-[0-9]+?).*', recv, re.DOTALL ).group(1)
@@ -95,9 +96,11 @@ def _waitString(channel, wait_str_ok_regex, wait_str_failed_regex=ERROR_REGEX):
 			sleep(1)
 		recv_string = channel.recv(9999)
 		file_name_string = removeDisallowedChars(recv_string)
-		if re.search(wait_str_ok_regex, recv_string, re.DOTALL ):
-			string_ok = 1
-		elif re.search(wait_str_failed_regex, recv_string, re.DOTALL ):
+		if re.search(wait_str_failed_regex, recv_string, re.DOTALL ):
 			raise exceptions.CommandErrorException(file_name_string)
+		elif re.search(INVALID_REGEX, recv_string, re.DOTALL ):
+			raise exceptions.InvalidCommandException(file_name_string)
+		elif re.search(wait_str_ok_regex, recv_string, re.DOTALL ):
+			string_ok = 1
 
 	return recv_string

@@ -35,7 +35,6 @@ import re
 import pkgutil 
 
 SUPPORTED_EQUIPMENT_BRANDS = ["Cisco", "Huawei"]
-TEMPLATE_TYPE = "interface_configuration"
 
 log = Log(__name__)
 
