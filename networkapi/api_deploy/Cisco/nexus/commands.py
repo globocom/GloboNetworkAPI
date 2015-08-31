@@ -26,7 +26,7 @@ log = Log(__name__)
 
 ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 INVALID_REGEX = '([Ii]nvalid)'
-VALID_TFTP_PUT_MESSAGE = 'TFTP put operation was successful'
+VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
 
 validChars = "-_.()\r\n %s%s" % (string.ascii_letters, string.digits)
 
@@ -48,7 +48,7 @@ def copyTftpToConfig (channel, tftpserver, filename, vrf="vrf management", desti
 	log.info("sending command: %s" % command)
 
 	channel.send("%s\n" % command)
-	recv = _waitString(channel, VALID_TFTP_PUT_MESSAGE)
+	recv = _waitString(channel, VALID_TFTP_GET_MESSAGE)
 
 	return recv
 
