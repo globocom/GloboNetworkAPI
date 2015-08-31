@@ -24,6 +24,7 @@ from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.settings import INTERFACE_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
 from networkapi.distributedlock import LOCK_INTERFACE_EQUIP_CONFIG
 from networkapi.log import Log
+from networkapi.interface.models import EnvironmentInterface
 
 from networkapi.interface.models import Interface, PortChannel
 from networkapi.util import is_valid_int_greater_zero_param
@@ -177,11 +178,13 @@ def _generate_dict(interface):
     #TODO Separate differet vendor support
     #Cisco Nexus 6001 dict
     key_dict["NATIVE_VLAN"] = interface.vlan_nativa
-    key_dict["VLAN_RANGE"] = get_vlan_range(interface)
     key_dict["USE_MCLAG"] = 1
     key_dict["INTERFACE_NAME"] = interface.interface
     key_dict["INTERFACE_DESCRIPTION"] = "description to be defined"
     key_dict["INTERFACE_TYPE"] = interface.tipo.tipo
+    if key_dict["INTERFACE_TYPE"] is "trunk":
+        key_dict["VLAN_RANGE"] = get_vlan_range(interface)
+
     if interface.channel is not None:
         key_dict["BOOL_INTERFACE_IN_CHANNEL"] = 1
         key_dict["PORTCHANNEL_NAME"] = interface.channel.nome
@@ -203,5 +206,18 @@ def _generate_dict(interface):
 
 def get_vlan_range(interface):
     #TODO Generate vlan range
-    return "1-200"
+    env_ints = EnvironmentInterface.get_by_interface(interface.id)
+    vlan_range = ""
+    for env_int in env_ints:
+        vlan_range_1 = str(env_int.ambiente.min_num_vlan_1)+"-"+str(env_int.ambiente.max_num_vlan_1)
+        vlan_range_2 = str(env_int.ambiente.min_num_vlan_2)+"-"+str(env_int.ambiente.max_num_vlan_2)
+        if vlan_range_1 is not vlan_range_2:
+            vlan_range_temp = vlan_range_1+","+vlan_range_2
+        else:
+            vlan_range_temp = vlan_range_1
+            
+        if vlan_range_temp not in vlan_range:
+            vlan_range += ","+vlan_range_temp
+
+    return vlan_range
 
