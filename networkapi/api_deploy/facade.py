@@ -24,7 +24,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.log import Log
 
-from settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR
+from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR
 
 import importlib
 import os
