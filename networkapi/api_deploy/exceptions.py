@@ -31,10 +31,10 @@ class ConnectionException(APIException):
 
 class InvalidCommandException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Error: Invalid command sent to equipment. Please check template or module used.'
+    default_detail = 'Error: Invalid command sent to equipment. Please check template syntax or module used.'
 
     def __init__(self, msg=None):
-        self.detail = u'Error: Invalid command sent to equipment. Equipment error: <<%s>>' % (msg)
+        self.detail = u'Error: Invalid command sent to equipment. Check syntax. Equipment msg: <<%s>>' % (msg)
 
 class InvalidEquipmentAccessException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

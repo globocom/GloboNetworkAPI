@@ -20,11 +20,12 @@ from networkapi.log import Log
 from networkapi.api_deploy import exceptions
 import re
 from time import sleep
+import unicodedata, string
 
 log = Log(__name__)
 
-ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|%|utility is occupied|'
-INVALID_REGEX = '.*([Ii]nvalid)'
+ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
+INVALID_REGEX = '([Ii]nvalid)'
 VALID_TFTP_PUT_MESSAGE = 'TFTP put operation was successful'
 
 validChars = "-_.()\r\n %s%s" % (string.ascii_letters, string.digits)
@@ -96,10 +97,10 @@ def _waitString(channel, wait_str_ok_regex, wait_str_failed_regex=ERROR_REGEX):
 			sleep(1)
 		recv_string = channel.recv(9999)
 		file_name_string = removeDisallowedChars(recv_string)
-		if re.search(wait_str_failed_regex, recv_string, re.DOTALL ):
-			raise exceptions.CommandErrorException(file_name_string)
-		elif re.search(INVALID_REGEX, recv_string, re.DOTALL ):
+		if re.search(INVALID_REGEX, recv_string, re.DOTALL ):
 			raise exceptions.InvalidCommandException(file_name_string)
+		elif re.search(wait_str_failed_regex, recv_string, re.DOTALL ):
+			raise exceptions.CommandErrorException(file_name_string)
 		elif re.search(wait_str_ok_regex, recv_string, re.DOTALL ):
 			string_ok = 1
 
