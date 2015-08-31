@@ -182,7 +182,7 @@ def _generate_dict(interface):
     key_dict["INTERFACE_NAME"] = interface.interface
     key_dict["INTERFACE_DESCRIPTION"] = "description to be defined"
     key_dict["INTERFACE_TYPE"] = interface.tipo.tipo
-    if key_dict["INTERFACE_TYPE"] is "trunk":
+    if key_dict["INTERFACE_TYPE"] in "trunk":
         key_dict["VLAN_RANGE"] = get_vlan_range(interface)
 
     if interface.channel is not None:
@@ -216,7 +216,9 @@ def get_vlan_range(interface):
         else:
             vlan_range_temp = vlan_range_1
             
-        if vlan_range_temp not in vlan_range:
+        if vlan_range is "":
+            vlan_range = vlan_range_temp
+        elif vlan_range_temp not in vlan_range:
             vlan_range += ","+vlan_range_temp
 
     return vlan_range
