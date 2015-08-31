@@ -119,18 +119,18 @@ def _generate_config_file(interfaces_list):
 
         #If Interface is in channel, render the template for channel, only once
         #for each channel
-        if interface.channel is not None:
-            try:
+        try:
+            if interface.channel is not None:
                 if interface.channel.id is not None and interface.channel.id not in channels_configured.keys():
                     channel_template_file = _load_template_file(equipment_id, TEMPLATE_TYPE_CHANNEL)
                     config_to_be_saved += channel_template_file.render( Context(key_dict) )
                     channels_configured[interface.channel.id] = 1
 
             #Render the template for interface
-                config_to_be_saved += int_template_file.render( Context(key_dict) )
-            except KeyError, exception:
-                log.error("Erro: %s " % exception)
-                raise exceptions.InvalidKeyException(exception)
+            config_to_be_saved += int_template_file.render( Context(key_dict) )
+        except KeyError, exception:
+            log.error("Erro: %s " % exception)
+            raise exceptions.InvalidKeyException(exception)
 
     #Save new file
     try:
