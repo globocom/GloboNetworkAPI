@@ -429,9 +429,9 @@ class NetworkIPv4(BaseModel):
                     self.ambient_vip = evip
                     self.save(user)
 
-        except Exception, e:
-            self.log.error(u'Error persisting a NetworkIPv4.')
-            raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
+                except Exception, e:
+                    self.log.error(u'Error persisting a NetworkIPv4.')
+                    raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
 
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
