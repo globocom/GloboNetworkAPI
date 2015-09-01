@@ -316,6 +316,59 @@ class Interface(BaseModel):
 
         return interfaces
 
+    def get_server_switch_or_router_interface_from_host_interface(self, protegida=None):
+        '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
+
+        @param protegida: Indicação do campo 'protegida' da interface do switch.
+
+        @return: Interface ligada a um equipamento do tipo SWITCH.
+
+        @raise InterfaceError: Falha ao pesquisar a interface do switch
+
+        @raise InterfaceNotFoundError: Interface do switch não encontrada.
+
+        @raise InterfaceProtectedError: A interface do switch está com o campo protegida diferente do parâmetro.
+        '''
+
+        interface_ids = []
+        from_interface = self
+        interface = self.ligacao_front
+        try:
+            while (interface is not None) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) \
+                    and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_ROUTER)\
+                    and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SERVIDOR):
+                interface_ids.append(interface.id)
+
+                if (interface.ligacao_back is not None) and (from_interface.id != interface.ligacao_back_id):
+                    from_interface = interface
+                    interface = interface.ligacao_back
+                elif (interface.ligacao_front is not None) and (from_interface.id != interface.ligacao_front_id):
+                    from_interface = interface
+                    interface = interface.ligacao_front
+                else:
+                    interface = None
+
+                if interface is not None:
+                    if interface.id in interface_ids:
+                        raise InterfaceNotFoundError(
+                            None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+        except InterfaceNotFoundError, e:
+            raise e
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar a interface do switch.')
+            raise InterfaceError(
+                e, u'Falha ao pesquisar a interface do switch.')
+
+        if (interface is None):
+            raise InterfaceNotFoundError(
+                None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+
+        if ((protegida is not None) and (interface.protegida != protegida)):
+            raise InterfaceProtectedError(
+                None, u'Interface do switch com o campo protegida diferente de %s.' % protegida)
+
+        return interface
+
     def get_switch_and_router_interface_from_host_interface(self, protegida=None):
         '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
 
