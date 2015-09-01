@@ -14,10 +14,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from django.conf.urls import patterns, url
-
-urlpatterns = patterns('networkapi.api_interface.views',
-    url(r'^interface/(?P<id_interface>\d+)/deploy_config_sync/$', 'deploy_interface_configuration_sync'),
-    url(r'^interface/channel/(?P<id_channel>\d+)/deploy_config_sync/$', 'deploy_channel_configuration_sync'),
-)

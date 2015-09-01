@@ -24,7 +24,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.log import Log
 
-from settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR
+from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR
 
 import importlib
 import os
@@ -32,9 +32,9 @@ import paramiko
 import sys
 import time
 import re
+import pkgutil 
 
 SUPPORTED_EQUIPMENT_BRANDS = ["Cisco", "Huawei"]
-TEMPLATE_TYPE = "interface_configuration"
 
 log = Log(__name__)
 
@@ -44,6 +44,13 @@ def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tft
 	path = os.path.abspath(TFTPBOOT_FILES_PATH+rel_filename)
 	if not path.startswith(TFTPBOOT_FILES_PATH):
 		raise exceptions.InvalidFilenameException(rel_filename)
+
+	if equipment_access==None:
+		try:
+			equipment_access = EquipamentoAcesso.search(None, equipment, "ssh").uniqueResult()
+		except e:
+			log.error("Access type %s not found for equipment %s." % ("ssh", equipment.nome))
+			raise exceptions.InvalidEquipmentAccessException()
 
 	with distributedlock(lockvar):
 		return applyConfig(equipment, rel_filename, equipment_access, tftpserver)
@@ -76,8 +83,32 @@ def create_connnection(equipment,equipment_access, port=22):
 	return remote_conn
 
 def load_module_for_equipment_config(equipment):
-	marca = equipment.modelo.marca.nome
-	module_name = "networkapi.api_deploy."+marca+".Generic"
+
+	nome_modelo = equipment.modelo.nome
+	nome_marca = equipment.modelo.marca.nome
+	module_generic = "networkapi.api_deploy."+nome_marca+".Generic"
+	module_name = ''
+
+	#Import package plugin
+	package_name = "networkapi.api_deploy."+nome_marca
+	try:
+		loaded_package = importlib.import_module(package_name, package=None)
+	except Exception, e:
+		log.error("Error importing package: %s - %s" % (package_name, e))
+		raise exceptions.LoadEquipmentModuleException(package_name)
+
+	#Search in plugin package if some module name is the same of part of
+	#the equipment's model name. Load it if found.
+	for importer, modname, ispkg in pkgutil.walk_packages(path=loaded_package.__path__,
+															prefix=loaded_package.__name__+'.',
+															onerror=lambda x: None):
+		if not ispkg:
+			splitted_modname = modname.split('.')
+			if re.search(splitted_modname[-2].upper(), nome_modelo.upper(), re.DOTALL ):
+				module_name = modname
+
+	if module_name is '':
+		module_name = module_generic
 
 	try:
 		loaded_module = importlib.import_module(module_name, package=None)
@@ -95,7 +126,9 @@ def applyConfig(equipment,filename, equipment_access=None,tftpserver=None,port=2
 	equip_module = load_module_for_equipment_config(equipment)
 
 	remote_conn = create_connnection(equipment, equipment_access)
-	switch_output = equip_module.copyTftpToConfig(remote_conn,tftpserver,filename)
+	channel = remote_conn.invoke_shell()
+	equip_module.ensure_privilege_level(channel, equipment_access.enable_pass)
+	switch_output = equip_module.copyTftpToConfig(channel,tftpserver,filename)
 	remote_conn.close()
 	return switch_output
 	
