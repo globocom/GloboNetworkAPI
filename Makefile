@@ -13,6 +13,13 @@ help:
 	@echo "  publish    to publish the package to PyPI"
 	@echo
 
+default:
+	@awk -F\: '/^[a-z_]+:/ && !/default/ {printf "- %-20s %s\n", $$1, $$2}' Makefile
+
+pip: # install pip libraries
+	@pip install -r requirements.txt
+	@pip install -r requirements_test.txt
+
 clean:
 	@echo "Cleaning..."
 	@rm -rf build dist *.egg-info
