@@ -23,23 +23,32 @@ from networkapi.log import Log
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
+NETWORKAPI_DATABASE_NAME = os.getenv('NETWORKAPI_DATABASE_NAME', 'networkapi')
+NETWORKAPI_DATABASE_USER = os.getenv('NETWORKAPI_DATABASE_USER', 'root')
+NETWORKAPI_DATABASE_PASSWORD = os.getenv('NETWORKAPI_DATABASE_PASSWORD', '')
+NETWORKAPI_DATABASE_HOST = os.getenv('NETWORKAPI_DATABASE_HOST', 'localhost')
+NETWORKAPI_DATABASE_PORT = os.getenv('NETWORKAPI_DATABASE_PORT', '3306')
+NETWORKAPI_DATABASE_OPTIONS = os.getenv('NETWORKAPI_DATABASE_OPTIONS', '{"init_command": "SET storage_engine=INNODB"}')
+
 # Configurações de banco de dados
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': 'localhost',
-        'NAME': 'telecom',
-        'USER': 'root',
-        'PASSWORD': 'password',
-        'PORT': '3306',
-        'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
+        'HOST': NETWORKAPI_DATABASE_HOST,
+        'NAME': NETWORKAPI_DATABASE_NAME,
+        'USER': NETWORKAPI_DATABASE_USER,
+        'PASSWORD': NETWORKAPI_DATABASE_PASSWORD,
+        'PORT': NETWORKAPI_DATABASE_PORT,
+        'OPTIONS': NETWORKAPI_DATABASE_OPTIONS
     }
 }
+
 
 from networkapi.models.models_signal_receiver import *
 
 # Aplicação rodando em modo Debug
-DEBUG = False
+#DEBUG = False
+DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
@@ -213,6 +222,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
+    'django_extensions',
 )
 
 
