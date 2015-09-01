@@ -10,9 +10,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     chef.add_recipe "mysql::server"
     chef.json = {
       :mysql => {
-         server_root_password: "password",
-         server_repl_password: "password",
-         server_debian_password: "password",
+         server_root_password: "",
+         server_repl_password: "",
+         server_debian_password: "",
          port: '3306',
          package_version: '5.6',
          data_dir: '/data-mysql',
