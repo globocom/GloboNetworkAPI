@@ -18,8 +18,11 @@
 
 import os
 import logging
+import newrelic.agent
 
 from networkapi.log import Log
+
+newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
