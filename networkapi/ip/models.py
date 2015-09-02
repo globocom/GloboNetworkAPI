@@ -18,6 +18,7 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db import transaction
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteNotFoundError, \
     EquipamentoAmbienteDuplicatedError, EquipamentoError
 from networkapi.log import Log
@@ -428,7 +429,7 @@ class NetworkIPv4(BaseModel):
                     self.network_type = internal_network_type
                     self.ambient_vip = evip
                     self.save(user)
-
+                    transaction.commit()
                 except Exception, e:
                     self.log.error(u'Error persisting a NetworkIPv4.')
                     raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
