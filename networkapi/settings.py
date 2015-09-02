@@ -214,6 +214,7 @@ INSTALLED_APPS = (
     #    'django.contrib.contenttypes',
     #    'django.contrib.sessions',
     #    'django.contrib.sites',
+    'django_extensions',
     'networkapi.ambiente',
     'networkapi.equipamento',
     'networkapi.eventlog',
@@ -236,7 +237,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
-    #'django_extensions',
 )
 
 
