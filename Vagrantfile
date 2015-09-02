@@ -5,6 +5,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "private_network", ip:"10.0.0.2"
   config.vm.hostname = "NETWORKAPI"
   config.omnibus.chef_version = :latest
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 512
+  end
   config.vm.provision :chef_solo do |chef|
     chef.add_recipe "apt"
     chef.add_recipe "mysql::server"
