@@ -31,7 +31,7 @@ def LOCAL_FILES(path):
     new_path = os.path.abspath(os.path.join(__file__, path))
     return new_path
 
-#newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
+newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
