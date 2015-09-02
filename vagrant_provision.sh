@@ -1,3 +1,4 @@
+apt-get install vim -y
 apt-get install memcached -y
 apt-get install python-pip -y
 apt-get install libmysqlclient-dev -y
