@@ -20,6 +20,12 @@ pip: # install pip libraries
 	@pip install -r requirements.txt
 	@pip install -r requirements_test.txt
 
+run: # run local server
+	@python manage.py runserver 0.0.0.0:8000 $(filter-out $@,$(MAKECMDGOALS))
+
+shell: # run django shell
+	@python manage.py shell_plus --use-pythonrc
+
 clean:
 	@echo "Cleaning..."
 	@rm -rf build dist *.egg-info
