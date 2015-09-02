@@ -1230,7 +1230,7 @@ COLLATE = utf8_unicode_ci;
 CREATE TABLE IF NOT EXISTS `networkapi`.`ambiente_rack` (
   `id_ambienterack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
-  `id_rack` INT(10) NOT NULL,
+  `id_rack` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY (`id_ambienterack`),
   UNIQUE INDEX `ambiente_rack_unique` (`id_ambiente` ASC, `id_rack` ASC),
   INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
