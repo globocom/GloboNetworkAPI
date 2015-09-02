@@ -20,13 +20,13 @@ from networkapi.log import Log
 
 log = Log(__name__)
 
-def copyTftpToConfig(remote_conn,tftpserver,filename, vpn_instance="vpn-instance management"):
+def copyScriptFileToConfig(remote_conn,tftpserver,filename, vpn_instance="vpn-instance management"):
 	try:
 		stdin, stdout, stderr = remote_conn.exec_command('tftp %s get %s %s' %(tftpserver,filename, vpn_instance))
 		switch_output=stdout.readlines()
 	except:
 		log.error("Error copying config file to equipment.", stderr)
-		raise api_exceptions.NetworkAPIException
+		raise api_exceptions.NetworkAPIException()
 
 	try:
 		local_filename = re.split('\/', file)[-1]
@@ -34,6 +34,6 @@ def copyTftpToConfig(remote_conn,tftpserver,filename, vpn_instance="vpn-instance
 		switch_output+=stdout.readlines()
 	except:
 		log.error("Error executing config file in equipment.", stderr)
-		raise api_exceptions.NetworkAPIException
+		raise api_exceptions.NetworkAPIException()
 
 	return switch_output

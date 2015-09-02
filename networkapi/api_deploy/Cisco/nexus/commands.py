@@ -35,7 +35,7 @@ def removeDisallowedChars(data):
 	cleanedStr = unicodedata.normalize('NFKD', data).encode('ASCII', 'ignore')
 	return ''.join(c for c in cleanedStr if c in validChars)
 
-def copyTftpToConfig (channel, tftpserver, filename, vrf="vrf management", destination="running-config"):
+def copyScriptFileToConfig (channel, tftpserver, filename, vrf="vrf management", destination="running-config"):
 	'''
 	Configuration Specific for cisco nexus - copy file from TFTP
 	'''
@@ -74,7 +74,7 @@ def _exec_command (remote_conn, command, success_regex, invalid_regex=INVALID_RE
 		stdin, stdout, stderr = remote_conn.exec_command('%s' %(command))
 	except:
 		log.error("Error in connection. Cannot send command.", stderr)
-		raise api_exceptions.NetworkAPIException
+		raise api_exceptions.NetworkAPIException()
 
 	equip_output_lines = stdout.readlines()
 	output_text = ''.join(equip_output_lines)

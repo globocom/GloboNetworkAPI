@@ -28,14 +28,14 @@ ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 INVALID_REGEX = '([Ii]nvalid)'
 VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
 
-validChars = "-_.()\r\n %s%s" % (string.ascii_letters, string.digits)
+validChars = "-_.()\r\n:<>#\\/\b %s%s" % (string.ascii_letters, string.digits)
 
 def removeDisallowedChars(data):
 	data = u'%s' % data
 	cleanedStr = unicodedata.normalize('NFKD', data).encode('ASCII', 'ignore')
 	return ''.join(c for c in cleanedStr if c in validChars)
 
-def copyTftpToConfig (channel, tftpserver, filename, vrf=None, destination="running-config"):
+def copyScriptFileToConfig (channel, tftpserver, filename, vrf=None, destination="running-config"):
 	'''
 	Configuration for cisco ios - copy file from TFTP
 	'''
@@ -74,7 +74,7 @@ def _exec_command (remote_conn, command, success_regex, invalid_regex=INVALID_RE
 		stdin, stdout, stderr = remote_conn.exec_command('%s' %(command))
 	except Exception, e:
 		log.error("Error in connection. Cannot send command.", e)
-		raise api_exceptions.NetworkAPIException
+		raise api_exceptions.NetworkAPIException()
 
 	equip_output_lines = stdout.readlines()
 	output_text = ''.join(equip_output_lines)

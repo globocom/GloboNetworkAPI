@@ -17,14 +17,15 @@
 
 from networkapi.distributedlock import distributedlock, LOCK_VIP_IP_EQUIP
 
-from networkapi.equipamento.models import EquipamentoRoteiro
+from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.roteiro.models import TipoRoteiro
 from networkapi.api_deploy import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.log import Log
+from networkapi.extra_logging import local, NO_REQUEST_ID
 
-from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR
+from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR, CONFIG_FILES_PATH
 
 import importlib
 import os
@@ -38,24 +39,49 @@ SUPPORTED_EQUIPMENT_BRANDS = ["Cisco", "Huawei"]
 
 log = Log(__name__)
 
-def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tftpserver=None, equipment_access=None):
+def __applyConfig(equipment,filename, equipment_access=None,source_server=None,port=22):
+	'''Apply configuration file on equipment
 
-	#validate filename
-	path = os.path.abspath(TFTPBOOT_FILES_PATH+rel_filename)
-	if not path.startswith(TFTPBOOT_FILES_PATH):
-		raise exceptions.InvalidFilenameException(rel_filename)
+	Args:
+		equipment: networkapi.equipamento.Equipamento()
+		filename: relative file path from TFTPBOOT_FILES_PATH to apply in equipment
+		equipment_access: networkapi.equipamento.EquipamentoAcesso() to use
+		source_server: source TFTP server address
+		port: ssh tcp port
 
-	if equipment_access==None:
-		try:
-			equipment_access = EquipamentoAcesso.search(None, equipment, "ssh").uniqueResult()
-		except e:
-			log.error("Access type %s not found for equipment %s." % ("ssh", equipment.nome))
-			raise exceptions.InvalidEquipmentAccessException()
+	Returns:
+		equipment output
 
-	with distributedlock(lockvar):
-		return applyConfig(equipment, rel_filename, equipment_access, tftpserver)
+	Raises:
+	'''
 
-def create_connnection(equipment,equipment_access, port=22):
+	if source_server == None:
+		source_server = TFTP_SERVER_ADDR
+	
+	equip_module = load_module_for_equipment_config(equipment)
+
+	remote_conn = create_ssh_connnection(equipment, equipment_access)
+	channel = remote_conn.invoke_shell()
+	equip_module.ensure_privilege_level(channel, equipment_access.enable_pass)
+	equip_output = equip_module.copyScriptFileToConfig(channel,source_server,filename)
+	remote_conn.close()
+	return equip_output
+	
+def create_ssh_connnection(equipment,equipment_access, port=22):
+	'''Connects to equipment via ssh
+
+	Args:
+		equipment: networkapi.equipamento.Equipamento()
+		equipment_access: networkapi.equipamento.EquipamentoAcesso() to use
+		port: ssh tcp port
+
+	Returns:
+		paramiko.SSHClient object
+
+	Raises:
+		IOError: if cannot connect to host
+		Exception: for other unhandled exceptions
+	'''
 
 	if equipment_access==None:
 		try:
@@ -82,8 +108,96 @@ def create_connnection(equipment,equipment_access, port=22):
 
 	return remote_conn
 
-def load_module_for_equipment_config(equipment):
+def create_file_from_script(script, prefix_name=""):
+	'''Creates a file with script content
 
+	Args:
+		script: string with commands script
+		prefix_name: prefix to use in filename
+
+	Returns:
+		file name created with path relative to networkapi.settings.CONFIG_FILES_PATH
+
+	Raises:
+		IOError: if cannot write file
+	'''
+
+	if prefix_name == "":
+		prefix_name = "script_reqid_"
+
+	#validate filename
+	path = os.path.abspath(CONFIG_FILES_PATH+prefix_name)
+	if not path.startswith(CONFIG_FILES_PATH):
+		raise exceptions.InvalidFilenameException(prefix_name)
+
+	request_id = getattr(local, 'request_id', NO_REQUEST_ID)
+	filename_out = prefix_name+str(request_id)
+	filename_to_save = CONFIG_FILES_PATH+filename_out
+
+	#Save new file
+	try:
+		file_handle = open(filename_to_save, 'w')
+		file_handle.write(script)
+		file_handle.close()
+	except IOError, e:
+		log.error("Error writing to config file: %s" % filename_to_save)
+		raise e
+
+	return filename_out
+
+def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tftpserver=None, equipment_access=None):
+	'''Apply configuration file on equipment
+
+	Args:
+		rel_filename: relative file path from TFTPBOOT_FILES_PATH to apply in equipment
+		equipment: networkapi.equipamento.Equipamento() or Equipamento().id
+		lockvar: distributed lock variable to use when applying config to equipment
+		equipment_access: networkapi.equipamento.EquipamentoAcesso() to use
+		tftpserver: source TFTP server address
+
+	Returns:
+		equipment output
+
+	Raises:
+	'''
+
+	#validate filename
+	path = os.path.abspath(TFTPBOOT_FILES_PATH+rel_filename)
+	if not path.startswith(TFTPBOOT_FILES_PATH):
+		raise exceptions.InvalidFilenameException(rel_filename)
+
+	if type(equipment) is int:
+		equipment = Equipamento.get_by_pk(equipment)
+	elif type(equipment) is Equipamento:
+		pass
+	else:
+		log.error("Invalid data for equipment")
+		raise api_exceptions.NetworkAPIException()
+
+	if equipment_access==None:
+		try:
+			equipment_access = EquipamentoAcesso.search(None, equipment, "ssh").uniqueResult()
+		except e:
+			log.error("Access type %s not found for equipment %s." % ("ssh", equipment.nome))
+			raise exceptions.InvalidEquipmentAccessException()
+
+	with distributedlock(lockvar):
+		return __applyConfig(equipment, rel_filename, equipment_access, tftpserver)
+
+def load_module_for_equipment_config(equipment):
+	'''Loads equipment plugin module based on equipment model/brand.
+	Module name is networkapi.api_deploy.BRAND.MODEL.commands if exists or networkapi.deploy.BRAND.Generic.py
+	TODO: Plugin modules should inherit networkapi.api_deploy.models.Plugin() class
+
+	Args:
+		equipment: networkapi.equipamento.Equipamento()
+
+	Returns:
+		loaded module
+
+	Raises:
+		LoadEquipmentModuleException: if not able to load module
+	'''
 	nome_modelo = equipment.modelo.nome
 	nome_marca = equipment.modelo.marca.nome
 	module_generic = "networkapi.api_deploy."+nome_marca+".Generic"
@@ -117,18 +231,3 @@ def load_module_for_equipment_config(equipment):
 		raise exceptions.LoadEquipmentModuleException(module_name)
 
 	return loaded_module
-
-def applyConfig(equipment,filename, equipment_access=None,tftpserver=None,port=22):
-
-    if tftpserver == None:
-    	tftpserver = TFTP_SERVER_ADDR
-	
-	equip_module = load_module_for_equipment_config(equipment)
-
-	remote_conn = create_connnection(equipment, equipment_access)
-	channel = remote_conn.invoke_shell()
-	equip_module.ensure_privilege_level(channel, equipment_access.enable_pass)
-	switch_output = equip_module.copyTftpToConfig(channel,tftpserver,filename)
-	remote_conn.close()
-	return switch_output
-	
