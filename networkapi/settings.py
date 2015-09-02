@@ -17,12 +17,21 @@
 
 
 import os
+import sys
 import logging
 import newrelic.agent
-
 from networkapi.log import Log
 
-newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
+# Include base path in system path for Python old.
+syspath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+if not syspath in sys.path:
+    sys.path.insert(0, syspath)
+
+def LOCAL_FILES(path):
+    new_path = os.path.abspath(os.path.join(__file__, path))
+    return new_path
+
+#newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -56,7 +65,7 @@ DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
-NETWORKAPI_MEMCACHE_HOSTS = os.getenv("NETWORKAPI_MEMCACHE_HOSTS",['127.0.0.1:11211'])
+NETWORKAPI_MEMCACHE_HOSTS = os.getenv("NETWORKAPI_MEMCACHE_HOSTS",'127.0.0.1:11211')
 
 CACHES = {
     'default': {
@@ -64,6 +73,7 @@ CACHES = {
         'LOCATION': NETWORKAPI_MEMCACHE_HOSTS.split(',')
     }
 }
+
 
 # Diretório dos arquivos dos scripts
 SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
@@ -214,7 +224,6 @@ INSTALLED_APPS = (
     #    'django.contrib.contenttypes',
     #    'django.contrib.sessions',
     #    'django.contrib.sites',
-    'django_extensions',
     'networkapi.ambiente',
     'networkapi.equipamento',
     'networkapi.eventlog',
@@ -237,6 +246,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
+    'django_extensions',
 )
 
 
