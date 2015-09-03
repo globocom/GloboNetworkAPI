@@ -188,8 +188,8 @@ Apache ActiveMQ ™ is the most popular and powerful open source messaging and I
 
 Example configuration on ``settings.py``::
 
-	QUEUE_DESTINATION = "/topic/queue_name"
-	QUEUE_BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false"
+	BROKER_DESTINATION = "/topic/queue_name"
+	BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false"
 
 Usage::
 

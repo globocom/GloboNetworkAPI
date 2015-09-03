@@ -211,6 +211,9 @@ class Vlan(BaseModel):
     acl_valida_v6 = models.BooleanField()
     ativada = models.BooleanField()
 
+    acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
+    acl_draft_v6 = models.TextField(blank=True, null=True, db_column='acl_draft_v6')
+
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
         managed = True

@@ -172,3 +172,42 @@ class NetworkInactiveError(CustomException):
 
     def __init__(self, cause=u'Unable to remove the network because it is inactive.', message=None):
         CustomException.__init__(self, cause, message)
+
+class EnvironmentNotFoundError(CustomException):
+
+    """returns exception to Environment research by primary key."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
+
+class EnvironmentEnvironmentVipNotFoundError(CustomException):
+
+    """returns exception to EnvironmentEnvironmentVip research by primary key."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
+
+class EnvironmentEnvironmentVipDuplicatedError(CustomException):
+
+    """returns exception to EnvironmentEnvironmentVip duplicated."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
+
+class EnvironmentEnvironmentVipError(CustomException):
+
+    """returns exception to EnvironmentEnvironmentVip error."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)
+
+
+class EnvironmentEnvironmentServerPoolLinked(CustomException):
+
+    """returns exception to EnvironmentEnvironmentVip error."""
+
+    def __init__(self, cause, message=None):
+        CustomException.__init__(self, cause, message)

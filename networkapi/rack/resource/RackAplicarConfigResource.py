@@ -590,6 +590,6 @@ class RackAplicarConfigResource(RestResource):
             return self.response_error(379, rack_id)
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(383)
 
 

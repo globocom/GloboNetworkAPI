@@ -31,7 +31,7 @@ from networkapi.util import mount_ipv4_string, mount_ipv6_string
 from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.equipamento.models import TipoEquipamento
 from networkapi.exception import InvalidValueError
-
+from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
 
 class NetworkIPv4Error(Exception):
 
@@ -319,7 +319,7 @@ class NetworkIPv4(BaseModel):
             raise NetworkIPv4Error(e, u'Error on update NetworkIPv4.')
 
     def add_network_ipv4(self, user, id_vlan, network_type, evip, prefix=None):
-        """Insert new NetworkIPv4 in database
+        """Allocate and Insert new NetworkIPv4 in database
             @return: Vlan map
             @raise VlanNotFoundError: Vlan is not registered.
             @raise VlanError: Failed to search for the Vlan
@@ -348,69 +348,72 @@ class NetworkIPv4(BaseModel):
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
 
-            # Find all networks ralated to environment
-            nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
+            #Needs to lock IPv4 listing when there are any allocation in progress
+            #If not, it will allocate two networks with same range
+            with distributedlock(LOCK_ENVIRONMENT % self.vlan.ambiente.id):
+                # Find all networks ralated to environment
+                nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
 
-            # Cast to API class
-            networksv4 = set([(IPv4Network(
-                        '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
+                # Cast to API class
+                networksv4 = set([(IPv4Network(
+                            '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
 
-            # For each configuration founded in environment
-            for config in configs:
+                # For each configuration founded in environment
+                for config in configs:
 
-                # If already get a network stop this
-                if stop:
-                    break
+                    # If already get a network stop this
+                    if stop:
+                        break
 
-                # Need to be IPv4
-                if config.ip_config.type == IP_VERSION.IPv4[0]:
+                    # Need to be IPv4
+                    if config.ip_config.type == IP_VERSION.IPv4[0]:
 
-                    net4 = IPv4Network(config.ip_config.subnet)
+                        net4 = IPv4Network(config.ip_config.subnet)
 
-                    if prefix is not None:
-                        new_prefix = int(prefix)
+                        if prefix is not None:
+                            new_prefix = int(prefix)
+                        else:
+                            new_prefix = int(config.ip_config.new_prefix)
+
+                        self.log.info(u"Prefix that will be used: %s" % new_prefix)
+                        # For each subnet generated with configs
+                        for subnet in net4.iter_subnets(new_prefix=new_prefix):
+
+                            net_found = True
+                            for network in networksv4:
+                                if subnet in network:
+                                    net_found = False
+
+                            # Checks if the network generated is UNUSED
+                            if net_found:
+
+                                #Checks if it is subnet/supernet of any existing network
+                                in_range = network_in_range(self.vlan, subnet, type_ipv4)
+                                if not in_range:
+                                    continue
+
+                                # If not this will be USED
+                                network_found = subnet
+
+                                if network_type:
+                                    internal_network_type = network_type
+                                elif config.ip_config.network_type is not None:
+                                    internal_network_type = config.ip_config.network_type
+                                else:
+                                    self.log.error(
+                                        u'Parameter tipo_rede is invalid. Value: %s', network_type)
+                                    raise InvalidValueError(
+                                        None, 'network_type', network_type)
+
+                                # Stop generation logic
+                                stop = True
+                                break
+
+                    # If not IPv4
                     else:
-                        new_prefix = int(config.ip_config.new_prefix)
-
-                    self.log.info(u"Prefix that will be used: %s" % new_prefix)
-                    # For each subnet generated with configs
-                    for subnet in net4.iter_subnets(new_prefix=new_prefix):
-
-                        net_found = True
-                        for network in networksv4:
-                            if subnet in network:
-                                net_found = False
-
-                        # Checks if the network generated is UNUSED
-                        if net_found:
-
-                            #Checks if it is subnet/supernet of any existing network
-                            in_range = network_in_range(self.vlan, subnet, type_ipv4)
-                            if not in_range:
-                                continue
-
-                            # If not this will be USED
-                            network_found = subnet
-
-                            if network_type:
-                                internal_network_type = network_type
-                            elif config.ip_config.network_type is not None:
-                                internal_network_type = config.ip_config.network_type
-                            else:
-                                self.log.error(
-                                    u'Parameter tipo_rede is invalid. Value: %s', network_type)
-                                raise InvalidValueError(
-                                    None, 'network_type', network_type)
-
-                            # Stop generation logic
-                            stop = True
-                            break
-
-                # If not be IPv4
-                else:
-                    # Throw an exception
-                    raise ConfigEnvironmentInvalidError(
-                        None, u'Invalid Configuration')
+                        # Throw an exception
+                        raise ConfigEnvironmentInvalidError(
+                            None, u'Invalid Configuration')
 
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')

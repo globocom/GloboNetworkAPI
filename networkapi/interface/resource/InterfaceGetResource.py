@@ -31,16 +31,36 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 def get_new_interface_map(interface):
     int_map = model_to_dict(interface)
+    int_map['nome'] = interface.interface
     int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
     int_map['equipamento_nome'] = interface.equipamento.nome
     int_map['marca'] = interface.equipamento.modelo.marca_id
+    int_map['protegida'] = interface.protegida
+    int_map['tipo'] = interface.tipo.tipo
+    int_map['vlan'] = interface.vlan_nativa
+    int_map['sw_router'] = None
+    if interface.channel is not None:
+        int_map['channel'] = interface.channel.nome
+        int_map['lacp'] = interface.channel.lacp
+        int_map['id_channel'] = interface.channel.id
+        int_map['sw_router'] = True
+    elif interface.ligacao_front is not None:
+        try:
+            sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
+            if sw_router.channel is not None:
+                int_map['channel'] = sw_router.channel.nome
+                int_map['lacp'] = sw_router.channel.lacp
+                int_map['id_channel'] = sw_router.channel.id
+        except:
+            pass
     if interface.ligacao_front is not None:
         int_map['nome_ligacao_front'] = interface.ligacao_front.interface
-        int_map[
-            'nome_equip_l_front'] = interface.ligacao_front.equipamento.nome
+        int_map['nome_equip_l_front'] = interface.ligacao_front.equipamento.nome
+        int_map['id_ligacao_front'] = interface.ligacao_front.id
     if interface.ligacao_back is not None:
         int_map['nome_ligacao_back'] = interface.ligacao_back.interface
         int_map['nome_equip_l_back'] = interface.ligacao_back.equipamento.nome
+        int_map['id_ligacao_back'] = interface.ligacao_back.id
 
     return int_map
 
@@ -50,14 +70,15 @@ class InterfaceGetResource(RestResource):
     log = Log('InterfaceGetResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        """Treat GET requests to list interface by ID
+        """Treat GET requests to list interface by ID or by channel
 
         URL: interface/<id_interface>/get/
+             interface/get-by-channel/<channel_name>/
         """
 
         try:
 
-            # Business Validations
+            self.log.info("GET Interface")
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
@@ -66,13 +87,24 @@ class InterfaceGetResource(RestResource):
                 raise UserNotAuthorizedError(None)
 
             # Get id_interface param
-            id_interface = kwargs.get('id_interface')
+            interface = kwargs.get('id_interface')
+            channel = kwargs.get('channel_name')
+
+            id_interface = None
+            equipInterface_list = []
 
             # Valid Interface ID
-            if not is_valid_int_greater_zero_param(id_interface):
-                self.log.error(
-                    u'The id_interface parameter is not a valid value: %s.', id_interface)
-                raise InvalidValueError(None, 'id_interface', id_interface)
+            if interface is not None:
+                if not is_valid_int_greater_zero_param(interface):
+                    self.log.error(u'The id_interface parameter is not a valid value: %s.', interface)
+                    raise InvalidValueError(None, 'id_interface', interface)
+                id_interface = interface
+
+            if channel is not None:
+                interfaces = Interface.objects.all().filter(channel__nome=channel)
+                for interf in interfaces:
+                    equipInterface_list.append(get_new_interface_map(interf))
+                return self.response(dumps_networkapi({'interface': equipInterface_list}))
 
             # Checks if interface exists in database
             interface = Interface.get_by_pk(id_interface)

@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -316,6 +315,13 @@ error_messages = {
     389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s.',
     390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
     391: u'Failure accessing Foreman server: %s',
+    392: u'Environment is already associated with the environment vip',
+    393: u'Environment is not associated with the environment vip',
+    394: u'O ambiente %s não pode ser desvinculado pois existem server pools com reals vinculados a este ambiente.',
+    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".',
+    397: u'O Rack, que o servidor está, não foi cadastrado.',
+    400: u'Nao foi possivel adicionar o Rack',
+    401: u'As mudancas nao foram salvas',
 }
 
 

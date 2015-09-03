@@ -611,6 +611,17 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
+-- -----------------------------------------------------
+-- Table `telecom`.`tipo_interface`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interface` (
+  `id_tipo_interface` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`id_tipo_interface`),
+  UNIQUE INDEX `tipo_unique` (`tipo` ASC))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
 
 -- -----------------------------------------------------
 -- Table `networkapi`.`interfaces`
@@ -623,6 +634,9 @@ CREATE TABLE IF NOT EXISTS `networkapi`.`interfaces` (
   `id_interface` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ligacao_front` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_ligacao_back` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `vlan_nativa` VARCHAR(200) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT 1,
+  `id_tipo_interface` INT(10) UNSIGNED NOT NULL,
+  `id_channel` INT(10) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`id_interface`),
   UNIQUE INDEX `uniq_interface_id_equip` (`interface` ASC, `id_equip` ASC),
   INDEX `fk_interfaces_equipamentos` (`id_equip` ASC),
@@ -639,7 +653,15 @@ CREATE TABLE IF NOT EXISTS `networkapi`.`interfaces` (
     ON UPDATE CASCADE,
   CONSTRAINT `fk_interfaces_interfaces_front`
     FOREIGN KEY (`id_ligacao_front`)
-    REFERENCES `networkapi`.`interfaces` (`id_interface`)
+    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_interfaces_tipo`
+    FOREIGN KEY (`id_tipo_interface`)
+    REFERENCES `telecom`.`tipo_interface` (`id_tipo_interface`)
+    ON UPDATE CASCADE)
+  CONSTRAINT `fk_interfaces_port_channel`
+    FOREIGN KEY (`id_channel`)
+    REFERENCES `telecom`.`port_channel` (`id_port_channel`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -1195,6 +1217,7 @@ DEFAULT CHARACTER SET = utf8;
 CREATE TABLE IF NOT EXISTS `networkapi`.`racks` (
   `id_rack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `numero` INT(10) UNSIGNED NOT NULL,
+  `nome` VARCHAR(4) NOT NULL UNIQUE,
   `mac_sw1` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `mac_sw2` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `mac_ilo` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
@@ -1202,6 +1225,7 @@ CREATE TABLE IF NOT EXISTS `networkapi`.`racks` (
   `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
   `config` tinyint(1) NOT NULL,
+  `create_vlan_amb` tinyint(1) NOT NULL,
   INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
   INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
   INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
@@ -1248,6 +1272,51 @@ CREATE TABLE IF NOT EXISTS `networkapi`.`ambiente_rack` (
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `telecom`.`interface_do_ambiente`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`interface_do_ambiente` (
+  `id_int_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  `id_interface` INT(10) NOT NULL,
+  `vlans` VARCHAR(200) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  PRIMARY KEY (`id_int_ambiente`),
+  UNIQUE INDEX `interface_do_ambiente_unique` (`id_ambiente` ASC, `id_interface` ASC),
+  INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
+  INDEX `fk_ambiente_rack_interface` (`id_interface` ASC),
+  CONSTRAINT `fk_ambiente_rack_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_rack_interface`
+    FOREIGN KEY (`id_interface`)
+    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `telecom`.`port_channel`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `telecom`.`port_channel` (
+  `id_port_channel` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(100) NOT NULL,
+  `lacp` TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_port_channel`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
+
+LOCK TABLES `tipo_interface` WRITE;
+INSERT INTO `tipo_interface` (`tipo`) VALUES ('access');
+INSERT INTO `tipo_interface` (`tipo`) VALUES ('trunk');
 
 
 LOCK TABLES `grupos` WRITE;

@@ -45,7 +45,6 @@ class EnvironmentGetByEquipResource(RestResource):
             # Commons Validations
 
             # User permission
-
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
@@ -70,11 +69,16 @@ class EnvironmentGetByEquipResource(RestResource):
                 env_map["divisao_dc_name"] = env.divisao_dc.nome
                 env_map["is_router"] = environment.is_router
 
+                try:
+                    if not environment.min_num_vlan_1==None and not environment.max_num_vlan_1==None:
+                        env_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_1)
+                except:
+                    env_map['range'] = "Nao definido"
+
                 if env.filter is not None:
                     env_map["filter_name"] = env.filter.name
 
                 lists_aux.append(env_map)
-
             # Return XML
             environment_list = dict()
             environment_list["ambiente"] = lists_aux

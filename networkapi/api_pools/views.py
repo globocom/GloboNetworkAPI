@@ -21,15 +21,18 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.conf import settings
+from django.forms.models import model_to_dict
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedException
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
     update_environment_option_pool, delete_environment_option_pool, delete_option_pool
-from networkapi.ip.models import IpEquipamento
+from networkapi.error_message_utils import error_messages
+from networkapi.ip.models import IpEquipamento, Ip, Ipv6
 from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
@@ -38,7 +41,7 @@ from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSe
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
     VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, OptionPoolSerializer, OptionPoolEnvironmentSerializer
 from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.ambiente.models import Ambiente, EnvironmentVip
+from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvironmentVip
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, \
@@ -784,9 +787,17 @@ def save_reals(request):
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
 
+
+        #valid if reals can linked by environment/environment vip relationship rule
+        reals_can_associate_server_pool(sp, list_server_pool_member)
+
         # Save reals
         save_server_pool_member(request.user, sp, list_server_pool_member)
         return Response()
+
+    except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
+        log.error(exception)
+        raise exception
 
     except exceptions.ScriptAddPoolException, exception:
         log.error(exception)
@@ -865,7 +876,11 @@ def save(request):
         # healthcheck = current_healthcheck
 
         if has_identifier.count() > 0:
-            raise exceptions.InvalidIdentifierPoolException()
+            raise exceptions.InvalidIdentifierAlreadyPoolException()
+
+        #Valid fist caracter is not is number
+        if identifier[0].isdigit():
+            raise exceptions.InvalidIdentifierFistDigitPoolException()
 
         healthcheck_identifier = ''
         if healthcheck_destination is None:
@@ -891,6 +906,9 @@ def save(request):
         # Prepare and valid to save reals
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
+
+        reals_can_associate_server_pool(sp, list_server_pool_member)
+
         # Save reals
         pool_member = save_server_pool_member(request.user, sp, list_server_pool_member)
 
@@ -912,29 +930,41 @@ def save(request):
         )
         data["server_pool_members"] = serializer_server_pool_member.data
 
-        return Response(data)
+        return Response(data, status=status.HTTP_201_CREATED)
 
-    except exceptions.ScriptAddPoolException, exception:
+    except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
         log.error(exception)
         raise exception
 
-    except exceptions.InvalidIdentifierPoolException, exception:
-        log.error(exception)
+    except exceptions.ScriptAddPoolException, exception:
+        log.error(exception.default_detail)
+        raise exception
+
+    except exceptions.InvalidIdentifierAlreadyPoolException, exception:
+        log.error(exception.default_detail)
+        raise exception
+
+    except exceptions.InvalidIdentifierFistDigitPoolException, exception:
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.UpdateEnvironmentVIPException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.UpdateEnvironmentServerPoolMemberException, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.IpNotFoundByEnvironment, exception:
-        log.error(exception)
+        log.error(exception.default_detail)
         raise exception
 
     except exceptions.InvalidRealPoolException, exception:
+        log.error(exception.default_detail)
+        raise exception
+
+    except UpdateEnvironmentPoolCreatedException, exception:
         log.error(exception)
         raise exception
 
@@ -1085,6 +1115,42 @@ def list_all_options(request):
     except ObjectDoesNotExist, exception:
         log.error(exception)
         raise exceptions.OptionPoolDoesNotExistException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def list_environment_environment_vip_related(request):
+
+    try:
+        environment_list = []
+
+        env_list_net_v4_related = Ambiente.objects.filter(vlan__networkipv4__ambient_vip__id__isnull=False)\
+            .order_by('divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome')\
+            .select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')\
+            .distinct()
+
+        env_list_net_v6_related = Ambiente.objects.filter(vlan__networkipv6__ambient_vip__id__isnull=False)\
+            .order_by('divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome')\
+            .select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')\
+            .distinct()
+
+        environment_list.extend(env_list_net_v4_related)
+        environment_list.extend(env_list_net_v6_related)
+
+        environment_list = set(environment_list)
+
+        environment_list_dict = []
+
+        for environment in environment_list:
+            env_map = model_to_dict(environment)
+            env_map["grupo_l3_name"] = environment.grupo_l3.nome
+            env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
+            env_map["divisao_dc_name"] = environment.divisao_dc.nome
+            if environment.filter is not None:
+                    env_map["filter_name"] = environment.filter.name
+
+            environment_list_dict.append(env_map)
+
+        return Response(environment_list_dict)
 
     except Exception, exception:
         log.error(exception)
@@ -1330,6 +1396,136 @@ def __list_environment_options_by_pk(request, environment_option_id):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def get_available_ips_to_add_server_pool(request, equip_name, id_ambiente):
+
+    # Start with alls
+     # Get Equipment
+
+    lista_ips_equip, lista_ipsv6_equip = _get_available_ips_to_add_server_pool(equip_name, id_ambiente)
+    # lists and dicts for return
+
+    lista_ip_entregue = list()
+    lista_ip6_entregue = list()
+
+    for ip in lista_ips_equip:
+        dict_ips4 = dict()
+        dict_network = dict()
+
+        dict_ips4['id'] = ip.id
+        dict_ips4['ip'] = "%s.%s.%s.%s" % (
+            ip.oct1, ip.oct2, ip.oct3, ip.oct4)
+
+        dict_network['id'] = ip.networkipv4_id
+        dict_network["network"] = "%s.%s.%s.%s" % (
+            ip.networkipv4.oct1, ip.networkipv4.oct2, ip.networkipv4.oct3, ip.networkipv4.oct4)
+        dict_network["mask"] = "%s.%s.%s.%s" % (
+            ip.networkipv4.mask_oct1, ip.networkipv4.mask_oct2, ip.networkipv4.mask_oct3, ip.networkipv4.mask_oct4)
+
+        dict_ips4['network'] = dict_network
+
+        lista_ip_entregue.append(dict_ips4)
+
+    for ip in lista_ipsv6_equip:
+        dict_ips6 = dict()
+        dict_network = dict()
+
+        dict_ips6['id'] = ip.id
+        dict_ips6['ip'] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
+            ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
+
+        dict_network['id'] = ip.networkipv6.id
+        dict_network["network"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
+            ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
+        dict_network["mask"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
+            ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
+
+        dict_ips6['network'] = dict_network
+
+        lista_ip6_entregue.append(dict_ips6)
+
+    lista_ip_entregue = lista_ip_entregue if len(
+        lista_ip_entregue) > 0 else None
+    lista_ip6_entregue = lista_ip6_entregue if len(
+        lista_ip6_entregue) > 0 else None
+
+    return Response({'list_ipv4': lista_ip_entregue, 'list_ipv6': lista_ip6_entregue})
+
+
+def _get_available_ips_to_add_server_pool(equip_name, id_ambiente):
+
+    equip = Equipamento.get_by_name(equip_name)
+
+    lista_ips_equip = set()
+    lista_ipsv6_equip = set()
+
+    environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(id_ambiente)
+    environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
+
+    # # Get all IPV4's Equipment
+    for environment in environment_list_related:
+        for ipequip in equip.ipequipamento_set.select_related().all():
+            network_ipv4 = ipequip.ip.networkipv4
+            if network_ipv4.vlan.ambiente == environment:
+                lista_ips_equip.add(ipequip.ip)
+
+    # # Get all IPV6's Equipment
+    for environment in environment_list_related:
+        for ipequip in equip.ipv6equipament_set.select_related().all():
+            network_ipv6 = ipequip.ip.networkipv6
+            if network_ipv6.vlan.ambiente == environment:
+                lista_ipsv6_equip.add(ipequip.ip)
+
+    return lista_ips_equip, lista_ipsv6_equip
+
+
+def _get_server_pool_member_ipv4_ipv6(list_server_pool_member):
+
+    ipv4_list = []
+    ipv6_list = []
+
+    for spm in list_server_pool_member:
+        ip = spm.get('ip')
+        ip_id = spm.get('id')
+
+        if len(ip) <= 15:
+            ipv4 = Ip.get_by_pk(ip_id)
+            ipv4_list.append(ipv4)
+        else:
+            ipv6 = Ipv6.get_by_pk(ip_id)
+            ipv6_list.append(ipv6)
+
+    return ipv4_list, ipv6_list
+
+
+def reals_can_associate_server_pool(server_pool, list_server_pool_member):
+
+    try:
+        environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(server_pool.environment.id)
+        environment_vip_list_name = ', '.join([envvip.name for envvip in environment_vip_list])
+
+        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
+
+        ipv4_list, ipv6_list = _get_server_pool_member_ipv4_ipv6(list_server_pool_member)
+
+        for ipv4 in ipv4_list:
+            environment = Ambiente.objects.filter(vlan__networkipv4__ip=ipv4).uniqueResult()
+            if environment not in environment_list_related:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip_list_name)
+                )
+
+        for ipv6 in ipv6_list:
+            environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=ipv6).uniqueResult()
+            if environment not in environment_list_related:
+                raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                    error_messages.get(396) % (server_pool.environment.name, ipv6.ip_formated, environment_vip_list_name)
+                )
+
+    except Exception, error:
+        log.error(error)
+        raise error
 
 def __update_environment_options_by_pk(request, environment_option_id):
     try:
@@ -1454,5 +1650,4 @@ def save_environment_options(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
-
 

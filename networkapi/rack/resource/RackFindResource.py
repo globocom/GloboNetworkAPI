@@ -23,6 +23,8 @@ from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.exception import InvalidValueError
+
 
 class RackFindResource(RestResource):
 
@@ -44,14 +46,15 @@ class RackFindResource(RestResource):
                     u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
-            rack_list = []
-            for rack in Rack.objects.all():
-                rack_list.append(model_to_dict(rack))
+            nome = kwargs.get('rack_name')
+            rack = Rack()
+            rack = rack.get_by_name(nome)
+            rack = model_to_dict(rack)
 
-            return self.response(dumps_networkapi({'rack': rack_list}))
+            return self.response(dumps_networkapi({'rack': rack}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(379)
