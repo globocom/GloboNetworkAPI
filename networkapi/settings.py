@@ -19,7 +19,6 @@
 import os
 import sys
 import logging
-import newrelic.agent
 from networkapi.log import Log
 
 # Include base path in system path for Python old.
@@ -31,7 +30,11 @@ def LOCAL_FILES(path):
     new_path = os.path.abspath(os.path.join(__file__, path))
     return new_path
 
-newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
+NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
+
+if NETWORKAPI_USE_NEWRELIC:
+    import newrelic.agent
+    newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
