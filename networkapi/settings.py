@@ -180,6 +180,8 @@ if DEBUG:
     LOG_LEVEL = logging.DEBUG
 else:
     LOG_LEVEL = logging.INFO
+
+
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
 LOG_USE_STDOUT = False
