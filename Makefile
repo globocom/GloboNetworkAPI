@@ -24,7 +24,7 @@ run: # run local server
 	@python manage.py runserver 0.0.0.0:8000 $(filter-out $@,$(MAKECMDGOALS))
 
 shell: # run django shell
-	@python manage.py shell
+	@python manage.py shell_plus
 
 clean:
 	@echo "Cleaning..."
