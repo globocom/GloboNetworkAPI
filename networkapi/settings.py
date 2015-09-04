@@ -21,6 +21,10 @@ import sys
 import logging
 from networkapi.log import Log
 
+reload(sys)
+
+sys.setdefaultencoding('utf-8')
+
 # Include base path in system path for Python old.
 syspath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 if not syspath in sys.path:
@@ -31,6 +35,31 @@ def LOCAL_FILES(path):
     return new_path
 
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
+
+# Aplicação rodando em modo Debug
+#DEBUG = False
+DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
+
+NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
+
+# Configuração do arquivo de log do projeto.
+LOG_FILE = NETWORKAPI_LOG_FILE
+if DEBUG:
+    LOG_LEVEL = logging.DEBUG
+else:
+    LOG_LEVEL = logging.INFO
+
+
+LOG_DAYS = 10
+LOG_SHOW_SQL = False
+LOG_USE_STDOUT = False
+LOG_SHOW_TRACEBACK = True
+
+# Inicialização do log
+# O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
+# O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
+# O terceiro parâmetro é o nível de detalhamento do Log.
+Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 if NETWORKAPI_USE_NEWRELIC:
     import newrelic.agent
@@ -61,9 +90,6 @@ DATABASES = {
 
 from networkapi.models.models_signal_receiver import *
 
-# Aplicação rodando em modo Debug
-#DEBUG = False
-DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
@@ -170,22 +196,6 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'ry@zgop%w80_nu83#!tbz)m&7*i@1)d-+ki@5^d#%6-&^216sg'
-
-
-NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
-
-# Configuração do arquivo de log do projeto.
-LOG_FILE = NETWORKAPI_LOG_FILE
-if DEBUG:
-    LOG_LEVEL = logging.DEBUG
-else:
-    LOG_LEVEL = logging.INFO
-
-
-LOG_DAYS = 10
-LOG_SHOW_SQL = False
-LOG_USE_STDOUT = False
-LOG_SHOW_TRACEBACK = True
 
 VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
@@ -365,16 +375,6 @@ QUEUE_BROKER_CONNECT_TIMEOUT = int(NETWORKAPI_BROKER_CONNECT_TIMEOUT)
 ###################################
 
 PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
-import sys
-reload(sys)
-
-sys.setdefaultencoding('utf-8')
-
-# Inicialização do log
-# O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
-# O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
-# O terceiro parâmetro é o nível de detalhamento do Log.
-Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 ###################################
 # PATH RACKS
