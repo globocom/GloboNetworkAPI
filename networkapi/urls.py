@@ -541,6 +541,7 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
+<<<<<<< HEAD
    url(r'^vlan/', include('networkapi.vlan.urls')),
    url(r'^tipoacesso/$', access_type_resource.handle_request,
        name='access_type.insert.search'),
@@ -899,7 +900,9 @@ urlpatterns += patterns('',
        name='interface.update.remove.by.pk'),
    url(r'^interface/(?P<id_interface>[^/]+)/get/$', interface_get_resource.handle_request,
        name='interface.get.by.pk'),
-   url(r'^interface/get-by-channel/(?P<channel_name>[^/]+)[/]?$', interface_get_resource.handle_request,
+   url(r'^interface/get/(?P<channel_name>[^/]+)/(?P<id_equipamento>[^/]+)[/]?$', interface_get_resource.handle_request,
+       name='interface.list.by.equip'),
+   url(r'^interface/get-by-channel/(?P<channel_name>[^/]+)[/]/?$', interface_get_resource.handle_request,
        name='interface.get.by.pk'),
    url(r'^interface/equipamento/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request,
        name='interface.search.by.equipment'),

@@ -26,6 +26,51 @@ from networkapi.util import convert_string_or_int_to_boolean
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
 
+
+def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb):
+
+    cont = []
+
+    var = interface.get_by_pk(int(var))
+
+    if var.channel is None:
+        var.channel = port_channel
+    elif not var.channel.id==port_channel.id:
+        raise InterfaceError("Interface %s já está em um Channel" % var.interface)
+
+    for i in interface.search(var.equipamento.id):
+        if i.channel is not None and not i.channel.id==port_channel.id:
+            raise InterfaceError("Equipamento %s já possui um Channel" % var.equipamento.nome)
+
+    if cont is []:
+        cont.append(int(var.equipamento.id))
+    elif not var.equipamento.id in cont:
+        cont.append(int(var.equipamento.id))
+        if len(cont) > 2:
+            raise InterfaceError("Mais de dois equipamentos foram selecionados")
+
+    var.tipo = int_type
+    var.vlan_nativa = vlan
+    var.save(user)
+
+    if "trunk" in int_type.tipo:
+        interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
+        for int_env in interface_list:
+            int_env.delete(user)
+        if envs is not None:
+            if not type(envs)==unicode:
+                for env in envs:
+                    amb_int = EnvironmentInterface()
+                    amb_int.interface = var
+                    amb_int.ambiente = amb.get_by_pk(int(env))
+                    amb_int.create(user)
+            else:
+                amb_int = EnvironmentInterface()
+                amb_int.interface = var
+                amb_int.ambiente = amb.get_by_pk(int(envs))
+                amb_int.create(user)
+
+
 class InterfaceChannelResource(RestResource):
 
     log = Log('InterfaceChannelResource')
@@ -67,6 +112,8 @@ class InterfaceChannelResource(RestResource):
             interface = Interface()
             amb = Ambiente()
 
+            cont = []
+
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
             port_channel.create(user)
@@ -80,7 +127,22 @@ class InterfaceChannelResource(RestResource):
                     try:
                         sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
                     except:
-                        raise Exception("Interface não conectada.")
+                        raise InterfaceError("Interface não conectada")
+
+                    if sw_router.channel is not None:
+                        raise InterfaceError("Interface %s já está em um Channel" % sw_router.interface)
+
+                    for i in interface.search(sw_router.equipamento.id):
+                        if i.channel is not None:
+                            raise InterfaceError("Equipamento %s já possui um Channel" % sw_router.equipamento.nome)
+
+                    if cont is []:
+                        cont.append(int(sw_router.equipamento.id))
+                    elif not sw_router.equipamento.id in cont:
+                        cont.append(int(sw_router.equipamento.id))
+                        if len(cont) > 2:
+                            raise InterfaceError("Mais de dois equipamentos foram selecionados")
+
                     if sw_router.ligacao_front is not None:
                         ligacao_front_id = sw_router.ligacao_front.id
                     else:
@@ -128,8 +190,8 @@ class InterfaceChannelResource(RestResource):
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
-        except InterfaceError:
-           return self.response_error(1)
+        except InterfaceError, e:
+           return self.response_error(405, e)
 
     def handle_get(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de um channel.
@@ -159,6 +221,7 @@ class InterfaceChannelResource(RestResource):
             channel = model_to_dict(channel)
 
             return self.response(dumps_networkapi({'channel': channel}))
+
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
@@ -238,6 +301,10 @@ class InterfaceChannelResource(RestResource):
             envs = channel_map.get('envs')
             ids_interface = channel_map.get('ids_interface')
 
+
+            if ids_interface is None:
+                raise InterfaceError("Nenhuma interface selecionada")
+
             if vlan is not None:
                 if int(vlan) < 1 or int(vlan) > 4096:
                     raise InvalidValueError(None, "Vlan" , vlan)
@@ -247,6 +314,7 @@ class InterfaceChannelResource(RestResource):
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
+            cont = []
 
             #buscar interfaces do channel
             interfaces = Interface.objects.all().filter(channel__id=id_channel)
@@ -254,14 +322,31 @@ class InterfaceChannelResource(RestResource):
             for i in interfaces:
                 ids_list.append(i.id)
 
-
-            ids_interface = [ int(x) for x in ids_interface ]
             ids_list = [ int(y) for y in ids_list ]
-            desassociar = set(ids_list) - set(ids_interface)
-            for item in desassociar:
-                item = interface.get_by_pk(int(item))
-                item.channel = None
-                item.save(user)
+            if type(ids_interface) is list:
+                ids_interface = [ int(x) for x in ids_interface ]
+                desassociar = set(ids_list) - set(ids_interface)
+                for item in desassociar:
+                    item = interface.get_by_pk(int(item))
+                    item.channel = None
+                    item.save(user)
+            else:
+                if ids_interface is not None:
+                    ids_interface = int(ids_interface)
+                    if ids_interface is not None:
+                        for item in ids_list:
+                            item = interface.get_by_pk(int(item))
+                            item.channel = None
+                            item.save(user)
+                    else:
+                        for item in ids_list:
+                            if not item== ids_interface:
+                                item = interface.get_by_pk(int(item))
+                                item.channel = None
+                                item.save(user)
+
+
+
 
             #update channel
             port_channel = port_channel.get_by_pk(id_channel)
@@ -272,30 +357,13 @@ class InterfaceChannelResource(RestResource):
             int_type = TipoInterface.get_by_name(str(int_type))
 
             #update interfaces
-            for var in ids_interface:
-                var = interface.get_by_pk(int(var))
-                if var.channel is None:
-                    var.channel = port_channel
-                var.tipo = int_type
-                var.vlan_nativa = vlan
-                var.save(user)
+            if type(ids_interface) is list:
+                for var in ids_interface:
+                    alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
+            else:
+                var = ids_interface
+                alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
 
-                if "trunk" in int_type.tipo:
-                    interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
-                    for int_env in interface_list:
-                        int_env.delete(user)
-                    if envs is not None:
-                        if not type(envs)==unicode:
-                            for env in envs:
-                                amb_int = EnvironmentInterface()
-                                amb_int.interface = var
-                                amb_int.ambiente = amb.get_by_pk(int(env))
-                                amb_int.create(user)
-                        else:
-                            amb_int = EnvironmentInterface()
-                            amb_int.interface = var
-                            amb_int.ambiente = amb.get_by_pk(int(envs))
-                            amb_int.create(user)
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel
@@ -307,5 +375,5 @@ class InterfaceChannelResource(RestResource):
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
-        except InterfaceError:
-           return self.response_error(1)
+        except InterfaceError, e:
+           return self.response_error(406, e)
