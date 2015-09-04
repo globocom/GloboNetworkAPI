@@ -22,7 +22,7 @@ from rest_framework.response import Response
 
 from networkapi.log import Log
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_network.permissions import Read, Write
+from networkapi.api_network.permissions import Read, Write, DeployConfig
 from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer
 
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
