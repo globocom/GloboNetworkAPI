@@ -416,6 +416,12 @@ class NetworkIPv4(BaseModel):
                         raise ConfigEnvironmentInvalidError(
                             None, u'Invalid Configuration')
 
+                # Checks if found any available network
+                if network_found == None:
+                    # If not found, an exception is thrown
+                    raise NetworkIPv4AddressNotAvailableError(
+                        None, u'Unavailable address to create a NetworkIPv4.')
+
                 # Set octs by network generated
                 self.oct1, self.oct2, self.oct3, self.oct4 = str(network_found.network).split('.')
                 # Set block by network generated
@@ -437,12 +443,6 @@ class NetworkIPv4(BaseModel):
 
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
-
-        # Checks if found any available network
-        if network_found == None:
-            # If not found, an exception is thrown
-            raise NetworkIPv4AddressNotAvailableError(
-                None, u'Unavailable address to create a NetworkIPv4.')
 
         # Return vlan map
         vlan_map = dict()
