@@ -283,26 +283,14 @@ def delete(request):
             try:
                 server_pool = ServerPool.objects.get(id=_id)
 
+                if server_pool.pool_created == True:
+                    raise exceptions.PoolConstraintCreatedException()
+
                 if VipPortToPool.objects.filter(server_pool=_id):
                     raise exceptions.PoolConstraintVipException()
 
                 for server_pool_member in server_pool.serverpoolmember_set.all():
-
-                    ipv4 = server_pool_member.ip
-                    ipv6 = server_pool_member.ipv6
-
-                    id_pool = server_pool.id
-                    id_ip = ipv4 and ipv4.id or ipv6 and ipv6.id
-                    port_ip = server_pool_member.port_real
-
                     server_pool_member.delete(request.user)
-
-                    command = settings.POOL_REAL_REMOVE % (id_pool, id_ip, port_ip)
-
-                    code, _, _ = exec_script(command)
-
-                    if code != 0:
-                        raise exceptions.ScriptDeletePoolException()
 
                 server_pool.delete(request.user)
 
