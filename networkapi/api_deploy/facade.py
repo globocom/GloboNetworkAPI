@@ -26,7 +26,7 @@ from networkapi.log import Log
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.plugins.factory import PluginFactory
 
-from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR, CONFIG_FILES_PATH
+from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR, CONFIG_FILES_PATH, CONFIG_FILES_REL_PATH
 
 import os
 import paramiko
@@ -72,7 +72,7 @@ def create_file_from_script(script, prefix_name=""):
 		prefix_name: prefix to use in filename
 
 	Returns:
-		file name created with path relative to networkapi.settings.CONFIG_FILES_PATH
+		file name created with path relative to networkapi.settings.TFTPBOOT_FILES_PATH
 
 	Raises:
 		IOError: if cannot write file
@@ -99,7 +99,7 @@ def create_file_from_script(script, prefix_name=""):
 		log.error("Error writing to config file: %s" % filename_to_save)
 		raise e
 
-	return filename_out
+	return CONFIG_FILES_REL_PATH+filename_out
 
 def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tftpserver=None, equipment_access=None):
 	'''Apply configuration file on equipment
