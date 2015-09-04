@@ -612,9 +612,9 @@ AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_interface`
+-- Table `networkapi`.`tipo_interface`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_interface` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`tipo_interface` (
   `id_tipo_interface` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `tipo` VARCHAR(20) NOT NULL,
   PRIMARY KEY (`id_tipo_interface`),
@@ -653,15 +653,15 @@ CREATE TABLE IF NOT EXISTS `networkapi`.`interfaces` (
     ON UPDATE CASCADE,
   CONSTRAINT `fk_interfaces_interfaces_front`
     FOREIGN KEY (`id_ligacao_front`)
-    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    REFERENCES `networkapi`.`interfaces` (`id_interface`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_interfaces_interfaces_tipo`
     FOREIGN KEY (`id_tipo_interface`)
-    REFERENCES `telecom`.`tipo_interface` (`id_tipo_interface`)
+    REFERENCES `networkapi`.`tipo_interface` (`id_tipo_interface`)
     ON UPDATE CASCADE)
   CONSTRAINT `fk_interfaces_port_channel`
     FOREIGN KEY (`id_channel`)
-    REFERENCES `telecom`.`port_channel` (`id_port_channel`)
+    REFERENCES `networkapi`.`port_channel` (`id_port_channel`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -1275,9 +1275,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`interface_do_ambiente`
+-- Table `networkapi`.`interface_do_ambiente`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`interface_do_ambiente` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`interface_do_ambiente` (
   `id_int_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
   `id_interface` INT(10) NOT NULL,
@@ -1288,12 +1288,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interface_do_ambiente` (
   INDEX `fk_ambiente_rack_interface` (`id_interface` ASC),
   CONSTRAINT `fk_ambiente_rack_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_ambiente_rack_interface`
     FOREIGN KEY (`id_interface`)
-    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    REFERENCES `networkapi`.`interfaces` (`id_interface`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1302,9 +1302,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`port_channel`
+-- Table `networkapi`.`port_channel`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`port_channel` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`port_channel` (
   `id_port_channel` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `lacp` TINYINT(1) NOT NULL DEFAULT 1,
