@@ -16,47 +16,48 @@
 # limitations under the License.
 
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.plugins import exceptions as base_exceptions
 from networkapi.log import Log
-from networkapi.api_deploy import exceptions
-from networkapi.plugins.base import BasePlugin
+from ...base import BasePlugin
 import re
-from time import sleep
-import unicodedata, string
 
 log = Log(__name__)
 
-class Generic(BasePlugin):
+class IOS(BasePlugin):
 
-	ADMIN_PRIVILEGES = 15
+	admin_privileges = 15
+	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
 
-	def copyTftpToConfig (filename, use_vrf=None, destination="running-config"):
+	def copyScriptFileToConfig (self, filename, use_vrf=None, destination="running-config"):
 		'''
 		Copy file from TFTP server to destination
 		By default, plugin should apply file in running configuration (active)
 		'''
+		if use_vrf == None:
+			use_vrf = self.management_vrf
 
-		if vrf is None:
-			command = "copy tftp://%s/%s %s\n\n" %(self.tftpserver, filename, destination)
-		else:
-			command = "copy tftp://%s/%s %s %s\n\n" %(self.tftpserver, filename, destination, use_vrf)
+		command = "copy tftp://%s/%s %s %s\n\n" %(self.tftpserver, filename, destination, use_vrf)
 
 		log.info("sending command: %s" % command)
 
 		self.channel.send("%s\n" % command)
-		recv = self.waitString(channel, VALID_TFTP_PUT_MESSAGE)
+		recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
 
 		return recv
 
-	def ensure_privilege_level(channel, privilege_level=ADMIN_PRIVILEGES):
+	def ensure_privilege_level(self, privilege_level=None):
 
-		recv = self.waitString(channel, ">|#")
+		if privilege_level  is None:
+			privilege_level = self.admin_privileges
+		self.channel.send("\n")
+		recv = self.waitString(">|#")
 		self.channel.send("show privilege\n")
-		recv = self.waitString(channel, "Current privilege level is")
+		recv = self.waitString("Current privilege level is")
 		level = re.search('Current privilege level is ([0-9]+?).*', recv, re.DOTALL ).group(1)
 
 		level = (level.split(' '))[-1]
 		if int(level) < privilege_level:
 			self.channel.send("enable\n")
-			recv = self.waitString(self.channel, "Password:")
+			recv = self.waitString("Password:")
 			self.channel.send("%s\n" % self.equipment_access.enable_pass)
-			recv = self.waitString(self.channel, "#")
+			recv = self.waitString("#")

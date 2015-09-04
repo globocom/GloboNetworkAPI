@@ -17,8 +17,9 @@
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.log import Log
-from networkapi.plugins import exceptions
+from . import exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
+from networkapi.settings import TFTP_SERVER_ADDR
 import re
 from time import sleep
 import unicodedata, string
@@ -36,14 +37,16 @@ class BasePlugin(object):
 	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
 	VALID_OUTPUT_CHARS = "-_.()\r\n %s%s" % (string.ascii_letters, string.digits)
 
-	ADMIN_PRIVILEGES = 'not defined'
+	admin_privileges = 'not defined'
 	GUEST_PRIVILEGES = 'not defined'
 	
 	connect_port = 22
-	equipment = Equipamento()
-	equipment_access = EquipamentoAcesso()
+	equipment = None
+	equipment_access = None
 	channel = None
-	tftpserver = networkapi.settings.TFTP_SERVER_ADDR
+	remote_conn = None
+	tftpserver = TFTP_SERVER_ADDR
+	management_vrf = ''
 
 	def __init__(self, **kwargs):
 
@@ -56,15 +59,21 @@ class BasePlugin(object):
 		if 'tftpserver' in kwargs:
 			self.tftpserver = kwargs.get('tftpserver')
 
-
-	def copyTftpToConfig (filename, use_vrf=None, destination=""):
+	def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
 		'''
-		Copy file from TFTP server to destination
+		Copy file from server to destination configuration
 		By default, plugin should apply file in running configuration (active)
 		'''
-        raise exceptions.NotImplementedError()
+		raise NotImplementedError()
 
-	def create_ssh_connnection():
+	def connect(self):
+		'''Connects to equipment via ssh using paramiko.SSHClient  and
+			sets channel variable with invoked shell object
+
+		Raises:
+			IOError: if cannot connect to host
+			Exception: for other unhandled exceptions
+		'''
 
 		if self.equipment_access==None:
 			try:
@@ -77,12 +86,12 @@ class BasePlugin(object):
 		username = self.equipment_access.user
 		password = self.equipment_access.password
 
-		remote_conn=paramiko.SSHClient()
-		remote_conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+		self.remote_conn=paramiko.SSHClient()
+		self.remote_conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 		try:
-			remote_conn.connect(device,port=self.connect_port,username=username,password=password)
-			self.channel = remote_conn.invoke_shell()
+			self.remote_conn.connect(device, port=self.connect_port, username=username, password=password)
+			self.channel = self.remote_conn.invoke_shell()
 		except IOError, e:
 			log.error("Could not connect to host %s: %s" % (device, e))
 			raise exceptions.ConnectionException(device)
@@ -90,13 +99,16 @@ class BasePlugin(object):
 			log.error("Error connecting to host %s: %s" % (device, e))
 			raise e
 
-	def ensure_privilege_level(self, privilege_level=self.ADMIN_PRIVILEGES):
+	def close(self):
+		self.channel.close()
+
+	def ensure_privilege_level(self, privilege_level=None):
 		'''
 		Ensure connection has the right privileges expected
 		'''
-        raise exceptions.NotImplementedError()
+		raise NotImplementedError()
 
-	def exec_command (self, command, success_regex='', invalid_regex=self.INVALID_REGEX, error_regex=self.ERROR_REGEX):
+	def exec_command (self, command, success_regex='', invalid_regex=None, error_regex=None):
 		'''
 		Send single command to equipment and than closes connection channel
 		'''
@@ -123,7 +135,13 @@ class BasePlugin(object):
 		cleanedStr = unicodedata.normalize('NFKD', data).encode('ASCII', 'ignore')
 		return ''.join(c for c in cleanedStr if c in self.VALID_OUTPUT_CHARS)
 
-	def waitString(self, wait_str_ok_regex, wait_str_invalid_regex=self.INVALID_REGEX, wait_str_failed_regex=self.ERROR_REGEX):
+	def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
+
+		if wait_str_invalid_regex is None:
+			wait_str_invalid_regex = self.INVALID_REGEX
+
+		if wait_str_failed_regex is None:
+			wait_str_failed_regex = self.ERROR_REGEX
 
 		string_ok = 0
 		recv_string = ''
