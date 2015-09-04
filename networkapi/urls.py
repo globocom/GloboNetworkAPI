@@ -541,7 +541,6 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
-<<<<<<< HEAD
    url(r'^vlan/', include('networkapi.vlan.urls')),
    url(r'^tipoacesso/$', access_type_resource.handle_request,
        name='access_type.insert.search'),
