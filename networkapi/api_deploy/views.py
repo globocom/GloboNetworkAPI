@@ -52,8 +52,9 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
         script_file = facade.create_file_from_script(script, USER_SCRIPTS_REL_PATH)
         equipment_id = int(equipment_id)
         lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_SCRIPT % (equipment_id)
-        data = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
-
+        data = dict()
+        data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
+        data["status"] = "OK"
         return Response(data)
 
     except KeyError, key:
