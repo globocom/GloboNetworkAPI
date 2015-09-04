@@ -3,14 +3,15 @@
 from django.conf.urls import patterns, url
 
 '''
-GET /api/network - lista redes
-POST /api/network - aloca rede
-GET /api/vlan/ID - lista rede
-DELETE /api/vlan/ID - remove rede
-PUT /api/network/ID - modifica cadastro rede
+TODO (v4 and v6)
+GET /api/network - list networks
+POST /api/network - allocate network
+GET /api/vlan/ID - list network
+DELETE /api/vlan/ID - remove network
+PUT /api/network/ID - modify network
 
-POST /api/network/ID/equipments - deploy config rede (L3) no switch
-DELETE /api/network/ID/equipments - remove config rede (L3) no switch
+POST /api/network/ID/equipments - deploy config (L3) on switches
+DELETE /api/network/ID/equipments - remove config (L3) from switches
 '''
 
 urlpatterns = patterns('networkapi.api_network.views',
