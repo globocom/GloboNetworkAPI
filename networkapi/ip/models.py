@@ -18,6 +18,7 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db import transaction
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteNotFoundError, \
     EquipamentoAmbienteDuplicatedError, EquipamentoError
 from networkapi.log import Log
@@ -415,6 +416,24 @@ class NetworkIPv4(BaseModel):
                         raise ConfigEnvironmentInvalidError(
                             None, u'Invalid Configuration')
 
+                # Set octs by network generated
+                self.oct1, self.oct2, self.oct3, self.oct4 = str(network_found.network).split('.')
+                # Set block by network generated
+                self.block = network_found.prefixlen
+                # Set mask by network generated
+                self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4 = str(network_found.netmask).split('.')
+                # Set broadcast by network generated
+                self.broadcast = network_found.broadcast
+
+                try:
+                    self.network_type = internal_network_type
+                    self.ambient_vip = evip
+                    self.save(user)
+                    transaction.commit()
+                except Exception, e:
+                    self.log.error(u'Error persisting a NetworkIPv4.')
+                    raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
+
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
 
@@ -423,28 +442,6 @@ class NetworkIPv4(BaseModel):
             # If not found, an exception is thrown
             raise NetworkIPv4AddressNotAvailableError(
                 None, u'Unavailable address to create a NetworkIPv4.')
-
-        # Set octs by network generated
-        self.oct1, self.oct2, self.oct3, self.oct4 = str(
-            network_found.network).split('.')
-        # Set block by network generated
-        self.block = network_found.prefixlen
-        # Set mask by network generated
-        self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4 = str(
-            network_found.netmask).split('.')
-        # Set broadcast by network generated
-        self.broadcast = network_found.broadcast
-
-        try:
-
-            self.network_type = internal_network_type
-            self.ambient_vip = evip
-
-            self.save(user)
-
-        except Exception, e:
-            self.log.error(u'Error persisting a NetworkIPv4.')
-            raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
 
         # Return vlan map
         vlan_map = dict()

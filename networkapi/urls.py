@@ -530,13 +530,14 @@ api_prefix = r'^api/'
 
 
 urlpatterns = patterns('',
-    url(api_prefix, include('networkapi.api_pools.urls')),
-    url(api_prefix, include('networkapi.snippets.urls')),
-    url(api_prefix, include('networkapi.api_vip_request.urls')),
+    url(api_prefix, include('networkapi.api_deploy.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
-    url(api_prefix, include('networkapi.api_vlan.urls')),
-    url(api_prefix, include('networkapi.api_network.urls')),
     url(api_prefix, include('networkapi.api_interface.urls')),
+    url(api_prefix, include('networkapi.api_network.urls')),
+    url(api_prefix, include('networkapi.api_pools.urls')),
+    url(api_prefix, include('networkapi.api_vip_request.urls')),
+    url(api_prefix, include('networkapi.api_vlan.urls')),
+    url(api_prefix, include('networkapi.snippets.urls')),
 )
 
 urlpatterns += patterns('',
