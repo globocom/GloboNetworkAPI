@@ -384,10 +384,10 @@ KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
 IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 #### <<<<<
 
-PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
-PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
+PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE','/vagrant/networkapi/rack/roteiros/')
+PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG','/vagrant/networkapi/rack/roteiros/')
+PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV','/vagrant/networkapi/rack/roteiros/')
 
-PATH_TO_MV = "/vagrant/networkapi/rack/delete/"
 LEAF = "LF-CM"
 OOB = "OOB-CM"
 SPN = "SPN-CM"
