@@ -2,7 +2,7 @@ CREATE TABLE `optionspool` (
   `id_optionspool` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(200) NOT NULL,
   `description` varchar(200) NOT NULL,
-  PRIMARY KEY (`id_optionspool`)
+  PRIMARY KEY (`id_optionspool`),
   UNIQUE KEY `optionspool_unique` (`type`,`description`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
