@@ -637,8 +637,51 @@ class Ip(BaseModel):
                 None, u'No IP available to NETWORK %s.' % networkipv4.id)
 
     @classmethod
-    def get_first_available_ip(self, id_network):
+    def get_first_available_ip(self, id_network, topdown=False):
         """Get a first available Ipv4 for networkIPv4
+            @return: Available Ipv4
+            @raise IpNotAvailableError: NetworkIPv4 does not has available Ipv4
+        """
+
+        networkipv4 = NetworkIPv4().get_by_pk(id_network)
+
+        # Cast to API
+        net4 = IPv4Network('%d.%d.%d.%d/%d' % (networkipv4.oct1, networkipv4.oct2,
+                                               networkipv4.oct3, networkipv4.oct4, networkipv4.block))
+
+        # Find all ips ralated to network
+        ips = Ip.objects.filter(networkipv4__id=networkipv4.id)
+
+        # Cast all to API class
+        ipsv4 = set(
+            [(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
+
+        selected_ip = None
+
+        if topdown:
+            method = net4.iterhostsTopDown
+        else:
+            method = net4.iterhosts
+            
+        # For each ip generated
+        for ip in method():
+
+            # If IP generated was not used
+            if ip not in ipsv4:
+
+                # Use it
+                selected_ip = ip
+
+                # Stop generation
+                return selected_ip
+
+        if selected_ip is None:
+            raise IpNotAvailableError(
+                None, u'No IP available to NETWORK %s.' % networkipv4.id)
+
+    @classmethod
+    def get_last_available_ip(self, id_network):
+        """Get an available Ipv4 for networkIPv4 from end of range
             @return: Available Ipv4
             @raise IpNotAvailableError: NetworkIPv4 does not has available Ipv4
         """
