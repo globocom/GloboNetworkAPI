@@ -18,6 +18,7 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db import transaction
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteNotFoundError, \
     EquipamentoAmbienteDuplicatedError, EquipamentoError
 from networkapi.log import Log
@@ -31,7 +32,7 @@ from networkapi.util import mount_ipv4_string, mount_ipv6_string
 from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.equipamento.models import TipoEquipamento
 from networkapi.exception import InvalidValueError
-
+from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
 
 class NetworkIPv4Error(Exception):
 
@@ -226,6 +227,13 @@ class IpEquipCantDissociateFromVip(IpError):
         IpError.__init__(self, cause, message)
 
 
+class IpCantRemoveFromServerPool(IpError):
+    """Returns exception when trying to dissociate ip and equipment, but equipment is the last balancer for Vip Request"""
+
+    def __init__(self, cause, message=None):
+        IpError.__init__(self, cause, message)
+
+
 class NetworkIPv4(BaseModel):
 
     id = models.AutoField(primary_key=True)
@@ -312,7 +320,7 @@ class NetworkIPv4(BaseModel):
             raise NetworkIPv4Error(e, u'Error on update NetworkIPv4.')
 
     def add_network_ipv4(self, user, id_vlan, network_type, evip, prefix=None):
-        """Insert new NetworkIPv4 in database
+        """Allocate and Insert new NetworkIPv4 in database
             @return: Vlan map
             @raise VlanNotFoundError: Vlan is not registered.
             @raise VlanError: Failed to search for the Vlan
@@ -341,95 +349,100 @@ class NetworkIPv4(BaseModel):
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
 
-            # Find all networks ralated to environment
-            nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
+            #Needs to lock IPv4 listing when there are any allocation in progress
+            #If not, it will allocate two networks with same range
+            with distributedlock(LOCK_ENVIRONMENT % self.vlan.ambiente.id):
+                # Find all networks ralated to environment
+                nets = NetworkIPv4.objects.filter(vlan__ambiente__id=self.vlan.ambiente.id)
 
-            # Cast to API class
-            networksv4 = set([(IPv4Network(
-                        '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
+                # Cast to API class
+                networksv4 = set([(IPv4Network(
+                            '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
 
-            # For each configuration founded in environment
-            for config in configs:
+                # For each configuration founded in environment
+                for config in configs:
 
-                # If already get a network stop this
-                if stop:
-                    break
+                    # If already get a network stop this
+                    if stop:
+                        break
 
-                # Need to be IPv4
-                if config.ip_config.type == IP_VERSION.IPv4[0]:
+                    # Need to be IPv4
+                    if config.ip_config.type == IP_VERSION.IPv4[0]:
 
-                    net4 = IPv4Network(config.ip_config.subnet)
+                        net4 = IPv4Network(config.ip_config.subnet)
 
-                    if prefix is not None:
-                        new_prefix = int(prefix)
+                        if prefix is not None:
+                            new_prefix = int(prefix)
+                        else:
+                            new_prefix = int(config.ip_config.new_prefix)
+
+                        self.log.info(u"Prefix that will be used: %s" % new_prefix)
+                        # For each subnet generated with configs
+                        for subnet in net4.iter_subnets(new_prefix=new_prefix):
+
+                            net_found = True
+                            for network in networksv4:
+                                if subnet in network:
+                                    net_found = False
+
+                            # Checks if the network generated is UNUSED
+                            if net_found:
+
+                                #Checks if it is subnet/supernet of any existing network
+                                in_range = network_in_range(self.vlan, subnet, type_ipv4)
+                                if not in_range:
+                                    continue
+
+                                # If not this will be USED
+                                network_found = subnet
+
+                                if network_type:
+                                    internal_network_type = network_type
+                                elif config.ip_config.network_type is not None:
+                                    internal_network_type = config.ip_config.network_type
+                                else:
+                                    self.log.error(
+                                        u'Parameter tipo_rede is invalid. Value: %s', network_type)
+                                    raise InvalidValueError(
+                                        None, 'network_type', network_type)
+
+                                # Stop generation logic
+                                stop = True
+                                break
+
+                    # If not IPv4
                     else:
-                        new_prefix = int(config.ip_config.new_prefix)
+                        # Throw an exception
+                        raise ConfigEnvironmentInvalidError(
+                            None, u'Invalid Configuration')
 
-                    self.log.info(u"Prefix that will be used: %s" % new_prefix)
-                    # For each subnet generated with configs
-                    for subnet in net4.iter_subnets(new_prefix=new_prefix):
+                # Checks if found any available network
+                if network_found == None:
+                    # If not found, an exception is thrown
+                    raise NetworkIPv4AddressNotAvailableError(
+                        None, u'Unavailable address to create a NetworkIPv4.')
 
-                        # Checks if the network generated is UNUSED
-                        if subnet not in networksv4:
+                # Set octs by network generated
+                self.oct1, self.oct2, self.oct3, self.oct4 = str(network_found.network).split('.')
+                # Set block by network generated
+                self.block = network_found.prefixlen
+                # Set mask by network generated
+                self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4 = str(network_found.netmask).split('.')
+                # Set broadcast by network generated
+                self.broadcast = network_found.broadcast
 
-                            #Checks if it is subnet/supernet of any existing network
-                            in_range = network_in_range(self.vlan, subnet, type_ipv4)
-                            if not in_range:
-                                continue
+                try:
+                    self.network_type = internal_network_type
+                    self.ambient_vip = evip
+                    self.save(user)
+                    transaction.commit()
 
-                            # If not this will be USED
-                            network_found = subnet
-
-                            if network_type:
-                                internal_network_type = network_type
-                            elif config.ip_config.network_type is not None:
-                                internal_network_type = config.ip_config.network_type
-                            else:
-                                self.log.error(
-                                    u'Parameter tipo_rede is invalid. Value: %s', network_type)
-                                raise InvalidValueError(
-                                    None, 'network_type', network_type)
-
-                            # Stop generation logic
-                            stop = True
-                            break
-
-                # If not be IPv4
-                else:
-                    # Throw an exception
-                    raise ConfigEnvironmentInvalidError(
-                        None, u'Invalid Configuration')
+                except Exception, e:
+                    self.log.error(u'Error persisting a NetworkIPv4.')
+                    raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
 
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
-
-        # Checks if found any available network
-        if network_found == None:
-            # If not found, an exception is thrown
-            raise NetworkIPv4AddressNotAvailableError(
-                None, u'Unavailable address to create a NetworkIPv4.')
-
-        # Set octs by network generated
-        self.oct1, self.oct2, self.oct3, self.oct4 = str(
-            network_found.network).split('.')
-        # Set block by network generated
-        self.block = network_found.prefixlen
-        # Set mask by network generated
-        self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4 = str(
-            network_found.netmask).split('.')
-        # Set broadcast by network generated
-        self.broadcast = network_found.broadcast
-
-        try:
-
-            self.network_type = internal_network_type
-            self.ambient_vip = evip
-
-            self.save(user)
-
-        except Exception, e:
-            self.log.error(u'Error persisting a NetworkIPv4.')
-            raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
 
         # Return vlan map
         vlan_map = dict()
@@ -1113,7 +1126,7 @@ class Ip(BaseModel):
                 #
                 #     ambienteequip.delete(authenticated_user)
 
-                ie.delete(authenticated_user)
+                    ie.delete(authenticated_user)
             super(Ip, self).delete(authenticated_user)
 
         except EquipamentoAmbienteNotFoundError, e:
@@ -1268,8 +1281,18 @@ class IpEquipamento(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome},
-                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP." % (self.equipamento.nome))
+
+            server_pool_identifiers = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
+
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
+
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(IpEquipamento, self).delete(authenticated_user)
 
@@ -1418,11 +1441,13 @@ class NetworkIPv6(BaseModel):
                 raise ConfigEnvironmentInvalidError(
                     None, u'Invalid Configuration')
 
+            # Find all networks ralated to environment
+            nets = NetworkIPv6.objects.filter(
+                vlan__ambiente__id=self.vlan.ambiente.id)
+
             # Cast to API class
             networksv6 = set([(IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net_ip.block1, net_ip.block2, net_ip.block3,
                                                                            net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block))) for net_ip in nets])
-
-            net6 = IPv6Network(config.ip_config.subnet)
 
             # For each configuration founded in environment
             for config in configs:
@@ -1434,9 +1459,7 @@ class NetworkIPv6(BaseModel):
                 # Need to be IPv6
                 if config.ip_config.type == IP_VERSION.IPv6[0]:
 
-                    # Find all networks ralated to environment
-                    nets = NetworkIPv6.objects.filter(
-                        vlan__ambiente__id=self.vlan.ambiente.id)
+                    net6 = IPv6Network(config.ip_config.subnet)
 
                     if prefix is not None:
                         new_prefix = int(prefix)
@@ -2226,8 +2249,6 @@ class Ipv6(BaseModel):
             raise IpCantBeRemovedFromVip(e.cause, e.message)
         except IpEquipmentNotFoundError, e:
             raise IpEquipmentNotFoundError(None, e.message)
-        except Exception, e:
-            raise Exception(None, e.message)
 
 
 class Ipv6Equipament(BaseModel):
@@ -2400,8 +2421,18 @@ class Ipv6Equipament(BaseModel):
                             r.delete(authenticated_user)
 
         if self.ip.serverpoolmember_set.count() > 0:
-            raise IpEquipCantDissociateFromVip({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome},
-                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando em uma Requisição VIP" % (self.equipamento.nome))
+
+            server_pool_identifiers = set()
+
+            for svm in self.ip.serverpoolmember_set.all():
+                item = '{}:{}'.format(svm.server_pool.id, svm.server_pool.identifier)
+                server_pool_identifiers.add(item)
+
+            server_pool_identifiers = list(server_pool_identifiers)
+            server_pool_identifiers = ', '.join(str(server_pool) for server_pool in server_pool_identifiers)
+
+            raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
+                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
         super(Ipv6Equipament, self).delete(authenticated_user)
 

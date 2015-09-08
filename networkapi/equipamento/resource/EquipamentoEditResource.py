@@ -24,7 +24,7 @@ from networkapi.log import Log
 from networkapi.equipamento.models import Equipamento, TipoEquipamento, Modelo, TipoEquipamentoNotFoundError, ModeloNotFoundError, EquipamentoNotFoundError, EquipamentoNameDuplicatedError, EquipamentoError, EquipTypeCantBeChangedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex,\
-    destroy_cache_function
+    destroy_cache_function, is_valid_boolean_param
 from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip, Ipv6, IpEquipamento, Ipv6Equipament
 from networkapi.vlan.models import Vlan
@@ -63,6 +63,7 @@ class EquipamentoEditResource(RestResource):
             id_modelo = equip_map.get('id_modelo')
             nome = equip_map.get('nome')
             id_tipo_equipamento = equip_map.get('id_tipo_equipamento')
+            maintenance = equip_map.get('maintenance')
 
             # Valid equip_id
             if not is_valid_int_greater_zero_param(equip_id):
@@ -88,11 +89,20 @@ class EquipamentoEditResource(RestResource):
                 self.log.error(u'Parameter nome is invalid. Value: %s', nome)
                 raise InvalidValueError(None, 'nome', nome)
 
+
             # Business Rules
 
             # New equipment
             equip = Equipamento()
             equip = equip.get_by_pk(equip_id)
+
+            #maintenance is a new feature. Check existing value if not defined in request
+            #Old calls does not send this field
+            if maintenance is None:
+                maintenance = equip.maintenance
+            if not is_valid_boolean_param(maintenance):
+                self.log.error(u'The maintenance parameter is not a valid value: %s.', maintenance)
+                raise InvalidValueError(None, 'maintenance', maintenance)
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip_id, AdminPermission.EQUIP_WRITE_OPERATION):

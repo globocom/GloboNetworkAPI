@@ -22,11 +22,12 @@ from __future__ import with_statement
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.ip.models import IpCantRemoveFromServerPool, IpCantBeRemovedFromVip
 from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsNotFoundError, RequisicaoVipsError, \
     ServerPoolMember
-from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_int_greater_zero_param, mount_ipv6_string, mount_ipv4_string
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.exception import InvalidValueError
 
@@ -40,7 +41,7 @@ class RequisicaoVipDeleteResource(RestResource):
         Treat DELETE requests to remove a vip request.
         Also remove reals related and balancer ips (if this ips isn't used for another vip).
 
-        URL: vip/remove/<id_vip>/
+        URL: vip/delete/<id_vip>/
         """
 
         try:
@@ -77,12 +78,20 @@ class RequisicaoVipDeleteResource(RestResource):
                     if ipv6 and not keep_ip:
                         if not self.is_ipv6_in_use(ipv6, vip_id):
                             ipv6.delete(user)
+                except IpCantRemoveFromServerPool, e:
+                    raise e
+                except IpCantBeRemovedFromVip, e:
+                    raise e
                 except Exception, e:
                     raise RequisicaoVipsError(
                         e, u'Failed to remove Vip Request.')
 
             return self.response(dumps_networkapi({}))
 
+        except IpCantRemoveFromServerPool, e:
+            return self.response_error(389, e.cause.get('vip_id'), e.cause.get('ip'), e.cause.get('server_pool_identifiers'))
+        except IpCantBeRemovedFromVip, e:
+            return self.response_error(390, e.cause.get('vip_id'), e.cause.get('vip_id_identifiers'), e.cause.get('ip'))
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except RequisicaoVipsNotFoundError, e:

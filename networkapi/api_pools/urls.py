@@ -28,4 +28,15 @@ urlpatterns = patterns('networkapi.api_pools.views',
     url(r'^pools/check/status/by/vip/(?P<vip_id>[^/]+)/$', 'chk_status_poolmembers_by_vip'),
 
     url(r'^pools/management/$', 'management_pools'),
+
+    url(r'^pools/options/$', 'list_all_options'),
+    url(r'^pools/options/save/$', 'save_pool_option'),
+    url(r'^pools/options/(?P<option_id>\d+)/$', 'list_option_by_pk'),
+
+    url(r'^pools/environment_options/$', 'list_all_environment_options'),
+    url(r'^pools/environment_options/save/$', 'save_environment_options'),
+    url(r'^pools/environment_options/(?P<environment_option_id>\d+)/$', 'environment_options_by_pk'),
+    
+    url(r'^pools/list/environments/environmentvip/$', 'list_environment_environment_vip_related'),
+    url(r'^pools/getipsbyambiente/(?P<equip_name>[^/]+)/(?P<id_ambiente>[^/]+)/$', 'get_available_ips_to_add_server_pool'),
 )

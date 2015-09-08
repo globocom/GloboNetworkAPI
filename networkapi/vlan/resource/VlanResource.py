@@ -35,7 +35,7 @@ from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, Vlan, Vla
 from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, NetworkIPv4AddressNotAvailableError, ConfigEnvironmentInvalidError, NetworkIPvXNotFoundError
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.settings import VLAN_CREATE
+from networkapi import settings, error_message_utils
 from networkapi.vlan.serializers import VlanSerializer
 
 
@@ -391,7 +391,7 @@ class VlanResource(RestResource):
         if vlan.ativada:
             return self.response_error(122)
 
-        command = VLAN_CREATE % (vlan.id)
+        command = settings.VLAN_CREATE % (vlan.id)
 
         code, stdout, stderr = exec_script(command)
         if code == 0:
@@ -409,8 +409,8 @@ class VlanResource(RestResource):
 
             serializer = VlanSerializer(vlan)
             data_to_queue = serializer.data
-            data_to_queue.update({'description': queue_keys.VLAN_CRIAR})
-            queue_manager.append(data_to_queue)
+            data_to_queue.update({'description': queue_keys.VLAN_CREATE})
+            queue_manager.append({'action': queue_keys.VLAN_CREATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
             queue_manager.send()
 

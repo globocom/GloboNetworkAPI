@@ -19,14 +19,16 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 
+from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
+from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.ip.models import Ipv6, Ip
+from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
-from networkapi.ambiente.models import IP_VERSION
 
+from networkapi.ambiente.models import IP_VERSION
 from networkapi.log import Log
 
 log = Log(__name__)
@@ -63,14 +65,15 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
 
     return hc
 
-def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member):
+def save_server_pool(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member, servicedownaction):
     # Save Server pool
     old_healthcheck = None
 
     if id:
         sp = ServerPool.objects.get(id=id)
 
-        # storage old healthcheck and lb method
+        # storage old healthcheck , lb method and service-down-action
+        old_servicedownaction = sp.servicedownaction
         old_identifier = sp.identifier
         old_healthcheck = Healthcheck.objects.get(id=sp.healthcheck.id)
         old_lb_method =  sp.lb_method
@@ -156,10 +159,23 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
                 transaction.commit()
                 raise exceptions.ScriptCreatePoolException()
 
+        #Applies new service-down-action in pool
+        #Todo - new method
+        sp.servicedownaction = servicedownaction
+        sp.save(user)
+        if(old_servicedownaction != sp.servicedownaction and sp.pool_created):
+            transaction.commit()
+            command = settings.POOL_SERVICEDOWNACTION % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                sp.servicedownaction = old_servicedownaction
+                sp.save(user)
+                transaction.commit()
+                raise exceptions.ScriptAlterServiceDownActionException()
 
     else:
         sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
-                        environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn)
+                        environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn, servicedownaction=servicedownaction)
         sp.save(user)
 
     return sp, (old_healthcheck.id if old_healthcheck else None)
@@ -224,25 +240,15 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                     raise exceptions.ScriptCreatePoolException()
                 transaction.commit()
 
-
     if list_server_pool_member:
         for dic in list_server_pool_member:
-
+        #
             ip_object = None
             ipv6_object = None
             if len(dic['ip']) <= 15:
                 ip_object = Ip.get_by_pk(dic['id'])
-
-                if sp.environment.divisao_dc.id != ip_object.networkipv4.vlan.ambiente.divisao_dc.id \
-                        or sp.environment.ambiente_logico.id != ip_object.networkipv4.vlan.ambiente.ambiente_logico.id:
-                    raise exceptions.IpNotFoundByEnvironment()
-
             else:
                 ipv6_object = Ipv6.get_by_pk(dic['id'])
-
-                if sp.environment.divisao_dc.id != ipv6_object.networkipv6.vlan.ambiente.divisao_dc.id \
-                        or sp.environment.ambiente_logico.id != ipv6_object.networkipv6.vlan.ambiente.ambiente_logico.id:
-                    raise exceptions.IpNotFoundByEnvironment()
 
             id_pool = sp.id
             id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
@@ -258,12 +264,12 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                 spm.weight = dic['weight']
                 spm.limit = sp.default_limit
                 spm.port_real = dic['port_real']
+                spm.save(user)
 
             else:
                 spm = ServerPoolMember(server_pool=sp, identifier=dic['nome_equips'], ip=ip_object, ipv6=ipv6_object,
                                        priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
                                        port_real=dic['port_real'])
-
                 spm.save(user)
 
                 #execute script to create real if pool already created
@@ -279,11 +285,8 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                         transaction.commit()
                         raise exceptions.ScriptCreatePoolException()
 
-
-            #if sp.healthcheck_id:
-            #    spm.healthcheck = sp.healthcheck
-
-
+                #if sp.healthcheck_id:
+                #    spm.healthcheck = sp.healthcheck
 
             list_pool_member.append(spm)
 
@@ -363,3 +366,88 @@ def manager_pools(request):
             old_member.save(request.user, commit=True)
 
         raise exception
+
+
+def save_option_pool(user, type, description):
+
+
+    '''if id:
+        sp = OptionPool.objects.get(id=id)
+
+        sp.type = type
+        sp.description = description
+        sp.save(user)
+
+
+    else:'''
+
+    sp = OptionPool(type=type, name=description)
+    sp.save(user)
+
+    return sp
+
+
+def update_option_pool(user, option_id, type, description):
+
+    sp = OptionPool.objects.get(id=option_id)
+
+    sp.type = type
+    sp.name=description
+
+    sp.save(user)
+
+    return sp
+
+def delete_option_pool(user, option_id):
+
+    pool_option=  OptionPool.objects.get(id=option_id)
+
+    environment_options = OptionPoolEnvironment.objects.all()
+    environment_options = environment_options.filter(option=option_id)
+
+    for eop in environment_options:
+        eop.delete(user)
+
+    pool_option.delete(user)
+
+    return option_id
+
+
+def save_environment_option_pool(user, option_id, environment_id):
+
+
+    op=OptionPool.objects.get(id=option_id)
+    env=Ambiente.objects.get(id=environment_id)
+
+
+#    log.warning("objetos buscados %s %s", serializer_options.data, serializer_env.data)
+
+    ope= OptionPoolEnvironment()
+
+    ope.environment=env
+    ope.option=op
+    ope.save(user)
+
+    return ope
+
+
+def update_environment_option_pool(user, environment_option_id, option_id, environment_id):
+
+    ope=OptionPoolEnvironment.objects.get(id=environment_option_id)
+    op=OptionPool.objects.get(id=option_id)
+    env=Ambiente.objects.get(id=environment_id)
+
+    ope.option = op
+    ope.environment = env
+
+    ope.save(user)
+
+    return ope
+
+def delete_environment_option_pool(user, environment_option_id):
+
+    ope=OptionPoolEnvironment.objects.get(id=environment_option_id)
+    ope.delete(user)
+
+    return environment_option_id
+

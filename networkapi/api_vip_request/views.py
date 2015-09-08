@@ -188,6 +188,10 @@ def save(request, pk=None):
         log.error(exception)
         raise api_exceptions.ValidationException()
 
+    except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
+        log.error(exception)
+        raise exception
+
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()

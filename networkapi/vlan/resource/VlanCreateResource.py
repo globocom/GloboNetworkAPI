@@ -145,10 +145,10 @@ class VlanCreateResource(RestResource):
 
             if IP_VERSION.IPv4[0] == network_version:
                 command = NETWORKIPV4_CREATE % (network_ip.id)
-                description_to_queue = queue_keys.VLAN_CREATE_IPV4
+                description_to_queue = queue_keys.VLAN_CREATE_NETWORK_IPV4
             else:
                 command = NETWORKIPV6_CREATE % (network_ip.id)
-                description_to_queue = queue_keys.VLAN_CREATE_IPV6
+                description_to_queue = queue_keys.VLAN_CREATE_NETWORK_IPV6
             # Execute command
             code, stdout, stderr = exec_script(command)
 
@@ -178,7 +178,7 @@ class VlanCreateResource(RestResource):
             serializer = VlanSerializer(vlan_obj)
             data_to_queue = serializer.data
             data_to_queue.update({'description': description_to_queue})
-            queue_manager.append(data_to_queue)
+            queue_manager.append({'action': description_to_queue,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
             queue_manager.send()
 

@@ -21,7 +21,8 @@ from networkapi.auth import has_perm
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceInvalidBackFrontError
+from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceInvalidBackFrontError,\
+                                        PortChannel
 from networkapi.log import Log
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
@@ -41,7 +42,7 @@ class InterfaceDisconnectResource(RestResource):
 
         try:
 
-            # Business Validations
+            self.log.info("Disconnect")
 
             # Valid Interface ID
             id_interface = kwargs.get('id_interface')
@@ -112,8 +113,22 @@ class InterfaceDisconnectResource(RestResource):
                 interface_1.save(user)
                 interface_2.save(user)
 
-                # Return None for success
-                return self.response(dumps_networkapi({}))
+            #sai do channel
+            if interface_1.channel is not None:
+                self.log.info("channel")
+
+                id_channel = interface_1.channel.id
+                interface_1.channel = None
+                interface_1.save(user)
+
+                interfaces = Interface.objects.all().filter(channel__id=id_channel)
+                if not len(interfaces) > 0:
+                    self.log.info("len "+str(len(interfaces)))
+
+                    PortChannel.delete(user)
+
+            # Return None for success
+            return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)

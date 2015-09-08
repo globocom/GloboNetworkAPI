@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -279,7 +278,7 @@ error_messages = {
     349: u"O filtro %s não pode ser desassociado do ambiente pois está em uso.",
     350: u'Permissão %s não cadastrada.',
     351: u'Permissão Administrativa com função %s já cadastrada.',
-    352: u"Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado na requisição vip criada %s e o equipamento é o único balanceador associado a este ip.",
+    352: u"Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado na requisição vip %s e o equipamento é o único balanceador associado a este ip.",
     353: u'Valores duplicados para Porta Real, Porta Vip e IP do Real na mesma Requisição VIP.',
     354: u'Não foi possível excluir o ip de id %s pois ele está sendo usado em uma requisição VIP.',
     355: u'Não foi possível excluir a rede de id %s pois há um ip nela sendo usado em uma requisição VIP.',
@@ -310,6 +309,19 @@ error_messages = {
     382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
     383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
     384: u'Erro ao editar ServerPool: %s',
+    385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools (id:identifier) %s.',
+    386: u'Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s.',
+    387: u'Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s.',
+    389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s.',
+    390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
+    391: u'Failure accessing Foreman server: %s',
+    392: u'Environment is already associated with the environment vip',
+    393: u'Environment is not associated with the environment vip',
+    394: u'O ambiente %s não pode ser desvinculado pois existem server pools com reals vinculados a este ambiente.',
+    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".',
+    397: u'O Rack, que o servidor está, não foi cadastrado.',
+    400: u'Nao foi possivel adicionar o Rack',
+    401: u'As mudancas nao foram salvas',
 }
 
 

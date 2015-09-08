@@ -211,6 +211,9 @@ class Vlan(BaseModel):
     acl_valida_v6 = models.BooleanField()
     ativada = models.BooleanField()
 
+    acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
+    acl_draft_v6 = models.TextField(blank=True, null=True, db_column='acl_draft_v6')
+
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
         managed = True
@@ -618,12 +621,10 @@ class Vlan(BaseModel):
                     raise VlanNumberEnvironmentNotAvailableError(
                         None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
 
-        try:
-            self.get_by_name(self.nome)
+        # Name VLAN can not be duplicated in the environment
+        if self.existVlanNameInEnvironment():
             raise VlanNameDuplicatedError(
-                None, "Já existe uma VLAN cadastrada com o nome %s" % self.nome)
-        except VlanNotFoundError:
-            pass
+                None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
             return self.save(authenticated_user)
@@ -688,12 +689,10 @@ class Vlan(BaseModel):
                             None, "Um dos equipamentos associados com o ambiente desta Vlan também está associado com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos ambientes se necessário.")
 
         if change_name:
-            try:
-                self.get_by_name(self.nome)
+            # Name VLAN can not be duplicated in the environment
+            if self.existVlanNameInEnvironment():
                 raise VlanNameDuplicatedError(
-                    None, "Já existe uma VLAN cadastrada com o nome %s" % self.nome)
-            except VlanNotFoundError:
-                pass
+                    None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
             return self.save(authenticated_user)

@@ -22,7 +22,7 @@ from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, VipPortToPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.equipamento.models import Equipamento
-from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool
+from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool, OptionPool, OptionPoolEnvironment
 from networkapi.settings import POOL_REAL_CHECK
 
 
@@ -112,8 +112,11 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
         ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
 
-        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+        for ipequip in ip_equipment_set.select_related():
+            if ipequip.equipamento.nome == obj.identifier:
+                return obj.identifier
 
+        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
         equipment = ip_equipment_obj.equipamento
 
         return equipment.nome
@@ -130,6 +133,7 @@ class ServerPoolSerializer(serializers.ModelSerializer):
             'default_port',
             'default_limit',
             'healthcheck',
+            'servicedownaction',
             'environment',
             'pool_created',
             'lb_method'
@@ -180,6 +184,24 @@ class OpcaoPoolAmbienteSerializer(serializers.ModelSerializer):
                   'ambiente'
                  )
 
+class OptionPoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OptionPool
+        depth = 1
+        fields = ('id',
+                  'type',
+                  'name'
+                 )
+
+
+class OptionPoolEnvironmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OptionPoolEnvironment
+        depth = 1
+        fields = ('id',
+                  'option',
+                  'environment'
+                 )
 
 class VipPortToPoolSerializer(serializers.ModelSerializer):
 
