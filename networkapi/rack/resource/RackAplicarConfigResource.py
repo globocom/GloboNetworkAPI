@@ -585,7 +585,7 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################                   Backuper
 
-            aplicar(rack)
+            #aplicar(rack)
             environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
