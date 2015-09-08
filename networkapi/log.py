@@ -30,6 +30,7 @@ import sys
 import time
 from networkapi.extra_logging.filters import ExtraLoggingFilter
 
+LOG = logging.getLogger(__name__)
 
 def convert_to_utf8(object):
     """Converte o object informado para uma representação em utf-8"""
@@ -154,6 +155,13 @@ class Log(object):
                         Log._USE_STDOUT,
                         Log._MAX_LINE_SIZE)
 
+    def __is_handler_added(self, logger, handler_class):
+        for handler in logger.handlers:
+            if isinstance(handler, handler_class):
+                return True
+
+        return False
+
     def __init_log(self,
                    log_file_name,
                    number_of_days_to_log,
@@ -170,8 +178,10 @@ class Log(object):
 
         self.logger.addFilter(my_filter)
 
-        # se não inicializou os handlers inicializa
-        if len(self.logger.handlers) == 0:
+        #se não inicializou os handlers inicializa
+        #if len(self.logger.handlers) == 0:
+        if not self.__is_handler_added(self.logger, MultiprocessTimedRotatingFileHandler):
+            #LOG.info("#### initializing handler MultiprocessTimedRotatingFileHandler log...")
             log_dir = os.path.split(log_file_name)[0]
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir, mode=0755)
@@ -302,16 +312,16 @@ class CommonAdminEmailHandler(AdminEmailHandler):
 
         super(CommonAdminEmailHandler, self).emit(record)
 
-if __name__ == '__main__':
-    Log.init_log()
-    log = Log('teste')
-    log.debug('A debug message %s', 'teste' * 501)
-    log = Log('teste2')
-    log.debug('A debug message')
-    print 'waiting...'
-    time.sleep(20)
-    log = Log('teste')
-    log.debug('A debug message')
-    log = Log('teste2')
-    log.debug('A debug message')
-    print 'done!'
+# if __name__ == '__main__':
+#     Log.init_log()
+#     log = Log('teste')
+#     log.debug('A debug message %s', 'teste' * 501)
+#     log = Log('teste2')
+#     log.debug('A debug message')
+#     print 'waiting...'
+#     time.sleep(20)
+#     log = Log('teste')
+#     log.debug('A debug message')
+#     log = Log('teste2')
+#     log.debug('A debug message')
+#     print 'done!'

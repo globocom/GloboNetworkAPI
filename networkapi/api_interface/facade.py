@@ -21,7 +21,7 @@ import thread
 import re
 
 from networkapi.extra_logging import local, NO_REQUEST_ID
-from networkapi.settings import INTERFACE_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
+from networkapi.settings import INTERFACE_CONFIG_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
 from networkapi.distributedlock import LOCK_INTERFACE_EQUIP_CONFIG
 from networkapi.log import Log
 from networkapi.interface.models import EnvironmentInterface
@@ -110,7 +110,7 @@ def _generate_config_file(interfaces_list):
     request_id = getattr(local, 'request_id', NO_REQUEST_ID)
     filename_out = "int-d_"+str(interfaces_list[0].id)+"_config_"+str(request_id)
     filename_to_save = INTERFACE_CONFIG_FILES_PATH+filename_out
-    rel_file_to_deploy = INTERFACE_TOAPPLY_REL_PATH+filename_out
+    rel_file_to_deploy = INTERFACE_CONFIG_TOAPPLY_REL_PATH+filename_out
 
     int_template_file = _load_template_file(equipment_id, TEMPLATE_TYPE_INT)
     channels_configured = {}

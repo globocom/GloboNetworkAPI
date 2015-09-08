@@ -17,32 +17,92 @@
 
 
 import os
+import sys
 import logging
-
 from networkapi.log import Log
 
+reload(sys)
+
+sys.setdefaultencoding('utf-8')
+
+# Include base path in system path for Python old.
+syspath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+if not syspath in sys.path:
+    sys.path.insert(0, syspath)
+
+def LOCAL_FILES(path):
+    new_path = os.path.abspath(os.path.join(__file__, path))
+    return new_path
+
+NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
+
+# Aplicação rodando em modo Debug
+#DEBUG = False
+DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
+
+NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
+
+# Configuração do arquivo de log do projeto.
+LOG_FILE = NETWORKAPI_LOG_FILE
+if DEBUG:
+    LOG_LEVEL = logging.DEBUG
+else:
+    LOG_LEVEL = logging.INFO
+
+
+LOG_DAYS = 10
+LOG_SHOW_SQL = False
+LOG_USE_STDOUT = False
+LOG_SHOW_TRACEBACK = True
+
+# Inicialização do log
+# O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
+# O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
+# O terceiro parâmetro é o nível de detalhamento do Log.
+Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
+
+if NETWORKAPI_USE_NEWRELIC:
+    import newrelic.agent
+    newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
+
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+
+NETWORKAPI_DATABASE_NAME = os.getenv('NETWORKAPI_DATABASE_NAME', 'networkapi')
+NETWORKAPI_DATABASE_USER = os.getenv('NETWORKAPI_DATABASE_USER', 'root')
+NETWORKAPI_DATABASE_PASSWORD = os.getenv('NETWORKAPI_DATABASE_PASSWORD', '')
+NETWORKAPI_DATABASE_HOST = os.getenv('NETWORKAPI_DATABASE_HOST', 'localhost')
+NETWORKAPI_DATABASE_PORT = os.getenv('NETWORKAPI_DATABASE_PORT', '3306')
+NETWORKAPI_DATABASE_OPTIONS = os.getenv('NETWORKAPI_DATABASE_OPTIONS', '{"init_command": "SET storage_engine=INNODB"}')
 
 # Configurações de banco de dados
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': 'localhost',
-        'NAME': 'telecom',
-        'USER': 'root',
-        'PASSWORD': 'password',
-        'PORT': '3306',
-        'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
+        'HOST': NETWORKAPI_DATABASE_HOST,
+        'NAME': NETWORKAPI_DATABASE_NAME,
+        'USER': NETWORKAPI_DATABASE_USER,
+        'PASSWORD': NETWORKAPI_DATABASE_PASSWORD,
+        'PORT': NETWORKAPI_DATABASE_PORT,
+        'OPTIONS': eval(NETWORKAPI_DATABASE_OPTIONS),
     }
 }
 
+
 from networkapi.models.models_signal_receiver import *
 
-# Aplicação rodando em modo Debug
-DEBUG = True
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
+
+NETWORKAPI_MEMCACHE_HOSTS = os.getenv("NETWORKAPI_MEMCACHE_HOSTS",'127.0.0.1:11211')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': NETWORKAPI_MEMCACHE_HOSTS.split(',')
+    }
+}
+
 
 # Diretório dos arquivos dos scripts
 SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
@@ -59,8 +119,10 @@ API_VERSION = '15.96'
 ASSOCIATE_PERMISSION_AUTOMATICALLY = True
 ID_AUTHENTICATE_PERMISSION = 5
 
+NETWORKAPI_SUPPORT_TIME =os.getenv('NETWORKAPI_SUPPORT_TIME',"Suporte Telecom")
+NETWORKAPI_SUPPORT_EMAIL=os.getenv('NETWORKAPI_SUPPORT_EMAIL', 'suptel@corp.globo.com')
 ADMINS = (
-    ('Suporte Telecom', 'suptel@corp.globo.com'),
+    (NETWORKAPI_SUPPORT_TIME, NETWORKAPI_SUPPORT_EMAIL),
 )
 
 LOGGING = {
@@ -98,21 +160,15 @@ MANAGERS = ADMINS
 
 DEFAULT_CHARSET = 'utf-8'  # Set the encoding to database data
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': [
-            '127.0.0.1:11211'
-        ]
-    }
-}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Sao_Paulo'
+
+NETWORKAPI_TIMEZONE = os.getenv('NETWORKAPI_TIMEZONE','America/Sao_Paulo')
+TIME_ZONE = NETWORKAPI_TIMEZONE
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -140,14 +196,6 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'ry@zgop%w80_nu83#!tbz)m&7*i@1)d-+ki@5^d#%6-&^216sg'
-
-# Configuração do arquivo de log do projeto.
-LOG_FILE = '/tmp/networkapi.log'
-LOG_LEVEL = logging.DEBUG
-LOG_DAYS = 10
-LOG_SHOW_SQL = False
-LOG_USE_STDOUT = False
-LOG_SHOW_TRACEBACK = True
 
 VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
@@ -213,6 +261,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
+    'django_extensions',
 )
 
 
@@ -313,26 +362,19 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ##################################
 #       QUEUE SETTINGS
 ##################################
-BROKER_DESTINATION = u"/topic/networkapi_queue"
-BROKER_CONNECT_TIMEOUT = 2
-BROKER_URI = u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e"
 
+NETWORKAPI_BROKER_CONNECT_TIMEOUT=os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT','2')
+NETWORKAPI_BROKER_URI=os.getenv('NETWORKAPI_BROKER_URI',u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e")
+
+QUEUE_DESTINATION = u"/topic/networkapi_queue"
+QUEUE_BROKER_URI = NETWORKAPI_BROKER_URI
+QUEUE_BROKER_CONNECT_TIMEOUT = int(NETWORKAPI_BROKER_CONNECT_TIMEOUT)
 
 ###################################
 #    PATH ACLS
 ###################################
 
 PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
-import sys
-reload(sys)
-
-sys.setdefaultencoding('utf-8')
-
-# Inicialização do log
-# O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
-# O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
-# O terceiro parâmetro é o nível de detalhamento do Log.
-Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 ###################################
 # PATH RACKS
@@ -345,31 +387,6 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 PATH_TO_GUIDE = "/vagrant/networkapi/rack/roteiros/"
 PATH_TO_CONFIG = "/vagrant/networkapi/rack/configuracao/"
 
-###################
-# TEMPLATE CONFIG #
-###################
-
-TFTP_SERVER_ADDR = "10.31.0.8"
-TFTPBOOT_FILES_PATH = "/mnt/tftpboot/"
-
-CONFIG_TEMPLATE_PATH = "/mnt/config_templates/"
-CONFIG_FILES_REL_PATH = "networkapi/generated_config/"
-APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
-
-INTERFACE_REL_PATH = "interface/"
-#/mnt/config_templates/interface/
-INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+INTERFACE_REL_PATH
-#/mnt/tftpboot/networkapi/generated_config/interface/
-INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
-#networkapi/generated_config/interface/
-INTERFACE_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+INTERFACE_REL_PATH
-
-USER_SCRIPTS_REL_PATH = "user_scripts/"
-USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
-USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
-###################
-
-
 PATH_TO_MV = "/vagrant/networkapi/rack/delete/"
 LEAF = "LF-CM"
 OOB = "OOB-CM"
@@ -380,9 +397,49 @@ DIVISAODC_MGMT="NA"
 AMBLOG_MGMT="NA"
 GRPL3_MGMT="REDENOVODC"
 
+NETWORKAPI_USE_FOREMAN=os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
+NETWORKAPI_FOREMAN_URL=os.getenv('NETWORKAPI_FOREMAN_URL','http://foreman_server')
+
+NETWORKAPI_FOREMAN_USERNAME=os.getenv('NETWORKAPI_FOREMAN_USERNAME','admin')
+NETWORKAPI_FOREMAN_PASSWORD=os.getenv('NETWORKAPI_FOREMAN_PASSWORD', 'password')
+
 ### FOREMAN
-USE_FOREMAN=False
-FOREMAN_URL="http://foreman_server"
-FOREMAN_USERNAME="admin"
-FOREMAN_PASSWORD="password"
+USE_FOREMAN=NETWORKAPI_USE_FOREMAN
+FOREMAN_URL=NETWORKAPI_FOREMAN_URL
+FOREMAN_USERNAME=NETWORKAPI_FOREMAN_USERNAME
+FOREMAN_PASSWORD=NETWORKAPI_FOREMAN_PASSWORD
 FOREMAN_HOSTS_ENVIRONMENT_ID=1
+
+
+###################
+# TEMPLATE CONFIG #
+###################
+NETWORKAPI_TFTP_SERVER_ADDR=os.getenv('NETWORKAPI_TFTP_SERVER_ADDR','')
+
+TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
+
+NETWORKAPI_TFTPBOOT_FILES_PATH=os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH','/mnt/tftpboot/')
+TFTPBOOT_FILES_PATH = NETWORKAPI_TFTPBOOT_FILES_PATH
+
+
+NETWORKAPI_CONFIG_TEMPLATE_PATH=os.getenv('NETWORKAPI_CONFIG_TEMPLATE_PATH','/mnt/config_templates/')
+CONFIG_TEMPLATE_PATH = NETWORKAPI_CONFIG_TEMPLATE_PATH
+
+CONFIG_FILES_REL_PATH = "networkapi/generated_config/"
+CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH
+APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
+
+INTERFACE_CONFIG_REL_PATH = "interface/"
+#/mnt/config_templates/interface/
+INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+INTERFACE_CONFIG_REL_PATH
+#/mnt/tftpboot/networkapi/generated_config/interface/
+INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+INTERFACE_CONFIG_REL_PATH
+#networkapi/generated_config/interface/
+INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+INTERFACE_CONFIG_REL_PATH
+
+USER_SCRIPTS_REL_PATH = "user_scripts/"
+#/mnt/tftpboot/networkapi/generated_config/user_scripts/
+USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
+#networkapi/generated_config/interface/
+USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
+###################

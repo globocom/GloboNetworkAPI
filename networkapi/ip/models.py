@@ -436,7 +436,6 @@ class NetworkIPv4(BaseModel):
                     self.ambient_vip = evip
                     self.save(user)
                     transaction.commit()
-
                 except Exception, e:
                     self.log.error(u'Error persisting a NetworkIPv4.')
                     raise NetworkIPv4Error(e, u'Error persisting a NetworkIPv4.')
@@ -1238,7 +1237,7 @@ class IpEquipamento(BaseModel):
         self.__validate_ip()
 
         try:
-            if self.equipamento not in [ea.equipamento for ea in self.ip.networkipv4.vlan.ambiente.equipamentoambiente_set.all()]:
+            if self.equipamento not in [ea.equipamento for ea in self.ip.networkipv4.vlan.ambiente.equipamentoambiente_set.all().select_related('equipamento')]:
                 ea = EquipamentoAmbiente(
                     ambiente=self.ip.networkipv4.vlan.ambiente, equipamento=self.equipamento)
                 ea.save(authenticated_user)
@@ -2458,12 +2457,12 @@ def network_in_range(vlan, network, version):
     #Get all equipments from the environment being tested
     #that are not supposed to be filtered
     #(not the same type of the equipment type of a filter of the environment)
-    for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types):
+    for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types).select_related('equipamento'):
         equips.append(env.equipamento)
 
     #Get all environment that the equipments above are included
     for equip in equips:
-        for env in equip.equipamentoambiente_set.all():
+        for env in equip.equipamentoambiente_set.all().select_related('ambiente'):
             if not env.ambiente_id in envs_aux:
                 envs.append(env.ambiente)
                 envs_aux.append(env.ambiente_id)
@@ -2472,9 +2471,9 @@ def network_in_range(vlan, network, version):
     #if there is a network that is sub or super network of the current
     #network being tested
     for env in envs:
-        for vlan_obj in env.vlan_set.all():
-            ids_all.append(vlan_obj.id)
-            is_subnet = verify_subnet(vlan_obj, network, version)
+        for vlan in env.vlan_set.all().prefetch_related('networkipv4_set'):
+            ids_all.append(vlan.id)
+            is_subnet = verify_subnet(vlan, network, version)
             if is_subnet:
                 return False
 
