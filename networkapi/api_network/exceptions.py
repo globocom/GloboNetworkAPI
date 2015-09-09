@@ -23,3 +23,7 @@ class IncorrectNetworkRouterRegistryException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Equipment IPs not correctly registered. \
 			 In case of multiple gateways, they should a registered IP other than the gateway.'
+
+class NetworkTemplateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'No template or multiple templates found for network configuration.'

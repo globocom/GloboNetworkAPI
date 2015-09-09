@@ -210,6 +210,7 @@ class Vlan(BaseModel):
     acl_file_name_v6 = models.CharField(max_length=200, blank=True)
     acl_valida_v6 = models.BooleanField()
     ativada = models.BooleanField()
+    vrf = models.CharField(max_length=100, null=True, db_column='vrf')
 
     acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
     acl_draft_v6 = models.TextField(blank=True, null=True, db_column='acl_draft_v6')

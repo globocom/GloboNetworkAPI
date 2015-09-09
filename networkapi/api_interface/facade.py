@@ -22,7 +22,7 @@ import re
 
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.settings import INTERFACE_CONFIG_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
-from networkapi.distributedlock import LOCK_INTERFACE_EQUIP_CONFIG
+from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
 from networkapi.log import Log
 from networkapi.interface.models import EnvironmentInterface
 
@@ -57,7 +57,7 @@ def generate_and_deploy_interface_config_sync(user, id_interface):
     file_to_deploy = _generate_config_file(interfaces)
 
     #TODO Deploy config file
-    lockvar = LOCK_INTERFACE_EQUIP_CONFIG % (interface.equipamento.id)
+    lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % (interface.equipamento.id)
     status_deploy = deploy_config_in_equipment_synchronous(file_to_deploy, interface.equipamento, lockvar)
 
     return status_deploy
@@ -87,7 +87,7 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
     #TODO Deploy config file
     #make separate threads
     for equipment_id in files_to_deploy.keys():
-        lockvar = LOCK_INTERFACE_EQUIP_CONFIG % (equipment_id)
+        lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % (equipment_id)
         equipamento = Equipamento.get_by_pk(equipment_id)
         status_deploy = deploy_config_in_equipment_synchronous(files_to_deploy[equipment_id], equipamento, lockvar)
 

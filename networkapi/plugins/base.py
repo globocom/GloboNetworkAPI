@@ -35,7 +35,7 @@ class BasePlugin(object):
 	INVALID_REGEX = '([Ii]nvalid)'
 	VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
 	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
-	VALID_OUTPUT_CHARS = "-_.()\r\n %s%s" % (string.ascii_letters, string.digits)
+	VALID_OUTPUT_CHARS = "-_.():/\\\r\n %s%s" % (string.ascii_letters, string.digits)
 
 	admin_privileges = 'not defined'
 	GUEST_PRIVILEGES = 'not defined'
