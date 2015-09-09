@@ -128,39 +128,9 @@ ADMINS = (
     (NETWORKAPI_SUPPORT_TIME, NETWORKAPI_SUPPORT_EMAIL),
 )
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'filters': {
-#
-#     },
-#     'handlers': {
-#         'mail_admins': {
-#             'level': 'ERROR',
-#             'class': 'networkapi.log.CommonAdminEmailHandler'
-#         },
-#         'null': {
-#             'level': 'DEBUG',
-#             'class': 'django.utils.log.NullHandler',
-#         },
-#     },
-#     'loggers': {
-#         'django.request': {
-#             'handlers': ['mail_admins'],
-#             'level': 'ERROR',
-#             'propagate': True,
-#         },
-#         'django.db.backends': {
-#             'handlers': ['null'],
-#             'level': 'ERROR',
-#             'propagate': False,
-#         },
-#     }
-# }
-
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
             'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
@@ -170,12 +140,17 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
         },
     },
+    'filters': {
+        'user_filter': {
+            '()': 'networkapi.extra_logging.filters.ExtraLoggingFilter',
+        }
+    },
     'handlers': {
         'log_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
-            'formatter': 'simple',
+            'formatter': 'verbose',
             'mode': 'a',
         },
     },
@@ -184,21 +159,25 @@ LOGGING = {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
         'django': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
         'django.request': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
         'django.db.backends': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
     },
     'root': {
