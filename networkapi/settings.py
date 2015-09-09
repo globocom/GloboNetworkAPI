@@ -127,32 +127,49 @@ ADMINS = (
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
+            'datefmt': '%d/%b/%Y:%H:%M:%S %z',
+        },
     },
     'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'networkapi.log.CommonAdminEmailHandler'
-        },
-        'null': {
-            'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+        'log_file': {
+            'level': LOG_LEVEL,
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': LOG_FILE,
+            'formatter': 'verbose',
+            'mode': 'a',
         },
     },
     'loggers': {
+        'default': {
+            'level': LOG_LEVEL,
+            'propagate': False,
+            'handlers': ['log_file'],
+        },
+        'django': {
+            'level': LOG_LEVEL,
+            'propagate': False,
+            'handlers': ['log_file'],
+        },
         'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
+            'level': LOG_LEVEL,
+            'propagate': False,
+            'handlers': ['log_file'],
         },
         'django.db.backends': {
-            'handlers': ['null'],
-            'level': 'ERROR',
+            'level': LOG_LEVEL,
             'propagate': False,
+            'handlers': ['log_file'],
         },
-    }
+    },
+    'root': {
+        'level': LOG_LEVEL,
+        'propagate': False,
+        'handlers': ['log_file'],
+    },
 }
 
 
