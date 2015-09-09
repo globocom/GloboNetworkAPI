@@ -107,7 +107,8 @@ CACHES = {
 
 
 # Diretório dos arquivos dos scripts
-SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
+#SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
+SCRIPTS_DIR = os.getenv("NETWORKAPI_SCRIPTS_DIR", os.path.abspath(os.path.join(__file__, '../../scripts')))
 
 # Armazena a raiz do projeto.
 SITE_ROOT = os.path.abspath(__file__ + '/../../')
