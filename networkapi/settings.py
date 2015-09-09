@@ -128,6 +128,36 @@ ADMINS = (
     (NETWORKAPI_SUPPORT_TIME, NETWORKAPI_SUPPORT_EMAIL),
 )
 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'filters': {
+#
+#     },
+#     'handlers': {
+#         'mail_admins': {
+#             'level': 'ERROR',
+#             'class': 'networkapi.log.CommonAdminEmailHandler'
+#         },
+#         'null': {
+#             'level': 'DEBUG',
+#             'class': 'django.utils.log.NullHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.request': {
+#             'handlers': ['mail_admins'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#         'django.db.backends': {
+#             'handlers': ['null'],
+#             'level': 'ERROR',
+#             'propagate': False,
+#         },
+#     }
+# }
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -136,13 +166,16 @@ LOGGING = {
             'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
     },
     'handlers': {
         'log_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
-            'formatter': 'verbose',
+            'formatter': 'simple',
             'mode': 'a',
         },
     },
