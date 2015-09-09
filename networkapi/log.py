@@ -179,8 +179,8 @@ class Log(object):
         self.logger.addFilter(my_filter)
 
         #se não inicializou os handlers inicializa
-        #if len(self.logger.handlers) == 0:
-        if not self.__is_handler_added(self.logger, MultiprocessTimedRotatingFileHandler):
+        if len(self.logger.handlers) == 0:
+        #if not self.__is_handler_added(self.logger, MultiprocessTimedRotatingFileHandler):
             #LOG.info("#### initializing handler MultiprocessTimedRotatingFileHandler log...")
             log_dir = os.path.split(log_file_name)[0]
             if not os.path.exists(log_dir):
