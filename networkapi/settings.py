@@ -44,10 +44,12 @@ NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = NETWORKAPI_LOG_FILE
-if DEBUG:
-    LOG_LEVEL = logging.DEBUG
-else:
-    LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
+
+# if DEBUG:
+#     LOG_LEVEL = logging.DEBUG
+# else:
+#     LOG_LEVEL = logging.INFO
 
 
 LOG_DAYS = 10
