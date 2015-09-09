@@ -99,6 +99,9 @@ class PoolConstraintVipException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Pool nao pode ser excluido pois esta associado com um VIP.'
 
+class PoolConstraintCreatedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool request can not be deleted because it is created in equipment.'
 
 class UpdateEnvironmentVIPException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

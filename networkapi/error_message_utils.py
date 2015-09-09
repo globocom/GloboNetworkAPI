@@ -322,6 +322,8 @@ error_messages = {
     397: u'O Rack, que o servidor está, não foi cadastrado.',
     400: u'Nao foi possivel adicionar o Rack',
     401: u'As mudancas nao foram salvas',
+    405: u'Channel não pode ser criado. %s',
+    406: u'Channel não pode ser editado. %s',
 }
 
 

@@ -74,6 +74,7 @@ class InterfaceGetResource(RestResource):
 
         URL: interface/<id_interface>/get/
              interface/get-by-channel/<channel_name>/
+             interface/get/<channel_name>/<id_equip>
         """
 
         try:
@@ -89,9 +90,10 @@ class InterfaceGetResource(RestResource):
             # Get id_interface param
             interface = kwargs.get('id_interface')
             channel = kwargs.get('channel_name')
+            equipamento = kwargs.get('id_equipamento')
 
-            id_interface = None
             equipInterface_list = []
+            interface_list = []
 
             # Valid Interface ID
             if interface is not None:
@@ -99,20 +101,35 @@ class InterfaceGetResource(RestResource):
                     self.log.error(u'The id_interface parameter is not a valid value: %s.', interface)
                     raise InvalidValueError(None, 'id_interface', interface)
                 id_interface = interface
+                # Checks if interface exists in database
+                interface = Interface.get_by_pk(id_interface)
+                int_map = get_new_interface_map(interface)
+                # Return interface map
+                return self.response(dumps_networkapi({'interface': int_map}))
 
             if channel is not None:
-                interfaces = Interface.objects.all().filter(channel__nome=channel)
-                for interf in interfaces:
-                    equipInterface_list.append(get_new_interface_map(interf))
-                return self.response(dumps_networkapi({'interface': equipInterface_list}))
+                if equipamento is None:
+                    interfaces = Interface.objects.all().filter(channel__nome=channel)
+                    for interf in interfaces:
+                        equipInterface_list.append(get_new_interface_map(interf))
+                    return self.response(dumps_networkapi({'interfaces': equipInterface_list}))
+                else:
+                    interfaces = Interface.objects.all().filter(channel__nome=channel)
+                    for interf in interfaces:
+                        if interf.equipamento.id==int(equipamento):
+                            int_server = interf.get_server_switch_or_router_interface_from_host_interface()
+                            equipamento = int_server.equipamento.id
+                    interfaces_equip = Interface.objects.all().filter(equipamento__id=int(equipamento))
+                    for interf in interfaces_equip:
+                        try:
+                            i = interf.get_switch_and_router_interface_from_host_interface()
+                            interface_list.append(get_new_interface_map(i))
+                        except:
+                            pass
+                    return self.response(dumps_networkapi({'interfaces': interface_list}))
 
-            # Checks if interface exists in database
-            interface = Interface.get_by_pk(id_interface)
+            return self.response(dumps_networkapi({}))
 
-            int_map = get_new_interface_map(interface)
-
-            # Return interface map
-            return self.response(dumps_networkapi({'interface': int_map}))
 
         except UserNotAuthorizedError:
             return self.not_authorized()

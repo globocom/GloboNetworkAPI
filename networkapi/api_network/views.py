@@ -22,17 +22,17 @@ from rest_framework.response import Response
 
 from networkapi.log import Log
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_network.permissions import Read, Write
-from networkapi.api_network.serializers import NetworkIPv4Serializer
+from networkapi.api_network.permissions import Read, Write, DeployConfig
+from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer
 
-from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 
 log = Log(__name__)
 
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
-def list_networksIPv4(request):
+def networksIPv4(request):
     try:
 
         environment_vip = ''
@@ -56,3 +56,46 @@ def list_networksIPv4(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write, DeployConfig))
+def networkIPv4_deploy(request, network_id):
+
+    raise NotImplementedError()
+
+    if not is_valid_int_greater_zero_param(network_id):
+        log.error(
+            u'The network_id parameter is invalid. Value: %s.', network_id)
+        raise exceptions.InvalidNetworkIDException()
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def networksIPv6(request):
+    try:
+
+        environment_vip = ''
+
+        if request.QUERY_PARAMS.has_key("environment_vip"):
+            environment_vip = str(request.QUERY_PARAMS["environment_vip"])
+
+        networkIPv6_obj = NetworkIPv6.objects.all()
+
+        if environment_vip:
+            networkIPv6_obj = networkIPv6_obj.filter(ambient_vip__id=environment_vip)
+
+        serializer_options = NetworkIPv6Serializer(
+            networkIPv6_obj,
+            many=True
+        )
+
+        return Response(serializer_options.data)
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write, DeployConfig))
+def networkIPv6_deploy(request, network_id):
+    raise NotImplementedError()

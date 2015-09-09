@@ -5,14 +5,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "private_network", ip:"10.0.0.2"
   config.vm.hostname = "NETWORKAPI"
   config.omnibus.chef_version = :latest
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 512
+  end
   config.vm.provision :chef_solo do |chef|
     chef.add_recipe "apt"
     chef.add_recipe "mysql::server"
     chef.json = {
       :mysql => {
-         server_root_password: "password",
-         server_repl_password: "password",
-         server_debian_password: "password",
+         server_root_password: "",
+         server_repl_password: "",
+         server_debian_password: "",
          port: '3306',
          package_version: '5.6',
          data_dir: '/data-mysql',

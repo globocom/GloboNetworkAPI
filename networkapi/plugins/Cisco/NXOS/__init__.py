@@ -14,11 +14,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from django.conf.urls import patterns, url
-
-urlpatterns = patterns('networkapi.api_deploy.views',
-    url(r'^deploy/sync/filename/(?P<equipment_id>\d+)$', 'deploy_synchronous_file_in_equipment'),
-    url(r'^deploy/sync/copy_script_to_equipments/(?P<equipment_id>\d+)/$', 'deploy_sync_copy_script_to_equipment'),
-    url(r'^deploy/sync/copy_script_to_equipments/$', 'deploy_sync_copy_script_to_multiple_equipments')
-)

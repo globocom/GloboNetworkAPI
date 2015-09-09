@@ -179,10 +179,9 @@ class NetworkIPv4AddResource(RestResource):
 
             # New NetworkIPv4
             network_ipv4 = NetworkIPv4()
-            vlan_map = network_ipv4.add_network_ipv4(
-                user, vlan_id, net, evip, prefix)
+            vlan_map = network_ipv4.add_network_ipv4(user, vlan_id, net, evip, prefix)
 
-            list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
+            list_equip_routers_ambient = EquipamentoAmbiente.objects.select_related('equipamento').filter(
                 ambiente=network_ipv4.vlan.ambiente.id, is_router=True)
 
             if list_equip_routers_ambient:
@@ -204,9 +203,7 @@ class NetworkIPv4AddResource(RestResource):
                 ip_model.save(user)
 
                 for equip in list_equip_routers_ambient:
-
-                    IpEquipamento().create(
-                        user, ip_model.id, equip.equipamento.id)
+                    IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))

@@ -34,7 +34,7 @@ class InvalidCommandException(APIException):
     default_detail = 'Error: Invalid command sent to equipment. Please check template syntax or module used.'
 
     def __init__(self, msg=None):
-        self.detail = u'Error: Invalid command sent to equipment: << %s >>' % (msg)
+        self.detail = u'Error: Invalid command sent to equipment. Check syntax. Equipment msg: <<%s>>' % (msg)
 
 class InvalidEquipmentAccessException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -46,13 +46,6 @@ class InvalidFilenameException(APIException):
 
     def __init__(self, filename=None):
 	    self.detail = u'Invalid filename: %s' % (filename)
-
-class InvalidKeyException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Request has no expected key(s).'
-
-    def __init__(self, key_name=None):
-        self.detail = u'Expected key not present in request: %s' % (key_name)
 
 class LoadEquipmentModuleException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -68,4 +61,5 @@ class UnableToVerifyResponse(APIException):
 class UnsupportedEquipmentException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Tryed to apply configuration on unsupported equipment interface.'
+
 
