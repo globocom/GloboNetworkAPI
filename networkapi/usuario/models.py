@@ -150,9 +150,9 @@ class Usuario(BaseModel):
         """
         try:
             if active:
-                return Usuario.objects.get(user_ldap__iexact=ldap_usr, ativo=1)
+                return Usuario.objects.prefetch_related('grupos').get(user_ldap__iexact=ldap_usr, ativo=1)
             else:
-                return Usuario.objects.get(user_ldap__iexact=ldap_usr)
+                return Usuario.objects.prefetch_related('grupos').get(user_ldap__iexact=ldap_usr)
         except ObjectDoesNotExist, e:
             raise UsuarioNotFoundError(
                 e, u'There is no User with ldap_user = %s.' % ldap_usr)
@@ -168,7 +168,7 @@ class Usuario(BaseModel):
         '''
         try:
             password = hashlib.md5(password).hexdigest()
-            return Usuario.objects.get(user=username, pwd=password, ativo=1)
+            return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
         except ObjectDoesNotExist:
             self.log.error(u'Usuário não autenticado ou inativo: %s', username)
         except MultipleObjectsReturned:

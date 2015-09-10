@@ -235,9 +235,9 @@ class NetworkEditResource(RestResource):
 
             # Check permission group equipments
             equips_from_ipv4 = Equipamento.objects.filter(
-                ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1)
+                ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1).distinct()
             equips_from_ipv6 = Equipamento.objects.filter(
-                ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1)
+                ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1).distinct()
             for equip in equips_from_ipv4:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
