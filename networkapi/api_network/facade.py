@@ -39,6 +39,14 @@ TEMPLATE_NETWORKv6_ACTIVATE = "ipv6_activate_network_configuration"
 TEMPLATE_NETWORKv6_DEACTIVATE = "ipv6_deactivate_network_configuration"
 
 def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
+	'''Loads template for creating Network IPv4 equipment configuration, creates file and
+	apply config.
+
+	Args: equipment_list: NetworkIPv4 object
+	equipment_list: Equipamento objects list
+
+	Returns: List with status of equipments output
+	'''
 
 	data = dict()
 	#lock network id to prevent multiple requests to same id
@@ -66,6 +74,14 @@ def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 			return status_deploy
 
 def deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
+	'''Loads template for creating Network IPv6 equipment configuration, creates file and
+	apply config.
+
+	Args: NetworkIPv6 object
+	Equipamento objects list
+
+	Returns: List with status of equipments output
+	'''
 
 	data = dict()
 	#lock network id to prevent multiple requests to same id
@@ -93,6 +109,14 @@ def deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
 			return status_deploy
 
 def remove_deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
+	'''Loads template for removing Network IPv4 equipment configuration, creates file and
+	apply config.
+
+	Args: NetworkIPv4 object
+	Equipamento objects list
+
+	Returns: List with status of equipments output
+	'''
 
 	data = dict()
 
@@ -124,6 +148,14 @@ def remove_deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 			return status_deploy
 
 def remove_deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
+	'''Loads template for removing Network IPv6 equipment configuration, creates file and
+	apply config.
+
+	Args: NetworkIPv6 object
+	Equipamento objects list
+
+	Returns: List with status of equipments output
+	'''
 
 	data = dict()
 
@@ -155,6 +187,14 @@ def remove_deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
 			return status_deploy
 
 def _generate_config_file(dict_ips, equipment, template_type):
+	'''Load a template and write a file with the rended output
+
+	Args: 2-dimension dictionary with equipments information for template rendering
+	equipment to render template to
+	template type to load
+
+	Returns: filename with relative path to settings.NETWORKAPI_TFTPBOOT_FILES_PATH
+	'''
 
 	config_to_be_saved = ""
 	request_id = getattr(local, 'request_id', NO_REQUEST_ID)
@@ -163,7 +203,7 @@ def _generate_config_file(dict_ips, equipment, template_type):
 	rel_file_to_deploy = NETWORK_CONFIG_TOAPPLY_REL_PATH+filename_out
 
 	try:
-		network_template_file = _load_template_file(equipment.id, template_type)
+		network_template_file = _load_template_file(equipment, template_type)
 		key_dict = _generate_template_dict(dict_ips, equipment)
 		config_to_be_saved += network_template_file.render( Context(key_dict) )
 	except KeyError, exception:
@@ -182,6 +222,13 @@ def _generate_config_file(dict_ips, equipment, template_type):
 	return rel_file_to_deploy
 
 def _generate_template_dict(dict_ips, equipment):
+	'''Creates a 1-dimension dictionary from a 2 dimension with equipment information
+
+	Args: dict_ips dictionary for template rendering
+	equipment to create dictionary to
+
+	Returns: 1-dimension dictionary to use in template rendering for equipment
+	'''
 
 	key_dict = {}
 	#TODO Separate differet vendor support if needed for gateway redundancy
@@ -204,6 +251,11 @@ def _generate_template_dict(dict_ips, equipment):
 def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list):
 	'''Generate dictionary with vlan an IP information to be used to generate
 	template dict for equipment configuration
+
+	Args: networkipv4 NetworkIPv4 object
+	equipment_list: Equipamento objects list
+
+	Returns: 2-dimension dictionary with equipments information for template rendering
 	'''
 
 	try:
@@ -265,6 +317,11 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list):
 	'''Generate dictionary with vlan an IP information to be used to generate
 	template dict for equipment configuration
+
+	Args: networkipv4 NetworkIPv4 object
+	equipment_list: Equipamento objects list
+
+	Returns: 2-dimension dictionary with equipments information for template rendering
 	'''
 
 	try:
@@ -329,6 +386,10 @@ def _has_active_network_in_vlan(vlan):
 	this is used because some equipments remove all the L3 config
 	when applying some commands, so they can only be applyed at the first time
 	or to remove interface vlan configuration
+
+	Args: vlan object
+
+	Returns: True of False
 	'''
 	nets = NetworkIPv4.objects.filter(vlan=vlan)
 	for network in nets:
@@ -342,9 +403,17 @@ def _has_active_network_in_vlan(vlan):
 
 	return False
 
-def _load_template_file(equipment_id, template_type):
+def _load_template_file(equipment, template_type):
+	'''Load template file with specific type related to equipment
+
+	Args: equipment: Equipamento object
+	template_type: Type of template to be loaded
+
+	Returns: template string
+	'''
+
     try:
-        equipment_template = (EquipamentoRoteiro.search(None, equipment_id, template_type)).uniqueResult()
+        equipment_template = (EquipamentoRoteiro.search(None, equipment.id, template_type)).uniqueResult()
     except:
         log.error("Template type %s not found." % template_type)
         raise exceptions.NetworkTemplateException()
