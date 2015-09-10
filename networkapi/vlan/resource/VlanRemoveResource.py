@@ -165,7 +165,7 @@ class VlanRemoveResource(RestResource):
                     data_to_queue.update({'description': queue_keys.VLAN_REMOVE})
                     queue_manager.append({'action': queue_keys.VLAN_REMOVE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
-                    #queue_manager.send()
+                    queue_manager.send()
 
                     return self.response(dumps_networkapi(map))
                 else:
