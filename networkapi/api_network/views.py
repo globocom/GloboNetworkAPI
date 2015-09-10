@@ -64,7 +64,7 @@ def networksIPv4(request):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST'])
+@api_view(['POST', 'DELETE'])
 @permission_classes((IsAuthenticated, Write, DeployConfig))
 def networkIPv4_deploy(request, network_id):
     '''Deploy network L3 configuration in the environment routers
@@ -114,7 +114,11 @@ def networkIPv4_deploy(request, network_id):
             raise APIException.PermissionDenied("No permission to configure equipment %s-%s " % (equip.id, equip.nome) )
 
     #deploy network configuration
-    returned_data = facade.deploy_networkIPv4_configuration(request.user, networkipv4, equipment_list)
+    if request.method == 'POST':
+        returned_data = facade.deploy_networkIPv4_configuration(request.user, networkipv4, equipment_list)
+    elif request.method == 'DELETE':
+        returned_data = facade.remove_deploy_networkIPv4_configuration(request.user, networkipv4, equipment_list)
+
     return Response(returned_data)
 
 

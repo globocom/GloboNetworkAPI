@@ -33,6 +33,8 @@ from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.equipamento.models import TipoEquipamento
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
+from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.queue_manager import QueueManager
 
 class NetworkIPv4Error(Exception):
 
@@ -288,9 +290,20 @@ class NetworkIPv4(BaseModel):
             raise NetworkIPv4Error(e, u'Failure to search the NetworkIPv4.')
 
     def activate(self, authenticated_user):
+
+        from networkapi.api_network.serializers import NetworkIPv4Serializer
+        
         try:
             self.active = 1
             self.save(authenticated_user)
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv4Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv4_ACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv4_ACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
+            queue_manager.send()
+
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv4.')
@@ -301,10 +314,20 @@ class NetworkIPv4(BaseModel):
             @param authenticated_user: User authenticate
             @raise NetworkIPv4Error: Error disabling a NetworkIPv4.
         '''
+        
+        from networkapi.api_network.serializers import NetworkIPv4Serializer
+
         try:
 
             self.active = 0
             self.save(authenticated_user, commit=commit)
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv4Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv4_DEACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv4_DEACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
+            queue_manager.send()
 
         except Exception, e:
             self.log.error(u'Error disabling NetworkIPv4.')
@@ -1422,9 +1445,19 @@ class NetworkIPv6(BaseModel):
             raise NetworkIPv6Error(e, u'Error finding NetworkIPv6.')
 
     def activate(self, authenticated_user):
+
+        from networkapi.api_network.serializers import NetworkIPv6Serializer
+
         try:
             self.active = 1
             self.save(authenticated_user)
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv6Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv6_ACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv6_ACTIVATE,'kind': queue_keys.NETWORKv6_KEY,'data': data_to_queue})
+            queue_manager.send()
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv6.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv6.')
@@ -1435,11 +1468,20 @@ class NetworkIPv6(BaseModel):
             @param authenticated_user: User authenticate
             @raise NetworkIPv6Error: Error disabling NetworkIPv6.
         '''
+
+        from networkapi.api_network.serializers import NetworkIPv6Serializer
+
         try:
 
             self.active = 0
             self.save(authenticated_user, commit=commit)
-
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv6Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': NETWORKv6_DEACTIVATE})
+            queue_manager.append({'action': NETWORKv6_DEACTIVATE,'kind': queue_keys.NETWORKv6_KEY,'data': data_to_queue})
+            queue_manager.send()
         except Exception, e:
             self.log.error(u'Error disabling NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error disabling NetworkIPv6.')
