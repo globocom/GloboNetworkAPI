@@ -75,9 +75,9 @@ class VlanRemoveResource(RestResource):
 
             # Check permission group equipments
             equips_from_ipv4 = Equipamento.objects.filter(
-                ipequipamento__ip__networkipv4__vlan=vlan_id, equipamentoambiente__is_router=1)
+                ipequipamento__ip__networkipv4__vlan=vlan_id, equipamentoambiente__is_router=1).distinct()
             equips_from_ipv6 = Equipamento.objects.filter(
-                ipv6equipament__ip__networkipv6__vlan=vlan_id, equipamentoambiente__is_router=1)
+                ipv6equipament__ip__networkipv6__vlan=vlan_id, equipamentoambiente__is_router=1).distinct()
             for equip in equips_from_ipv4:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
@@ -165,7 +165,7 @@ class VlanRemoveResource(RestResource):
                     data_to_queue.update({'description': queue_keys.VLAN_REMOVE})
                     queue_manager.append({'action': queue_keys.VLAN_REMOVE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
-                    queue_manager.send()
+                    #queue_manager.send()
 
                     return self.response(dumps_networkapi(map))
                 else:
