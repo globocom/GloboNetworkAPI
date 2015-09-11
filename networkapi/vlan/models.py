@@ -394,7 +394,10 @@ class Vlan(BaseModel):
             @raise VlanError: Exception
         """
 
+        from networkapi.vlan.serializers import VlanSerializer
+
         try:
+
             self.ativada = 0
             self.save(authenticated_user)
             # Send to Queue

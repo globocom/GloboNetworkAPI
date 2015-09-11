@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.db import transaction
 from django.template import Context, Template
 from networkapi.log import Log
 
@@ -29,6 +30,7 @@ from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.distributedlock import distributedlock,LOCK_VLAN, \
 								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
+from networkapi.plugins.factory import PluginFactory
 
 
 log = Log(__name__)
@@ -68,6 +70,8 @@ def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 				status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
 			
 			networkipv4.activate(user)
+			transaction.commit()
+
 			if networkipv4.vlan.ativada == 0:
 				networkipv4.vlan.activate(user)
 
@@ -103,6 +107,7 @@ def deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
 				status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
 			
 			networkipv6.activate(user)
+			transaction.commit()
 			if networkipv6.vlan.ativada == 0:
 				networkipv6.vlan.activate(user)
 
@@ -136,14 +141,17 @@ def remove_deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 				file_to_deploy = _generate_config_file(dict_ips, equipment, TEMPLATE_NETWORKv4_DEACTIVATE)
 				#deploy config file in equipments
 				lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (equipment.id)
-				status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
-			
+				#status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
+				status_deploy[equipment.id] = "OKOKOKOKOK"
 			networkipv4.deactivate(user)
+			transaction.commit()
 			if networkipv4.vlan.ativada == 1:
 				#if there are no other networks active in vlan, remove int vlan
-				if _has_active_network_in_vlan(networkipv4.vlan):
-					#TODO remove int vlan
-					networkipv4.vlan.remove()
+				if not _has_active_network_in_vlan(networkipv4.vlan):
+					#remove int vlan
+					for equipment in equipment_list:
+						status_deploy[equipment.id] += _remove_svi(equipment, networkipv4.vlan.num_vlan)
+					networkipv4.vlan.remove(user)
 
 			return status_deploy
 
@@ -178,11 +186,14 @@ def remove_deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
 				status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
 			
 			networkipv6.deactivate(user)
+			transaction.commit()
 			if networkipv6.vlan.ativada == 1:
 				#if there are no other networks active in vlan, remove int vlan
-				if _has_active_network_in_vlan(networkipv6.vlan):
-					#TODO remove int vlan
-					networkipv6.vlan.remove()
+				if not _has_active_network_in_vlan(networkipv6.vlan):
+					#remove int vlan
+					for equipment in equipment_list:
+						status_deploy[equipment.id] += _remove_svi(equipment, networkipv6.vlan.num_vlan)
+					networkipv6.vlan.remove(user)
 
 			return status_deploy
 
@@ -412,25 +423,33 @@ def _load_template_file(equipment, template_type):
 	Returns: template string
 	'''
 
-    try:
-        equipment_template = (EquipamentoRoteiro.search(None, equipment.id, template_type)).uniqueResult()
-    except:
-        log.error("Template type %s not found." % template_type)
-        raise exceptions.NetworkTemplateException()
+	try:
+		equipment_template = (EquipamentoRoteiro.search(None, equipment.id, template_type)).uniqueResult()
+	except:
+		log.error("Template type %s not found." % template_type)
+		raise exceptions.NetworkTemplateException()
 
-    filename_in = NETWORK_CONFIG_TEMPLATE_PATH+"/"+equipment_template.roteiro.roteiro
+	filename_in = NETWORK_CONFIG_TEMPLATE_PATH+"/"+equipment_template.roteiro.roteiro
 
-    # Read contents from file
-    try:
-        file_handle = open(filename_in, 'r')
-        template_file = Template ( file_handle.read() )
-        file_handle.close()
-    except IOError, e:
-        log.error("Error opening template file for read: %s" % filename_in)
-        raise e
-    except Exception, e:
-        log.error("Syntax error when parsing template: %s " % e)
-        raise e
-        #TemplateSyntaxError
+	# Read contents from file
+	try:
+		file_handle = open(filename_in, 'r')
+		template_file = Template ( file_handle.read() )
+		file_handle.close()
+	except IOError, e:
+		log.error("Error opening template file for read: %s" % filename_in)
+		raise e
+	except Exception, e:
+		log.error("Syntax error when parsing template: %s " % e)
+		raise e
+		#TemplateSyntaxError
 
-    return template_file
+	return template_file
+
+def _remove_svi(equipment, vlan_num):
+	equip_plugin = PluginFactory.factory(equipment)
+	equip_plugin.connect()
+	output = equip_plugin.remove_svi(vlan_num)
+	equip_plugin.close()
+
+	return output

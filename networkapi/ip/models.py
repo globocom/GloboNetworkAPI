@@ -295,7 +295,6 @@ class NetworkIPv4(BaseModel):
         
         try:
             self.active = 1
-            self.save(authenticated_user)
             # Send to Queue
             queue_manager = QueueManager()
             serializer = NetworkIPv4Serializer(self)
@@ -303,6 +302,7 @@ class NetworkIPv4(BaseModel):
             data_to_queue.update({'description': queue_keys.NETWORKv4_ACTIVATE})
             queue_manager.append({'action': queue_keys.NETWORKv4_ACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
             queue_manager.send()
+            self.save(authenticated_user)
 
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv4.')
@@ -320,7 +320,6 @@ class NetworkIPv4(BaseModel):
         try:
 
             self.active = 0
-            self.save(authenticated_user, commit=commit)
             # Send to Queue
             queue_manager = QueueManager()
             serializer = NetworkIPv4Serializer(self)
@@ -328,6 +327,7 @@ class NetworkIPv4(BaseModel):
             data_to_queue.update({'description': queue_keys.NETWORKv4_DEACTIVATE})
             queue_manager.append({'action': queue_keys.NETWORKv4_DEACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
             queue_manager.send()
+            self.save(authenticated_user, commit=commit)
 
         except Exception, e:
             self.log.error(u'Error disabling NetworkIPv4.')

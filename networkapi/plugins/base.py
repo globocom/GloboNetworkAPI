@@ -35,7 +35,7 @@ class BasePlugin(object):
 	INVALID_REGEX = '([Ii]nvalid)'
 	VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
 	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
-	VALID_OUTPUT_CHARS = "-_.():/\\\r\n %s%s" % (string.ascii_letters, string.digits)
+	VALID_OUTPUT_CHARS = "-_.():/#\\\r\n %s%s" % (string.ascii_letters, string.digits)
 
 	admin_privileges = 'not defined'
 	GUEST_PRIVILEGES = 'not defined'
@@ -99,6 +99,12 @@ class BasePlugin(object):
 			log.error("Error connecting to host %s: %s" % (device, e))
 			raise e
 
+	def create_svi(self, svi_number, svi_description='no description'):
+		'''
+		Delete SVI in switch
+		'''
+		raise NotImplementedError()
+
 	def close(self):
 		self.channel.close()
 
@@ -134,6 +140,12 @@ class BasePlugin(object):
 		data = u'%s' % data
 		cleanedStr = unicodedata.normalize('NFKD', data).encode('ASCII', 'ignore')
 		return ''.join(c for c in cleanedStr if c in self.VALID_OUTPUT_CHARS)
+
+	def remove_svi(self, svi_number):
+		'''
+		Delete SVI from switch
+		'''
+		raise NotImplementedError()
 
 	def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
 

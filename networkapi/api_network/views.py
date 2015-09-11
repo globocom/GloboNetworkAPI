@@ -20,6 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework import status
 from rest_framework.response import Response
+from django.db.transaction import commit_on_success
 
 from networkapi.log import Log
 from networkapi.auth import has_perm
@@ -40,6 +41,8 @@ log = Log(__name__)
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def networksIPv4(request):
+    '''Lists network ipv4 and filter by url parameters
+    '''
     try:
 
         environment_vip = ''
@@ -66,8 +69,9 @@ def networksIPv4(request):
 
 @api_view(['POST', 'DELETE'])
 @permission_classes((IsAuthenticated, Write, DeployConfig))
+@commit_on_success
 def networkIPv4_deploy(request, network_id):
-    '''Deploy network L3 configuration in the environment routers
+    '''Deploy network L3 configuration in the environment routers for network ipv4
 
     Receives optional parameter equipments to specify what equipment should
     receive network configuration
@@ -125,6 +129,9 @@ def networkIPv4_deploy(request, network_id):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def networksIPv6(request):
+    '''Lists network ipv6 and filter by url parameters
+    '''
+
     try:
 
         environment_vip = ''
@@ -148,7 +155,60 @@ def networksIPv6(request):
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
 
-@api_view(['POST'])
+@api_view(['POST', 'DELETE'])
 @permission_classes((IsAuthenticated, Write, DeployConfig))
+@commit_on_success
 def networkIPv6_deploy(request, network_id):
-    raise NotImplementedError()
+    '''Deploy network L3 configuration in the environment routers for network ipv6
+
+    Receives optional parameter equipments to specify what equipment should
+    receive network configuration
+    '''
+
+    networkipv6 = NetworkIPv6.get_by_pk(int(network_id))
+    environment = networkipv6.vlan.ambiente
+    equipments_id_list = request.DATA.get("equipments", None)
+
+    equipment_list = []
+    
+    if equipments_id_list is not None:
+        if type(equipments_id_list) is not list:
+            raise api_exceptions.ValidationException("equipments")
+
+        for equip in equipments_id_list:
+            try:
+                int(equip)
+            except ValueError, e:
+                raise api_exceptions.ValidationException("equipments")
+
+        #Check that equipments received as parameters are in correct vlan environment
+        equipment_list = Equipamento.objects.filter(
+            equipamentoambiente__ambiente = environment,
+            id__in=equipments_id_list)
+        log.info ("list = %s" % equipment_list)
+        if len(equipment_list) != len(equipments_id_list):
+            log.error("Error: equipments %s are not part of network environment." % equipments_id_list)
+            raise exceptions.EquipmentIDNotInCorrectEnvException()
+    else:
+        #TODO GET network routers
+        equipment_list = Equipamento.objects.filter(
+            ipequipamento__ip__networkipv6 = networkipv6,
+            equipamentoambiente__ambiente = networkipv6.vlan.ambiente,
+            equipamentoambiente__is_router = 1)
+        if len(equipment_list) == 0:
+            raise exceptions.NoEnvironmentRoutersFoundException()
+
+    # Check permission to configure equipments 
+    for equip in equipment_list:
+        # User permission
+        if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
+            log.error(u'User does not have permission to perform the operation.')
+            raise APIException.PermissionDenied("No permission to configure equipment %s-%s " % (equip.id, equip.nome) )
+
+    #deploy network configuration
+    if request.method == 'POST':
+        returned_data = facade.deploy_networkIPv6_configuration(request.user, networkipv6, equipment_list)
+    elif request.method == 'DELETE':
+        returned_data = facade.remove_deploy_networkIPv6_configuration(request.user, networkipv6, equipment_list)
+
+    return Response(returned_data)
