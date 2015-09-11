@@ -294,7 +294,7 @@ def ambiente_prod(user, rack, environment_list):
 
     redes, ipv6 = dic_pods(rack.numero)
 
-    divisao_aclpaths_vrf = [['BE','BECLOUD'],['BEFE','BEFE'],['BEBORDA','BEBORDA'],['BECACHOS','BECACHOS']]
+    divisao_aclpaths = [['BE','BECLOUD'],['BEFE','BEFE'],['BEBORDA','BEBORDA'],['BECACHOS','BECACHOS']]
 
     grupol3 = rack.nome
     ambiente_logico = "PRODUCAO"

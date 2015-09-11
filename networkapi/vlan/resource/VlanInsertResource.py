@@ -82,6 +82,7 @@ class VlanInsertResource(RestResource):
             description = vlan_map.get('description')
             network_ipv4 = vlan_map.get('network_ipv4')
             network_ipv6 = vlan_map.get('network_ipv6')
+            vrf = vlan_map.get('vrf')
 
             # Valid environment_id ID
             if not is_valid_int_greater_zero_param(environment_id):
@@ -109,6 +110,12 @@ class VlanInsertResource(RestResource):
                 self.log.error(
                     u'Parameter network_ipv6 is invalid. Value: %s.', network_ipv6)
                 raise InvalidValueError(None, 'network_ipv6', network_ipv6)
+
+            # vrf can NOT be greater than 100
+            if not is_valid_string_maxsize(vrf, 100, False):
+                self.log.error(
+                    u'Parameter vrf is invalid. Value: %s.', vrf)
+                raise InvalidValueError(None, 'vrf', vrf)
 
             network_ipv4 = int(network_ipv4)
             network_ipv6 = int(network_ipv6)

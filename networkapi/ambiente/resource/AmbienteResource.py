@@ -269,6 +269,11 @@ class AmbienteResource(RestResource):
                 min_num_vlan_2 = min_num_vlan_1
             # validate  max_num_vlan_2 and min_num_vlan_2
 
+            vrf = environment_map.get('vrf')
+            if not is_valid_string_maxsize(vrf, 100, False):
+                self.log.error(u'Parameter vrf is invalid. Value: %s', vrf)
+                raise InvalidValueError(None, 'link', vrf)
+
             environment = Ambiente()
             environment.grupo_l3 = GrupoL3()
             environment.ambiente_logico = AmbienteLogico()
@@ -283,6 +288,7 @@ class AmbienteResource(RestResource):
             environment.min_num_vlan_1 = min_num_vlan_1
             environment.max_num_vlan_2 = max_num_vlan_2
             environment.min_num_vlan_2 = min_num_vlan_2
+            environment.vrf = vrf
 
             if filter_id is not None:
                 environment.filter = Filter()
