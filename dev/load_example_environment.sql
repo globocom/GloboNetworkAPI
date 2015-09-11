@@ -2,9 +2,9 @@
 -- 
 -- Script for load into your database the environment used for documentation examples
 -- 
--- Host: localhost    Database: telecom
+-- Host: localhost    Database: networkapi
 --
--- Current Database: `telecom`
+-- Current Database: `networkapi`
 --
 -- ----------------------------------------------------------------------------------
 

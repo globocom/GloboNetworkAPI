@@ -96,7 +96,7 @@ def networkapi_post_save(sender, instance, created, **kwargs):
             id_objeto = values_map['id']
             try:
                 parametro_anterior = EventLog.objects.values_list('parametro_atual', flat=True).filter(
-                    id_objeto=id_objeto, funcionalidade=classe.__name__).order_by('-hora_evento')[0]
+                    id_objeto=id_objeto, funcionalidade=classe.__name__).order_by("-id")[0]
             except:
                 parametro_anterior = ''
 

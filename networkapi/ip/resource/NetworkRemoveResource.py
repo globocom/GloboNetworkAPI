@@ -137,32 +137,28 @@ class NetworkRemoveResource(RestResource):
                 u'The type network parameter is invalid value: %s.', network_type)
             raise InvalidValueError(None, 'network_type', network_type)
 
-        if network_type == self.NETWORK_TYPE_V4:
-            net = NetworkIPv4.get_by_pk(id_network)
-
-            if not self.is_active_netwok(net):
-                raise NetworkInactiveError(
-                    message=error_messages.get(self.CODE_MESSAGE_INACTIVE_NETWORK))
-
-            command = NETWORKIPV4_REMOVE % int(id_network)
-
-            code, stdout, stderr = exec_script(command)
-            if code == 0:
-                net = NetworkIPv4.get_by_pk(id_network)
-                net.deactivate(user)
+        if not self.is_active_netwok(net):
+            code = 0
+            stdout = 'Nothing to do. Network is not active.'
+            stderr = ''
         else:
+            if network_type == self.NETWORK_TYPE_V4:
+                net = NetworkIPv4.get_by_pk(id_network)
 
-            net = NetworkIPv6.get_by_pk(id_network)
+                command = NETWORKIPV4_REMOVE % int(id_network)
 
-            if not self.is_active_netwok(net):
-                raise NetworkInactiveError(
-                    message=error_messages.get(self.CODE_MESSAGE_INACTIVE_NETWORK))
+                code, stdout, stderr = exec_script(command)
+                if code == 0:
+                    net = NetworkIPv4.get_by_pk(id_network)
+                    net.deactivate(user)
+            else:
+                net = NetworkIPv6.get_by_pk(id_network)
 
-            command = NETWORKIPV6_REMOVE % int(id_network)
+                command = NETWORKIPV6_REMOVE % int(id_network)
 
-            code, stdout, stderr = exec_script(command)
-            if code == 0:
-                net.deactivate(user)
+                code, stdout, stderr = exec_script(command)
+                if code == 0:
+                    net.deactivate(user)
 
         return code, stdout, stderr
 

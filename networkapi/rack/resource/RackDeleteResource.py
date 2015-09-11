@@ -86,11 +86,9 @@ def remover_ambiente(user, lista_amb, rack):
 
     for amb in lista_amb:
         amb.remove(user, amb.id)
-
-    nome = "RACK_"+rack.nome
     grupo_l3 = GrupoL3()
     try:
-        grupo_l3 = grupo_l3.get_by_name(nome)
+        grupo_l3 = grupo_l3.get_by_name(rack.nome)
         grupo_l3.delete(user)
     except:
         pass
@@ -102,12 +100,24 @@ def aplicar(rack):
     for var in arquivos: 
         name_equipaments = var.split('/')[-1][:-4]      
         #Check if file is config relative to this rack
-        if rack.nome in name_equipaments:
-            #Apply config only in spines. Leaves already have all necessary config in startup
-            if "DEL" in name_equipaments:
-                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
-                if erro:
-                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+        for nome in name_equipaments:
+            #Check if file is config relative to this rack
+            if rack.nome in nome:
+                #Apply config only in spines. Leaves already have all necessary config in startup
+                if "DEL" in nome:
+                    #Check if equipment in under maintenance. If so, does not aplly on it
+                    try:
+                        equip = Equipamento.get_by_name(nome)
+                        if not equip.maintenance:
+                            (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, nome))
+                            if erro:
+                                raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+                    except RackAplError, e:
+                        raise e
+                    except:
+                        #Error equipment not found, do nothing
+                        pass
+
 
 def remover_vlan_so(user, rack):
 
@@ -174,7 +184,7 @@ class RackDeleteResource(RestResource):
                 remover_vlan_so(user, rack)
             except:
                 raise RackError(None, u'Failed to remove the Vlans and Environments.')
-            
+
             ########################################################         Remove rack config from spines and core oob
             aplicar(rack)
 
@@ -188,7 +198,7 @@ class RackDeleteResource(RestResource):
                 except Exception, e:
                     self.log.error(u'Failed to remove the Rack.')
                     raise RackError(e, u'Failed to remove the Rack.')                   
-                
+
             return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:
@@ -201,7 +211,7 @@ class RackDeleteResource(RestResource):
             return self.response_error(379, rack_id)
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(378)
 
         except VlanNetworkError, e:
             return self.response_error(369, e.message)

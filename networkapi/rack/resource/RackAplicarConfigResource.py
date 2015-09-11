@@ -16,19 +16,21 @@
 # limitations under the License.
 
 
+from django.core.exceptions import ObjectDoesNotExist
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.util import destroy_cache_function
+from networkapi.filter.models import Filter
 from networkapi import settings
 import glob
 import commands
@@ -145,7 +147,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
  
     return network_ip
 
-def criar_ambiente(user, ambientes, ranges):
+def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None, vrf=None):
 
     #ambiente cloud
     environment = Ambiente()
@@ -157,9 +159,11 @@ def criar_ambiente(user, ambientes, ranges):
     environment.ambiente_logico.id = environment.ambiente_logico.get_by_name(ambientes.get('LOG')).id
     environment.divisao_dc.id = environment.divisao_dc.get_by_name(ambientes.get('DC')).id
 
-    environment.acl_path = None
+    environment.acl_path = acl_path
     environment.ipv4_template = None
     environment.ipv6_template = None
+    if vrf is not None:
+        environment.vrf = vrf
 
     environment.max_num_vlan_1 = ranges.get('MAX')
     environment.min_num_vlan_1 = ranges.get('MIN')
@@ -167,6 +171,14 @@ def criar_ambiente(user, ambientes, ranges):
     environment.min_num_vlan_2 = ranges.get('MIN')
 
     environment.link = " "
+
+    if filter is not None:
+        try:
+            filter_obj = Filter.objects.get(name__iexact=filter)
+            environment.filter = filter_obj
+        except ObjectDoesNotExist, e:
+            pass
+
 
     environment.create(user)
 
@@ -226,36 +238,44 @@ def ambiente_spn_lf(user, rack, environment_list):
     vlans, redes, ipv6 = dic_lf_spn(user, rack.numero)
 
     divisaoDC = ['BE', 'FE', 'BORDA', 'BORDACACHOS']
+    vrfNames = ['BEVrf', 'FEVrf', 'BordaVrf', 'BordaCachosVrf']
     spines = ['01', '02', '03', '04']
 
     grupol3 = GrupoL3()
-    grupol3.nome = "RACK_"+rack.nome
+    grupol3.nome = rack.nome
     grupol3.save(user)
 
     ambientes= dict()   
-    ambientes['L3']= "RACK_"+rack.nome
+    ambientes['L3']= rack.nome
 
     ranges=dict()
     hosts=dict()
     hosts['TIPO']= "Ponto a ponto"
     ipv6['TIPO']= "Ponto a ponto"
 
-    for divisaodc in divisaoDC: 
+    for divisaodc, vrf in zip(divisaoDC, vrfNames): 
         ambientes['DC']=divisaodc
         for i in spines: 
 
             ambientes['LOG']= "SPINE"+i+"LEAF"
+            rede = "SPINE"+i[1]+"ipv4"
+            rede_ipv6 = "SPINE"+i[1]+"ipv6"
 
             #cadastro dos ambientes
             vlan_name = "VLAN"+divisaodc+"LEAF"
             ranges['MAX'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119 
             ranges['MIN'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
 
-            env = criar_ambiente(user, ambientes, ranges)
+            env = criar_ambiente(user, ambientes, ranges, None, None, vrf)
             environment_list.append(env)
+            vlan = dict()
+            vlan['VLAN_NUM'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
+            vlan['VLAN_NAME'] = "VLAN_"+"SPN"+i[1]+'LF'+"_"+divisaodc
+            vlan = criar_vlan(user, vlan, ambientes)
+            criar_rede(user, hosts['TIPO'], redes.get(rede+'_net'), vlan)
+            criar_rede_ipv6(user, ipv6['TIPO'], ipv6.get(rede_ipv6+'_net'), vlan)
 
             #configuracao do ambiente
-            rede = "SPINE"+i[1]+"ipv4"
             hosts['REDE'] = redes.get(rede)
             hosts['PREFIX'] = "31"
 
@@ -263,7 +283,6 @@ def ambiente_spn_lf(user, rack, environment_list):
             hosts['VERSION']="ipv4"
             config_ambiente(user, hosts, ambientes)
 
-            rede_ipv6 = "SPINE"+i[1]+"ipv6"
             ipv6['REDE']= ipv6.get(rede_ipv6)
             ipv6['PREFIX']="127"
             ipv6['VERSION']="ipv6"
@@ -275,8 +294,9 @@ def ambiente_prod(user, rack, environment_list):
 
     redes, ipv6 = dic_pods(rack.numero)
 
-    divisaoDC = ['BE', 'BEFE', 'BEBORDA', 'BECACHOS']
-    grupol3 = "RACK_"+rack.nome
+    divisao_aclpaths_vrf = [['BE','BECLOUD'],['BEFE','BEFE'],['BEBORDA','BEBORDA'],['BECACHOS','BECACHOS']]
+
+    grupol3 = rack.nome
     ambiente_logico = "PRODUCAO"
 
     ambientes= dict()   
@@ -288,7 +308,9 @@ def ambiente_prod(user, rack, environment_list):
     hosts['TIPO']= "Rede invalida equipamentos"
     ipv6['TIPO']= "Rede invalida equipamentos"
 
-    for divisaodc in divisaoDC:
+    for item in divisao_aclpaths:
+        divisaodc = item[0]
+        acl_path = item[1]
 
         ambientes['DC']=divisaodc
 
@@ -298,7 +320,7 @@ def ambiente_prod(user, rack, environment_list):
         ranges['MAX']= redes.get(vlan_max)
         ranges['MIN']= redes.get(vlan_min)
 
-        env = criar_ambiente(user, ambientes, ranges)
+        env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores", "BEVrf")
         environment_list.append(env)
 
         #configuracao dos ambientes
@@ -324,14 +346,15 @@ def ambiente_cloud(user, rack, environment_list):
     ambientes= dict()
     ambientes['DC']="BE"
     ambientes['LOG']="MNGT_NETWORK"
-    ambientes['L3']= "RACK_"+rack.nome    
+    ambientes['L3']= rack.nome    
  
     ranges=dict()
     ranges['MAX']= hosts.get('VLAN_MNGT_FILER')
     ranges['MIN']=hosts.get('VLAN_MNGT_BE')
+    aclpath = 'BECLOUD'
 
     #criar ambiente cloud
-    env = criar_ambiente(user, ambientes, ranges)
+    env = criar_ambiente(user, ambientes, ranges, aclpath, "Servidores")
     environment_list.append(env)
 
     #configuracao do ambiente
@@ -364,14 +387,16 @@ def ambiente_prod_fe(user, rack, environment_list):
 
     ambientes= dict()
     ambientes['LOG']="PRODUCAO"
-    ambientes['L3']= "RACK_"+rack.nome
+    ambientes['L3']= rack.nome
     ambientes['DC']="FE"
 
     redes['TIPO']= "Rede invalida equipamentos"
     ipv6['TIPO']= "Rede invalida equipamentos"
 
+    acl_path = 'FECLOUD'
+
     #criar ambiente
-    env = criar_ambiente(user, ambientes, ranges)
+    env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores", "FEVrf")
     environment_list.append(env)
 
     #configuracao dos ambientes
@@ -388,15 +413,31 @@ def ambiente_borda(user,rack, environment_list):
     ranges=dict()
     ranges['MAX']=None
     ranges['MIN']=None
+    ranges_vlans = dict()
+    ranges_vlans['BORDA_DSR_VLAN_MIN']= 366
+    ranges_vlans['BORDA_DSR_VLAN_MAX']= 381
+    ranges_vlans['BORDA_DMZ_VLAN_MIN']= 382
+    ranges_vlans['BORDA_DMZ_VLAN_MAX']= 400
+    ranges_vlans['BORDACACHOS_VLAN_MIN']= 401
+    ranges_vlans['BORDACACHOS_VLAN_MAX']= 410
 
     ambientes=dict()   
     ambientes['LOG'] = "PRODUCAO"
-    ambientes['L3']= "RACK_"+rack.nome
-    amb_list= ['BORDA_DSR','BORDA_DMZ', 'BORDACACHOS']
+    ambientes['L3']= rack.nome
+    divisao_aclpaths = [['BORDA_DSR','BORDA-DSR', 'BordaVrf'],['BORDA_DMZ','BORDA-DMZ', 'BordaVrf'],['BORDACACHOS','BORDACACHOS', 'BordaCachosVrf']]
 
-    for amb in amb_list:
-        ambientes['DC']=amb
-        env = criar_ambiente(user, ambientes,ranges)
+    for item in divisao_aclpaths:
+        divisaodc = item[0]
+        acl_path = item[1]
+        vrf = item[2]
+
+        vlan_min = divisaodc+"_VLAN_MIN"
+        vlan_max = divisaodc+"_VLAN_MAX"
+        ranges['MAX']= ranges_vlans.get(vlan_max)
+        ranges['MIN']= ranges_vlans.get(vlan_min)
+
+        ambientes['DC']= divisaodc
+        env = criar_ambiente(user, ambientes,ranges, acl_path, "Servidores", vrf)
         environment_list.append(env)
 
     return environment_list
@@ -406,24 +447,52 @@ def aplicar(rack):
     path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
     arquivos = glob.glob(path_config)
 
+    #Get all files and search for equipments of the rack
     for var in arquivos: 
         name_equipaments = var.split('/')[-1][:-4]      
-
-        #Check if file is config relative to this rack
-        if rack.nome in name_equipaments:
-            #Apply config only in spines. Leaves already have all necessary config in startup
-            if "ADD" in name_equipaments:
-                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, name_equipaments))
-                if erro:
-                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+        for nome in name_equipaments:
+            #Check if file is config relative to this rack
+            if rack.nome in nome:
+                #Apply config only in spines. Leaves already have all necessary config in startup
+                if "ADD" in nome:
+                    #Check if equipment in under maintenance. If so, does not aplly on it
+                    try:
+                        equip = Equipamento.get_by_name(nome)
+                        if not equip.maintenance:
+                            (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, nome))
+                            if erro:
+                                raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+                    except RackAplError, e:
+                        raise e
+                    except:
+                        #Error equipment not found, do nothing
+                        pass
 
 def environment_rack(user, environment_list, rack):
 
+    #Insert all environments in environment rack table
+    #Insert rack switches in rack environments
     for env in environment_list:
-        ambienteRack = EnvironmentRack()
-        ambienteRack.ambiente = env
-        ambienteRack.rack = rack
-        ambienteRack.save(user)
+        try:
+            ambienteRack = EnvironmentRack()
+            ambienteRack.ambiente = env
+            ambienteRack.rack = rack
+            ambienteRack.create(user)
+        except EnvironmentRackDuplicatedError:
+            pass
+
+        for switch in [rack.id_sw1, rack.id_sw2]:
+            try:
+                equipamento_ambiente = EquipamentoAmbiente()
+                equipamento_ambiente.ambiente = env
+                equipamento_ambiente.equipamento = switch
+                equipamento_ambiente.is_router = True
+                equipamento_ambiente.create(user)
+            except EquipamentoAmbienteDuplicatedError:
+                pass
+
+
+
 
 class RackAplicarConfigResource(RestResource):
 
@@ -489,23 +558,38 @@ class RackAplicarConfigResource(RestResource):
             #######################################################################                   Ambientes
 
             #BE - SPINE - LEAF
-            environment_list = ambiente_spn_lf(user, rack, environment_list)
+            try:
+                environment_list = ambiente_spn_lf(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans do Spine-leaf.")
 
             #BE - PRODUCAO
-            environment_list = ambiente_prod(user, rack, environment_list)
+            try:
+                environment_list = ambiente_prod(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de produção.")
 
             #BE - Hosts - CLOUD
-            environment_list = ambiente_cloud(user, rack, environment_list)
-            
-            #FE 
-            environment_list = ambiente_prod_fe(user, rack, environment_list)
+            try:
+                environment_list = ambiente_cloud(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans da Cloud.")
+
+            #FE
+            try:
+                environment_list = ambiente_prod_fe(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de FE.")
 
             #Borda
-            environment_list = ambiente_borda(user, rack, environment_list)
+            try:
+                environment_list = ambiente_borda(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de Borda.")
 
             #######################################################################                   Backuper
 
-            aplicar(rack)
+            #aplicar(rack)
             environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
@@ -531,6 +615,6 @@ class RackAplicarConfigResource(RestResource):
             return self.response_error(379, rack_id)
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(383)
 
 

@@ -57,7 +57,7 @@ def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equi
         egroup = EGrupo.get_by_pk(egroup_id)
         egroups = [egroup]
     elif equip_id is not None:
-        equip = Equipamento().get_by_pk(equip_id)
+        equip = Equipamento.get_by_pk(equip_id, 'grupos')
         egroups = equip.grupos.all()
         if len(egroups) == 0:
             return False
@@ -65,8 +65,7 @@ def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equi
     ugroups = user.grupos.all()
     for ugroup in ugroups:
         try:
-            perm = PermissaoAdministrativa().get_permission(
-                perm_function, ugroup, perm_oper)
+            perm = PermissaoAdministrativa().get_permission(perm_function, ugroup, perm_oper)
             if (egroups is None) or (_has_equip_perm(ugroup, egroups, equip_oper)):
                 return True
         except PermissaoAdministrativaNotFoundError:

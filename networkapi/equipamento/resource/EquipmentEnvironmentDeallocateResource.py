@@ -71,7 +71,7 @@ class EquipmentEnvironmentDeallocateResource(RestResource):
             environment = Ambiente.get_by_pk(id_environment)
 
             with distributedlock(LOCK_EQUIPMENT_ENVIRONMENT % id_environment):
-
+                '''
                 equip_env = EquipamentoAmbiente().get_by_equipment_environment(
                     id_equipment, id_environment)
 
@@ -105,6 +105,7 @@ class EquipmentEnvironmentDeallocateResource(RestResource):
                     return self.response_error(336, environment.show_environment(), ipv4_error, ipv6_error)
 
                 # Remove Equipment - Environment
+                '''
                 EquipamentoAmbiente.remove(user, id_equipment, id_environment)
 
                 return self.response(dumps_networkapi({}))

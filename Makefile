@@ -13,6 +13,19 @@ help:
 	@echo "  publish    to publish the package to PyPI"
 	@echo
 
+default:
+	@awk -F\: '/^[a-z_]+:/ && !/default/ {printf "- %-20s %s\n", $$1, $$2}' Makefile
+
+pip: # install pip libraries
+	@pip install -r requirements.txt
+	@pip install -r requirements_test.txt
+
+run: # run local server
+	@python manage.py runserver 0.0.0.0:8000 $(filter-out $@,$(MAKECMDGOALS))
+
+shell: # run django shell
+	@python manage.py shell_plus
+
 clean:
 	@echo "Cleaning..."
 	@rm -rf build dist *.egg-info

@@ -5,7 +5,9 @@
 
 # Contributors:
 
+- [Alejandra Klachquin](https://github.com/alejandraklachquin)
 - Avner Gonçalves
+- [Laura Panzariello](https://github.com/laurapanzariello)
 - Lucas Borges
 - Mauricio Leoncio dos Santos
 - Mateus Constanzo

@@ -403,6 +403,7 @@ class Modelo(BaseModel):
 
 class TipoEquipamento(BaseModel):
     TIPO_EQUIPAMENTO_SERVIDOR_VIRTUAL = 10
+    TIPO_EQUIPAMENTO_SERVIDOR = 2
     TIPO_EQUIPAMENTO_SWITCH = 1
     TIPO_EQUIPAMENTO_ROUTER = 3
 
@@ -526,6 +527,7 @@ class Equipamento(BaseModel):
     modelo = models.ForeignKey(Modelo, db_column='id_modelo')
     nome = models.CharField(unique=True, max_length=50)
     grupos = models.ManyToManyField(EGrupo, through='EquipamentoGrupo')
+    maintenance = models.BooleanField(db_column='maintenance')
 
     log = Log('Equipamento')
 
@@ -598,6 +600,9 @@ class Equipamento(BaseModel):
 
         self.modelo = Modelo.get_by_pk(self.modelo.id)
 
+        if self.maintenance is None:
+            self.maintenance = False
+
         try:
             self.get_by_name(self.nome)
             raise EquipamentoNameDuplicatedError(
@@ -619,7 +624,7 @@ class Equipamento(BaseModel):
             raise EquipamentoError(e, u'Falha ao inserir o equipamento.')
 
     @classmethod
-    def get_by_pk(cls, pk):
+    def get_by_pk(cls, pk, *prefetch_list):
         """Get Equipament by id.
 
             @return: Equipament.
@@ -629,7 +634,11 @@ class Equipamento(BaseModel):
             @raise OperationalError: Lock wait timeout exceeded. 
         """
         try:
-            return Equipamento.objects.filter(id=pk).uniqueResult()
+            query = Equipamento.objects.filter(id=pk)
+            if prefetch_list:
+                return query.prefetch_related(prefetch_list).uniqueResult()
+            else:
+                return query.uniqueResult()
         except ObjectDoesNotExist, e:
             raise EquipamentoNotFoundError(
                 e, u'Dont there is a equipament by pk = %s.' % id)
@@ -991,7 +1000,7 @@ class EquipamentoAcesso(BaseModel):
                 e, u'Failure to search the EquipamentoAcesso.')
 
     @classmethod
-    def search(cls, ugroups=None):
+    def search(cls, ugroups=None, equipamento=None, protocolo=None):
         """Efetua a pesquisa das informações de acesso a equipamentos
         @return: Um queryset contendo as informações de aceso a equipamentos cadastrados
         @raise EquipamentoError: Falha ao pesquisar as informações de acesso a equipamentos.
@@ -1001,6 +1010,13 @@ class EquipamentoAcesso(BaseModel):
             if ugroups is not None:
                 results = results.filter(
                     equipamento__grupos__direitosgrupoequipamento__ugrupo__in=ugroups, equipamento__grupos__direitosgrupoequipamento__escrita='1')
+
+            if equipamento is not None:
+                results = results.filter(equipamento=equipamento)
+
+            if protocolo is not None:
+                results = results.filter(tipo_acesso__protocolo=protocolo)
+
             return results
         except Exception, e:
             cls.log.error(
@@ -1108,7 +1124,7 @@ class EquipamentoRoteiro(BaseModel):
         unique_together = ('equipamento', 'roteiro')
 
     @classmethod
-    def search(cls, ugroups=None, equip_id=None):
+    def search(cls, ugroups=None, equip_id=None, roteiro_type=None):
         try:
             er = EquipamentoRoteiro.objects.all()
 
@@ -1118,6 +1134,9 @@ class EquipamentoRoteiro(BaseModel):
 
             if equip_id is not None:
                 er = er.filter(equipamento__id=equip_id)
+
+            if roteiro_type is not None:
+                er = er.filter(roteiro__tipo_roteiro__tipo=roteiro_type)
 
             return er
 

@@ -10,6 +10,8 @@ In order to use the pre-configured VM you need to have `vagrant <https://www.vag
 After that, go to the directory you want to install and do::
 
   git clone https://github.com/globocom/GloboNetworkAPI
+  git submodule init
+  git submodule update
   cd GloboNetworkAPI-WebUI
   vagrant plugin install vagrant-omnibus
   vagrant up
@@ -186,8 +188,8 @@ Apache ActiveMQ ™ is the most popular and powerful open source messaging and I
 
 Example configuration on ``settings.py``::
 
-	QUEUE_DESTINATION = "/topic/queue_name"
-	QUEUE_BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false"
+	BROKER_DESTINATION = "/topic/queue_name"
+	BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false"
 
 Usage::
 

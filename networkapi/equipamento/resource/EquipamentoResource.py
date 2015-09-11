@@ -40,7 +40,7 @@ from networkapi.grupo.models import EGrupoNotFoundError, GrupoError
 from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT, LOCK_BRAND, LOCK_MODEL, LOCK_EQUIPMENT_SCRIPT, LOCK_EQUIPMENT_ENVIRONMENT
 
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize,\
-    destroy_cache_function
+    destroy_cache_function, is_valid_boolean_param
 
 from networkapi.exception import InvalidValueError
 
@@ -141,8 +141,20 @@ def insert_equipment(equipment_map, user):
     if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 50):
         log.error(u'The name parameter is not a valid value: %s.', name)
         raise InvalidValueError(None, 'name', name)
+    else:
+        equipment.nome = name
 
-    equipment.nome = name
+    #maintenance is a new feature. Check existing value if not defined in request
+    #Old calls does not send this field
+    maintenance = equipment_map.get('maintenance')
+    if maintenance is None:
+        maintenance = False
+    if not is_valid_boolean_param(maintenance):
+        log.error(u'The maintenance parameter is not a valid value: %s.', maintenance)
+        raise InvalidValueError(None, 'maintenance', maintenance)
+    else:
+        equipment.maintenance = maintenance
+
     equipment_group_id = equipment.create(user, group_id)
 
     return 0, equipment_group_id, equipment

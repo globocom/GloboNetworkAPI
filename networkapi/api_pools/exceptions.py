@@ -20,14 +20,24 @@ class InvalidIdEnvironmentException(APIException):
     default_detail = 'Invalid id for Environment.'
 
 
+class InvalidServiceDownActionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid value for Service-Down-Action.'
+
+
 class InvalidIdVipException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for VIP.'
 
 
-class InvalidIdentifierPoolException(APIException):
+class InvalidIdentifierAlreadyPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Identifier already exists.'
+
+
+class InvalidIdentifierFistDigitPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'The first character of the identifier field can not be a number.'
 
 class CreatedPoolIdentifierException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -41,6 +51,10 @@ class InvalidIdPoolMemberException(APIException):
 class ScriptRemovePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute remove script for pool.'
+
+class ScriptAlterServiceDownActionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute service-down-action script for pool.'
 
 
 class ScriptCreatePoolException(APIException):
@@ -76,6 +90,10 @@ class ScriptAlterLimitPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute limits script for pool.'
 
+class ScriptAlterPriorityPoolMembersException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute priority script for pool.'
+
 class ScriptAlterLimitPoolDiffMembersException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to change limits for pool. Members limit differs from pool default limit \
@@ -85,6 +103,9 @@ class PoolConstraintVipException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Pool nao pode ser excluido pois esta associado com um VIP.'
 
+class PoolConstraintCreatedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool request can not be deleted because it is created in equipment.'
 
 class UpdateEnvironmentVIPException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -122,3 +143,50 @@ class ScriptManagementPoolException(APIException):
 class InvalidStatusPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid status for Pool Member.'
+
+
+class OptionPoolDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Option Pool Does Not Exist.'
+
+class EnvironmentDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Environment Does Not Exist.'
+
+class InvalidIdOptionPoolRequestException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Option Pool Request.'
+
+class OptionPoolEnvironmentDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Environment Option Pool Does Not Exist.'
+
+class InvalidIdOptionPoolEnvironmentRequestException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid id for Environment Option Pool Request.'
+
+class ScriptAddPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute add script for pool option.'
+
+class ScriptAddEnvironmentPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute add script for environment pool option.'
+
+class OptionPoolConstraintPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'OptionPool can not be deleted because it is associated with a Pool.'
+
+class ScriptDeletePoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute delete script for pool option.'
+
+class ScriptModifyPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute modify script for pool option.'
+
+class ScriptDeleteEnvironmentPoolOptionException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute delete script for environment pool option.'
+
+

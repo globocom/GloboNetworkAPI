@@ -105,6 +105,7 @@ class RequestVipGetByIdResource(RestResource):
             if pool_to_use:
                 vip_map['maxcon'] = pool_to_use.default_limit
                 vip_map['metodo_bal'] = pool_to_use.lb_method
+                vip_map['servicedownaction'] = pool_to_use.servicedownaction.name if pool_to_use.servicedownaction else ''
                 vip_map['healthcheck_type'] = pool.healthcheck.healthcheck_type if pool.healthcheck else ''
                 if vip_map['healthcheck_type'] in ('HTTP', 'HTTPS'):
                     vip_map['healthcheck'] = pool.healthcheck.healthcheck_request if pool.healthcheck else ''

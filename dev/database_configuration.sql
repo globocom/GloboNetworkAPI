@@ -2,13 +2,13 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
-CREATE SCHEMA IF NOT EXISTS `telecom` DEFAULT CHARACTER SET utf8 ;
-USE `telecom` ;
+CREATE SCHEMA IF NOT EXISTS `networkapi` DEFAULT CHARACTER SET utf8 ;
+USE `networkapi` ;
 
 -- -----------------------------------------------------
--- Table `telecom`.`ambiente_logico`
+-- Table `networkapi`.`ambiente_logico`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ambiente_logico` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ambiente_logico` (
   `id_ambiente_logic` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(80) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_ambiente_logic`),
@@ -20,9 +20,9 @@ COMMENT = 'Separação de ambiente utilizada na Globo.com';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`divisao_dc`
+-- Table `networkapi`.`divisao_dc`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`divisao_dc` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`divisao_dc` (
   `id_divisao` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_divisao`),
@@ -34,9 +34,9 @@ COMMENT = 'Divisao da rede (FE, BE, Parceiros etc)';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`filter`
+-- Table `networkapi`.`filter`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`filter` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`filter` (
   `id_filter` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
   `description` VARCHAR(200) NULL DEFAULT '',
@@ -48,9 +48,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`grupo_l3`
+-- Table `networkapi`.`grupo_l3`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`grupo_l3` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`grupo_l3` (
   `id_grupo_l3` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(80) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_grupo_l3`),
@@ -62,9 +62,9 @@ COMMENT = 'Descreve grupo de roteamento de um ambiente';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ambiente`
+-- Table `networkapi`.`ambiente`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ambiente` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ambiente` (
   `id_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_grupo_l3` INT(10) UNSIGNED NOT NULL,
   `id_ambiente_logic` INT(10) UNSIGNED NOT NULL,
@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ambiente` (
   `max_num_vlan_1` INT(10) NULL DEFAULT NULL,
   `min_num_vlan_2` INT(10) NULL DEFAULT NULL,
   `max_num_vlan_2` INT(10) NULL DEFAULT NULL,
+  `vrf` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id_ambiente`),
   UNIQUE INDEX `ambiente_unico` (`id_grupo_l3` ASC, `id_ambiente_logic` ASC, `id_divisao` ASC),
   INDEX `fk_ambiente_ambiente_logico` (`id_ambiente_logic` ASC),
@@ -86,20 +87,20 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ambiente` (
   INDEX `fk_ambiente_filter` (`id_filter` ASC),
   CONSTRAINT `fk_ambiente_ambiente_logico`
     FOREIGN KEY (`id_ambiente_logic`)
-    REFERENCES `telecom`.`ambiente_logico` (`id_ambiente_logic`)
+    REFERENCES `networkapi`.`ambiente_logico` (`id_ambiente_logic`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_ambiente_divisao_dc`
     FOREIGN KEY (`id_divisao`)
-    REFERENCES `telecom`.`divisao_dc` (`id_divisao`)
+    REFERENCES `networkapi`.`divisao_dc` (`id_divisao`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_ambiente_filter`
     FOREIGN KEY (`id_filter`)
-    REFERENCES `telecom`.`filter` (`id_filter`)
+    REFERENCES `networkapi`.`filter` (`id_filter`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_ambiente_grupo_l3`
     FOREIGN KEY (`id_grupo_l3`)
-    REFERENCES `telecom`.`grupo_l3` (`id_grupo_l3`)
+    REFERENCES `networkapi`.`grupo_l3` (`id_grupo_l3`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -107,9 +108,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ambientevip`
+-- Table `networkapi`.`ambientevip`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ambientevip` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ambientevip` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `finalidade_txt` CHAR(50) CHARACTER SET 'latin1' NOT NULL,
   `cliente_txt` CHAR(50) CHARACTER SET 'latin1' NOT NULL,
@@ -121,9 +122,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`block_rules`
+-- Table `networkapi`.`block_rules`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`block_rules` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`block_rules` (
   `id_block_rules` INT(10) NOT NULL AUTO_INCREMENT,
   `content` TEXT NOT NULL,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
@@ -132,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`block_rules` (
   INDEX `fk_block_rules_ambiente_idx` (`id_ambiente` ASC),
   CONSTRAINT `fk_block_rules_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -141,9 +142,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`config`
+-- Table `networkapi`.`config`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`config` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`config` (
   `id_config` TINYINT(4) NOT NULL,
   `ip_v4_min` TINYINT(4) NOT NULL,
   `ip_v4_max` TINYINT(4) NOT NULL,
@@ -155,9 +156,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_rede`
+-- Table `networkapi`.`tipo_rede`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_rede` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`tipo_rede` (
   `id_tipo_rede` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `tipo_rede` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_tipo_rede`),
@@ -169,9 +170,9 @@ COMMENT = 'Informa o tipo dos IPs da vlan.';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ip_config`
+-- Table `networkapi`.`ip_config`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ip_config` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ip_config` (
   `id_ip_config` INT(10) NOT NULL AUTO_INCREMENT,
   `subnet` VARCHAR(45) NOT NULL,
   `new_prefix` VARCHAR(3) NOT NULL,
@@ -181,7 +182,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ip_config` (
   INDEX `fk_ip_config_1_idx` (`network_type` ASC),
   CONSTRAINT `fk_ip_config_network_type`
     FOREIGN KEY (`network_type`)
-    REFERENCES `telecom`.`tipo_rede` (`id_tipo_rede`)
+    REFERENCES `networkapi`.`tipo_rede` (`id_tipo_rede`)
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -189,9 +190,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`config_do_ambiente`
+-- Table `networkapi`.`config_do_ambiente`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`config_do_ambiente` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`config_do_ambiente` (
   `id_config_do_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
   `id_ip_config` INT(10) NOT NULL,
@@ -201,12 +202,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`config_do_ambiente` (
   INDEX `fk_config_do_ambiente_ip_config` (`id_ip_config` ASC),
   CONSTRAINT `fk_config_do_ambiente_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_config_do_ambiente_ip_config`
     FOREIGN KEY (`id_ip_config`)
-    REFERENCES `telecom`.`ip_config` (`id_ip_config`)
+    REFERENCES `networkapi`.`ip_config` (`id_ip_config`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -215,9 +216,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`grupos_equip`
+-- Table `networkapi`.`grupos_equip`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`grupos_equip` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`grupos_equip` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL COMMENT 'unique',
   PRIMARY KEY (`id`))
@@ -227,9 +228,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`grupos`
+-- Table `networkapi`.`grupos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`grupos` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`grupos` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL COMMENT 'unique',
   `leitura` CHAR(1) NOT NULL,
@@ -244,9 +245,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`direitos_grupoequip`
+-- Table `networkapi`.`direitos_grupoequip`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`direitos_grupoequip` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`direitos_grupoequip` (
   `id_direito` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ugrupo` INT(10) UNSIGNED NOT NULL,
   `id_egrupo` INT(10) UNSIGNED NOT NULL,
@@ -260,12 +261,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`direitos_grupoequip` (
   INDEX `fk_direitosg_gequip` (`id_egrupo` ASC),
   CONSTRAINT `fk_direitosg_gequip`
     FOREIGN KEY (`id_egrupo`)
-    REFERENCES `telecom`.`grupos_equip` (`id`)
+    REFERENCES `networkapi`.`grupos_equip` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_direitosg_ugrupos`
     FOREIGN KEY (`id_ugrupo`)
-    REFERENCES `telecom`.`grupos` (`id`)
+    REFERENCES `networkapi`.`grupos` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -274,9 +275,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`marcas`
+-- Table `networkapi`.`marcas`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`marcas` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`marcas` (
   `id_marca` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_marca`),
@@ -288,9 +289,9 @@ COMMENT = 'Marca do equipamento (Cisco, 3Com etc...)';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`modelos`
+-- Table `networkapi`.`modelos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`modelos` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`modelos` (
   `id_modelo` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL,
   `id_marca` INT(10) UNSIGNED NOT NULL,
@@ -299,7 +300,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`modelos` (
   INDEX `fk_modelos_marcas` (`id_marca` ASC),
   CONSTRAINT `fk_modelos_marcas`
     FOREIGN KEY (`id_marca`)
-    REFERENCES `telecom`.`marcas` (`id_marca`)
+    REFERENCES `networkapi`.`marcas` (`id_marca`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -308,9 +309,9 @@ COMMENT = 'Modelo do equipamento';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_equipamento`
+-- Table `networkapi`.`tipo_equipamento`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_equipamento` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`tipo_equipamento` (
   `id_tipo_equipamento` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `tipo_equipamento` VARCHAR(100) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_tipo_equipamento`))
@@ -321,9 +322,9 @@ COMMENT = 'Tipo do equipamento (roteador, servidor, switch)';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`equipamentos`
+-- Table `networkapi`.`equipamentos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`equipamentos` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`equipamentos` (
   `id_equip` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_tipo_equipamento` INT(10) UNSIGNED NOT NULL,
   `id_modelo` INT(10) UNSIGNED NOT NULL DEFAULT '1',
@@ -334,11 +335,11 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equipamentos` (
   INDEX `fk_equipamentos_modelos` (`id_modelo` ASC),
   CONSTRAINT `fk_equipamentos_modelos`
     FOREIGN KEY (`id_modelo`)
-    REFERENCES `telecom`.`modelos` (`id_modelo`)
+    REFERENCES `networkapi`.`modelos` (`id_modelo`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_equipamentos_tipo_equipamento`
     FOREIGN KEY (`id_tipo_equipamento`)
-    REFERENCES `telecom`.`tipo_equipamento` (`id_tipo_equipamento`)
+    REFERENCES `networkapi`.`tipo_equipamento` (`id_tipo_equipamento`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -346,9 +347,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`equip_do_ambiente`
+-- Table `networkapi`.`equip_do_ambiente`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`equip_do_ambiente` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`equip_do_ambiente` (
   `id_equip_do_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
   `id_equip` INT(10) UNSIGNED NOT NULL,
@@ -359,11 +360,11 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equip_do_ambiente` (
   INDEX `fk_equip_do_ambiente_equipamentos` (`id_equip` ASC),
   CONSTRAINT `fk_equip_do_ambiente_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_equip_do_ambiente_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -372,9 +373,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`equip_do_grupo`
+-- Table `networkapi`.`equip_do_grupo`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`equip_do_grupo` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`equip_do_grupo` (
   `id_equip_do_grupo` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_egrupo` INT(10) UNSIGNED NOT NULL,
   `id_equip` INT(10) UNSIGNED NOT NULL,
@@ -384,12 +385,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equip_do_grupo` (
   INDEX `fk_equip_do_grupo_equipamentos` (`id_equip` ASC),
   CONSTRAINT `fk_equip_do_grupo_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_equip_do_grupo_grupo`
     FOREIGN KEY (`id_egrupo`)
-    REFERENCES `telecom`.`grupos_equip` (`id`)
+    REFERENCES `networkapi`.`grupos_equip` (`id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -397,9 +398,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_acesso`
+-- Table `networkapi`.`tipo_acesso`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_acesso` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`tipo_acesso` (
   `id_tipo_acesso` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `protocolo` VARCHAR(45) CHARACTER SET 'latin1' NOT NULL,
   PRIMARY KEY (`id_tipo_acesso`),
@@ -410,9 +411,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`equiptos_access`
+-- Table `networkapi`.`equiptos_access`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`equiptos_access` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`equiptos_access` (
   `id_equiptos_access` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_equip` INT(10) UNSIGNED NOT NULL,
   `fqdn` VARCHAR(100) NOT NULL,
@@ -426,12 +427,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equiptos_access` (
   INDEX `fk_equiptos_access_tipo_acesso` (`id_tipo_acesso` ASC),
   CONSTRAINT `fk_equiptos_access_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_equiptos_access_tipo_acesso`
     FOREIGN KEY (`id_tipo_acesso`)
-    REFERENCES `telecom`.`tipo_acesso` (`id_tipo_acesso`)
+    REFERENCES `networkapi`.`tipo_acesso` (`id_tipo_acesso`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -439,9 +440,9 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`tipo_roteiro`
+-- Table `networkapi`.`tipo_roteiro`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`tipo_roteiro` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`tipo_roteiro` (
   `id_tipo_roteiro` INT(11) NOT NULL AUTO_INCREMENT,
   `tipo` VARCHAR(40) CHARACTER SET 'latin1' NULL DEFAULT NULL,
   `descricao` VARCHAR(100) CHARACTER SET 'latin1' NULL DEFAULT NULL,
@@ -453,9 +454,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`roteiros`
+-- Table `networkapi`.`roteiros`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`roteiros` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`roteiros` (
   `id_roteiros` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `roteiro` VARCHAR(40) CHARACTER SET 'latin1' NOT NULL,
   `id_tipo_roteiro` INT(11) NOT NULL,
@@ -465,7 +466,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`roteiros` (
   INDEX `fk_roteiros_tipo_roteiro` (`id_tipo_roteiro` ASC),
   CONSTRAINT `fk_roteiros_tipo_roteiro`
     FOREIGN KEY (`id_tipo_roteiro`)
-    REFERENCES `telecom`.`tipo_roteiro` (`id_tipo_roteiro`)
+    REFERENCES `networkapi`.`tipo_roteiro` (`id_tipo_roteiro`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -473,9 +474,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`equiptos_roteiros`
+-- Table `networkapi`.`equiptos_roteiros`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`equiptos_roteiros` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`equiptos_roteiros` (
   `id_equiptos_roteiros` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_equip` INT(10) UNSIGNED NOT NULL,
   `id_roteiros` INT(10) UNSIGNED NOT NULL,
@@ -485,12 +486,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`equiptos_roteiros` (
   INDEX `fk_equiptos_roteiros_roteiros` (`id_roteiros` ASC),
   CONSTRAINT `fk_equiptos_roteiros_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_equiptos_roteiros_roteiros`
     FOREIGN KEY (`id_roteiros`)
-    REFERENCES `telecom`.`roteiros` (`id_roteiros`)
+    REFERENCES `networkapi`.`roteiros` (`id_roteiros`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -498,9 +499,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`usuarios`
+-- Table `networkapi`.`usuarios`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`usuarios` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`usuarios` (
   `user` VARCHAR(45) CHARACTER SET 'latin1' NOT NULL,
   `pwd` VARCHAR(45) NOT NULL,
   `id_user` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -516,9 +517,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`event_log`
+-- Table `networkapi`.`event_log`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`event_log` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`event_log` (
   `id_evento` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_user` INT(10) UNSIGNED NOT NULL,
   `hora_evento` DATETIME NOT NULL,
@@ -533,19 +534,19 @@ CREATE TABLE IF NOT EXISTS `telecom`.`event_log` (
   INDEX `fk_event_log_usuarios` (`id_user` ASC),
   CONSTRAINT `fk_event_log_usuarios`
     FOREIGN KEY (`id_user`)
-    REFERENCES `telecom`.`usuarios` (`id_user`)
+    REFERENCES `networkapi`.`usuarios` (`id_user`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8
-COMMENT = 'InnoDB free: 0 kB; (`id_user`) REFER `telecom/usuarios`(`id_';
+COMMENT = 'InnoDB free: 0 kB; (`id_user`) REFER `networkapi/usuarios`(`id_';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`filter_equiptype_xref`
+-- Table `networkapi`.`filter_equiptype_xref`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`filter_equiptype_xref` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`filter_equiptype_xref` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_filter` INT(10) UNSIGNED NOT NULL,
   `id_equiptype` INT(10) UNSIGNED NOT NULL,
@@ -554,12 +555,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`filter_equiptype_xref` (
   INDEX `fk_filter_equiptype_xref_equiptype` (`id_equiptype` ASC),
   CONSTRAINT `fk_filter_equiptype_xref_equip_type`
     FOREIGN KEY (`id_equiptype`)
-    REFERENCES `telecom`.`tipo_equipamento` (`id_tipo_equipamento`)
+    REFERENCES `networkapi`.`tipo_equipamento` (`id_tipo_equipamento`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_filter_equiptype_xref_filter`
     FOREIGN KEY (`id_filter`)
-    REFERENCES `telecom`.`filter` (`id_filter`)
+    REFERENCES `networkapi`.`filter` (`id_filter`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -568,9 +569,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`functionality`
+-- Table `networkapi`.`functionality`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`functionality` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`functionality` (
   `functionality` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`functionality`))
 ENGINE = InnoDB
@@ -578,9 +579,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`healthcheck`
+-- Table `networkapi`.`healthcheck`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`healthcheck` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`healthcheck` (
   `id_healthcheck` INT(11) NOT NULL AUTO_INCREMENT,
   `identifier` VARCHAR(200) NULL DEFAULT NULL,
   `healthcheck_type` VARCHAR(45) NULL DEFAULT NULL,
@@ -593,9 +594,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`healthcheck_expect`
+-- Table `networkapi`.`healthcheck_expect`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`healthcheck_expect` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`healthcheck_expect` (
   `id_healthcheck_expect` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `expect_string` VARCHAR(50) NOT NULL,
   `match_list` VARCHAR(50) NOT NULL,
@@ -604,18 +605,29 @@ CREATE TABLE IF NOT EXISTS `telecom`.`healthcheck_expect` (
   INDEX `fk_healthcheck_expect_ambiente` (`id_ambiente` ASC),
   CONSTRAINT `fk_healthcheck_expect_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
+-- -----------------------------------------------------
+-- Table `networkapi`.`tipo_interface`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `networkapi`.`tipo_interface` (
+  `id_tipo_interface` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`id_tipo_interface`),
+  UNIQUE INDEX `tipo_unique` (`tipo` ASC))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
 
 -- -----------------------------------------------------
--- Table `telecom`.`interfaces`
+-- Table `networkapi`.`interfaces`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`interfaces` (
   `id_equip` INT(10) UNSIGNED NOT NULL,
   `interface` VARCHAR(20) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NOT NULL,
   `protegida` TINYINT(1) NOT NULL DEFAULT '1',
@@ -623,6 +635,9 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
   `id_interface` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ligacao_front` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_ligacao_back` INT(10) UNSIGNED NULL DEFAULT NULL,
+  `vlan_nativa` VARCHAR(200) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT 1,
+  `id_tipo_interface` INT(10) UNSIGNED NOT NULL,
+  `id_channel` INT(10) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`id_interface`),
   UNIQUE INDEX `uniq_interface_id_equip` (`interface` ASC, `id_equip` ASC),
   INDEX `fk_interfaces_equipamentos` (`id_equip` ASC),
@@ -630,16 +645,24 @@ CREATE TABLE IF NOT EXISTS `telecom`.`interfaces` (
   INDEX `fk_interfaces_interfaces_back` (`id_ligacao_back` ASC),
   CONSTRAINT `fk_interfaces_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_interfaces_interfaces_back`
     FOREIGN KEY (`id_ligacao_back`)
-    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    REFERENCES `networkapi`.`interfaces` (`id_interface`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_interfaces_interfaces_front`
     FOREIGN KEY (`id_ligacao_front`)
-    REFERENCES `telecom`.`interfaces` (`id_interface`)
+    REFERENCES `networkapi`.`interfaces` (`id_interface`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_interfaces_tipo`
+    FOREIGN KEY (`id_tipo_interface`)
+    REFERENCES `networkapi`.`tipo_interface` (`id_tipo_interface`)
+    ON UPDATE CASCADE)
+  CONSTRAINT `fk_interfaces_port_channel`
+    FOREIGN KEY (`id_channel`)
+    REFERENCES `networkapi`.`port_channel` (`id_port_channel`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -648,9 +671,9 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`vlans`
+-- Table `networkapi`.`vlans`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`vlans` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`vlans` (
   `id_vlan` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(50) CHARACTER SET 'latin1' NOT NULL,
   `num_vlan` INT(10) UNSIGNED NOT NULL,
@@ -661,13 +684,14 @@ CREATE TABLE IF NOT EXISTS `telecom`.`vlans` (
   `ativada` TINYINT(4) NOT NULL DEFAULT '0',
   `acl_file_name_v6` VARCHAR(200) NULL DEFAULT NULL,
   `acl_valida_v6` TINYINT(1) NOT NULL,
+  `vrf` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id_vlan`),
   UNIQUE INDEX `vlan_no_ambiente` (`id_ambiente` ASC, `num_vlan` ASC),
   UNIQUE INDEX `nome_da_vlan_no_ambiente` (`nome` ASC, `id_ambiente` ASC),
   INDEX `fk_vlans_ambiente` (`id_ambiente` ASC),
   CONSTRAINT `fk_vlans_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -676,9 +700,9 @@ COMMENT = 'Descreve as características da vlan.';
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`redeipv4`
+-- Table `networkapi`.`redeipv4`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`redeipv4` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`redeipv4` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_vlan` INT(10) UNSIGNED NOT NULL,
   `rede_oct1` TINYINT(3) UNSIGNED NOT NULL,
@@ -700,24 +724,24 @@ CREATE TABLE IF NOT EXISTS `telecom`.`redeipv4` (
   INDEX `fk_redeipv4_ambientevip` (`id_ambientevip` ASC),
   CONSTRAINT `fk_redeipv4_ambientevip`
     FOREIGN KEY (`id_ambientevip`)
-    REFERENCES `telecom`.`ambientevip` (`id`),
+    REFERENCES `networkapi`.`ambientevip` (`id`),
   CONSTRAINT `fk_redeipv4_tipo_rede`
     FOREIGN KEY (`id_tipo_rede`)
-    REFERENCES `telecom`.`tipo_rede` (`id_tipo_rede`)
+    REFERENCES `networkapi`.`tipo_rede` (`id_tipo_rede`)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
   CONSTRAINT `fk_redeipv4_vlans`
     FOREIGN KEY (`id_vlan`)
-    REFERENCES `telecom`.`vlans` (`id_vlan`))
+    REFERENCES `networkapi`.`vlans` (`id_vlan`))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ips`
+-- Table `networkapi`.`ips`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ips` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ips` (
   `id_ip` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `oct4` TINYINT(3) UNSIGNED NOT NULL,
   `oct3` TINYINT(3) UNSIGNED NOT NULL,
@@ -730,7 +754,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ips` (
   INDEX `fk_ips_redeipv4` (`id_redeipv4` ASC),
   CONSTRAINT `fk_ips_redeipv4`
     FOREIGN KEY (`id_redeipv4`)
-    REFERENCES `telecom`.`redeipv4` (`id`)
+    REFERENCES `networkapi`.`redeipv4` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -739,9 +763,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ips_dos_equipamentos`
+-- Table `networkapi`.`ips_dos_equipamentos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ips_dos_equipamentos` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ips_dos_equipamentos` (
   `id_ips_dos_equipamentos` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ip` INT(10) UNSIGNED NOT NULL,
   `id_equip` INT(10) UNSIGNED NOT NULL,
@@ -751,11 +775,11 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ips_dos_equipamentos` (
   INDEX `fk_ips_has_equipamentos_equipamentos` (`id_equip` ASC),
   CONSTRAINT `fk_ips_has_equipamentos_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_ips_has_equipamentos_ips`
     FOREIGN KEY (`id_ip`)
-    REFERENCES `telecom`.`ips` (`id_ip`)
+    REFERENCES `networkapi`.`ips` (`id_ip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -764,9 +788,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`redeipv6`
+-- Table `networkapi`.`redeipv6`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`redeipv6` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`redeipv6` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambientevip` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_vlan` INT(10) UNSIGNED NOT NULL,
@@ -795,24 +819,24 @@ CREATE TABLE IF NOT EXISTS `telecom`.`redeipv6` (
   INDEX `fk_redeipv6_ambientevip` (`id_ambientevip` ASC),
   CONSTRAINT `fk_redeipv6_ambientevip`
     FOREIGN KEY (`id_ambientevip`)
-    REFERENCES `telecom`.`ambientevip` (`id`),
+    REFERENCES `networkapi`.`ambientevip` (`id`),
   CONSTRAINT `fk_redeipv6_tipo_rede`
     FOREIGN KEY (`id_tipo_rede`)
-    REFERENCES `telecom`.`tipo_rede` (`id_tipo_rede`)
+    REFERENCES `networkapi`.`tipo_rede` (`id_tipo_rede`)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
   CONSTRAINT `fk_redeipv6_vlans`
     FOREIGN KEY (`id_vlan`)
-    REFERENCES `telecom`.`vlans` (`id_vlan`))
+    REFERENCES `networkapi`.`vlans` (`id_vlan`))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ipsv6`
+-- Table `networkapi`.`ipsv6`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ipsv6` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ipsv6` (
   `id_ipv6` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `descricao` VARCHAR(100) NULL DEFAULT NULL,
   `id_redeipv6` INT(10) UNSIGNED NOT NULL,
@@ -828,7 +852,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ipsv6` (
   INDEX `fk_ipsv6_redeipv6` (`id_redeipv6` ASC),
   CONSTRAINT `fk_ipsv6_redeipv6`
     FOREIGN KEY (`id_redeipv6`)
-    REFERENCES `telecom`.`redeipv6` (`id`)
+    REFERENCES `networkapi`.`redeipv6` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -837,9 +861,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ipsv6_dos_equipamentos`
+-- Table `networkapi`.`ipsv6_dos_equipamentos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ipsv6_dos_equipamentos` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ipsv6_dos_equipamentos` (
   `id_ipsv6_dos_equipamentos` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ipv6` INT(10) UNSIGNED NOT NULL,
   `id_equip` INT(10) UNSIGNED NOT NULL,
@@ -849,7 +873,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`ipsv6_dos_equipamentos` (
   INDEX `fk_ipsv6_has_equipamentos_equipamentos` (`id_equip` ASC),
   CONSTRAINT `fk_ipsv6_has_equipamentos_equipamentos`
     FOREIGN KEY (`id_equip`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -858,9 +882,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`opcoesvip`
+-- Table `networkapi`.`opcoesvip`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`opcoesvip` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`opcoesvip` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `tipo_opcao` CHAR(50) CHARACTER SET 'latin1' NOT NULL,
   `nome_opcao_txt` CHAR(50) CHARACTER SET 'latin1' NOT NULL,
@@ -871,9 +895,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`opcoesvip_ambiente_xref`
+-- Table `networkapi`.`opcoesvip_ambiente_xref`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`opcoesvip_ambiente_xref` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`opcoesvip_ambiente_xref` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
   `id_opcoesvip` INT(10) UNSIGNED NOT NULL,
@@ -882,19 +906,19 @@ CREATE TABLE IF NOT EXISTS `telecom`.`opcoesvip_ambiente_xref` (
   INDEX `fk_opcoesvip_ambiente_ambiente` (`id_ambiente` ASC),
   CONSTRAINT `fk_opcoesvip_ambiente_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambientevip` (`id`),
+    REFERENCES `networkapi`.`ambientevip` (`id`),
   CONSTRAINT `fk_opcoesvip_ambiente_opcoesvip`
     FOREIGN KEY (`id_opcoesvip`)
-    REFERENCES `telecom`.`opcoesvip` (`id`))
+    REFERENCES `networkapi`.`opcoesvip` (`id`))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`permissions`
+-- Table `networkapi`.`permissions`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`permissions` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`permissions` (
   `id_permission` INT(11) NOT NULL AUTO_INCREMENT,
   `function` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`id_permission`),
@@ -905,9 +929,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`permissoes_administrativas`
+-- Table `networkapi`.`permissoes_administrativas`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`permissoes_administrativas` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`permissoes_administrativas` (
   `id_permissoes_administrativas` INT(11) NOT NULL AUTO_INCREMENT,
   `leitura` TINYINT(4) NOT NULL DEFAULT '0',
   `escrita` TINYINT(4) NOT NULL DEFAULT '0',
@@ -918,12 +942,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`permissoes_administrativas` (
   INDEX `fk_permissoes_administrativas_permissions1_idx` (`permission_id` ASC),
   CONSTRAINT `fk_permissoes_administrativas_grupos`
     FOREIGN KEY (`grupos_id`)
-    REFERENCES `telecom`.`grupos` (`id`)
+    REFERENCES `networkapi`.`grupos` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_permissoes_administrativas_permissions1_idx`
     FOREIGN KEY (`permission_id`)
-    REFERENCES `telecom`.`permissions` (`id_permission`)
+    REFERENCES `networkapi`.`permissions` (`id_permission`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -933,9 +957,9 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`rule`
+-- Table `networkapi`.`rule`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`rule` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`rule` (
   `id_rule` INT(10) NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
   `name` VARCHAR(80) NOT NULL,
@@ -945,12 +969,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`rule` (
   INDEX `fk_rule_vip_idx` (`id_vip` ASC),
   CONSTRAINT `fk_rule_vip`
     FOREIGN KEY (`id_vip`)
-    REFERENCES `telecom`.`requisicao_vips` (`id_requisicao_vips`)
+    REFERENCES `networkapi`.`requisicao_vips` (`id_requisicao_vips`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_rule_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -959,9 +983,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`requisicao_vips`
+-- Table `networkapi`.`requisicao_vips`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`requisicao_vips` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`requisicao_vips` (
   `id_requisicao_vips` INT(11) NOT NULL AUTO_INCREMENT,
   `validado` TINYINT(4) NOT NULL DEFAULT '0',
   `variaveis` TEXT CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
@@ -986,30 +1010,30 @@ CREATE TABLE IF NOT EXISTS `telecom`.`requisicao_vips` (
   INDEX `fk_requisicao_vips_rule_rollback_idx` (`id_rule_rollback` ASC),
   CONSTRAINT `fk_requisicao_vips_rule_current`
     FOREIGN KEY (`id_rule_current`)
-    REFERENCES `telecom`.`rule` (`id_rule`)
+    REFERENCES `networkapi`.`rule` (`id_rule`)
     ON DELETE SET NULL
     ON UPDATE SET NULL,
   CONSTRAINT `fk_requisicao_vips_rule_rollback`
     FOREIGN KEY (`id_rule_rollback`)
-    REFERENCES `telecom`.`rule` (`id_rule`)
+    REFERENCES `networkapi`.`rule` (`id_rule`)
     ON DELETE SET NULL
     ON UPDATE SET NULL,
   CONSTRAINT `fk_requisicao_vips_healthcheck_expect`
     FOREIGN KEY (`id_healthcheck_expect`)
-    REFERENCES `telecom`.`healthcheck_expect` (`id_healthcheck_expect`)
+    REFERENCES `networkapi`.`healthcheck_expect` (`id_healthcheck_expect`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_requisicao_vips_ips`
     FOREIGN KEY (`ips_id_ip`)
-    REFERENCES `telecom`.`ips` (`id_ip`)
+    REFERENCES `networkapi`.`ips` (`id_ip`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_requisicao_vips_ipsv6`
     FOREIGN KEY (`ipsv6_id_ipv6`)
-    REFERENCES `telecom`.`ipsv6` (`id_ipv6`)
+    REFERENCES `networkapi`.`ipsv6` (`id_ipv6`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_requisicao_vips_rule`
     FOREIGN KEY (`id_rule`)
-    REFERENCES `telecom`.`rule` (`id_rule`)
+    REFERENCES `networkapi`.`rule` (`id_rule`)
     ON DELETE SET NULL
     ON UPDATE SET NULL)
 ENGINE = InnoDB
@@ -1019,9 +1043,9 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`rule_content`
+-- Table `networkapi`.`rule_content`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`rule_content` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`rule_content` (
   `id_rule_content` INT(10) NOT NULL AUTO_INCREMENT,
   `content` TEXT NOT NULL,
   `order` INT(10) NOT NULL,
@@ -1030,7 +1054,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`rule_content` (
   INDEX `fk_rule_content_idx` (`id_rule` ASC),
   CONSTRAINT `fk_rule_content`
     FOREIGN KEY (`id_rule`)
-    REFERENCES `telecom`.`rule` (`id_rule`)
+    REFERENCES `networkapi`.`rule` (`id_rule`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1039,9 +1063,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`semaforo`
+-- Table `networkapi`.`semaforo`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`semaforo` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`semaforo` (
   `id_semaforo` INT(5) UNSIGNED NOT NULL,
   `descricao` VARCHAR(50) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NOT NULL,
   PRIMARY KEY (`id_semaforo`))
@@ -1051,9 +1075,9 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`server_pool`
+-- Table `networkapi`.`server_pool`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`server_pool` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`server_pool` (
   `id_server_pool` INT(11) NOT NULL AUTO_INCREMENT,
   `identifier` VARCHAR(200) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `healthcheck_id_healthcheck` INT(11) NULL DEFAULT NULL,
@@ -1062,7 +1086,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`server_pool` (
   INDEX `fk_server_pool_healthcheck1_idx` (`healthcheck_id_healthcheck` ASC),
   CONSTRAINT `fk_server_pool_healthcheck1`
     FOREIGN KEY (`healthcheck_id_healthcheck`)
-    REFERENCES `telecom`.`healthcheck` (`id_healthcheck`)
+    REFERENCES `networkapi`.`healthcheck` (`id_healthcheck`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1072,9 +1096,9 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`server_pool_member`
+-- Table `networkapi`.`server_pool_member`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`server_pool_member` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`server_pool_member` (
   `id_server_pool_member` INT(11) NOT NULL AUTO_INCREMENT,
   `id_server_pool` INT(11) NOT NULL,
   `identifier` VARCHAR(200) NULL DEFAULT NULL,
@@ -1094,22 +1118,22 @@ CREATE TABLE IF NOT EXISTS `telecom`.`server_pool_member` (
   INDEX `fk_server_pool_member_healthcheck1_idx` (`healthcheck_id_healthcheck` ASC),
   CONSTRAINT `fk_server_pool_ips1`
     FOREIGN KEY (`ips_id_ip`)
-    REFERENCES `telecom`.`ips` (`id_ip`)
+    REFERENCES `networkapi`.`ips` (`id_ip`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_server_pool_ipsv61`
     FOREIGN KEY (`ipsv6_id_ipv6`)
-    REFERENCES `telecom`.`ipsv6` (`id_ipv6`)
+    REFERENCES `networkapi`.`ipsv6` (`id_ipv6`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_server_pool_member_healthcheck1`
     FOREIGN KEY (`healthcheck_id_healthcheck`)
-    REFERENCES `telecom`.`healthcheck` (`id_healthcheck`)
+    REFERENCES `networkapi`.`healthcheck` (`id_healthcheck`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_server_pool_member_server_pool1`
     FOREIGN KEY (`id_server_pool`)
-    REFERENCES `telecom`.`server_pool` (`id_server_pool`)
+    REFERENCES `networkapi`.`server_pool` (`id_server_pool`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1118,9 +1142,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`usuarios_do_grupo`
+-- Table `networkapi`.`usuarios_do_grupo`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`usuarios_do_grupo` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`usuarios_do_grupo` (
   `id_usuarios_do_grupo` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_user` INT(10) UNSIGNED NOT NULL,
   `id_grupo` INT(10) UNSIGNED NOT NULL,
@@ -1130,12 +1154,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`usuarios_do_grupo` (
   INDEX `fk_users_do_grupo_grupos` (`id_grupo` ASC),
   CONSTRAINT `fk_users_do_grupo_grupos`
     FOREIGN KEY (`id_grupo`)
-    REFERENCES `telecom`.`grupos` (`id`)
+    REFERENCES `networkapi`.`grupos` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_users_do_grupo_users`
     FOREIGN KEY (`id_user`)
-    REFERENCES `telecom`.`usuarios` (`id_user`)
+    REFERENCES `networkapi`.`usuarios` (`id_user`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1144,9 +1168,9 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`vip_port_to_pool`
+-- Table `networkapi`.`vip_port_to_pool`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`vip_port_to_pool` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`vip_port_to_pool` (
   `id_vip_port_to_pool` INT(11) NOT NULL AUTO_INCREMENT,
   `id_requisicao_vips` INT(11) NOT NULL,
   `id_server_pool` INT(11) NOT NULL,
@@ -1156,12 +1180,12 @@ CREATE TABLE IF NOT EXISTS `telecom`.`vip_port_to_pool` (
   INDEX `fk_vip_port_to_pool_server_pool1_idx` (`id_server_pool` ASC),
   CONSTRAINT `fk_vip_port_to_pool_requisicao_vips1`
     FOREIGN KEY (`id_requisicao_vips`)
-    REFERENCES `telecom`.`requisicao_vips` (`id_requisicao_vips`)
+    REFERENCES `networkapi`.`requisicao_vips` (`id_requisicao_vips`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_vip_port_to_pool_server_pool1`
     FOREIGN KEY (`id_server_pool`)
-    REFERENCES `telecom`.`server_pool` (`id_server_pool`)
+    REFERENCES `networkapi`.`server_pool` (`id_server_pool`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1169,9 +1193,9 @@ AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 -- -----------------------------------------------------
--- Table `telecom`.`option2config`
+-- Table `networkapi`.`option2config`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`option2config` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`option2config` (
   `id_option2config` INT(11) NOT NULL AUTO_INCREMENT,
   `type` VARCHAR(80) CHARACTER SET 'latin1' NULL DEFAULT NULL,
   `value` VARCHAR(150) CHARACTER SET 'latin1' NULL DEFAULT NULL,
@@ -1181,7 +1205,7 @@ CREATE TABLE IF NOT EXISTS `telecom`.`option2config` (
   UNIQUE INDEX `option2config_unique` (`id_ambiente` ASC, `type` ASC, `value` ASC),
   CONSTRAINT `fk_option2config_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -1190,11 +1214,12 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`racks`
+-- Table `networkapi`.`racks`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`racks` (
   `id_rack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `numero` INT(10) UNSIGNED NOT NULL,
+  `nome` VARCHAR(4) NOT NULL UNIQUE,
   `mac_sw1` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `mac_sw2` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
   `mac_ilo` VARCHAR(17) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
@@ -1202,21 +1227,22 @@ CREATE TABLE IF NOT EXISTS `telecom`.`racks` (
   `id_equip2` INT(10) UNSIGNED NULL DEFAULT NULL,
   `id_equip3` INT(10) UNSIGNED NULL DEFAULT NULL,
   `config` tinyint(1) NOT NULL,
+  `create_vlan_amb` tinyint(1) NOT NULL,
   INDEX `fk_racks_id_equip1` (`id_equip1` ASC),
   INDEX `fk_racks_id_equip2` (`id_equip2` ASC),
   INDEX `fk_racks_id_equip3` (`id_equip3` ASC),
   PRIMARY KEY (`id_rack`),
   CONSTRAINT `fk_racks_id_equip1`
     FOREIGN KEY (`id_equip1`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_racks_id_equip2`
     FOREIGN KEY (`id_equip2`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON UPDATE CASCADE,
   CONSTRAINT `fk_racks_id_equip3`
     FOREIGN KEY (`id_equip3`)
-    REFERENCES `telecom`.`equipamentos` (`id_equip`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
@@ -1225,29 +1251,74 @@ COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
--- Table `telecom`.`ambiente_rack`
+-- Table `networkapi`.`ambiente_rack`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `telecom`.`ambiente_rack` (
+CREATE TABLE IF NOT EXISTS `networkapi`.`ambiente_rack` (
   `id_ambienterack` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_ambiente` INT(10) UNSIGNED NOT NULL,
-  `id_rack` INT(10) NOT NULL,
+  `id_rack` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY (`id_ambienterack`),
   UNIQUE INDEX `ambiente_rack_unique` (`id_ambiente` ASC, `id_rack` ASC),
   INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
   INDEX `fk_ambiente_rack_rack` (`id_rack` ASC),
   CONSTRAINT `fk_ambiente_rack_ambiente`
     FOREIGN KEY (`id_ambiente`)
-    REFERENCES `telecom`.`ambiente` (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_ambiente_rack_rack`
     FOREIGN KEY (`id_rack`)
-    REFERENCES `telecom`.`racks` (`id_rack`)
+    REFERENCES `networkapi`.`racks` (`id_rack`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `networkapi`.`interface_do_ambiente`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `networkapi`.`interface_do_ambiente` (
+  `id_int_ambiente` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_ambiente` INT(10) UNSIGNED NOT NULL,
+  `id_interface` INT(10) NOT NULL,
+  `vlans` VARCHAR(200) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NULL DEFAULT NULL,
+  PRIMARY KEY (`id_int_ambiente`),
+  UNIQUE INDEX `interface_do_ambiente_unique` (`id_ambiente` ASC, `id_interface` ASC),
+  INDEX `fk_ambiente_rack_ambiente` (`id_ambiente` ASC),
+  INDEX `fk_ambiente_rack_interface` (`id_interface` ASC),
+  CONSTRAINT `fk_ambiente_rack_ambiente`
+    FOREIGN KEY (`id_ambiente`)
+    REFERENCES `networkapi`.`ambiente` (`id_ambiente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_rack_interface`
+    FOREIGN KEY (`id_interface`)
+    REFERENCES `networkapi`.`interfaces` (`id_interface`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `networkapi`.`port_channel`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `networkapi`.`port_channel` (
+  `id_port_channel` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(100) NOT NULL,
+  `lacp` TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_port_channel`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8;
+
+
+LOCK TABLES `tipo_interface` WRITE;
+INSERT INTO `tipo_interface` (`tipo`) VALUES ('access');
+INSERT INTO `tipo_interface` (`tipo`) VALUES ('trunk');
 
 
 LOCK TABLES `grupos` WRITE;

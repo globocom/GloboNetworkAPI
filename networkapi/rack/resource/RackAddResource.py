@@ -115,7 +115,7 @@ class RackAddResource(RestResource):
             return self.not_authorized()
 
         except RackError:
-            return self.response_error(1)
+            return self.response_error(400)
 
         except InvalidMacValueError:
             return self.response_error(377)

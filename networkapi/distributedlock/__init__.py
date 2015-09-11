@@ -24,6 +24,8 @@ LOCK_ENVIRONMENT_VIP = "environment_vip:%s"
 LOCK_EQUIPMENT_ACCESS = "equipment_access:%s"
 LOCK_EQUIPMENT = "equipment:%s"
 LOCK_EQUIPMENT_GROUP = "equipment_group:%s"
+LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT = "equipment_deploy_config_userscript:%s"
+LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT = "equipment_deploy_config_network_script:%s"
 LOCK_EQUIPMENT_SCRIPT = "equipment_script:%s"
 LOCK_EQUIPMENT_ENVIRONMENT = "equipment_environment:%s"
 LOCK_GROUP_USER = "group_user:%s"
@@ -33,6 +35,7 @@ LOCK_GROUP_VIRTUAL = "group_virtual"
 LOCK_GROUP_L3 = "group_l3:%s"
 LOCK_PERM = "perm:%s"
 LOCK_INTERFACE = "interface:%s"
+LOCK_INTERFACE_DEPLOY_CONFIG = "interface_equipment:%s"
 LOCK_IP_EQUIPMENT = "ip_equipment:%s:%s"
 LOCK_IPV4 = "ipv4:%s"
 LOCK_NETWORK_IPV4 = "network_ipv4:%s"
@@ -52,12 +55,13 @@ LOCK_USER = "user:%s"
 LOCK_VLAN = "vlan:%s"
 LOCK_RACK = "rack:%s"
 
+
 # Adjusts settings
 from django.core.cache import cache
 from networkapi.distributedlock.memcachedlock import MemcachedLock
 
 DEBUG = False
-DEFAULT_TIMEOUT = 60
+DEFAULT_TIMEOUT = 600
 DEFAULT_BLOCKING = False
 DEFAULT_MEMCACHED_CLIENT = cache
 DEFAULT_LOCK_FACTORY = lambda key: MemcachedLock(

@@ -296,6 +296,17 @@ def is_valid_email(param):
 
     return re.match(pattern, param)
 
+def is_valid_healthcheck_destination(param):
+    '''Checks if the parameter is a valid healthcheck_destination.
+
+    @param param: Value to be validated.
+
+    @return True if the parameter has a valid healthcheck_destination value, or False otherwise.
+    '''
+    pattern = re.compile(r"^([0-9]+|\*):([0-9]+|\*)$")
+
+    return re.match(pattern, param)
+
 
 def is_valid_ipv4(param):
     '''Checks if the parameter is a valid ipv4.

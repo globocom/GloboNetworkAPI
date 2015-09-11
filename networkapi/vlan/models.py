@@ -25,6 +25,9 @@ from _mysql_exceptions import OperationalError
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.util import clone
 from networkapi.filter.models import verify_subnet_and_equip
+from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.queue_manager import QueueManager
+
 
 
 class VlanError(Exception):
@@ -210,6 +213,10 @@ class Vlan(BaseModel):
     acl_file_name_v6 = models.CharField(max_length=200, blank=True)
     acl_valida_v6 = models.BooleanField()
     ativada = models.BooleanField()
+    vrf = models.CharField(max_length=100, null=True, db_column='vrf')
+
+    acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
+    acl_draft_v6 = models.TextField(blank=True, null=True, db_column='acl_draft_v6')
 
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
@@ -360,9 +367,20 @@ class Vlan(BaseModel):
 
     def activate(self, authenticated_user):
         """ Set column ativada = 1"""
+
+        from networkapi.vlan.serializers import VlanSerializer
+
         try:
             self.ativada = 1
             self.save(authenticated_user)
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = VlanSerializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.VLAN_ACTIVATE})
+            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
+            queue_manager.send()
+
         except Exception, e:
             self.log.error(u'Falha ao salvar a VLAN.')
             raise VlanError(e, u'Falha ao salvar a VLAN.')
@@ -376,9 +394,20 @@ class Vlan(BaseModel):
             @raise VlanError: Exception
         """
 
+        from networkapi.vlan.serializers import VlanSerializer
+
         try:
+
             self.ativada = 0
             self.save(authenticated_user)
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = VlanSerializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.VLAN_DEACTIVATE})
+            queue_manager.append({'action': queue_keys.VLAN_DEACTIVATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
+            queue_manager.send()
+
         except Exception, e:
             self.log.error(u'Falha ao salvar a VLAN.')
             raise VlanError(e, u'Falha ao salvar a VLAN.')
@@ -618,12 +647,10 @@ class Vlan(BaseModel):
                     raise VlanNumberEnvironmentNotAvailableError(
                         None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
 
-        try:
-            self.get_by_name(self.nome)
+        # Name VLAN can not be duplicated in the environment
+        if self.existVlanNameInEnvironment():
             raise VlanNameDuplicatedError(
-                None, "Já existe uma VLAN cadastrada com o nome %s" % self.nome)
-        except VlanNotFoundError:
-            pass
+                None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
             return self.save(authenticated_user)
@@ -688,12 +715,10 @@ class Vlan(BaseModel):
                             None, "Um dos equipamentos associados com o ambiente desta Vlan também está associado com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos ambientes se necessário.")
 
         if change_name:
-            try:
-                self.get_by_name(self.nome)
+            # Name VLAN can not be duplicated in the environment
+            if self.existVlanNameInEnvironment():
                 raise VlanNameDuplicatedError(
-                    None, "Já existe uma VLAN cadastrada com o nome %s" % self.nome)
-            except VlanNotFoundError:
-                pass
+                    None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
             return self.save(authenticated_user)
