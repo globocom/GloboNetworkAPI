@@ -2556,7 +2556,7 @@ def network_in_range(vlan, network, version):
     #if there is a network that is sub or super network of the current
     #network being tested
     for env in envs:
-        for vlan in env.vlan_set.all().prefetch_related('networkipv4_set'):
+        for vlan in env.vlan_set.all().prefetch_related('networkipv4_set').prefetch_related('networkipv6_set'):
             ids_all.append(vlan.id)
             is_subnet = verify_subnet(vlan, network, version)
             if is_subnet:
