@@ -133,7 +133,7 @@ def prepares_network(vlan, half):
 
     vlan_dict["is_more"] = False
     netv4_itens = []
-    for netv4 in vlan.networkipv4_set.all():
+    for netv4 in vlan.networkipv4_set.all().prefetch_related("network_type"):
         net_dict = dict()
         net = str(netv4.oct1) + "." + str(netv4.oct2) + "." + \
             str(netv4.oct3) + "." + str(netv4.oct4) + "/" + str(netv4.block)
@@ -146,9 +146,8 @@ def prepares_network(vlan, half):
             for ip in netv4.ip_set.all():
                 for ip_equip in ip.ipequipamento_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
-                            if equip_amb.is_router is True:
-                                equip_itens.append(ip_equip.equipamento.nome)
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
+                            equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -175,9 +174,8 @@ def prepares_network(vlan, half):
             for ip in netv6.ipv6_set.all():
                 for ip_equip in ip.ipv6equipament_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
-                            if equip_amb.is_router is True:
-                                equip_itens.append(ip_equip.equipamento.nome)
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
+                            equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")

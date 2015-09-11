@@ -106,7 +106,7 @@ def networkIPv4_deploy(request, network_id):
         equipment_list = Equipamento.objects.filter(
             ipequipamento__ip__networkipv4 = networkipv4,
             equipamentoambiente__ambiente = networkipv4.vlan.ambiente,
-            equipamentoambiente__is_router = 1)
+            equipamentoambiente__is_router = 1).distinct()
         if len(equipment_list) == 0:
             raise exceptions.NoEnvironmentRoutersFoundException()
 
@@ -194,7 +194,7 @@ def networkIPv6_deploy(request, network_id):
         equipment_list = Equipamento.objects.filter(
             ipequipamento__ip__networkipv6 = networkipv6,
             equipamentoambiente__ambiente = networkipv6.vlan.ambiente,
-            equipamentoambiente__is_router = 1)
+            equipamentoambiente__is_router = 1).distinct()
         if len(equipment_list) == 0:
             raise exceptions.NoEnvironmentRoutersFoundException()
 
