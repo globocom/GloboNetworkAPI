@@ -57,7 +57,7 @@ def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equi
         egroup = EGrupo.get_by_pk(egroup_id)
         egroups = [egroup]
     elif equip_id is not None:
-        equip = Equipamento.objects.filter(id=equip_id).prefetch_related('grupos').uniqueResult()
+        equip = Equipamento.get_by_pk(equip_id, 'grupos')
         egroups = equip.grupos.all()
         if len(egroups) == 0:
             return False

@@ -624,7 +624,7 @@ class Equipamento(BaseModel):
             raise EquipamentoError(e, u'Falha ao inserir o equipamento.')
 
     @classmethod
-    def get_by_pk(cls, pk):
+    def get_by_pk(cls, pk, *prefetch_list):
         """Get Equipament by id.
 
             @return: Equipament.
@@ -634,7 +634,11 @@ class Equipamento(BaseModel):
             @raise OperationalError: Lock wait timeout exceeded. 
         """
         try:
-            return Equipamento.objects.filter(id=pk).uniqueResult()
+            query = Equipamento.objects.filter(id=pk)
+            if prefetch_list:
+                return query.prefetch_related(prefetch_list).uniqueResult()
+            else:
+                return query.uniqueResult()
         except ObjectDoesNotExist, e:
             raise EquipamentoNotFoundError(
                 e, u'Dont there is a equipament by pk = %s.' % id)
