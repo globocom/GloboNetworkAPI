@@ -147,7 +147,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
  
     return network_ip
 
-def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None):
+def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None, vrf=None):
 
     #ambiente cloud
     environment = Ambiente()
@@ -162,6 +162,8 @@ def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None):
     environment.acl_path = acl_path
     environment.ipv4_template = None
     environment.ipv6_template = None
+    if vrf is not None:
+        environment.vrf = vrf
 
     environment.max_num_vlan_1 = ranges.get('MAX')
     environment.min_num_vlan_1 = ranges.get('MIN')
@@ -236,6 +238,7 @@ def ambiente_spn_lf(user, rack, environment_list):
     vlans, redes, ipv6 = dic_lf_spn(user, rack.numero)
 
     divisaoDC = ['BE', 'FE', 'BORDA', 'BORDACACHOS']
+    vrfNames = ['BEVrf', 'FEVrf', 'BordaVrf', 'BordaCachosVrf']
     spines = ['01', '02', '03', '04']
 
     grupol3 = GrupoL3()
@@ -250,7 +253,7 @@ def ambiente_spn_lf(user, rack, environment_list):
     hosts['TIPO']= "Ponto a ponto"
     ipv6['TIPO']= "Ponto a ponto"
 
-    for divisaodc in divisaoDC: 
+    for divisaodc, vrf in zip(divisaoDC, vrfNames): 
         ambientes['DC']=divisaodc
         for i in spines: 
 
@@ -261,7 +264,7 @@ def ambiente_spn_lf(user, rack, environment_list):
             ranges['MAX'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119 
             ranges['MIN'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
 
-            env = criar_ambiente(user, ambientes, ranges)
+            env = criar_ambiente(user, ambientes, ranges, None, None, vrf)
             environment_list.append(env)
 
             #configuracao do ambiente
@@ -285,7 +288,7 @@ def ambiente_prod(user, rack, environment_list):
 
     redes, ipv6 = dic_pods(rack.numero)
 
-    divisao_aclpaths = [['BE','BECLOUD'],['BEFE','BEFE'],['BEBORDA','BEBORDA'],['BECACHOS','BECACHOS']]
+    divisao_aclpaths_vrf = [['BE','BECLOUD'],['BEFE','BEFE'],['BEBORDA','BEBORDA'],['BECACHOS','BECACHOS']]
 
     grupol3 = rack.nome
     ambiente_logico = "PRODUCAO"
@@ -311,7 +314,7 @@ def ambiente_prod(user, rack, environment_list):
         ranges['MAX']= redes.get(vlan_max)
         ranges['MIN']= redes.get(vlan_min)
 
-        env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores")
+        env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores", "BEVrf")
         environment_list.append(env)
 
         #configuracao dos ambientes
@@ -387,7 +390,7 @@ def ambiente_prod_fe(user, rack, environment_list):
     acl_path = 'FECLOUD'
 
     #criar ambiente
-    env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores")
+    env = criar_ambiente(user, ambientes, ranges, acl_path, "Servidores", "FEVrf")
     environment_list.append(env)
 
     #configuracao dos ambientes
@@ -415,11 +418,12 @@ def ambiente_borda(user,rack, environment_list):
     ambientes=dict()   
     ambientes['LOG'] = "PRODUCAO"
     ambientes['L3']= rack.nome
-    divisao_aclpaths = [['BORDA_DSR','BORDA-DSR'],['BORDA_DMZ','BORDA-DMZ'],['BORDACACHOS','BORDACACHOS']]
+    divisao_aclpaths = [['BORDA_DSR','BORDA-DSR', 'BordaVrf'],['BORDA_DMZ','BORDA-DMZ', 'BordaVrf'],['BORDACACHOS','BORDACACHOS', 'BordaCachosVrf']]
 
     for item in divisao_aclpaths:
         divisaodc = item[0]
         acl_path = item[1]
+        vrf = item[2]
 
         vlan_min = divisaodc+"_VLAN_MIN"
         vlan_max = divisaodc+"_VLAN_MAX"
@@ -427,7 +431,7 @@ def ambiente_borda(user,rack, environment_list):
         ranges['MIN']= ranges_vlans.get(vlan_min)
 
         ambientes['DC']= divisaodc
-        env = criar_ambiente(user, ambientes,ranges, acl_path, "Servidores")
+        env = criar_ambiente(user, ambientes,ranges, acl_path, "Servidores", vrf)
         environment_list.append(env)
 
     return environment_list
