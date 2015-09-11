@@ -1,9 +1,5 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `networkapi` /*!40100 DEFAULT CHARACTER SET utf8 */;
-
-USE `networkapi`;
-
 --
 -- Table structure for table `ambiente`
 --
