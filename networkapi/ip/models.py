@@ -1479,8 +1479,8 @@ class NetworkIPv6(BaseModel):
             queue_manager = QueueManager()
             serializer = NetworkIPv6Serializer(self)
             data_to_queue = serializer.data
-            data_to_queue.update({'description': NETWORKv6_DEACTIVATE})
-            queue_manager.append({'action': NETWORKv6_DEACTIVATE,'kind': queue_keys.NETWORKv6_KEY,'data': data_to_queue})
+            data_to_queue.update({'description': queue_keys.NETWORKv6_DEACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv6_DEACTIVATE,'kind': queue_keys.NETWORKv6_KEY,'data': data_to_queue})
             queue_manager.send()
         except Exception, e:
             self.log.error(u'Error disabling NetworkIPv6.')
