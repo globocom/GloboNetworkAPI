@@ -840,6 +840,8 @@ class Ambiente(BaseModel):
         # Remove every vlan associated with this environment
         for vlan in environment.vlan_set.all():
             try:
+                if vlan.ativada:
+                    vlan.remove(authenticated_user)
                 vlan.delete(authenticated_user)
             except VlanCantDeallocate, e:
                 raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)

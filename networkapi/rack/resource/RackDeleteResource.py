@@ -86,11 +86,9 @@ def remover_ambiente(user, lista_amb, rack):
 
     for amb in lista_amb:
         amb.remove(user, amb.id)
-
-    nome = "RACK_"+rack.nome
     grupo_l3 = GrupoL3()
     try:
-        grupo_l3 = grupo_l3.get_by_name(nome)
+        grupo_l3 = grupo_l3.get_by_name(rack.nome)
         grupo_l3.delete(user)
     except:
         pass
@@ -186,7 +184,7 @@ class RackDeleteResource(RestResource):
                 remover_vlan_so(user, rack)
             except:
                 raise RackError(None, u'Failed to remove the Vlans and Environments.')
-            
+
             ########################################################         Remove rack config from spines and core oob
             aplicar(rack)
 
@@ -200,7 +198,7 @@ class RackDeleteResource(RestResource):
                 except Exception, e:
                     self.log.error(u'Failed to remove the Rack.')
                     raise RackError(e, u'Failed to remove the Rack.')                   
-                
+
             return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:

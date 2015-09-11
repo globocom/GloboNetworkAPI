@@ -258,6 +258,8 @@ def ambiente_spn_lf(user, rack, environment_list):
         for i in spines: 
 
             ambientes['LOG']= "SPINE"+i+"LEAF"
+            rede = "SPINE"+i[1]+"ipv4"
+            rede_ipv6 = "SPINE"+i[1]+"ipv6"
 
             #cadastro dos ambientes
             vlan_name = "VLAN"+divisaodc+"LEAF"
@@ -266,9 +268,14 @@ def ambiente_spn_lf(user, rack, environment_list):
 
             env = criar_ambiente(user, ambientes, ranges, None, None, vrf)
             environment_list.append(env)
+            vlan = dict()
+            vlan['VLAN_NUM'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
+            vlan['VLAN_NAME'] = "VLAN_"+"SPN"+i[1]+'LF'+"_"+divisaodc
+            vlan = criar_vlan(user, vlan, ambientes)
+            criar_rede(user, hosts['TIPO'], redes.get(rede+'_net'), vlan)
+            criar_rede_ipv6(user, ipv6['TIPO'], ipv6.get(rede_ipv6+'_net'), vlan)
 
             #configuracao do ambiente
-            rede = "SPINE"+i[1]+"ipv4"
             hosts['REDE'] = redes.get(rede)
             hosts['PREFIX'] = "31"
 
@@ -276,7 +283,6 @@ def ambiente_spn_lf(user, rack, environment_list):
             hosts['VERSION']="ipv4"
             config_ambiente(user, hosts, ambientes)
 
-            rede_ipv6 = "SPINE"+i[1]+"ipv6"
             ipv6['REDE']= ipv6.get(rede_ipv6)
             ipv6['PREFIX']="127"
             ipv6['VERSION']="ipv6"
@@ -552,23 +558,38 @@ class RackAplicarConfigResource(RestResource):
             #######################################################################                   Ambientes
 
             #BE - SPINE - LEAF
-            environment_list = ambiente_spn_lf(user, rack, environment_list)
+            try:
+                environment_list = ambiente_spn_lf(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans do Spine-leaf.")
 
             #BE - PRODUCAO
-            environment_list = ambiente_prod(user, rack, environment_list)
+            try:
+                environment_list = ambiente_prod(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de produção.")
 
             #BE - Hosts - CLOUD
-            environment_list = ambiente_cloud(user, rack, environment_list)
-            
-            #FE 
-            environment_list = ambiente_prod_fe(user, rack, environment_list)
+            try:
+                environment_list = ambiente_cloud(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans da Cloud.")
+
+            #FE
+            try:
+                environment_list = ambiente_prod_fe(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de FE.")
 
             #Borda
-            environment_list = ambiente_borda(user, rack, environment_list)
+            try:
+                environment_list = ambiente_borda(user, rack, environment_list)
+            except:
+                raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de Borda.")
 
             #######################################################################                   Backuper
 
-            aplicar(rack)
+            #aplicar(rack)
             environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
