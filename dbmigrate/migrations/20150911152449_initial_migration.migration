@@ -46,7 +46,7 @@ CREATE TABLE `ambiente_logico` (
   `nome` varchar(80) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id_ambiente_logic`),
   UNIQUE KEY `nome` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8 COMMENT='Separação de ambiente utilizada na Globo.com';
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +178,7 @@ CREATE TABLE `divisao_dc` (
   `nome` varchar(100) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id_divisao`),
   UNIQUE KEY `nome` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8 COMMENT='Divisao da rede (FE, BE, Parceiros etc)';
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -328,7 +328,7 @@ CREATE TABLE `event_log` (
   PRIMARY KEY (`id_evento`),
   KEY `fk_event_log_usuarios` (`id_user`),
   CONSTRAINT `fk_event_log_usuarios` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id_user`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1154485 DEFAULT CHARSET=utf8 COMMENT='InnoDB free: 0 kB; (`id_user`) REFER `telecom/usuarios`(`id_';
+) ENGINE=InnoDB AUTO_INCREMENT=1154485 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -391,7 +391,7 @@ CREATE TABLE `grupo_l3` (
   `nome` varchar(80) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id_grupo_l3`),
   UNIQUE KEY `nome` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8 COMMENT='Descreve grupo de roteamento de um ambiente';
+) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -403,7 +403,7 @@ DROP TABLE IF EXISTS `grupos`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `grupos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `nome` varchar(100) CHARACTER SET latin1 NOT NULL COMMENT 'unique',
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL ,
   `leitura` char(1) NOT NULL,
   `escrita` char(1) NOT NULL,
   `edicao` char(1) NOT NULL,
@@ -422,7 +422,7 @@ DROP TABLE IF EXISTS `grupos_equip`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `grupos_equip` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `nome` varchar(100) CHARACTER SET latin1 NOT NULL COMMENT 'unique',
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL ,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -655,7 +655,7 @@ CREATE TABLE `marcas` (
   `nome` varchar(100) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id_marca`),
   UNIQUE KEY `marca_unica` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 COMMENT='Marca do equipamento (Cisco, 3Com etc...)';
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -673,7 +673,7 @@ CREATE TABLE `modelos` (
   UNIQUE KEY `modelo_marca_unicos` (`nome`,`id_marca`),
   KEY `fk_modelos_marcas` (`id_marca`),
   CONSTRAINT `fk_modelos_marcas` FOREIGN KEY (`id_marca`) REFERENCES `marcas` (`id_marca`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8 COMMENT='Modelo do equipamento';
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1079,7 +1079,7 @@ CREATE TABLE `server_pool_member` (
   `limit` int(11) NOT NULL DEFAULT '0',
   `port` int(10) unsigned NOT NULL,
   `healthcheck_id_healthcheck` int(11) DEFAULT NULL,
-  `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '1-enable/ 0-disable',
+  `status` tinyint(4) NOT NULL DEFAULT '0' ,
   `last_status_update` datetime DEFAULT NULL,
   PRIMARY KEY (`id_server_pool_member`),
   UNIQUE KEY `unique_pool_member` (`id_server_pool`,`ips_id_ip`,`port`),
@@ -1121,7 +1121,7 @@ CREATE TABLE `tipo_equipamento` (
   `id_tipo_equipamento` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tipo_equipamento` varchar(100) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id_tipo_equipamento`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8 COMMENT='Tipo do equipamento (roteador, servidor, switch)';
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1151,7 +1151,7 @@ CREATE TABLE `tipo_rede` (
   `tipo_rede` varchar(100) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id_tipo_rede`),
   UNIQUE KEY `tipo_rede_unico` (`tipo_rede`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COMMENT='Informa o tipo dos IPs da vlan.';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1255,7 +1255,7 @@ CREATE TABLE `vlans` (
   UNIQUE KEY `nome_da_vlan_no_ambiente` (`nome`,`id_ambiente`),
   KEY `fk_vlans_ambiente` (`id_ambiente`),
   CONSTRAINT `fk_vlans_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=27677 DEFAULT CHARSET=utf8 COMMENT='Descreve as características da vlan.';
+) ENGINE=InnoDB AUTO_INCREMENT=27677 DEFAULT CHARSET=utf8 ;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
