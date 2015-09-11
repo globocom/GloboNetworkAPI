@@ -1,0 +1,1355 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `ambiente`
+--
+
+DROP TABLE IF EXISTS `ambiente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ambiente` (
+  `id_ambiente` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_grupo_l3` int(10) unsigned NOT NULL,
+  `id_ambiente_logic` int(10) unsigned NOT NULL,
+  `id_divisao` int(10) unsigned NOT NULL,
+  `link` varchar(200) CHARACTER SET latin1 DEFAULT 'http://wiki.globoi.com/DataCenter/Telecom',
+  `acl_path` varchar(250) DEFAULT NULL,
+  `ipv4_template` varchar(250) DEFAULT NULL,
+  `ipv6_template` varchar(250) DEFAULT NULL,
+  `id_filter` int(10) unsigned DEFAULT NULL,
+  `min_num_vlan_1` int(10) DEFAULT NULL,
+  `max_num_vlan_1` int(10) DEFAULT NULL,
+  `min_num_vlan_2` int(10) DEFAULT NULL,
+  `max_num_vlan_2` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id_ambiente`),
+  UNIQUE KEY `ambiente_unico` (`id_grupo_l3`,`id_ambiente_logic`,`id_divisao`),
+  KEY `fk_ambiente_ambiente_logico` (`id_ambiente_logic`),
+  KEY `fk_ambiente_divisao_dc` (`id_divisao`),
+  KEY `fk_ambiente_grupo_l3` (`id_grupo_l3`),
+  KEY `fk_ambiente_filter` (`id_filter`),
+  CONSTRAINT `fk_ambiente_ambiente_logico` FOREIGN KEY (`id_ambiente_logic`) REFERENCES `ambiente_logico` (`id_ambiente_logic`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_ambiente_divisao_dc` FOREIGN KEY (`id_divisao`) REFERENCES `divisao_dc` (`id_divisao`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_ambiente_filter` FOREIGN KEY (`id_filter`) REFERENCES `filter` (`id_filter`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_grupo_l3` FOREIGN KEY (`id_grupo_l3`) REFERENCES `grupo_l3` (`id_grupo_l3`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=597 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ambiente_logico`
+--
+
+DROP TABLE IF EXISTS `ambiente_logico`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ambiente_logico` (
+  `id_ambiente_logic` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(80) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_ambiente_logic`),
+  UNIQUE KEY `nome` (`nome`)
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ambiente_rack`
+--
+
+DROP TABLE IF EXISTS `ambiente_rack`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ambiente_rack` (
+  `id_ambienterack` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `id_rack` int(10) NOT NULL,
+  PRIMARY KEY (`id_ambienterack`),
+  UNIQUE KEY `ambiente_rack_unique` (`id_ambiente`,`id_rack`),
+  KEY `fk_ambiente_rack_ambiente` (`id_ambiente`),
+  KEY `fk_ambiente_rack_rack` (`id_rack`),
+  CONSTRAINT `fk_ambiente_rack_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ambiente_rack_rack` FOREIGN KEY (`id_rack`) REFERENCES `racks` (`id_rack`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ambientevip`
+--
+
+DROP TABLE IF EXISTS `ambientevip`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ambientevip` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `finalidade_txt` char(50) CHARACTER SET latin1 NOT NULL,
+  `cliente_txt` char(50) CHARACTER SET latin1 NOT NULL,
+  `ambiente_p44_txt` char(50) CHARACTER SET latin1 NOT NULL,
+  `description` char(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `block_rules`
+--
+
+DROP TABLE IF EXISTS `block_rules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `block_rules` (
+  `id_block_rules` int(10) NOT NULL AUTO_INCREMENT,
+  `content` text NOT NULL,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `order` int(10) NOT NULL,
+  PRIMARY KEY (`id_block_rules`),
+  KEY `fk_block_rules_ambiente_idx` (`id_ambiente`),
+  CONSTRAINT `fk_block_rules_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `config`
+--
+
+DROP TABLE IF EXISTS `config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `config` (
+  `id_config` tinyint(4) NOT NULL,
+  `ip_v4_min` tinyint(4) NOT NULL,
+  `ip_v4_max` tinyint(4) NOT NULL,
+  `ip_v6_min` tinyint(4) NOT NULL,
+  `ip_v6_max` tinyint(4) NOT NULL,
+  PRIMARY KEY (`id_config`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `config_do_ambiente`
+--
+
+DROP TABLE IF EXISTS `config_do_ambiente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `config_do_ambiente` (
+  `id_config_do_ambiente` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `id_ip_config` int(10) NOT NULL,
+  PRIMARY KEY (`id_config_do_ambiente`),
+  UNIQUE KEY `ambiente_ip_config_unique` (`id_ambiente`,`id_ip_config`),
+  KEY `fk_config_do_ambiente_ambiente` (`id_ambiente`),
+  KEY `fk_config_do_ambiente_ip_config` (`id_ip_config`),
+  KEY `unique_ip_config_ambiente` (`id_ambiente`,`id_ip_config`),
+  CONSTRAINT `fk_config_do_ambiente_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_config_do_ambiente_ip_config` FOREIGN KEY (`id_ip_config`) REFERENCES `ip_config` (`id_ip_config`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=836 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `direitos_grupoequip`
+--
+
+DROP TABLE IF EXISTS `direitos_grupoequip`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `direitos_grupoequip` (
+  `id_direito` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ugrupo` int(10) unsigned NOT NULL,
+  `id_egrupo` int(10) unsigned NOT NULL,
+  `leitura` char(1) NOT NULL,
+  `escrita` char(1) NOT NULL,
+  `alterar_config` char(1) NOT NULL,
+  `exclusao` char(1) NOT NULL,
+  PRIMARY KEY (`id_direito`),
+  UNIQUE KEY `uniq_ugrupo_egrupo` (`id_ugrupo`,`id_egrupo`),
+  KEY `fk_direitosg_ugrupos` (`id_ugrupo`),
+  KEY `fk_direitosg_gequip` (`id_egrupo`),
+  CONSTRAINT `fk_direitosg_gequip` FOREIGN KEY (`id_egrupo`) REFERENCES `grupos_equip` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_direitosg_ugrupos` FOREIGN KEY (`id_ugrupo`) REFERENCES `grupos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=187 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `divisao_dc`
+--
+
+DROP TABLE IF EXISTS `divisao_dc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `divisao_dc` (
+  `id_divisao` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_divisao`),
+  UNIQUE KEY `nome` (`nome`)
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `environment_environment_vip`
+--
+
+DROP TABLE IF EXISTS `environment_environment_vip`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `environment_environment_vip` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `environment_id` int(10) unsigned NOT NULL,
+  `environment_vip_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `environment_fk` (`environment_id`),
+  KEY `environment_vip_fk` (`environment_vip_id`),
+  CONSTRAINT `environment_fk` FOREIGN KEY (`environment_id`) REFERENCES `ambiente` (`id_ambiente`),
+  CONSTRAINT `environment_vip_fk` FOREIGN KEY (`environment_vip_id`) REFERENCES `ambientevip` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=594 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `equip_do_ambiente`
+--
+
+DROP TABLE IF EXISTS `equip_do_ambiente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `equip_do_ambiente` (
+  `id_equip_do_ambiente` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `id_equip` int(10) unsigned NOT NULL,
+  `is_router` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id_equip_do_ambiente`),
+  UNIQUE KEY `uniq_id_ambiente_id_equip` (`id_equip`,`id_ambiente`),
+  KEY `fk_equip_do_ambiente_ambiente` (`id_ambiente`),
+  KEY `fk_equip_do_ambiente_equipamentos` (`id_equip`),
+  CONSTRAINT `fk_equip_do_ambiente_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_equip_do_ambiente_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=77237 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `equip_do_grupo`
+--
+
+DROP TABLE IF EXISTS `equip_do_grupo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `equip_do_grupo` (
+  `id_equip_do_grupo` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_egrupo` int(10) unsigned NOT NULL,
+  `id_equip` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_equip_do_grupo`),
+  UNIQUE KEY `uniq_id_egrupo_ud_equip` (`id_egrupo`,`id_equip`),
+  KEY `fk_equip_do_grupo_grupo` (`id_egrupo`),
+  KEY `fk_equip_do_grupo_equipamentos` (`id_equip`),
+  CONSTRAINT `fk_equip_do_grupo_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_equip_do_grupo_grupo` FOREIGN KEY (`id_egrupo`) REFERENCES `grupos_equip` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=65332 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `equipamentos`
+--
+
+DROP TABLE IF EXISTS `equipamentos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `equipamentos` (
+  `id_equip` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_tipo_equipamento` int(10) unsigned NOT NULL,
+  `id_modelo` int(10) unsigned NOT NULL DEFAULT '1',
+  `nome` varchar(50) NOT NULL,
+  `maintenance` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id_equip`),
+  UNIQUE KEY `nome` (`nome`),
+  KEY `fk_equipamentos_tipo_equipamento` (`id_tipo_equipamento`),
+  KEY `fk_equipamentos_modelos` (`id_modelo`),
+  CONSTRAINT `fk_equipamentos_modelos` FOREIGN KEY (`id_modelo`) REFERENCES `modelos` (`id_modelo`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_equipamentos_tipo_equipamento` FOREIGN KEY (`id_tipo_equipamento`) REFERENCES `tipo_equipamento` (`id_tipo_equipamento`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=65151 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `equiptos_access`
+--
+
+DROP TABLE IF EXISTS `equiptos_access`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `equiptos_access` (
+  `id_equiptos_access` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_equip` int(10) unsigned NOT NULL,
+  `fqdn` varchar(100) NOT NULL,
+  `user` varchar(20) NOT NULL,
+  `pass` varchar(150) DEFAULT NULL,
+  `id_tipo_acesso` int(10) unsigned NOT NULL,
+  `enable_pass` varchar(150) DEFAULT NULL,
+  PRIMARY KEY (`id_equiptos_access`),
+  UNIQUE KEY `unique_id_equip_id_tipo_acesso` (`id_equip`,`id_tipo_acesso`),
+  KEY `fk_equiptos_access_equipamentos` (`id_equip`),
+  KEY `fk_equiptos_access_tipo_acesso` (`id_tipo_acesso`),
+  CONSTRAINT `fk_equiptos_access_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_equiptos_access_tipo_acesso` FOREIGN KEY (`id_tipo_acesso`) REFERENCES `tipo_acesso` (`id_tipo_acesso`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=829 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `equiptos_roteiros`
+--
+
+DROP TABLE IF EXISTS `equiptos_roteiros`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `equiptos_roteiros` (
+  `id_equiptos_roteiros` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_equip` int(10) unsigned NOT NULL,
+  `id_roteiros` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_equiptos_roteiros`),
+  UNIQUE KEY `uniq_equiptos_roteiros` (`id_equip`,`id_roteiros`),
+  KEY `fk_equiptos_roteiros_equipamentos` (`id_equip`),
+  KEY `fk_equiptos_roteiros_roteiros` (`id_roteiros`),
+  CONSTRAINT `fk_equiptos_roteiros_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_equiptos_roteiros_roteiros` FOREIGN KEY (`id_roteiros`) REFERENCES `roteiros` (`id_roteiros`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1141 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `event_log`
+--
+
+DROP TABLE IF EXISTS `event_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `event_log` (
+  `id_evento` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_user` int(10) unsigned NOT NULL,
+  `hora_evento` datetime NOT NULL,
+  `evento` text NOT NULL,
+  `resultado` int(11) NOT NULL,
+  `acao` text,
+  `funcionalidade` text,
+  `parametro_anterior` text,
+  `parametro_atual` text,
+  `id_objeto` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id_evento`),
+  KEY `fk_event_log_usuarios` (`id_user`),
+  CONSTRAINT `fk_event_log_usuarios` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id_user`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1154485 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `filter`
+--
+
+DROP TABLE IF EXISTS `filter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `filter` (
+  `id_filter` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(200) DEFAULT '',
+  PRIMARY KEY (`id_filter`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `filter_equiptype_xref`
+--
+
+DROP TABLE IF EXISTS `filter_equiptype_xref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `filter_equiptype_xref` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_filter` int(10) unsigned NOT NULL,
+  `id_equiptype` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_filter_equiptype_xref_filter` (`id_filter`),
+  KEY `fk_filter_equiptype_xref_equiptype` (`id_equiptype`),
+  CONSTRAINT `fk_filter_equiptype_xref_equip_type` FOREIGN KEY (`id_equiptype`) REFERENCES `tipo_equipamento` (`id_tipo_equipamento`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_filter_equiptype_xref_filter` FOREIGN KEY (`id_filter`) REFERENCES `filter` (`id_filter`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `functionality`
+--
+
+DROP TABLE IF EXISTS `functionality`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `functionality` (
+  `functionality` varchar(50) NOT NULL,
+  PRIMARY KEY (`functionality`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grupo_l3`
+--
+
+DROP TABLE IF EXISTS `grupo_l3`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grupo_l3` (
+  `id_grupo_l3` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(80) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_grupo_l3`),
+  UNIQUE KEY `nome` (`nome`)
+) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grupos`
+--
+
+DROP TABLE IF EXISTS `grupos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grupos` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL ,
+  `leitura` char(1) NOT NULL,
+  `escrita` char(1) NOT NULL,
+  `edicao` char(1) NOT NULL,
+  `exclusao` char(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nome` (`nome`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grupos_equip`
+--
+
+DROP TABLE IF EXISTS `grupos_equip`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grupos_equip` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL ,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `healthcheck`
+--
+
+DROP TABLE IF EXISTS `healthcheck`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `healthcheck` (
+  `id_healthcheck` int(11) NOT NULL AUTO_INCREMENT,
+  `identifier` varchar(200) DEFAULT NULL,
+  `healthcheck_type` varchar(45) DEFAULT NULL,
+  `healthcheck_request` varchar(500) DEFAULT NULL,
+  `healthcheck_expect` varchar(200) DEFAULT NULL,
+  `destination` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id_healthcheck`)
+) ENGINE=InnoDB AUTO_INCREMENT=2782 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `healthcheck_expect`
+--
+
+DROP TABLE IF EXISTS `healthcheck_expect`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `healthcheck_expect` (
+  `id_healthcheck_expect` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `expect_string` varchar(50) NOT NULL,
+  `match_list` varchar(50) NOT NULL,
+  `id_ambiente` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`id_healthcheck_expect`,`id_ambiente`),
+  KEY `fk_healthcheck_expect_ambiente` (`id_ambiente`),
+  CONSTRAINT `fk_healthcheck_expect_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `healthcheckexpect_healthcheck`
+--
+
+DROP TABLE IF EXISTS `healthcheckexpect_healthcheck`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `healthcheckexpect_healthcheck` (
+  `id_healthcheck` int(11) NOT NULL AUTO_INCREMENT,
+  `identifier` varchar(200) NOT NULL,
+  `healthcheck_type` varchar(45) NOT NULL,
+  `healthcheck_request` varchar(500) NOT NULL,
+  `healthcheck_expect` varchar(200) NOT NULL,
+  `destination` varchar(45) NOT NULL,
+  PRIMARY KEY (`id_healthcheck`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `interface_do_ambiente`
+--
+
+DROP TABLE IF EXISTS `interface_do_ambiente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `interface_do_ambiente` (
+  `id_int_ambiente` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `id_interface` int(10) unsigned NOT NULL,
+  `vlans` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id_int_ambiente`),
+  UNIQUE KEY `interface_do_ambiente_unique` (`id_ambiente`,`id_interface`),
+  KEY `fk_ interface_do_ambiente_ambiente` (`id_ambiente`),
+  KEY `fk_ interface_do_ambiente_interface` (`id_interface`),
+  CONSTRAINT `interface_do_ambiente_ambiente?` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON UPDATE CASCADE,
+  CONSTRAINT `interface_do_ambiente_interface?` FOREIGN KEY (`id_interface`) REFERENCES `interfaces` (`id_interface`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `interfaces`
+--
+
+DROP TABLE IF EXISTS `interfaces`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `interfaces` (
+  `id_equip` int(10) unsigned NOT NULL,
+  `interface` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `protegida` tinyint(1) NOT NULL DEFAULT '1',
+  `descricao` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id_interface` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ligacao_front` int(10) unsigned DEFAULT NULL,
+  `id_ligacao_back` int(10) unsigned DEFAULT NULL,
+  `vlan_nativa` varchar(200) COLLATE utf8_unicode_ci DEFAULT '1',
+  `id_tipo_interface` int(10) unsigned NOT NULL DEFAULT '1',
+  `id_channel` int(10) unsigned DEFAULT NULL,
+  `vlans` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id_interface`),
+  UNIQUE KEY `uniq_interface_id_equip` (`interface`,`id_equip`),
+  KEY `fk_interfaces_equipamentos` (`id_equip`),
+  KEY `fk_interfaces_interfaces_front` (`id_ligacao_front`),
+  KEY `fk_interfaces_interfaces_back` (`id_ligacao_back`),
+  KEY `fk_interfaces_interfaces_tipo` (`id_tipo_interface`),
+  KEY `fk_interfaces_port_channel` (`id_channel`),
+  CONSTRAINT `fk_interfaces_port_channel` FOREIGN KEY (`id_channel`) REFERENCES `port_channel` (`id_port_channel`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_interfaces_back` FOREIGN KEY (`id_ligacao_back`) REFERENCES `interfaces` (`id_interface`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_interfaces_front` FOREIGN KEY (`id_ligacao_front`) REFERENCES `interfaces` (`id_interface`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_interfaces_interfaces_tipo` FOREIGN KEY (`id_tipo_interface`) REFERENCES `tipo_interface` (`id_tipo_interface`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=28671 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ip_config`
+--
+
+DROP TABLE IF EXISTS `ip_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ip_config` (
+  `id_ip_config` int(10) NOT NULL AUTO_INCREMENT,
+  `subnet` varchar(45) NOT NULL,
+  `new_prefix` varchar(3) NOT NULL,
+  `type` enum('v6','v4') NOT NULL,
+  `network_type` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id_ip_config`),
+  KEY `fk_ip_config_1_idx` (`network_type`),
+  KEY `fk_ip_config_tipo_rede` (`network_type`),
+  CONSTRAINT `fk_ip_config_tipo_rede` FOREIGN KEY (`network_type`) REFERENCES `tipo_rede` (`id_tipo_rede`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ip_config_network_type` FOREIGN KEY (`network_type`) REFERENCES `tipo_rede` (`id_tipo_rede`) ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=829 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ips`
+--
+
+DROP TABLE IF EXISTS `ips`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ips` (
+  `id_ip` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `oct4` tinyint(3) unsigned NOT NULL,
+  `oct3` tinyint(3) unsigned NOT NULL,
+  `oct2` tinyint(3) unsigned NOT NULL,
+  `oct1` tinyint(3) unsigned NOT NULL,
+  `descricao` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `id_redeipv4` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_ip`),
+  UNIQUE KEY `ip_da_rede` (`oct1`,`oct2`,`oct3`,`oct4`,`id_redeipv4`),
+  KEY `fk_ips_redeipv4` (`id_redeipv4`),
+  CONSTRAINT `fk_ips_redeipv4` FOREIGN KEY (`id_redeipv4`) REFERENCES `redeipv4` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=135478 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ips_dos_equipamentos`
+--
+
+DROP TABLE IF EXISTS `ips_dos_equipamentos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ips_dos_equipamentos` (
+  `id_ips_dos_equipamentos` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ip` int(10) unsigned NOT NULL,
+  `id_equip` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_ips_dos_equipamentos`),
+  UNIQUE KEY `uniq_id_ip_id_equip` (`id_ip`,`id_equip`),
+  KEY `fk_ips_has_equipamentos_ips` (`id_ip`),
+  KEY `fk_ips_has_equipamentos_equipamentos` (`id_equip`),
+  CONSTRAINT `fk_ips_has_equipamentos_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_ips_has_equipamentos_ips` FOREIGN KEY (`id_ip`) REFERENCES `ips` (`id_ip`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=164427 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipsv6`
+--
+
+DROP TABLE IF EXISTS `ipsv6`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipsv6` (
+  `id_ipv6` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(100) DEFAULT NULL,
+  `id_redeipv6` int(10) unsigned NOT NULL,
+  `bloco1` varchar(4) NOT NULL,
+  `bloco2` varchar(4) NOT NULL,
+  `bloco3` varchar(4) NOT NULL,
+  `bloco4` varchar(4) NOT NULL,
+  `bloco5` varchar(4) NOT NULL,
+  `bloco6` varchar(4) NOT NULL,
+  `bloco7` varchar(4) NOT NULL,
+  `bloco8` varchar(4) NOT NULL,
+  PRIMARY KEY (`id_ipv6`),
+  KEY `fk_ipsv6_redeipv6` (`id_redeipv6`),
+  CONSTRAINT `fk_ipsv6_redeipv6` FOREIGN KEY (`id_redeipv6`) REFERENCES `redeipv6` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=412 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipsv6_dos_equipamentos`
+--
+
+DROP TABLE IF EXISTS `ipsv6_dos_equipamentos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipsv6_dos_equipamentos` (
+  `id_ipsv6_dos_equipamentos` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ipv6` int(10) unsigned NOT NULL,
+  `id_equip` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_ipsv6_dos_equipamentos`),
+  UNIQUE KEY `uniq_id_ipv6_id_equip` (`id_ipv6`,`id_equip`),
+  KEY `fk_ipsv6_has_equipamentos_ipsv6` (`id_ipv6`),
+  KEY `fk_ipsv6_has_equipamentos_equipamentos` (`id_equip`),
+  CONSTRAINT `fk_ipsv6_has_equipamentos_equipamentos` FOREIGN KEY (`id_equip`) REFERENCES `equipamentos` (`id_equip`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=488 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `marcas`
+--
+
+DROP TABLE IF EXISTS `marcas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `marcas` (
+  `id_marca` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_marca`),
+  UNIQUE KEY `marca_unica` (`nome`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `modelos`
+--
+
+DROP TABLE IF EXISTS `modelos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `modelos` (
+  `id_modelo` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) CHARACTER SET latin1 NOT NULL,
+  `id_marca` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_modelo`),
+  UNIQUE KEY `modelo_marca_unicos` (`nome`,`id_marca`),
+  KEY `fk_modelos_marcas` (`id_marca`),
+  CONSTRAINT `fk_modelos_marcas` FOREIGN KEY (`id_marca`) REFERENCES `marcas` (`id_marca`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `opcoespool`
+--
+
+DROP TABLE IF EXISTS `opcoespool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `opcoespool` (
+  `id_opcaopool` int(11) NOT NULL AUTO_INCREMENT,
+  `description` varchar(200) NOT NULL,
+  PRIMARY KEY (`id_opcaopool`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `opcoespool_ambiente_xref`
+--
+
+DROP TABLE IF EXISTS `opcoespool_ambiente_xref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `opcoespool_ambiente_xref` (
+  `id_opcaopool_ambiente_xref` int(11) NOT NULL AUTO_INCREMENT,
+  `id_opcaopool` int(11) NOT NULL,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_opcaopool_ambiente_xref`),
+  KEY `fk_opcoes_id_opcaopool_idx` (`id_opcaopool`),
+  KEY `fk_opcoes_id_ambiente_idx` (`id_ambiente`),
+  CONSTRAINT `fk_opcoes_id_opcaopool` FOREIGN KEY (`id_opcaopool`) REFERENCES `opcoespool` (`id_opcaopool`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_opcoes_id_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `opcoesvip`
+--
+
+DROP TABLE IF EXISTS `opcoesvip`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `opcoesvip` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tipo_opcao` char(50) CHARACTER SET latin1 NOT NULL,
+  `nome_opcao_txt` char(50) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `opcoesvip_ambiente_xref`
+--
+
+DROP TABLE IF EXISTS `opcoesvip_ambiente_xref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `opcoesvip_ambiente_xref` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `id_opcoesvip` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_opcoesvip_ambiente_opcoesvip` (`id_opcoesvip`),
+  KEY `fk_opcoesvip_ambiente_ambiente` (`id_ambiente`),
+  CONSTRAINT `fk_opcoesvip_ambiente_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambientevip` (`id`),
+  CONSTRAINT `fk_opcoesvip_ambiente_opcoesvip` FOREIGN KEY (`id_opcoesvip`) REFERENCES `opcoesvip` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1322 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `optionspool`
+--
+
+DROP TABLE IF EXISTS `optionspool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `optionspool` (
+  `id_optionspool` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(200) NOT NULL,
+  `description` varchar(200) NOT NULL,
+  PRIMARY KEY (`id_optionspool`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `optionspool_environment_xref`
+--
+
+DROP TABLE IF EXISTS `optionspool_environment_xref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `optionspool_environment_xref` (
+  `id_optionspool_environment_xref` int(11) NOT NULL AUTO_INCREMENT,
+  `id_optionspool` int(11) NOT NULL,
+  `id_environment` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_optionspool_environment_xref`),
+  KEY `fk_options_id_optionspool_idx` (`id_optionspool`),
+  KEY `fk_options_id_environment_idx` (`id_environment`),
+  CONSTRAINT `fk_options_id_optionspool` FOREIGN KEY (`id_optionspool`) REFERENCES `optionspool` (`id_optionspool`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_options_id_environment` FOREIGN KEY (`id_environment`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=160 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `permissions`
+--
+
+DROP TABLE IF EXISTS `permissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `permissions` (
+  `id_permission` int(11) NOT NULL AUTO_INCREMENT,
+  `function` varchar(100) NOT NULL,
+  PRIMARY KEY (`id_permission`),
+  UNIQUE KEY `function_UNIQUE` (`function`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `permissoes_administrativas`
+--
+
+DROP TABLE IF EXISTS `permissoes_administrativas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `permissoes_administrativas` (
+  `id_permissoes_administrativas` int(11) NOT NULL AUTO_INCREMENT,
+  `leitura` tinyint(4) NOT NULL DEFAULT '0',
+  `escrita` tinyint(4) NOT NULL DEFAULT '0',
+  `grupos_id` int(10) unsigned NOT NULL,
+  `permission_id` int(11) NOT NULL,
+  PRIMARY KEY (`id_permissoes_administrativas`),
+  KEY `fk_permissoes_administrativas_grupos` (`grupos_id`),
+  KEY `fk_permissoes_administrativas_permissions1_idx` (`permission_id`),
+  CONSTRAINT `fk_permissoes_administrativas_grupos` FOREIGN KEY (`grupos_id`) REFERENCES `grupos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_permissoes_administrativas_permissions1_idx` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id_permission`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=393 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `port_channel`
+--
+
+DROP TABLE IF EXISTS `port_channel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `port_channel` (
+  `id_port_channel` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `lacp` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id_port_channel`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `racks`
+--
+
+DROP TABLE IF EXISTS `racks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `racks` (
+  `id_rack` int(11) NOT NULL AUTO_INCREMENT,
+  `numero` int(11) NOT NULL,
+  `nome` varchar(4) NOT NULL,
+  `mac_sw1` varchar(17) DEFAULT NULL,
+  `mac_sw2` varchar(17) DEFAULT NULL,
+  `mac_ilo` varchar(17) DEFAULT NULL,
+  `id_equip1` int(11) DEFAULT NULL,
+  `id_equip2` int(11) DEFAULT NULL,
+  `id_equip3` int(11) DEFAULT NULL,
+  `config` tinyint(1) NOT NULL,
+  `create_vlan_amb` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id_rack`),
+  UNIQUE KEY `numero` (`numero`),
+  UNIQUE KEY `nome` (`nome`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `redeipv4`
+--
+
+DROP TABLE IF EXISTS `redeipv4`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `redeipv4` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_vlan` int(10) unsigned NOT NULL,
+  `rede_oct1` tinyint(3) unsigned NOT NULL,
+  `rede_oct2` tinyint(3) unsigned NOT NULL,
+  `rede_oct3` tinyint(3) unsigned NOT NULL,
+  `rede_oct4` tinyint(3) unsigned NOT NULL,
+  `bloco` tinyint(3) unsigned NOT NULL,
+  `masc_oct1` tinyint(3) unsigned NOT NULL,
+  `masc_oct2` tinyint(3) unsigned NOT NULL,
+  `masc_oct3` tinyint(3) unsigned NOT NULL,
+  `masc_oct4` tinyint(3) unsigned NOT NULL,
+  `id_tipo_rede` int(10) unsigned DEFAULT NULL,
+  `broadcast` char(15) CHARACTER SET latin1 NOT NULL,
+  `id_ambientevip` int(10) unsigned DEFAULT NULL,
+  `active` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `fk_redeipv4_vlans` (`id_vlan`),
+  KEY `fk_redeipv4_tipo_rede` (`id_tipo_rede`),
+  KEY `fk_redeipv4_ambientevip` (`id_ambientevip`),
+  CONSTRAINT `fk_redeipv4_ambientevip` FOREIGN KEY (`id_ambientevip`) REFERENCES `ambientevip` (`id`),
+  CONSTRAINT `fk_redeipv4_tipo_rede` FOREIGN KEY (`id_tipo_rede`) REFERENCES `tipo_rede` (`id_tipo_rede`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_redeipv4_vlans` FOREIGN KEY (`id_vlan`) REFERENCES `vlans` (`id_vlan`)
+) ENGINE=InnoDB AUTO_INCREMENT=26397 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `redeipv6`
+--
+
+DROP TABLE IF EXISTS `redeipv6`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `redeipv6` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ambientevip` int(10) unsigned DEFAULT NULL,
+  `id_vlan` int(10) unsigned NOT NULL,
+  `id_tipo_rede` int(10) unsigned DEFAULT NULL,
+  `bloco1` varchar(4) NOT NULL,
+  `bloco2` varchar(4) NOT NULL,
+  `bloco3` varchar(4) NOT NULL,
+  `bloco4` varchar(4) NOT NULL,
+  `bloco5` varchar(4) NOT NULL,
+  `bloco6` varchar(4) NOT NULL,
+  `bloco7` varchar(4) NOT NULL,
+  `bloco8` varchar(4) NOT NULL,
+  `bloco` smallint(6) NOT NULL,
+  `mask_bloco1` varchar(4) NOT NULL,
+  `mask_bloco2` varchar(4) NOT NULL,
+  `mask_bloco3` varchar(4) NOT NULL,
+  `mask_bloco4` varchar(4) NOT NULL,
+  `mask_bloco5` varchar(4) NOT NULL,
+  `mask_bloco6` varchar(4) NOT NULL,
+  `mask_bloco7` varchar(4) NOT NULL,
+  `mask_bloco8` varchar(4) NOT NULL,
+  `active` tinyint(4) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_redeipv6_vlans` (`id_vlan`),
+  KEY `fk_redeipv6_tipo_rede` (`id_tipo_rede`),
+  KEY `fk_redeipv6_ambientevip` (`id_ambientevip`),
+  CONSTRAINT `fk_redeipv6_ambientevip` FOREIGN KEY (`id_ambientevip`) REFERENCES `ambientevip` (`id`),
+  CONSTRAINT `fk_redeipv6_tipo_rede` FOREIGN KEY (`id_tipo_rede`) REFERENCES `tipo_rede` (`id_tipo_rede`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_redeipv6_vlans` FOREIGN KEY (`id_vlan`) REFERENCES `vlans` (`id_vlan`)
+) ENGINE=InnoDB AUTO_INCREMENT=328 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `requisicao_vips`
+--
+
+DROP TABLE IF EXISTS `requisicao_vips`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `requisicao_vips` (
+  `id_requisicao_vips` int(11) NOT NULL AUTO_INCREMENT,
+  `validado` tinyint(4) NOT NULL DEFAULT '0',
+  `variaveis` text COLLATE utf8_unicode_ci,
+  `vip_criado` tinyint(4) NOT NULL DEFAULT '0',
+  `ips_id_ip` int(10) unsigned DEFAULT NULL,
+  `id_healthcheck_expect` int(10) unsigned DEFAULT NULL,
+  `ipsv6_id_ipv6` int(10) unsigned DEFAULT NULL,
+  `l7_filter_to_apply` text COLLATE utf8_unicode_ci,
+  `l7_filter_current` text COLLATE utf8_unicode_ci,
+  `l7_filter_rollback` text COLLATE utf8_unicode_ci,
+  `l7_filter_is_valid` tinyint(4) DEFAULT NULL,
+  `l7_filter_applied_datetime` datetime DEFAULT NULL,
+  `id_rule` int(10) DEFAULT NULL,
+  `id_rule_current` int(10) DEFAULT NULL,
+  `id_rule_rollback` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id_requisicao_vips`),
+  KEY `fk_requisicao_vips_ips` (`ips_id_ip`),
+  KEY `fk_requisicao_vips_healthcheck_expect` (`id_healthcheck_expect`),
+  KEY `fk_requisicao_vips_ipsv6` (`ipsv6_id_ipv6`),
+  KEY `fk_requisicao_vips_rule_idx` (`id_rule`),
+  KEY `fk_requisicao_vips_rule_current_idx` (`id_rule_current`),
+  KEY `fk_requisicao_vips_rule_rollback_idx` (`id_rule_rollback`),
+  CONSTRAINT `fk_requisicao_vips_rule_current` FOREIGN KEY (`id_rule_current`) REFERENCES `rule` (`id_rule`) ON DELETE SET NULL ON UPDATE SET NULL,
+  CONSTRAINT `fk_requisicao_vips_rule_rollback` FOREIGN KEY (`id_rule_rollback`) REFERENCES `rule` (`id_rule`) ON DELETE SET NULL ON UPDATE SET NULL,
+  CONSTRAINT `fk_requisicao_vips_healthcheck_expect` FOREIGN KEY (`id_healthcheck_expect`) REFERENCES `healthcheck_expect` (`id_healthcheck_expect`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_requisicao_vips_ips` FOREIGN KEY (`ips_id_ip`) REFERENCES `ips` (`id_ip`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_requisicao_vips_ipsv6` FOREIGN KEY (`ipsv6_id_ipv6`) REFERENCES `ipsv6` (`id_ipv6`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_requisicao_vips_rule` FOREIGN KEY (`id_rule`) REFERENCES `rule` (`id_rule`) ON DELETE SET NULL ON UPDATE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=13621 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `roteiros`
+--
+
+DROP TABLE IF EXISTS `roteiros`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `roteiros` (
+  `id_roteiros` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `roteiro` varchar(40) CHARACTER SET latin1 NOT NULL,
+  `id_tipo_roteiro` int(11) NOT NULL,
+  `descricao` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  PRIMARY KEY (`id_roteiros`),
+  UNIQUE KEY `roteiros_tipo_unico` (`roteiro`,`id_tipo_roteiro`),
+  KEY `fk_roteiros_tipo_roteiro` (`id_tipo_roteiro`),
+  CONSTRAINT `fk_roteiros_tipo_roteiro` FOREIGN KEY (`id_tipo_roteiro`) REFERENCES `tipo_roteiro` (`id_tipo_roteiro`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `rule`
+--
+
+DROP TABLE IF EXISTS `rule`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rule` (
+  `id_rule` int(10) NOT NULL AUTO_INCREMENT,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `id_vip` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id_rule`),
+  KEY `fk_rule_ambiente_idx` (`id_ambiente`),
+  KEY `fk_rule_vip_idx` (`id_vip`),
+  CONSTRAINT `fk_rule_vip` FOREIGN KEY (`id_vip`) REFERENCES `requisicao_vips` (`id_requisicao_vips`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `fk_rule_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `rule_content`
+--
+
+DROP TABLE IF EXISTS `rule_content`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rule_content` (
+  `id_rule_content` int(10) NOT NULL AUTO_INCREMENT,
+  `content` text NOT NULL,
+  `order` int(10) NOT NULL,
+  `id_rule` int(10) NOT NULL,
+  PRIMARY KEY (`id_rule_content`),
+  KEY `fk_rule_content_idx` (`id_rule`),
+  CONSTRAINT `fk_rule_content` FOREIGN KEY (`id_rule`) REFERENCES `rule` (`id_rule`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `semaforo`
+--
+
+DROP TABLE IF EXISTS `semaforo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `semaforo` (
+  `id_semaforo` int(5) unsigned NOT NULL,
+  `descricao` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_semaforo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `server_pool`
+--
+
+DROP TABLE IF EXISTS `server_pool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `server_pool` (
+  `id_server_pool` int(11) NOT NULL AUTO_INCREMENT,
+  `identifier` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `healthcheck_id_healthcheck` int(11) DEFAULT NULL,
+  `service-down-action_id` int(11) DEFAULT '5',
+  `default_port` int(10) unsigned NOT NULL,
+  `default_limit` int(11) DEFAULT NULL,
+  `ambiente_id_ambiente` int(10) unsigned DEFAULT NULL,
+  `pool_criado` tinyint(4) DEFAULT '0',
+  `lb_method` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id_server_pool`),
+  UNIQUE KEY `fk_server_pool_environment2` (`ambiente_id_ambiente`,`identifier`),
+  KEY `fk_server_pool_healthcheck1_idx` (`healthcheck_id_healthcheck`),
+  CONSTRAINT `fk_server_pool_environment` FOREIGN KEY (`ambiente_id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_server_pool_healthcheck1` FOREIGN KEY (`healthcheck_id_healthcheck`) REFERENCES `healthcheck` (`id_healthcheck`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=17466 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `server_pool_member`
+--
+
+DROP TABLE IF EXISTS `server_pool_member`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `server_pool_member` (
+  `id_server_pool_member` int(11) NOT NULL AUTO_INCREMENT,
+  `id_server_pool` int(11) NOT NULL,
+  `identifier` varchar(200) DEFAULT NULL,
+  `ipsv6_id_ipv6` int(10) unsigned DEFAULT NULL,
+  `ips_id_ip` int(10) unsigned DEFAULT NULL,
+  `priority` int(10) unsigned NOT NULL DEFAULT '0',
+  `weight` int(10) unsigned NOT NULL DEFAULT '0',
+  `limit` int(11) NOT NULL DEFAULT '0',
+  `port` int(10) unsigned NOT NULL,
+  `healthcheck_id_healthcheck` int(11) DEFAULT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT '0' ,
+  `last_status_update` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_server_pool_member`),
+  UNIQUE KEY `unique_pool_member` (`id_server_pool`,`ips_id_ip`,`port`),
+  UNIQUE KEY `unique_pool_member_ipv6` (`id_server_pool`,`ipsv6_id_ipv6`,`port`),
+  KEY `fk_server_pool_ipsv61_idx` (`ipsv6_id_ipv6`),
+  KEY `fk_server_pool_ips1_idx` (`ips_id_ip`),
+  KEY `fk_server_pool_member_server_pool1_idx` (`id_server_pool`),
+  KEY `fk_server_pool_member_healthcheck1_idx` (`healthcheck_id_healthcheck`),
+  CONSTRAINT `fk_server_pool_ips1` FOREIGN KEY (`ips_id_ip`) REFERENCES `ips` (`id_ip`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_server_pool_ipsv61` FOREIGN KEY (`ipsv6_id_ipv6`) REFERENCES `ipsv6` (`id_ipv6`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_server_pool_member_healthcheck1` FOREIGN KEY (`healthcheck_id_healthcheck`) REFERENCES `healthcheck` (`id_healthcheck`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_server_pool_member_server_pool1` FOREIGN KEY (`id_server_pool`) REFERENCES `server_pool` (`id_server_pool`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=31623 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tipo_acesso`
+--
+
+DROP TABLE IF EXISTS `tipo_acesso`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipo_acesso` (
+  `id_tipo_acesso` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `protocolo` varchar(45) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_tipo_acesso`),
+  UNIQUE KEY `protocolo` (`protocolo`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tipo_equipamento`
+--
+
+DROP TABLE IF EXISTS `tipo_equipamento`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipo_equipamento` (
+  `id_tipo_equipamento` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tipo_equipamento` varchar(100) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_tipo_equipamento`)
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tipo_interface`
+--
+
+DROP TABLE IF EXISTS `tipo_interface`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipo_interface` (
+  `id_tipo_interface` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tipo` varchar(20) NOT NULL,
+  PRIMARY KEY (`id_tipo_interface`),
+  UNIQUE KEY `tipo_unique` (`tipo`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tipo_rede`
+--
+
+DROP TABLE IF EXISTS `tipo_rede`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipo_rede` (
+  `id_tipo_rede` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tipo_rede` varchar(100) CHARACTER SET latin1 NOT NULL,
+  PRIMARY KEY (`id_tipo_rede`),
+  UNIQUE KEY `tipo_rede_unico` (`tipo_rede`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tipo_roteiro`
+--
+
+DROP TABLE IF EXISTS `tipo_roteiro`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipo_roteiro` (
+  `id_tipo_roteiro` int(11) NOT NULL AUTO_INCREMENT,
+  `tipo` varchar(40) CHARACTER SET latin1 DEFAULT NULL,
+  `descricao` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  PRIMARY KEY (`id_tipo_roteiro`),
+  UNIQUE KEY `tipo` (`tipo`)
+) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `usuarios`
+--
+
+DROP TABLE IF EXISTS `usuarios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `usuarios` (
+  `user` varchar(45) CHARACTER SET latin1 NOT NULL,
+  `pwd` varchar(45) NOT NULL,
+  `id_user` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(200) NOT NULL,
+  `ativo` tinyint(4) NOT NULL DEFAULT '1',
+  `email` varchar(300) NOT NULL,
+  `user_ldap` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id_user`),
+  UNIQUE KEY `key_user` (`user`)
+) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `usuarios_do_grupo`
+--
+
+DROP TABLE IF EXISTS `usuarios_do_grupo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `usuarios_do_grupo` (
+  `id_usuarios_do_grupo` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_user` int(10) unsigned NOT NULL,
+  `id_grupo` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_usuarios_do_grupo`),
+  UNIQUE KEY `uniq_id_user_id_grupo` (`id_user`,`id_grupo`),
+  KEY `fk_users_do_grupo_users` (`id_user`),
+  KEY `fk_users_do_grupo_grupos` (`id_grupo`),
+  CONSTRAINT `fk_users_do_grupo_grupos` FOREIGN KEY (`id_grupo`) REFERENCES `grupos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_do_grupo_users` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id_user`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `vip_port_to_pool`
+--
+
+DROP TABLE IF EXISTS `vip_port_to_pool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vip_port_to_pool` (
+  `id_vip_port_to_pool` int(11) NOT NULL AUTO_INCREMENT,
+  `id_requisicao_vips` int(11) NOT NULL,
+  `id_server_pool` int(11) NOT NULL,
+  `vip_port` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_vip_port_to_pool`),
+  KEY `fk_vip_port_to_pool_requisicao_vips1_idx` (`id_requisicao_vips`),
+  KEY `fk_vip_port_to_pool_server_pool1_idx` (`id_server_pool`),
+  CONSTRAINT `fk_vip_port_to_pool_requisicao_vips1` FOREIGN KEY (`id_requisicao_vips`) REFERENCES `requisicao_vips` (`id_requisicao_vips`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vip_port_to_pool_server_pool1` FOREIGN KEY (`id_server_pool`) REFERENCES `server_pool` (`id_server_pool`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=17491 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `vlans`
+--
+
+DROP TABLE IF EXISTS `vlans`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vlans` (
+  `id_vlan` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(50) CHARACTER SET latin1 NOT NULL,
+  `num_vlan` int(10) unsigned NOT NULL,
+  `id_ambiente` int(10) unsigned NOT NULL,
+  `descricao` varchar(200) CHARACTER SET latin1 DEFAULT NULL,
+  `acl_file_name` varchar(200) DEFAULT NULL,
+  `acl_valida` tinyint(1) NOT NULL,
+  `ativada` tinyint(4) NOT NULL DEFAULT '0',
+  `acl_file_name_v6` varchar(200) DEFAULT NULL,
+  `acl_valida_v6` tinyint(1) NOT NULL,
+  `acl_draft` text,
+  `acl_draft_v6` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id_vlan`),
+  UNIQUE KEY `vlan_no_ambiente` (`id_ambiente`,`num_vlan`),
+  UNIQUE KEY `nome_da_vlan_no_ambiente` (`nome`,`id_ambiente`),
+  KEY `fk_vlans_ambiente` (`id_ambiente`),
+  CONSTRAINT `fk_vlans_ambiente` FOREIGN KEY (`id_ambiente`) REFERENCES `ambiente` (`id_ambiente`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=27677 DEFAULT CHARSET=utf8 ;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+"""
+
+SQL_DOWN = u"""
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+
+
+drop table  ambiente                       ;
+drop table  ambiente_logico                ;
+drop table  ambiente_rack                  ;
+drop table  ambientevip                    ;
+drop table  block_rules                    ;
+drop table  config                         ;
+drop table  config_do_ambiente             ;
+drop table  direitos_grupoequip            ;
+drop table  divisao_dc                     ;
+drop table  environment_environment_vip    ;
+drop table  equip_do_ambiente              ;
+drop table  equip_do_grupo                 ;
+drop table  equipamentos                   ;
+drop table  equiptos_access                ;
+drop table  equiptos_roteiros              ;
+drop table  event_log                      ;
+drop table  filter                         ;
+drop table  filter_equiptype_xref          ;
+drop table  functionality                  ;
+drop table  grupo_l3                       ;
+drop table  grupos                         ;
+drop table  grupos_equip                   ;
+drop table  healthcheck                    ;
+drop table  healthcheck_expect             ;
+drop table  healthcheckexpect_healthcheck  ;
+drop table  interface_do_ambiente          ;
+drop table  interfaces                     ;
+drop table  ip_config                      ;
+drop table  ips                            ;
+drop table  ips_dos_equipamentos           ;
+drop table  ipsv6                          ;
+drop table  ipsv6_dos_equipamentos         ;
+drop table  marcas                         ;
+drop table  modelos                        ;
+drop table  opcoespool                     ;
+drop table  opcoespool_ambiente_xref       ;
+drop table  opcoesvip                      ;
+drop table  opcoesvip_ambiente_xref        ;
+drop table  optionspool                    ;
+drop table  optionspool_environment_xref   ;
+drop table  permissions                    ;
+drop table  permissoes_administrativas     ;
+drop table  port_channel                   ;
+drop table  racks                          ;
+drop table  redeipv4                       ;
+drop table  redeipv6                       ;
+drop table  requisicao_vips                ;
+drop table  roteiros                       ;
+drop table  rule                           ;
+drop table  rule_content                   ;
+drop table  semaforo                       ;
+drop table  server_pool                    ;
+drop table  server_pool_member             ;
+drop table  tipo_acesso                    ;
+drop table  tipo_equipamento               ;
+drop table  tipo_interface                 ;
+drop table  tipo_rede                      ;
+drop table  tipo_roteiro                   ;
+drop table  usuarios                       ;
+drop table  usuarios_do_grupo              ;
+drop table  vip_port_to_pool               ;
+drop table  vlans                          ;
+
+
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+
+
+"""
