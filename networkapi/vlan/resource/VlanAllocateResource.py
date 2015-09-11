@@ -73,6 +73,7 @@ class VlanAllocateResource(RestResource):
             environment = vlan_map.get('environment_id')
             name = vlan_map.get('name')
             description = vlan_map.get('description')
+            vrf = vlan_map.get('vrf')
 
             # Name must NOT be none and 50 is the maxsize
             if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 50):
@@ -84,6 +85,12 @@ class VlanAllocateResource(RestResource):
                 self.log.error(
                     u'Parameter description is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'description', description)
+                
+            # vrf can NOT be greater than 100
+            if not is_valid_string_maxsize(vrf, 100, False):
+                self.log.error(
+                    u'Parameter vrf is invalid. Value: %s.', vrf)
+                raise InvalidValueError(None, 'vrf', vrf)
 
             # Environment
             try:
