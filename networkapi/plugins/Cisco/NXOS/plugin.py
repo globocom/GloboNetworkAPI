@@ -32,6 +32,17 @@ class NXOS(BasePlugin):
 	management_vrf = 'management'
 	VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
 
+	def create_svi(self, svi_number, svi_description='no description'):
+		'''
+		Create SVI in switch
+		'''
+		self.ensure_privilege_level(self)
+		self.channel.send("terminal length 0\nconfigure terminal\n \
+			interface Vlan%s \n description %s \n end \n" % (svi_number, svi_description))
+		recv = self.waitString("#")
+
+		return recv
+
 	def copyScriptFileToConfig (self, filename, use_vrf=None, destination="running-config"):
 		'''
 		Copy file from TFTP server to destination
@@ -49,8 +60,11 @@ class NXOS(BasePlugin):
 
 		return recv
 
-	def ensure_privilege_level(self, privilege_level=self.admin_privileges):
+	def ensure_privilege_level(self, privilege_level=None):
 
+		if privilege_level == None:
+			privilege_level = self.admin_privileges
+			
 		recv = self.waitString(">|#")
 		channel.send("show privilege\n")
 		recv = self.waitString("Current privilege level:")
@@ -62,3 +76,14 @@ class NXOS(BasePlugin):
 			recv = self.waitString("Password:")
 			channel.send("%s\n" % enable_pass)
 			recv = self.waitString("#")
+			
+	def remove_svi(self, svi_number):
+		'''
+		Delete SVI from switch
+		'''
+		self.ensure_privilege_level()
+		self.channel.send("terminal length 0\nconfigure terminal\n \
+			no interface Vlan%s \n end \n" % (svi_number))
+		recv = self.waitString("#")
+
+		return recv

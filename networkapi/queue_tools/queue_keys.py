@@ -18,10 +18,20 @@
 
 ENVIRONMENT_KEY = "environment"
 ENVIRONMENT_CONFIG_KEY = "environment_configuration"
+NETWORKv4_KEY = "networkv4"
+NETWORKv6_KEY = "networkv6"
 VLAN_KEY = "vlan"
 EQUIP_ENV_KEY = "equipment_environment"
 CONFIGURATION_KEY = "environment_configuration"
 DIVISION_DC_KEY = "division_dc"
+
+"""
+Network keys
+"""
+NETWORKv4_ACTIVATE = "activate_networkv4"
+NETWORKv4_DEACTIVATE = "deactivate_networkv4"
+NETWORKv6_ACTIVATE = "activate_networkv6"
+NETWORKv6_DEACTIVATE = "deactivate_networkv6"
 
 """
  Vlan keys
@@ -31,5 +41,6 @@ VLAN_CREATE_NETWORK_IPV4 = "create_ipv4"
 VLAN_CREATE_NETWORK_IPV6 = "create_ipv6"
 VLAN_CREATE_SCRIPT_ACL = "create_script_acl"
 VLAN_ACTIVATE = "activate_vlan"
+VLAN_DEACTIVATE = "deactivate_vlan"
 VLAN_CREATE = "create"
 VLAN_REMOVE = "remove"
