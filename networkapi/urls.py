@@ -292,15 +292,7 @@ environment_vip_rules = RequestVipGetRulesByEVipResource()
 rule_resource = RuleResource()
 rule_get_resource = RuleGetResource()
 
-equipment_resource = EquipamentoResource()
 
-equipment_get_real_related = EquipmentGetRealRelated()
-
-equipment_edit_resource = EquipamentoEditResource()
-
-equipment_type_get_all_resource = EquipmentTypeGetAllResource()
-
-equipment_type_add_resource = EquipmentTypeAddResource()
 
 # brand_resource = MarcaResource()
 brand_add_resource = BrandAddResource()
@@ -321,8 +313,8 @@ equipment_script_list_resource = EquipScriptListResource()
 equipment_access_get_resource = EquipAccessGetResource()
 equipment_access_edit_resource = EquipAccessEditResource()
 equipment_environment_resource = EquipamentoAmbienteResource()
-equipment_list_resource = EquipmentListResource()
-equipment_find_resource = EquipmentFindResource()
+
+
 equipment_get_all_resource = EquipmentGetAllResource()
 equipment_get_by_group_resource = EquipmentGetByGroupEquipmentResource()
 equipment_environment_remove = EquipmentEnvironmentDeallocateResource()
@@ -563,25 +555,9 @@ urlpatterns += patterns('',
    url(r'^net_type/(?P<id_net_type>[^/]+)/$',
        network_type_resource.handle_request, name='network_type.update.remove.by.pk'),
 
+   #equipamento
+   url(r'^equipamento/', include('networkapi.equipamento.urls')),
 
-   url(r'^equipamento/get_real_related/(?P<id_equip>[^/]+)/$',
-       equipment_get_real_related.handle_request, name='equipment.get.real.related'),
-   url(r'^equipamento/$', equipment_resource.handle_request,
-       name='equipment.insert'),
-   url(r'^equipamento/edit/(?P<id_equip>[^/]+)/$',
-       equipment_edit_resource.handle_request, name='equipment.edit.by.pk'),
-   url(r'^equipamento/list/$', equipment_list_resource.handle_request,
-       name='equipment.list.all'),
-   url(r'^equipamento/find/$',
-       equipment_find_resource.handle_request, name='equipment.find'),
-   url(r'^equipamento/(?P<id_equip>[^/]+)/$',
-       equipment_resource.handle_request, name='equipment.remove.by.pk'),
-   url(r'^equipamento/nome/(?P<nome_equip>[^/]+)/$',
-       equipment_resource.handle_request, name='equipment.get.by.name'),
-   url(r'^equipamento/id/(?P<id_equip>[^/]+)/$',
-       equipment_resource.handle_request, name='equipment.get.by.id'),
-   url(r'^equipamento/tipoequipamento/(?P<id_tipo_equip>[^/]+)/ambiente/(?P<id_ambiente>[^/]+)/$',
-       equipment_resource.handle_request, name='equipment.search.by.equipment_type.environment'),
    url(r'^equipment/all/$', equipment_get_all_resource.handle_request,
        name='equipment.get.all'),
    url(r'^equipment/group/(?P<id_egroup>[^/]+)/$',
@@ -606,10 +582,8 @@ urlpatterns += patterns('',
    url(r'^equipmentscript/(?P<id_equipment>[^/]+)/(?P<id_script>[^/]+)/$',
        equipment_script_remove_resource.handle_request, name='equipment_script.remove'),
 
-   url(r'^equipmenttype/all/$', equipment_type_get_all_resource.handle_request,
-       name='equipment_type.get.all'),
-   url(r'^equipmenttype/$', equipment_type_add_resource.handle_request,
-       name='equipment_type.add'),
+   #EQUIPMENT TYPE
+   url(r'^equipmenttype/', include('networkapi.equipamento.urls_equipmenttype')),
 
    url(r'^equipamentoambiente/$', equipment_environment_resource.handle_request,
        name='equipmentenvironment.insert'),
