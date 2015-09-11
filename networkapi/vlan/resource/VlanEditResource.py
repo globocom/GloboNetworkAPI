@@ -317,7 +317,7 @@ class VlanEditResource(RestResource):
                     return self.not_authorized()
 
             if vlan.ativada:
-                return self.response_error(122)
+                return self.response(dumps_networkapi({}))
 
             # Make command
             vlan_command = settings.VLAN_CREATE % int(id_vlan)

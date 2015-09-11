@@ -133,8 +133,14 @@ class VlanRemoveResource(RestResource):
                             None, message=', '.join(network_errors))
 
                 else:
-                    raise VlanInactiveError(
-                        None, 'Cant remove vlan because its inactive.')
+                    success_map = dict()
+                    success_map['codigo'] = '%04d' % 0
+                    success_map['descricao'] = {
+                    'stdout': 'Nothing to do. Vlan was already not active', 'stderr': ''}
+                    map = dict()
+                    map['sucesso'] = success_map
+
+                    return self.response(dumps_networkapi(map))
 
                 # Execute script
                 vlan_id = vlan.id
