@@ -1,0 +1,8 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+"""
+
+SQL_DOWN = u"""
+
+"""
