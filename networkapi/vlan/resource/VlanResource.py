@@ -26,8 +26,6 @@ from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceProtectedError
 from networkapi.log import Log
-from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, Vlan, VlanNameDuplicatedError, \
@@ -36,7 +34,6 @@ from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, NetworkI
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi import settings, error_message_utils
-from networkapi.vlan.serializers import VlanSerializer
 
 
 class VlanResource(RestResource):
@@ -403,16 +400,6 @@ class VlanResource(RestResource):
 
             map = dict()
             map['sucesso'] = success_map
-
-            # Send to Queue
-            queue_manager = QueueManager()
-
-            serializer = VlanSerializer(vlan)
-            data_to_queue = serializer.data
-            data_to_queue.update({'description': queue_keys.VLAN_CREATE})
-            queue_manager.append({'action': queue_keys.VLAN_CREATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
-
-            queue_manager.send()
 
             return self.response(dumps_networkapi(map))
         else:

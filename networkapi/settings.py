@@ -356,6 +356,7 @@ POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
 POOL_REAL_CHECK_BY_POOL = 'gerador_vips --pool %s --check_status'
 POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
 POOL_SERVICEDOWNACTION = 'gerador_vips --pool %s --servicedownaction'
+POOL_MEMBER_PRIORITIES = 'gerador_vips --pool %s --priority'
 
 # Script to Managemant Status Pool Members
 POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
@@ -474,4 +475,12 @@ USER_SCRIPTS_REL_PATH = "user_scripts/"
 USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
 #networkapi/generated_config/interface/
 USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
+
+NETWORK_CONFIG_REL_PATH = "network/"
+#/mnt/config_templates/interface/
+NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+NETWORK_CONFIG_REL_PATH
+#/mnt/tftpboot/networkapi/generated_config/interface/
+NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
+#networkapi/generated_config/interface/
+NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
 ###################
