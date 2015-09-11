@@ -141,8 +141,7 @@ def remove_deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 				file_to_deploy = _generate_config_file(dict_ips, equipment, TEMPLATE_NETWORKv4_DEACTIVATE)
 				#deploy config file in equipments
 				lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (equipment.id)
-				#status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
-				status_deploy[equipment.id] = "OKOKOKOKOK"
+				status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(file_to_deploy, equipment, lockvar)
 			networkipv4.deactivate(user)
 			transaction.commit()
 			if networkipv4.vlan.ativada == 1:
@@ -150,7 +149,8 @@ def remove_deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 				if not _has_active_network_in_vlan(networkipv4.vlan):
 					#remove int vlan
 					for equipment in equipment_list:
-						status_deploy[equipment.id] += _remove_svi(equipment, networkipv4.vlan.num_vlan)
+						if equipment.maintenance is not True:
+							status_deploy[equipment.id] += _remove_svi(equipment, networkipv4.vlan.num_vlan)
 					networkipv4.vlan.remove(user)
 
 			return status_deploy
@@ -192,7 +192,8 @@ def remove_deploy_networkIPv6_configuration(user, networkipv6, equipment_list):
 				if not _has_active_network_in_vlan(networkipv6.vlan):
 					#remove int vlan
 					for equipment in equipment_list:
-						status_deploy[equipment.id] += _remove_svi(equipment, networkipv6.vlan.num_vlan)
+						if equipment.maintenance is not True:
+							status_deploy[equipment.id] += _remove_svi(equipment, networkipv6.vlan.num_vlan)
 					networkipv6.vlan.remove(user)
 
 			return status_deploy
