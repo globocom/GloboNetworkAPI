@@ -65,7 +65,9 @@ Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 if NETWORKAPI_USE_NEWRELIC:
     import newrelic.agent
-    newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
+    config_file_path = os.environ.get('NETWORKAPI_NEW_RELIC_CONFIG')
+    if config_file_path is not None:
+        newrelic.agent.initialize(config_file_path, os.environ.get('NETWORKAPI_NEW_RELIC_ENV', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
