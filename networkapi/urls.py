@@ -36,10 +36,6 @@ from networkapi.equipamento.resource.EquipmentScriptRemoveResource import Equipm
 from networkapi.equipamento.resource.EquipmentScriptGetAllResource import EquipmentScriptGetAllResource
 
 from networkapi.equipamento.resource.EquipamentoGrupoResource import EquipamentoGrupoResource
-from networkapi.equipamento.resource.EquipamentoAcessoResource import EquipamentoAcessoResource
-from networkapi.equipamento.resource.EquipAccessListResource import EquipAccessListResource
-from networkapi.equipamento.resource.EquipAccessGetResource import EquipAccessGetResource
-from networkapi.equipamento.resource.EquipAccessEditResource import EquipAccessEditResource
 from networkapi.equipamento.resource.EquipScriptListResource import EquipScriptListResource
 from networkapi.equipamento.resource.EquipmentEnvironmentDeallocateResource import EquipmentEnvironmentDeallocateResource
 
@@ -288,13 +284,9 @@ model_get_by_brand_resource = ModelGetByBrandResource()
 
 equipment_group_resource = EquipamentoGrupoResource()
 equipment_group_associa_resource = GrupoEquipamentoAssociaEquipamentoResource()
-equipment_access_resource = EquipamentoAcessoResource()
-equipment_access_list_resource = EquipAccessListResource()
-equipment_script_list_resource = EquipScriptListResource()
-equipment_access_get_resource = EquipAccessGetResource()
-equipment_access_edit_resource = EquipAccessEditResource()
-equipment_environment_resource = EquipamentoAmbienteResource()
 
+equipment_script_list_resource = EquipScriptListResource()
+equipment_environment_resource = EquipamentoAmbienteResource()
 
 environment_resource = AmbienteResource()
 environment_list_resource = EnvironmentListResource()
@@ -515,17 +507,6 @@ urlpatterns += patterns('',
    url(r'^tipoacesso/(?P<id_tipo_acesso>[^/]+)/$',
        access_type_resource.handle_request, name='access_type.update.remove.by.pk'),
 
-   url(r'^equipamentoacesso/$', equipment_access_resource.handle_request,
-       name='equipmentaccess.insert.search'),
-   url(r'^equipamentoacesso/id/(?P<id_acesso>[^/]+)/$',
-       equipment_access_get_resource.handle_request, name='equipmentaccess.get.by.id'),
-   url(r'^equipamentoacesso/(?P<id_equipamento>[^/]+)/(?P<id_tipo_acesso>[^/]+)/$',
-       equipment_access_resource.handle_request, name='equipmentaccess.update.remove.by.pk'),
-   url(r'^equipamentoacesso/name/$', equipment_access_list_resource.handle_request,
-       name='equipmentaccess.list.by.name'),
-   url(r'^equipamentoacesso/edit/$', equipment_access_edit_resource.handle_request,
-       name='equipmentaccess.edit.by.id'),
-
    url(r'^net_type/$', network_type_resource.handle_request,
        name='network_type.insert.search'),
    url(r'^net_type/(?P<id_net_type>[^/]+)/$',
@@ -534,6 +515,7 @@ urlpatterns += patterns('',
    #equipamento
    url(r'^equipamento/', include('networkapi.equipamento.urls')),
    url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
+   url(r'^equipamentoacesso/', include('networkapi.equipamento.urls_equipamentoacesso')),
 
    url(r'^equipamentogrupo/$', equipment_group_resource.handle_request,
        name='equipmentgroup.insert'),
