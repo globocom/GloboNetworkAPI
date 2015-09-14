@@ -17,41 +17,30 @@
 
 from django.conf.urls.defaults import *
 from django.http import HttpResponse
-from networkapi.equipamento.resource import EquipmentGetIpsByAmbiente
 
 from networkapi.vlan.resource.NetworkTypeResource import NetworkTypeResource
 
-from networkapi.equipamento.resource.EquipamentoResource import EquipamentoResource, EquipamentoAmbienteResource
+from networkapi.equipamento.resource.EquipamentoResource import EquipamentoAmbienteResource
 
-from networkapi.equipamento.resource.EquipmentGetRealRelated import EquipmentGetRealRelated
 from networkapi.equipamento.resource.BrandAddResource import BrandAddResource
 from networkapi.equipamento.resource.BrandAlterRemoveResource import BrandAlterRemoveResource
 from networkapi.equipamento.resource.BrandGetAllResource import BrandGetAllResource
-from networkapi.equipamento.resource.EquipmentGetIpsByAmbiente import EquipmentGetIpsByAmbiente
 
 from networkapi.equipamento.resource.ModelAddResource import ModelAddResource
 from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterRemoveResource
 from networkapi.equipamento.resource.ModelGetAllResource import ModelGetAllResource
 from networkapi.equipamento.resource.ModelGetByBrandResource import ModelGetByBrandResource
 
-from networkapi.equipamento.resource.EquipmentTypeGetAllResource import EquipmentTypeGetAllResource
-
 from networkapi.equipamento.resource.EquipmentScriptAddResource import EquipmentScriptAddResource
 from networkapi.equipamento.resource.EquipmentScriptRemoveResource import EquipmentScriptRemoveResource
 from networkapi.equipamento.resource.EquipmentScriptGetAllResource import EquipmentScriptGetAllResource
 
-from networkapi.equipamento.resource.EquipamentoEditResource import EquipamentoEditResource
-from networkapi.equipamento.resource.EquipmentTypeAddResource import EquipmentTypeAddResource
 from networkapi.equipamento.resource.EquipamentoGrupoResource import EquipamentoGrupoResource
 from networkapi.equipamento.resource.EquipamentoAcessoResource import EquipamentoAcessoResource
 from networkapi.equipamento.resource.EquipAccessListResource import EquipAccessListResource
 from networkapi.equipamento.resource.EquipAccessGetResource import EquipAccessGetResource
 from networkapi.equipamento.resource.EquipAccessEditResource import EquipAccessEditResource
-from networkapi.equipamento.resource.EquipmentListResource import EquipmentListResource
 from networkapi.equipamento.resource.EquipScriptListResource import EquipScriptListResource
-from networkapi.equipamento.resource.EquipmentFindResource import EquipmentFindResource
-from networkapi.equipamento.resource.EquipmentGetAllResource import EquipmentGetAllResource
-from networkapi.equipamento.resource.EquipmentGetByGroupEquipmentResource import EquipmentGetByGroupEquipmentResource
 from networkapi.equipamento.resource.EquipmentEnvironmentDeallocateResource import EquipmentEnvironmentDeallocateResource
 
 from networkapi.ambiente.resource.AmbienteResource import AmbienteResource, AmbienteEquipamentoResource
@@ -198,13 +187,8 @@ from networkapi.roteiro.resource.ScriptTypeGetAllResource import ScriptTypeGetAl
 
 
 from networkapi.healthcheckexpect.resource.HealthcheckExpectResource import HealthcheckExpectResource
-
 from networkapi.healthcheckexpect.resource.HealthcheckAddResource import HealthcheckAddResource
 
-from networkapi.requisicaovips.resource.OptionVipGetTimeoutByEVipResource import OptionVipGetTimeoutByEVipResource
-from networkapi.requisicaovips.resource.OptionVipGetGrupoCacheByEVipResource import OptionVipGetGrupoCacheByEVipResource
-from networkapi.requisicaovips.resource.OptionVipGetPersistenciaByEVipResource import OptionVipGetPersistenciaByEVipResource
-from networkapi.requisicaovips.resource.OptionVipGetBalanceamentoByEVipResource import OptionVipGetBalanceamentoByEVipResource
 from networkapi.ambiente.resource.EnvironmentVipGetFinalityResource import EnvironmentVipGetFinalityResource
 from networkapi.ambiente.resource.EnvironmentVipGetClienteTxtResource import EnvironmentVipGetClienteTxtResource
 from networkapi.ambiente.resource.EnvironmentVipGetAmbienteP44TxtResource import EnvironmentVipGetAmbienteP44TxtResource
@@ -258,7 +242,6 @@ check_action = CheckAction()
 # from django.contrib import admin
 # admin.autodiscover()
 
-
 rack_add_resource = RackAddResource()
 find_rack_resource = RackFindResource()
 edit_rack_resource = RackEditResource()
@@ -268,8 +251,6 @@ aplicar_config_rack_resource = RackAplicarConfigResource()
 list_all_racks_resource = RackListAllResource()
 list_rack_environment_resource = RackEnvironmentResource()
 get_rack_by_equip_resource = RackGetByEquipResource()
-
-
 
 healthcheckexpect_string_resource = HealthcheckAddExpectStringResource()
 
@@ -314,11 +295,7 @@ equipment_access_get_resource = EquipAccessGetResource()
 equipment_access_edit_resource = EquipAccessEditResource()
 equipment_environment_resource = EquipamentoAmbienteResource()
 
-
-equipment_get_all_resource = EquipmentGetAllResource()
-equipment_get_by_group_resource = EquipmentGetByGroupEquipmentResource()
 equipment_environment_remove = EquipmentEnvironmentDeallocateResource()
-equipment_get_ips_resource = EquipmentGetIpsByAmbiente()
 
 environment_resource = AmbienteResource()
 environment_list_resource = EnvironmentListResource()
@@ -557,13 +534,7 @@ urlpatterns += patterns('',
 
    #equipamento
    url(r'^equipamento/', include('networkapi.equipamento.urls')),
-
-   url(r'^equipment/all/$', equipment_get_all_resource.handle_request,
-       name='equipment.get.all'),
-   url(r'^equipment/group/(?P<id_egroup>[^/]+)/$',
-       equipment_get_by_group_resource.handle_request, name='equipment.get.by.group'),
-   url(r'^equipment/getipsbyambiente/(?P<equip_name>[^/]+)/(?P<id_ambiente>[^/]+)/$',
-       equipment_get_ips_resource.handle_request, name='equipment.get.by.ambiente'),
+   url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
 
    url(r'^equipamentogrupo/$', equipment_group_resource.handle_request,
        name='equipmentgroup.insert'),
