@@ -204,6 +204,8 @@ class NetworkIPv4AddResource(RestResource):
 
                 if len(list_equip_routers_ambient) > 1:
                     multiple_ips = True
+                else:
+                    multiple_ips = False
 
                 for equip in list_equip_routers_ambient:
                     IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
