@@ -295,7 +295,6 @@ equipment_access_get_resource = EquipAccessGetResource()
 equipment_access_edit_resource = EquipAccessEditResource()
 equipment_environment_resource = EquipamentoAmbienteResource()
 
-equipment_environment_remove = EquipmentEnvironmentDeallocateResource()
 
 environment_resource = AmbienteResource()
 environment_list_resource = EnvironmentListResource()
@@ -560,8 +559,6 @@ urlpatterns += patterns('',
        name='equipmentenvironment.insert'),
    url(r'^equipamentoambiente/update/$',
        equipment_environment_resource.handle_request, name='equipmentenvironment.update'),
-   url(r'^equipment/(?P<id_equipment>[^/]+)/environment/(?P<id_environment>[^/]+)/$',
-       equipment_environment_remove.handle_request, name='equipmentenvironment.remove'),
 
    url(r'^ambiente/$', environment_resource.handle_request,
        name='environment.search.insert'),
