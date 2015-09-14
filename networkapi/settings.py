@@ -54,6 +54,7 @@ LOG_LEVEL = logging.DEBUG
 
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
+LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
 LOG_USE_STDOUT = False
 LOG_SHOW_TRACEBACK = True
 
@@ -176,7 +177,7 @@ LOGGING = {
             'filters': ['user_filter'],
         },
         'django.db.backends': {
-            'level': LOG_LEVEL,
+            'level': LOG_DB_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
             'filters': ['user_filter'],
