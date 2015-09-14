@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE vlans ADD COLUMN vrf varchar(100) DEFAULT NULL;
+ALTER TABLE ambiente ADD COLUMN vrf varchar(100) DEFAULT NULL;
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE vlans DROP COLUMN `vrf`;
+ALTER TABLE ambiente DROP COLUMN `vrf`;
+"""
