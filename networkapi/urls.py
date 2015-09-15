@@ -54,44 +54,18 @@ from networkapi.ambiente.resource.EnvironmentAllGetByEnvironmentVipResource impo
 
 from networkapi.ambiente.resource.EnvironmentGetByIdResource import EnvironmentGetByIdResource
 
-from networkapi.ip.resource.IpResource import IpResource
-from networkapi.ip.resource.IPv4AddResource import IPv4AddResource
-from networkapi.ip.resource.IPv6AddResource import IPv6AddResource
 from networkapi.ip.resource.NetworkAddResource import NetworkAddResource
 from networkapi.ip.resource.NetworkIPv4AddResource import NetworkIPv4AddResource
 from networkapi.ip.resource.NetworkIPv6AddResource import NetworkIPv6AddResource
-from networkapi.ip.resource.Ipv6AssociateResource import Ipv6AssociateResource
-from networkapi.ip.resource.Ipv6RemoveResource import Ipv6RemoveResource
 from networkapi.ip.resource.NetworkIPv4DeallocateResource import NetworkIPv4DeallocateResource
 from networkapi.ip.resource.NetworkIPv6DeallocateResource import NetworkIPv6DeallocateResource
 from networkapi.ip.resource.SearchIPv6EnvironmentResource import SearchIPv6EnvironmentResource
 from networkapi.ip.resource.NetworkIPv4GetResource import NetworkIPv4GetResource
 from networkapi.ip.resource.NetworkIPv6GetResource import NetworkIPv6GetResource
-from networkapi.ip.resource.IPGetByEquipResource import IPGetByEquipResource
-from networkapi.ip.resource.IPv4ListResource import IPv4ListResource
-from networkapi.ip.resource.Ipv4GetByIdResource import Ipv4GetByIdResource
-from networkapi.ip.resource.Ipv6GetByIdResource import Ipv6GetByIdResource
-from networkapi.ip.resource.IPv6ListResource import IPv6ListResource
-from networkapi.ip.resource.IPv4GetAvailableResource import IPv4GetAvailableResource
-from networkapi.ip.resource.IPv6GetAvailableResource import IPv6GetAvailableResource
-from networkapi.ip.resource.Ipv6GetAvailableForVipResource import Ipv6GetAvailableForVipResource
-from networkapi.ip.resource.Ipv4GetAvailableForVipResource import Ipv4GetAvailableForVipResource
-from networkapi.ip.resource.IPv4SaveResource import IPv4SaveResource
-from networkapi.ip.resource.IPv6SaveResource import IPv6SaveResource
 from networkapi.ip.resource.IPv4DeleteResource import IPv4DeleteResource
-from networkapi.ip.resource.IPv6DeleteResource import IPv6DeleteResource
 from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
-from networkapi.ip.resource.IPv6EditResource import IPv6EditResource
-from networkapi.ip.resource.IPv6GetResource import IPv6GetResource
-from networkapi.ip.resource.IPv4GetResource import IPv4GetResource
-from networkapi.ip.resource.IPEquipEvipResource import IPEquipEvipResource
-from networkapi.ip.resource.IpGetOctBlockResource import IpGetOctBlockResource
-from networkapi.ip.resource.IpCheckForVipResource import IpCheckForVipResource
 from networkapi.ip.resource.NetworkEditResource import NetworkEditResource
 from networkapi.ip.resource.NetworkRemoveResource import NetworkRemoveResource
-
-from networkapi.ip.resource.Ipv4AssocEquipResource import Ipv4AssocEquipResource
-from networkapi.ip.resource.Ipv6AssocEquipResource import Ipv6AssocEquipResource
 
 from networkapi.requisicaovips.resource.RequestVipL7Resource import RequestVipL7Resource
 from networkapi.requisicaovips.resource.RequestVipL7ValidateResource import RequestVipL7ValidateResource
@@ -310,35 +284,14 @@ logical_environment_add_resource = LogicalEnvironmentAddResource()
 logical_environment_alter_remove_resource = LogicalEnvironmentAlterRemoveResource()
 logical_environment_get_all_resource = LogicalEnvironmentGetAllResource()
 
-ip_resource = IpResource()
-ipv4_get_resource = Ipv4GetByIdResource()
-ipv6_get_resource = Ipv6GetByIdResource()
-ipv4_add_resource = IPv4AddResource()
-ipv6_add_resource = IPv6AddResource()
 networkip4_get_resource = NetworkIPv4GetResource()
 networkip6_get_resource = NetworkIPv6GetResource()
 network_edit_resource = NetworkEditResource()
-networkip4_list_ip_resource = IPv4ListResource()
-networkip6_list_ip_resource = IPv6ListResource()
-ip4_available_resource = IPv4GetAvailableResource()
-ip6_available_resource = IPv6GetAvailableResource()
-ip6_available_vip_resource = Ipv6GetAvailableForVipResource()
-ip4_available_vip_resource = Ipv4GetAvailableForVipResource()
-ipv4_save_resource = IPv4SaveResource()
-ipv6_save_resource = IPv6SaveResource()
-ipv4_delete_resource = IPv4DeleteResource()
-ipv6_delete_resource = IPv6DeleteResource()
-ipv4_edit_resource = IPv4EditResource()
-ipv6_edit_resource = IPv6EditResource()
-ipv4_get_by_id_resource = IPv4GetResource()
-ip_equip_evip_resource = IPEquipEvipResource()
-ip_get_by_oct_block = IpGetOctBlockResource()
-ip_check_for_vip = IpCheckForVipResource()
-ipv6_get_by_id_resource = IPv6GetResource()
-ip_get_by_equip_resource = IPGetByEquipResource()
 
-ipv4_assoc_equip_resource = Ipv4AssocEquipResource()
-ipv6_assoc_equip_resource = Ipv6AssocEquipResource()
+ipv4_delete_resource = IPv4DeleteResource()
+
+ipv4_edit_resource = IPv4EditResource()
+
 
 network_add_resource = NetworkAddResource()
 network_remove_resource = NetworkRemoveResource()
@@ -346,8 +299,6 @@ network_ipv4_add_resource = NetworkIPv4AddResource()
 network_ipv4_deallocate_resource = NetworkIPv4DeallocateResource()
 network_ipv6_add_resource = NetworkIPv6AddResource()
 network_ipv6_deallocate_resource = NetworkIPv6DeallocateResource()
-ipv6_associate = Ipv6AssociateResource()
-ipv6_remove = Ipv6RemoveResource()
 search_ipv6_environment = SearchIPv6EnvironmentResource()
 
 # equipment_script_resource = EquipamentoRoteiroResource()
@@ -607,68 +558,16 @@ urlpatterns += patterns('',
    url(r'^logicalenvironment/(?P<id_logicalenvironment>[^/]+)/$',
        logical_environment_alter_remove_resource.handle_request, name='logical_environment.update.remove.by.pk'),
 
-   url(r'^ip/(?P<id_ip>[^/]+)/equipamento/(?P<id_equipamento>[^/]+)/$',
-       ip_resource.handle_request, name='ipequipment.insert.remove'),
-   url(r'^ip/(?P<ip>.+)/ambiente/(?P<id_amb>[^/]+)/$',
-       ip_resource.handle_request, name='ip.get.by.ip.environment'),
-   url(r'^ip/id_network_ipv4/(?P<id_rede>[^/]+)/',
-       networkip4_list_ip_resource.handle_request, name='ip4.list.by.network'),
-   url(r'^ip/id_network_ipv6/(?P<id_rede>[^/]+)/',
-       networkip6_list_ip_resource.handle_request, name='ip6.list.by.network'),
-   url(r'^ip/availableip6/vip/(?P<id_evip>[^/]+)/',
-       ip6_available_vip_resource.handle_request, name='ip6.get.available.for.vip'),
-   url(r'^ip/availableip4/vip/(?P<id_evip>[^/]+)/',
-       ip4_available_vip_resource.handle_request, name='ip4.get.available.for.vip'),
-   url(r'^ip/availableip4/(?P<id_rede>[^/]+)/',
-       ip4_available_resource.handle_request, name='ip4.get.available'),
-   url(r'^ip/availableip6/(?P<id_rede>[^/]+)/',
-       ip6_available_resource.handle_request, name='ip6.get.available'),
-   url(r'^ip/$', ip_resource.handle_request,
-       name='ip.insert'),
-   url(r'^ip/get-ipv4/(?P<id_ip>[^/]+)/$',
-       ipv4_get_resource.handle_request, name='ipv4.get.by.pk'),
-   url(r'^ip/get-ipv6/(?P<id_ip>[^/]+)/$',
-       ipv6_get_resource.handle_request, name='ipv6.get.by.pk'),
-   url(r'^ip/get-ipv4/$',
-       ip_resource.handle_request, name='ip.insert'),
+   #ip
+   url(r'^ip/', include('networkapi.ip.urls')),
+
    url(r'^ip4/delete/(?P<id_ipv4>[^/]+)',
        ipv4_delete_resource.handle_request, name='ip4.delete'),
    url(r'^ip4/edit', ipv4_edit_resource.handle_request,
        name="ip4.edit"),
-   url(r'^ipv6/edit',
-       ipv6_edit_resource.handle_request, name="ip6.edit"),
-   url(r'^ip/get/(?P<id_ip>[^/]+)/',
-       ipv4_get_by_id_resource.handle_request, name='ip4.get.by.id'),
-   url(r'^ip/getbyoctblock/', ip_get_by_oct_block.handle_request,
-       name='ip.get.by.oct.or.block'),
-   url(r'^ip/checkvipip/', ip_check_for_vip.handle_request,
-       name='ip.check.for.vip'),
-   url(r'^ip/getbyequipandevip/$', ip_equip_evip_resource.handle_request,
-       name='ip.get.by.equip.and.evip'),
-   url(r'^ip/getbyequip/(?P<id_equip>[^/]+)/',
-       ip_get_by_equip_resource.handle_request, name='ip.get.by.equip'),
-   url(r'^ipv6/get/(?P<id_ipv6>[^/]+)/',
-       ipv6_get_by_id_resource.handle_request, name='ip6.get.by.id'),
-   url(r'^ipv6/delete/(?P<id_ipv6>[^/]+)',
-       ipv6_delete_resource.handle_request, name='ip6.delete'),
-   url(r'^ipv4/$', ipv4_add_resource.handle_request,
-       name='ipv4.insert'),
-   url(r'^ipv4/save/$',
-       ipv4_save_resource.handle_request, name='ipv4.save'),
-   url(r'^ipv6/save/$',
-       ipv6_save_resource.handle_request, name='ipv6.save'),
-   url(r'^ipv6/$', ipv6_add_resource.handle_request,
-       name='ipv6.insert'),
-   url(r'^ipv6/(?P<id_ipv6>[^/]+)/equipment/(?P<id_equip>[^/]+)/$',
-       ipv6_associate.handle_request, name='ipv6equipment.associate'),
-   url(r'^ipv6/(?P<id_ipv6>[^/]+)/equipment/(?P<id_equip>[^/]+)/remove/$',
-       ipv6_remove.handle_request, name='ipv6equipment.remove'),
-   url(r'^ipv6/environment/$', search_ipv6_environment.handle_request,
-       name='ipv6.get.by.ip.environment'),
-   url(r'^ipv4/assoc/$', ipv4_assoc_equip_resource.handle_request,
-       name='ipv4.assoc.equip'),
-   url(r'^ipv6/assoc/$', ipv6_assoc_equip_resource.handle_request,
-       name='ipv6.assoc.equip'),
+
+   url(r'^ipv4/', include('networkapi.equipamento.urls_ipv4')),
+   url(r'^ipv6/', include('networkapi.equipamento.urls_ipv6')),
 
    url(r'^script/$', script_add_resource.handle_request,
        name='script.add'),
