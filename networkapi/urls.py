@@ -82,12 +82,7 @@ from networkapi.grupo.resource.GroupUserGetByIdResource import GroupUserGetByIdR
 from networkapi.grupo.resource.GroupUserAlterRemoveResource import GroupUserAlterRemoveResource
 from networkapi.grupo.resource.GroupUserAddResource import GroupUserAddResource
 
-from networkapi.interface.resource.InterfaceResource import InterfaceResource
-from networkapi.interface.resource.InterfaceGetResource import InterfaceGetResource
-from networkapi.interface.resource.InterfaceDisconnectResource import InterfaceDisconnectResource
 from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
-from networkapi.interface.resource.InterfaceGetSwRouterResource import InterfaceGetSwRouterResource
-from networkapi.interface.resource.InterfaceEnvironmentResource import InterfaceEnvironmentResource
 from networkapi.interface.resource.InterfaceChannelResource import InterfaceChannelResource
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
@@ -127,9 +122,6 @@ from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceRe
 from networkapi.check.CheckAction import CheckAction
 from usuario.resource.UserGetByLdapResource import UserGetByLdapResource
 
-from networkapi.blockrules.resource.RuleResource import RuleResource
-from networkapi.blockrules.resource.RuleGetResource import RuleGetResource
-
 from networkapi.rack.resource.RackAddResource import RackAddResource
 from networkapi.rack.resource.RackFindResource import RackFindResource
 from networkapi.rack.resource.RackEditResource import RackEditResource
@@ -161,10 +153,6 @@ healthcheckexpect_string_resource = HealthcheckAddExpectStringResource()
 healthcheckexpect_distinct_resource = HealthcheckExpectDistinctResource()
 
 healthcheckexpect_get_resource = HealthcheckExpectGetResource()
-
-rule_resource = RuleResource()
-rule_get_resource = RuleGetResource()
-
 # brand_resource = MarcaResource()
 brand_add_resource = BrandAddResource()
 brand_alter_remove_resource = BrandAlterRemoveResource()
@@ -231,12 +219,8 @@ access_type_resource = TipoAcessoResource()
 
 network_type_resource = NetworkTypeResource()
 
-interface_resource = InterfaceResource()
-interface_get_resource = InterfaceGetResource()
-interface_disconnect_resource = InterfaceDisconnectResource()
 interface_type_get_all_resource = InterfaceTypeGetAllResource()
-interface_get_sw_router_resource = InterfaceGetSwRouterResource()
-interface_environment_resource = InterfaceEnvironmentResource()
+
 interface_channel_resource = InterfaceChannelResource()
 
 authenticate_resource = AuthenticateResource()
@@ -330,16 +314,8 @@ urlpatterns += patterns('',
    url(r'^ambiente/', include('networkapi.ambiente.urls')),
    url(r'^environment/', include('networkapi.ambiente.urls_environment')),
 
-   url(r'^rule/get_by_id/(?P<id_rule>[^/]+)/$',
-       rule_resource.handle_request, name='rule.get.by.id'),
-   url(r'^rule/all/(?P<id_env>[^/]+)/$',
-       rule_get_resource.handle_request, name='rule.all'),
-   url(r'^rule/save/$', rule_resource.handle_request,
-       name='rule.save'),
-   url(r'^rule/update/$', rule_resource.handle_request,
-       name='rule.update'),
-   url(r'^rule/delete/(?P<id_rule>[^/]+)/$',
-       rule_resource.handle_request, name='rule.delete'),
+   #rules
+   url(r'^rule/', include('networkapi.blockrules.urls')),
 
    url(r'^ipconfig/$', env_ip_conf_resource.handle_request,
        name="ipconfig.associate"),
@@ -413,6 +389,10 @@ urlpatterns += patterns('',
    url(r'^environmentvip/', include('networkapi.requisicaovips.urls_environmentvip')),
    url(r'^optionvip/', include('networkapi.requisicaovips.urls_optionvip')),
 
+   #interface
+   url(r'^interface/', include('networkapi.interface.urls')),
+   url(r'^int/', include('networkapi.interface.urls_int')),
+
    url(r'^grupovirtual/$', virtual_group_resource.handle_request,
        name='virtual_group.add.remove'),
 
@@ -431,33 +411,6 @@ urlpatterns += patterns('',
        model_alter_remove_resource.handle_request, name='model.update.remove.by.pk'),
    url(r'^model/brand/(?P<id_brand>[^/]+)/$',
        model_get_by_brand_resource.handle_request, name='model.get.by.brand'),
-
-   url(r'^interface/$', interface_resource.handle_request,
-       name='interface.insert'),
-   url(r'^interface/(?P<id_interface>[^/]+)/$', interface_resource.handle_request,
-       name='interface.update.remove.by.pk'),
-   url(r'^interface/(?P<id_interface>[^/]+)/get/$', interface_get_resource.handle_request,
-       name='interface.get.by.pk'),
-   url(r'^interface/get/(?P<channel_name>[^/]+)/(?P<id_equipamento>[^/]+)[/]?$', interface_get_resource.handle_request,
-       name='interface.list.by.equip'),
-   url(r'^interface/get-by-channel/(?P<channel_name>[^/]+)[/]/?$', interface_get_resource.handle_request,
-       name='interface.get.by.pk'),
-   url(r'^interface/equipamento/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request,
-       name='interface.search.by.equipment'),
-   url(r'^interface/equipment/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request, {
-       'new': True}, name='interface.search.by.equipment.new'),
-   url(r'^interface/(?P<id_interface>[^/]+)/(?P<back_or_front>[^/]+)/$', interface_disconnect_resource.handle_request,
-       name='interface.remove.connection'),
-   url(r'^interface/(?P<nome_interface>.+?)/equipamento/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request,
-       name='interface.search.by.interface.equipment'),
-   url(r'^interface/(?P<nome_interface>.+?)/equipment/(?P<id_equipamento>[^/]+)/$', interface_resource.handle_request, {
-       'new': True}, name='interface.search.by.interface.equipment.new'),
-   url(r'^int/getbyidequip/(?P<id_equipamento>[^/]+)/$', interface_get_sw_router_resource.handle_request,
-       name='interface.get_sw_router'),
-   url(r'^int/associar-ambiente[/]?$', interface_environment_resource.handle_request,
-       name='interface.associar'),
-   url(r'^int/get-env-by-interface/(?P<id_interface>[^/]+)[/]?$', interface_environment_resource.handle_request,
-       name='interface.ambiente.get'),
 
    url(r'^authenticate/$', authenticate_resource.handle_request,
        name='user.authenticate'),
