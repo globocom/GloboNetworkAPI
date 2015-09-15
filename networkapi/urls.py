@@ -20,8 +20,6 @@ from django.http import HttpResponse
 
 from networkapi.vlan.resource.NetworkTypeResource import NetworkTypeResource
 
-from networkapi.equipamento.resource.EquipamentoResource import EquipamentoAmbienteResource
-
 from networkapi.equipamento.resource.BrandAddResource import BrandAddResource
 from networkapi.equipamento.resource.BrandAlterRemoveResource import BrandAlterRemoveResource
 from networkapi.equipamento.resource.BrandGetAllResource import BrandGetAllResource
@@ -30,10 +28,6 @@ from networkapi.equipamento.resource.ModelAddResource import ModelAddResource
 from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterRemoveResource
 from networkapi.equipamento.resource.ModelGetAllResource import ModelGetAllResource
 from networkapi.equipamento.resource.ModelGetByBrandResource import ModelGetByBrandResource
-
-from networkapi.equipamento.resource.EquipmentScriptAddResource import EquipmentScriptAddResource
-from networkapi.equipamento.resource.EquipmentScriptRemoveResource import EquipmentScriptRemoveResource
-from networkapi.equipamento.resource.EquipmentScriptGetAllResource import EquipmentScriptGetAllResource
 
 from networkapi.equipamento.resource.EquipScriptListResource import EquipScriptListResource
 
@@ -280,7 +274,6 @@ model_get_all_resource = ModelGetAllResource()
 model_get_by_brand_resource = ModelGetByBrandResource()
 
 equipment_script_list_resource = EquipScriptListResource()
-equipment_environment_resource = EquipamentoAmbienteResource()
 
 environment_resource = AmbienteResource()
 environment_list_resource = EnvironmentListResource()
@@ -358,10 +351,6 @@ ipv6_remove = Ipv6RemoveResource()
 search_ipv6_environment = SearchIPv6EnvironmentResource()
 
 # equipment_script_resource = EquipamentoRoteiroResource()
-
-equipment_script_add_resource = EquipmentScriptAddResource()
-equipment_script_remove_resource = EquipmentScriptRemoveResource()
-equipment_script_get_all_resource = EquipmentScriptGetAllResource()
 
 # script_resource = RoteiroResource()
 
@@ -511,24 +500,12 @@ urlpatterns += patterns('',
    url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
    url(r'^equipamentoacesso/', include('networkapi.equipamento.urls_equipamentoacesso')),
    url(r'^equipamentogrupo/', include('networkapi.equipamento.urls_equipamentogrupo')),
+   url(r'^equipmenttype/', include('networkapi.equipamento.urls_equipmenttype')),
+   url(r'^equipamentoambiente/', include('networkapi.equipamento.urls_equipamentoambiente')),
+   url(r'^equipmentscript/', include('networkapi.equipamento.urls_equipmentscript')),
 
    url(r'^equipamentoroteiro/name/$', equipment_script_list_resource.handle_request,
        name='equipmentscript.list.by.name'),
-
-   url(r'^equipmentscript/$', equipment_script_add_resource.handle_request,
-       name='equipment_script.add'),
-   url(r'^equipmentscript/all/$', equipment_script_get_all_resource.handle_request,
-       name='equipment_script.get.all'),
-   url(r'^equipmentscript/(?P<id_equipment>[^/]+)/(?P<id_script>[^/]+)/$',
-       equipment_script_remove_resource.handle_request, name='equipment_script.remove'),
-
-   #EQUIPMENT TYPE
-   url(r'^equipmenttype/', include('networkapi.equipamento.urls_equipmenttype')),
-
-   url(r'^equipamentoambiente/$', equipment_environment_resource.handle_request,
-       name='equipmentenvironment.insert'),
-   url(r'^equipamentoambiente/update/$',
-       equipment_environment_resource.handle_request, name='equipmentenvironment.update'),
 
    url(r'^ambiente/$', environment_resource.handle_request,
        name='environment.search.insert'),
