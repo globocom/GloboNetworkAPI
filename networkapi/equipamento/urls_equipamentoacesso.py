@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 from networkapi.equipamento.resource.EquipAccessEditResource import EquipAccessEditResource
 from networkapi.equipamento.resource.EquipAccessGetResource import EquipAccessGetResource
 from networkapi.equipamento.resource.EquipAccessListResource import EquipAccessListResource

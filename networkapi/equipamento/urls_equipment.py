@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from django.conf.urls import patterns, include, url
-from networkapi.equipamento.resource.EquipmentEnvironmentDeallocateResource import \
-    EquipmentEnvironmentDeallocateResource
+from django.conf.urls import patterns, url
+from networkapi.equipamento.resource.EquipmentEnvironmentDeallocateResource import EquipmentEnvironmentDeallocateResource
 
 from networkapi.equipamento.resource.EquipmentGetAllResource import EquipmentGetAllResource
 from networkapi.equipamento.resource.EquipmentGetByGroupEquipmentResource import EquipmentGetByGroupEquipmentResource

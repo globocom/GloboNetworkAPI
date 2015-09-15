@@ -35,9 +35,7 @@ from networkapi.equipamento.resource.EquipmentScriptAddResource import Equipment
 from networkapi.equipamento.resource.EquipmentScriptRemoveResource import EquipmentScriptRemoveResource
 from networkapi.equipamento.resource.EquipmentScriptGetAllResource import EquipmentScriptGetAllResource
 
-from networkapi.equipamento.resource.EquipamentoGrupoResource import EquipamentoGrupoResource
 from networkapi.equipamento.resource.EquipScriptListResource import EquipScriptListResource
-from networkapi.equipamento.resource.EquipmentEnvironmentDeallocateResource import EquipmentEnvironmentDeallocateResource
 
 from networkapi.ambiente.resource.AmbienteResource import AmbienteResource, AmbienteEquipamentoResource
 from networkapi.ambiente.resource.DivisionDcAddResource import DivisionDcAddResource
@@ -151,7 +149,6 @@ from networkapi.grupo.resource.AdministrativePermissionGetByIdResource import Ad
 from networkapi.grupo.resource.PermissionGetAllResource import PermissionGetAllResource
 from networkapi.grupo.resource.GrupoEquipamentoGetByEquipResource import GrupoEquipamentoGetByEquipResource
 from networkapi.grupo.resource.GrupoEquipamentoRemoveAssociationEquipResource import GrupoEquipamentoRemoveAssociationEquipResource
-from networkapi.grupo.resource.GrupoEquipamentoAssociaEquipamentoResource import GrupoEquipamentoAssociaEquipamentoResource
 from networkapi.grupo.resource.GroupEquipmentResource import GroupEquipmentResource
 
 from networkapi.grupo.resource.GroupUserGetAllResource import GroupUserGetAllResource
@@ -281,9 +278,6 @@ model_add_resource = ModelAddResource()
 model_alter_remove_resource = ModelAlterRemoveResource()
 model_get_all_resource = ModelGetAllResource()
 model_get_by_brand_resource = ModelGetByBrandResource()
-
-equipment_group_resource = EquipamentoGrupoResource()
-equipment_group_associa_resource = GrupoEquipamentoAssociaEquipamentoResource()
 
 equipment_script_list_resource = EquipScriptListResource()
 equipment_environment_resource = EquipamentoAmbienteResource()
@@ -516,13 +510,7 @@ urlpatterns += patterns('',
    url(r'^equipamento/', include('networkapi.equipamento.urls')),
    url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
    url(r'^equipamentoacesso/', include('networkapi.equipamento.urls_equipamentoacesso')),
-
-   url(r'^equipamentogrupo/$', equipment_group_resource.handle_request,
-       name='equipmentgroup.insert'),
-   url(r'^equipamentogrupo/associa/$',
-       equipment_group_associa_resource.handle_request, name='equipmentgroup.associa'),
-   url(r'^equipamentogrupo/equipamento/(?P<id_equip>[^/]+)/egrupo/(?P<id_egrupo>[^/]+)/$',
-       equipment_group_resource.handle_request, name='equipmentgroup.remove'),
+   url(r'^equipamentogrupo/', include('networkapi.equipamento.urls_equipamentogrupo')),
 
    url(r'^equipamentoroteiro/name/$', equipment_script_list_resource.handle_request,
        name='equipmentscript.list.by.name'),
