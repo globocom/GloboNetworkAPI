@@ -315,6 +315,7 @@ class EquipamentoResource(RestResource):
                 equip_map['nome_modelo'] = equipment.modelo.nome
                 equip_map['id_marca'] = equipment.modelo.marca.id
                 equip_map['nome_marca'] = equipment.modelo.marca.nome
+                equip_map['maintenance'] = equipment.maintenance
                 map_list.append(equip_map)
 
             return self.response(dumps_networkapi({'equipamento': map_list}))

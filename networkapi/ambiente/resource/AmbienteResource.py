@@ -65,6 +65,8 @@ def get_environment_map(environment):
         environment_map['id_filter'] = environment.filter.id
         environment_map['filter_name'] = environment.filter.name
 
+    if environment.vrf is not None:
+        environment_map['vrf'] = environment.vrf
     return environment_map
 
 
@@ -427,6 +429,11 @@ class AmbienteResource(RestResource):
                 self.log.error(u'Parameter link is invalid. Value: %s', link)
                 raise InvalidValueError(None, 'link', link)
 
+            vrf = environment_map.get('vrf')
+            if not is_valid_string_maxsize(link, 100, False):
+                self.log.error(u'Parameter vrf is invalid. Value: %s', vrf)
+                raise InvalidValueError(None, 'vrf', vrf)
+
             filter_id = environment_map.get('id_filter')
             if filter_id is not None:
                 if not is_valid_int_greater_zero_param(filter_id):
@@ -541,6 +548,7 @@ class AmbienteResource(RestResource):
                                 divisao_dc_id=dc_division_id,
                                 filter_id=filter_id,
                                 link=link,
+                                vrf=vrf,
                                 acl_path=fix_acl_path(acl_path),
                                 ipv4_template=ipv4_template,
                                 ipv6_template=ipv6_template,
