@@ -39,9 +39,6 @@ from networkapi.ambiente.resource.LogicalEnvironmentAddResource import LogicalEn
 from networkapi.ambiente.resource.LogicalEnvironmentAlterRemoveResource import LogicalEnvironmentAlterRemoveResource
 from networkapi.ambiente.resource.LogicalEnvironmentGetAllResource import LogicalEnvironmentGetAllResource
 from networkapi.ambiente.resource.EnvironmentIpConfigResource import EnvironmentIpConfigResource
-from networkapi.ambiente.resource.EnvironmentVipResource import EnvironmentVipResource
-from networkapi.ambiente.resource.EnvironmentVipSearchResource import EnvironmentVipSearchResource
-from networkapi.ambiente.resource.RequestAllVipsEnviromentVipResource import RequestAllVipsEnviromentVipResource
 
 from networkapi.ip.resource.NetworkAddResource import NetworkAddResource
 from networkapi.ip.resource.NetworkIPv4AddResource import NetworkIPv4AddResource
@@ -55,11 +52,6 @@ from networkapi.ip.resource.IPv4DeleteResource import IPv4DeleteResource
 from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
 from networkapi.ip.resource.NetworkEditResource import NetworkEditResource
 from networkapi.ip.resource.NetworkRemoveResource import NetworkRemoveResource
-
-from networkapi.requisicaovips.resource.OptionVipResource import OptionVipResource
-from networkapi.requisicaovips.resource.OptionVipEnvironmentVipAssociationResource import OptionVipEnvironmentVipAssociationResource
-from networkapi.requisicaovips.resource.OptionVipAllResource import OptionVipAllResource
-from networkapi.requisicaovips.resource.OptionVipAllGetByEnvironmentVipResource import OptionVipAllGetByEnvironmentVipResource
 
 from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
 from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
@@ -116,13 +108,6 @@ from networkapi.roteiro.resource.ScriptTypeGetAllResource import ScriptTypeGetAl
 from networkapi.healthcheckexpect.resource.HealthcheckExpectResource import HealthcheckExpectResource
 from networkapi.healthcheckexpect.resource.HealthcheckAddResource import HealthcheckAddResource
 
-from networkapi.ambiente.resource.EnvironmentVipGetFinalityResource import EnvironmentVipGetFinalityResource
-from networkapi.ambiente.resource.EnvironmentVipGetClienteTxtResource import EnvironmentVipGetClienteTxtResource
-from networkapi.ambiente.resource.EnvironmentVipGetAmbienteP44TxtResource import EnvironmentVipGetAmbienteP44TxtResource
-from networkapi.requisicaovips.resource.OptionVipGetTimeoutByEVipResource import OptionVipGetTimeoutByEVipResource
-from networkapi.requisicaovips.resource.OptionVipGetGrupoCacheByEVipResource import OptionVipGetGrupoCacheByEVipResource
-from networkapi.requisicaovips.resource.OptionVipGetPersistenciaByEVipResource import OptionVipGetPersistenciaByEVipResource
-from networkapi.requisicaovips.resource.OptionVipGetBalanceamentoByEVipResource import OptionVipGetBalanceamentoByEVipResource
 from networkapi.healthcheckexpect.resource.HealthcheckAddExpectStringResource import HealthcheckAddExpectStringResource
 from networkapi.healthcheckexpect.resource.HealthcheckExpectDistinctResource import HealthcheckExpectDistinctResource
 from networkapi.healthcheckexpect.resource.HealthcheckExpectGetResource import HealthcheckExpectGetResource
@@ -142,12 +127,8 @@ from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceRe
 from networkapi.check.CheckAction import CheckAction
 from usuario.resource.UserGetByLdapResource import UserGetByLdapResource
 
-
-from networkapi.requisicaovips.resource.RequestVipGetRulesByEVipResource import RequestVipGetRulesByEVipResource
 from networkapi.blockrules.resource.RuleResource import RuleResource
 from networkapi.blockrules.resource.RuleGetResource import RuleGetResource
-from networkapi.requisicaovips.resource.OptionVipGetHealthcheckByEVipResource import OptionVipGetHealthcheckByEVipResource
-
 
 from networkapi.rack.resource.RackAddResource import RackAddResource
 from networkapi.rack.resource.RackFindResource import RackFindResource
@@ -181,22 +162,8 @@ healthcheckexpect_distinct_resource = HealthcheckExpectDistinctResource()
 
 healthcheckexpect_get_resource = HealthcheckExpectGetResource()
 
-opt_vip_timeout = OptionVipGetTimeoutByEVipResource()
-opt_vip_grupocache = OptionVipGetGrupoCacheByEVipResource()
-opt_vip_persistencia = OptionVipGetPersistenciaByEVipResource()
-opt_vip_balanceamento = OptionVipGetBalanceamentoByEVipResource()
-opt_vip_healthcheck = OptionVipGetHealthcheckByEVipResource()
-
-environment_vip_finality = EnvironmentVipGetFinalityResource()
-environment_vip_cliente_txt = EnvironmentVipGetClienteTxtResource()
-environment_vip_ambientep44_txt = EnvironmentVipGetAmbienteP44TxtResource()
-environment_vip_rules = RequestVipGetRulesByEVipResource()
-
-
 rule_resource = RuleResource()
 rule_get_resource = RuleGetResource()
-
-
 
 # brand_resource = MarcaResource()
 brand_add_resource = BrandAddResource()
@@ -258,12 +225,6 @@ script_type_get_all_resource = ScriptTypeGetAllResource()
 healthcheckexpect_resource = HealthcheckExpectResource()
 healthcheckexpect_add_resource = HealthcheckAddResource()
 
-
-option_vip = OptionVipResource()
-option_vip_environment_vip_association = OptionVipEnvironmentVipAssociationResource()
-option_vip_all = OptionVipAllResource()
-option_vip_environment_vip = OptionVipAllGetByEnvironmentVipResource()
-
 virtual_group_resource = GroupVirtualResource()
 
 access_type_resource = TipoAcessoResource()
@@ -318,12 +279,6 @@ user_group_dissociate_resource = UserGroupDissociateResource()
 
 access_right_resource = DireitoGrupoEquipamentoResource()
 
-environment_vip_resource = EnvironmentVipResource()
-
-environment_vip_search_resource = EnvironmentVipSearchResource()
-
-environment_vip_search_all_vips_resource = RequestAllVipsEnviromentVipResource()
-
 filter_list_all = FilterListAllResource()
 filter_add = FilterAddResource()
 filter_alter_remove = FilterAlterRemoveResource()
@@ -374,25 +329,6 @@ urlpatterns += patterns('',
    #ambiente
    url(r'^ambiente/', include('networkapi.ambiente.urls')),
    url(r'^environment/', include('networkapi.ambiente.urls_environment')),
-
-   url(r'^environment-vip/get/finality/$',
-       environment_vip_finality.handle_request, name='environemnt-vip.get.finality'),
-   url(r'^environment-vip/get/cliente_txt/$',
-       environment_vip_cliente_txt.handle_request, name='environemnt-vip.get.cliente_txt'),
-   url(r'^environment-vip/get/ambiente_p44_txt/$',
-       environment_vip_ambientep44_txt.handle_request, name='environemnt-vip.get.ambientep44_txt'),
-   url(r'^environment-vip/get/timeout/(?P<id_evip>[^/]+)/$',
-       opt_vip_timeout.handle_request, name='option-vip.get.timeout'),
-   url(r'^environment-vip/get/grupo-cache/(?P<id_evip>[^/]+)/$',
-       opt_vip_grupocache.handle_request, name='option-vip.get.grupocache'),
-   url(r'^environment-vip/get/persistencia/(?P<id_evip>[^/]+)/$',
-       opt_vip_persistencia.handle_request, name='option-vip.get.persistencia'),
-   url(r'^environment-vip/get/balanceamento/(?P<id_evip>[^/]+)/$',
-       opt_vip_balanceamento.handle_request, name='option-vip.get.balanceamento'),
-   url(r'^environment-vip/get/rules/(?P<id_evip>[^/]+)(?:/(?P<id_vip>[^/]+))?/$',
-       environment_vip_rules.handle_request, name='environment-vip.get.rules'),
-   url(r'^environment-vip/get/healthcheck/(?P<id_evip>[^/]+)/$',
-       opt_vip_healthcheck.handle_request, name='environment-vip.get.healthcheck'),
 
    url(r'^rule/get_by_id/(?P<id_rule>[^/]+)/$',
        rule_resource.handle_request, name='rule.get.by.id'),
@@ -473,6 +409,9 @@ urlpatterns += patterns('',
    url(r'^vip/', include('networkapi.requisicaovips.urls')),
    url(r'^requestvip/', include('networkapi.requisicaovips.urls_requestvip')),
    url(r'^real/', include('networkapi.requisicaovips.urls_real')),
+   url(r'^environment-vip/', include('networkapi.requisicaovips.urls_environment-vip')),
+   url(r'^environmentvip/', include('networkapi.requisicaovips.urls_environmentvip')),
+   url(r'^optionvip/', include('networkapi.requisicaovips.urls_optionvip')),
 
    url(r'^grupovirtual/$', virtual_group_resource.handle_request,
        name='virtual_group.add.remove'),
@@ -613,30 +552,6 @@ urlpatterns += patterns('',
 )
 
 urlpatterns += patterns('',
-   url(r'^environmentvip/$', environment_vip_resource.handle_request,
-       name='environment.vip.add'),
-   url(r'^environmentvip/all/', environment_vip_resource.handle_request,
-       name='environment.vip.all'),
-   url(r'^environmentvip/search/$',
-       environment_vip_search_resource.handle_request, name='environment.vip.search'),
-   url(r'^environmentvip/search/(?P<id_vlan>[^/]+)/$',
-       environment_vip_search_resource.handle_request, name='environment.vip.search'),
-   url(r'^environmentvip/(?P<id_environment_vip>[^/]+)/$',
-       environment_vip_resource.handle_request, name='environment.vip.update.remove'),
-   url(r'^environmentvip/(?P<id_environment_vip>[^/]+)/vip/all/$',
-       environment_vip_search_all_vips_resource.handle_request, name='environmentvip.vips.all'),
-
-   url(r'^optionvip/all/$', option_vip_all.handle_request,
-       name='option.vip.all'),
-   url(r'^optionvip/$', option_vip.handle_request,
-       name='option.vip.add'),
-   url(r'^optionvip/(?P<id_option_vip>[^/]+)/$',
-       option_vip.handle_request, name='option.vip.update.remove.search'),
-   url(r'^optionvip/(?P<id_option_vip>[^/]+)/environmentvip/(?P<id_environment_vip>[^/]+)/$',
-       option_vip_environment_vip_association.handle_request, name='option.vip.environment.vip.associate.disassociate'),
-   url(r'^optionvip/environmentvip/(?P<id_environment_vip>[^/]+)/$',
-       option_vip_environment_vip.handle_request, name='option.vip.by.environment.vip'),
-
    url(r'^filter/all/$', filter_list_all.handle_request,
        name='filter.list.all'),
    url(r'^filter/$', filter_add.handle_request,
@@ -649,7 +564,6 @@ urlpatterns += patterns('',
        filter_associate.handle_request, name='filter.associate'),
    url(r'^filter/(?P<id_filter>[^/]+)/dissociate/(?P<id_equip_type>[^/]+)/$',
        filter_dissociate_one.handle_request, name='filter.dissociate.one'),
-
 )
 
 
