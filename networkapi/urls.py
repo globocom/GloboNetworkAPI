@@ -29,8 +29,6 @@ from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterR
 from networkapi.equipamento.resource.ModelGetAllResource import ModelGetAllResource
 from networkapi.equipamento.resource.ModelGetByBrandResource import ModelGetByBrandResource
 
-from networkapi.equipamento.resource.EquipScriptListResource import EquipScriptListResource
-
 from networkapi.ambiente.resource.AmbienteResource import AmbienteResource, AmbienteEquipamentoResource
 from networkapi.ambiente.resource.DivisionDcAddResource import DivisionDcAddResource
 from networkapi.ambiente.resource.DivisionDcAlterRemoveResource import DivisionDcAlterRemoveResource
@@ -273,8 +271,6 @@ model_alter_remove_resource = ModelAlterRemoveResource()
 model_get_all_resource = ModelGetAllResource()
 model_get_by_brand_resource = ModelGetByBrandResource()
 
-equipment_script_list_resource = EquipScriptListResource()
-
 environment_resource = AmbienteResource()
 environment_list_resource = EnvironmentListResource()
 environment_by_equip_resource = EnvironmentGetByEquipResource()
@@ -503,9 +499,7 @@ urlpatterns += patterns('',
    url(r'^equipmenttype/', include('networkapi.equipamento.urls_equipmenttype')),
    url(r'^equipamentoambiente/', include('networkapi.equipamento.urls_equipamentoambiente')),
    url(r'^equipmentscript/', include('networkapi.equipamento.urls_equipmentscript')),
-
-   url(r'^equipamentoroteiro/name/$', equipment_script_list_resource.handle_request,
-       name='equipmentscript.list.by.name'),
+   url(r'^equipamentoroteiro/', include('networkapi.equipamento.urls_equipamentoroteiro')),
 
    url(r'^ambiente/$', environment_resource.handle_request,
        name='environment.search.insert'),
