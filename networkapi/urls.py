@@ -56,33 +56,10 @@ from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
 from networkapi.ip.resource.NetworkEditResource import NetworkEditResource
 from networkapi.ip.resource.NetworkRemoveResource import NetworkRemoveResource
 
-from networkapi.requisicaovips.resource.RequestVipL7Resource import RequestVipL7Resource
-from networkapi.requisicaovips.resource.RequestVipL7ValidateResource import RequestVipL7ValidateResource
-from networkapi.requisicaovips.resource.RequestVipL7ApplyResource import RequestVipL7ApplyResource
-from networkapi.requisicaovips.resource.RequestVipL7RollbackResource import RequestVipL7RollbackResource
-from networkapi.requisicaovips.resource.RequisicaoVipsResource import RequisicaoVipsResource
-from networkapi.requisicaovips.resource.RequisicaoVipDeleteResource import RequisicaoVipDeleteResource
-from networkapi.requisicaovips.resource.RequestVipValidateResource import RequestVipValidateResource
-from networkapi.requisicaovips.resource.RequestAllVipsResource import RequestAllVipsResource
-from networkapi.requisicaovips.resource.RequestAllVipsIPv4Resource import RequestAllVipsIPv4Resource
-from networkapi.requisicaovips.resource.RequestAllVipsIPv6Resource import RequestAllVipsIPv6Resource
-from networkapi.requisicaovips.resource.RequestHealthcheckResource import RequestHealthcheckResource
-from networkapi.requisicaovips.resource.RequestPersistenceResource import RequestPersistenceResource
-from networkapi.requisicaovips.resource.RequestMaxconResource import RequestMaxconResource
-from networkapi.requisicaovips.resource.RequestPriorityResource import RequestPriorityResource
-from networkapi.requisicaovips.resource.RequestVipsResource import RequestVipsResource
-from networkapi.requisicaovips.resource.RequestVipGetIdIpResource import RequestVipGetIdIpResource
-from networkapi.requisicaovips.resource.RequestVipGetByIdResource import RequestVipGetByIdResource
-from networkapi.requisicaovips.resource.CreateVipResource import CreateVipResource
-from networkapi.requisicaovips.resource.RemoveVipResource import RemoveVipResource
 from networkapi.requisicaovips.resource.OptionVipResource import OptionVipResource
 from networkapi.requisicaovips.resource.OptionVipEnvironmentVipAssociationResource import OptionVipEnvironmentVipAssociationResource
 from networkapi.requisicaovips.resource.OptionVipAllResource import OptionVipAllResource
 from networkapi.requisicaovips.resource.OptionVipAllGetByEnvironmentVipResource import OptionVipAllGetByEnvironmentVipResource
-from networkapi.requisicaovips.resource.RequestVipsRealResource import RequestVipsRealResource
-from networkapi.requisicaovips.resource.RequestVipRealEditResource import RequestVipRealEditResource
-from networkapi.requisicaovips.resource.RequestVipRealValidResource import RequestVipRealValidResource
-from networkapi.requisicaovips.resource.RequestVipRuleResource import RequestVipRuleResource
 
 from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
 from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
@@ -279,33 +256,9 @@ script_type_alter_remove_resource = ScriptTypeAlterRemoveResource()
 script_type_get_all_resource = ScriptTypeGetAllResource()
 
 healthcheckexpect_resource = HealthcheckExpectResource()
-
 healthcheckexpect_add_resource = HealthcheckAddResource()
 
 
-vip_l7_resource = RequestVipL7Resource()
-vip_l7_validate_resource = RequestVipL7ValidateResource()
-vip_l7_apply_resource = RequestVipL7ApplyResource()
-vip_l7_rollback_resource = RequestVipL7RollbackResource()
-vip_add_block_resource = RequestVipRuleResource()
-vip_request_resource = RequisicaoVipsResource()
-vip_delete_resource = RequisicaoVipDeleteResource()
-vip_validate_resource = RequestVipValidateResource()
-vip_create_resource = CreateVipResource()
-vip_remove_resource = RemoveVipResource()
-vip_list_all_resource = RequestAllVipsResource()
-vip_list_all_ipv4_resource = RequestAllVipsIPv4Resource()
-vip_list_all_ipv6_resource = RequestAllVipsIPv6Resource()
-vip_healthcheck_resource = RequestHealthcheckResource()
-vip_persistence_resource = RequestPersistenceResource()
-vip_maxcon = RequestMaxconResource()
-vip_priority = RequestPriorityResource()
-vip_request = RequestVipsResource()
-vip_request_get_id = RequestVipGetByIdResource()
-vip_request_get_ip_id = RequestVipGetIdIpResource()
-vip_real = RequestVipsRealResource()
-vip_real_edit = RequestVipRealEditResource()
-vip_real_valid = RequestVipRealValidResource()
 option_vip = OptionVipResource()
 option_vip_environment_vip_association = OptionVipEnvironmentVipAssociationResource()
 option_vip_all = OptionVipAllResource()
@@ -484,8 +437,8 @@ urlpatterns += patterns('',
    url(r'^ip4/edit', ipv4_edit_resource.handle_request,
        name="ip4.edit"),
 
-   url(r'^ipv4/', include('networkapi.equipamento.urls_ipv4')),
-   url(r'^ipv6/', include('networkapi.equipamento.urls_ipv6')),
+   url(r'^ipv4/', include('networkapi.ip.urls_ipv4')),
+   url(r'^ipv6/', include('networkapi.ip.urls_ipv6')),
 
    url(r'^script/$', script_add_resource.handle_request,
        name='script.add'),
@@ -516,69 +469,10 @@ urlpatterns += patterns('',
    url(r'^healthcheckexpect/get/(?P<id_healthcheck>[^/]+)/$',
        healthcheckexpect_get_resource.handle_request, name='healthcheckexpect.get.by.pk'),
 
-   url(r'^requestvip/$', vip_request.handle_request,
-       name='requestvip.insert'),
-   url(r'^requestvip/get_by_ip_id/$',
-       vip_request_get_ip_id.handle_request, name='requestvip.get.by.id.ip'),
-   url(r'^requestvip/getbyid/(?P<id_vip>[^/]+)/$',
-       vip_request_get_id.handle_request, name='requestvip.get.by.pk'),
-   url(r'^requestvip/(?P<id_vip>[^/]+)/$',
-       vip_request.handle_request, name='requestvip.update.by.pk'),
-   url(r'^vip/$', vip_request_resource.handle_request,
-       name='vip.insert'),
-   url(r'^vip/all/$', vip_list_all_resource.handle_request,
-       name='vip.list_all'),
-   url(r'^vip/ipv4/all/$', vip_list_all_ipv4_resource.handle_request,
-       name='vip.ipv4.all'),
-   url(r'^vip/ipv6/all/$', vip_list_all_ipv6_resource.handle_request,
-       name='vip.ipv6.all'),
-   url(r'^vip/create/$', vip_create_resource.handle_request,
-       name='vip.create'),
-
-   url(r'^vip/(?P<id_vip>\d+)/criar/$',
-       vip_create_resource.handle_request, name='vip.create.by.pk'),
-
-   url(r'^vip/remove/$', vip_remove_resource.handle_request,
-       name='vip.remove'),
-   url(r'^vip/real/$', vip_real.handle_request,
-       name='vip.real'),
-   url(r'^vip/(?P<id_vip>[^/]+)/filter/$',
-       vip_l7_resource.handle_request, name='vip.get.l7.by.pk'),
-   url(r'^vip/(?P<id_vip>[^/]+)/$',
-       vip_request_resource.handle_request, name='vip.get.update.by.pk'),
-   url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>maxcon)/(?P<maxcon>[^/]+)/$',
-       vip_maxcon.handle_request, name='vip.update.maxcon.by.pk'),
-   url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>healthcheck)/$',
-       vip_healthcheck_resource.handle_request, name='vip.update.healthcheck.by.pk'),
-   url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>persistence)/$',
-       vip_persistence_resource.handle_request, name='vip.update.persistence.by.pk'),
-   url(r'^vip/(?P<id_vip>[^/]+)/(?P<operacao>priority)/$',
-       vip_priority.handle_request, name='vip.update.priority.by.pk'),
-   url(r'^vip/delete/(?P<id_vip>[^/]+)/$',
-       vip_delete_resource.handle_request, name='vip.delete.by.pk'),
-   url(r'^vip/validate/(?P<id_vip>[^/]+)/$',
-       vip_validate_resource.handle_request, name='vip.validate.by.pk'),
-   url(r'^vip/real/edit/$', vip_real_edit.handle_request,
-       name='vip.real.edit'),
-   url(r'^vip/real/valid/$', vip_real_valid.handle_request,
-       name='vip.real.valid'),
-   url(r'^vip/l7/(?P<id_vip>[^/]+)/$',
-       vip_l7_resource.handle_request, name='vip.get.l7.by.pk'),
-   url(r'^vip/l7/(?P<id_vip>[^/]+)/validate/$',
-       vip_l7_validate_resource.handle_request, name='vip.l7.validate.by.pk'),
-   url(r'^vip/l7/(?P<id_vip>[^/]+)/apply/$',
-       vip_l7_apply_resource.handle_request, name='vip.l7.apply.by.pk'),
-   url(r'^vip/l7/(?P<id_vip>[^/]+)/rollback/$',
-       vip_l7_rollback_resource.handle_request, name='vip.l7.rollback.by.pk'),
-
-   url(r'^vip/add_block/(?P<id_vip>\d+)/(?P<id_block>\d+)/(?P<override>\d+)[/]?$',
-       vip_add_block_resource.handle_request, name='vip.add.block'),
-
-
-   url(r'^real/equip/(?P<id_equip>\d+)/vip/(?P<id_vip>\d+)/ip/(?P<id_ip>\d+)/$',
-       vip_real.handle_request, name='vip.real.add.remove'),
-   url(r'^real/(?P<status>enable|disable|check)/equip/(?P<id_equip>\d+)/vip/(?P<id_vip>\d+)/ip/(?P<id_ip>\d+)/$',
-       vip_real.handle_request, name='vip.real.enable.disable'),
+   #vips
+   url(r'^vip/', include('networkapi.requisicaovips.urls')),
+   url(r'^requestvip/', include('networkapi.requisicaovips.urls_requestvip')),
+   url(r'^real/', include('networkapi.requisicaovips.urls_real')),
 
    url(r'^grupovirtual/$', virtual_group_resource.handle_request,
        name='virtual_group.add.remove'),
