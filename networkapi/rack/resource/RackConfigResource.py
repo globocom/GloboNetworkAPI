@@ -305,7 +305,7 @@ def gera_config(rack):
                     else:
                         hostgroup_id = hostgroups['results'][0]['id']
 
-                    host = foreman.hosts.create(host={'name': switch.nome, 'ip': ip, 'mac': mac, 'environment_id': settings.FOREMAN_HOSTS_ENVIRONMENT_ID, 'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id, 'build': 'true'})
+                    host = foreman.hosts.create(host={'name': switch.nome, 'ip': ip, 'mac': mac, 'environment_id': settings.FOREMAN_HOSTS_ENVIRONMENT_ID, 'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id, 'build': 'true', 'overwrite': 'true'})
                     switch_cadastrado=1
                     
             if not switch_cadastrado:
