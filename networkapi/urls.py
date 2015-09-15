@@ -29,7 +29,6 @@ from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterR
 from networkapi.equipamento.resource.ModelGetAllResource import ModelGetAllResource
 from networkapi.equipamento.resource.ModelGetByBrandResource import ModelGetByBrandResource
 
-from networkapi.ambiente.resource.AmbienteResource import AmbienteResource, AmbienteEquipamentoResource
 from networkapi.ambiente.resource.DivisionDcAddResource import DivisionDcAddResource
 from networkapi.ambiente.resource.DivisionDcAlterRemoveResource import DivisionDcAlterRemoveResource
 from networkapi.ambiente.resource.DivisionDcGetAllResource import DivisionDcGetAllResource
@@ -39,18 +38,10 @@ from networkapi.ambiente.resource.GroupL3GetAllResource import GroupL3GetAllReso
 from networkapi.ambiente.resource.LogicalEnvironmentAddResource import LogicalEnvironmentAddResource
 from networkapi.ambiente.resource.LogicalEnvironmentAlterRemoveResource import LogicalEnvironmentAlterRemoveResource
 from networkapi.ambiente.resource.LogicalEnvironmentGetAllResource import LogicalEnvironmentGetAllResource
-from networkapi.ambiente.resource.EnvironmentListResource import EnvironmentListResource
-from networkapi.ambiente.resource.EnvironmentGetByEquipResource import EnvironmentGetByEquipResource
 from networkapi.ambiente.resource.EnvironmentIpConfigResource import EnvironmentIpConfigResource
 from networkapi.ambiente.resource.EnvironmentVipResource import EnvironmentVipResource
 from networkapi.ambiente.resource.EnvironmentVipSearchResource import EnvironmentVipSearchResource
 from networkapi.ambiente.resource.RequestAllVipsEnviromentVipResource import RequestAllVipsEnviromentVipResource
-from networkapi.ambiente.resource.EnvironmentBlocks import EnvironmentBlocks
-from networkapi.ambiente.resource.EnvironmentConfigurationAddResource import EnvironmentConfigurationAddResource
-from networkapi.ambiente.resource.EnvironmentEnvironmentVipAssociationResource import EnvironmentEnvironmentVipAssociationResource
-from networkapi.ambiente.resource.EnvironmentAllGetByEnvironmentVipResource import EnvironmentAllGetByEnvironmentVipResource
-
-from networkapi.ambiente.resource.EnvironmentGetByIdResource import EnvironmentGetByIdResource
 
 from networkapi.ip.resource.NetworkAddResource import NetworkAddResource
 from networkapi.ip.resource.NetworkIPv4AddResource import NetworkIPv4AddResource
@@ -173,15 +164,11 @@ from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceRe
 # Healthcheck
 from networkapi.check.CheckAction import CheckAction
 from usuario.resource.UserGetByLdapResource import UserGetByLdapResource
-from networkapi.ambiente.resource.EnvironmentGetAclPathsResource import EnvironmentGetAclPathsResource
-from networkapi.ambiente.resource.EnvironmentSetTemplateResource import EnvironmentSetTemplateResource
 
 
 from networkapi.requisicaovips.resource.RequestVipGetRulesByEVipResource import RequestVipGetRulesByEVipResource
 from networkapi.blockrules.resource.RuleResource import RuleResource
 from networkapi.blockrules.resource.RuleGetResource import RuleGetResource
-from networkapi.ambiente.resource.EnvironmentConfigurationListResource import EnvironmentConfigurationListResource
-from networkapi.ambiente.resource.EnvironmentConfigurationRemoveResource import EnvironmentConfigurationRemoveResource
 from networkapi.requisicaovips.resource.OptionVipGetHealthcheckByEVipResource import OptionVipGetHealthcheckByEVipResource
 
 
@@ -245,28 +232,7 @@ model_alter_remove_resource = ModelAlterRemoveResource()
 model_get_all_resource = ModelGetAllResource()
 model_get_by_brand_resource = ModelGetByBrandResource()
 
-environment_resource = AmbienteResource()
-environment_list_resource = EnvironmentListResource()
-environment_by_equip_resource = EnvironmentGetByEquipResource()
 env_ip_conf_resource = EnvironmentIpConfigResource()
-
-environment_get_by_id_resource = EnvironmentGetByIdResource()
-environment_get_acl_paths_resource = EnvironmentGetAclPathsResource()
-
-environment_set_template = EnvironmentSetTemplateResource()
-
-environment_blocks = EnvironmentBlocks()
-
-environment_configuration_add_resource = EnvironmentConfigurationAddResource()
-
-environment_configuration_list_resource = EnvironmentConfigurationListResource()
-
-environment_configuration_remove_resource = EnvironmentConfigurationRemoveResource()
-
-environment_equip_resource = AmbienteEquipamentoResource()
-
-environment_environment_vip_association = EnvironmentEnvironmentVipAssociationResource()
-environment_environment_vip_list = EnvironmentAllGetByEnvironmentVipResource()
 
 division_dc_add_resource = DivisionDcAddResource()
 division_dc_alter_remove_resource = DivisionDcAlterRemoveResource()
@@ -452,51 +418,9 @@ urlpatterns += patterns('',
    url(r'^equipmentscript/', include('networkapi.equipamento.urls_equipmentscript')),
    url(r'^equipamentoroteiro/', include('networkapi.equipamento.urls_equipamentoroteiro')),
 
-   url(r'^ambiente/$', environment_resource.handle_request,
-       name='environment.search.insert'),
-   url(r'^ambiente/list/$', environment_list_resource.handle_request,
-       name='environment.list.all'),
-   url(r'^ambiente/equip/(?P<id_equip>[^/]+)/$',
-       environment_by_equip_resource.handle_request, name='environment.list.by.equip'),
-   url(r'^ambiente/ipconfig/$', environment_resource.handle_request,
-       {'ip_config': True}, name='environment.insert.ipconfig'),
-   url(r'^ambiente/divisao_dc/(?P<id_divisao_dc>[^/]+)/$',
-       environment_resource.handle_request, name='environment.search.by.divisao_dc'),
-   url(r'^ambiente/divisao_dc/(?P<id_divisao_dc>[^/]+)/ambiente_logico/(?P<id_amb_logico>[^/]+)/$',
-       environment_resource.handle_request, name='environment.search.by.divisao_dc.logic_environment'),
-   url(r'^ambiente/equipamento/(?P<nome_equip>[^/]+)/ip/(?P<x1>\d{1,3})\.(?P<x2>\d{1,3})\.(?P<x3>\d{1,3})\.(?P<x4>\d{1,3})/$',
-       environment_equip_resource.handle_request, name='environment.get.by.equipment_name.ip'),
-   url(r'^ambiente/(?P<id_ambiente>[^/]+)/$', environment_resource.handle_request,
-       name="environment.search.update.remove.by.pk"),
-   url(r'^environment/id/(?P<environment_id>[^/]+)/$',
-       environment_get_by_id_resource.handle_request, name="environment.search.by.pk"),
-   url(r'^environment/acl_path[/]$',
-       environment_get_acl_paths_resource.handle_request, name="environment.acl_path"),
-   url(r'^environment/set_template/(?P<environment_id>[^/]+)/$',
-       environment_set_template.handle_request, name="environment.set.template"),
-   url(r'^environment/get_env_template/$',
-       environment_set_template.handle_request, name="environment.get.template"),
-
-
-   url(r'^environment/configuration/save/$',
-       environment_configuration_add_resource.handle_request, name="environment.configuration.save"),
-   url(r'^environment/configuration/list/(?P<environment_id>[^/]+)/$',
-       environment_configuration_list_resource.handle_request, name="environment.configuration.list"),
-   url(r'^environment/configuration/remove/(?P<environment_id>[^/]+)/(?P<configuration_id>[^/]+)/$',
-       environment_configuration_remove_resource.handle_request, name="environment.configuration.remove"),
-
-   url(r'^environment/save_blocks/$', environment_blocks.handle_request,
-       name="environment.save.blocks"),
-   url(r'^environment/update_blocks/$', environment_blocks.handle_request,
-       name="environment.update.blocks"),
-   url(r'^environment/get_blocks/(?P<environment_id>[^/]+)/$',
-       environment_blocks.handle_request, name="environment.get.blocks"),
-   url(r'^environment/list_no_blocks/$',
-       environment_list_resource.handle_request, name='environment.list.no_blocks'),
-   url(r'^environment/(?P<environment_id>[^/]+)/environmentvip/(?P<environment_vip_id>[^/]+)/$',
-       environment_environment_vip_association.handle_request, name='environment.environmentvip.associate.disassociate'),
-   url(r'^environment/environmentvip/(?P<environment_vip_id>[^/]+)/$',
-       environment_environment_vip_list.handle_request, name='environment.environmentvip.list'),
+   #ambiente
+   url(r'^ambiente/', include('networkapi.ambiente.urls')),
+   url(r'^environment/', include('networkapi.ambiente.urls_environment')),
 
    url(r'^environment-vip/get/finality/$',
        environment_vip_finality.handle_request, name='environemnt-vip.get.finality'),
