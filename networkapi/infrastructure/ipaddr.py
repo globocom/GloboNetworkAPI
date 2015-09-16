@@ -560,7 +560,7 @@ class _BaseNet(_IPAddrBase):
         """
         network = int(self.network) + 1
         cur = int(self.broadcast) - 1
-        while cur >= bcast:
+        while cur >= network:
             cur -= 1
             yield IPAddress(cur + 1, version=self._version)
 

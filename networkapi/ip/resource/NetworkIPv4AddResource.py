@@ -212,13 +212,14 @@ class NetworkIPv4AddResource(RestResource):
 
                     if multiple_ips:
                         router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                        router_ip = str(router_ip).split('.')
                         ip_model2 = Ip()
                         ip_model2.oct1 = router_ip[0]
                         ip_model2.oct2 = router_ip[1]
                         ip_model2.oct3 = router_ip[2]
                         ip_model2.oct4 = router_ip[3]
                         ip_model2.networkipv4_id = network_ipv4.id
-                        ip_model.save(user)
+                        ip_model2.save(user)
                         IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
             # Return XML
