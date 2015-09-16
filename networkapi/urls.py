@@ -40,18 +40,8 @@ from networkapi.ambiente.resource.LogicalEnvironmentAlterRemoveResource import L
 from networkapi.ambiente.resource.LogicalEnvironmentGetAllResource import LogicalEnvironmentGetAllResource
 from networkapi.ambiente.resource.EnvironmentIpConfigResource import EnvironmentIpConfigResource
 
-from networkapi.ip.resource.NetworkAddResource import NetworkAddResource
-from networkapi.ip.resource.NetworkIPv4AddResource import NetworkIPv4AddResource
-from networkapi.ip.resource.NetworkIPv6AddResource import NetworkIPv6AddResource
-from networkapi.ip.resource.NetworkIPv4DeallocateResource import NetworkIPv4DeallocateResource
-from networkapi.ip.resource.NetworkIPv6DeallocateResource import NetworkIPv6DeallocateResource
-from networkapi.ip.resource.SearchIPv6EnvironmentResource import SearchIPv6EnvironmentResource
-from networkapi.ip.resource.NetworkIPv4GetResource import NetworkIPv4GetResource
-from networkapi.ip.resource.NetworkIPv6GetResource import NetworkIPv6GetResource
 from networkapi.ip.resource.IPv4DeleteResource import IPv4DeleteResource
 from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
-from networkapi.ip.resource.NetworkEditResource import NetworkEditResource
-from networkapi.ip.resource.NetworkRemoveResource import NetworkRemoveResource
 
 from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
 from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
@@ -99,14 +89,6 @@ from networkapi.roteiro.resource.ScriptTypeAddResource import ScriptTypeAddResou
 from networkapi.roteiro.resource.ScriptTypeAlterRemoveResource import ScriptTypeAlterRemoveResource
 from networkapi.roteiro.resource.ScriptTypeGetAllResource import ScriptTypeGetAllResource
 
-
-from networkapi.healthcheckexpect.resource.HealthcheckExpectResource import HealthcheckExpectResource
-from networkapi.healthcheckexpect.resource.HealthcheckAddResource import HealthcheckAddResource
-
-from networkapi.healthcheckexpect.resource.HealthcheckAddExpectStringResource import HealthcheckAddExpectStringResource
-from networkapi.healthcheckexpect.resource.HealthcheckExpectDistinctResource import HealthcheckExpectDistinctResource
-from networkapi.healthcheckexpect.resource.HealthcheckExpectGetResource import HealthcheckExpectGetResource
-
 # Filter
 from networkapi.filter.resource.FilterListAllResource import FilterListAllResource
 from networkapi.filter.resource.FilterAddResource import FilterAddResource
@@ -148,11 +130,6 @@ list_all_racks_resource = RackListAllResource()
 list_rack_environment_resource = RackEnvironmentResource()
 get_rack_by_equip_resource = RackGetByEquipResource()
 
-healthcheckexpect_string_resource = HealthcheckAddExpectStringResource()
-
-healthcheckexpect_distinct_resource = HealthcheckExpectDistinctResource()
-
-healthcheckexpect_get_resource = HealthcheckExpectGetResource()
 # brand_resource = MarcaResource()
 brand_add_resource = BrandAddResource()
 brand_alter_remove_resource = BrandAlterRemoveResource()
@@ -178,22 +155,9 @@ logical_environment_add_resource = LogicalEnvironmentAddResource()
 logical_environment_alter_remove_resource = LogicalEnvironmentAlterRemoveResource()
 logical_environment_get_all_resource = LogicalEnvironmentGetAllResource()
 
-networkip4_get_resource = NetworkIPv4GetResource()
-networkip6_get_resource = NetworkIPv6GetResource()
-network_edit_resource = NetworkEditResource()
-
 ipv4_delete_resource = IPv4DeleteResource()
 
 ipv4_edit_resource = IPv4EditResource()
-
-
-network_add_resource = NetworkAddResource()
-network_remove_resource = NetworkRemoveResource()
-network_ipv4_add_resource = NetworkIPv4AddResource()
-network_ipv4_deallocate_resource = NetworkIPv4DeallocateResource()
-network_ipv6_add_resource = NetworkIPv6AddResource()
-network_ipv6_deallocate_resource = NetworkIPv6DeallocateResource()
-search_ipv6_environment = SearchIPv6EnvironmentResource()
 
 # equipment_script_resource = EquipamentoRoteiroResource()
 
@@ -209,9 +173,6 @@ script_get_equipment_resource = ScriptGetEquipmentResource()
 script_type_add_resource = ScriptTypeAddResource()
 script_type_alter_remove_resource = ScriptTypeAlterRemoveResource()
 script_type_get_all_resource = ScriptTypeGetAllResource()
-
-healthcheckexpect_resource = HealthcheckExpectResource()
-healthcheckexpect_add_resource = HealthcheckAddResource()
 
 virtual_group_resource = GroupVirtualResource()
 
@@ -343,14 +304,14 @@ urlpatterns += patterns('',
 
    #ip
    url(r'^ip/', include('networkapi.ip.urls')),
+   url(r'^ipv4/', include('networkapi.ip.urls_ipv4')),
+   url(r'^ipv6/', include('networkapi.ip.urls_ipv6')),
+   url(r'^network/', include('networkapi.ip.urls_network')),
 
    url(r'^ip4/delete/(?P<id_ipv4>[^/]+)',
        ipv4_delete_resource.handle_request, name='ip4.delete'),
    url(r'^ip4/edit', ipv4_edit_resource.handle_request,
        name="ip4.edit"),
-
-   url(r'^ipv4/', include('networkapi.ip.urls_ipv4')),
-   url(r'^ipv6/', include('networkapi.ip.urls_ipv6')),
 
    url(r'^script/$', script_add_resource.handle_request,
        name='script.add'),
@@ -370,16 +331,8 @@ urlpatterns += patterns('',
    url(r'^scripttype/(?P<id_script_type>[^/]+)/$',
        script_type_alter_remove_resource.handle_request, name='script_type.update.remove.by.pk'),
 
-   url(r'^healthcheckexpect/ambiente/(?P<id_amb>[^/]+)/$',
-       healthcheckexpect_resource.handle_request, name='healthcheckexpect.search.by.environment'),
-   url(r'^healthcheckexpect/add/$',
-       healthcheckexpect_add_resource.handle_request, name='healthcheckexpect.add'),
-   url(r'^healthcheckexpect/add/expect_string/$',
-       healthcheckexpect_string_resource.handle_request, name='healthcheckexpect.string.add'),
-   url(r'^healthcheckexpect/distinct/busca/$',
-       healthcheckexpect_distinct_resource.handle_request, name='healthcheckexpect.distinct'),
-   url(r'^healthcheckexpect/get/(?P<id_healthcheck>[^/]+)/$',
-       healthcheckexpect_get_resource.handle_request, name='healthcheckexpect.get.by.pk'),
+   #healthcheckexpect
+   url(r'^healthcheckexpect/', include('networkapi.healthcheckexpect.urls')),
 
    #vips
    url(r'^vip/', include('networkapi.requisicaovips.urls')),
@@ -481,27 +434,6 @@ urlpatterns += patterns('',
        access_right_resource.handle_request, name='access_right.search.update.remove.by.pk'),
 
    url(r'^check$', check_action.check, name='check'),
-
-   url(r'^network/ipv4/id/(?P<id_rede4>[^/]+)/$',
-       networkip4_get_resource.handle_request, name='network.ip4.get.by.id'),
-   url(r'^network/ipv6/id/(?P<id_rede6>[^/]+)/$',
-       networkip6_get_resource.handle_request, name='network.ip6.get.by.id'),
-   url(r'^network/add/$', network_add_resource.handle_request,
-       name='network.add'),
-   url(r'^network/edit/$', network_edit_resource.handle_request,
-       name='network.edit'),
-   url(r'^network/create/$', network_edit_resource.handle_request,
-       name='network.create'),
-   url(r'^network/remove/$', network_remove_resource.handle_request,
-       name='network.remove'),
-   url(r'^network/ipv4/add/$', network_ipv4_add_resource.handle_request,
-       name='network.ipv4.add'),
-   url(r'^network/ipv4/(?P<id_network_ipv4>[^/]+)/deallocate/$',
-       network_ipv4_deallocate_resource.handle_request, name='network.ipv4.deallocate'),
-   url(r'^network/ipv6/add/$', network_ipv6_add_resource.handle_request,
-       name='network.ipv6.add'),
-   url(r'^network/ipv6/(?P<id_network_ipv6>[^/]+)/deallocate/$',
-       network_ipv6_deallocate_resource.handle_request, name='network.ipv6.deallocate'),
 )
 
 urlpatterns += patterns('',
