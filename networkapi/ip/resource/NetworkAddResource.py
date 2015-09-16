@@ -402,53 +402,56 @@ class NetworkAddResource(RestResource):
 
                     if version == IP_VERSION.IPv4[0]:
 
-                        # Add Adds the first available ipv4 on all equipment
-                        # that is configured as a router for the environment
-                        # related to network
-                        ip = Ip.get_first_available_ip(network_ip.id)
+                        if network_ip.block < 31:
 
-                        ip = str(ip).split('.')
+                            # Add Adds the first available ipv4 on all equipment
+                            # that is configured as a router for the environment
+                            # related to network
+                            ip = Ip.get_first_available_ip(network_ip.id)
 
-                        ip_model = Ip()
-                        ip_model.oct1 = ip[0]
-                        ip_model.oct2 = ip[1]
-                        ip_model.oct3 = ip[2]
-                        ip_model.oct4 = ip[3]
-                        ip_model.networkipv4_id = network_ip.id
+                            ip = str(ip).split('.')
 
-                        ip_model.save(user)
+                            ip_model = Ip()
+                            ip_model.oct1 = ip[0]
+                            ip_model.oct2 = ip[1]
+                            ip_model.oct3 = ip[2]
+                            ip_model.oct4 = ip[3]
+                            ip_model.networkipv4_id = network_ip.id
 
-                        for equip in list_equip_routers_ambient:
+                            ip_model.save(user)
 
-                            IpEquipamento().create(
-                                user, ip_model.id, equip.equipamento.id)
+                            for equip in list_equip_routers_ambient:
+
+                                IpEquipamento().create(
+                                    user, ip_model.id, equip.equipamento.id)
 
                     else:
+                        if network_ip.block < 127:
 
-                        # Add Adds the first available ipv6 on all equipment
-                        # that is configured as a router for the environment
-                        # related to network
-                        ipv6 = Ipv6.get_first_available_ip6(network_ip.id)
+                            # Add Adds the first available ipv6 on all equipment
+                            # that is configured as a router for the environment
+                            # related to network
+                            ipv6 = Ipv6.get_first_available_ip6(network_ip.id)
 
-                        ipv6 = str(ipv6).split(':')
+                            ipv6 = str(ipv6).split(':')
 
-                        ipv6_model = Ipv6()
-                        ipv6_model.block1 = ipv6[0]
-                        ipv6_model.block2 = ipv6[1]
-                        ipv6_model.block3 = ipv6[2]
-                        ipv6_model.block4 = ipv6[3]
-                        ipv6_model.block5 = ipv6[4]
-                        ipv6_model.block6 = ipv6[5]
-                        ipv6_model.block7 = ipv6[6]
-                        ipv6_model.block8 = ipv6[7]
-                        ipv6_model.networkipv6_id = network_ip.id
+                            ipv6_model = Ipv6()
+                            ipv6_model.block1 = ipv6[0]
+                            ipv6_model.block2 = ipv6[1]
+                            ipv6_model.block3 = ipv6[2]
+                            ipv6_model.block4 = ipv6[3]
+                            ipv6_model.block5 = ipv6[4]
+                            ipv6_model.block6 = ipv6[5]
+                            ipv6_model.block7 = ipv6[6]
+                            ipv6_model.block8 = ipv6[7]
+                            ipv6_model.networkipv6_id = network_ip.id
 
-                        ipv6_model.save(user)
+                            ipv6_model.save(user)
 
-                        for equip in list_equip_routers_ambient:
+                            for equip in list_equip_routers_ambient:
 
-                            Ipv6Equipament().create(
-                                user, ipv6_model.id, equip.equipamento.id)
+                                Ipv6Equipament().create(
+                                    user, ipv6_model.id, equip.equipamento.id)
 
             except Exception, e:
                 raise IpError(e, u'Error persisting Network.')
