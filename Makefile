@@ -20,6 +20,12 @@ pip: # install pip libraries
 	@pip install -r requirements.txt
 	@pip install -r requirements_test.txt
 
+db_reset: # drop and create database
+	@[ -z $NETWORKAPI_DATABASE_PASSWORD ] && [ -z $NETWORKAPI_DATABASE_USER ] && [ -z $NETWORKAPI_DATABASE_HOST ] && mysqladmin -hlocalhost -uroot -f drop networkapi; true
+	@[ -z $NETWORKAPI_DATABASE_PASSWORD ] && [ -z $NETWORKAPI_DATABASE_USER ] && [ -z $NETWORKAPI_DATABASE_HOST ] && mysqladmin -hlocalhost -uroot -f create networkapi; true
+	@[ -n $NETWORKAPI_DATABASE_PASSWORD ] && [ -n $NETWORKAPI_DATABASE_USER ] && [ -n $NETWORKAPI_DATABASE_HOST ] && mysqladmin -h$(NETWORKAPI_DATABASE_HOST) -u$(NETWORKAPI_DATABASE_USER) -p$(NETWORKAPI_DATABASE_PASSWORD) -f drop networkapi; true
+	@[ -n $NETWORKAPI_DATABASE_PASSWORD ] && [ -n $NETWORKAPI_DATABASE_USER ] && [ -n $NETWORKAPI_DATABASE_HOST ] && mysqladmin -h$(NETWORKAPI_DATABASE_HOST) -u$(NETWORKAPI_DATABASE_USER) -p$(NETWORKAPI_DATABASE_PASSWORD) -f create networkapi; true
+
 run: # run local server
 	@python manage.py runserver 0.0.0.0:8000 $(filter-out $@,$(MAKECMDGOALS))
 
@@ -42,9 +48,9 @@ compile: clean
 
 test: compile
 	@make clean
-	@echo "Nothing yet"
-#	@echo "Starting tests..."
-# 	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=networkapiclient tests
+	@[ -n $NETWORKAPI_DATABASE_PASSWORD ] && [ -n $NETWORKAPI_DATABASE_USER ] && [ -n $NETWORKAPI_DATABASE_HOST ] && mysqladmin -h$(NETWORKAPI_DATABASE_HOST) -u$(NETWORKAPI_DATABASE_USER) -p$(NETWORKAPI_DATABASE_PASSWORD) -f drop test_networkapi; true
+	@[ -z $NETWORKAPI_DATABASE_PASSWORD ] && [ -z $NETWORKAPI_DATABASE_USER ] && [ -z $NETWORKAPI_DATABASE_HOST ] && mysqladmin -hlocalhost -uroot -f drop test_networkapi; true
+	@python manage.py test --traceback $(filter-out $@,$(MAKECMDGOALS))
 
 install:
 	@python setup.py install
