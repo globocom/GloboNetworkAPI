@@ -28,3 +28,4 @@ pylint==1.0.0
 coverage==3.6
 HTTPretty==0.8.3
 sure==1.2.7
+nose-exclude==0.3.0
