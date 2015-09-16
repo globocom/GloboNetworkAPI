@@ -45,16 +45,6 @@ from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
 
 from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
 from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
-from networkapi.usuario.resource.UsuarioGetResource import UsuarioGetResource
-from networkapi.usuario.resource.UserAddResource import UserAddResource
-from networkapi.usuario.resource.UserAlterRemoveResource import UserAlterRemoveResource
-from networkapi.usuario.resource.UserGetAllResource import UserGetAllResource
-from networkapi.usuario.resource.UserGetByIdResource import UserGetByIdResource
-
-from networkapi.usuario.resource.UsuarioChangePassResource import UsuarioChangePassResource
-from networkapi.usuario.resource.AuthenticateResource import AuthenticateResource
-from networkapi.usuario.resource.UserGetByGroupUserResource import UserGetByGroupUserResource
-from networkapi.usuario.resource.UserGetByGroupUserOutGroup import UserGetByGroupUserOutGroup
 
 from networkapi.grupo.resource.GrupoResource import GrupoEquipamentoResource, DireitoGrupoEquipamentoResource
 from networkapi.grupo.resource.AdministrativePermissionByGroupUserResource import AdministrativePermissionByGroupUserResource
@@ -102,7 +92,6 @@ from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceRe
 
 # Healthcheck
 from networkapi.check.CheckAction import CheckAction
-from usuario.resource.UserGetByLdapResource import UserGetByLdapResource
 
 from networkapi.rack.resource.RackAddResource import RackAddResource
 from networkapi.rack.resource.RackFindResource import RackFindResource
@@ -183,21 +172,6 @@ network_type_resource = NetworkTypeResource()
 interface_type_get_all_resource = InterfaceTypeGetAllResource()
 
 interface_channel_resource = InterfaceChannelResource()
-
-authenticate_resource = AuthenticateResource()
-
-user_add_resource = UserAddResource()
-user_alter_remove_resource = UserAlterRemoveResource()
-user_get_by_pk_resource = UserGetByIdResource()
-user_get_all_resource = UserGetAllResource()
-user_get_by_ldap_resource = UserGetByLdapResource()
-
-user_get_resource = UsuarioGetResource()
-
-user_change_pass_resource = UsuarioChangePassResource()
-
-user_get_by_group_resource = UserGetByGroupUserResource()
-user_get_by_group_out_group_resource = UserGetByGroupUserOutGroup()
 
 ugroup_get_all_resource = GroupUserGetAllResource()
 ugroup_get_by_id_resource = GroupUserGetByIdResource()
@@ -365,26 +339,11 @@ urlpatterns += patterns('',
    url(r'^model/brand/(?P<id_brand>[^/]+)/$',
        model_get_by_brand_resource.handle_request, name='model.get.by.brand'),
 
-   url(r'^authenticate/$', authenticate_resource.handle_request,
-       name='user.authenticate'),
-   url(r'^user/$', user_add_resource.handle_request,
-       name='user.add'),
-   url(r'^usuario/get/$', user_get_resource.handle_request,
-       name='user.list.with.group'),
-   url(r'^user-change-pass/$', user_change_pass_resource.handle_request,
-       name='user.change.pass'),
-   url(r'^user/all/$', user_get_all_resource.handle_request,
-       name='user.get.all'),
-   url(r'^user/(?P<id_user>[^/]+)/$',
-       user_alter_remove_resource.handle_request, name='user.update.remove.by.pk'),
-   url(r'^user/get/(?P<id_user>[^/]+)/$',
-       user_get_by_pk_resource.handle_request, name='user.get.by.id'),
-   url(r'^user/group/(?P<id_ugroup>[^/]+)/$',
-       user_get_by_group_resource.handle_request, name='user.get.by.group'),
-   url(r'^user/out/group/(?P<id_ugroup>[^/]+)/$',
-       user_get_by_group_out_group_resource.handle_request, name='user.get.by.group.out.group'),
-   url(r'^user/get/ldap/(?P<user_name>[^/]+)/$',
-       user_get_by_ldap_resource.handle_request, name='user.get.ldap'),
+   #usario
+   url(r'^usuario/', include('networkapi.usuario.urls')),
+   url(r'^user/', include('networkapi.usuario.urls_user')),
+   url(r'^authenticate/', include('networkapi.usuario.urls_authenticate')),
+   url(r'^user-change-pass/', include('networkapi.usuario.urls_user-change-pass')),
 
    url(r'^ugroup/all/$', ugroup_get_all_resource.handle_request,
        name='ugroup.get.all'),
