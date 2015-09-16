@@ -501,12 +501,54 @@ TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--verbosity=2', '--no-byte-compile', '-d', '-s']
 if CI:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': True,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+            },
+        },
+        'handlers': {
+            'console':{
+                'level':'DEBUG',
+                'class':'logging.StreamHandler',
+                'formatter': 'simple'
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers':['console'],
+                'propagate': True,
+                'level':'DEBUG',
+            },
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': False,
+            },
+            'django.db.backends': {
+                'level': 'INFO',
+                'propagate': False,
+                'handlers': ['console'],
+            },
+        },
+        'root': {
+            'level': 'DEBUG',
+            'propagate': False,
+            'handlers': ['console'],
+        },
+    }
     INSTALLED_APPS += ('django_nose',)
-    NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--exclude=.*migrations*', '--exclude-dir=./integration/',
+    NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi',
+                  '--exclude=.*migrations*', '--exclude-dir=./integration/',
                   '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
 
-elif INTEGRATION:
-    TEST_DISCOVER_ROOT = None
-    NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--where-dir=./integration/',
-                  '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
+# elif INTEGRATION:
+#     TEST_DISCOVER_ROOT = None
+#     NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--where-dir=./integration/',
+#                   '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
 
