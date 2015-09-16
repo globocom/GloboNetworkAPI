@@ -47,7 +47,6 @@ compile: clean
 	@pep8 --format=pylint --statistics networkapiclient setup.py
 
 test: compile
-	@make clean
 	@[ -n $NETWORKAPI_DATABASE_PASSWORD ] && [ -n $NETWORKAPI_DATABASE_USER ] && [ -n $NETWORKAPI_DATABASE_HOST ] && mysqladmin -h$(NETWORKAPI_DATABASE_HOST) -u$(NETWORKAPI_DATABASE_USER) -p$(NETWORKAPI_DATABASE_PASSWORD) -f drop test_networkapi; true
 	@[ -z $NETWORKAPI_DATABASE_PASSWORD ] && [ -z $NETWORKAPI_DATABASE_USER ] && [ -z $NETWORKAPI_DATABASE_HOST ] && mysqladmin -hlocalhost -uroot -f drop test_networkapi; true
 	@python manage.py test --traceback $(filter-out $@,$(MAKECMDGOALS))
