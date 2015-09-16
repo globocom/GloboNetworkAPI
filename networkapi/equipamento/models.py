@@ -650,11 +650,14 @@ class Equipamento(BaseModel):
             cls.log.error(u'Failure to search the equipament.')
             raise EquipamentoError(e, u'Failure to search the equipament.')
 
-    def edit(self, user, nome, tipo_equip, modelo):
+    def edit(self, user, nome, tipo_equip, modelo, maintenance=None):
         try:
+            if maintenance == None:
+                maintenance = self.maintenance
             self.modelo = modelo
             self.tipo_equipamento = tipo_equip
             self.nome = nome
+            self.maintenance = maintenance
             self.save(user)
         except EquipamentoNameDuplicatedError, e:
             raise EquipamentoNameDuplicatedError(e.message)
