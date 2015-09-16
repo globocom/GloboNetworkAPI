@@ -20,15 +20,6 @@ from django.http import HttpResponse
 
 from networkapi.vlan.resource.NetworkTypeResource import NetworkTypeResource
 
-from networkapi.equipamento.resource.BrandAddResource import BrandAddResource
-from networkapi.equipamento.resource.BrandAlterRemoveResource import BrandAlterRemoveResource
-from networkapi.equipamento.resource.BrandGetAllResource import BrandGetAllResource
-
-from networkapi.equipamento.resource.ModelAddResource import ModelAddResource
-from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterRemoveResource
-from networkapi.equipamento.resource.ModelGetAllResource import ModelGetAllResource
-from networkapi.equipamento.resource.ModelGetByBrandResource import ModelGetByBrandResource
-
 from networkapi.ambiente.resource.DivisionDcAddResource import DivisionDcAddResource
 from networkapi.ambiente.resource.DivisionDcAlterRemoveResource import DivisionDcAlterRemoveResource
 from networkapi.ambiente.resource.DivisionDcGetAllResource import DivisionDcGetAllResource
@@ -39,9 +30,6 @@ from networkapi.ambiente.resource.LogicalEnvironmentAddResource import LogicalEn
 from networkapi.ambiente.resource.LogicalEnvironmentAlterRemoveResource import LogicalEnvironmentAlterRemoveResource
 from networkapi.ambiente.resource.LogicalEnvironmentGetAllResource import LogicalEnvironmentGetAllResource
 from networkapi.ambiente.resource.EnvironmentIpConfigResource import EnvironmentIpConfigResource
-
-from networkapi.ip.resource.IPv4DeleteResource import IPv4DeleteResource
-from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
 
 from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
 from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
@@ -69,17 +57,6 @@ from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualRe
 
 from networkapi.tipoacesso.resource.TipoAcessoResource import TipoAcessoResource
 
-from networkapi.roteiro.resource.ScriptAddResource import ScriptAddResource
-from networkapi.roteiro.resource.ScriptAlterRemoveResource import ScriptAlterRemoveResource
-from networkapi.roteiro.resource.ScriptGetAllResource import ScriptGetAllResource
-from networkapi.roteiro.resource.ScriptGetScriptTypeResource import ScriptGetScriptTypeResource
-from networkapi.roteiro.resource.ScriptGetEquipmentResource import ScriptGetEquipmentResource
-
-from networkapi.roteiro.resource.ScriptTypeAddResource import ScriptTypeAddResource
-from networkapi.roteiro.resource.ScriptTypeAlterRemoveResource import ScriptTypeAlterRemoveResource
-from networkapi.roteiro.resource.ScriptTypeGetAllResource import ScriptTypeGetAllResource
-
-# Filter
 from networkapi.filter.resource.FilterListAllResource import FilterListAllResource
 from networkapi.filter.resource.FilterAddResource import FilterAddResource
 from networkapi.filter.resource.FilterAlterRemoveResource import FilterAlterRemoveResource
@@ -90,7 +67,6 @@ from networkapi.filter.resource.FilterDissociateOneResource import FilterDissoci
 from networkapi.eventlog.resource.EventLogFindResource import EventLogFindResource
 from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceResource
 
-# Healthcheck
 from networkapi.check.CheckAction import CheckAction
 
 from networkapi.rack.resource.RackAddResource import RackAddResource
@@ -103,7 +79,6 @@ from networkapi.rack.resource.RackListAllResource import RackListAllResource
 from networkapi.rack.resource.RackEnvironmentResource import RackEnvironmentResource
 from networkapi.rack.resource.RackGetByEquipResource import RackGetByEquipResource
 check_action = CheckAction()
-
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -119,17 +94,6 @@ list_all_racks_resource = RackListAllResource()
 list_rack_environment_resource = RackEnvironmentResource()
 get_rack_by_equip_resource = RackGetByEquipResource()
 
-# brand_resource = MarcaResource()
-brand_add_resource = BrandAddResource()
-brand_alter_remove_resource = BrandAlterRemoveResource()
-brand_get_all_resource = BrandGetAllResource()
-
-# model_resource = ModeloResource()
-model_add_resource = ModelAddResource()
-model_alter_remove_resource = ModelAlterRemoveResource()
-model_get_all_resource = ModelGetAllResource()
-model_get_by_brand_resource = ModelGetByBrandResource()
-
 env_ip_conf_resource = EnvironmentIpConfigResource()
 
 division_dc_add_resource = DivisionDcAddResource()
@@ -143,25 +107,6 @@ group_l3_get_all_resource = GroupL3GetAllResource()
 logical_environment_add_resource = LogicalEnvironmentAddResource()
 logical_environment_alter_remove_resource = LogicalEnvironmentAlterRemoveResource()
 logical_environment_get_all_resource = LogicalEnvironmentGetAllResource()
-
-ipv4_delete_resource = IPv4DeleteResource()
-
-ipv4_edit_resource = IPv4EditResource()
-
-# equipment_script_resource = EquipamentoRoteiroResource()
-
-# script_resource = RoteiroResource()
-
-script_add_resource = ScriptAddResource()
-script_alter_remove_resource = ScriptAlterRemoveResource()
-script_get_all_resource = ScriptGetAllResource()
-script_get_script_type_resource = ScriptGetScriptTypeResource()
-script_get_equipment_resource = ScriptGetEquipmentResource()
-
-
-script_type_add_resource = ScriptTypeAddResource()
-script_type_alter_remove_resource = ScriptTypeAlterRemoveResource()
-script_type_get_all_resource = ScriptTypeGetAllResource()
 
 virtual_group_resource = GroupVirtualResource()
 
@@ -186,11 +131,8 @@ aperms_alter_remove_resource = AdministrativePermissionAlterRemoveResource()
 perms_get_all_resource = PermissionGetAllResource()
 
 egroup_resource = GrupoEquipamentoResource()
-
 egroup_remove_association_equip_resource = GrupoEquipamentoRemoveAssociationEquipResource()
-
 egroup_get_by_equip_resource = GrupoEquipamentoGetByEquipResource()
-
 egroup_get_resource = GroupEquipmentResource()
 
 user_group_associate_resource = UserGroupAssociateResource()
@@ -211,7 +153,6 @@ eventlog_choice_resource = EventLogChoiceResource()
 
 api_prefix = r'^api/'
 
-
 urlpatterns = patterns('',
     url(api_prefix, include('networkapi.api_deploy.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
@@ -224,7 +165,6 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
-   url(r'^vlan/', include('networkapi.vlan.urls')),
    url(r'^tipoacesso/$', access_type_resource.handle_request,
        name='access_type.insert.search'),
    url(r'^tipoacesso/(?P<id_tipo_acesso>[^/]+)/$',
@@ -244,6 +184,8 @@ urlpatterns += patterns('',
    url(r'^equipamentoambiente/', include('networkapi.equipamento.urls_equipamentoambiente')),
    url(r'^equipmentscript/', include('networkapi.equipamento.urls_equipmentscript')),
    url(r'^equipamentoroteiro/', include('networkapi.equipamento.urls_equipamentoroteiro')),
+   url(r'^brand/', include('networkapi.equipamento.urls_brand')),
+   url(r'^model/', include('networkapi.equipamento.urls_model')),
 
    #ambiente
    url(r'^ambiente/', include('networkapi.ambiente.urls')),
@@ -276,34 +218,19 @@ urlpatterns += patterns('',
    url(r'^logicalenvironment/(?P<id_logicalenvironment>[^/]+)/$',
        logical_environment_alter_remove_resource.handle_request, name='logical_environment.update.remove.by.pk'),
 
+   #vlan
+   url(r'^vlan/', include('networkapi.vlan.urls')),
+
    #ip
    url(r'^ip/', include('networkapi.ip.urls')),
    url(r'^ipv4/', include('networkapi.ip.urls_ipv4')),
    url(r'^ipv6/', include('networkapi.ip.urls_ipv6')),
    url(r'^network/', include('networkapi.ip.urls_network')),
+   url(r'^ip4/', include('networkapi.ip.urls_ip4')),
 
-   url(r'^ip4/delete/(?P<id_ipv4>[^/]+)',
-       ipv4_delete_resource.handle_request, name='ip4.delete'),
-   url(r'^ip4/edit', ipv4_edit_resource.handle_request,
-       name="ip4.edit"),
-
-   url(r'^script/$', script_add_resource.handle_request,
-       name='script.add'),
-   url(r'^script/all/$', script_get_all_resource.handle_request,
-       name='script.get.all'),
-   url(r'^script/(?P<id_script>[^/]+)/$',
-       script_alter_remove_resource.handle_request, name='script.update.remove.by.pk'),
-   url(r'^script/scripttype/(?P<id_script_type>[^/]+)/$',
-       script_get_script_type_resource.handle_request, name='script.get.script_type'),
-   url(r'^script/equipment/(?P<id_equipment>[^/]+)/$',
-       script_get_equipment_resource.handle_request, name='script.get.equipment'),
-
-   url(r'^scripttype/$', script_type_add_resource.handle_request,
-       name='script_type.add'),
-   url(r'^scripttype/all/$', script_type_get_all_resource.handle_request,
-       name='script_type.get.all'),
-   url(r'^scripttype/(?P<id_script_type>[^/]+)/$',
-       script_type_alter_remove_resource.handle_request, name='script_type.update.remove.by.pk'),
+   #scripts
+   url(r'^script/', include('networkapi.roteiro.urls')),
+   url(r'^scripttype/', include('networkapi.roteiro.urls_scripttype')),
 
    #healthcheckexpect
    url(r'^healthcheckexpect/', include('networkapi.healthcheckexpect.urls')),
@@ -322,22 +249,6 @@ urlpatterns += patterns('',
 
    url(r'^grupovirtual/$', virtual_group_resource.handle_request,
        name='virtual_group.add.remove'),
-
-   url(r'^brand/$', brand_add_resource.handle_request,
-       name='brand.add'),
-   url(r'^brand/all/$', brand_get_all_resource.handle_request,
-       name='brand.get.all'),
-   url(r'^brand/(?P<id_brand>[^/]+)/$',
-       brand_alter_remove_resource.handle_request, name='brand.update.remove.by.pk'),
-
-   url(r'^model/$', model_add_resource.handle_request,
-       name='model.add'),
-   url(r'^model/all/$', model_get_all_resource.handle_request,
-       name='model.get.all'),
-   url(r'^model/(?P<id_model>[^/]+)/$',
-       model_alter_remove_resource.handle_request, name='model.update.remove.by.pk'),
-   url(r'^model/brand/(?P<id_brand>[^/]+)/$',
-       model_get_by_brand_resource.handle_request, name='model.get.by.brand'),
 
    #usario
    url(r'^usuario/', include('networkapi.usuario.urls')),
@@ -410,49 +321,45 @@ urlpatterns += patterns('',
        filter_dissociate_one.handle_request, name='filter.dissociate.one'),
 )
 
-
-# Healthcheck
 urlpatterns += patterns('',
-                       url(r'^eventlog/find/$', eventlog_find_resource.handle_request,
-                           name='eventlog.find'),
-                       url(r'^eventlog/choices/$', eventlog_choice_resource.handle_request,
-                           name='eventlog.choices'),
-                       url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
-                           name='eventlog.version'),
-                       url(r'^healthcheck$',lambda _: HttpResponse("WORKING")),
-                       url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
-                           name='rack.add'),
-                       url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
-                           name='list.rack'),
-                       url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
-                           name='find.rack'),
-                       url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
-                           name='edit.rack'),
-                       url(r'^rack/(?P<id_rack>[^/]+)/$', delete_rack_resource.handle_request,
-                           name='delete.rack'),
-                       url(r'^rack/gerar-configuracao/(?P<id_rack>[^/]+)/$', gerar_config_rack_resource.handle_request,
-                           name='config.rack'),
-                       url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
-                           name='aplicar.rack'),
-                       url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
-                           name='rack.get.equip.id'),
-                       url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
-                           name='interfacetype.get'),
-                       url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
-                           name='interfacetype.get'),
-                       url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
-                           name='channel.edit'),
-                       url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
-                           name='channel.add'),
-                       url(r'^channel/delete/(?P<channel_name>[^/]+)/$', interface_channel_resource.handle_request,
-                           name='channel.delete'),
-                       url(r'^channel/get-by-name[/]?$', interface_channel_resource.handle_request,
-                           name='channel.get'),
-                       )
-
+   url(r'^eventlog/find/$', eventlog_find_resource.handle_request,
+       name='eventlog.find'),
+   url(r'^eventlog/choices/$', eventlog_choice_resource.handle_request,
+       name='eventlog.choices'),
+   url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
+       name='eventlog.version'),
+   url(r'^healthcheck$',lambda _: HttpResponse("WORKING")),
+   url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
+       name='rack.add'),
+   url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
+       name='list.rack'),
+   url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
+       name='find.rack'),
+   url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
+       name='edit.rack'),
+   url(r'^rack/(?P<id_rack>[^/]+)/$', delete_rack_resource.handle_request,
+       name='delete.rack'),
+   url(r'^rack/gerar-configuracao/(?P<id_rack>[^/]+)/$', gerar_config_rack_resource.handle_request,
+       name='config.rack'),
+   url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
+       name='aplicar.rack'),
+   url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
+       name='rack.get.equip.id'),
+   url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
+       name='interfacetype.get'),
+   url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
+       name='interfacetype.get'),
+   url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
+       name='channel.edit'),
+   url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
+       name='channel.add'),
+   url(r'^channel/delete/(?P<channel_name>[^/]+)/$', interface_channel_resource.handle_request,
+       name='channel.delete'),
+   url(r'^channel/get-by-name[/]?$', interface_channel_resource.handle_request,
+       name='channel.get'),
+)
 
 urlpatterns += patterns('networkapi.test_form.views',
-
-                        url('^test-vip[/]?$', 'test_form',
-                            name='test_form_vip',)
-                        )
+    url('^test-vip[/]?$', 'test_form',
+        name='test_form_vip',)
+)
