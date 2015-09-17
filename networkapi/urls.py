@@ -18,8 +18,6 @@
 from django.conf.urls.defaults import *
 from django.http import HttpResponse
 
-from networkapi.vlan.resource.NetworkTypeResource import NetworkTypeResource
-
 from networkapi.ambiente.resource.DivisionDcAddResource import DivisionDcAddResource
 from networkapi.ambiente.resource.DivisionDcAlterRemoveResource import DivisionDcAlterRemoveResource
 from networkapi.ambiente.resource.DivisionDcGetAllResource import DivisionDcGetAllResource
@@ -31,31 +29,18 @@ from networkapi.ambiente.resource.LogicalEnvironmentAlterRemoveResource import L
 from networkapi.ambiente.resource.LogicalEnvironmentGetAllResource import LogicalEnvironmentGetAllResource
 from networkapi.ambiente.resource.EnvironmentIpConfigResource import EnvironmentIpConfigResource
 
-from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
-from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
-
-from networkapi.grupo.resource.GrupoResource import GrupoEquipamentoResource, DireitoGrupoEquipamentoResource
+from networkapi.grupo.resource.GrupoResource import DireitoGrupoEquipamentoResource
 from networkapi.grupo.resource.AdministrativePermissionByGroupUserResource import AdministrativePermissionByGroupUserResource
 from networkapi.grupo.resource.AdministrativePermissionAddResource import AdministrativePermissionAddResource
 from networkapi.grupo.resource.AdministrativePermissionAlterRemoveResource import AdministrativePermissionAlterRemoveResource
 from networkapi.grupo.resource.AdministrativePermissionGetAllResource import AdministrativePermissionGetAllResource
 from networkapi.grupo.resource.AdministrativePermissionGetByIdResource import AdministrativePermissionGetByIdResource
 from networkapi.grupo.resource.PermissionGetAllResource import PermissionGetAllResource
-from networkapi.grupo.resource.GrupoEquipamentoGetByEquipResource import GrupoEquipamentoGetByEquipResource
-from networkapi.grupo.resource.GrupoEquipamentoRemoveAssociationEquipResource import GrupoEquipamentoRemoveAssociationEquipResource
-from networkapi.grupo.resource.GroupEquipmentResource import GroupEquipmentResource
-
-from networkapi.grupo.resource.GroupUserGetAllResource import GroupUserGetAllResource
-from networkapi.grupo.resource.GroupUserGetByIdResource import GroupUserGetByIdResource
-from networkapi.grupo.resource.GroupUserAlterRemoveResource import GroupUserAlterRemoveResource
-from networkapi.grupo.resource.GroupUserAddResource import GroupUserAddResource
 
 from networkapi.interface.resource.InterfaceTypeGetAllResource import InterfaceTypeGetAllResource
 from networkapi.interface.resource.InterfaceChannelResource import InterfaceChannelResource
 
 from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualResource
-
-from networkapi.tipoacesso.resource.TipoAcessoResource import TipoAcessoResource
 
 from networkapi.filter.resource.FilterListAllResource import FilterListAllResource
 from networkapi.filter.resource.FilterAddResource import FilterAddResource
@@ -110,18 +95,9 @@ logical_environment_get_all_resource = LogicalEnvironmentGetAllResource()
 
 virtual_group_resource = GroupVirtualResource()
 
-access_type_resource = TipoAcessoResource()
-
-network_type_resource = NetworkTypeResource()
-
 interface_type_get_all_resource = InterfaceTypeGetAllResource()
 
 interface_channel_resource = InterfaceChannelResource()
-
-ugroup_get_all_resource = GroupUserGetAllResource()
-ugroup_get_by_id_resource = GroupUserGetByIdResource()
-ugroup_alter_remove_resource = GroupUserAlterRemoveResource()
-ugroup_add_resource = GroupUserAddResource()
 
 aperms_get_by_group = AdministrativePermissionByGroupUserResource()
 aperms_add_resource = AdministrativePermissionAddResource()
@@ -129,14 +105,6 @@ aperms_get_by_pk_resource = AdministrativePermissionGetByIdResource()
 aperms_get_all_resource = AdministrativePermissionGetAllResource()
 aperms_alter_remove_resource = AdministrativePermissionAlterRemoveResource()
 perms_get_all_resource = PermissionGetAllResource()
-
-egroup_resource = GrupoEquipamentoResource()
-egroup_remove_association_equip_resource = GrupoEquipamentoRemoveAssociationEquipResource()
-egroup_get_by_equip_resource = GrupoEquipamentoGetByEquipResource()
-egroup_get_resource = GroupEquipmentResource()
-
-user_group_associate_resource = UserGroupAssociateResource()
-user_group_dissociate_resource = UserGroupDissociateResource()
 
 access_right_resource = DireitoGrupoEquipamentoResource()
 
@@ -165,16 +133,6 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
-   url(r'^tipoacesso/$', access_type_resource.handle_request,
-       name='access_type.insert.search'),
-   url(r'^tipoacesso/(?P<id_tipo_acesso>[^/]+)/$',
-       access_type_resource.handle_request, name='access_type.update.remove.by.pk'),
-
-   url(r'^net_type/$', network_type_resource.handle_request,
-       name='network_type.insert.search'),
-   url(r'^net_type/(?P<id_net_type>[^/]+)/$',
-       network_type_resource.handle_request, name='network_type.update.remove.by.pk'),
-
    #equipamento
    url(r'^equipamento/', include('networkapi.equipamento.urls')),
    url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
@@ -220,6 +178,7 @@ urlpatterns += patterns('',
 
    #vlan
    url(r'^vlan/', include('networkapi.vlan.urls')),
+   url(r'^net_type/', include('networkapi.vlan.urls_net_type')),
 
    #ip
    url(r'^ip/', include('networkapi.ip.urls')),
@@ -255,31 +214,15 @@ urlpatterns += patterns('',
    url(r'^user/', include('networkapi.usuario.urls_user')),
    url(r'^authenticate/', include('networkapi.usuario.urls_authenticate')),
    url(r'^user-change-pass/', include('networkapi.usuario.urls_user-change-pass')),
+   url(r'^usergroup/', include('networkapi.usuario.urls_usergroup')),
 
-   url(r'^ugroup/all/$', ugroup_get_all_resource.handle_request,
-       name='ugroup.get.all'),
-   url(r'^ugroup/get/(?P<id_ugroup>[^/]+)/$',
-       ugroup_get_by_id_resource.handle_request, name='ugroup.get'),
-   url(r'^ugroup/$', ugroup_add_resource.handle_request,
-       name='ugroup.add'),
-   url(r'^ugroup/(?P<id_ugroup>[^/]+)/$',
-       ugroup_alter_remove_resource.handle_request, name='ugroup.alter.remove'),
+   #tipoacesso
+   url(r'^tipoacesso/', include('networkapi.tipoacesso.urls')),
 
-   url(r'^egrupo/$', egroup_resource.handle_request,
-       name='egroup.search.insert'),
-   url(r'^egrupo/equipamento/(?P<id_equipamento>[^/]+)/egrupo/(?P<id_egrupo>[^/]+)/$',
-       egroup_remove_association_equip_resource.handle_request, name='egroup.remove.equip.association'),
-   url(r'^egrupo/equip/(?P<id_equip>[^/]+)/$',
-       egroup_get_by_equip_resource.handle_request, name='egroup.get.by.equip'),
-   url(r'^egrupo/(?P<id_grupo>[^/]+)/$',
-       egroup_resource.handle_request, name='egroup.update.remove.by.pk'),
-   url(r'^egroup/(?P<id_egroup>[^/]+)/$',
-       egroup_get_resource.handle_request, name='egroup.get.by.pk'),
-
-   url(r'^usergroup/user/(?P<id_user>[^/]+)/ugroup/(?P<id_group>[^/]+)/associate/$',
-       user_group_associate_resource.handle_request, name='user_group.associate'),
-   url(r'^usergroup/user/(?P<id_user>[^/]+)/ugroup/(?P<id_group>[^/]+)/dissociate/$',
-       user_group_dissociate_resource.handle_request, name='user_group.dissociate'),
+   #grupos
+   url(r'^ugroup/', include('networkapi.grupo.urls')),
+   url(r'^egroup/', include('networkapi.grupo.urls_egroup')),
+   url(r'^egrupo/', include('networkapi.grupo.urls_egrupo')),
 
    url(r'^perms/all/$', perms_get_all_resource.handle_request,
        name='permission.get.all'),
