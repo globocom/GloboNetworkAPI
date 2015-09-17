@@ -20,15 +20,6 @@ from django.http import HttpResponse
 
 from networkapi.vlan.resource.NetworkTypeResource import NetworkTypeResource
 
-from networkapi.equipamento.resource.BrandAddResource import BrandAddResource
-from networkapi.equipamento.resource.BrandAlterRemoveResource import BrandAlterRemoveResource
-from networkapi.equipamento.resource.BrandGetAllResource import BrandGetAllResource
-
-from networkapi.equipamento.resource.ModelAddResource import ModelAddResource
-from networkapi.equipamento.resource.ModelAlterRemoveResource import ModelAlterRemoveResource
-from networkapi.equipamento.resource.ModelGetAllResource import ModelGetAllResource
-from networkapi.equipamento.resource.ModelGetByBrandResource import ModelGetByBrandResource
-
 from networkapi.ambiente.resource.DivisionDcAddResource import DivisionDcAddResource
 from networkapi.ambiente.resource.DivisionDcAlterRemoveResource import DivisionDcAlterRemoveResource
 from networkapi.ambiente.resource.DivisionDcGetAllResource import DivisionDcGetAllResource
@@ -40,31 +31,8 @@ from networkapi.ambiente.resource.LogicalEnvironmentAlterRemoveResource import L
 from networkapi.ambiente.resource.LogicalEnvironmentGetAllResource import LogicalEnvironmentGetAllResource
 from networkapi.ambiente.resource.EnvironmentIpConfigResource import EnvironmentIpConfigResource
 
-from networkapi.ip.resource.NetworkAddResource import NetworkAddResource
-from networkapi.ip.resource.NetworkIPv4AddResource import NetworkIPv4AddResource
-from networkapi.ip.resource.NetworkIPv6AddResource import NetworkIPv6AddResource
-from networkapi.ip.resource.NetworkIPv4DeallocateResource import NetworkIPv4DeallocateResource
-from networkapi.ip.resource.NetworkIPv6DeallocateResource import NetworkIPv6DeallocateResource
-from networkapi.ip.resource.SearchIPv6EnvironmentResource import SearchIPv6EnvironmentResource
-from networkapi.ip.resource.NetworkIPv4GetResource import NetworkIPv4GetResource
-from networkapi.ip.resource.NetworkIPv6GetResource import NetworkIPv6GetResource
-from networkapi.ip.resource.IPv4DeleteResource import IPv4DeleteResource
-from networkapi.ip.resource.IPv4EditResource import IPv4EditResource
-from networkapi.ip.resource.NetworkEditResource import NetworkEditResource
-from networkapi.ip.resource.NetworkRemoveResource import NetworkRemoveResource
-
 from networkapi.usuario.resource.UserGroupAssociateResource import UserGroupAssociateResource
 from networkapi.usuario.resource.UserGroupDissociateResource import UserGroupDissociateResource
-from networkapi.usuario.resource.UsuarioGetResource import UsuarioGetResource
-from networkapi.usuario.resource.UserAddResource import UserAddResource
-from networkapi.usuario.resource.UserAlterRemoveResource import UserAlterRemoveResource
-from networkapi.usuario.resource.UserGetAllResource import UserGetAllResource
-from networkapi.usuario.resource.UserGetByIdResource import UserGetByIdResource
-
-from networkapi.usuario.resource.UsuarioChangePassResource import UsuarioChangePassResource
-from networkapi.usuario.resource.AuthenticateResource import AuthenticateResource
-from networkapi.usuario.resource.UserGetByGroupUserResource import UserGetByGroupUserResource
-from networkapi.usuario.resource.UserGetByGroupUserOutGroup import UserGetByGroupUserOutGroup
 
 from networkapi.grupo.resource.GrupoResource import GrupoEquipamentoResource, DireitoGrupoEquipamentoResource
 from networkapi.grupo.resource.AdministrativePermissionByGroupUserResource import AdministrativePermissionByGroupUserResource
@@ -89,25 +57,6 @@ from networkapi.grupovirtual.resource.GrupoVirtualResource import GroupVirtualRe
 
 from networkapi.tipoacesso.resource.TipoAcessoResource import TipoAcessoResource
 
-from networkapi.roteiro.resource.ScriptAddResource import ScriptAddResource
-from networkapi.roteiro.resource.ScriptAlterRemoveResource import ScriptAlterRemoveResource
-from networkapi.roteiro.resource.ScriptGetAllResource import ScriptGetAllResource
-from networkapi.roteiro.resource.ScriptGetScriptTypeResource import ScriptGetScriptTypeResource
-from networkapi.roteiro.resource.ScriptGetEquipmentResource import ScriptGetEquipmentResource
-
-from networkapi.roteiro.resource.ScriptTypeAddResource import ScriptTypeAddResource
-from networkapi.roteiro.resource.ScriptTypeAlterRemoveResource import ScriptTypeAlterRemoveResource
-from networkapi.roteiro.resource.ScriptTypeGetAllResource import ScriptTypeGetAllResource
-
-
-from networkapi.healthcheckexpect.resource.HealthcheckExpectResource import HealthcheckExpectResource
-from networkapi.healthcheckexpect.resource.HealthcheckAddResource import HealthcheckAddResource
-
-from networkapi.healthcheckexpect.resource.HealthcheckAddExpectStringResource import HealthcheckAddExpectStringResource
-from networkapi.healthcheckexpect.resource.HealthcheckExpectDistinctResource import HealthcheckExpectDistinctResource
-from networkapi.healthcheckexpect.resource.HealthcheckExpectGetResource import HealthcheckExpectGetResource
-
-# Filter
 from networkapi.filter.resource.FilterListAllResource import FilterListAllResource
 from networkapi.filter.resource.FilterAddResource import FilterAddResource
 from networkapi.filter.resource.FilterAlterRemoveResource import FilterAlterRemoveResource
@@ -118,9 +67,7 @@ from networkapi.filter.resource.FilterDissociateOneResource import FilterDissoci
 from networkapi.eventlog.resource.EventLogFindResource import EventLogFindResource
 from networkapi.eventlog.resource.EventLogChoiceResource import EventLogChoiceResource
 
-# Healthcheck
 from networkapi.check.CheckAction import CheckAction
-from usuario.resource.UserGetByLdapResource import UserGetByLdapResource
 
 from networkapi.rack.resource.RackAddResource import RackAddResource
 from networkapi.rack.resource.RackFindResource import RackFindResource
@@ -132,7 +79,6 @@ from networkapi.rack.resource.RackListAllResource import RackListAllResource
 from networkapi.rack.resource.RackEnvironmentResource import RackEnvironmentResource
 from networkapi.rack.resource.RackGetByEquipResource import RackGetByEquipResource
 check_action = CheckAction()
-
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -148,22 +94,6 @@ list_all_racks_resource = RackListAllResource()
 list_rack_environment_resource = RackEnvironmentResource()
 get_rack_by_equip_resource = RackGetByEquipResource()
 
-healthcheckexpect_string_resource = HealthcheckAddExpectStringResource()
-
-healthcheckexpect_distinct_resource = HealthcheckExpectDistinctResource()
-
-healthcheckexpect_get_resource = HealthcheckExpectGetResource()
-# brand_resource = MarcaResource()
-brand_add_resource = BrandAddResource()
-brand_alter_remove_resource = BrandAlterRemoveResource()
-brand_get_all_resource = BrandGetAllResource()
-
-# model_resource = ModeloResource()
-model_add_resource = ModelAddResource()
-model_alter_remove_resource = ModelAlterRemoveResource()
-model_get_all_resource = ModelGetAllResource()
-model_get_by_brand_resource = ModelGetByBrandResource()
-
 env_ip_conf_resource = EnvironmentIpConfigResource()
 
 division_dc_add_resource = DivisionDcAddResource()
@@ -178,41 +108,6 @@ logical_environment_add_resource = LogicalEnvironmentAddResource()
 logical_environment_alter_remove_resource = LogicalEnvironmentAlterRemoveResource()
 logical_environment_get_all_resource = LogicalEnvironmentGetAllResource()
 
-networkip4_get_resource = NetworkIPv4GetResource()
-networkip6_get_resource = NetworkIPv6GetResource()
-network_edit_resource = NetworkEditResource()
-
-ipv4_delete_resource = IPv4DeleteResource()
-
-ipv4_edit_resource = IPv4EditResource()
-
-
-network_add_resource = NetworkAddResource()
-network_remove_resource = NetworkRemoveResource()
-network_ipv4_add_resource = NetworkIPv4AddResource()
-network_ipv4_deallocate_resource = NetworkIPv4DeallocateResource()
-network_ipv6_add_resource = NetworkIPv6AddResource()
-network_ipv6_deallocate_resource = NetworkIPv6DeallocateResource()
-search_ipv6_environment = SearchIPv6EnvironmentResource()
-
-# equipment_script_resource = EquipamentoRoteiroResource()
-
-# script_resource = RoteiroResource()
-
-script_add_resource = ScriptAddResource()
-script_alter_remove_resource = ScriptAlterRemoveResource()
-script_get_all_resource = ScriptGetAllResource()
-script_get_script_type_resource = ScriptGetScriptTypeResource()
-script_get_equipment_resource = ScriptGetEquipmentResource()
-
-
-script_type_add_resource = ScriptTypeAddResource()
-script_type_alter_remove_resource = ScriptTypeAlterRemoveResource()
-script_type_get_all_resource = ScriptTypeGetAllResource()
-
-healthcheckexpect_resource = HealthcheckExpectResource()
-healthcheckexpect_add_resource = HealthcheckAddResource()
-
 virtual_group_resource = GroupVirtualResource()
 
 access_type_resource = TipoAcessoResource()
@@ -222,21 +117,6 @@ network_type_resource = NetworkTypeResource()
 interface_type_get_all_resource = InterfaceTypeGetAllResource()
 
 interface_channel_resource = InterfaceChannelResource()
-
-authenticate_resource = AuthenticateResource()
-
-user_add_resource = UserAddResource()
-user_alter_remove_resource = UserAlterRemoveResource()
-user_get_by_pk_resource = UserGetByIdResource()
-user_get_all_resource = UserGetAllResource()
-user_get_by_ldap_resource = UserGetByLdapResource()
-
-user_get_resource = UsuarioGetResource()
-
-user_change_pass_resource = UsuarioChangePassResource()
-
-user_get_by_group_resource = UserGetByGroupUserResource()
-user_get_by_group_out_group_resource = UserGetByGroupUserOutGroup()
 
 ugroup_get_all_resource = GroupUserGetAllResource()
 ugroup_get_by_id_resource = GroupUserGetByIdResource()
@@ -251,11 +131,8 @@ aperms_alter_remove_resource = AdministrativePermissionAlterRemoveResource()
 perms_get_all_resource = PermissionGetAllResource()
 
 egroup_resource = GrupoEquipamentoResource()
-
 egroup_remove_association_equip_resource = GrupoEquipamentoRemoveAssociationEquipResource()
-
 egroup_get_by_equip_resource = GrupoEquipamentoGetByEquipResource()
-
 egroup_get_resource = GroupEquipmentResource()
 
 user_group_associate_resource = UserGroupAssociateResource()
@@ -276,7 +153,6 @@ eventlog_choice_resource = EventLogChoiceResource()
 
 api_prefix = r'^api/'
 
-
 urlpatterns = patterns('',
     url(api_prefix, include('networkapi.api_deploy.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
@@ -289,7 +165,6 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
-   url(r'^vlan/', include('networkapi.vlan.urls')),
    url(r'^tipoacesso/$', access_type_resource.handle_request,
        name='access_type.insert.search'),
    url(r'^tipoacesso/(?P<id_tipo_acesso>[^/]+)/$',
@@ -309,6 +184,8 @@ urlpatterns += patterns('',
    url(r'^equipamentoambiente/', include('networkapi.equipamento.urls_equipamentoambiente')),
    url(r'^equipmentscript/', include('networkapi.equipamento.urls_equipmentscript')),
    url(r'^equipamentoroteiro/', include('networkapi.equipamento.urls_equipamentoroteiro')),
+   url(r'^brand/', include('networkapi.equipamento.urls_brand')),
+   url(r'^model/', include('networkapi.equipamento.urls_model')),
 
    #ambiente
    url(r'^ambiente/', include('networkapi.ambiente.urls')),
@@ -341,45 +218,22 @@ urlpatterns += patterns('',
    url(r'^logicalenvironment/(?P<id_logicalenvironment>[^/]+)/$',
        logical_environment_alter_remove_resource.handle_request, name='logical_environment.update.remove.by.pk'),
 
+   #vlan
+   url(r'^vlan/', include('networkapi.vlan.urls')),
+
    #ip
    url(r'^ip/', include('networkapi.ip.urls')),
-
-   url(r'^ip4/delete/(?P<id_ipv4>[^/]+)',
-       ipv4_delete_resource.handle_request, name='ip4.delete'),
-   url(r'^ip4/edit', ipv4_edit_resource.handle_request,
-       name="ip4.edit"),
-
    url(r'^ipv4/', include('networkapi.ip.urls_ipv4')),
    url(r'^ipv6/', include('networkapi.ip.urls_ipv6')),
+   url(r'^network/', include('networkapi.ip.urls_network')),
+   url(r'^ip4/', include('networkapi.ip.urls_ip4')),
 
-   url(r'^script/$', script_add_resource.handle_request,
-       name='script.add'),
-   url(r'^script/all/$', script_get_all_resource.handle_request,
-       name='script.get.all'),
-   url(r'^script/(?P<id_script>[^/]+)/$',
-       script_alter_remove_resource.handle_request, name='script.update.remove.by.pk'),
-   url(r'^script/scripttype/(?P<id_script_type>[^/]+)/$',
-       script_get_script_type_resource.handle_request, name='script.get.script_type'),
-   url(r'^script/equipment/(?P<id_equipment>[^/]+)/$',
-       script_get_equipment_resource.handle_request, name='script.get.equipment'),
+   #scripts
+   url(r'^script/', include('networkapi.roteiro.urls')),
+   url(r'^scripttype/', include('networkapi.roteiro.urls_scripttype')),
 
-   url(r'^scripttype/$', script_type_add_resource.handle_request,
-       name='script_type.add'),
-   url(r'^scripttype/all/$', script_type_get_all_resource.handle_request,
-       name='script_type.get.all'),
-   url(r'^scripttype/(?P<id_script_type>[^/]+)/$',
-       script_type_alter_remove_resource.handle_request, name='script_type.update.remove.by.pk'),
-
-   url(r'^healthcheckexpect/ambiente/(?P<id_amb>[^/]+)/$',
-       healthcheckexpect_resource.handle_request, name='healthcheckexpect.search.by.environment'),
-   url(r'^healthcheckexpect/add/$',
-       healthcheckexpect_add_resource.handle_request, name='healthcheckexpect.add'),
-   url(r'^healthcheckexpect/add/expect_string/$',
-       healthcheckexpect_string_resource.handle_request, name='healthcheckexpect.string.add'),
-   url(r'^healthcheckexpect/distinct/busca/$',
-       healthcheckexpect_distinct_resource.handle_request, name='healthcheckexpect.distinct'),
-   url(r'^healthcheckexpect/get/(?P<id_healthcheck>[^/]+)/$',
-       healthcheckexpect_get_resource.handle_request, name='healthcheckexpect.get.by.pk'),
+   #healthcheckexpect
+   url(r'^healthcheckexpect/', include('networkapi.healthcheckexpect.urls')),
 
    #vips
    url(r'^vip/', include('networkapi.requisicaovips.urls')),
@@ -396,42 +250,11 @@ urlpatterns += patterns('',
    url(r'^grupovirtual/$', virtual_group_resource.handle_request,
        name='virtual_group.add.remove'),
 
-   url(r'^brand/$', brand_add_resource.handle_request,
-       name='brand.add'),
-   url(r'^brand/all/$', brand_get_all_resource.handle_request,
-       name='brand.get.all'),
-   url(r'^brand/(?P<id_brand>[^/]+)/$',
-       brand_alter_remove_resource.handle_request, name='brand.update.remove.by.pk'),
-
-   url(r'^model/$', model_add_resource.handle_request,
-       name='model.add'),
-   url(r'^model/all/$', model_get_all_resource.handle_request,
-       name='model.get.all'),
-   url(r'^model/(?P<id_model>[^/]+)/$',
-       model_alter_remove_resource.handle_request, name='model.update.remove.by.pk'),
-   url(r'^model/brand/(?P<id_brand>[^/]+)/$',
-       model_get_by_brand_resource.handle_request, name='model.get.by.brand'),
-
-   url(r'^authenticate/$', authenticate_resource.handle_request,
-       name='user.authenticate'),
-   url(r'^user/$', user_add_resource.handle_request,
-       name='user.add'),
-   url(r'^usuario/get/$', user_get_resource.handle_request,
-       name='user.list.with.group'),
-   url(r'^user-change-pass/$', user_change_pass_resource.handle_request,
-       name='user.change.pass'),
-   url(r'^user/all/$', user_get_all_resource.handle_request,
-       name='user.get.all'),
-   url(r'^user/(?P<id_user>[^/]+)/$',
-       user_alter_remove_resource.handle_request, name='user.update.remove.by.pk'),
-   url(r'^user/get/(?P<id_user>[^/]+)/$',
-       user_get_by_pk_resource.handle_request, name='user.get.by.id'),
-   url(r'^user/group/(?P<id_ugroup>[^/]+)/$',
-       user_get_by_group_resource.handle_request, name='user.get.by.group'),
-   url(r'^user/out/group/(?P<id_ugroup>[^/]+)/$',
-       user_get_by_group_out_group_resource.handle_request, name='user.get.by.group.out.group'),
-   url(r'^user/get/ldap/(?P<user_name>[^/]+)/$',
-       user_get_by_ldap_resource.handle_request, name='user.get.ldap'),
+   #usario
+   url(r'^usuario/', include('networkapi.usuario.urls')),
+   url(r'^user/', include('networkapi.usuario.urls_user')),
+   url(r'^authenticate/', include('networkapi.usuario.urls_authenticate')),
+   url(r'^user-change-pass/', include('networkapi.usuario.urls_user-change-pass')),
 
    url(r'^ugroup/all/$', ugroup_get_all_resource.handle_request,
        name='ugroup.get.all'),
@@ -481,27 +304,6 @@ urlpatterns += patterns('',
        access_right_resource.handle_request, name='access_right.search.update.remove.by.pk'),
 
    url(r'^check$', check_action.check, name='check'),
-
-   url(r'^network/ipv4/id/(?P<id_rede4>[^/]+)/$',
-       networkip4_get_resource.handle_request, name='network.ip4.get.by.id'),
-   url(r'^network/ipv6/id/(?P<id_rede6>[^/]+)/$',
-       networkip6_get_resource.handle_request, name='network.ip6.get.by.id'),
-   url(r'^network/add/$', network_add_resource.handle_request,
-       name='network.add'),
-   url(r'^network/edit/$', network_edit_resource.handle_request,
-       name='network.edit'),
-   url(r'^network/create/$', network_edit_resource.handle_request,
-       name='network.create'),
-   url(r'^network/remove/$', network_remove_resource.handle_request,
-       name='network.remove'),
-   url(r'^network/ipv4/add/$', network_ipv4_add_resource.handle_request,
-       name='network.ipv4.add'),
-   url(r'^network/ipv4/(?P<id_network_ipv4>[^/]+)/deallocate/$',
-       network_ipv4_deallocate_resource.handle_request, name='network.ipv4.deallocate'),
-   url(r'^network/ipv6/add/$', network_ipv6_add_resource.handle_request,
-       name='network.ipv6.add'),
-   url(r'^network/ipv6/(?P<id_network_ipv6>[^/]+)/deallocate/$',
-       network_ipv6_deallocate_resource.handle_request, name='network.ipv6.deallocate'),
 )
 
 urlpatterns += patterns('',
@@ -519,49 +321,45 @@ urlpatterns += patterns('',
        filter_dissociate_one.handle_request, name='filter.dissociate.one'),
 )
 
-
-# Healthcheck
 urlpatterns += patterns('',
-                       url(r'^eventlog/find/$', eventlog_find_resource.handle_request,
-                           name='eventlog.find'),
-                       url(r'^eventlog/choices/$', eventlog_choice_resource.handle_request,
-                           name='eventlog.choices'),
-                       url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
-                           name='eventlog.version'),
-                       url(r'^healthcheck$',lambda _: HttpResponse("WORKING")),
-                       url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
-                           name='rack.add'),
-                       url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
-                           name='list.rack'),
-                       url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
-                           name='find.rack'),
-                       url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
-                           name='edit.rack'),
-                       url(r'^rack/(?P<id_rack>[^/]+)/$', delete_rack_resource.handle_request,
-                           name='delete.rack'),
-                       url(r'^rack/gerar-configuracao/(?P<id_rack>[^/]+)/$', gerar_config_rack_resource.handle_request,
-                           name='config.rack'),
-                       url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
-                           name='aplicar.rack'),
-                       url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
-                           name='rack.get.equip.id'),
-                       url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
-                           name='interfacetype.get'),
-                       url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
-                           name='interfacetype.get'),
-                       url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
-                           name='channel.edit'),
-                       url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
-                           name='channel.add'),
-                       url(r'^channel/delete/(?P<channel_name>[^/]+)/$', interface_channel_resource.handle_request,
-                           name='channel.delete'),
-                       url(r'^channel/get-by-name[/]?$', interface_channel_resource.handle_request,
-                           name='channel.get'),
-                       )
-
+   url(r'^eventlog/find/$', eventlog_find_resource.handle_request,
+       name='eventlog.find'),
+   url(r'^eventlog/choices/$', eventlog_choice_resource.handle_request,
+       name='eventlog.choices'),
+   url(r'^eventlog/version/$', eventlog_find_resource.handle_request,
+       name='eventlog.version'),
+   url(r'^healthcheck$',lambda _: HttpResponse("WORKING")),
+   url(r'^rack/insert[/]?$', rack_add_resource.handle_request,
+       name='rack.add'),
+   url(r'^rack/list[/]?$', list_all_racks_resource.handle_request,
+       name='list.rack'),
+   url(r'^rack/find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
+       name='find.rack'),
+   url(r'^rack/edit[/]?$', edit_rack_resource.handle_request,
+       name='edit.rack'),
+   url(r'^rack/(?P<id_rack>[^/]+)/$', delete_rack_resource.handle_request,
+       name='delete.rack'),
+   url(r'^rack/gerar-configuracao/(?P<id_rack>[^/]+)/$', gerar_config_rack_resource.handle_request,
+       name='config.rack'),
+   url(r'^rack/aplicar-config/(?P<id_rack>[^/]+)/$', aplicar_config_rack_resource.handle_request,
+       name='aplicar.rack'),
+   url(r'^rack/get-by-equip/(?P<equip_id>[^/]+)/$', get_rack_by_equip_resource.handle_request,
+       name='rack.get.equip.id'),
+   url(r'^interfacetype/get-type[/]?$', interface_type_get_all_resource.handle_request,
+       name='interfacetype.get'),
+   url(r'^rack/list-rack-environment/(?P<rack_id>[^/]+)/$', list_rack_environment_resource.handle_request,
+       name='interfacetype.get'),
+   url(r'^channel/editar[/]?$', interface_channel_resource.handle_request,
+       name='channel.edit'),
+   url(r'^channel/inserir[/]?$', interface_channel_resource.handle_request,
+       name='channel.add'),
+   url(r'^channel/delete/(?P<channel_name>[^/]+)/$', interface_channel_resource.handle_request,
+       name='channel.delete'),
+   url(r'^channel/get-by-name[/]?$', interface_channel_resource.handle_request,
+       name='channel.get'),
+)
 
 urlpatterns += patterns('networkapi.test_form.views',
-
-                        url('^test-vip[/]?$', 'test_form',
-                            name='test_form_vip',)
-                        )
+    url('^test-vip[/]?$', 'test_form',
+        name='test_form_vip',)
+)
