@@ -19,6 +19,8 @@
 from django.db import transaction
 from django.http import HttpResponse
 from httplib import *
+from rest_framework.exceptions import AuthenticationFailed
+from networkapi.api_rest.authentication import BasicAuthentication
 from networkapi.auth import authenticate
 from networkapi.error_message_utils import error_dumps
 from networkapi.usuario.models import UsuarioError
@@ -70,15 +72,7 @@ class RestResource(object):
         """
         response = None
         try:
-
-            username, password, user_ldap = self.read_user_data(request)
-
-            #self.log.debug(u'Usuário da requisição: %s.' % username)
-
-            if user_ldap is None:
-                user = authenticate(username, password)
-            else:
-                user = authenticate(username, password, user_ldap)
+            user = self.authenticate_user(request)
 
             if (user is None):
                 response = self.not_authenticated()
@@ -92,7 +86,9 @@ class RestResource(object):
                         request, user, args, **kwargs)
                 elif request.method == 'PUT':
                     response = self.handle_put(request, user, args, **kwargs)
-
+        except AuthenticationFailed, ex:
+            self.log.error(u'Authentication failed.')
+            response = self.not_authenticated()
         except (LockNotAcquiredError, OperationalError), e:
             self.log.error(u'Lock wait timeout exceeded.')
             return self.response_error(273)
@@ -137,6 +133,21 @@ class RestResource(object):
         password = request.META.get('HTTP_NETWORKAPI_PASSWORD')
         user_ldap = request.META.get('HTTP_NETWORKAPI_USERLDAP')
         return username, password, user_ldap
+
+    def authenticate_user(self, request):
+        user = None
+        username, password, user_ldap = self.read_user_data(request)
+
+        if user_ldap is None:
+            user = authenticate(username, password)
+        else:
+            user = authenticate(username, password, user_ldap)
+
+        if user is None:
+            credentials = BasicAuthentication().authenticate(request)
+            user = credentials[0] if credentials is not None else None
+
+        return user
 
     def not_authenticated(self):
         return HttpResponse(u'401 - Usuário não autenticado. Usuário e/ou senha incorretos.',

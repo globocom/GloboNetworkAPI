@@ -90,6 +90,10 @@ class ScriptAlterLimitPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute limits script for pool.'
 
+class ScriptAlterPriorityPoolMembersException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Failed to execute priority script for pool.'
+
 class ScriptAlterLimitPoolDiffMembersException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to change limits for pool. Members limit differs from pool default limit \

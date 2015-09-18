@@ -54,6 +54,7 @@ LOG_LEVEL = logging.DEBUG
 
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
+LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
 LOG_USE_STDOUT = False
 LOG_SHOW_TRACEBACK = True
 
@@ -65,7 +66,9 @@ Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 if NETWORKAPI_USE_NEWRELIC:
     import newrelic.agent
-    newrelic.agent.initialize("newrelic.ini", os.environ.get('NEW_RELIC_ENVIRONMENT', 'local'))
+    config_file_path = os.environ.get('NETWORKAPI_NEW_RELIC_CONFIG')
+    if config_file_path is not None:
+        newrelic.agent.initialize(config_file_path, os.environ.get('NETWORKAPI_NEW_RELIC_ENV', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -130,12 +133,20 @@ ADMINS = (
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
             'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+    },
+    'filters': {
+        'user_filter': {
+            '()': 'networkapi.extra_logging.filters.ExtraLoggingFilter',
+        }
     },
     'handlers': {
         'log_file': {
@@ -151,21 +162,25 @@ LOGGING = {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
         'django': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
         'django.request': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
         'django.db.backends': {
-            'level': LOG_LEVEL,
+            'level': LOG_DB_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+            'filters': ['user_filter'],
         },
     },
     'root': {
@@ -344,6 +359,7 @@ POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
 POOL_REAL_CHECK_BY_POOL = 'gerador_vips --pool %s --check_status'
 POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
 POOL_SERVICEDOWNACTION = 'gerador_vips --pool %s --servicedownaction'
+POOL_MEMBER_PRIORITIES = 'gerador_vips --pool %s --priority'
 
 # Script to Managemant Status Pool Members
 POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
@@ -462,4 +478,35 @@ USER_SCRIPTS_REL_PATH = "user_scripts/"
 USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
 #networkapi/generated_config/interface/
 USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
+
+NETWORK_CONFIG_REL_PATH = "network/"
+#/mnt/config_templates/interface/
+NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+NETWORK_CONFIG_REL_PATH
+#/mnt/tftpboot/networkapi/generated_config/interface/
+NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
+#networkapi/generated_config/interface/
+NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
 ###################
+
+
+## TESTS CONFIGS ##
+# If is running on CI: if CI=1 or running inside jenkins
+CI = os.getenv('CI', '0') == '1'
+INTEGRATION = os.getenv('CI', '0') == '1'
+INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
+
+TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
+
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--verbosity=2', '--no-byte-compile', '-d', '-s']
+if CI:
+    INSTALLED_APPS += ('django_nose',)
+    NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--exclude=.*migrations*', '--exclude-dir=./integration/',
+                  '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
+
+elif INTEGRATION:
+    TEST_DISCOVER_ROOT = None
+    NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--where-dir=./integration/',
+                  '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
+

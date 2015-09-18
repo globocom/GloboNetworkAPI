@@ -549,7 +549,7 @@ class DireitosGrupoEquipamento(BaseModel):
     @classmethod
     def search(cls, ugroup_id=None, equip_operation=None, egroup_id=None):
         try:
-            q = DireitosGrupoEquipamento.objects.all()
+            q = DireitosGrupoEquipamento.objects.select_related('egrupo').all()
 
             if ugroup_id is not None:
                 q = q.filter(ugrupo__id=ugroup_id)

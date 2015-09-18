@@ -221,6 +221,7 @@ def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, we
 def save_server_pool_member(user, sp, list_server_pool_member):
 
     list_pool_member = list()
+    old_priorities_list = list()
     # Remove empty values from list
     id_pool_member_noempty = [x['id_pool_member'] for x in list_server_pool_member if x['id_pool_member'] != '']
 
@@ -241,6 +242,7 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                 transaction.commit()
 
     if list_server_pool_member:
+        apply_new_priorities = False
         for dic in list_server_pool_member:
         #
             ip_object = None
@@ -260,17 +262,22 @@ def save_server_pool_member(user, sp, list_server_pool_member):
                 spm.identifier = dic['nome_equips']
                 spm.ip = ip_object
                 spm.ipv6 = ipv6_object
-                spm.priority = dic['priority']
                 spm.weight = dic['weight']
                 spm.limit = sp.default_limit
+                old_spm_priority = spm.priority
+                old_priorities_list.append(old_spm_priority)
+                spm.priority = dic['priority']
                 spm.port_real = dic['port_real']
                 spm.save(user)
-
+                if(old_spm_priority != spm.priority and sp.pool_created):
+                    apply_new_priorities = True
             else:
                 spm = ServerPoolMember(server_pool=sp, identifier=dic['nome_equips'], ip=ip_object, ipv6=ipv6_object,
                                        priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
                                        port_real=dic['port_real'])
                 spm.save(user)
+
+                old_priorities_list.append(dic['priority'])
 
                 #execute script to create real if pool already created
                 #commits transaction. Rolls back if script returns error
@@ -287,8 +294,19 @@ def save_server_pool_member(user, sp, list_server_pool_member):
 
                 #if sp.healthcheck_id:
                 #    spm.healthcheck = sp.healthcheck
-
             list_pool_member.append(spm)
+
+        #Applies new priority in pool - only 1 script run for all members
+        if(apply_new_priorities):
+            transaction.commit()
+            command = settings.POOL_MEMBER_PRIORITIES % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                for i in len(old_priorities_list):
+                    list_pool_member[i].priority = old_priorities_list[i]
+                    list_pool_member[i].save(user)
+                transaction.commit()
+                raise exceptions.ScriptAlterPriorityPoolMembersException()
 
     return list_pool_member
 

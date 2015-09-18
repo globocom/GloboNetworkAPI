@@ -633,7 +633,8 @@ class Ambiente(BaseModel):
     max_num_vlan_1 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_1')
     min_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='min_num_vlan_2')
     max_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_2')
-
+    vrf = models.CharField(max_length=100, null=True, default='', db_column='vrf')
+    
     log = Log('Ambiente')
 
     class Meta(BaseModel.Meta):
@@ -839,6 +840,8 @@ class Ambiente(BaseModel):
         # Remove every vlan associated with this environment
         for vlan in environment.vlan_set.all():
             try:
+                if vlan.ativada:
+                    vlan.remove(authenticated_user)
                 vlan.delete(authenticated_user)
             except VlanCantDeallocate, e:
                 raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
