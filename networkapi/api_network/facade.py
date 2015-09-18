@@ -315,7 +315,7 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 					In case of multiple gateways, they should have an IP other than the gateway registered.")
 				raise exceptions.IncorrectNetworkRouterRegistryException
 			dict_ips[equipment] = dict()
-			dict_ips[equipment]["ip"] = "%s.%s.%s.%s" % (ip.oct1, ip.oct2, ip.oct3, ip.oct4) 
+			dict_ips[equipment]["ip"] = "%s.%s.%s.%s" % (ip[0].oct1, ip[0].oct2, ip[0].oct3, ip[0].oct4) 
 			dict_ips[equipment]["prio"] = 100+equip_number
 			equip_number += 1
 	else:
@@ -382,7 +382,7 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 					In case of multiple gateways, they should have an IP other than the gateway registered.")
 				raise exceptions.IncorrectNetworkRouterRegistryException
 			dict_ips[equipment] = dict()
-			dict_ips[equipment]["ip"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8) 
+			dict_ips[equipment]["ip"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (ip[0].block1, ip[0].block2, ip[0].block3, ip[0].block4, ip[0].block5, ip[0].block6, ip[0].block7, ip[0].block8) 
 			dict_ips[equipment]["prio"] = 100+equip_number
 			equip_number += 1
 	else:
