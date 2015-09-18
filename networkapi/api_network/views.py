@@ -192,7 +192,7 @@ def networkIPv6_deploy(request, network_id):
     else:
         #TODO GET network routers
         equipment_list = Equipamento.objects.filter(
-            ipequipamento__ip__networkipv6 = networkipv6,
+            ipv6equipament__ip__networkipv6 = networkipv6,
             equipamentoambiente__ambiente = networkipv6.vlan.ambiente,
             equipamentoambiente__is_router = 1).distinct()
         if len(equipment_list) == 0:
