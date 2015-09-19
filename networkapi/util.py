@@ -505,6 +505,7 @@ def get_environment_map(environment):
         environment_map['filter_name'] = environment.filter.name
 
     environment_map['acl_path'] = environment.acl_path
+    environment_map['vrf'] = environment.vrf
     environment_map['ipv4_template'] = environment.ipv4_template
     environment_map['ipv6_template'] = environment.ipv6_template
 

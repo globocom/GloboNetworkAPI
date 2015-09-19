@@ -25,17 +25,27 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool, OptionPool, OptionPoolEnvironment
 from networkapi.settings import POOL_REAL_CHECK
 
+class HealthcheckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Healthcheck
+        fields = ('id',
+                  'identifier',
+                  'healthcheck_type',
+                  'healthcheck_request',
+                  'healthcheck_expect',
+                  'destination'
+                  )
 
 class ServerPoolDatatableSerializer(serializers.ModelSerializer):
 
-    healthcheck = serializers.RelatedField(
-        source='healthcheck.healthcheck_type'
-    )
+    # healthcheck = serializers.RelatedField(
+    #     source='healthcheck.healthcheck_type'
+    # )
 
-    environment = serializers.RelatedField(
-        source='environment.name'
-    )
+    healthcheck = HealthcheckSerializer()
 
+    environment = serializers.RelatedField(source='environment.name')
+    maxcom = serializers.CharField(source='default_limit')
 
     class Meta:
         model = ServerPool
@@ -45,7 +55,9 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
             'default_port',
             'healthcheck',
             'environment',
-            'pool_created'
+            'pool_created',
+            'lb_method',
+            'maxcom'
         )
 
 
@@ -153,17 +165,6 @@ class PoolSerializer(serializers.ModelSerializer):
             'pool_created'
         )
 
-
-class HealthcheckSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Healthcheck
-        fields = ('id',
-                  'identifier',
-                  'healthcheck_type',
-                  'healthcheck_request',
-                  'healthcheck_expect',
-                  'destination'
-                  )
 
 class EquipamentoSerializer(serializers.ModelSerializer):
     class Meta:

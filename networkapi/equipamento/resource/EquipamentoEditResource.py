@@ -256,7 +256,7 @@ class EquipamentoEditResource(RestResource):
                 destroy_cache_function([equip_id], True)
 
                 modelo = Modelo.get_by_pk(id_modelo)
-                equip.edit(user, nome, tipo_equip, modelo)
+                equip.edit(user, nome, tipo_equip, modelo, maintenance)
 
                 return self.response(dumps_networkapi({}))
 
