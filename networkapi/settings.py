@@ -154,11 +154,13 @@ LOGGING = {
             'filename': LOG_FILE,
             'formatter': 'verbose',
             'mode': 'a',
+            'filters': ['user_filter'],
         },
         'console':{
             'level':'DEBUG',
             'class':'logging.StreamHandler',
             'formatter': 'simple',
+            'filters': ['user_filter'],
         },
     },
     'loggers': {
@@ -166,7 +168,6 @@ LOGGING = {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
-            'filters': ['user_filter'],
         },
         'django': {
             'level': LOG_LEVEL,
@@ -177,7 +178,6 @@ LOGGING = {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
-            'filters': ['user_filter'],
         },
         'django.db.backends': {
             'level': LOG_DB_LEVEL,
@@ -189,7 +189,6 @@ LOGGING = {
         'level': LOG_LEVEL,
         'propagate': False,
         'handlers': ['log_file', 'console'],
-        'filters': ['user_filter'],
     },
 }
 
