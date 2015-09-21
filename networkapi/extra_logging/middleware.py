@@ -24,8 +24,6 @@ import logging
 from networkapi.extra_logging import local, REQUEST_ID_HEADER, NO_REQUEST_ID, NO_REQUEST_USER
 from networkapi.extra_logging.filters import ExtraLoggingFilter
 
-logger = logging.getLogger(__name__)
-
 import weakref
 weakref_type = type(weakref.ref(lambda: None))
 
@@ -68,6 +66,7 @@ def get_username(request):
 class ExtraLoggingMiddleware(object):
 
     FILTER = ExtraLoggingFilter
+    logger = logging.getLogger(__name__)
 
     def __init__(self, root=''):
         self.root = root
@@ -131,12 +130,23 @@ class ExtraLoggingMiddleware(object):
         return self._find_filterer_with_filter(self.find_handlers(),
                                                filter_cls)
 
+    def logger_has_filter(self, logger, filter_cls):
+        """
+        Checks if the logger has the filter class
+        """
+        for filter in logger.filters:
+            if isinstance(filter, filter_cls):
+                return True
+
+        return False
+
     def add_filter(self, f, filter_cls=None):
         """Add filter *f* to any loggers that have *filter_cls* filters."""
         if filter_cls is None:
             filter_cls = type(f)
         for logger in self.find_loggers_with_filter(filter_cls):
-            logger.addFilter(f)
+            if not self.logger_has_filter(logger, filter_cls):
+                logger.addFilter(f)
         for handler in self.find_handlers_with_filter(filter_cls):
             handler.addFilter(f)
 
@@ -157,20 +167,22 @@ class ExtraLoggingMiddleware(object):
         request.request_user = username
         request.request_path = request.get_full_path()
 
-        self.add_filter(request.logging_filter)
+        #self.add_filter(request.logging_filter)
+        if not self.logger_has_filter(self.logger, type(request.logging_filter)):
+            self.logger.addFilter(request.logging_filter)
 
-        logger.debug(u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data))
+        self.logger.debug(u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data))
 
 
     def process_response(self, request, response):
         """Removes this *request*'s filter from all loggers."""
         if 399 < response.status_code < 600:
             #logger.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
-            logger.debug(u'Requisição concluída com falha. Conteúdo: [].' )
+            self.logger.debug(u'Requisição concluída com falha. Conteúdo: [].' )
         else:
-            logger.debug(u'Requisição concluída com sucesso.')
+            self.logger.debug(u'Requisição concluída com sucesso.')
 
-        logger.debug(u'FIM da requisição.')
+        self.logger.debug(u'FIM da requisição.')
 
         f = getattr(request, 'logging_filter', None)
         if f:
@@ -179,7 +191,7 @@ class ExtraLoggingMiddleware(object):
 
     def process_exception(self, request, exception):
         """Removes this *request*'s filter from all loggers."""
-        logger.error(u'Erro não esperado.')
+        self.logger.error(u'Erro não esperado.')
         f = getattr(request, 'logging_filter', None)
         if f:
             self.remove_filter(f)
