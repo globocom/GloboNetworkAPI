@@ -20,7 +20,7 @@ from django.template import Context, Template
 import logging
 
 from networkapi.extra_logging import local, NO_REQUEST_ID
-from networkapi.ip.models import Ip, IpNotFoundError, IpEquipamento
+from networkapi.ip.models import Ip, IpNotFoundError, IpEquipamento, Ipv6Equipament, Ipv6
 from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.infrastructure import ipaddr
 from networkapi.api_network import exceptions
@@ -28,7 +28,7 @@ from networkapi.settings import NETWORK_CONFIG_FILES_PATH,\
 							 NETWORK_CONFIG_TOAPPLY_REL_PATH, NETWORK_CONFIG_TEMPLATE_PATH
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.distributedlock import distributedlock,LOCK_VLAN, \
-								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4
+								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4, LOCK_NETWORK_IPV6
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.plugins.factory import PluginFactory
 
@@ -284,12 +284,12 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 			Router equipments should have first IP of network allocated for them.")
 		raise exceptions.IncorrectRedundantGatewayRegistryException()
 
+	dict_ips = dict()
 	if networkipv4.vlan.vrf is not None and networkipv4.vlan.vrf is not '':
 		dict_ips["vrf"] = networkipv4.vlan.vrf
 	elif networkipv4.vlan.ambiente.vrf is not None:
 		dict_ips["vrf"] = networkipv4.vlan.ambiente.vrf
 
-	dict_ips = dict()
 	dict_ips["gateway"] = "%d.%d.%d.%d" % (gateway_ip.oct1, gateway_ip.oct2, gateway_ip.oct3, gateway_ip.oct4) 
 	dict_ips["ip_version"] = "IPV4"
 	dict_ips["equipments"] = dict()
@@ -309,13 +309,15 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 		dict_ips["gateway_redundancy"] = True
 		equip_number = 0
 		for equipment in equipment_list:
-			ip = IpEquipamento.objects.filter(equipamento=equipment, ip__networkipv4=networkipv4).exclude(ip=gateway_ip)
-			if ip == []:
+			ip_equip = IpEquipamento.objects.filter(equipamento=equipment, ip__networkipv4=networkipv4).exclude(ip=gateway_ip)\
+                .select_related('ip')
+			if ip_equip == []:
 				log.error("Error: Equipment IPs not correctly registered. \
 					In case of multiple gateways, they should have an IP other than the gateway registered.")
 				raise exceptions.IncorrectNetworkRouterRegistryException
+			ip = ip_equip[0].ip
 			dict_ips[equipment] = dict()
-			dict_ips[equipment]["ip"] = "%s.%s.%s.%s" % (ip[0].oct1, ip[0].oct2, ip[0].oct3, ip[0].oct4) 
+			dict_ips[equipment]["ip"] = "%s.%s.%s.%s" % (ip.oct1, ip.oct2, ip.oct3, ip.oct4)
 			dict_ips[equipment]["prio"] = 100+equip_number
 			equip_number += 1
 	else:
@@ -337,9 +339,9 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 	'''
 
 	try:
-		gateway_ip = Ip.get_by_blocks_and_net(networkipv6.block1, networkipv6.block2,
+		gateway_ip = Ipv6.get_by_blocks_and_net(networkipv6.block1, networkipv6.block2,
 			networkipv6.block3, networkipv6.block4, networkipv6.block5, networkipv6.block6,
-			networkipv6.block7, networkipv6.block8+1, networkipv6)
+			networkipv6.block7, hex(int(networkipv6.block8, 16) + 1).lstrip("0x"), networkipv6)
 	except IpNotFoundError:
 		log.error("Equipment IPs not correctly registered. \
 			Router equipments should have first IP of network allocated for them.")
@@ -351,13 +353,13 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 			Router equipments should have first IP of network allocated for them.")
 		raise exceptions.IncorrectRedundantGatewayRegistryException()
 
+	dict_ips = dict()
 	if networkipv6.vlan.vrf is not None and networkipv6.vlan.vrf is not '':
 		dict_ips["vrf"] = networkipv6.vlan.vrf
 	elif networkipv6.vlan.ambiente.vrf is not None:
 		dict_ips["vrf"] = networkipv6.vlan.ambiente.vrf
 
-	dict_ips = dict()
-	dict_ips["gateway"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (gateway_ip.block1, gateway_ip.block2, gateway_ip.block3, gateway_ip.block4, gateway_ip.block5, gateway_ip.block6, gateway_ip.block7, gateway_ip.block8) 
+	dict_ips["gateway"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (gateway_ip.block1, gateway_ip.block2, gateway_ip.block3, gateway_ip.block4, gateway_ip.block5, gateway_ip.block6, gateway_ip.block7, gateway_ip.block8)
 	dict_ips["ip_version"] = "IPV6"
 	dict_ips["equipments"] = dict()
 	dict_ips["vlan_num"] = networkipv6.vlan.num_vlan
@@ -366,7 +368,7 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 	dict_ips["mask"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (networkipv6.mask1, networkipv6.mask2, networkipv6.mask3, networkipv6.mask4, networkipv6.mask5, networkipv6.mask6, networkipv6.mask7, networkipv6.mask8)
 	dict_ips["wildmask"] = "Not used"
 
-	if _has_active_network_in_vlan(networkipv4.vlan):
+	if _has_active_network_in_vlan(networkipv6.vlan):
 		dict_ips["first_network"] = False
 	else:
 		dict_ips["first_network"] = True
@@ -376,13 +378,15 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 		dict_ips["gateway_redundancy"] = True
 		equip_number = 0
 		for equipment in equipment_list:
-			ip = Ipv6Equipament.objects.filter(equipamento=equipment, ip__networkipv6=networkipv6).exclude(ip=gateway_ip)
-			if ip == []:
+			ip_equip = Ipv6Equipament.objects.filter(equipamento=equipment, ip__networkipv6=networkipv6).exclude(ip=gateway_ip)\
+                .select_related('ip')
+			if ip_equip == []:
 				log.error("Error: Equipment IPs not correctly registered. \
 					In case of multiple gateways, they should have an IP other than the gateway registered.")
 				raise exceptions.IncorrectNetworkRouterRegistryException
+			ip = ip_equip[0].ip
 			dict_ips[equipment] = dict()
-			dict_ips[equipment]["ip"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (ip[0].block1, ip[0].block2, ip[0].block3, ip[0].block4, ip[0].block5, ip[0].block6, ip[0].block7, ip[0].block8) 
+			dict_ips[equipment]["ip"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
 			dict_ips[equipment]["prio"] = 100+equip_number
 			equip_number += 1
 	else:

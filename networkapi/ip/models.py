@@ -1435,7 +1435,7 @@ class NetworkIPv6(BaseModel):
             return NetworkIPv6.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
             raise NetworkIPv6NotFoundError(
-                e, u'Can not find a NetworkIPv4 with id = %s.' % id)
+                e, u'Can not find a NetworkIPv6 with id = %s.' % id)
         except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
