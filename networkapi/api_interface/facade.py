@@ -23,7 +23,7 @@ import re
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.settings import INTERFACE_CONFIG_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
-from networkapi.log import Log
+import logging
 from networkapi.interface.models import EnvironmentInterface
 
 from networkapi.interface.models import Interface, PortChannel
@@ -37,7 +37,7 @@ SUPPORTED_EQUIPMENT_BRANDS = ["Cisco"]
 TEMPLATE_TYPE_INT = "interface_configuration"
 TEMPLATE_TYPE_CHANNEL = "interface_channel_configuration"
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 #register = template.Library()
 

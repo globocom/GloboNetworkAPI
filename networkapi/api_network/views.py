@@ -22,7 +22,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.db.transaction import commit_on_success
 
-from networkapi.log import Log
+import logging
 from networkapi.auth import has_perm
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.admin_permission import AdminPermission
@@ -35,7 +35,7 @@ from networkapi.api_network import exceptions
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.equipamento.models import Equipamento
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['GET'])

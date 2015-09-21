@@ -21,7 +21,7 @@ from networkapi.rest import RestResource
 from networkapi.filter.models import Filter
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from django.forms.models import model_to_dict
 
 
@@ -29,7 +29,7 @@ class FilterListAllResource(RestResource):
 
     '''Class that receives requests to list all Filters.'''
 
-    log = Log('FilterListAllResource')
+    log = logging.getLogger('FilterListAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests list all Filters.

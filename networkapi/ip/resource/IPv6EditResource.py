@@ -23,7 +23,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import   IpNotAvailableError, IpEquipmentAlreadyAssociation,\
     NetworkIPv6NotFoundError, Ipv6, IpError, NetworkIPv6Error, IpNotFoundError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
@@ -32,7 +32,7 @@ from networkapi.distributedlock import distributedlock, LOCK_IPV6
 
 class IPv6EditResource(RestResource):
 
-    log = Log('IPv6EditResource')
+    log = logging.getLogger('IPv6EditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to edit an IP6.

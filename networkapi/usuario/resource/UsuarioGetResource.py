@@ -21,13 +21,13 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
-from networkapi.log import Log
+import logging
 from networkapi.usuario.models import Usuario, UsuarioGrupo, UsuarioError
 from networkapi.grupo.models import UGrupo
 
 
 class UsuarioGetResource(RestResource):
-    log = Log('UsuarioGetResource')
+    log = logging.getLogger('UsuarioGetResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET para listar Usuarios.

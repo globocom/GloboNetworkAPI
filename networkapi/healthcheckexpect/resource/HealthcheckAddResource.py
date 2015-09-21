@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize, is_valid_int_greater_zero_param
 from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckExpectError, HealthcheckEqualError
@@ -29,7 +29,7 @@ from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
 
 class HealthcheckAddResource(RestResource):
 
-    log = Log('HealthcheckAddResource.')
+    log = logging.getLogger('HealthcheckAddResource.')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add a HeltcheckExpect.

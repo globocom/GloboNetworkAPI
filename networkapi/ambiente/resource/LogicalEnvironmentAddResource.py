@@ -22,14 +22,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import AmbienteLogico, AmbienteLogicoNameDuplicatedError, AmbienteError, AmbienteLogicoNotFoundError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
 
 
 class LogicalEnvironmentAddResource(RestResource):
 
-    log = Log('LogicalEnvironmentAddResource')
+    log = logging.getLogger('LogicalEnvironmentAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Logical Environment.

@@ -34,7 +34,7 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLErro
 
 from networkapi.ip.models import IpError, IpNotFoundError, Ip
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, \
@@ -74,7 +74,7 @@ class AmbienteResource(RestResource):
 
     '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
 
-    log = Log('AmbienteResource')
+    log = logging.getLogger('AmbienteResource')
 
     CODE_MESSAGE_CONFIG_ENVIRONMENT_ALREADY_EXISTS = 302
 
@@ -645,7 +645,7 @@ class AmbienteEquipamentoResource(RestResource):
 
     '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
 
-    log = Log('AmbienteEquipamentoResource')
+    log = logging.getLogger('AmbienteEquipamentoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET para consulta de um ambiente.

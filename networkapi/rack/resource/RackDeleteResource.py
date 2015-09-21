@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError, EnvironmentRack, RackAplError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
 from networkapi.ambiente.models import Ambiente, GrupoL3
@@ -132,7 +132,7 @@ def remover_vlan_so(user, rack):
 
 class RackDeleteResource(RestResource):
 
-    log = Log('RackDeleteResource')
+    log = logging.getLogger('RackDeleteResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests POST to delete Rack.

@@ -18,7 +18,7 @@
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
@@ -54,7 +54,7 @@ def prepares_logs(log):
 
 
 class EventLogFindResource(RestResource):
-    log = Log('EventLogFindResource')
+    log = logging.getLogger('EventLogFindResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to find all logs by search parameters.

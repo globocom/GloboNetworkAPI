@@ -19,7 +19,7 @@ from __future__ import with_statement
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.settings import NETWORKIPV4_REMOVE, NETWORKIPV6_REMOVE
 from networkapi.util import is_valid_version_ip, is_valid_int_greater_zero_param
@@ -34,7 +34,7 @@ from networkapi.admin_permission import AdminPermission
 
 class NetworkRemoveResource(RestResource):
 
-    log = Log('NetworkRemoveResource')
+    log = logging.getLogger('NetworkRemoveResource')
 
     NETWORK_TYPE_V4 = 'v4'
     CODE_MESSAGE_INACTIVE_NETWORK = 363

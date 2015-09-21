@@ -24,6 +24,7 @@ import socket
 import copy
 import sys
 import re
+import logging
 
 import time
 
@@ -589,9 +590,8 @@ def deprecated(new_uri=None):
         @functools.wraps(fun)
         def inner(*args, **kwargs):
             import os
-            from networkapi.log import Log
             basename = os.path.basename(fun.func_code.co_filename)
-            log = Log(basename)
+            log = logging.getLogger(basename)
             message = "%s:%s: %s is deprecated. Use the new rest API." % (
                 basename,
                 fun.func_code.co_firstlineno + 1,

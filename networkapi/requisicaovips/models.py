@@ -23,7 +23,7 @@ from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
 from django.core.exceptions import ObjectDoesNotExist
 from _mysql_exceptions import OperationalError
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from string import upper
 from networkapi.util import is_valid_ip, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
@@ -301,7 +301,7 @@ class RequisicaoVips(BaseModel):
         related_name='rule_rollback'
     )
 
-    log = Log('RequisicaoVips')
+    log = logging.getLogger('RequisicaoVips')
 
     class Meta(BaseModel.Meta):
         db_table = u'requisicao_vips'
@@ -519,7 +519,7 @@ class RequisicaoVips(BaseModel):
         return map
 
     def set_new_variables(self, data):
-        log = Log('insert_vip_request_set_new_variables')
+        log = logging.getLogger('insert_vip_request_set_new_variables')
 
         self.variaveis = ''
 
@@ -670,7 +670,7 @@ class RequisicaoVips(BaseModel):
         @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
         '''
 
-        log = Log('insert_vip_request_set_variables')
+        log = logging.getLogger('insert_vip_request_set_variables')
 
         self.variaveis = ''
 
@@ -1816,7 +1816,7 @@ class OptionVip(BaseModel):
     nome_opcao_txt = models.CharField(
         max_length=50, blank=False, db_column='nome_opcao_txt')
 
-    log = Log('OptionVIP')
+    log = logging.getLogger('OptionVIP')
 
     class Meta(BaseModel.Meta):
         db_table = u'opcoesvip'
@@ -2011,7 +2011,7 @@ class OptionVipEnvironmentVip(BaseModel):
     option = models.ForeignKey(OptionVip, db_column='id_opcoesvip')
     environment = models.ForeignKey(EnvironmentVip, db_column='id_ambiente')
 
-    log = Log('OptionVipEnvironmentVip')
+    log = logging.getLogger('OptionVipEnvironmentVip')
 
     class Meta(BaseModel.Meta):
         db_table = u'opcoesvip_ambiente_xref'
@@ -2104,7 +2104,7 @@ class ServerPool(BaseModel):
         db_column='lb_method',
     )
 
-    log = Log('ServerPool')
+    log = logging.getLogger('ServerPool')
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool'

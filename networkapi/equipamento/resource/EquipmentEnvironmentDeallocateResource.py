@@ -24,14 +24,14 @@ from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, Equi
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import IpCantBeRemovedFromVip, IpNotFoundError, IpError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 class EquipmentEnvironmentDeallocateResource(RestResource):
 
-    log = Log('EquipmentEnvironmentDeallocateResource')
+    log = logging.getLogger('EquipmentEnvironmentDeallocateResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat Delete requests to remove related Equipment and  Environment

@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
@@ -36,7 +36,7 @@ from networkapi.ip.models import NetworkIPv4AddressNotAvailableError, IpNotAvail
 
 class VlanInsertResource(RestResource):
 
-    log = Log('VlanInsertResource')
+    log = logging.getLogger('VlanInsertResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Treat POST requests to insert vlan

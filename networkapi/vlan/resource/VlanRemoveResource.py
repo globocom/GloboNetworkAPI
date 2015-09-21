@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.vlan.models import Vlan, VlanError, VlanNotFoundError, \
@@ -35,7 +35,7 @@ from networkapi.error_message_utils import error_messages
 
 class VlanRemoveResource(RestResource):
 
-    log = Log('VlanRemoveResource')
+    log = logging.getLogger('VlanRemoveResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Handles DELETE requests to remove VLAN by ID.

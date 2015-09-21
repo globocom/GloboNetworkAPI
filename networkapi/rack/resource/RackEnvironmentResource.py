@@ -21,7 +21,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import Rack , RackError, EnvironmentRack
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import Ambiente
@@ -44,7 +44,7 @@ def get_environment_map(environment):
 
 class RackEnvironmentResource(RestResource):
 
-    log = Log('RackEnvironmentResource')
+    log = logging.getLogger('RackEnvironmentResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all Racks

@@ -30,7 +30,7 @@ from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
 from networkapi.ip.models import IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError, \
     Ip, Ipv6
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips, \
     RequisicaoVipsNotFoundError, RequisicaoVipsError, \
     InvalidFinalidadeValueError, \
@@ -51,7 +51,7 @@ from django.db import transaction
 
 class RequestVipRealEditResource(RestResource):
 
-    log = Log('RequestVipRealEditResource')
+    log = logging.getLogger('RequestVipRealEditResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """

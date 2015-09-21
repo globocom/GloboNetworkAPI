@@ -18,7 +18,7 @@
 from __future__ import with_statement
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from networkapi.log import Log
+import logging
 from networkapi.semaforo.model import Semaforo
 from networkapi.models.BaseModel import BaseModel
 from _mysql_exceptions import OperationalError
@@ -161,7 +161,7 @@ class TipoRede(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_tipo_rede')
     tipo_rede = models.CharField(max_length=100)
 
-    log = Log('TipoRede')
+    log = logging.getLogger('TipoRede')
 
     class Meta(BaseModel.Meta):
         db_table = u'tipo_rede'
@@ -201,7 +201,7 @@ class Vlan(BaseModel):
 
     from networkapi.ambiente.models import Ambiente
 
-    log = Log('Vlan')
+    log = logging.getLogger('Vlan')
 
     id = models.AutoField(primary_key=True, db_column='id_vlan')
     nome = models.CharField(unique=True, max_length=50)

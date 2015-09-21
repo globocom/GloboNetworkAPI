@@ -20,7 +20,7 @@ from __future__ import with_statement
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.grupo.models import UGrupo, GrupoError, UGrupoNameDuplicatedError, UGrupoNotFoundError
 from networkapi.exception import InvalidValueError
@@ -30,7 +30,7 @@ from networkapi.distributedlock import distributedlock, LOCK_GROUP_USER
 
 class GroupUserAlterRemoveResource(RestResource):
 
-    log = Log('GroupUserAlterRemoveResource')
+    log = logging.getLogger('GroupUserAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to edit Group User.

@@ -17,11 +17,11 @@
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.log import Log
+import logging
 from ...base import BasePlugin
 import re
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 class IOS(BasePlugin):
 

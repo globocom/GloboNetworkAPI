@@ -24,14 +24,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.grupo.models import GrupoError
-from networkapi.log import Log
+import logging
 from networkapi.usuario.models import Usuario, UsuarioNotFoundError, UsuarioError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 import hashlib
 
 
 class UsuarioChangePassResource(RestResource):
-    log = Log('UsuarioChangePassResource')
+    log = logging.getLogger('UsuarioChangePassResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Trata as requisições de POST para alterar a senha de um Usuario.

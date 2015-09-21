@@ -22,7 +22,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.tipoacesso.models import TipoAcesso, TipoAcessoError, DuplicateProtocolError, AccessTypeUsedByEquipmentError, AccessTypeNotFoundError
 from networkapi.exception import InvalidValueError
@@ -35,7 +35,7 @@ class TipoAcessoResource(RestResource):
 
     '''Class to treat GET, POST, PUT and DELETE requests to tipo_acesso table.'''
 
-    log = Log('TipoAcessoResource')
+    log = logging.getLogger('TipoAcessoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """GET requests to list all TipoAcesso.

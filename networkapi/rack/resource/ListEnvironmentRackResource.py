@@ -22,7 +22,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.rack.models import EnvironmentRack, Rack
 from django.forms.models import model_to_dict
@@ -57,7 +57,7 @@ def get_envs(ambientes, no_blocks=False):
 
 class ListEnvironmentRackResource(RestResource):
 
-    log = Log('ListEnvironmentRackResource')
+    log = logging.getLogger('ListEnvironmentRackResource')
 
     def handle_get(self, request, user, *args, **kwargs):
 

@@ -17,7 +17,7 @@
 
 from django.db import transaction
 from django.template import Context, Template
-from networkapi.log import Log
+import logging
 
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.ip.models import Ip, IpNotFoundError, IpEquipamento
@@ -33,7 +33,7 @@ from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.plugins.factory import PluginFactory
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 TEMPLATE_NETWORKv4_ACTIVATE = "ipv4_activate_network_configuration"
 TEMPLATE_NETWORKv4_DEACTIVATE = "ipv4_deactivate_network_configuration"

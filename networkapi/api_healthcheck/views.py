@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from networkapi.api_healthcheck.permissions import Write
-from networkapi.log import Log
+import logging
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_pools import exceptions
@@ -30,7 +30,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from networkapi.requisicaovips.models import ServerPool
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write))

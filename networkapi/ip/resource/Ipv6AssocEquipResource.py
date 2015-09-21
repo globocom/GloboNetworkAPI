@@ -31,7 +31,7 @@ from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkap
 
 from networkapi.ip.models import NetworkIPv6, NetworkIPv6NotFoundError, Ipv6, IpNotAvailableError, IpError, NetworkIPv6Error, IpEquipmentAlreadyAssociation, Ipv6Equipament, IpEquipmentNotFoundError, IpNotFoundError, IpRangeAlreadyAssociation
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource, UserNotAuthorizedError
 
@@ -48,7 +48,7 @@ from networkapi.infrastructure.ipaddr import AddressValueError
 
 class Ipv6AssocEquipResource(RestResource):
 
-    log = Log('Ipv6AssocEquipResource')
+    log = logging.getLogger('Ipv6AssocEquipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to associate and IPv6 to an equipment.

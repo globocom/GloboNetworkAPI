@@ -19,7 +19,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.grupo.models import UGrupo, GrupoError
 from django.forms.models import model_to_dict
@@ -27,7 +27,7 @@ from django.forms.models import model_to_dict
 
 class GroupUserGetAllResource(RestResource):
 
-    log = Log('GroupUserGetAllResource')
+    log = logging.getLogger('GroupUserGetAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all the user groups.

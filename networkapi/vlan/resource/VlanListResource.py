@@ -22,14 +22,14 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.vlan.models import Vlan, VlanError
 
 
 class VlanListResource(RestResource):
 
-    log = Log('VlanListResource')
+    log = logging.getLogger('VlanListResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles POST requests to list all VLANs.

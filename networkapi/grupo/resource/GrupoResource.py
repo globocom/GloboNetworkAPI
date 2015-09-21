@@ -26,7 +26,7 @@ from networkapi.auth import has_perm
 
 from networkapi.grupo.models import *
 
-from networkapi.log import Log
+import logging
 
 from networkapi.distributedlock import distributedlock, LOCK_GROUP_USER, LOCK_GROUP_EQUIPMENT, LOCK_PERM, LOCK_GROUP_RIGHTS
 
@@ -38,7 +38,7 @@ from networkapi.exception import InvalidValueError
 
 class GrupoEquipamentoResource(RestResource):
 
-    log = Log('GrupoEquipamentoResource')
+    log = logging.getLogger('GrupoEquipamentoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET para listar todos os grupos de equipamento.
@@ -195,7 +195,7 @@ class GrupoEquipamentoResource(RestResource):
 
 
 class DireitoGrupoEquipamentoResource(RestResource):
-    log = Log('DireitoGrupoEquipamentoResource')
+    log = logging.getLogger('DireitoGrupoEquipamentoResource')
 
     def __get_direito_map(self, direito):
         direito_map = dict()

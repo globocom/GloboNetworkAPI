@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import IpError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
@@ -35,7 +35,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP
 
 class CreateVipResource(RestResource):
 
-    log = Log('CreateVipResource')
+    log = logging.getLogger('CreateVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Treat POST requests to run script creation for vip

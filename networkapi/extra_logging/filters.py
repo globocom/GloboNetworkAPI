@@ -22,9 +22,14 @@ from networkapi.extra_logging import local, NO_REQUEST_ID, NO_REQUEST_USER, NO_R
 
 class ExtraLoggingFilter(logging.Filter):
 
-    def filter(self, record):
-        record.request_id = getattr(local, 'request_id', NO_REQUEST_ID)
-        record.request_user = getattr(local, 'request_user', NO_REQUEST_USER)
-        record.request_path = getattr(local, 'request_path', NO_REQUEST_PATH)
+    def __init__(self, request=None):
+        """Saves *request* (a WSGIRequest object) for later."""
+        self.request = request
 
+    def filter(self, record):
+        request = self.request
+
+        record.request_id = getattr(request, 'request_id', NO_REQUEST_ID)
+        record.request_path = getattr(request, 'request_path', NO_REQUEST_PATH)
+        record.request_user = getattr(request, 'request_user', NO_REQUEST_USER)
         return True

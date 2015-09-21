@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 
 from django.db import transaction
 from django.http import HttpResponse
@@ -25,7 +26,6 @@ from networkapi.auth import authenticate
 from networkapi.error_message_utils import error_dumps
 from networkapi.usuario.models import UsuarioError
 from urllib2 import *
-from networkapi.log import Log
 from _mysql_exceptions import OperationalError
 from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.distributedlock import LockNotAcquiredError
@@ -62,7 +62,7 @@ class RestResource(object):
     forma a serem acessados via requisições HTTP.
     """
 
-    log = Log('RestResource')
+    log = logging.getLogger('RestResource')
 
     @transaction.commit_manually
     def handle_request(self, request, *args, **kwargs):

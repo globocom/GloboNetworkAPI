@@ -28,7 +28,7 @@ from networkapi.roteiro.models import Roteiro
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 
@@ -216,7 +216,7 @@ class Marca(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_marca')
     nome = models.CharField(max_length=100)
 
-    log = Log('Marca')
+    log = logging.getLogger('Marca')
 
     class Meta(BaseModel.Meta):
         db_table = u'marcas'
@@ -322,7 +322,7 @@ class Modelo(BaseModel):
     nome = models.CharField(max_length=100)
     marca = models.ForeignKey(Marca, db_column='id_marca')
 
-    log = Log('Modelo')
+    log = logging.getLogger('Modelo')
 
     class Meta(BaseModel.Meta):
         db_table = u'modelos'
@@ -410,7 +410,7 @@ class TipoEquipamento(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_tipo_equipamento')
     tipo_equipamento = models.CharField(max_length=100)
 
-    log = Log('TipoEquipamento')
+    log = logging.getLogger('TipoEquipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'tipo_equipamento'
@@ -529,7 +529,7 @@ class Equipamento(BaseModel):
     grupos = models.ManyToManyField(EGrupo, through='EquipamentoGrupo')
     maintenance = models.BooleanField(db_column='maintenance')
 
-    log = Log('Equipamento')
+    log = logging.getLogger('Equipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'equipamentos'
@@ -776,7 +776,7 @@ class EquipamentoAmbiente(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     is_router = models.BooleanField(db_column='is_router')
 
-    log = Log('EquipamentoAmbiente')
+    log = logging.getLogger('EquipamentoAmbiente')
 
     class Meta(BaseModel.Meta):
         db_table = u'equip_do_ambiente'
@@ -870,7 +870,7 @@ class EquipamentoGrupo(BaseModel):
     egrupo = models.ForeignKey(EGrupo, db_column='id_egrupo')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
-    log = Log('EquipamentoGrupo')
+    log = logging.getLogger('EquipamentoGrupo')
 
     class Meta(BaseModel.Meta):
         db_table = u'equip_do_grupo'
@@ -971,7 +971,7 @@ class EquipamentoAcesso(BaseModel):
     tipo_acesso = models.ForeignKey(TipoAcesso, db_column='id_tipo_acesso')
     enable_pass = models.CharField(max_length=20, blank=True)
 
-    log = Log('EquipamentoAcesso')
+    log = logging.getLogger('EquipamentoAcesso')
 
     class Meta(BaseModel.Meta):
         db_table = u'equiptos_access'
@@ -1119,7 +1119,7 @@ class EquipamentoRoteiro(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     roteiro = models.ForeignKey(Roteiro, db_column='id_roteiros')
 
-    log = Log('EquipamentoRoteiro')
+    log = logging.getLogger('EquipamentoRoteiro')
 
     class Meta(BaseModel.Meta):
         db_table = u'equiptos_roteiros'

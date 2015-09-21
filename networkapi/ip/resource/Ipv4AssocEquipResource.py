@@ -25,7 +25,7 @@ from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4NotFoundError, Ip, IpNotAvailableError, IpError, NetworkIPv4Error, \
     NetworkIPv4, IpEquipmentAlreadyAssociation, IpEquipamento, IpEquipmentNotFoundError, IpNotFoundError, IpRangeAlreadyAssociation
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param,\
@@ -38,7 +38,7 @@ from networkapi.infrastructure.ipaddr import AddressValueError
 
 class Ipv4AssocEquipResource(RestResource):
 
-    log = Log('Ipv4AssocEquipResource')
+    log = logging.getLogger('Ipv4AssocEquipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to associate and IP to an equipment.

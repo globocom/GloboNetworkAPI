@@ -24,7 +24,7 @@ from networkapi.exception import InvalidValueError, \
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, \
@@ -34,7 +34,7 @@ from datetime import datetime
 
 class RequestVipL7RollbackResource(RestResource):
 
-    log = Log('RequestVipL7RollbackResource')
+    log = logging.getLogger('RequestVipL7RollbackResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Rollback of the filter

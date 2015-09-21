@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import Ipv6, IpError, Ip, IpNotFoundError, IP_VERSION
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_ip_ipaddr
@@ -29,7 +29,7 @@ from django.forms.models import model_to_dict
 
 class IpGetOctBlockResource(RestResource):
 
-    log = Log('IpGetOctBlockResource')
+    log = logging.getLogger('IpGetOctBlockResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to get an IPv4 or Ipv6 by oct or blocks .

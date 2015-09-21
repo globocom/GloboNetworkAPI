@@ -22,7 +22,7 @@ from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, Ambiente
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanNetworkAddressNotAvailableError, VlanError, VlanNotFoundError
@@ -33,7 +33,7 @@ from networkapi.ip.models import NetworkIPv6, ConfigEnvironmentInvalidError, Net
 
 class VlanAllocateIPv6Resorce(RestResource):
 
-    log = Log('VlanAllocateIPv6Resorce')
+    log = logging.getLogger('VlanAllocateIPv6Resorce')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to allocate a new VLAN IPv6.

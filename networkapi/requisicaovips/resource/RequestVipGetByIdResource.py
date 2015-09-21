@@ -21,7 +21,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
@@ -31,7 +31,7 @@ from networkapi.requisicaovips.models import RequisicaoVips,\
 
 class RequestVipGetByIdResource(RestResource):
 
-    log = Log('RequestVipGetByIdResource')
+    log = logging.getLogger('RequestVipGetByIdResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all Vip Requests by id.

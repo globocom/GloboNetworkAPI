@@ -17,7 +17,7 @@
 
 
 from networkapi.models.BaseModel import BaseModel
-from networkapi.log import Log
+import logging
 from django.db import models
 
 
@@ -28,7 +28,7 @@ class Configuration(BaseModel):
     IPv6_MIN = models.SmallIntegerField(db_column='ip_v6_min')
     IPv6_MAX = models.SmallIntegerField(db_column='ip_v6_max')
 
-    log = Log('Configuration')
+    log = logging.getLogger('Configuration')
 
     class Meta(BaseModel.Meta):
         db_table = u'config'

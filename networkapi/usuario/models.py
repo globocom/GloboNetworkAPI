@@ -20,7 +20,7 @@ import hashlib
 from django.db import models
 from networkapi.grupo.models import UGrupo
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
 
@@ -90,7 +90,7 @@ class Usuario(BaseModel):
     user_ldap = models.CharField(
         unique=True, max_length=45, null=True, blank=True)
 
-    log = Log('Usuario')
+    log = logging.getLogger('Usuario')
 
     class Meta(BaseModel.Meta):
         db_table = u'usuarios'
@@ -185,7 +185,7 @@ class UsuarioGrupo(BaseModel):
     usuario = models.ForeignKey(Usuario, db_column='id_user')
     ugrupo = models.ForeignKey(UGrupo, db_column='id_grupo')
 
-    log = Log('UsuarioGrupo')
+    log = logging.getLogger('UsuarioGrupo')
 
     class Meta(BaseModel.Meta):
         db_table = u'usuarios_do_grupo'

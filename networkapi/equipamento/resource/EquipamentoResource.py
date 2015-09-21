@@ -24,7 +24,7 @@ from networkapi.admin_permission import AdminPermission
 
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 
-from networkapi.log import Log
+import logging
 
 from networkapi.equipamento.models import *
 
@@ -96,7 +96,7 @@ def insert_equipment(equipment_map, user):
     @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
 
     '''
-    log = Log('insert_equipment')
+    log = logging.getLogger('insert_equipment')
 
     log.debug('EQUIPAMENTO_MAP: %s', equipment_map)
 
@@ -164,7 +164,7 @@ class EquipamentoResource(RestResource):
 
     '''Classe que trata as requisicoes de PUT,POST,GET e DELETE para a tabela equipamentos.'''
 
-    log = Log('EquipamentoResource')
+    log = logging.getLogger('EquipamentoResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Trata uma requisicao POST para inserir um equipamento.
@@ -385,7 +385,7 @@ class EquipamentoResource(RestResource):
 
 
 class EquipamentoAmbienteResource(RestResource):
-    log = Log('EquipamentoAmbienteResource')
+    log = logging.getLogger('EquipamentoAmbienteResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Trata as requisições de POST para inserir uma associação entre um Equipamento e um Ambiente.

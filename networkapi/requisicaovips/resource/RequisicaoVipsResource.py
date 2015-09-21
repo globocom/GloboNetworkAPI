@@ -28,7 +28,7 @@ from networkapi.healthcheckexpect.models import HealthcheckExpectError, Healthch
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
 from networkapi.ip.models import Ip, IpError, IpNotFoundError, \
     IpNotFoundByEquipAndVipError
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
     InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
@@ -95,7 +95,7 @@ def insert_vip_request(vip_map, user):
     @raise UserNotAuthorizedError:
     '''
 
-    log = Log('insert_vip_request')
+    log = logging.getLogger('insert_vip_request')
 
     if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.WRITE_OPERATION):
         raise UserNotAuthorizedError(
@@ -174,7 +174,7 @@ def insert_vip_request(vip_map, user):
 
 def update_vip_request(vip_id, vip_map, user):
 
-    log = Log('update_vip_request')
+    log = logging.getLogger('update_vip_request')
 
     if not has_perm(user,
                     AdminPermission.VIPS_REQUEST,
@@ -241,7 +241,7 @@ def update_vip_request(vip_id, vip_map, user):
 
 class RequisicaoVipsResource(RestResource):
 
-    log = Log('RequisicaoVipsResource')
+    log = logging.getLogger('RequisicaoVipsResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Trata as requisições de POST para inserir uma requisição de VIP.'''

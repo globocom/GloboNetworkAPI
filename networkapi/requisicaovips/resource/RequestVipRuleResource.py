@@ -20,7 +20,7 @@ from networkapi.auth import has_perm
 from networkapi.blockrules.models import BlockRules, Rule, RuleContent
 from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, AddBlockOverrideNotDefined
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, \
     RequisicaoVips, VipRequestNoBlockInRule, VipRequestBlockAlreadyInRule
 from networkapi.rest import RestResource
@@ -32,7 +32,7 @@ import re
 
 class RequestVipRuleResource(RestResource):
 
-    log = Log('RequestVipRruleResource')
+    log = logging.getLogger('RequestVipRruleResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to add block in vip rule.

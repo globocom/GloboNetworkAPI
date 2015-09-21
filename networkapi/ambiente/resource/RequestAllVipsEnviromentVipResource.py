@@ -28,7 +28,7 @@ from networkapi.auth import has_perm
 
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 
-from networkapi.log import Log
+import logging
 
 from networkapi.util import is_valid_int_greater_zero_param
 
@@ -37,7 +37,7 @@ from networkapi.exception import InvalidValueError, EnvironmentVipError, Environ
 
 class RequestAllVipsEnviromentVipResource(RestResource):
 
-    log = Log('RequestAllVipsEnviromentVipResource')
+    log = logging.getLogger('RequestAllVipsEnviromentVipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all the VIPs related to Environment VIP. 

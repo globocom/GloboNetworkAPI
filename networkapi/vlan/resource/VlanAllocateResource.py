@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.vlan.models import Vlan, VlanError, VlanNameDuplicatedError, VlanNumberNotAvailableError
@@ -32,7 +32,7 @@ from django.forms.models import model_to_dict
 
 class VlanAllocateResource(RestResource):
 
-    log = Log('VlanAllocateResource')
+    log = logging.getLogger('VlanAllocateResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to create new VLAN without add NetworkIPv4.

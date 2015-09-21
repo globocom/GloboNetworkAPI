@@ -23,7 +23,7 @@ from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import IpError, IpNotFoundError, IP_VERSION, IpNotFoundByEquipAndVipError
 from networkapi.equipamento.models import EquipamentoNotFoundError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_ipv4, is_valid_ipv6, is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_ip_ipaddr, is_valid_regex
 from networkapi.equipamento.models import Equipamento
@@ -33,7 +33,7 @@ from networkapi.requisicaovips.models import RequisicaoVips
 
 class RequestVipRealValidResource(RestResource):
 
-    log = Log('RequestVipRealValidResource')
+    log = logging.getLogger('RequestVipRealValidResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to valid Real server.

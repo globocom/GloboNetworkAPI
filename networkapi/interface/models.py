@@ -18,7 +18,7 @@
 
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_regex
 from networkapi.exception import InvalidValueError
@@ -108,7 +108,7 @@ class TipoInterface(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_tipo_interface')
     tipo = models.CharField(unique=True, max_length=20)
 
-    log = Log('Tipo de Interface')
+    log = logging.getLogger('Tipo de Interface')
 
     class Meta(BaseModel.Meta):
         db_table = u'tipo_interface'
@@ -141,7 +141,7 @@ class TipoInterface(BaseModel):
 
 class PortChannel(BaseModel):
 
-    log = Log('PortChannel')
+    log = logging.getLogger('PortChannel')
 
     id = models.AutoField(primary_key=True, db_column='id_port_channel')
     nome = models.CharField(max_length=10, unique=True)
@@ -221,7 +221,7 @@ class Interface(BaseModel):
     tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
     channel = models.ForeignKey(PortChannel, db_column='id_channel', blank=True, null=True)
 
-    log = Log('Interface')
+    log = logging.getLogger('Interface')
 
     class Meta(BaseModel.Meta):
         db_table = u'interfaces'
@@ -706,7 +706,7 @@ class Interface(BaseModel):
 
 class EnvironmentInterface(BaseModel):
 
-    log = Log('EnvironmentInterface')
+    log = logging.getLogger('EnvironmentInterface')
 
     id = models.AutoField(primary_key=True, db_column='id_int_ambiente')
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')

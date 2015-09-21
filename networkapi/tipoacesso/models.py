@@ -17,7 +17,7 @@
 
 from __future__ import with_statement
 from django.db import models
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from django.core.exceptions import ObjectDoesNotExist
 from networkapi.distributedlock import distributedlock, LOCK_TYPE_ACCESS
@@ -67,7 +67,7 @@ class TipoAcesso(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_tipo_acesso')
     protocolo = models.CharField(unique=True, max_length=45)
 
-    log = Log('TipoAcesso')
+    log = logging.getLogger('TipoAcesso')
 
     class Meta(BaseModel.Meta):
         db_table = u'tipo_acesso'

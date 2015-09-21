@@ -19,7 +19,7 @@ from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from networkapi.log import Log
+import logging
 from networkapi.api_vlan.permissions import Write
 from networkapi.vlan.models import Vlan
 from networkapi.api_vlan import exceptions
@@ -27,7 +27,7 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vlan import facade
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['GET'])

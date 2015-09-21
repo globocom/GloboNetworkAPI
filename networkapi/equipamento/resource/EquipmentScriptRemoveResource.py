@@ -24,14 +24,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento, EquipamentoRoteiro, EquipamentoRoteiroNotFoundError
 from networkapi.roteiro.models import Roteiro, RoteiroError, RoteiroNotFoundError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 class EquipmentScriptRemoveResource(RestResource):
 
-    log = Log('EquipmentScriptRemoveResource')
+    log = logging.getLogger('EquipmentScriptRemoveResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests DELETE to remove Equipment Script.

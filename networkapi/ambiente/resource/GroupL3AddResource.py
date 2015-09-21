@@ -22,14 +22,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import GrupoL3, GrupoL3NameDuplicatedError, AmbienteError, GroupL3NotFoundError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
 
 
 class GroupL3AddResource(RestResource):
 
-    log = Log('GroupL3AddResource')
+    log = logging.getLogger('GroupL3AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Group l3.

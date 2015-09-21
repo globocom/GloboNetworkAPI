@@ -19,7 +19,6 @@
 import os
 import sys
 import logging
-from networkapi.log import Log
 
 reload(sys)
 
@@ -62,7 +61,7 @@ LOG_SHOW_TRACEBACK = True
 # O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
 # O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
 # O terceiro parâmetro é o nível de detalhamento do Log.
-Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
+#Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 if NETWORKAPI_USE_NEWRELIC:
     import newrelic.agent
@@ -140,7 +139,7 @@ LOGGING = {
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
         'simple': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+            'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
         },
     },
     'filters': {
@@ -156,19 +155,22 @@ LOGGING = {
             'formatter': 'verbose',
             'mode': 'a',
         },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'simple'
+        },
     },
     'loggers': {
         'default': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
-            'filters': ['user_filter'],
         },
         'django': {
             'level': LOG_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
-            'filters': ['user_filter'],
         },
         'django.request': {
             'level': LOG_LEVEL,
@@ -180,13 +182,12 @@ LOGGING = {
             'level': LOG_DB_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
-            'filters': ['user_filter'],
         },
     },
     'root': {
         'level': LOG_LEVEL,
         'propagate': False,
-        'handlers': ['log_file'],
+        'handlers': ['log_file', 'console'],
     },
 }
 

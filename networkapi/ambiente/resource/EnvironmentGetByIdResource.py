@@ -21,7 +21,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, get_environment_map
 from networkapi.exception import InvalidValueError
@@ -29,7 +29,7 @@ from networkapi.exception import InvalidValueError
 
 class EnvironmentGetByIdResource(RestResource):
 
-    log = Log('EnvironmentGetByIdResource')
+    log = logging.getLogger('EnvironmentGetByIdResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handle GET requests to get Environment by id.

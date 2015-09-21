@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
 from networkapi.exception import InvalidValueError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.grupo.models import UGrupo, GrupoError, UGrupoNameDuplicatedError,\
     PermissaoAdministrativa, Permission
@@ -31,7 +31,7 @@ from networkapi.settings import ASSOCIATE_PERMISSION_AUTOMATICALLY,\
 
 class GroupUserAddResource(RestResource):
 
-    log = Log('GroupUserAddResource')
+    log = logging.getLogger('GroupUserAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat POST request to add new user group.

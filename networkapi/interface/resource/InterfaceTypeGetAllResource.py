@@ -19,7 +19,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.interface.models import TipoInterface
 from django.forms.models import model_to_dict
@@ -29,7 +29,7 @@ from networkapi.exception import InvalidValueError
 
 class InterfaceTypeGetAllResource(RestResource):
 
-    log = Log('InterfaceTypeGetAllResource')
+    log = logging.getLogger('InterfaceTypeGetAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all .

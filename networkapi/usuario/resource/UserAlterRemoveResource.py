@@ -24,14 +24,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.usuario.models import Usuario, UsuarioError, UsuarioNameDuplicatedError, UsuarioNotFoundError, UsuarioHasEventOrGrupoError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_boolean_param, convert_string_or_int_to_boolean, is_valid_string_minsize, is_valid_string_maxsize, is_valid_email
 
 
 class UserAlterRemoveResource(RestResource):
 
-    log = Log('UserAlterRemoveResource')
+    log = logging.getLogger('UserAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to edit User.

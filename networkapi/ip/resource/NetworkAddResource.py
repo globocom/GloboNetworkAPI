@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4, NetworkIPv4AddressNotAvailableError, NetworkIPv6, IpError, NetworkIPv6Error, NetworkIPv4Error, NetworkIPv6AddressNotAvailableError, NetworkIpAddressNotAvailableError, NetworkIPRangeEnvError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, \
     destroy_cache_function
@@ -40,7 +40,7 @@ from networkapi.ip.models import Ip, Ipv6, IpEquipamento, Ipv6Equipament
 
 class NetworkAddResource(RestResource):
 
-    log = Log('NetworkAddResource')
+    log = logging.getLogger('NetworkAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat POST requests to add new Network

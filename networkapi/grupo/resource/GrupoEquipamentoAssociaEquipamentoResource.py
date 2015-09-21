@@ -24,7 +24,7 @@ from networkapi.admin_permission import AdminPermission
 
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 
-from networkapi.log import Log
+import logging
 
 from networkapi.equipamento.models import *
 
@@ -40,7 +40,7 @@ import re
 
 class GrupoEquipamentoAssociaEquipamentoResource(RestResource):
 
-    log = Log('EquipamentoGrupoAssociaEquipamentoResource')
+    log = logging.getLogger('EquipamentoGrupoAssociaEquipamentoResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Trata uma requisicao POST para inserir um associao entre grupo de equipamento e equipamento.

@@ -18,9 +18,9 @@
 import logging
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi import settings
-from networkapi.log import Log
+import logging
 
-log = Log('testing')
+log = logging.getLogger('testing')
 
 
 def show_sql(sql=True):

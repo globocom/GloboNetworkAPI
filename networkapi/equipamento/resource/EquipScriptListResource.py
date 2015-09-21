@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
 from networkapi.exception import InvalidValueError
@@ -30,7 +30,7 @@ from networkapi.util import is_valid_string_maxsize
 
 class EquipScriptListResource(RestResource):
 
-    log = Log('EquipScriptListResource')
+    log = logging.getLogger('EquipScriptListResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to list all equip scripts by equipment name.

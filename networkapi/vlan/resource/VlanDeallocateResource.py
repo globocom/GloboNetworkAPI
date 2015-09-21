@@ -23,7 +23,7 @@ from networkapi.ip.models import IpCantBeRemovedFromVip, IpCantRemoveFromServerP
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_int_greater_zero_param,\
     destroy_cache_function, mount_ipv4_string, mount_ipv6_string
 from networkapi.exception import InvalidValueError
@@ -35,7 +35,7 @@ from networkapi.requisicaovips.models import ServerPoolMember
 
 class VlanDeallocateResource(RestResource):
 
-    log = Log('VlanDeallocateResource')
+    log = logging.getLogger('VlanDeallocateResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests DELETE to deallocate all relationships between Vlan.

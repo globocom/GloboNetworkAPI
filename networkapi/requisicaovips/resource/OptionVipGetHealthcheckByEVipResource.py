@@ -16,7 +16,7 @@
 # limitations under the License.
 
 
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
@@ -29,7 +29,7 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi
 
 class OptionVipGetHealthcheckByEVipResource(RestResource):
 
-    log = Log('OptionVipGetHealthcheckByEVipResource')
+    log = logging.getLogger('OptionVipGetHealthcheckByEVipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all healthcheck of the Option VIP by Environment Vip.

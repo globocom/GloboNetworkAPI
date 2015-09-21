@@ -22,14 +22,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoRoteiroDuplicatedError, EquipamentoError, Equipamento, EquipamentoRoteiro
 from networkapi.roteiro.models import Roteiro, RoteiroError, RoteiroNotFoundError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 class EquipmentScriptAddResource(RestResource):
 
-    log = Log('EquipmentScriptAddResource')
+    log = logging.getLogger('EquipmentScriptAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Equipment Script.

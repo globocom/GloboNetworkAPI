@@ -21,7 +21,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import EnvironmentVip
@@ -29,7 +29,7 @@ from networkapi.ambiente.models import EnvironmentVip
 
 class EnvironmentVipGetFinalityResource(RestResource):
 
-    log = Log('EnvironmentVipGetFinalityResource')
+    log = logging.getLogger('EnvironmentVipGetFinalityResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all finalitys of environment VIP.

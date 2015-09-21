@@ -21,7 +21,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 
@@ -32,7 +32,7 @@ from networkapi.util import is_valid_int_greater_equal_zero_param
 
 class EnvironmentSetTemplateResource(RestResource):
 
-    log = Log('EnvironmentSetTemplateResource')
+    log = logging.getLogger('EnvironmentSetTemplateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Handle POST requests to get Environments by template name.

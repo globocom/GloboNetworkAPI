@@ -21,7 +21,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.usuario.models import Usuario, UsuarioError, UsuarioNotFoundError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is_valid_boolean_param, convert_string_or_int_to_boolean
 from networkapi.exception import InvalidValueError
 from django.forms.models import model_to_dict
@@ -29,7 +29,7 @@ from django.forms.models import model_to_dict
 
 class AuthenticateResource(RestResource):
 
-    log = Log('AuthenticateResource')
+    log = logging.getLogger('AuthenticateResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to authenticate to user.

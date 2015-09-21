@@ -23,14 +23,14 @@ from networkapi.distributedlock import distributedlock, LOCK_LOGICAL_ENVIRONMENT
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import AmbienteLogico, AmbienteLogicoNameDuplicatedError, AmbienteError, AmbienteLogicoNotFoundError, AmbienteLogicoUsedByEnvironmentError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
 
 
 class LogicalEnvironmentAlterRemoveResource(RestResource):
 
-    log = Log('LogicalEnvironmentAlterRemoveResource')
+    log = logging.getLogger('LogicalEnvironmentAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to edit Logical Environment.

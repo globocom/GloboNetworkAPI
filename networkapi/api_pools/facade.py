@@ -29,9 +29,9 @@ from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
 
 from networkapi.ambiente.models import IP_VERSION
-from networkapi.log import Log
+import logging
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 #Todo
 #Not to be used alone like this

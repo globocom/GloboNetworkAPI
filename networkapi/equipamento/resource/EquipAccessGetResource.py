@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.equipamento.models import EquipamentoAccessNotFoundError, EquipamentoError
 from networkapi.exception import InvalidValueError
@@ -31,7 +31,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 
 class EquipAccessGetResource(RestResource):
 
-    log = Log('EquipAccessGetResource')
+    log = logging.getLogger('EquipAccessGetResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to list all equip access by access identifier.
