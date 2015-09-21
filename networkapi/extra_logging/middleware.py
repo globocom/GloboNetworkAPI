@@ -168,8 +168,8 @@ class ExtraLoggingMiddleware(object):
         request.request_path = request.get_full_path()
 
         #self.add_filter(request.logging_filter)
-        if not self.logger_has_filter(self.logger, type(request.logging_filter)):
-            self.logger.addFilter(request.logging_filter)
+        # if not self.logger_has_filter(self.logger, type(request.logging_filter)):
+        #     self.logger.addFilter(request.logging_filter)
 
         self.logger.debug(u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data))
 
