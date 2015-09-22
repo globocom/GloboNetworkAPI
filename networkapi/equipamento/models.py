@@ -126,6 +126,22 @@ class ModeloNotFoundError(EquipamentoError):
         EquipamentoError.__init__(self, cause, message)
 
 
+class ModeloRoteiroDuplicatedError(EquipamentoError):
+
+    """Retorna exceção quando o modelo_roteiro já existe."""
+
+    def __init__(self, cause, message=None):
+        EquipamentoError.__init__(self, cause, message)
+
+
+class ModeloRoteiroNotFoundError(EquipamentoError):
+
+    """Retorna exceção para pesquisa de modelo_roteiro."""
+
+    def __init__(self, cause, message=None):
+        EquipamentoError.__init__(self, cause, message)
+
+
 class MarcaNotFoundError(EquipamentoError):
 
     """Retorna exceção para pesquisa de modelo de equipamento por chave primária."""
@@ -1208,3 +1224,40 @@ class EquipamentoRoteiro(BaseModel):
                 u'Falha ao remover uma associação entre um Equipamento e um Roteiro.')
             raise EquipamentoError(
                 e, u'Falha ao remover uma associação entre um Equipamento e um Roteiro.')
+
+
+class ModeloRoteiro(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id_modelo_roteiro')
+    modelo = models.ForeignKey(Modelo, db_column='id_modelo')
+    roteiro = models.ForeignKey(Roteiro, db_column='id_roteiro')
+
+    log = Log('ModeloRoteiro')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'modelo_roteiro'
+        managed = True
+        unique_together = ('modelo', 'roteiro')
+
+    def create(self, authenticated_user):
+        ''' Insere uma nova associação entre um Modelo e um Roteiro.
+            @return: Nothing
+            @raise RoteiroNotFoundError: Roteiro não cadastrado.
+            @raise RoteiroError: Falha ao pesquisar o roteiro.
+            @raise ModeloRoteiroDuplicatedError: Equipamento já está associado ao roteiro.
+            @raise ModeloError: Falha ao inserir o modelo no roteiro.
+        '''
+        self.modelo = Modelo().get_by_pk(self.modelo.id)
+        self.roteiro = Roteiro.get_by_pk(self.roteiro.id)
+
+        try:
+            try:
+                ModeloRoteiro.objects.get(modelo__id=self.modelo.id)
+                raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
+            except ObjectDoesNotExist:
+                pass
+            self.save(authenticated_user)
+        except ModeloRoteiroDuplicatedError, e:
+            raise e
+        except Exception, e:
+            self.log.error(u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))
+            raise EquipamentoError(e, u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))

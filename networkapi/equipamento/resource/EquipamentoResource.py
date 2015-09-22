@@ -17,32 +17,30 @@
 
 from __future__ import with_statement
 from networkapi.rest import RestResource, UserNotAuthorizedError
-
 from networkapi.auth import has_perm
-
 from networkapi.admin_permission import AdminPermission
-
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
 from networkapi.log import Log
-
 from networkapi.equipamento.models import *
-
 from networkapi.roteiro.models import *
-
 from networkapi.ambiente.models import *
-
-from networkapi.ip.models import IpCantBeRemovedFromVip, IpEquipamento,\
-    Ipv6Equipament
-
+from networkapi.ip.models import IpCantBeRemovedFromVip, IpEquipamento, Ipv6Equipament
 from networkapi.grupo.models import EGrupoNotFoundError, GrupoError
-
 from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT, LOCK_BRAND, LOCK_MODEL, LOCK_EQUIPMENT_SCRIPT, LOCK_EQUIPMENT_ENVIRONMENT
-
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize,\
-    destroy_cache_function, is_valid_boolean_param
-
+                            destroy_cache_function, is_valid_boolean_param
 from networkapi.exception import InvalidValueError
+
+def add_script(user, equipamento):
+    try:
+        modelo_roteiro = ModeloRoteiro.objects.filter(modelo__id=equipamento.modelo.id)
+        for rot in modelo_roteiro:
+            equip_roteiro = EquipamentoRoteiro()
+            equip_roteiro.roteiro = rot.roteiro
+            equip_roteiro.equipamento = equipamento
+            equip_roteiro.create(user)
+    except:
+        pass
 
 
 def remove_equipment(equipment_id, user):
@@ -201,6 +199,8 @@ class EquipamentoResource(RestResource):
 
                 networkapi_map['equipamento'] = equipment_map
                 networkapi_map['equipamento_grupo'] = equipment_group_map
+
+                add_script(user, response[2])
 
                 return self.response(dumps_networkapi(networkapi_map))
             else:
