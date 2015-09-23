@@ -18,6 +18,7 @@
 from __future__ import with_statement
 from django.db import models
 from django.db.models import Q
+from networkapi.util.decorators import cached_property
 from networkapi.healthcheckexpect.models import HealthcheckExpect
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
@@ -2133,8 +2134,7 @@ class ServerPoolMember(BaseModel):
         db_table = u'server_pool_member'
         managed = True
 
-    # TODO: cache property with decorator
-    @property
+    @cached_property
     def equipment(self):
         ipv4 = self.ip
         ipv6 = self.ipv6
@@ -2146,9 +2146,9 @@ class ServerPoolMember(BaseModel):
                 return ipequip.equipamento
 
         ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
-        equipment = ip_equipment_obj.equipamento
+        equipamento = ip_equipment_obj.equipamento
 
-        return equipment
+        return equipamento
 
     def _get_last_status_update_formated(self):
         formated = None
