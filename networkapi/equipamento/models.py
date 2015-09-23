@@ -1231,7 +1231,7 @@ class ModeloRoteiro(BaseModel):
     modelo = models.ForeignKey(Modelo, db_column='id_modelo')
     roteiro = models.ForeignKey(Roteiro, db_column='id_roteiro')
 
-    log = Log('ModeloRoteiro')
+    log = logging.getLogger('ModeloRoteiro')
 
     class Meta(BaseModel.Meta):
         db_table = u'modelo_roteiro'
