@@ -2133,6 +2133,7 @@ class ServerPoolMember(BaseModel):
         db_table = u'server_pool_member'
         managed = True
 
+    # TODO: cache property with decorator
     @property
     def equipment(self):
         ipv4 = self.ip
