@@ -121,7 +121,7 @@ def aplicar(rack):
 
 def remover_vlan_so(user, rack):
 
-    nome = "VLAN_SO_"+rack.nome
+    nome = "OOB_SO_"+rack.nome
 
     vlan = Vlan()
     try:
