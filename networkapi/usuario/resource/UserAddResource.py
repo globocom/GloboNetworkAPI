@@ -107,7 +107,7 @@ class UserAddResource(RestResource):
 
             # set variables
             usr.user = username
-            usr.pwd = hashlib.md5(password).hexdigest()
+            usr.pwd = Usuario.encode_password(password)
             usr.nome = name
             usr.email = email
             usr.ativo = True

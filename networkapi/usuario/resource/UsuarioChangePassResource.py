@@ -78,7 +78,7 @@ class UsuarioChangePassResource(RestResource):
             with distributedlock(LOCK_USER % id_user):
 
                 # set variable
-                usr.pwd = hashlib.md5(password).hexdigest()
+                usr.pwd = Usuario.encode_password(password)
 
                 try:
                     # update User

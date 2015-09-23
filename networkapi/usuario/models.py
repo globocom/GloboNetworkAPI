@@ -104,6 +104,10 @@ class Usuario(BaseModel):
         )
 
     @classmethod
+    def encode_password(cls, pwd):
+        return hashlib.md5(pwd).hexdigest()
+
+    @classmethod
     def get_by_pk(cls, pk):
         """"Get  User by pk.
 
@@ -167,7 +171,7 @@ class Usuario(BaseModel):
         Retorna apenas usuário ativo.
         '''
         try:
-            password = hashlib.md5(password).hexdigest()
+            password = Usuario.encode_password(password)
             return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
         except ObjectDoesNotExist:
             self.log.error(u'Usuário não autenticado ou inativo: %s', username)
