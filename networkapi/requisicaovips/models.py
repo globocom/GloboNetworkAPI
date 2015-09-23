@@ -2133,6 +2133,22 @@ class ServerPoolMember(BaseModel):
         db_table = u'server_pool_member'
         managed = True
 
+    @property
+    def equipment(self):
+        ipv4 = self.ip
+        ipv6 = self.ipv6
+
+        ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
+
+        for ipequip in ip_equipment_set.select_related():
+            if ipequip.equipamento.nome == self.identifier:
+                return ipequip.equipamento
+
+        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+        equipment = ip_equipment_obj.equipamento
+
+        return equipment
+
     def _get_last_status_update_formated(self):
         formated = None
         if self.last_status_update:
