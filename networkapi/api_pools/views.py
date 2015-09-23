@@ -477,7 +477,7 @@ def get_by_pk(request, id_server_pool):
         raise exceptions.PoolDoesNotExistException()
 
     except Exception, exception:
-        log.error(exception)
+        log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
 
