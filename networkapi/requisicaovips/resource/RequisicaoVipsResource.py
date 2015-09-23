@@ -35,8 +35,7 @@ from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeVa
     InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError, \
     ServerPool, VipPortToPool
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int, \
-    deprecated
+from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from django.forms.models import model_to_dict
 
@@ -323,7 +322,7 @@ class RequisicaoVipsResource(RestResource):
             return self.not_authorized()
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError):
             return self.response_error(1)
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
 
     def handle_get(self, request, user, *args, **kwargs):
