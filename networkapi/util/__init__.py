@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from __future__ import absolute_import, unicode_literals
 from hashlib import sha1
 from django.core.cache import cache
 import warnings
@@ -31,6 +31,8 @@ import time
 from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
 from django.forms.models import model_to_dict
 from django.core import validators
+
+from .decorators import deprecated
 
 LOCK = 'LOCK'
 
@@ -580,28 +582,3 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
 
     return True
 
-
-def deprecated(new_uri=None):
-    """This is a decorator which can be used to mark functions
-        as deprecated. It will result in a warning being emitted
-        when the function is used.
-    """
-    def outer(fun):
-        @functools.wraps(fun)
-        def inner(*args, **kwargs):
-            import os
-            basename = os.path.basename(fun.func_code.co_filename)
-            log = logging.getLogger(basename)
-            message = "%s:%s: %s is deprecated. Use the new rest API." % (
-                basename,
-                fun.func_code.co_firstlineno + 1,
-                fun.__name__,
-            )
-
-            if new_uri:
-                message += " Uri to access: %s" % new_uri
-
-            log.warning(message)
-            return fun(*args, **kwargs)
-        return inner
-    return outer
