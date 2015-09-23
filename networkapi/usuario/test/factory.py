@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import factory
-import datetime
+import logging
 
-from .. import models
+LOG = logging.getLogger(__name__)
+
+from networkapi.usuario import models
 
 class UGrupoFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.UGrupo
@@ -15,6 +17,24 @@ class UGrupoFactory(factory.DjangoModelFactory):
     exclusao = 'S'
 
 class UsuarioFactory(factory.DjangoModelFactory):
+    """
+    usr = Usuario()
+
+    # set variables
+    usr.user = username
+    usr.pwd = hashlib.md5(password).hexdigest()
+    usr.nome = name
+    usr.email = email
+    usr.ativo = True
+    usr.user_ldap = user_ldap
+
+    try:
+        # save User
+        usr.save(user)
+    except Exception, e:
+        self.log.error(u'Failed to save the user.')
+        raise UsuarioError(e, u'Failed to save the user.')
+    """
     FACTORY_FOR = models.Usuario
 
     user = factory.Sequence(lambda n: 'user-{0}'.format(n))
@@ -22,7 +42,31 @@ class UsuarioFactory(factory.DjangoModelFactory):
     nome = factory.Sequence(lambda n: 'user-{0}-nome'.format(n))
     ativo = True
     email = factory.Sequence(lambda n: 'user-{0}@email.com'.format(n))
-    user_ldap = factory.Sequence(lambda n: 'user-{0}-ldap'.format(n))
+    user_ldap = None
+
+    @classmethod
+    def _create(cls, target_class, *args, **kwargs):
+        """Create an instance of the model, and save it to the database."""
+        manager = cls._get_manager(target_class)
+
+        if cls.FACTORY_DJANGO_GET_OR_CREATE:
+            return cls._get_or_create(target_class, *args, **kwargs)
+
+        usr = models.Usuario()
+
+        # set variables
+        usr.user = kwargs.get('user')
+        usr.pwd = kwargs.get('pwd')
+        usr.nome = kwargs.get('nome')
+        usr.email = kwargs.get('email')
+        usr.ativo = kwargs.get('ativo')
+        usr.user_ldap = kwargs.get('user_ldap')
+
+        try:
+            # save User
+            usr.save(None)
+        except Exception, e:
+            LOG.exception(u"Failed to save the user {0}.".format(usr))
 
     @factory.post_generation
     def grupos(self, create, extracted, **kwargs):
