@@ -255,6 +255,8 @@ def _generate_template_dict(dict_ips, equipment):
 	key_dict["NETWORK_WILDMASK"] = dict_ips["wildmask"]
 	key_dict["IP_VERSION"] = dict_ips["ip_version"]
 	key_dict["FIRST_NETWORK"] = dict_ips["first_network"]
+	if 'vrf' in dict_ips.keys():
+		key_dict["VRF"] = dict_ips["vrf"]
 	#key_dict["ACL_IN"] = ""
 	#key_dict["ACL_OUT"] = ""
 
@@ -287,7 +289,7 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 	dict_ips = dict()
 	if networkipv4.vlan.vrf is not None and networkipv4.vlan.vrf is not '':
 		dict_ips["vrf"] = networkipv4.vlan.vrf
-	elif networkipv4.vlan.ambiente.vrf is not None:
+	elif networkipv4.vlan.ambiente.vrf is not None and networkipv4.vlan.ambiente.vrf is not '':
 		dict_ips["vrf"] = networkipv4.vlan.ambiente.vrf
 
 	dict_ips["gateway"] = "%d.%d.%d.%d" % (gateway_ip.oct1, gateway_ip.oct2, gateway_ip.oct3, gateway_ip.oct4) 
@@ -341,7 +343,7 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 	try:
 		gateway_ip = Ipv6.get_by_blocks_and_net(networkipv6.block1, networkipv6.block2,
 			networkipv6.block3, networkipv6.block4, networkipv6.block5, networkipv6.block6,
-			networkipv6.block7, hex(int(networkipv6.block8, 16) + 1).lstrip("0x"), networkipv6)
+			networkipv6.block7, "{0:0{1}x}".format(int(networkipv6.block8, 16) + 1,4), networkipv6)
 	except IpNotFoundError:
 		log.error("Equipment IPs not correctly registered. \
 			Router equipments should have first IP of network allocated for them.")
@@ -359,13 +361,13 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 	elif networkipv6.vlan.ambiente.vrf is not None:
 		dict_ips["vrf"] = networkipv6.vlan.ambiente.vrf
 
-	dict_ips["gateway"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (gateway_ip.block1, gateway_ip.block2, gateway_ip.block3, gateway_ip.block4, gateway_ip.block5, gateway_ip.block6, gateway_ip.block7, gateway_ip.block8)
+	dict_ips["gateway"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (gateway_ip.block1, gateway_ip.block2, gateway_ip.block3, gateway_ip.block4, gateway_ip.block5, gateway_ip.block6, gateway_ip.block7, gateway_ip.block8)
 	dict_ips["ip_version"] = "IPV6"
 	dict_ips["equipments"] = dict()
 	dict_ips["vlan_num"] = networkipv6.vlan.num_vlan
 	dict_ips["vlan_name"] = networkipv6.vlan.nome
 	dict_ips["cidr_block"] = networkipv6.block
-	dict_ips["mask"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (networkipv6.mask1, networkipv6.mask2, networkipv6.mask3, networkipv6.mask4, networkipv6.mask5, networkipv6.mask6, networkipv6.mask7, networkipv6.mask8)
+	dict_ips["mask"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (networkipv6.mask1, networkipv6.mask2, networkipv6.mask3, networkipv6.mask4, networkipv6.mask5, networkipv6.mask6, networkipv6.mask7, networkipv6.mask8)
 	dict_ips["wildmask"] = "Not used"
 
 	if _has_active_network_in_vlan(networkipv6.vlan):
@@ -386,7 +388,7 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 				raise exceptions.IncorrectNetworkRouterRegistryException
 			ip = ip_equip[0].ip
 			dict_ips[equipment] = dict()
-			dict_ips[equipment]["ip"] = "%d:%d:%d:%d:%d:%d:%d:%d" % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
+			dict_ips[equipment]["ip"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
 			dict_ips[equipment]["prio"] = 100+equip_number
 			equip_number += 1
 	else:
