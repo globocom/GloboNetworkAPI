@@ -51,7 +51,7 @@ class NXOS(BasePlugin):
 		if use_vrf == None:
 			use_vrf = self.management_vrf
 
-		command = 'copy tftp://%s/%s %s vrf %s\n\n' %(tftpserver, filename, destination, vrf)
+		command = 'copy tftp://%s/%s %s vrf %s\n\n' %(self.tftpserver, filename, destination, use_vrf)
 
 		log.info("sending command: %s" % command)
 
@@ -66,15 +66,15 @@ class NXOS(BasePlugin):
 			privilege_level = self.admin_privileges
 			
 		recv = self.waitString(">|#")
-		channel.send("show privilege\n")
+		self.channel.send("show privilege\n")
 		recv = self.waitString("Current privilege level:")
 		level = re.search('Current privilege level: (-[0-9]+?).*', recv, re.DOTALL ).group(1)
 
 		level = (level.split(' '))[-1]
 		if int(level) < privilege_level:
-			channel.send("enable\n")
+			self.channel.send("enable\n")
 			recv = self.waitString("Password:")
-			channel.send("%s\n" % enable_pass)
+			self.channel.send("%s\n" % self.equipment_access.enable_pass)
 			recv = self.waitString("#")
 			
 	def remove_svi(self, svi_number):
@@ -82,8 +82,7 @@ class NXOS(BasePlugin):
 		Delete SVI from switch
 		'''
 		self.ensure_privilege_level()
-		self.channel.send("terminal length 0\nconfigure terminal\n \
-			no interface Vlan%s \n end \n" % (svi_number))
+		self.channel.send("terminal length 0\nconfigure terminal\nno interface Vlan%s \n end \n" % (svi_number))
 		recv = self.waitString("#")
 
 		return recv
