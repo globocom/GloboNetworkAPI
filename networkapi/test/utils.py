@@ -16,9 +16,10 @@
 # limitations under the License.
 
 import logging
+import mock
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi import settings
-import logging
+from networkapi.usuario.models import Usuario
 
 log = logging.getLogger('testing')
 
@@ -76,3 +77,10 @@ def permute(**kargs):
     return possibilidades
 
 # map(lambda t: dict(t.items() + [('status', t in v)]), p)
+
+def mock_login(func):
+    authenticator = mock.patch('networkapi.api_rest.authentication.BasicAuthentication.authenticate').start()
+    authenticator.return_value = (Usuario(user= 'username'), None)
+    permission_decorator = mock.patch('rest_framework.decorators.permission_classes').start()
+    permission_decorator.return_value = lambda func: func
+    return func

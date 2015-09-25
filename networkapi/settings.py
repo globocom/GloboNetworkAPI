@@ -91,10 +91,6 @@ DATABASES = {
     }
 }
 
-
-from networkapi.models.models_signal_receiver import *
-
-
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
