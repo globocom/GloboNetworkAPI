@@ -77,7 +77,7 @@ class ExtraLoggingMiddleware(object):
 
         if 399 < response.status_code < 600:
             #logger.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
-            logger.debug(u'Requisição concluída com falha. Conteúdo: [].' )
+            logger.warning(u'Requisição concluída com falha. Conteúdo: [].' )
         else:
             logger.debug(u'Requisição concluída com sucesso.')
 
