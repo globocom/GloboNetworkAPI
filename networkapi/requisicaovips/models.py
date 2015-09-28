@@ -2115,6 +2115,9 @@ class ServerPool(BaseModel):
         self.default_port = default_port
         self.save(user)
 
+    @cached_property
+    def vip_ports(self):
+        return self.vipporttopool_set.all()
 
 class ServerPoolMember(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_server_pool_member')
