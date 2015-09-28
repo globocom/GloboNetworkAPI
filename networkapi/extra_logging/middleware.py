@@ -22,6 +22,7 @@ from django.conf import settings
 
 import logging
 from networkapi.extra_logging import local, REQUEST_ID_HEADER, NO_REQUEST_ID, NO_REQUEST_USER
+from networkapi.util import search_hide_password
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,8 @@ class ExtraLoggingMiddleware(object):
         local.request_path = request.get_full_path()
         request.id = identity
 
-        logger.debug(u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data))
+        msg = u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data)
+        logger.debug(search_hide_password(msg))
 
     def process_response(self, request, response):
 
