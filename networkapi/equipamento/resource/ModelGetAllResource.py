@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.log import Log
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Modelo, EquipamentoError
+from networkapi.equipamento.models import Modelo, EquipamentoError, ModeloRoteiro
 
 
 class ModelGetAllResource(RestResource):
@@ -37,6 +37,8 @@ class ModelGetAllResource(RestResource):
 
             self.log.info("GET to list all the Model")
 
+            script_id = kwargs.get('script_id')
+
             # User permission
             if not has_perm(user, AdminPermission.BRAND_MANAGEMENT, AdminPermission.READ_OPERATION):
                 self.log.error(
@@ -44,14 +46,15 @@ class ModelGetAllResource(RestResource):
                 raise UserNotAuthorizedError(None)
 
             model_list = []
-            for model in Modelo.objects.all():
-                model_map = dict()
-                model_map['id'] = model.id
-                model_map['nome'] = model.nome
-                model_map['id_marca'] = model.marca.id
-                model_map['nome_marca'] = model.marca.nome
-                model_list.append(model_map)
 
+            if script_id is not None:
+                models = ModeloRoteiro.objects.filter(roteiro__id=int(script_id))
+                for i in models:
+                    model_list.append(self.model_map(i.modelo))
+                return self.response(dumps_networkapi({'model': model_list}))
+
+            for model in Modelo.objects.all():
+                model_list.append(self.model_map(model))
             return self.response(dumps_networkapi({'model': model_list}))
 
         except UserNotAuthorizedError:
@@ -59,3 +62,12 @@ class ModelGetAllResource(RestResource):
 
         except EquipamentoError:
             return self.response_error(1)
+
+    def model_map(self, model):
+        model_map = dict()
+        model_map['id'] = model.id
+        model_map['nome'] = model.nome
+        model_map['id_marca'] = model.marca.id
+        model_map['nome_marca'] = model.marca.nome
+
+        return model_map
