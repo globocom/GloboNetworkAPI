@@ -113,7 +113,7 @@ def pool_list(request):
         raise api_exceptions.NetworkAPIException()
 
 
-@api_view(['POST'])
+@api_view(['POST','GET'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def pool_list_by_reqvip(request):
@@ -156,11 +156,11 @@ def pool_list_by_reqvip(request):
         return Response(data)
 
     except api_exceptions.ValidationException, exception:
-        log.error(exception)
+        log.exception(exception)
         raise exception
 
     except Exception, exception:
-        log.error(exception)
+        log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
 
