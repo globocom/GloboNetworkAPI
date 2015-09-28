@@ -316,7 +316,7 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 			if ip_equip == []:
 				log.error("Error: Equipment IPs not correctly registered. \
 					In case of multiple gateways, they should have an IP other than the gateway registered.")
-				raise exceptions.IncorrectNetworkRouterRegistryException
+				raise exceptions.IncorrectNetworkRouterRegistryException()
 			ip = ip_equip[0].ip
 			dict_ips[equipment] = dict()
 			dict_ips[equipment]["ip"] = "%s.%s.%s.%s" % (ip.oct1, ip.oct2, ip.oct3, ip.oct4)
@@ -385,7 +385,7 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 			if ip_equip == []:
 				log.error("Error: Equipment IPs not correctly registered. \
 					In case of multiple gateways, they should have an IP other than the gateway registered.")
-				raise exceptions.IncorrectNetworkRouterRegistryException
+				raise exceptions.IncorrectNetworkRouterRegistryException()
 			ip = ip_equip[0].ip
 			dict_ips[equipment] = dict()
 			dict_ips[equipment]["ip"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
