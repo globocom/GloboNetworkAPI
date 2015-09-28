@@ -1248,18 +1248,19 @@ class ModeloRoteiro(BaseModel):
         '''
         self.modelo = Modelo().get_by_pk(self.modelo.id)
         self.roteiro = Roteiro.get_by_pk(self.roteiro.id)
-
         try:
             try:
-                ModeloRoteiro.objects.get(modelo__id=self.modelo.id)
-                raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
+                roteiros = ModeloRoteiro.objects.filter(modelo__id=self.modelo.id)
+                for rot in roteiros:
+                    if rot.roteiro.id == self.roteiro.id:
+                        raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
             except ObjectDoesNotExist:
                 pass
             self.save(authenticated_user)
         except ModeloRoteiroDuplicatedError, e:
             raise e
         except Exception, e:
-            self.log.error(u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))
+            self.log.error(u'Falha ao inserir a associação modelo/roteiro: %s/%s. %s' % (self.modelo.id, self.roteiro.id, e))
             raise EquipamentoError(e, u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))
 
     @classmethod

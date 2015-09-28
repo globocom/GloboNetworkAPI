@@ -97,7 +97,7 @@ class ScriptAddResource(RestResource):
             scr.tipo_roteiro = script_type
             scr.descricao = description
 
-            modelo = []
+            modelo_list = []
 
             try:
                 # save Script
@@ -115,23 +115,25 @@ class ScriptAddResource(RestResource):
                 for ids in model:
                     modelos = ModeloRoteiro()
                     modelos.roteiro = scr
-                    modelos.modelo = Modelo().get_by_pk(int(ids))
+                    modelo = Modelo().get_by_pk(int(ids))
+                    modelos.modelo = modelo
                     modelos.create(user)
-                    modelo.append(modelos.modelo)
-            except:
-                self.log.info("Failed to save modelo_roteiro.")
-                pass
+                    modelo_list.append(modelos.modelo)
+            except Exception, e:
+                raise RoteiroError (e, u"Failed to save modelo_roteiro.")
 
             #verificar se há equipamento daquele modelo que não está associado a um roteiro
-            for ids in modelo:
+            for ids in modelo_list:
                 equipamentos = Equipamento.objects.filter(modelo__id=ids.id)
                 for equip in equipamentos:
-                    equip_roteiro = EquipamentoRoteiro.objects.filter(equipamento__id=equip.id)
-                    if equip_roteiro is None:
+                    equip_roteiro = EquipamentoRoteiro().search(None, equip.id, scr.tipo_roteiro)
+                    try:
                         equip_roteiro = EquipamentoRoteiro()
                         equip_roteiro.equipamento = equip
-                        equip_roteiro.roteiro = ids
+                        equip_roteiro.roteiro = scr
                         equip_roteiro.create(user)
+                    except:
+                        pass
 
             script_map = dict()
             script_map['script'] = model_to_dict(scr, exclude=["roteiro", "tipo_roteiro", "descricao"])

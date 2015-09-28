@@ -23,7 +23,7 @@ from networkapi.distributedlock import distributedlock, LOCK_SCRIPT
 from networkapi.exception import InvalidValueError
 from networkapi.roteiro.models import Roteiro, TipoRoteiro, TipoRoteiroNotFoundError, RoteiroError, RoteiroNotFoundError, \
                                       RoteiroNameDuplicatedError, RoteiroHasEquipamentoError
-from networkapi.equipamento.models import ModeloRoteiro, Modelo
+from networkapi.equipamento.models import ModeloRoteiro, Modelo, Equipamento, EquipamentoRoteiro
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
@@ -119,6 +119,19 @@ class ScriptAlterRemoveResource(RestResource):
                 scr_models.roteiro = scr
                 scr_models.modelo = Modelo.get_by_pk(i)
                 scr_models.create(user)
+
+            #verificar se há equipamento daquele modelo que não está associado a um roteiro
+            for ids in models:
+                equipamentos = Equipamento.objects.filter(modelo__id=int(ids))
+                for equip in equipamentos:
+                    equip_roteiro = EquipamentoRoteiro().search(None, equip.id, scr.tipo_roteiro)
+                    try:
+                        equip_roteiro = EquipamentoRoteiro()
+                        equip_roteiro.equipamento = equip
+                        equip_roteiro.roteiro = scr
+                        equip_roteiro.create(user)
+                    except:
+                        pass
 
             with distributedlock(LOCK_SCRIPT % id_script):
 
