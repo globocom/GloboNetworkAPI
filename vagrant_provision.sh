@@ -10,10 +10,10 @@ pip install -r /vagrant/requirements.txt
 pip install gunicorn
 #criar usuario  no DB
 #load migrations
-#mysql -uroot -hlocalhost -e 'drop database if exists networkapi;'
-#mysql -uroot -hlocalhost -e 'create database networkapi;'
-#cd dbmigrate; db-migrate --show-sql
-mysql -u root -h localhost < /vagrant/dev/database_configuration.sql
+mysql -uroot -hlocalhost -e 'drop database if exists networkapi;'
+mysql -uroot -hlocalhost -e 'create database networkapi;'
+cd /vagrant/dbmigrate; db-migrate --show-sql
+#mysql -u root -h localhost < /vagrant/dev/database_configuration.sql
 mysql -u root -h localhost networkapi < /vagrant/dev/load_example_environment.sql
 
 echo -e "PYTHONPATH=\"/vagrant/networkapi:/vagrant/$PYTHONPATH\"" >> /etc/environment
