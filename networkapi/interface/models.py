@@ -636,7 +636,10 @@ class Interface(BaseModel):
             interface.interface = nome
             interface.descricao = kwargs['descricao']
             interface.protegida = kwargs['protegida']
-            interface.tipo = kwargs['tipo']
+            try:
+                interface.tipo = kwargs['tipo']
+            except:
+                pass
             interface.vlan_nativa = kwargs['vlan_nativa']
             if interface.vlan_nativa is not None:
                 if int(interface.vlan_nativa) < 1 or int(interface.vlan_nativa) > 4096:

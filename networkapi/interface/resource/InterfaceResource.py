@@ -307,10 +307,10 @@ class InterfaceResource(RestResource):
                     id_ligacao_back = int(id_ligacao_back)
 
             tipo = interface_map.get('tipo')
-            tipo = TipoInterface.get_by_name(tipo)
+            if tipo is not None:
+                tipo = TipoInterface.get_by_name(tipo)
 
             vlan = interface_map.get('vlan')
-
             with distributedlock(LOCK_INTERFACE % id_interface):
 
                 # Update interface
