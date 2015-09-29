@@ -1,5 +1,32 @@
 from rest_framework import serializers
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
+from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
+
+class DHCPRelayIPv4Serializer(serializers.ModelSerializer):
+    id = serializers.Field()
+    ipv4 = serializers.PrimaryKeyRelatedField()
+    networkipv4 = serializers.PrimaryKeyRelatedField()
+
+    class Meta:
+        model = DHCPRelayIPv4
+        fields = (
+            'id',
+            'ipv4',
+            'networkipv4',
+            )
+
+class DHCPRelayIPv6Serializer(serializers.ModelSerializer):
+    id = serializers.Field()
+    ipv6 = serializers.Field()
+    networkipv6 = serializers.Field()
+
+    class Meta:
+        model = DHCPRelayIPv6
+        fields = (
+            'id',
+            'ipv6',
+            'networkipv6',
+            )
 
 class NetworkIPv4Serializer(serializers.ModelSerializer):
 
@@ -28,6 +55,8 @@ class NetworkIPv4Serializer(serializers.ModelSerializer):
     )
     active = serializers.Field()
 
+    dhcprelay = DHCPRelayIPv4Serializer()
+
     class Meta:
         model = NetworkIPv4
         fields = (
@@ -46,7 +75,12 @@ class NetworkIPv4Serializer(serializers.ModelSerializer):
             'network_type',
             'ambient_vip',
             'active',
+            'dhcprelay'
         )
+
+    def teste(self, dhcprelay):
+        self.dhcprelay = DHCPRelayIPv4Serializer(dhcprelay)
+
 
 class NetworkIPv6Serializer(serializers.ModelSerializer):
 

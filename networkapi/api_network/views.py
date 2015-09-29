@@ -30,9 +30,10 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.api_network import facade
 from networkapi.api_network.permissions import Read, Write, DeployConfig
 from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer
+from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
 from networkapi.api_network import exceptions
 
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv4NotFoundError, NetworkIPv6NotFoundError
 from networkapi.equipamento.models import Equipamento
 
 log = logging.getLogger(__name__)
@@ -62,6 +63,29 @@ def networksIPv4(request):
 
         return Response(serializer_options.data)
 
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def networksIPv4_by_pk(request, network_id):
+    '''Lists network ipv4
+    '''
+    try:
+
+        networkIPv4_obj = NetworkIPv4.get_by_pk(network_id)
+        dhcprelay = DHCPRelayIPv4.objects.filter(networkipv4=networkIPv4_obj)
+        serializer_options = NetworkIPv4Serializer(
+            networkIPv4_obj,
+            many=False
+        )
+        serializer_options.teste(dhcprelay)
+
+        return Response(serializer_options.data)
+
+    except NetworkIPv4NotFoundError, exception:
+        raise exceptions.InvalidNetworkIDException()
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
@@ -151,6 +175,27 @@ def networksIPv6(request):
 
         return Response(serializer_options.data)
 
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def networksIPv6_by_pk(request, network_id):
+    '''Lists network ipv6
+    '''
+    try:
+
+        networkIPv6_obj = NetworkIPv6.get_by_pk(network_id)
+
+        serializer_options = NetworkIPv6Serializer(
+            networkIPv6_obj,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+    except NetworkIPv6NotFoundError, exception:
+        raise exceptions.InvalidNetworkIDException()
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
