@@ -66,7 +66,7 @@ class CreateVipResource(RestResource):
                 return self.response_error(3, msg)
             vip_map = networkapi_map.get('vip')
             if vip_map is None:
-                msg = u'There is no value to the vlan tag of XML request.'
+                msg = u'There is no value to the vip tag of XML request.'
                 self.log.error(msg)
                 return self.response_error(3, msg)
 
