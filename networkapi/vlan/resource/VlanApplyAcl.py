@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from networkapi.rest import RestResource
-from networkapi.log import Log
+import logging
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
@@ -51,7 +51,7 @@ hexa = lambda x: hex(x)[2:]
 
 class VlanApplyAcl(RestResource):
 
-    log = Log('VlanApplyAcl')
+    log = logging.getLogger('VlanApplyAcl')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Treat POST requests to APPLY ACL in a vlan 

@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4NotFoundError, NetworkIPv4Error, NetworkIPv4, NetworkIPv6NotFoundError, NetworkIPv6, NetworkIPv6Error, NetworkIpAddressNotAvailableError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError, EnvironmentVipError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_int_param
@@ -41,7 +41,7 @@ from networkapi.equipamento.models import Equipamento
 
 class NetworkEditResource(RestResource):
 
-    log = Log('NetworkEditResource')
+    log = logging.getLogger('NetworkEditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to edit an Network.

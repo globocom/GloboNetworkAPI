@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.equipamento.models import Equipamento
@@ -28,7 +28,7 @@ from networkapi.equipamento.models import Equipamento
 
 class EquipmentListResource(RestResource):
 
-    log = Log('EquipmentListResource')
+    log = logging.getLogger('EquipmentListResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to list all equipment.

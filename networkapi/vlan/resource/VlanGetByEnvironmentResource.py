@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, AmbienteError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
@@ -29,7 +29,7 @@ from django.forms.models import model_to_dict
 
 class VlanGetByEnvironmentResource(RestResource):
 
-    log = Log('VlanGetByEnvironmentResource')
+    log = logging.getLogger('VlanGetByEnvironmentResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handle GET requests to get VLAN by environment.

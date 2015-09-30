@@ -21,7 +21,7 @@ from django.db.models import Q
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, \
     is_valid_boolean_param
@@ -156,7 +156,7 @@ def get_vips(vips):
 
 class RequestVipGetIdIpResource(RestResource):
 
-    log = Log('RequestVipGetIdIpResource')
+    log = logging.getLogger('RequestVipGetIdIpResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to find all Vip Requests by search parameters.

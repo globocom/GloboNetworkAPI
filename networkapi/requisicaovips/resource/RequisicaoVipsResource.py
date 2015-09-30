@@ -28,15 +28,14 @@ from networkapi.healthcheckexpect.models import HealthcheckExpectError, Healthch
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
 from networkapi.ip.models import Ip, IpError, IpNotFoundError, \
     IpNotFoundByEquipAndVipError
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
     InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
     InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError, \
     ServerPool, VipPortToPool
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int, \
-    deprecated
+from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from django.forms.models import model_to_dict
 
@@ -95,7 +94,7 @@ def insert_vip_request(vip_map, user):
     @raise UserNotAuthorizedError:
     '''
 
-    log = Log('insert_vip_request')
+    log = logging.getLogger('insert_vip_request')
 
     if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.WRITE_OPERATION):
         raise UserNotAuthorizedError(
@@ -174,7 +173,7 @@ def insert_vip_request(vip_map, user):
 
 def update_vip_request(vip_id, vip_map, user):
 
-    log = Log('update_vip_request')
+    log = logging.getLogger('update_vip_request')
 
     if not has_perm(user,
                     AdminPermission.VIPS_REQUEST,
@@ -241,7 +240,7 @@ def update_vip_request(vip_id, vip_map, user):
 
 class RequisicaoVipsResource(RestResource):
 
-    log = Log('RequisicaoVipsResource')
+    log = logging.getLogger('RequisicaoVipsResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Trata as requisições de POST para inserir uma requisição de VIP.'''
@@ -323,7 +322,7 @@ class RequisicaoVipsResource(RestResource):
             return self.not_authorized()
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError):
             return self.response_error(1)
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
 
     def handle_get(self, request, user, *args, **kwargs):

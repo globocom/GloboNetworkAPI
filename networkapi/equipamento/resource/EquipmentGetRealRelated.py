@@ -22,7 +22,7 @@ from networkapi.equipamento.models import Equipamento, EquipamentoError,\
     EquipamentoNotFoundError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.requisicaovips.models import VipPortToPool, RequisicaoVips
 from networkapi.util import mount_ipv4_string, mount_ipv6_string,\
@@ -32,7 +32,7 @@ from networkapi.exception import InvalidValueError
 
 class EquipmentGetRealRelated(RestResource):
 
-    log = Log('EquipmentGetRealRelateds')
+    log = logging.getLogger('EquipmentGetRealRelateds')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to list all real related equipment.

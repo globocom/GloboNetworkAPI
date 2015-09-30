@@ -23,14 +23,14 @@ from networkapi.ambiente.models import Ambiente, AmbienteError, AmbienteNotFound
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_ipv6
 from networkapi.exception import InvalidValueError
 
 
 class SearchIPv6EnvironmentResource(RestResource):
 
-    log = Log('SearchIPv6EnvironmentResource')
+    log = logging.getLogger('SearchIPv6EnvironmentResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to verify that the IPv6 belongs to environment.

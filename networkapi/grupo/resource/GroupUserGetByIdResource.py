@@ -19,7 +19,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.grupo.models import UGrupo, GrupoError, UGrupoNotFoundError
 from django.forms.models import model_to_dict
@@ -29,7 +29,7 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 class GroupUserGetByIdResource(RestResource):
 
-    log = Log('GroupUserGetByIdResource')
+    log = logging.getLogger('GroupUserGetByIdResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to get Group User.

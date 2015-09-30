@@ -21,7 +21,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
@@ -496,7 +496,7 @@ def environment_rack(user, environment_list, rack):
 
 class RackAplicarConfigResource(RestResource):
 
-    log = Log('RackAplicarConfigResource')
+    log = logging.getLogger('RackAplicarConfigResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to create the configuration file.

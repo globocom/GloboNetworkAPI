@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.ambiente.models import IPConfig, ConfigEnvironment, IPConfigNotFoundError, AmbienteError, Ambiente, AmbienteNotFoundError, \
@@ -30,7 +30,7 @@ from networkapi.exception import InvalidValueError
 
 class EnvironmentIpConfigResource(RestResource):
 
-    log = Log('EnvironmentIpConfigResource')
+    log = logging.getLogger('EnvironmentIpConfigResource')
 
     CODE_MESSAGE_CONFIG_ENVIRONMENT_ALREADY_EXISTS = 302
 

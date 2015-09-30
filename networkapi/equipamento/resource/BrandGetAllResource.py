@@ -19,7 +19,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Marca, EquipamentoError
 from django.forms.models import model_to_dict
@@ -27,7 +27,7 @@ from django.forms.models import model_to_dict
 
 class BrandGetAllResource(RestResource):
 
-    log = Log('BrandGetAllResource')
+    log = logging.getLogger('BrandGetAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all the Brand.

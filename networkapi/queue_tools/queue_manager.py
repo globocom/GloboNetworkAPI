@@ -19,7 +19,7 @@ import json
 import types
 
 import logging
-from networkapi.log import Log
+import logging
 
 from django.conf import settings
 from stompest.config import StompConfig
@@ -33,7 +33,7 @@ class QueueManager(object):
     """
         Object to manager objects sent to queue
     """
-    log = Log(__name__)
+    log = logging.getLogger(__name__)
 
     def __init__(self):
         """

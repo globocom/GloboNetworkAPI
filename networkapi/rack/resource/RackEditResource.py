@@ -22,14 +22,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Equipamento
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 
 class RackEditResource(RestResource):
 
-    log = Log('RackEditResource')
+    log = logging.getLogger('RackEditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to edit Rack.

@@ -22,7 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 
-from networkapi.log import Log
+import logging
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.interface.models import InterfaceNotFoundError
@@ -33,7 +33,7 @@ from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
 from networkapi.settings import USER_SCRIPTS_REL_PATH
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['PUT'])

@@ -19,7 +19,7 @@ from __future__ import with_statement
 from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
-from networkapi.log import Log
+import logging
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.grupo.models import GrupoError
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
@@ -46,7 +46,7 @@ def get_new_interface_map(interface_sw):
 
 class InterfaceGetSwRouterResource(RestResource):
 
-    log = Log('InterfaceGetSwRouterResource')
+    log = logging.getLogger('InterfaceGetSwRouterResource')
 
     def handle_get(self, request, user, *args, **kwargs):
 

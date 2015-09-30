@@ -26,7 +26,7 @@ from networkapi.auth import has_perm
 
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
 
-from networkapi.log import Log
+import logging
 
 from networkapi.util import is_valid_int_greater_zero_param
 
@@ -43,7 +43,7 @@ class OptionVipResource(RestResource):
 
     '''Class that receives requests related to the table 'OptionVip'.'''
 
-    log = Log('OptionVipResource')
+    log = logging.getLogger('OptionVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to insert Option VIP.

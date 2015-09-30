@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.log import Log
+import logging
 from networkapi.plugins import exceptions
 import re
 

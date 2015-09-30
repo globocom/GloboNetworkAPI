@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.log import Log
+import logging
 from . import exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.settings import TFTP_SERVER_ADDR
@@ -25,7 +25,7 @@ from time import sleep
 import unicodedata, string
 import paramiko
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 class BasePlugin(object):
 	'''

@@ -32,9 +32,10 @@ from networkapi.healthcheckexpect.models import HealthcheckExpectError, Healthch
 from networkapi.grupo.models import GrupoError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
-    is_valid_string_minsize, is_valid_string_maxsize, deprecated
+    is_valid_string_minsize, is_valid_string_maxsize
+from networkapi.util.decorators import deprecated
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from django.db.utils import IntegrityError
@@ -43,7 +44,7 @@ from networkapi.blockrules.models import Rule
 
 class RequestVipsResource(RestResource):
 
-    log = Log('RequestVipsResource')
+    log = logging.getLogger('RequestVipsResource')
 
     @deprecated(new_uri='api/vip/request/save/')
     def handle_post(self, request, user, *args, **kwargs):

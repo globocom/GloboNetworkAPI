@@ -18,7 +18,7 @@
 from __future__ import with_statement
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError, InvalidGroupToEquipmentTypeError, \
     ModeloNotFoundError, EquipamentoNameDuplicatedError, TipoEquipamentoNotFoundError
 from networkapi.equipamento.resource.EquipamentoResource import insert_equipment, remove_equipment
@@ -44,7 +44,7 @@ from networkapi.ambiente.models import EnvironmentVip
 
 class GroupVirtualResource(RestResource):
 
-    log = Log('GroupVirtualResource')
+    log = logging.getLogger('GroupVirtualResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         '''Trata as requisições de PUT para remover um grupo virtual.

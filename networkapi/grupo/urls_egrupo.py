@@ -11,12 +11,12 @@ egroup_remove_association_equip_resource = GrupoEquipamentoRemoveAssociationEqui
 egroup_get_by_equip_resource = GrupoEquipamentoGetByEquipResource()
 
 urlpatterns = patterns('',
-    url(r'$', egroup_resource.handle_request,
-        name='egroup.search.insert'),
     url(r'equipamento/(?P<id_equipamento>[^/]+)/egrupo/(?P<id_egrupo>[^/]+)/$', egroup_remove_association_equip_resource.handle_request,
         name='egroup.remove.equip.association'),
     url(r'equip/(?P<id_equip>[^/]+)/$', egroup_get_by_equip_resource.handle_request,
         name='egroup.get.by.equip'),
     url(r'(?P<id_grupo>[^/]+)/$', egroup_resource.handle_request,
-        name='egroup.update.remove.by.pk')
+        name='egroup.update.remove.by.pk'),
+    url(r'$', egroup_resource.handle_request,
+        name='egroup.search.insert')
 )

@@ -23,14 +23,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError, UGrupo, UGrupoNotFoundError
 from networkapi.usuario.models import Usuario, UsuarioGrupo, UsuarioError, UsuarioNotFoundError, UsuarioGrupoDuplicatedError, UserGroupNotFoundError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 class UserGroupAssociateResource(RestResource):
 
-    log = Log('UserGroupAssociateResource')
+    log = logging.getLogger('UserGroupAssociateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to associate User and Group.

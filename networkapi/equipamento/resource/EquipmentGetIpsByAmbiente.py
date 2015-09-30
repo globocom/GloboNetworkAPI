@@ -19,7 +19,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvironmentVip
@@ -28,7 +28,7 @@ from networkapi.equipamento.models import Equipamento, EquipamentoError
 
 class EquipmentGetIpsByAmbiente(RestResource):
 
-    log = Log('EquipmentFindResource')
+    log = logging.getLogger('EquipmentFindResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles POST requests to find all Equipments by search parameters.

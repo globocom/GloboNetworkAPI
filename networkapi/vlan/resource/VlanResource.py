@@ -25,7 +25,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceProtectedError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, Vlan, VlanNameDuplicatedError, \
@@ -40,7 +40,7 @@ class VlanResource(RestResource):
 
     '''Class to treat GET, POST, PUT and DELETE requests for Vlan.'''
 
-    log = Log('VlanResource')
+    log = logging.getLogger('VlanResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """

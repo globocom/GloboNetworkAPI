@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError, OptionVipNotFoundError, EnvironmentVipNotFoundError, OptionVipError, EnvironmentVipError, OptionVipEnvironmentVipError, OptionVipEnvironmentVipDuplicatedError, OptionVipEnvironmentVipNotFoundError, \
     EnvironmentEnvironmentVipNotFoundError, EnvironmentNotFoundError, EnvironmentEnvironmentVipDuplicatedError, \
     EnvironmentEnvironmentVipError, EnvironmentEnvironmentServerPoolLinked
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import OptionVip, OptionVipEnvironmentVip, RequisicaoVips
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
@@ -33,7 +33,7 @@ from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT_VIP
 
 class EnvironmentEnvironmentVipAssociationResource(RestResource):
 
-    log = Log('EnvironmentEnvironmentVipAssociationResource')
+    log = logging.getLogger('EnvironmentEnvironmentVipAssociationResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """

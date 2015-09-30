@@ -46,7 +46,7 @@ from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, \
     is_valid_healthcheck_destination
-from networkapi.log import Log
+import logging
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
@@ -56,7 +56,7 @@ from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_option
 from networkapi.exception import InvalidValueError
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
@@ -156,11 +156,11 @@ def pool_list_by_reqvip(request):
         return Response(data)
 
     except api_exceptions.ValidationException, exception:
-        log.error(exception)
+        log.exception(exception)
         raise exception
 
     except Exception, exception:
-        log.error(exception)
+        log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
 
@@ -477,7 +477,7 @@ def get_by_pk(request, id_server_pool):
         raise exceptions.PoolDoesNotExistException()
 
     except Exception, exception:
-        log.error(exception)
+        log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
 

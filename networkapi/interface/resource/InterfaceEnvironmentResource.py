@@ -21,7 +21,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.admin_permission import AdminPermission
-from networkapi.log import Log
+import logging
 from networkapi.ambiente.models import Ambiente
 from networkapi.interface.models import EnvironmentInterface, Interface, InterfaceError
 from networkapi.exception import InvalidValueError
@@ -31,7 +31,7 @@ from django.forms.models import model_to_dict
 
 class InterfaceEnvironmentResource(RestResource):
 
-    log = Log('InterfaceEnvironmentResource')
+    log = logging.getLogger('InterfaceEnvironmentResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.

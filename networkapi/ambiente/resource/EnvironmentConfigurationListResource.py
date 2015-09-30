@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import PermissionError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.ambiente.models import IPConfig, AmbienteNotFoundError, \
     AmbienteError, Ambiente
@@ -31,7 +31,7 @@ from networkapi.exception import InvalidValueError
 
 class EnvironmentConfigurationListResource(RestResource):
 
-    log = Log('EnvironmentConfigurationListResource')
+    log = logging.getLogger('EnvironmentConfigurationListResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all Environments.

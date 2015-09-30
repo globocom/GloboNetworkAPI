@@ -16,7 +16,7 @@ from django.db import models
 # limitations under the License.
 
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 from networkapi.ambiente.models import Ambiente
@@ -33,7 +33,7 @@ class Rule(BaseModel):
     vip = models.ForeignKey(
         RequisicaoVips, db_column='id_vip', null=True, related_name='vip')
 
-    log = Log('Rule')
+    log = logging.getLogger('Rule')
 
     class Meta (BaseModel.Meta):
         managed = True
@@ -48,7 +48,7 @@ class BlockRules(BaseModel):
         Ambiente, db_column='id_ambiente', null=False)
     order = models.IntegerField(null=False, blank=False)
 
-    log = Log('BlockRules')
+    log = logging.getLogger('BlockRules')
 
     class Meta (BaseModel.Meta):
         db_table = u'block_rules'
@@ -63,7 +63,7 @@ class RuleContent(BaseModel):
     rule = models.ForeignKey(
         Rule, null=False, db_column='id_rule', on_delete=models.CASCADE)
 
-    log = Log('RuleContent')
+    log = logging.getLogger('RuleContent')
 
     class Meta (BaseModel.Meta):
         managed = True

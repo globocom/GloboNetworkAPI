@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv4NotFoundError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.vlan.models import Vlan, VlanError, VlanNotFoundError
@@ -31,7 +31,7 @@ from django.forms.models import model_to_dict
 
 class VlanSearchResource(RestResource):
 
-    log = Log('VlanSearchResource')
+    log = logging.getLogger('VlanSearchResource')
 
     def get_vlan_map(self, vlan, network_ipv4, network_ipv6):
         vlan_map = model_to_dict(vlan)

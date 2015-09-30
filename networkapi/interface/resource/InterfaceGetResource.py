@@ -22,7 +22,7 @@ from networkapi.equipamento.models import EquipamentoError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from django.forms.models import model_to_dict
@@ -67,7 +67,7 @@ def get_new_interface_map(interface):
 
 class InterfaceGetResource(RestResource):
 
-    log = Log('InterfaceGetResource')
+    log = logging.getLogger('InterfaceGetResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests to list interface by ID or by channel

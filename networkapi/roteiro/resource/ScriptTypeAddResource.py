@@ -22,14 +22,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.roteiro.models import TipoRoteiro, TipoRoteiroNameDuplicatedError, TipoRoteiroNotFoundError, RoteiroError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 
 
 class ScriptTypeAddResource(RestResource):
 
-    log = Log('ScriptTypeAddResource')
+    log = logging.getLogger('ScriptTypeAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Script Type.

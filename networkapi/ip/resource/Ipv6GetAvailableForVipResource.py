@@ -23,7 +23,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi,\
     loads
 from networkapi.ip.models import IpNotAvailableError, IpError, Ipv6, NetworkIPv6Error, NetworkNotInEvip, IpRangeAlreadyAssociation, Ipv6Equipament
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.util import is_valid_int_greater_zero_param
@@ -33,7 +33,7 @@ from django.forms.models import model_to_dict
 
 class Ipv6GetAvailableForVipResource(RestResource):
 
-    log = Log('Ipv6GetAvailableForVipResource')
+    log = logging.getLogger('Ipv6GetAvailableForVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles GET requests get an IP6 available for vip_request by evip_id.

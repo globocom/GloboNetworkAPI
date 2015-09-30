@@ -20,7 +20,7 @@ from django.db import models
 from datetime import datetime
 from networkapi.models.BaseModel import BaseModel
 from networkapi.usuario.models import Usuario
-from networkapi.log import Log
+import logging
 
 class EventLogError(Exception):
 
@@ -47,7 +47,7 @@ class EventLog(BaseModel):
     resultado = models.IntegerField()
     id_objeto = models.IntegerField()
 
-    logger = Log('EventLog')
+    logger = logging.getLogger('EventLog')
 
     class Meta(BaseModel.Meta):
         db_table = u'event_log'
@@ -88,7 +88,7 @@ class Functionality(models.Model):
     nome = models.CharField(
         max_length=50, primary_key=True, db_column='functionality')
 
-    logger = Log('Funcionality')
+    logger = logging.getLogger('Funcionality')
 
     class Meta:
         db_table = u'functionality'

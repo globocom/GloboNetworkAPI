@@ -32,7 +32,7 @@ from networkapi.ip.models import NetworkIPv6, NetworkIPv6NotFoundError, IpNotAva
 
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError, VlanError
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource
 
@@ -46,7 +46,7 @@ from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV6,\
 
 class NetworkIPv6AddResource(RestResource):
 
-    log = Log('NetworkIPv6AddResource')
+    log = logging.getLogger('NetworkIPv6AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''

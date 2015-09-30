@@ -22,7 +22,7 @@ from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_int_greater_equal_zero_param, clone
 from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
@@ -30,7 +30,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP
 
 class RequestPriorityResource(RestResource):
 
-    log = Log('RequestPriorityResource')
+    log = logging.getLogger('RequestPriorityResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to change reals_priority list of VIP.

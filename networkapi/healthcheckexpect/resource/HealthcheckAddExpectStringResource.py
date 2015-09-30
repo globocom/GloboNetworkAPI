@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckExpectError, HealthcheckEqualError
@@ -28,7 +28,7 @@ from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckEx
 
 class HealthcheckAddExpectStringResource(RestResource):
 
-    log = Log('HealthcheckAddExpectStringResource.')
+    log = logging.getLogger('HealthcheckAddExpectStringResource.')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add a HeltcheckExpect only expect_string field.

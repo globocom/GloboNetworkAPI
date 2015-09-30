@@ -30,7 +30,7 @@ from networkapi.auth import has_perm
 
 from django.conf import settings
 
-from networkapi.log import Log
+import logging
 
 from networkapi.grupo.models import GrupoError
 
@@ -43,7 +43,7 @@ from networkapi.distributedlock import distributedlock, LOCK_IPV6
 
 class Ipv6AssociateResource(RestResource):
 
-    log = Log('Ipv6AssociateResource')
+    log = logging.getLogger('Ipv6AssociateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         '''Treat requests  PUT to insert the relationship between IPv6 and equipment.

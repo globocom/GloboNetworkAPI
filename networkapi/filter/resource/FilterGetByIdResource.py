@@ -23,7 +23,7 @@ from networkapi.auth import has_perm
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.exception import InvalidValueError
-from networkapi.log import Log
+import logging
 from django.forms.models import model_to_dict
 
 
@@ -31,7 +31,7 @@ class FilterGetByIdResource(RestResource):
 
     '''Class that receives requests to get a Filter by id.'''
 
-    log = Log('FilterGetByIdResource')
+    log = logging.getLogger('FilterGetByIdResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests to get a Filter by id.

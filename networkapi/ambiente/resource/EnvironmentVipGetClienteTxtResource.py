@@ -26,7 +26,7 @@ from networkapi.auth import has_perm
 
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
 
-from networkapi.log import Log
+import logging
 
 from networkapi.util import is_valid_string_maxsize, is_valid_text, is_valid_string_minsize
 
@@ -37,7 +37,7 @@ class EnvironmentVipGetClienteTxtResource(RestResource):
 
     '''Class that receives requests related to the table 'EnvironmentVip'.'''
 
-    log = Log('EnvironmentVipGetClienteTxtResource')
+    log = logging.getLogger('EnvironmentVipGetClienteTxtResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests Post to search cliente_txt of  Environment VIP by finalidade_txt

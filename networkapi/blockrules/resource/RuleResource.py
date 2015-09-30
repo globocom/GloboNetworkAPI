@@ -17,7 +17,7 @@
 
 from __future__ import with_statement
 
-from networkapi.log import Log
+import logging
 from networkapi.blockrules.models import Rule, BlockRules
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
@@ -32,7 +32,7 @@ from networkapi.requisicaovips.models import RequisicaoVips
 
 class RuleResource(RestResource):
 
-    log = Log('RuleResource')
+    log = logging.getLogger('RuleResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find Rule by id.

@@ -19,14 +19,14 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import EquipamentoRoteiro, EquipamentoError
 
 
 class EquipmentScriptGetAllResource(RestResource):
 
-    log = Log('EquipmentScriptGetAllResource')
+    log = logging.getLogger('EquipmentScriptGetAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all Equipment Script.

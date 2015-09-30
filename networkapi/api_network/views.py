@@ -17,12 +17,12 @@
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.transaction import commit_on_success
 
-from networkapi.log import Log
+import logging
 from networkapi.auth import has_perm
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.admin_permission import AdminPermission
@@ -35,7 +35,7 @@ from networkapi.api_network import exceptions
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.equipamento.models import Equipamento
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
@@ -115,7 +115,7 @@ def networkIPv4_deploy(request, network_id):
         # User permission
         if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
             log.error(u'User does not have permission to perform the operation.')
-            raise APIException.PermissionDenied("No permission to configure equipment %s-%s " % (equip.id, equip.nome) )
+            raise PermissionDenied("No permission to configure equipment %s-%s" % (equip.id, equip.nome) )
 
     #deploy network configuration
     if request.method == 'POST':
@@ -203,7 +203,7 @@ def networkIPv6_deploy(request, network_id):
         # User permission
         if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
             log.error(u'User does not have permission to perform the operation.')
-            raise APIException.PermissionDenied("No permission to configure equipment %s-%s " % (equip.id, equip.nome) )
+            raise PermissionDenied("No permission to configure equipment %s-%s" % (equip.id, equip.nome) )
 
     #deploy network configuration
     if request.method == 'POST':

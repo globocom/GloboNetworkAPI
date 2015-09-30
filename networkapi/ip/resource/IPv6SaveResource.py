@@ -25,7 +25,7 @@ from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkap
 from networkapi.ip.models import   IpNotAvailableError, IpEquipmentAlreadyAssociation,\
     NetworkIPv6NotFoundError, Ipv6, NetworkIPv6, IpError, NetworkIPv6Error,\
     Ipv6Equipament, IpRangeAlreadyAssociation
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize,\
@@ -37,7 +37,7 @@ from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV6
 
 class IPv6SaveResource(RestResource):
 
-    log = Log('IPv6SaveResource')
+    log = logging.getLogger('IPv6SaveResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to add an IP6 and associate it to an equipment.

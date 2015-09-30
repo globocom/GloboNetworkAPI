@@ -32,7 +32,7 @@ from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
 from networkapi.ip.models import Ipv6, Ipv6Equipament, Ip, IpEquipamento, \
     IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips, \
     RequisicaoVipsNotFoundError, RequisicaoVipsError, InvalidFinalidadeValueError, \
     InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, \
@@ -50,7 +50,7 @@ from networkapi.ambiente.models import EnvironmentVip
 
 class RequestMaxconResource(RestResource):
 
-    log = Log('RequestMaxconResource')
+    log = logging.getLogger('RequestMaxconResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat  requests PUT change limit connections to VIP.

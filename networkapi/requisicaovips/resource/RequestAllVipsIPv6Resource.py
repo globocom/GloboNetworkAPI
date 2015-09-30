@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
 from networkapi.infrastructure.ipaddr import IPv6Address
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVipsError
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.ip.models import Ipv6, IpNotFoundError, IpError
@@ -31,7 +31,7 @@ from django.forms.models import model_to_dict
 
 class RequestAllVipsIPv6Resource(RestResource):
 
-    log = Log('RequestAllVipsIPv6Resource')
+    log = logging.getLogger('RequestAllVipsIPv6Resource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """

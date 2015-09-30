@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import RackConfigError, RackNumberNotFoundError, Rack , RackError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
@@ -322,7 +322,7 @@ def gera_config(rack):
 
 class RackConfigResource(RestResource):
 
-    log = Log('RackConfigResource')
+    log = logging.getLogger('RackConfigResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to create the configuration file.
@@ -373,6 +373,7 @@ class RackConfigResource(RestResource):
             return self.response_error(141)
 
         except ForemanException, e:
-            return self.response_error(391, e.res)
+            self.log.error("Error acessing Foreman Server %s" % str(e))
+            return self.response_error(391, str(e))
         except RequestException, e:
             return self.response_error(391, e)

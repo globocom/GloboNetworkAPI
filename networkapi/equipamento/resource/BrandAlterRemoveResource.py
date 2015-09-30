@@ -23,14 +23,14 @@ from networkapi.distributedlock import distributedlock, LOCK_BRAND
 from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import Marca, MarcaNotFoundError, MarcaNameDuplicatedError, EquipamentoError, MarcaUsedByModeloError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 
 
 class BrandAlterRemoveResource(RestResource):
 
-    log = Log('BrandAlterRemoveResource')
+    log = logging.getLogger('BrandAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to edit Brand.

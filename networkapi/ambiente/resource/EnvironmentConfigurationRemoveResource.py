@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import PermissionError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.ambiente.models import IPConfig, AmbienteNotFoundError, \
     Ambiente, IPConfigNotFoundError, IPConfigError
@@ -30,7 +30,7 @@ from networkapi.exception import InvalidValueError
 
 class EnvironmentConfigurationRemoveResource(RestResource):
 
-    log = Log('EnvironmentConfigurationRemoveResource')
+    log = logging.getLogger('EnvironmentConfigurationRemoveResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests GET to Remove Prefix Configuration.

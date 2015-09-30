@@ -19,7 +19,7 @@ from __future__ import with_statement
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.exception import InvalidValueError
@@ -33,7 +33,7 @@ from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_ACCESS
 
 class EquipAccessEditResource(RestResource):
 
-    log = Log('EquipAccessEditResource')
+    log = logging.getLogger('EquipAccessEditResource')
 
     def handle_post(self, request, auth, *args, **kwargs):
         """Handles POST requests to update Equipment Access by id.

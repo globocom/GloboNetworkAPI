@@ -19,7 +19,7 @@ from __future__ import with_statement
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from networkapi.ambiente.models import Ambiente
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -27,7 +27,7 @@ class OpcaoPool(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_opcao_pool')
     description = models.CharField(blank=False, max_length=200)
 
-    log = Log('OpcaoPool')
+    log = logging.getLogger('OpcaoPool')
 
     class Meta(BaseModel.Meta):
         db_table = u'opcoes_pool'
@@ -39,7 +39,7 @@ class OpcaoPoolAmbiente(BaseModel):
     opcao_pool = models.ForeignKey(OpcaoPool, db_column='id_opcao_pool')
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
 
-    log = Log('OpcaoPoolAmbiente')
+    log = logging.getLogger('OpcaoPoolAmbiente')
 
     class Meta(BaseModel.Meta):
         db_table = u'opcoes_pool_ambiente'

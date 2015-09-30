@@ -20,7 +20,7 @@ import hashlib
 from django.db import models
 from networkapi.grupo.models import UGrupo
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
 
@@ -90,7 +90,7 @@ class Usuario(BaseModel):
     user_ldap = models.CharField(
         unique=True, max_length=45, null=True, blank=True)
 
-    log = Log('Usuario')
+    log = logging.getLogger('Usuario')
 
     class Meta(BaseModel.Meta):
         db_table = u'usuarios'
@@ -102,6 +102,10 @@ class Usuario(BaseModel):
             pwd=self.pwd,
             ativo=1
         )
+
+    @classmethod
+    def encode_password(cls, pwd):
+        return hashlib.md5(pwd).hexdigest()
 
     @classmethod
     def get_by_pk(cls, pk):
@@ -167,7 +171,7 @@ class Usuario(BaseModel):
         Retorna apenas usuário ativo.
         '''
         try:
-            password = hashlib.md5(password).hexdigest()
+            password = Usuario.encode_password(password)
             return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
         except ObjectDoesNotExist:
             self.log.error(u'Usuário não autenticado ou inativo: %s', username)
@@ -185,7 +189,7 @@ class UsuarioGrupo(BaseModel):
     usuario = models.ForeignKey(Usuario, db_column='id_user')
     ugrupo = models.ForeignKey(UGrupo, db_column='id_grupo')
 
-    log = Log('UsuarioGrupo')
+    log = logging.getLogger('UsuarioGrupo')
 
     class Meta(BaseModel.Meta):
         db_table = u'usuarios_do_grupo'

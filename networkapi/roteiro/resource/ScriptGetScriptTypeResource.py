@@ -19,7 +19,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.roteiro.models import Roteiro, TipoRoteiro, RoteiroError, TipoRoteiroNotFoundError
 from networkapi.exception import InvalidValueError
@@ -29,7 +29,7 @@ from django.forms.models import model_to_dict
 
 class ScriptGetScriptTypeResource(RestResource):
 
-    log = Log('ScriptGetScriptTypeResource')
+    log = logging.getLogger('ScriptGetScriptTypeResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all the Script by Script Type.

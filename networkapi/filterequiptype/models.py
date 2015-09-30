@@ -20,7 +20,7 @@ from django.db import models
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 
@@ -50,7 +50,7 @@ class FilterEquipType(BaseModel):
     filter = models.ForeignKey(Filter, db_column='id_filter')
     equiptype = models.ForeignKey(TipoEquipamento, db_column='id_equiptype')
 
-    log = Log('FilterEquipType')
+    log = logging.getLogger('FilterEquipType')
 
     class Meta(BaseModel.Meta):
         db_table = u'filter_equiptype_xref'

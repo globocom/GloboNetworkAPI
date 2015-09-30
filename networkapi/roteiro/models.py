@@ -20,7 +20,7 @@ from django.db import models
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 
@@ -93,7 +93,7 @@ class TipoRoteiro(BaseModel):
     tipo = models.CharField(unique=True, max_length=40, blank=True)
     descricao = models.CharField(max_length=100, blank=True)
 
-    log = Log('TipoRoteiro')
+    log = logging.getLogger('TipoRoteiro')
 
     class Meta(BaseModel.Meta):
         db_table = u'tipo_roteiro'
@@ -142,7 +142,7 @@ class Roteiro(BaseModel):
     tipo_roteiro = models.ForeignKey(TipoRoteiro, db_column='id_tipo_roteiro')
     descricao = models.CharField(max_length=100, blank=True)
 
-    log = Log('Roteiro')
+    log = logging.getLogger('Roteiro')
 
     class Meta(BaseModel.Meta):
         db_table = u'roteiros'

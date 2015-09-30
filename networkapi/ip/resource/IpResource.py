@@ -25,7 +25,7 @@ from networkapi.infrastructure.ipaddr import IPAddress
 from networkapi.ip.models import Ip, IpEquipamento, IpNotFoundError, IpEquipamentoDuplicatedError, IpError, \
     NetworkIPv4NotFoundError, IpNotAvailableError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
     IpCantRemoveFromServerPool
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import VlanNotFoundError, VlanError
 from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
@@ -55,7 +55,7 @@ def insert_ip(ip_map, user):
     @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
 
     '''
-    log = Log('insert_ip')
+    log = logging.getLogger('insert_ip')
 
     equip_id = ip_map.get('id_equipamento')
     if not is_valid_int_greater_zero_param(equip_id):
@@ -164,7 +164,7 @@ def remove_ip_equipment(ip_id, equipment_id, user):
 
 
 class IpResource(RestResource):
-    log = Log('IpResource')
+    log = logging.getLogger('IpResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         '''Trata as requisições de PUT para inserir o relacionamento entre IP e Equipamento.

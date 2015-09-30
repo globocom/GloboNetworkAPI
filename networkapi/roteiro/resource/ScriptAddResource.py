@@ -21,15 +21,16 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.roteiro.models import Roteiro, TipoRoteiro, RoteiroNameDuplicatedError, RoteiroNotFoundError, RoteiroError, TipoRoteiroNotFoundError
+from networkapi.equipamento.models import ModeloRoteiro, Modelo, Equipamento, EquipamentoRoteiro
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize, is_valid_int_greater_zero_param
 
 
 class ScriptAddResource(RestResource):
 
-    log = Log('ScriptAddResource')
+    log = logging.getLogger('ScriptAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Script.
@@ -43,8 +44,7 @@ class ScriptAddResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -62,24 +62,22 @@ class ScriptAddResource(RestResource):
             # Get XML data
             script = script_map.get('script')
             id_script_type = script_map.get('id_script_type')
+            model = script_map.get('model')
             description = script_map.get('description')
 
             # Valid Script
             if not is_valid_string_minsize(script, 3) or not is_valid_string_maxsize(script, 40):
-                self.log.error(
-                    u'Parameter script is invalid. Value: %s', script)
+                self.log.error(u'Parameter script is invalid. Value: %s', script)
                 raise InvalidValueError(None, 'script', script)
 
             # Valid ID Script Type
             if not is_valid_int_greater_zero_param(id_script_type):
-                self.log.error(
-                    u'The id_script_type parameter is not a valid value: %s.', id_script_type)
+                self.log.error(u'The id_script_type parameter is not a valid value: %s.', id_script_type)
                 raise InvalidValueError(None, 'id_script_type', id_script_type)
 
             # Valid description
             if not is_valid_string_minsize(description, 3) or not is_valid_string_maxsize(description, 100):
-                self.log.error(
-                    u'Parameter description is invalid. Value: %s', description)
+                self.log.error(u'Parameter description is invalid. Value: %s', description)
                 raise InvalidValueError(None, 'description', description)
 
             # Find Script Type by ID to check if it exist
@@ -87,8 +85,8 @@ class ScriptAddResource(RestResource):
 
             try:
                 Roteiro.get_by_name_script(script, id_script_type)
-                raise RoteiroNameDuplicatedError(
-                    None, u'Já existe um roteiro com o nome %s com tipo de roteiro %s.' % (script, script_type.tipo))
+                raise RoteiroNameDuplicatedError(None, u'Já existe um roteiro com o nome %s com tipo de roteiro %s.'
+                                                 % (script, script_type.tipo))
             except RoteiroNotFoundError:
                 pass
 
@@ -99,6 +97,8 @@ class ScriptAddResource(RestResource):
             scr.tipo_roteiro = script_type
             scr.descricao = description
 
+            modelo_list = []
+
             try:
                 # save Script
                 scr.save(user)
@@ -106,9 +106,37 @@ class ScriptAddResource(RestResource):
                 self.log.error(u'Failed to save the Script.')
                 raise RoteiroError(e, u'Failed to save the Script.')
 
+            #associar o modelo ao roteiro
+            try:
+                if type(model) is unicode:
+                    item = model
+                    model = []
+                    model.append(item)
+                for ids in model:
+                    modelos = ModeloRoteiro()
+                    modelos.roteiro = scr
+                    modelo = Modelo().get_by_pk(int(ids))
+                    modelos.modelo = modelo
+                    modelos.create(user)
+                    modelo_list.append(modelos.modelo)
+            except Exception, e:
+                raise RoteiroError (e, u"Failed to save modelo_roteiro.")
+
+            #verificar se há equipamento daquele modelo que não está associado a um roteiro
+            for ids in modelo_list:
+                equipamentos = Equipamento.objects.filter(modelo__id=ids.id)
+                for equip in equipamentos:
+                    equip_roteiro = EquipamentoRoteiro().search(None, equip.id, scr.tipo_roteiro)
+                    try:
+                        equip_roteiro = EquipamentoRoteiro()
+                        equip_roteiro.equipamento = equip
+                        equip_roteiro.roteiro = scr
+                        equip_roteiro.create(user)
+                    except:
+                        pass
+
             script_map = dict()
-            script_map['script'] = model_to_dict(
-                scr, exclude=["roteiro", "tipo_roteiro", "descricao"])
+            script_map['script'] = model_to_dict(scr, exclude=["roteiro", "tipo_roteiro", "descricao"])
 
             return self.response(dumps_networkapi(script_map))
 

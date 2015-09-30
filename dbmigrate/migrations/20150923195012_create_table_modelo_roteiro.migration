@@ -1,0 +1,26 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+--
+-- Table structure for table `modelo_roteiro`
+--
+
+DROP TABLE IF EXISTS `modelo_roteiro`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `modelo_roteiro` (
+  `id_modelo_roteiro` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_roteiro` int(10) unsigned NOT NULL,
+  `id_modelo` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_modelo_roteiro`),
+  KEY `fk_modelo_roteiro_id_roteiro` (`id_roteiro`),
+  KEY `fk_modelo_roteiro_id_modelo` (`id_modelo`),
+  CONSTRAINT `fk_modelo_roteiro_id_roteiro` FOREIGN KEY (`id_roteiro`) REFERENCES `roteiros` (`id_roteiros`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_modelo_roteiro_id_modelo` FOREIGN KEY (`id_modelo`) REFERENCES `modelos` (`id_modelo`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+"""
+
+SQL_DOWN = u"""
+DROP TABLE modelo_roteiro;
+"""

@@ -28,7 +28,7 @@ from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkap
 
 from networkapi.ip.models import NetworkIPv4NotFoundError, Ip, IpNotAvailableError, IpError, NetworkIPv4Error
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource, UserNotAuthorizedError
 
@@ -40,7 +40,7 @@ from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_max
 
 class IPv4AddResource(RestResource):
 
-    log = Log('IPv4AddResource')
+    log = logging.getLogger('IPv4AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to add an IP and associate it to an equipment.

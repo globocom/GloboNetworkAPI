@@ -22,7 +22,7 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models.query_utils import Q
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 from networkapi.filter.models import Filter, FilterNotFoundError
@@ -210,7 +210,7 @@ class GrupoL3(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_grupo_l3')
     nome = models.CharField(unique=True, max_length=80)
 
-    log = Log('GrupoL3')
+    log = logging.getLogger('GrupoL3')
 
     class Meta(BaseModel.Meta):
         db_table = u'grupo_l3'
@@ -260,7 +260,7 @@ class DivisaoDc(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_divisao')
     nome = models.CharField(unique=True, max_length=100)
 
-    log = Log('DivisaoDc')
+    log = logging.getLogger('DivisaoDc')
 
     class Meta(BaseModel.Meta):
         db_table = u'divisao_dc'
@@ -309,7 +309,7 @@ class AmbienteLogico(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_ambiente_logic')
     nome = models.CharField(unique=True, max_length=80)
 
-    log = Log('AmbienteLogico')
+    log = logging.getLogger('AmbienteLogico')
 
     class Meta(BaseModel.Meta):
         db_table = u'ambiente_logico'
@@ -384,7 +384,7 @@ class EnvironmentVip(BaseModel):
         db_column='description'
     )
 
-    log = Log('EnvironmentVip')
+    log = logging.getLogger('EnvironmentVip')
 
     class Meta(BaseModel.Meta):
         db_table = u'ambientevip'
@@ -635,7 +635,7 @@ class Ambiente(BaseModel):
     max_num_vlan_2 = models.IntegerField(blank=True, null=True, db_column='max_num_vlan_2')
     vrf = models.CharField(max_length=100, null=True, default='', db_column='vrf')
     
-    log = Log('Ambiente')
+    log = logging.getLogger('Ambiente')
 
     class Meta(BaseModel.Meta):
         db_table = u'ambiente'
@@ -904,7 +904,7 @@ class IPConfig(BaseModel):
     network_type = models.ForeignKey(
         TipoRede, null=True, db_column='network_type')
 
-    log = Log('IPConfig')
+    log = logging.getLogger('IPConfig')
 
     class Meta(BaseModel.Meta):
         db_table = u'ip_config'
@@ -1000,7 +1000,7 @@ class ConfigEnvironment(BaseModel):
     environment = models.ForeignKey(Ambiente, db_column='id_ambiente')
     ip_config = models.ForeignKey(IPConfig, db_column='id_ip_config')
 
-    log = Log('ConfigEnvironment')
+    log = logging.getLogger('ConfigEnvironment')
 
     class Meta(BaseModel.Meta):
         db_table = u'config_do_ambiente'
@@ -1120,7 +1120,7 @@ class EnvironmentEnvironmentVip(BaseModel):
     environment = models.ForeignKey(Ambiente)
     environment_vip = models.ForeignKey(EnvironmentVip)
 
-    log = Log('EnvironmentEnvironmentVip')
+    log = logging.getLogger('EnvironmentEnvironmentVip')
 
     class Meta(BaseModel.Meta):
         db_table = u'environment_environment_vip'

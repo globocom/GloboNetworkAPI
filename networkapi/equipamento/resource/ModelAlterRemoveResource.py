@@ -23,14 +23,14 @@ from networkapi.distributedlock import distributedlock, LOCK_MODEL
 from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import Marca, MarcaNotFoundError, EquipamentoError, Modelo, ModeloNotFoundError, MarcaModeloNameDuplicatedError, ModeloUsedByEquipamentoError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 
 
 class ModelAlterRemoveResource(RestResource):
 
-    log = Log('ModelAlterRemoveResource')
+    log = logging.getLogger('ModelAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to edit Model.

@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_version_ip
 from networkapi.vlan.models import VlanError, Vlan, VlanNotFoundError
@@ -30,7 +30,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VLAN
 
 class VlanInvalidateResource(RestResource):
 
-    log = Log('VlanInvalidateResource')
+    log = logging.getLogger('VlanInvalidateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         '''Treat PUT requests to Invalidate a vlan 

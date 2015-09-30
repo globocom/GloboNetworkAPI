@@ -16,12 +16,12 @@
 # limitations under the License.
 
 
-from networkapi.log import Log
+import logging
 
 
 class SQLLogMiddleware(object):
 
-    log = Log('SQLLogMiddleware')
+    log = logging.getLogger('SQLLogMiddleware')
 
     """Loga os SQLs executados em uma requisição."""
 

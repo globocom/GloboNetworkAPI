@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.admin_permission import AdminPermission
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.interface.models import EnvironmentInterface, TipoInterface, Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
 from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError
@@ -34,7 +34,7 @@ class InterfaceResource(RestResource):
 
     '''Classe responsável por tratar as requisições relacionadas com a tabela "interfaces".'''
 
-    log = Log('InterfaceResource')
+    log = logging.getLogger('InterfaceResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Método responsável por tratar as requisições GET para consultar as interfaces.
@@ -307,10 +307,10 @@ class InterfaceResource(RestResource):
                     id_ligacao_back = int(id_ligacao_back)
 
             tipo = interface_map.get('tipo')
-            tipo = TipoInterface.get_by_name(tipo)
+            if tipo is not None:
+                tipo = TipoInterface.get_by_name(tipo)
 
             vlan = interface_map.get('vlan')
-
             with distributedlock(LOCK_INTERFACE % id_interface):
 
                 # Update interface

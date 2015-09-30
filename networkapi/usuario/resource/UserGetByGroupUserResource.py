@@ -22,14 +22,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import UGrupo, UGrupoNotFoundError, GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 class UserGetByGroupUserResource(RestResource):
 
-    log = Log('UserGetByGroupUserResource')
+    log = logging.getLogger('UserGetByGroupUserResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to get Users by Group.

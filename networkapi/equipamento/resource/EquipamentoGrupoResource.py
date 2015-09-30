@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, EquipamentoGrupo, Equipamento, EquipamentoGrupoDuplicatedError, EquipamentoGrupoNotFoundError, EquipmentDontRemoveError
 from networkapi.grupo.models import GrupoError, EGrupo, EGrupoNotFoundError
 from networkapi.infrastructure.xml_utils import loads, XMLError,  dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_GROUP
 from networkapi.exception import InvalidValueError
@@ -32,7 +32,7 @@ class EquipamentoGrupoResource(RestResource):
 
     '''Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela equip_do_grupo.'''
 
-    log = Log('EquipamentoGrupoResource')
+    log = logging.getLogger('EquipamentoGrupoResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Trata as requisições de POST para inserir um equipamento_grupo.

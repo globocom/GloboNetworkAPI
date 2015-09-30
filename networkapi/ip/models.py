@@ -21,7 +21,7 @@ from django.db import models
 from django.db import transaction
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteNotFoundError, \
     EquipamentoAmbienteDuplicatedError, EquipamentoError
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.vlan.models import Vlan, TipoRede
 from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironment, IP_VERSION, ConfigEnvironmentInvalidError, Ambiente
@@ -256,7 +256,7 @@ class NetworkIPv4(BaseModel):
         EnvironmentVip, null=True, db_column='id_ambientevip')
     active = models.BooleanField()
 
-    log = Log('NetworkIPv4')
+    log = logging.getLogger('NetworkIPv4')
 
     class Meta(BaseModel.Meta):
         db_table = u'redeipv4'
@@ -524,7 +524,7 @@ class Ip(BaseModel):
     descricao = models.CharField(max_length=100, blank=True)
     networkipv4 = models.ForeignKey(NetworkIPv4, db_column='id_redeipv4')
 
-    log = Log('Ip')
+    log = logging.getLogger('Ip')
 
     class Meta(BaseModel.Meta):
         db_table = u'ips'
@@ -1208,7 +1208,7 @@ class IpEquipamento(BaseModel):
     ip = models.ForeignKey(Ip, db_column='id_ip')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
-    log = Log('IpEquipamento')
+    log = logging.getLogger('IpEquipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'ips_dos_equipamentos'
@@ -1411,7 +1411,7 @@ class NetworkIPv6(BaseModel):
     mask8 = models.CharField(max_length=4, db_column='mask_bloco8')
     active = models.BooleanField()
 
-    log = Log('NetworkIPv6')
+    log = logging.getLogger('NetworkIPv6')
 
     class Meta(BaseModel.Meta):
         db_table = u'redeipv6'
@@ -1688,7 +1688,7 @@ class Ipv6(BaseModel):
     block7 = models.CharField(max_length=4, db_column='bloco7')
     block8 = models.CharField(max_length=4, db_column='bloco8')
 
-    log = Log('Ipv6')
+    log = logging.getLogger('Ipv6')
 
     class Meta(BaseModel.Meta):
         db_table = u'ipsv6'
@@ -2341,7 +2341,7 @@ class Ipv6Equipament(BaseModel):
     ip = models.ForeignKey(Ipv6, db_column='id_ipv6')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
-    log = Log('Ipv6Equipament')
+    log = logging.getLogger('Ipv6Equipament')
 
     class Meta(BaseModel.Meta):
         db_table = u'ipsv6_dos_equipamentos'
