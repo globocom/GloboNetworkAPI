@@ -14,7 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import json
 import logging
 import mock
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
@@ -84,3 +84,9 @@ def mock_login(func):
     permission_decorator = mock.patch('rest_framework.decorators.permission_classes').start()
     permission_decorator.return_value = lambda func: func
     return func
+
+def load_json(file_path):
+    with open(file_path) as json_data:
+        data = json.loads(json_data.read())
+        json_data.close()
+        return data

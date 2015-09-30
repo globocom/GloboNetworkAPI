@@ -920,44 +920,28 @@ def save(request):
 
         return Response(data, status=status.HTTP_201_CREATED)
 
-    except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
-        log.error(exception)
-        raise exception
-
-    except exceptions.ScriptAddPoolException, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except exceptions.InvalidIdentifierAlreadyPoolException, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except exceptions.InvalidIdentifierFistDigitPoolException, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except exceptions.UpdateEnvironmentVIPException, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except exceptions.UpdateEnvironmentServerPoolMemberException, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except exceptions.IpNotFoundByEnvironment, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except exceptions.InvalidRealPoolException, exception:
-        log.error(exception.default_detail)
-        raise exception
-
-    except UpdateEnvironmentPoolCreatedException, exception:
-        log.error(exception)
+    except (api_exceptions.EnvironmentEnvironmentVipNotBoundedException,
+            exceptions.ScriptAddPoolException,
+            exceptions.InvalidIdentifierAlreadyPoolException,
+            exceptions.InvalidIdentifierFistDigitPoolException,
+            exceptions.UpdateEnvironmentVIPException,
+            exceptions.UpdateEnvironmentServerPoolMemberException,
+            exceptions.IpNotFoundByEnvironment,
+            exceptions.InvalidRealPoolException,
+            exceptions.UpdateEnvironmentPoolCreatedException,
+            exceptions.InvalidServiceDownActionException,
+            exceptions.CreatedPoolIdentifierException,
+            exceptions.ScriptAlterLimitPoolDiffMembersException,
+            exceptions.ScriptAlterLimitPoolException,
+            exceptions.ScriptCreatePoolException,
+            exceptions.ScriptAlterPriorityPoolMembersException,
+            exceptions.InvalidRealPoolException,
+            exceptions.ScriptAlterServiceDownActionException)as exception:
+        log.exception(exception)
         raise exception
 
     except Exception, exception:
-        log.error(exception)
+        log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
 
