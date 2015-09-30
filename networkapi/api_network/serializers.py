@@ -78,9 +78,6 @@ class NetworkIPv4Serializer(serializers.ModelSerializer):
             'dhcprelay'
         )
 
-    def teste(self, dhcprelay):
-        self.dhcprelay = DHCPRelayIPv4Serializer(dhcprelay)
-
 
 class NetworkIPv6Serializer(serializers.ModelSerializer):
 

@@ -27,37 +27,37 @@ from _mysql_exceptions import OperationalError
 
 class DHCPRelayIPv4(BaseModel):
 
-    log = logging.getLogger('DHCPRelayIPv4')
+	log = logging.getLogger('DHCPRelayIPv4')
 
-    id = models.AutoField(primary_key=True, db_column='id_dhcprelay_ipv4')
-    ipv4 = models.ForeignKey(Ip, db_column='id_ip')
-    networkipv4 = models.ForeignKey(NetworkIPv4, db_column='id_networkipv4')
+	id = models.AutoField(primary_key=True, db_column='id_dhcprelay_ipv4')
+	ipv4 = models.ForeignKey(Ip, db_column='id_ip')
+	networkipv4 = models.ForeignKey(NetworkIPv4, db_column='id_networkipv4')
 
-    class Meta(BaseModel.Meta):
-        db_table = u'dhcprelay_ipv4'
-        managed = True
-        unique_together = ('ipv4', 'networkipv4')
+	class Meta(BaseModel.Meta):
+		db_table = u'dhcprelay_ipv4'
+		managed = True
+		unique_together = ('ipv4', 'networkipv4')
 
-    def get_by_pk(self, id):
-        '''Get DHCPRelayIPv4 by id.
+	@classmethod
+	def get_by_pk(self, id):
+		'''Get DHCPRelayIPv4 by id.
 
-        @return: DHCPRelayIPv4
+		@return: DHCPRelayIPv4
 
-        @raise DHCPRelayNotFoundError: DHCPRelayIPv4 is not registered.
-        @raise OperationalError: Lock wait timeout exceed
-        '''
-        try:
-            return DHCPRelayIPv4.objects.get(id=id)
-        except ObjectDoesNotExist, e:
-            raise exceptions.DHCPRelayNotFoundError('IPv4', id)
-        except OperationalError, e:
-            self.log.error(u'Lock wait timeout exceeded searching DHCPRelayIPv4.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
-            self.log.error(u'Failure to search the DHCPRelayIPv4.')
-            raise api_exceptions.NetworkAPIException()
-
+		@raise DHCPRelayNotFoundError: DHCPRelayIPv4 is not registered.
+		@raise OperationalError: Lock wait timeout exceed'''
+		
+		try:
+			return DHCPRelayIPv4.objects.get(id=id)
+		except ObjectDoesNotExist, e:
+			raise exceptions.DHCPRelayNotFoundError('IPv4', id)
+		except OperationalError, e:
+			self.log.error(u'Lock wait timeout exceeded searching DHCPRelayIPv4.')
+			raise OperationalError(
+				e, u'Lock wait timeout exceeded; try restarting transaction')
+		except Exception, e:
+			self.log.error(u'Failure to search the DHCPRelayIPv4.')
+			raise api_exceptions.NetworkAPIException()
 
 class DHCPRelayIPv6(BaseModel):
 

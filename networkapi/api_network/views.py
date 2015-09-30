@@ -21,6 +21,7 @@ from rest_framework.exceptions import APIException
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.transaction import commit_on_success
+from rest_framework.views import APIView
 
 import logging
 from networkapi.auth import has_perm
@@ -29,7 +30,7 @@ from networkapi.admin_permission import AdminPermission
 
 from networkapi.api_network import facade
 from networkapi.api_network.permissions import Read, Write, DeployConfig
-from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer
+from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer, DHCPRelayIPv4Serializer, DHCPRelayIPv6Serializer
 from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
 from networkapi.api_network import exceptions
 
@@ -37,6 +38,155 @@ from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv4NotFoundEr
 from networkapi.equipamento.models import Equipamento
 
 log = logging.getLogger(__name__)
+
+
+class DHCPRelayIPv4View(APIView):
+    @permission_classes((IsAuthenticated, Read))
+    def get(self, *args, **kwargs):
+        '''Lists DHCP relay ipv4 and filter by network or IP parameters
+        '''
+        try:
+
+            networkipv4_id = ''
+            ipv4_id = ''
+
+            if self.request.QUERY_PARAMS.has_key("networkipv4"):
+                networkipv4_id = int(self.request.QUERY_PARAMS["networkipv4"])
+            if self.request.QUERY_PARAMS.has_key("ipv4"):
+                ipv4_id = int(self.request.QUERY_PARAMS["ipv4"])
+
+            dhcprelayipv4_obj = DHCPRelayIPv4.objects.all()
+
+            if networkipv4_id is not '':
+                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(networkipv4__id=networkipv4_id)
+            if ipv4_id is not '':
+                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(ipv4__id=ipv4_id)
+
+            serializer_options = DHCPRelayIPv4Serializer(
+                dhcprelayipv4_obj,
+                many=True
+            )
+
+            return Response(serializer_options.data)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException()
+
+    @permission_classes((IsAuthenticated, Write))
+    def post(self, *args, **kwargs):
+        '''Insert DHCP relay ipv4 and filter by network or IP parameters
+        '''
+        try:
+            data = self.request.DATA
+            if type(data) is not list:
+                self.request.DATA = [data]
+
+            #TODO
+            for dhcprelay in self.request.DATA:
+                networkipv4 = dhcprelay['networkipv4']
+                ipv4 = dhcprelay['ipv4']
+                log.info("%s %s" % (networkipv4, ipv4))
+                dhcprelay_obj = DHCPRelayIPv4()
+                dhcprelay_obj.ipv4 = ipv4
+                dhcprelay_obj.networkipv4 = networkipv4
+                dhcprelay_obj.save(self.request.user)
+
+            if networkipv4_id is not '':
+                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(networkipv4__id=networkipv4_id)
+            if ipv4_id is not '':
+                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(ipv4__id=ipv4_id)
+
+            serializer_options = DHCPRelayIPv4Serializer(
+                dhcprelayipv4_obj,
+                many=True
+            )
+
+            return Response(serializer_options.data)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException()
+
+class DHCPRelayIPv4ByPkView(APIView):
+    @permission_classes((IsAuthenticated, Read))
+    def get(self, *args, **kwargs):
+        '''Lists dhcprelay ipv4 entry
+        '''
+        dhcprelay_id = kwargs['dhcprelay_id']
+        dhcprelayIPv4_obj = DHCPRelayIPv4.get_by_pk(id=dhcprelay_id)
+        serializer_options = DHCPRelayIPv4Serializer(
+            dhcprelayIPv4_obj,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+
+    @permission_classes((IsAuthenticated, Write))
+    def delete(self, *args, **kwargs):
+        '''Delete dhcprelay ipv4 entry
+        '''
+        dhcprelay_id = kwargs['dhcprelay_id']
+        dhcprelayIPv4_obj = DHCPRelayIPv4.get_by_pk(id=dhcprelay_id).delete(self.request.user)
+
+        return Response({})
+
+class DHCPRelayIPv6View(APIView):
+
+    @permission_classes((IsAuthenticated, Read))
+    def get(self, *args, **kwargs):
+        '''Lists DHCP relay ipv6 and filter by network or IP parameters
+        '''
+        try:
+
+            networkipv6_id = ''
+            ipv6_id = ''
+
+            if self.request.QUERY_PARAMS.has_key("networkipv6"):
+                networkipv6_id = int(self.request.QUERY_PARAMS["networkipv6"])
+            if self.request.QUERY_PARAMS.has_key("ipv6"):
+                ipv6_id = int(self.request.QUERY_PARAMS["ipv6"])
+
+            dhcprelayipv6_obj = DHCPRelayIPv6.objects.all()
+
+            if networkipv6_id is not '':
+                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(networkipv6__id=networkipv6_id)
+            if ipv6_id is not '':
+                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(ipv6__id=ipv6_id)
+
+            serializer_options = DHCPRelayIPv6Serializer(
+                dhcprelayipv6_obj,
+                many=True
+            )
+
+            return Response(serializer_options.data)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException()
+
+class DHCPRelayIPv6ByPkView(APIView):
+    @permission_classes((IsAuthenticated, Read))
+    def get(self, *args, **kwargs):
+        '''Lists DHCPrelay IPv6 entry
+        '''
+        dhcprelay_id = kwargs['dhcprelay_id']
+        dhcprelayIPv6_obj = DHCPRelayIPv6.get_by_pk(id=dhcprelay_id)
+        serializer_options = DHCPRelayIPv6Serializer(
+            dhcprelayIPv6_obj,
+            many=False
+        )
+
+        return Response(serializer_options.data)
+
+    @permission_classes((IsAuthenticated, Write))
+    def delete(self, *args, **kwargs):
+        '''Delete DHCPrelay IPv6 entry
+        '''
+        dhcprelay_id = kwargs['dhcprelay_id']
+        dhcprelayIPv6_obj = DHCPRelayIPv6.get_by_pk(id=dhcprelay_id).delete(self.request.user)
+
+        return Response({})
 
 
 @api_view(['GET'])
@@ -75,12 +225,10 @@ def networksIPv4_by_pk(request, network_id):
     try:
 
         networkIPv4_obj = NetworkIPv4.get_by_pk(network_id)
-        dhcprelay = DHCPRelayIPv4.objects.filter(networkipv4=networkIPv4_obj)
         serializer_options = NetworkIPv4Serializer(
             networkIPv4_obj,
             many=False
         )
-        serializer_options.teste(dhcprelay)
 
         return Response(serializer_options.data)
 
