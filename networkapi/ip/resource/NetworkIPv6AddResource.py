@@ -225,7 +225,7 @@ class NetworkIPv6AddResource(RestResource):
                         user, ipv6_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                        router_ip = Ipv6.get_first_available_ip6(network_ipv6.id, True)
                         ipv6_model2 = Ipv6()
                         ipv6_model2.block1 = router_ip[0]
                         ipv6_model2.block2 = router_ip[1]
