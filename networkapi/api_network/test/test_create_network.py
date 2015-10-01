@@ -13,7 +13,7 @@ from networkapi.vlan.models import Vlan
 
 LOG = logging.getLogger(__name__)
 
-class NetworkViewsTestCase(unittest.TestCase):
+class NetworkCreateTestCase(unittest.TestCase):
 
     def setUp(self):
         self.client = APIClient()

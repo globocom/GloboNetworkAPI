@@ -14,7 +14,7 @@ from networkapi.vlan.models import Vlan
 
 LOG = logging.getLogger(__name__)
 
-class NetworkViewsTestCase(unittest.TestCase):
+class NetworkFacadeTestCase(unittest.TestCase):
 
     def setUp(self):
         self.user = Usuario()
