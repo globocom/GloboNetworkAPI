@@ -22,19 +22,19 @@ from networkapi.models.BaseModel import BaseModel
 
 import collections
 
-from functools import wraps
-
-def disable_for_loaddata(signal_handler):
-    """
-    Decorator that turns off signal handlers when loading fixture data.
-    """
-
-    @wraps(signal_handler)
-    def wrapper(*args, **kwargs):
-        if kwargs['raw']:
-            return
-        signal_handler(*args, **kwargs)
-    return wrapper
+# from functools import wraps
+#
+# def disable_for_loaddata(signal_handler):
+#     """
+#     Decorator that turns off signal handlers when loading fixture data.
+#     """
+#
+#     @wraps(signal_handler)
+#     def wrapper(*args, **kwargs):
+#         if kwargs['raw']:
+#             return
+#         signal_handler(*args, **kwargs)
+#     return wrapper
 
 class MissingUserError(Exception):
 
