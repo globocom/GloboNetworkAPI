@@ -2,6 +2,10 @@ from rest_framework.exceptions import APIException
 from rest_framework import status
 
 
+class CannotRemoveDHCPRelayFromActiveNetwork(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Cannot remove DHCPRelay IP from an active network.'
+
 class DHCPRelayNotFoundError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No DHCPRelayIPv4 found.'
@@ -11,9 +15,9 @@ class DHCPRelayNotFoundError(APIException):
 
 class DHCPRelayAlreadyExistsError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'DHCPRelayIPv4 with giver parameters already found.'
+    default_detail = 'DHCPRelayIP with giver parameters already found.'
     def __init__(self, ip_id, network_id):
-        self.detail = u'DHCPRelayIPv4 with giver parameters already found (%s, %s).' % (ip_id, network_id)
+        self.detail = u'DHCPRelayIP with giver parameters already found (%s, %s).' % (ip_id, network_id)
 
 class EquipmentIDNotInCorrectEnvException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

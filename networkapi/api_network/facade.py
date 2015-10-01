@@ -28,10 +28,12 @@ from networkapi.settings import NETWORK_CONFIG_FILES_PATH,\
 							 NETWORK_CONFIG_TOAPPLY_REL_PATH, NETWORK_CONFIG_TEMPLATE_PATH
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.distributedlock import distributedlock,LOCK_VLAN, \
-								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4, LOCK_NETWORK_IPV6, LOCK_DCHCPv4_NET
+								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4, LOCK_NETWORK_IPV6, \
+								 LOCK_DCHCPv4_NET, LOCK_DCHCPv6_NET
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.plugins.factory import PluginFactory
 from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
+from networkapi.api_network import exceptions
 
 
 log = logging.getLogger(__name__)
@@ -49,6 +51,36 @@ def create_dhcprelayIPv4_object(user, ipv4_id, networkipv4_id):
 		dhcprelay_obj.create(ipv4_id, networkipv4_id)
 		dhcprelay_obj.save(user)
 		return dhcprelay_obj
+
+def create_dhcprelayIPv6_object(user, ipv6_id, networkipv6_id):
+
+	with distributedlock(LOCK_DCHCPv6_NET % networkipv6_id):
+		dhcprelay_obj = DHCPRelayIPv6()
+		dhcprelay_obj.create(ipv6_id, networkipv6_id)
+		dhcprelay_obj.save(user)
+		return dhcprelay_obj
+
+def delete_dhcprelayipv4(user, dhcprelayipv4_id):
+
+	dhcprelayipv4_obj = DHCPRelayIPv4.get_by_pk(id=dhcprelayipv4_id)
+
+	with distributedlock(LOCK_NETWORK_IPV4 % dhcprelayipv4_obj.networkipv4.id):
+		if not dhcprelayipv4_obj.networkipv4.active:
+			dhcprelayipv4_obj.delete(user)
+			return True
+		else:
+			raise exceptions.CannotRemoveDHCPRelayFromActiveNetwork()
+
+def delete_dhcprelayipv6(user, dhcprelayipv6_id):
+
+	dhcprelayipv6_obj = DHCPRelayIPv6.get_by_pk(id=dhcprelayipv6_id)
+
+	with distributedlock(LOCK_NETWORK_IPV6 % dhcprelayipv6_obj.networkipv6.id):
+		if not dhcprelayipv6_obj.networkipv6.active:
+			dhcprelayipv6_obj.delete(user)
+			return True
+		else:
+			raise exceptions.CannotRemoveDHCPRelayFromActiveNetwork()
 
 def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 	'''Loads template for creating Network IPv4 equipment configuration, creates file and

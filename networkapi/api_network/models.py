@@ -83,6 +83,17 @@ class DHCPRelayIPv6(BaseModel):
 		managed = True
 		unique_together = ('ipv6', 'networkipv6')
 
+	def create(self, ipv6_id, networkipv6_id):
+		ipv6 = Ipv6.get_by_pk(ipv6_id)
+		networkipv6 = NetworkIPv6.get_by_pk(networkipv6_id)
+
+		if len(DHCPRelayIPv6.objects.filter(ipv6=ipv6, networkipv6=networkipv6)) > 0:
+			raise exceptions.DHCPRelayAlreadyExistsError(ipv6_id, networkipv6_id)
+		
+		self.ipv6 = ipv6
+		self.networkipv6 = networkipv6
+
+	@classmethod
 	def get_by_pk(self, id):
 		'''Get DHCPRelayIPv6 by id.
 

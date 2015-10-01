@@ -83,13 +83,11 @@ class DHCPRelayIPv4View(APIView):
 
         try:
             networkipv4_id = int(data['networkipv4'])
-            ipv4_id = int(data['ipv4'])
+            ipv4_id = int(data['ipv4']['id'])
         except Exception, exception:
             raise exceptions.InvalidInputException()
 
         try:
-
-
             dhcprelay_obj = facade.create_dhcprelayIPv4_object(self.request.user, ipv4_id, networkipv4_id)
 
             serializer_options = DHCPRelayIPv4Serializer(
@@ -116,7 +114,6 @@ class DHCPRelayIPv4ByPkView(APIView):
             dhcprelayIPv4_obj,
             many=False
         )
-
         return Response(serializer_options.data)
 
     @permission_classes((IsAuthenticated, Write))
@@ -124,12 +121,10 @@ class DHCPRelayIPv4ByPkView(APIView):
         '''Delete dhcprelay ipv4 entry
         '''
         dhcprelay_id = kwargs['dhcprelay_id']
-        dhcprelayIPv4_obj = DHCPRelayIPv4.get_by_pk(id=dhcprelay_id).delete(self.request.user)
-
+        facade.delete_dhcprelayipv4(self.request.user, dhcprelay_id)
         return Response({})
 
 class DHCPRelayIPv6View(APIView):
-
     @permission_classes((IsAuthenticated, Read))
     def get(self, *args, **kwargs):
         '''Lists DHCP relay ipv6 and filter by network or IP parameters
@@ -147,9 +142,9 @@ class DHCPRelayIPv6View(APIView):
             dhcprelayipv6_obj = DHCPRelayIPv6.objects.all()
 
             if networkipv6_id is not '':
-                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(networkipv6__id=networkipv6_id)
+                dhcprelayipv6_obj = dhcprelayipv6_obj.filter(networkipv6__id=networkipv6_id)
             if ipv6_id is not '':
-                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(ipv6__id=ipv6_id)
+                dhcprelayipv6_obj = dhcprelayipv6_obj.filter(ipv6__id=ipv6_id)
 
             serializer_options = DHCPRelayIPv6Serializer(
                 dhcprelayipv6_obj,
@@ -160,6 +155,37 @@ class DHCPRelayIPv6View(APIView):
 
         except Exception, exception:
             log.error(exception)
+            raise api_exceptions.NetworkAPIException()
+
+    @permission_classes((IsAuthenticated, Write))
+    def post(self, *args, **kwargs):
+        '''Insert DHCP relay ipv6 and filter by network or IP parameters
+        '''
+        data = self.request.DATA
+        if type(data) is list:
+            raise exceptions.InvalidInputException()
+
+        try:
+            networkipv6_id = int(data['networkipv6'])
+            ipv6_id = int(data['ipv6']['id'])
+            log.info ("DADOS %s %s" % (networkipv6_id, ipv6_id))
+        except Exception, exception:
+            raise exceptions.InvalidInputException()
+
+        try:
+            dhcprelay_obj = facade.create_dhcprelayIPv6_object(self.request.user, ipv6_id, networkipv6_id)
+
+            serializer_options = DHCPRelayIPv6Serializer(
+                dhcprelay_obj,
+                many=False
+            )
+
+            return Response(serializer_options.data)
+
+        except exceptions.DHCPRelayAlreadyExistsError, exception:
+            raise exception
+        except Exception, exception:
+            log.error("Error: %s" % str(exception))
             raise api_exceptions.NetworkAPIException()
 
 class DHCPRelayIPv6ByPkView(APIView):
@@ -181,8 +207,7 @@ class DHCPRelayIPv6ByPkView(APIView):
         '''Delete DHCPrelay IPv6 entry
         '''
         dhcprelay_id = kwargs['dhcprelay_id']
-        dhcprelayIPv6_obj = DHCPRelayIPv6.get_by_pk(id=dhcprelay_id).delete(self.request.user)
-
+        facade.delete_dhcprelayipv6(self.request.user, dhcprelay_id)
         return Response({})
 
 
