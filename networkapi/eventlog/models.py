@@ -15,12 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import logging
+import uuid
+import threading
 from django.db import models
 from datetime import datetime
 from networkapi.models.BaseModel import BaseModel
 from networkapi.usuario.models import Usuario
-import logging
+
+from django.utils.translation import ugettext_lazy as _
 
 class EventLogError(Exception):
 
@@ -83,6 +86,68 @@ class EventLog(BaseModel):
 
         return userlist
 
+class AuditRequest(models.Model):
+    """
+    copied from https://github.com/leandrosouza/django-simple-audit
+    """
+
+    THREAD_LOCAL = threading.local()
+
+    request_id = models.CharField(max_length=255)
+    ip = models.IPAddressField()
+    path = models.CharField(max_length=1024)
+    date = models.DateTimeField(auto_now_add=True, verbose_name=_("Date"))
+    user = models.ForeignKey(Usuario)
+
+    class Meta:
+        db_table = u'audit_request'
+
+    @staticmethod
+    def new_request(path, user, ip):
+        """
+        Create a new request from a path, user and ip and put it on thread context.
+        The new request should not be saved until first use or calling method current_request(True)
+        """
+        audit_request = AuditRequest()
+        audit_request.ip = ip
+        audit_request.user = user
+        audit_request.path = path
+        audit_request.request_id = uuid.uuid4().hex
+        while AuditRequest.objects.filter(request_id=audit_request.request_id).exists():
+            audit_request.request_id = uuid.uuid4().hex
+
+        AuditRequest.THREAD_LOCAL.current = audit_request
+        return audit_request
+
+    @staticmethod
+    def set_request_from_id(request_id):
+        """ Load an old request from database and put it again in thread context. If request_id doesn't
+        exist, thread context will be cleared """
+        audit_request = None
+        if request_id is not None:
+            try:
+                audit_request = AuditRequest.objects.get(request_id=request_id)
+            except AuditRequest.DoesNotExist:
+                pass
+
+        AuditRequest.THREAD_LOCAL.current = audit_request
+
+    @staticmethod
+    def current_request(force_save=False):
+        """ Get current request from thread context (or None doesn't exist). If you specify force_save,
+        current request will be saved on database first.
+        """
+        audit_request = getattr(AuditRequest.THREAD_LOCAL, 'current', None)
+        if force_save and audit_request is not None and audit_request.pk is None:
+            audit_request.save()
+        return audit_request
+
+    @staticmethod
+    def cleanup_request():
+        """
+        Remove audit request from thread context
+        """
+        AuditRequest.THREAD_LOCAL.current = None
 
 class Functionality(models.Model):
     nome = models.CharField(
