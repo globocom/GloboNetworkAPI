@@ -35,7 +35,21 @@ from django.core import validators
 from .decorators import deprecated
 
 LOCK = 'LOCK'
+PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
 
+def search_hide_password(msg):
+    """
+    Search and hide password
+    """
+
+    for text in PATTERN_XML_PASSWORD:
+        r = re.compile(text)
+        m = r.search(msg)
+        if m:
+            password = m.group(1)
+            msg = msg.replace(password, "****")
+
+    return msg
 
 def is_valid_regex(string, regex):
     '''Checks if the parameter is a valid value by regex.
