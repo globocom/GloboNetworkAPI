@@ -21,6 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import logging
 from networkapi.api_network import exceptions
 from rest_framework.exceptions import APIException
+from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.models.BaseModel import BaseModel
 from networkapi.ip.models import Ip, Ipv6, NetworkIPv4, NetworkIPv6
 from _mysql_exceptions import OperationalError
@@ -37,6 +38,16 @@ class DHCPRelayIPv4(BaseModel):
 		db_table = u'dhcprelay_ipv4'
 		managed = True
 		unique_together = ('ipv4', 'networkipv4')
+
+	def create(self, ipv4_id, networkipv4_id):
+		ipv4 = Ip.get_by_pk(ipv4_id)
+		networkipv4 = NetworkIPv4.get_by_pk(networkipv4_id)
+
+		if len(DHCPRelayIPv4.objects.filter(ipv4=ipv4, networkipv4=networkipv4)) > 0:
+			raise exceptions.DHCPRelayAlreadyExistsError(ipv4_id, networkipv4_id)
+		
+		self.ipv4 = ipv4
+		self.networkipv4 = networkipv4
 
 	@classmethod
 	def get_by_pk(self, id):

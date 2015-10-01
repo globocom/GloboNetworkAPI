@@ -28,9 +28,10 @@ from networkapi.settings import NETWORK_CONFIG_FILES_PATH,\
 							 NETWORK_CONFIG_TOAPPLY_REL_PATH, NETWORK_CONFIG_TEMPLATE_PATH
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.distributedlock import distributedlock,LOCK_VLAN, \
-								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4, LOCK_NETWORK_IPV6
+								 LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT, LOCK_NETWORK_IPV4, LOCK_NETWORK_IPV6, LOCK_DCHCPv4_NET
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
 
 
 log = logging.getLogger(__name__)
@@ -39,6 +40,15 @@ TEMPLATE_NETWORKv4_ACTIVATE = "ipv4_activate_network_configuration"
 TEMPLATE_NETWORKv4_DEACTIVATE = "ipv4_deactivate_network_configuration"
 TEMPLATE_NETWORKv6_ACTIVATE = "ipv6_activate_network_configuration"
 TEMPLATE_NETWORKv6_DEACTIVATE = "ipv6_deactivate_network_configuration"
+
+
+def create_dhcprelayIPv4_object(user, ipv4_id, networkipv4_id):
+
+	with distributedlock(LOCK_DCHCPv4_NET % networkipv4_id):
+		dhcprelay_obj = DHCPRelayIPv4()
+		dhcprelay_obj.create(ipv4_id, networkipv4_id)
+		dhcprelay_obj.save(user)
+		return dhcprelay_obj
 
 def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 	'''Loads template for creating Network IPv4 equipment configuration, creates file and
@@ -257,6 +267,11 @@ def _generate_template_dict(dict_ips, equipment):
 	key_dict["FIRST_NETWORK"] = dict_ips["first_network"]
 	if 'vrf' in dict_ips.keys():
 		key_dict["VRF"] = dict_ips["vrf"]
+
+	if 'dhcprelay_list' in dict_ips.keys():
+		key_dict["DHCPRELAY_LIST"] = dict_ips["dhcprelay_list"]
+	else:
+		key_dict["DHCPRELAY_LIST"] = []
 	#key_dict["ACL_IN"] = ""
 	#key_dict["ACL_OUT"] = ""
 
@@ -291,6 +306,14 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 		dict_ips["vrf"] = networkipv4.vlan.vrf
 	elif networkipv4.vlan.ambiente.vrf is not None and networkipv4.vlan.ambiente.vrf is not '':
 		dict_ips["vrf"] = networkipv4.vlan.ambiente.vrf
+
+	#DHCPRelay list
+	dhcprelay_list = DHCPRelayIPv4.objects.filter(networkipv4=networkipv4)
+	if len(dhcprelay_list) > 0:
+		dict_ips["dhcprelay_list"] = []
+		for dhcprelay in dhcprelay_list:
+			ipv4 = "%s.%s.%s.%s" % (dhcprelay.ipv4.oct1, dhcprelay.ipv4.oct2, dhcprelay.ipv4.oct3, dhcprelay.ipv4.oct4)
+			dict_ips["dhcprelay_list"].append(ipv4)
 
 	dict_ips["gateway"] = "%d.%d.%d.%d" % (gateway_ip.oct1, gateway_ip.oct2, gateway_ip.oct3, gateway_ip.oct4) 
 	dict_ips["ip_version"] = "IPV4"

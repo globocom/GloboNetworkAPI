@@ -77,33 +77,26 @@ class DHCPRelayIPv4View(APIView):
     def post(self, *args, **kwargs):
         '''Insert DHCP relay ipv4 and filter by network or IP parameters
         '''
+        data = self.request.DATA
+        if type(data) is list:
+            raise exceptions.InvalidInputException()
+
         try:
-            data = self.request.DATA
-            if type(data) is not list:
-                self.request.DATA = [data]
 
-            #TODO
-            for dhcprelay in self.request.DATA:
-                networkipv4 = dhcprelay['networkipv4']
-                ipv4 = dhcprelay['ipv4']
-                log.info("%s %s" % (networkipv4, ipv4))
-                dhcprelay_obj = DHCPRelayIPv4()
-                dhcprelay_obj.ipv4 = ipv4
-                dhcprelay_obj.networkipv4 = networkipv4
-                dhcprelay_obj.save(self.request.user)
+            networkipv4_id = data['networkipv4']
+            ipv4_id = data['ipv4']
 
-            if networkipv4_id is not '':
-                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(networkipv4__id=networkipv4_id)
-            if ipv4_id is not '':
-                dhcprelayipv4_obj = dhcprelayipv4_obj.filter(ipv4__id=ipv4_id)
+            dhcprelay_obj = facade.create_dhcprelayIPv4_object(self.request.user, ipv4_id, networkipv4_id)
 
             serializer_options = DHCPRelayIPv4Serializer(
-                dhcprelayipv4_obj,
-                many=True
+                dhcprelay_obj,
+                many=False
             )
 
             return Response(serializer_options.data)
 
+        except exceptions.DHCPRelayAlreadyExistsError, exception:
+            raise exception
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException()

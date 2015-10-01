@@ -9,6 +9,12 @@ class DHCPRelayNotFoundError(APIException):
     def __init__(self, version='', id=None):
         self.detail = u'There is no DHCPRelay%s with id = %s.' % (version, id)
 
+class DHCPRelayAlreadyExistsError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'DHCPRelayIPv4 with giver parameters already found.'
+    def __init__(self, ip_id, network_id):
+        self.detail = u'DHCPRelayIPv4 with giver parameters already found (%s, %s).' % (ip_id, network_id)
+
 class EquipmentIDNotInCorrectEnvException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Equipments are not part of network environment.'
@@ -22,6 +28,10 @@ class IncorrectRedundantGatewayRegistryException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Equipment IPs not correctly registered. \
          Equipments should have first IP of network allocated for them as gateways.'
+
+class InvalidInputException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid input.'
 
 class InvalidNetworkIDException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
