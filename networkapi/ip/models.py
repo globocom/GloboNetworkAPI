@@ -1430,6 +1430,12 @@ class NetworkIPv6(BaseModel):
 
     ip_formated = property(_get_formated_ip)
 
+    @cached_property
+    def dhcprelay(self):
+        from networkapi.api_network.models import DHCPRelayIPv6
+
+        return DHCPRelayIPv6.objects.filter(networkipv6=self)
+
     @classmethod
     def get_by_pk(self, id):
         """Get NetworkIPv6 by id.

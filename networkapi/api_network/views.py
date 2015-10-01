@@ -82,9 +82,13 @@ class DHCPRelayIPv4View(APIView):
             raise exceptions.InvalidInputException()
 
         try:
+            networkipv4_id = int(data['networkipv4'])
+            ipv4_id = int(data['ipv4'])
+        except Exception, exception:
+            raise exceptions.InvalidInputException()
 
-            networkipv4_id = data['networkipv4']
-            ipv4_id = data['ipv4']
+        try:
+
 
             dhcprelay_obj = facade.create_dhcprelayIPv4_object(self.request.user, ipv4_id, networkipv4_id)
 
@@ -98,7 +102,7 @@ class DHCPRelayIPv4View(APIView):
         except exceptions.DHCPRelayAlreadyExistsError, exception:
             raise exception
         except Exception, exception:
-            log.error(exception)
+            log.error("Error: %s" % str(exception))
             raise api_exceptions.NetworkAPIException()
 
 class DHCPRelayIPv4ByPkView(APIView):
