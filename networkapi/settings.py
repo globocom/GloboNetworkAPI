@@ -248,12 +248,14 @@ if LOG_SHOW_SQL:
         #        'django.contrib.auth.middleware.AuthenticationMiddleware',
         'networkapi.SQLLogMiddleware.SQLLogMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
+        'simple_audit.middleware.TrackingRequestOnThreadLocalMiddleware',
     )
 else:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
+        'simple_audit.middleware.TrackingRequestOnThreadLocalMiddleware',
         #        'django.contrib.sessions.middleware.SessionMiddleware',
         #        'django.contrib.auth.middleware.AuthenticationMiddleware',
     )
