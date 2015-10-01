@@ -52,7 +52,7 @@ LOG_LEVEL = logging.DEBUG
 
 
 LOG_DAYS = 10
-LOG_SHOW_SQL = False
+LOG_SHOW_SQL = True
 LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
 LOG_USE_STDOUT = False
 LOG_SHOW_TRACEBACK = True
@@ -244,20 +244,20 @@ if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
-        #        'django.contrib.sessions.middleware.SessionMiddleware',
-        #        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'networkapi.SQLLogMiddleware.SQLLogMiddleware',
+       'django.contrib.sessions.middleware.SessionMiddleware',
+       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'networkapi.middlewares.SQLLogMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
-        'simple_audit.middleware.TrackingRequestOnThreadLocalMiddleware',
+        'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
 else:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
-        'simple_audit.middleware.TrackingRequestOnThreadLocalMiddleware',
-        #        'django.contrib.sessions.middleware.SessionMiddleware',
-        #        'django.contrib.auth.middleware.AuthenticationMiddleware',
+       'django.contrib.sessions.middleware.SessionMiddleware',
+       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
 
 ROOT_URLCONF = 'networkapi.urls'
@@ -314,6 +314,8 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR="networkapi.api_rest.authentication.BasicAuthentication"
 
 NETWORKAPI_VERSION = "1.0"
 
