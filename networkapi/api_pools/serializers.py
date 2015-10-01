@@ -60,7 +60,7 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
 
     def get_vip_port(self, obj):
 
-        return obj.vip_ports[0].port_vip
+        return obj.vip_ports[0].port_vip if obj.vip_ports else 0
 
     # def get_vip_ports(self, obj):
     #
