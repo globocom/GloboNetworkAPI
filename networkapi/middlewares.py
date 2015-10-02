@@ -20,6 +20,7 @@ import logging
 from django.conf import settings
 
 from networkapi.eventlog.models import AuditRequest
+from networkapi.api_rest.authentication import BasicAuthentication
 
 class SQLLogMiddleware(object):
 
@@ -54,13 +55,12 @@ class TrackingRequestOnThreadLocalMiddleware(object):
             ip = self._get_ip(request)
             AuditRequest.new_request(request.get_full_path(), request.user, ip)
         else:
-            if settings.DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR:
-                user_auth_tuple = settings.DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR().authenticate(request)
+            user_auth_tuple = BasicAuthentication().authenticate(request)
 
-                if user_auth_tuple is not None:
-                    user, token = user_auth_tuple
-                    ip = self._get_ip(request)
-                    AuditRequest.new_request(request.get_full_path(), user, ip)
+            if user_auth_tuple is not None:
+                user, token = user_auth_tuple
+                ip = self._get_ip(request)
+                AuditRequest.new_request(request.get_full_path(), user, ip)
 
     def process_response(self, request, response):
         AuditRequest.cleanup_request()
