@@ -147,6 +147,9 @@ class RestResource(object):
             credentials = BasicAuthentication().authenticate(request)
             user = credentials[0] if credentials is not None else None
 
+        if user:
+            request.user = user
+
         return user
 
     def not_authenticated(self):
