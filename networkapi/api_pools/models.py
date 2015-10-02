@@ -120,7 +120,7 @@ class OptionPool (BaseModel):
 
             @return: All Option Pool.
 
-            @raise OperationalError: Failed to search for all Option Pool.
+            @raise OptionPoolError: Failed to search for all Option Pool.
         """
         try:
             return OptionPool.objects.all()

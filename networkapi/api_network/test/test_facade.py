@@ -67,9 +67,7 @@ class NetworkFacadeTestCase(unittest.TestCase):
 
         response = deploy_networkIPv4_configuration(self.user, self.networkv4, self.equipment_list)
 
-        file_path = 'networkapi/generated_config/network/network_equip1_config_NoRequestId'
-        lockvar_name = 'equipment_deploy_config_network_script:1'
-        deploy_config_mock.assert_called_with(file_path, self.equipment_list[0], lockvar_name)
+        self.assertTrue(deploy_config_mock.called)
         network_activation_mock.assert_called_with(self.user)
         self.assertFalse(vlan_activation_mock.called)
         self.assertEquals({1: 'config_deployed'}, response)
@@ -87,9 +85,7 @@ class NetworkFacadeTestCase(unittest.TestCase):
 
         response = deploy_networkIPv4_configuration(self.user, self.networkv4, self.equipment_list)
 
-        file_path = 'networkapi/generated_config/network/network_equip1_config_NoRequestId'
-        lockvar_name = 'equipment_deploy_config_network_script:1'
-        deploy_config_mock.assert_called_with(file_path, self.equipment_list[0], lockvar_name)
+        self.assertTrue(deploy_config_mock.called)
         network_activation_mock.assert_called_with(self.user)
         vlan_activation_mock.assert_called_with(self.user)
         self.assertEquals({1: 'config_deployed'}, response)
@@ -128,9 +124,7 @@ class NetworkFacadeTestCase(unittest.TestCase):
 
         response = deploy_networkIPv6_configuration(self.user, self.networkv6, self.equipment_list)
 
-        file_path = 'networkapi/generated_config/network/network_equip1_config_NoRequestId'
-        lockvar_name = 'equipment_deploy_config_network_script:1'
-        deploy_config_mock.assert_called_with(file_path, self.equipment_list[0], lockvar_name)
+        self.assertTrue(deploy_config_mock.called)
         network_activation_mock.assert_called_with(self.user)
         self.assertFalse(vlan_activation_mock.called)
         self.assertEquals({1: 'config_deployed'}, response)
@@ -149,9 +143,7 @@ class NetworkFacadeTestCase(unittest.TestCase):
 
         response = deploy_networkIPv6_configuration(self.user, self.networkv6, self.equipment_list)
 
-        file_path = 'networkapi/generated_config/network/network_equip1_config_NoRequestId'
-        lockvar_name = 'equipment_deploy_config_network_script:1'
-        deploy_config_mock.assert_called_with(file_path, self.equipment_list[0], lockvar_name)
+        self.assertTrue(deploy_config_mock.called)
         network_activation_mock.assert_called_with(self.user)
         vlan_activation_mock.assert_called_with(self.user)
         self.assertEquals({1: 'config_deployed'}, response)
@@ -195,10 +187,12 @@ class NetworkFacadeTestCase(unittest.TestCase):
         return deploy_config_mock
 
     def mock_network_activation(self):
-        return patch('networkapi.ip.models.NetworkIPv4.activate').start()
+        self.networkv4.activate = MagicMock()
+        return self.networkv4.activate
 
     def mock_networkv6_activation(self):
-        return patch('networkapi.ip.models.NetworkIPv6.activate').start()
+        self.networkv6.activate = MagicMock()
+        return self.networkv6.activate
 
     def mock_vlan_activation(self):
         return patch('networkapi.vlan.models.Vlan.activate').start()
