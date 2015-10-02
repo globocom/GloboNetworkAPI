@@ -38,13 +38,14 @@ class BaseModel(models.Model):
     def set_authenticated_user(self, user):
         self.authenticated_user = user
 
-    def save(self, user, force_insert=False, force_update=False, commit=False):
-        self.set_authenticated_user(user)
+    def save(self, user=None, force_insert=False, force_update=False, commit=False):
+        if user:
+            self.set_authenticated_user(user)
         super(BaseModel, self).save(force_insert, force_update)
         if commit == True:
             transaction.commit()
 
-    def delete(self, user):
+    def delete(self, user=None):
         '''
         Replace  super(BaseModel, self).delete()
         Cause: When delete relationship in cascade  default no have attribute User to Log.
@@ -56,7 +57,8 @@ class BaseModel(models.Model):
         collector = Collector(using=using)
         collector.collect([self])
 
-        for key in collector.data.keys():
-            key.authenticated_user = user
+        if user:
+            for key in collector.data.keys():
+                key.authenticated_user = user
 
         collector.delete()

@@ -39,6 +39,11 @@ class EventLogError(Exception):
 
 
 class EventLog(BaseModel):
+
+    ADD = 0
+    CHANGE = 1
+    DELETE = 2
+
     id = models.AutoField(primary_key=True, db_column='id_evento')
     usuario = models.ForeignKey(Usuario, db_column='id_user')
     hora_evento = models.DateTimeField()
@@ -58,7 +63,20 @@ class EventLog(BaseModel):
 
     @classmethod
     def log(cls, usuario, evento):
-        """ Gera um log da operação realizada pelo usuário """
+        """
+        saves the eventlog in the database
+        @params
+        usuario: Usuario object
+        evento: dict in the form
+        {
+            "acao": value,
+            "funcionalidade": value,
+            "parametro_anterior": value,
+            "parametro_atual": value,
+            "id_objeto": value,
+            "audit_request": value
+        }
+        """
 
         try:
             functionality = Functionality()
