@@ -91,10 +91,6 @@ DATABASES = {
     }
 }
 
-
-from networkapi.models.models_signal_receiver import *
-
-
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
@@ -474,9 +470,9 @@ OOB = "OOB-CM"
 SPN = "SPN-CM"
 FORMATO = ".cfg"
 
-DIVISAODC_MGMT="NA"
-AMBLOG_MGMT="NA"
-GRPL3_MGMT="REDENOVODC"
+DIVISAODC_MGMT="OOB-CM"
+AMBLOG_MGMT="GERENCIA"
+GRPL3_MGMT="CORE/DENSIDADE"
 
 NETWORKAPI_USE_FOREMAN=os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
 NETWORKAPI_FOREMAN_URL=os.getenv('NETWORKAPI_FOREMAN_URL','http://foreman_server')

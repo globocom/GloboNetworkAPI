@@ -17,7 +17,7 @@
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.transaction import commit_on_success
@@ -115,7 +115,7 @@ def networkIPv4_deploy(request, network_id):
         # User permission
         if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
             log.error(u'User does not have permission to perform the operation.')
-            raise APIException.PermissionDenied("No permission to configure equipment %s-%s " % (equip.id, equip.nome) )
+            raise PermissionDenied("No permission to configure equipment %s-%s" % (equip.id, equip.nome) )
 
     #deploy network configuration
     if request.method == 'POST':
@@ -203,7 +203,7 @@ def networkIPv6_deploy(request, network_id):
         # User permission
         if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
             log.error(u'User does not have permission to perform the operation.')
-            raise APIException.PermissionDenied("No permission to configure equipment %s-%s " % (equip.id, equip.nome) )
+            raise PermissionDenied("No permission to configure equipment %s-%s" % (equip.id, equip.nome) )
 
     #deploy network configuration
     if request.method == 'POST':

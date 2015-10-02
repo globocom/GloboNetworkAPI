@@ -40,9 +40,14 @@ class ScriptGetAllResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
+
+            id_script = kwargs.get('id_script')
+            if id_script is not None:
+                script = Roteiro.get_by_pk(int(id_script))
+                script = model_to_dict(script)
+                return self.response(dumps_networkapi({'script': script}))
 
             script_list = []
             for script in Roteiro.objects.all():

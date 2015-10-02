@@ -51,7 +51,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 
     #Vlan para cadastrar
     variablestochangecore["VLAN_SO"]= str(BASE_SO+rack)
-    variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack
+    variablestochangecore["VLAN_NAME"]="OOB_SO_"+name_rack
     variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack)
 
     #Rede para cadastrar

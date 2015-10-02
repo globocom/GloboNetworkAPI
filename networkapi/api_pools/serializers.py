@@ -38,14 +38,11 @@ class HealthcheckSerializer(serializers.ModelSerializer):
 
 class ServerPoolDatatableSerializer(serializers.ModelSerializer):
 
-    # healthcheck = serializers.RelatedField(
-    #     source='healthcheck.healthcheck_type'
-    # )
-
     healthcheck = HealthcheckSerializer()
 
     environment = serializers.RelatedField(source='environment.name')
     maxcom = serializers.CharField(source='default_limit')
+    vip_port = serializers.SerializerMethodField('get_vip_port')
 
     class Meta:
         model = ServerPool
@@ -57,9 +54,17 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
             'environment',
             'pool_created',
             'lb_method',
-            'maxcom'
+            'maxcom',
+            'vip_port'
         )
 
+    def get_vip_port(self, obj):
+
+        return obj.vip_ports[0].port_vip if obj.vip_ports else 0
+
+    # def get_vip_ports(self, obj):
+    #
+    #     return [p.port_vip for p in obj.vip_ports]
 
 class Ipv4Serializer(serializers.ModelSerializer):
 

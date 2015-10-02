@@ -545,7 +545,7 @@ class RackAplicarConfigResource(RestResource):
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
                 #criar e ativar a rede
-                network = criar_rede(user, "Ponto a ponto", variablestochangecore1, vlan)
+                network = criar_rede(user, "Rede invalida equipamentos", variablestochangecore1, vlan)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
             try:

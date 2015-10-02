@@ -373,6 +373,7 @@ class RackConfigResource(RestResource):
             return self.response_error(141)
 
         except ForemanException, e:
-            return self.response_error(391, e.res)
+            self.log.error("Error acessing Foreman Server %s" % str(e))
+            return self.response_error(391, str(e))
         except RequestException, e:
             return self.response_error(391, e)

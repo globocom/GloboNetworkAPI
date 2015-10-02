@@ -1248,16 +1248,42 @@ class ModeloRoteiro(BaseModel):
         '''
         self.modelo = Modelo().get_by_pk(self.modelo.id)
         self.roteiro = Roteiro.get_by_pk(self.roteiro.id)
-
         try:
             try:
-                ModeloRoteiro.objects.get(modelo__id=self.modelo.id)
-                raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
+                roteiros = ModeloRoteiro.objects.filter(modelo__id=self.modelo.id)
+                for rot in roteiros:
+                    if rot.roteiro.id == self.roteiro.id:
+                        raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
             except ObjectDoesNotExist:
                 pass
             self.save(authenticated_user)
         except ModeloRoteiroDuplicatedError, e:
             raise e
         except Exception, e:
-            self.log.error(u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))
+            self.log.error(u'Falha ao inserir a associação modelo/roteiro: %s/%s. %s' % (self.modelo.id, self.roteiro.id, e))
             raise EquipamentoError(e, u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))
+
+    @classmethod
+    def get_by_pk(cls, idt):
+        try:
+            return ModeloRoteiro.objects.filter(id=idt).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise ObjectDoesNotExist(
+                e, u'Dont there is a object by pk = %s.' % idt)
+        except Exception, e:
+            cls.log.error(u'Failure to search the object.')
+            raise EquipamentoError(e, u'Failure to search object.')
+
+    @classmethod
+    def remover(cls, authenticated_user, model_id, script_id):
+        try:
+            model_script = ModeloRoteiro.objects.get(modelo__id=model_id, roteiro__id=script_id)
+            model_script.delete(authenticated_user)
+
+        except ObjectDoesNotExist, n:
+            cls.log.debug(u'Não existe um modelo_roteiro com o modelo = %s e o roteiro = %s.' % (model_id, script_id))
+            raise ObjectDoesNotExist(
+                n, u'Não existe um modelo_roteiro com o modelo = %s e o roteiro = %s.' % (model_id, script_id))
+        except Exception, e:
+            cls.log.error(u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
+            raise EquipamentoError(e, u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
