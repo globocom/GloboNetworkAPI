@@ -22,16 +22,20 @@ from django.db import transaction
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente, EquipamentoAcesso
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
+from networkapi.plugins.factory import PluginFactory
 
 from networkapi.ambiente.models import IP_VERSION
 import logging
 
 log = logging.getLogger(__name__)
+
 
 #Todo
 #Not to be used alone like this
@@ -321,6 +325,76 @@ def exec_script_check_poolmember_by_pool(pool_id):
         raise exceptions.ScriptCheckStatusPoolMemberException()
 
     return stdout
+
+
+def poolmember_state(request):
+
+    load_balance = {}
+
+    for pool in request:
+
+        members = []
+        members_monitor_state = []
+        members_session_state = []
+        for pool_member in pool['server_pool_members']:
+            if pool_member['ipv6'] is None:
+                ip = pool_member['ip']['ip_formated']
+            else:
+                ip = pool_member['ipv6']['ip_formated']
+
+            port_real = pool_member['port_real']
+
+            members.append({'address':ip, 'port':port_real})
+            members_monitor_state.append(settings.STATUS_POOL_MEMBER[str(pool_member['member_status'])]['monitor'])
+            members_session_state.append(settings.STATUS_POOL_MEMBER[str(pool_member['member_status'])]['session'])
+
+        equips = EquipamentoAmbiente.objects.filter(ambiente__id=pool['server_pool']['environment'],equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+        
+        for e in equips:
+            eqpt_id = str(e.equipamento.id)
+            equipment_access = EquipamentoAcesso.search(equipamento=e.equipamento.id, protocolo="https").uniqueResult()
+            equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+            if not load_balance.get(eqpt_id):
+                load_balance[eqpt_id] = {
+                    'plugin': PluginFactory.factory(equipment),
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'pools_name' : [],
+                    'pools_members' : [],
+                    'pools_members_monitor_state' : [],
+                    'pools_members_session_state' : []
+                }
+
+            load_balance[eqpt_id]['pools_members'].append(members)
+            load_balance[eqpt_id]['pools_members_monitor_state'].append(members_monitor_state)
+            load_balance[eqpt_id]['pools_members_session_state'].append(members_session_state)
+            load_balance[eqpt_id]['pools_name'].append(pool['server_pool']['identifier'])
+
+    return load_balance
+
+
+def set_poolmember_state(request):
+
+    load_balance = poolmember_state(request)
+
+    try:
+        for lb in load_balance:
+            load_balance[lb]['plugin'].setState(load_balance[lb])
+        return {}
+    except Exception, exception:
+        raise exception
+
+
+def get_poolmember_state(request):
+
+    load_balance = poolmember_state(request)
+
+    for lb in load_balance:
+        status = load_balance[lb]['plugin'].getState(load_balance[lb])
+        load_balance[lb]['pools_members_monitor_state'] = status['monitor']
+        load_balance[lb]['pools_members_session_state'] = status['session']
 
 
 def manager_pools(request):

@@ -20,6 +20,8 @@ import logging
 from networkapi.plugins import exceptions
 import re
 
+log = logging.getLogger(__name__)
+
 class PluginFactory(object):
 
 	@classmethod
@@ -50,6 +52,9 @@ class PluginFactory(object):
 			if re.search('HUAWEI', marca.upper(), re.DOTALL ):
 				from .Huawei import Generic
 				return Generic
+			if re.search('F5', marca.upper(), re.DOTALL ):
+				from .F5.Generic import Generic
+				return Generic
 
 		raise NotImplementedError()
 
@@ -58,8 +63,8 @@ class PluginFactory(object):
 
 		marca = equipment.modelo.marca.nome
 		modelo = equipment.modelo.nome
-
 		plugin_name = self.get_plugin(modelo = modelo, marca = marca)
+	
 		return plugin_name(equipment = equipment)
 
 

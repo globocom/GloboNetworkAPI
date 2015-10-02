@@ -17,6 +17,7 @@
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.plugins import exceptions as base_exceptions
+from . import exceptions
 import logging
 from ..base import BasePlugin
 

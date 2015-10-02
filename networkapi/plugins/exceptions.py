@@ -61,5 +61,3 @@ class UnableToVerifyResponse(APIException):
 class UnsupportedEquipmentException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Tryed to apply configuration on unsupported equipment interface.'
-
-
