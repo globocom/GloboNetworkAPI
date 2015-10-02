@@ -1,23 +1,30 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
+
+DROP TABLE IF EXISTS `audit_request`;
+
 CREATE TABLE `audit_request` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `request_id` varchar(255) NOT NULL,
     `ip` char(15) NOT NULL,
     `path` varchar(1024) NOT NULL,
     `date` datetime NOT NULL,
-    `user_id` integer NOT NULL
-)
-;
-ALTER TABLE `audit_request` ADD CONSTRAINT `user_id_refs_id_user_672fe158` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id_user`);
+    `user_id` int(10) unsigned NOT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `audit_request`
+ADD CONSTRAINT `fk_audit_request_user_id`
+FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id_user`);
+
 CREATE INDEX `audit_request_fbfc09f1` ON `audit_request` (`user_id`);
+
 """
 
 SQL_DOWN = u"""
 
-ALTER TABLE audit_request DROP INDEX audit_request_fbfc09f1;
+ALTER TABLE audit_request DROP FOREIGN KEY fk_audit_request_user_id;
 
-ALTER TABLE audit_request DROP FOREIGN KEY user_id_refs_id_user_672fe158;
+ALTER TABLE audit_request DROP INDEX audit_request_fbfc09f1;
 
 DROP TABLE audit_request;
 
