@@ -6,6 +6,7 @@ from mock import patch, MagicMock
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_network.exceptions import IncorrectRedundantGatewayRegistryException
 from networkapi.api_network.facade import deploy_networkIPv4_configuration, deploy_networkIPv6_configuration
+from networkapi.api_network.models import DHCPRelayIPv4
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip, Ipv6, IpEquipamento, Ipv6Equipament
 from networkapi.roteiro.models import Roteiro
@@ -57,8 +58,10 @@ class NetworkFacadeTestCase(unittest.TestCase):
     def test_deploy_networkIPv4_configuration_with_active_vlan(self):
         self.networkv4.vlan.ativada = True
 
-        self.mock_ip_get_by_octets(Ip(oct1 = 192, oct2 = 168, oct3 = 0, oct4 = 0))
+        ipv4 = Ip(oct1=192, oct2=168, oct3=0, oct4=0)
+        self.mock_ip_get_by_octets(ipv4)
         self.mock_find_equipamento_ip([IpEquipamento()])
+        self.mock_dhcp_relay_find([DHCPRelayIPv4(ipv4 = ipv4)])
         self.mock_find_roteiro(EquipamentoRoteiro(roteiro = Roteiro(roteiro = 'roteiro')))
         self.mock_template_file_read('script content')
         deploy_config_mock = self.mock_deploy_config('config_deployed')
@@ -75,8 +78,10 @@ class NetworkFacadeTestCase(unittest.TestCase):
     def test_deploy_networkIPv4_configuration_with_inactive_vlan(self):
         self.networkv4.vlan.ativada = False
 
+        ipv4 = Ip(oct1=192, oct2=168, oct3=0, oct4=0)
         self.mock_ip_get_by_octets(Ip(oct1 = 192, oct2 = 168, oct3 = 0, oct4 = 0))
         self.mock_find_equipamento_ip([IpEquipamento()])
+        self.mock_dhcp_relay_find([DHCPRelayIPv4(ipv4 = ipv4)])
         self.mock_find_roteiro(EquipamentoRoteiro(roteiro = Roteiro(roteiro = 'roteiro')))
         self.mock_template_file_read('script content')
         deploy_config_mock = self.mock_deploy_config('config_deployed')
@@ -199,3 +204,7 @@ class NetworkFacadeTestCase(unittest.TestCase):
 
     def mock_transaction(self):
         patch('networkapi.api_network.facade.transaction').start()
+
+    def mock_dhcp_relay_find(self, response):
+        dhcp_relay_find_mock = patch('networkapi.api_network.models.DHCPRelayIPv4.objects.filter').start()
+        dhcp_relay_find_mock.return_value = response
