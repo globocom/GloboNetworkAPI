@@ -14,22 +14,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import absolute_import, unicode_literals
 import logging
 import re
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
 from django.db.models.signals import pre_save, post_save, post_delete, pre_delete
+from django.dispatch import receiver
 
-from . import m2m_audit
+from networkapi.models import m2m_audit
 from networkapi.eventlog.models import EventLog, AuditRequest
 from networkapi.models.BaseModel import BaseModel
 
-# # Registra os processadores de signals post_save e post_delete
-#post_save.connect(networkapi_post_save)
-#post_delete.connect(networkapi_post_delete)
-
-######
 MODEL_LIST = set()
 LOG = logging.getLogger(__name__)
 DEFAULT_CACHE_TIMEOUT = 120
@@ -184,8 +179,6 @@ def save_audit(instance, operation, kwargs={}):
         if persist_audit:
             if m2m_change:
                 for description in descriptions:
-                    #audit = Audit.register(instance, description, operation)
-
                     obj_description = (instance and unicode(instance) and '')[:100]
                     audit_request = AuditRequest.current_request(True)
 
@@ -207,8 +200,6 @@ def save_audit(instance, operation, kwargs={}):
                     EventLog.log(audit_request.user, event)
 
             else:
-                #audit = Audit.register(instance, description, operation)
-
                 obj_description = (instance and unicode(instance) and '')[:100]
                 audit_request = AuditRequest.current_request(True)
 
@@ -232,6 +223,7 @@ def save_audit(instance, operation, kwargs={}):
 
 
 #####
+@receiver(pre_delete)
 def audit_pre_delete(sender, instance, **kwargs):
     #instance=kwargs.get('instance')
 
@@ -240,6 +232,7 @@ def audit_pre_delete(sender, instance, **kwargs):
 
     save_audit(instance, EventLog.DELETE)
 
+@receiver(pre_save)
 def audit_pre_save(sender, instance, created, **kwargs):
 
     #instance=kwargs.get('instance')
@@ -256,6 +249,7 @@ def audit_pre_save(sender, instance, created, **kwargs):
             LOG.debug("old_state saved in cache with key %s for m2m auditing" % cache_key)
         save_audit(kwargs['instance'], EventLog.CHANGE)
 
+@receiver(post_save)
 def audit_post_save(sender, instance, created, **kwargs):
 
     #instance=kwargs.get('instance')
@@ -272,9 +266,12 @@ def handle_unicode(s):
     return s
 
 
+# # Registra os processadores de signals post_save e post_delete
+#post_save.connect(networkapi_post_save)
+#post_delete.connect(networkapi_post_delete)
 
 
 ######
-pre_save.connect(audit_pre_save)
-post_save.connect(audit_post_save)
-pre_delete.connect(audit_pre_delete)
+# pre_save.connect(audit_pre_save)
+# post_save.connect(audit_post_save)
+# pre_delete.connect(audit_pre_delete)
