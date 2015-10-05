@@ -119,8 +119,7 @@ class Ipv4GetAvailableForVipResource(RestResource):
                                 balanceador_found_flag = True
 
                     if not balanceador_found_flag:
-                        cont_balanceador_not_found = cont_balanceador_not_found + \
-                            1
+                        cont_balanceador_not_found = cont_balanceador_not_found + 1
                     else:
                         break
 
