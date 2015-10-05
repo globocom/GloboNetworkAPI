@@ -19,7 +19,7 @@ import re
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
 
-from networkapi.models import m2m_audit
+from networkapi.util import signals_helper as m2m_audit
 from networkapi.eventlog.models import EventLog, AuditRequest
 
 MODEL_LIST = set()
@@ -193,8 +193,10 @@ def save_audit(instance, operation, kwargs={}):
                     event['id_objeto'] = instance.pk
                     event['audit_request'] = audit_request
                     #save the event log
-
-                    EventLog.log(audit_request.user, event)
+                    if audit_request:
+                        EventLog.log(audit_request.user, event)
+                    else:
+                        LOG.warning("Cannot save audit because audit_request is None")
 
             else:
                 obj_description = (instance and unicode(instance) and '')[:100]
@@ -212,8 +214,10 @@ def save_audit(instance, operation, kwargs={}):
                 event['parametro_atual'] = u"\n".join(new_value_list)
                 event['id_objeto'] = instance.pk
                 event['audit_request'] = audit_request
-
-                EventLog.log(audit_request.user, event)
+                if audit_request:
+                    EventLog.log(audit_request.user, event)
+                else:
+                    LOG.warning("Cannot save audit because audit_request is None")
     except:
         LOG.error(u'Error registering auditing to %s: (%s) %s',
             repr(instance), type(instance), getattr(instance, '__dict__', None), exc_info=True)
@@ -248,7 +252,7 @@ def audit_pre_save(sender, instance, **kwargs):
             dict_["old_state"] = m2m_audit.get_m2m_values_for(instance=instance)
             cache.set(cache_key, dict_, DEFAULT_CACHE_TIMEOUT)
             LOG.debug("old_state saved in cache with key %s for m2m auditing" % cache_key)
-        save_audit(kwargs['instance'], EventLog.CHANGE)
+        save_audit(instance, EventLog.CHANGE)
 
 def audit_post_save(sender, instance, created, **kwargs):
 
