@@ -18,12 +18,9 @@ import logging
 import re
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
-from django.db.models.signals import pre_save, post_save, post_delete, pre_delete
-from django.dispatch import receiver
 
 from networkapi.models import m2m_audit
 from networkapi.eventlog.models import EventLog, AuditRequest
-from networkapi.models.BaseModel import BaseModel
 
 MODEL_LIST = set()
 LOG = logging.getLogger(__name__)
@@ -189,7 +186,7 @@ def save_audit(instance, operation, kwargs={}):
                         old_value_list.append("{0} : {1}".format(field, handle_unicode(old_value)))
                         new_value_list.append("{0} : {1}".format(field, handle_unicode(new_value)))
 
-                    event['acao'] = "Alterar" if operation is None else operation
+                    event['acao'] = "Alterar" if action is None else action
                     event['funcionalidade'] = instance.__class__.__name__
                     event['parametro_anterior'] = u"\n".join(old_value_list)
                     event['parametro_atual'] = u"\n".join(new_value_list)
@@ -205,11 +202,11 @@ def save_audit(instance, operation, kwargs={}):
 
                 old_value_list = []
                 new_value_list = []
-                for field, (old_value, new_value) in changed_field.items():
+                for field, (old_value, new_value) in changed_fields.items():
                     old_value_list.append("{0} : {1}".format(field, handle_unicode(old_value)))
                     new_value_list.append("{0} : {1}".format(field, handle_unicode(new_value)))
 
-                event['acao'] = "Alterar" if operation is None else operation
+                event['acao'] = "Alterar" if action is None else action
                 event['funcionalidade'] = instance.__class__.__name__
                 event['parametro_anterior'] = u"\n".join(old_value_list)
                 event['parametro_atual'] = u"\n".join(new_value_list)
@@ -221,23 +218,27 @@ def save_audit(instance, operation, kwargs={}):
         LOG.error(u'Error registering auditing to %s: (%s) %s',
             repr(instance), type(instance), getattr(instance, '__dict__', None), exc_info=True)
 
-
-#####
-@receiver(pre_delete)
+###################
+##### SIGNALS #####
+###################
+#@receiver(pre_delete)
 def audit_pre_delete(sender, instance, **kwargs):
-    #instance=kwargs.get('instance')
 
-    if (not issubclass(instance.__class__, BaseModel)) or (instance.__class__ is EventLog):
+    #instance=kwargs.get('instance')
+    from networkapi.models.BaseModel import BaseModel
+
+    if (not issubclass(instance.__class__, BaseModel)):
         return
 
     save_audit(instance, EventLog.DELETE)
 
-@receiver(pre_save)
-def audit_pre_save(sender, instance, created, **kwargs):
+#@receiver(pre_save)
+def audit_pre_save(sender, instance, **kwargs):
 
     #instance=kwargs.get('instance')
+    from networkapi.models.BaseModel import BaseModel
 
-    if (not issubclass(instance.__class__, BaseModel)) or (instance.__class__ is EventLog):
+    if (not issubclass(instance.__class__, BaseModel)):
         return
 
     if instance.pk:
@@ -249,12 +250,11 @@ def audit_pre_save(sender, instance, created, **kwargs):
             LOG.debug("old_state saved in cache with key %s for m2m auditing" % cache_key)
         save_audit(kwargs['instance'], EventLog.CHANGE)
 
-@receiver(post_save)
 def audit_post_save(sender, instance, created, **kwargs):
 
-    #instance=kwargs.get('instance')
+    from networkapi.models.BaseModel import BaseModel
 
-    if (not issubclass(instance.__class__, BaseModel)) or (instance.__class__ is EventLog):
+    if (not issubclass(instance.__class__, BaseModel)):
         return
 
     if created:

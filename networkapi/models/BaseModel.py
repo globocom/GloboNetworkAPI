@@ -20,7 +20,6 @@ from django.db import models, transaction, router
 from networkapi.models.BaseManager import BaseManager
 from django.db.models.deletion import Collector
 
-
 class BaseModel(models.Model):
 
     '''

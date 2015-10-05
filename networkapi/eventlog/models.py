@@ -20,7 +20,6 @@ import uuid
 import threading
 from django.db import models
 from datetime import datetime
-from networkapi.models.BaseModel import BaseModel
 from networkapi.usuario.models import Usuario
 
 from django.utils.translation import ugettext_lazy as _
@@ -38,7 +37,7 @@ class EventLogError(Exception):
         return msg.encode('utf-8', 'replace')
 
 
-class EventLog(BaseModel):
+class EventLog(models.Model):
 
     ADD = 0
     CHANGE = 1
@@ -57,7 +56,7 @@ class EventLog(BaseModel):
 
     logger = logging.getLogger('EventLog')
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         db_table = u'event_log'
         managed = True
 
@@ -91,7 +90,7 @@ class EventLog(BaseModel):
             event_log.id_objeto = evento['id_objeto']
             event_log.evento = ''
             event_log.resultado = 0
-            event_log.save(usuario)
+            event_log.save()
         except Exception, e:
             cls.logger.error(
                 u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario.id))
