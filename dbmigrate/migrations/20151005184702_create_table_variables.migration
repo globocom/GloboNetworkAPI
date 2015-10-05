@@ -1,0 +1,24 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+--
+-- Table structure for table `variables`
+--
+
+DROP TABLE IF EXISTS `variables`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `variables` (
+  `id_variable` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `value` varchar(50) NOT NULL,
+  `description` varchar(100) default NULL,
+  PRIMARY KEY  (`id_variable`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+"""
+
+SQL_DOWN = u"""
+DROP TABLE variables;
+"""
