@@ -96,6 +96,9 @@ class Usuario(BaseModel):
         db_table = u'usuarios'
         managed = True
 
+    def is_anonymous(self):
+        return False
+
     def is_authenticated(self):
         return Usuario.objects.filter(
             user=self.user.lower(),

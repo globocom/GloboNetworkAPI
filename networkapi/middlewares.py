@@ -21,6 +21,7 @@ from django.conf import settings
 
 from networkapi.eventlog.models import AuditRequest
 from networkapi.api_rest.authentication import BasicAuthentication
+from networkapi.rest import RestResource
 
 class SQLLogMiddleware(object):
 
@@ -59,6 +60,10 @@ class TrackingRequestOnThreadLocalMiddleware(object):
 
             if user_auth_tuple is not None:
                 user, token = user_auth_tuple
+            else: # keeps compatibility with old authentication method
+                user = RestResource.authenticate_user(request)
+
+            if user is not None:
                 ip = self._get_ip(request)
                 AuditRequest.new_request(request.get_full_path(), user, ip)
 
