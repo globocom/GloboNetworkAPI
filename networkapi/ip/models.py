@@ -35,6 +35,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
 from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.util.decorators import cached_property
 
 class NetworkIPv4Error(Exception):
 
@@ -267,6 +268,12 @@ class NetworkIPv4(BaseModel):
         return '%s.%s.%s.%s/%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.block)
 
     ip_formated = property(_get_formated_ip)
+
+    @cached_property
+    def dhcprelay(self):
+        from networkapi.api_network.models import DHCPRelayIPv4
+
+        return DHCPRelayIPv4.objects.filter(networkipv4=self)
 
     @classmethod
     def get_by_pk(self, id):
@@ -1423,6 +1430,12 @@ class NetworkIPv6(BaseModel):
 
     ip_formated = property(_get_formated_ip)
 
+    @cached_property
+    def dhcprelay(self):
+        from networkapi.api_network.models import DHCPRelayIPv6
+
+        return DHCPRelayIPv6.objects.filter(networkipv6=self)
+
     @classmethod
     def get_by_pk(self, id):
         """Get NetworkIPv6 by id.
@@ -1698,7 +1711,7 @@ class Ipv6(BaseModel):
 
     def _get_formated_ip(self):
         "Returns formated ip."
-        return '%s.%s.%s.%s.%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.oct5, self.oct6, self.oct7, self.oct8)
+        return '%s.%s.%s.%s.%s.%s.%s.%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8)
 
     ip_formated = property(_get_formated_ip)
 

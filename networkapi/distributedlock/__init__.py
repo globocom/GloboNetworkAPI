@@ -20,6 +20,8 @@ from __future__ import with_statement
 LOCK_LOGICAL_ENVIRONMENT = "logical_environment:%s"
 LOCK_ENVIRONMENT = "environment:%s"
 LOCK_DC_DIVISION = "division:%s"
+LOCK_DCHCPv4_NET = "DHCPrelayIPv4Network:%s"
+LOCK_DCHCPv6_NET = "DHCPrelayIPv6Network:%s"
 LOCK_ENVIRONMENT_VIP = "environment_vip:%s"
 LOCK_EQUIPMENT_ACCESS = "equipment_access:%s"
 LOCK_EQUIPMENT = "equipment:%s"

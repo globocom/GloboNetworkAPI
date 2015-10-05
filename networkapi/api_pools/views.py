@@ -69,7 +69,6 @@ def pool_list(request):
     try:
 
         data = dict()
-
         environment_id = request.DATA.get("environment_id")
         start_record = request.DATA.get("start_record")
         end_record = request.DATA.get("end_record")
@@ -823,7 +822,6 @@ def save_reals(request):
 @commit_on_success
 def save(request):
     try:
-
         id = request.DATA.get('id')
         identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
