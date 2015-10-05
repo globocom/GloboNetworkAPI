@@ -30,11 +30,11 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
-    update_environment_option_pool, delete_environment_option_pool, delete_option_pool
+    update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
+    exec_script_check_poolmember_by_pool, set_poolmember_state
 from networkapi.error_message_utils import error_messages
 from networkapi.ip.models import IpEquipamento, Ip, Ipv6
 from networkapi.equipamento.models import Equipamento
-from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
@@ -161,6 +161,20 @@ def pool_list_by_reqvip(request):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def poolmember_state(request):
+    """
+    Enable/Disable pool member by list
+    """
+
+    request = request.DATA.get("pools", [])
+    response = set_poolmember_state(request)
+
+    return Response(response)
 
 
 @api_view(['GET', 'POST'])
