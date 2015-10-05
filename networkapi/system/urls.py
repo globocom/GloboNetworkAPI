@@ -4,4 +4,5 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns('networkapi.system.views',
     url(r'^system/variables/save', 'save'),
+    url(r'^system/variables/list', 'get_all'),
 )

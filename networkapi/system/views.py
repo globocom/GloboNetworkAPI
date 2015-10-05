@@ -23,10 +23,11 @@ from rest_framework import status
 from rest_framework.response import Response
 import logging
 from networkapi.api_vlan.permissions import Read, Write
-from networkapi.system.facade import save_variable
+from networkapi.system.facade import save_variable, get_all_variables
 from networkapi.system.serializers import VariableSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.system import exceptions
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -54,6 +55,25 @@ def save(request):
     except (exceptions.InvalidIdNameException, exceptions.InvalidIdValueException)as exception:
         log.exception(exception)
         raise exception
+
+    except Exception, exception:
+        log.exception(exception)
+        raise api_exceptions.NetworkAPIException()
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, Read))
+def get_all(request):
+    try:
+        log.info("GET ALL VARIABLES")
+
+        variable_query = get_all_variables()
+        serializer_variable = VariableSerializer(variable_query, many=True)
+
+        return Response(serializer_variable.data)
+
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise api_exceptions.ObjectDoesNotExistException('Variable Does Not Exist')
 
     except Exception, exception:
         log.exception(exception)

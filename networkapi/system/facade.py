@@ -36,3 +36,9 @@ def save_variable(user, name, value, description):
 
     return var
 
+def get_all_variables():
+
+    variables = Variable.objects.all()
+
+    return variables
+
