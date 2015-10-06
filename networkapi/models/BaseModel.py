@@ -50,13 +50,11 @@ class BaseModel(models.Model):
         if commit == True:
             transaction.commit()
 
-    def delete(self, **kwargs):
+    def delete(self, *args, **kwargs):
         '''
         Replace  super(BaseModel, self).delete()
         Cause: When delete relationship in cascade  default no have attribute User to Log.
         '''
-
-        user = kwargs.get('user', None)
 
         using = router.db_for_write(self.__class__, instance=self)
         assert self._get_pk_val() is not None, "%s object can't be deleted because its %s attribute is set to None." % (
@@ -64,9 +62,5 @@ class BaseModel(models.Model):
 
         collector = Collector(using=using)
         collector.collect([self])
-
-        if user:
-            for key in collector.data.keys():
-                key.authenticated_user = user
 
         collector.delete()
