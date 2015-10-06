@@ -33,6 +33,7 @@ from networkapi.ambiente.models import EnvironmentVip, Ambiente
 from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.api_vip_request import facade
+from networkapi.requisicaovips.models import DsrL3_to_Vip, RequisicaoVipsMissingDSRL3idError
 
 
 log = Log(__name__)
@@ -116,6 +117,15 @@ def delete(request):
 
         vips_request = RequisicaoVips.objects.filter(id__in=ids)
         for vrequest in vips_request:
+            """ if vip has DSRl3 """
+            if vrequest.id_traffic_return == 47:
+                try:
+                    dsrl3= DsrL3_to_Vip.get_by_vip_id(ids)
+                    dsrl3.delete(request.user)
+                except RequisicaoVipsMissingDSRL3idError, e:
+                    log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
+                    raise RequisicaoVipsMissingDSRL3idError(
+                            e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % ids)
             vrequest.delete(request.user)
 
     except Exception, exception:
