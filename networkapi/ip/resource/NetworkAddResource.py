@@ -420,10 +420,27 @@ class NetworkAddResource(RestResource):
 
                             ip_model.save(user)
 
-                            for equip in list_equip_routers_ambient:
+                            if len(list_equip_routers_ambient) > 1 and network_ip.block < 30:
+                                multiple_ips = True
+                            else:
+                                multiple_ips = False
 
+                            for equip in list_equip_routers_ambient:
                                 IpEquipamento().create(
                                     user, ip_model.id, equip.equipamento.id)
+
+                                if multiple_ips:
+                                    router_ip = Ip.get_first_available_ip(network_ip.id, True)
+                                    router_ip = str(router_ip).split('.')
+                                    ip_model2 = Ip()
+                                    ip_model2.oct1 = router_ip[0]
+                                    ip_model2.oct2 = router_ip[1]
+                                    ip_model2.oct3 = router_ip[2]
+                                    ip_model2.oct4 = router_ip[3]
+                                    ip_model2.networkipv4_id = network_ip.id
+                                    ip_model2.save(user)
+                                    IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
+
 
                     else:
                         if network_ip.block < 127:
@@ -448,10 +465,31 @@ class NetworkAddResource(RestResource):
 
                             ipv6_model.save(user)
 
-                            for equip in list_equip_routers_ambient:
+                            if len(list_equip_routers_ambient) > 1 and network_ip.block < 126:
+                                multiple_ips = True
+                            else:
+                                multiple_ips = False
 
+                            for equip in list_equip_routers_ambient:
                                 Ipv6Equipament().create(
                                     user, ipv6_model.id, equip.equipamento.id)
+
+                                if multiple_ips:
+                                    router_ip = Ipv6.get_first_available_ip6(network_ip.id, True)
+                                    router_ip = str(router_ip).split(':')
+                                    ipv6_model2 = Ipv6()
+                                    ipv6_model2.block1 = router_ip[0]
+                                    ipv6_model2.block2 = router_ip[1]
+                                    ipv6_model2.block3 = router_ip[2]
+                                    ipv6_model2.block4 = router_ip[3]
+                                    ipv6_model2.block5 = router_ip[4]
+                                    ipv6_model2.block6 = router_ip[5]
+                                    ipv6_model2.block7 = router_ip[6]
+                                    ipv6_model2.block8 = router_ip[7]
+                                    ipv6_model2.networkipv6_id = network_ip.id
+                                    ipv6_model2.save(user)
+                                    Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
+
 
             except Exception, e:
                 raise IpError(e, u'Error persisting Network.')

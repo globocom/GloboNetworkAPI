@@ -30,8 +30,9 @@ from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, Vla
 from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import AmbienteError, Ambiente, AmbienteNotFoundError,\
     ConfigEnvironmentInvalidError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv6AddressNotAvailableError
+from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv6AddressNotAvailableError, Ip, Ipv6, IpEquipamento, Ipv6Equipament
 from networkapi.ip.models import NetworkIPv4AddressNotAvailableError, IpNotAvailableError
+from networkapi.equipamento.models import EquipamentoAmbiente
 
 
 class VlanInsertResource(RestResource):
@@ -192,10 +193,104 @@ class VlanInsertResource(RestResource):
             vlan.insert_vlan(user)
 
             if network_ipv4:
-                NetworkIPv4().add_network_ipv4(user, vlan.id, None, None, None)
+                network_ipv4 = NetworkIPv4()
+                vlan_map = network_ipv4.add_network_ipv4(user, vlan.id, None, None, None)
+                list_equip_routers_ambient = EquipamentoAmbiente.objects.select_related('equipamento').filter(
+                    ambiente=vlan.ambiente.id, is_router=True)
+
+                if list_equip_routers_ambient:
+
+                    # Add Adds the first available ipv4 on all equipment
+                    # that is configured as a router for the environment related to
+                    # network
+                    ip = Ip.get_first_available_ip(network_ipv4.id)
+
+                    ip = str(ip).split('.')
+
+                    ip_model = Ip()
+                    ip_model.oct1 = ip[0]
+                    ip_model.oct2 = ip[1]
+                    ip_model.oct3 = ip[2]
+                    ip_model.oct4 = ip[3]
+                    ip_model.networkipv4_id = network_ipv4.id
+
+                    ip_model.save(user)
+
+                    if len(list_equip_routers_ambient) > 1 and network_ipv4.block < 30:
+                        multiple_ips = True
+                    else:
+                        multiple_ips = False
+
+                    for equip in list_equip_routers_ambient:
+                        IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
+
+                        if multiple_ips:
+                            router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                            router_ip = str(router_ip).split('.')
+                            ip_model2 = Ip()
+                            ip_model2.oct1 = router_ip[0]
+                            ip_model2.oct2 = router_ip[1]
+                            ip_model2.oct3 = router_ip[2]
+                            ip_model2.oct4 = router_ip[3]
+                            ip_model2.networkipv4_id = network_ipv4.id
+                            ip_model2.save(user)
+                            IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
+
 
             if network_ipv6:
-                NetworkIPv6().add_network_ipv6(user, vlan.id, None, None, None)
+                network_ipv6 = NetworkIPv6()
+                vlan_map = network_ipv6.add_network_ipv6(user, vlan.id, None, None, None)
+
+                list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
+                    ambiente=vlan.ambiente.id, is_router=True)
+
+                if list_equip_routers_ambient:
+
+                    # Add Adds the first available ipv6 on all equipment
+                    # that is configured as a router for the environment related to
+                    # network
+                    ipv6 = Ipv6.get_first_available_ip6(network_ipv6.id)
+
+                    ipv6 = str(ipv6).split(':')
+
+                    ipv6_model = Ipv6()
+                    ipv6_model.block1 = ipv6[0]
+                    ipv6_model.block2 = ipv6[1]
+                    ipv6_model.block3 = ipv6[2]
+                    ipv6_model.block4 = ipv6[3]
+                    ipv6_model.block5 = ipv6[4]
+                    ipv6_model.block6 = ipv6[5]
+                    ipv6_model.block7 = ipv6[6]
+                    ipv6_model.block8 = ipv6[7]
+                    ipv6_model.networkipv6_id = network_ipv6.id
+
+                    ipv6_model.save(user)
+
+                    if len(list_equip_routers_ambient) > 1:
+                        multiple_ips = True
+                    else:
+                        multiple_ips = False
+
+                    for equip in list_equip_routers_ambient:
+
+                        Ipv6Equipament().create(
+                            user, ipv6_model.id, equip.equipamento.id)
+
+                        if multiple_ips:
+                            router_ip = Ipv6.get_first_available_ip6(network_ipv6.id, True)
+                            router_ip = str(router_ip).split(':')
+                            ipv6_model2 = Ipv6()
+                            ipv6_model2.block1 = router_ip[0]
+                            ipv6_model2.block2 = router_ip[1]
+                            ipv6_model2.block3 = router_ip[2]
+                            ipv6_model2.block4 = router_ip[3]
+                            ipv6_model2.block5 = router_ip[4]
+                            ipv6_model2.block6 = router_ip[5]
+                            ipv6_model2.block7 = router_ip[6]
+                            ipv6_model2.block8 = router_ip[7]
+                            ipv6_model2.networkipv6_id = network_ipv6.id
+                            ipv6_model2.save(user)
+                            Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 
             map = dict()
             listaVlan = dict()

@@ -1844,19 +1844,20 @@ class Ipv6(BaseModel):
                 None, u'No IP6 available to NETWORK %s.' % self.networkipv6.id)
 
     @classmethod
-    def get_first_available_ip6(self, id_network):
+    def get_first_available_ip6(self, id_network, topdown=False):
         """Get a first available ip6 for network6
             @return: Available IP6
             @raise IpNotAvailableError: NetworkIPv6 does not has available Ip6
         """
 
         self.networkipv6 = NetworkIPv6.get_by_pk(id_network)
-
         # Cast to API
         net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.networkipv6.block1, self.networkipv6.block2, self.networkipv6.block3, self.networkipv6.block4,
                                                            self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8, self.networkipv6.block))
         # Find all ipv6s ralated to network
         ips = Ipv6.objects.filter(networkipv6__id=self.networkipv6.id)
+        for ip in ips:
+            self.log.info("ip %s" % ip.block8)
 
         # Cast all to API class
         ipsv6 = set([(IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (
@@ -1864,8 +1865,13 @@ class Ipv6(BaseModel):
 
         selected_ip = None
 
+        if topdown:
+            method = net6.iterhostsTopDown
+        else:
+            method = net6.iterhosts
+
         # For each ip generated
-        for ip in net6.iterhosts():
+        for ip in method():
 
             # If IP generated was not used
             if ip not in ipsv6:
