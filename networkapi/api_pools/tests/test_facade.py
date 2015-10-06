@@ -35,7 +35,7 @@ class PoolFacadeTestCase(unittest.TestCase):
         self.assertEquals('1', health_check.identifier)
         self.assertIsNotNone(health_check)
         self.assertTrue(find_health_check_mock.called)
-        save_health_check_mock.assert_called_with(self.user)
+        self.assertTrue(save_health_check_mock.called)
 
     def test_get_healthcheck_given_multiple_healthchecK_found(self):
         healthcheck = self.create_health_check(expect='WORKING', type='HTTP', req='/healthcheck', dest='*:*', ident='1')
@@ -64,7 +64,7 @@ class PoolFacadeTestCase(unittest.TestCase):
         self.assertEquals('', health_check.identifier)
         self.assertIsNotNone(health_check)
         self.assertTrue(find_health_check_mock.called)
-        save_health_check_mock.assert_called_with(self.user)
+        self.assertTrue(save_health_check_mock.called)
 
     def test_is_valid_healthcheck_destination(self):
         self.assertTrue(is_valid_healthcheck_destination("*:*"))
@@ -85,7 +85,7 @@ class PoolFacadeTestCase(unittest.TestCase):
         save_pool_mock = self.mock_save_pool()
         update_pool_fields(default_port, env, identifier, old_healthcheck, old_lb_method, old_maxconn, pool, self.user)
 
-        save_pool_mock.assert_calls(call(self.user), call(self.user))
+        save_pool_mock.assert_calls(call(), call())
         self.assertEquals(default_port, pool.default_port)
         self.assertEquals(env, pool.environment)
         self.assertEquals(identifier, pool.identifier)
@@ -342,7 +342,7 @@ class PoolFacadeTestCase(unittest.TestCase):
         self.assertEquals(1, pool_member.weight)
         self.assertEquals(1, pool_member.priority)
         self.assertEquals(80, pool_member.port_real)
-        save_member_mock.assert_called_with(self.user)
+        self.assertTrue(save_member_mock.called)
 
     def test_get_ipv4(self):
         get_by_pk_mock = patch('networkapi.ip.models.Ip.get_by_pk').start()
@@ -472,10 +472,10 @@ class PoolFacadeTestCase(unittest.TestCase):
         return exec_script_mock
 
     def mock_server_pool(self, maxconn = 0, created = False, members = []):
-        return Mock(default_limit = maxconn, pool_created = created, serverpoolmember_set = Mock(all = lambda :members), save = lambda user: None)
+        return Mock(default_limit = maxconn, pool_created = created, serverpoolmember_set = Mock(all = lambda :members), save = lambda : None)
 
     def mock_pool_member(self, maxconn = 0):
-        return MagicMock(save = lambda user: None, limit = maxconn)
+        return MagicMock(save = lambda: None, limit = maxconn)
 
     def mock_transaction(self):
         patch('networkapi.api_pools.facade.transaction').start()
