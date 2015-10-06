@@ -2,19 +2,11 @@
 from __future__ import absolute_import, unicode_literals
 import factory
 import logging
+from networkapi.grupo.tests.factory import UGrupoFactory
 
 LOG = logging.getLogger(__name__)
 
 from networkapi.usuario import models
-
-class UGrupoFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.UGrupo
-
-    nome = factory.Sequence(lambda n: 'grupo-{0}'.format(n))
-    leitura = 'S'
-    escrita = 'S'
-    edicao = 'S'
-    exclusao = 'S'
 
 class UsuarioFactory(factory.DjangoModelFactory):
     """

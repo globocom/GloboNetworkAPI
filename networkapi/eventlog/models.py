@@ -20,9 +20,11 @@ import uuid
 import threading
 from django.db import models
 from datetime import datetime
-from networkapi.usuario.models import Usuario
 
 from django.utils.translation import ugettext_lazy as _
+
+from networkapi.usuario.models import Usuario
+
 
 class EventLogError(Exception):
 
@@ -44,7 +46,7 @@ class EventLog(models.Model):
     DELETE = 2
 
     id = models.AutoField(primary_key=True, db_column='id_evento')
-    usuario = models.ForeignKey(Usuario, db_column='id_user', blank=True, null=True)
+    usuario = models.ForeignKey('usuario.Usuario', db_column='id_user', blank=True, null=True)
     hora_evento = models.DateTimeField()
     acao = models.TextField()
     funcionalidade = models.TextField()
@@ -114,7 +116,7 @@ class AuditRequest(models.Model):
     ip = models.IPAddressField()
     path = models.CharField(max_length=1024)
     date = models.DateTimeField(auto_now_add=True, verbose_name=_("Date"))
-    user = models.ForeignKey(Usuario)
+    user = models.ForeignKey('usuario.Usuario')
 
     class Meta:
         db_table = u'audit_request'

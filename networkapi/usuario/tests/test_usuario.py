@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import mock
 from django.test import TestCase
 from django.db import IntegrityError
-from networkapi.usuario.test import factory
+from networkapi.usuario.tests import factory
 
 import logging
 
@@ -14,7 +14,6 @@ class UsuarioTestCase(TestCase):
     #fixtures = ['initial_usuario.json']
 
     def setUp(self):
-        #pass
         self.usuario = factory.UserWithGroupFactory()
 
     def tearDown(self):
