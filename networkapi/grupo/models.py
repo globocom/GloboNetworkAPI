@@ -234,7 +234,7 @@ class PermissaoAdministrativa(BaseModel):
 
         try:
             self.ugrupo = UGrupo.objects.get(id=self.ugrupo.id)
-            return self.save(authenticated_user)
+            return self.save()
 
         except UGrupo.DoesNotExist, e:
             raise e
@@ -362,7 +362,7 @@ class EGrupo(BaseModel):
             except EGrupo.DoesNotExist:
                 pass
 
-            self.save(authenticated_user)
+            self.save()
         except EGrupoNameDuplicatedError, e:
             raise e
         except Exception, e:
@@ -486,7 +486,7 @@ class DireitosGrupoEquipamento(BaseModel):
                 raise DireitoGrupoEquipamentoDuplicatedError(
                     None, u'Direito Grupo Equipamento para o grupo de usuário %d e grupo de equipamento %s já cadastrado.' % (self.ugrupo_id, self.egrupo_id))
 
-            self.save(authenticated_user)
+            self.save()
         except UGrupo.DoesNotExist, e:
             raise e
         except DireitoGrupoEquipamentoDuplicatedError, e:

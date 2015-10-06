@@ -101,7 +101,7 @@ class ScriptAddResource(RestResource):
 
             try:
                 # save Script
-                scr.save(user)
+                scr.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Script.')
                 raise RoteiroError(e, u'Failed to save the Script.')

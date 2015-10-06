@@ -136,7 +136,7 @@ class HealthcheckExpect(BaseModel):
             self.match_list = match_list
             self.expect_string = expect_string
 
-            self.save(authenticated_user)
+            self.save()
 
             return self.id
 
@@ -174,7 +174,7 @@ class HealthcheckExpect(BaseModel):
             self.expect_string = expect_string
             self.ambiente = ambiente
 
-            self.save(authenticated_user)
+            self.save()
 
             return self.id
 

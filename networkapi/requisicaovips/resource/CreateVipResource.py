@@ -141,14 +141,14 @@ class CreateVipResource(RestResource):
                 vip.filter_valid = False
 
                 vip.vip_criado = 1
-                vip.save(user)
+                vip.save()
 
                 server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip.id)
 
                 for server_pool in server_pools:
                     if not server_pool.pool_created:
                         server_pool.pool_created = 1
-                        server_pool.save(user)
+                        server_pool.save()
 
                 map = dict()
                 map['sucesso'] = success_map

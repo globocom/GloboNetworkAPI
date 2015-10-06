@@ -255,7 +255,7 @@ class Marca(BaseModel):
             pass
         
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception:
             self.log.error(u'Falha ao inserir marca de equipamento.')
             raise EquipamentoError(u'Falha ao inserir marca de equipamento.')
@@ -524,7 +524,7 @@ class TipoEquipamento(BaseModel):
                 pass
 
             self.tipo_equipamento = name
-            self.save(authenticated_user)
+            self.save()
             return self.id
 
         except TipoEquipamentoDuplicateNameError, e:
@@ -627,7 +627,7 @@ class Equipamento(BaseModel):
             self.log.debug('Equipamento com o mesmo nome não encontrado.')
 
         try:
-            self.save(authenticated_user)
+            self.save()
 
             equipment_group = EquipamentoGrupo()
             equipment_group.egrupo = egroup
@@ -674,7 +674,7 @@ class Equipamento(BaseModel):
             self.tipo_equipamento = tipo_equip
             self.nome = nome
             self.maintenance = maintenance
-            self.save(user)
+            self.save()
         except EquipamentoNameDuplicatedError, e:
             raise EquipamentoNameDuplicatedError(e.message)
         except Exception, e:
@@ -823,7 +823,7 @@ class EquipamentoAmbiente(BaseModel):
             pass
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir a associação equipamento/ambiente: %s/%s.' %
                            (self.equipamento.id, self.ambiente.id))
@@ -918,7 +918,7 @@ class EquipamentoGrupo(BaseModel):
             pass
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir a associação equipamento/grupo: %d/%d.' %
                            (self.equipamento.id, self.egrupo.id))
@@ -1064,7 +1064,7 @@ class EquipamentoAcesso(BaseModel):
                     None, u'Já existe esta associação de equipamento e tipo de acesso cadastrada.')
 
             # Persiste a informação
-            return self.save(authenticated_user)
+            return self.save()
 
         except TipoAcesso.DoesNotExist, e:
             raise e
@@ -1190,7 +1190,7 @@ class EquipamentoRoteiro(BaseModel):
             except ObjectDoesNotExist:
                 pass
 
-            self.save(authenticated_user)
+            self.save()
         except EquipamentoRoteiroDuplicatedError, e:
             raise e
         except Exception, e:
@@ -1256,7 +1256,7 @@ class ModeloRoteiro(BaseModel):
                         raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
             except ObjectDoesNotExist:
                 pass
-            self.save(authenticated_user)
+            self.save()
         except ModeloRoteiroDuplicatedError, e:
             raise e
         except Exception, e:

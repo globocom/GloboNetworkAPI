@@ -71,13 +71,13 @@ class RequisicaoVipDeleteResource(RestResource):
             with distributedlock(LOCK_VIP % vip_id):
                 try:
                     vip.delete_vips_and_reals(user)
-                    vip.delete(user)
+                    vip.delete()
                     if ipv4 and not keep_ip:
                         if not self.is_ipv4_in_use(ipv4, vip_id):
-                            ipv4.delete(user)
+                            ipv4.delete()
                     if ipv6 and not keep_ip:
                         if not self.is_ipv6_in_use(ipv6, vip_id):
-                            ipv6.delete(user)
+                            ipv6.delete()
                 except IpCantRemoveFromServerPool, e:
                     raise e
                 except IpCantBeRemovedFromVip, e:

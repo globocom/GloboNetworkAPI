@@ -162,7 +162,7 @@ class PortChannel(BaseModel):
             raise InvalidValueError(None, e.param, e.value)
 
         try:
-            return self.save(authenticated_user)
+            return self.save()
         except Exception, e:
             self.log.error(u'Failed to add port channel.')
             raise InterfaceError(e, u'Failed to add port channel.')
@@ -542,7 +542,7 @@ class Interface(BaseModel):
                 raise InterfaceForEquipmentDuplicatedError(
                     None, u'An interface with the same name on the same equipment already exists')
 
-            return self.save(authenticated_user)
+            return self.save()
 
         except InterfaceForEquipmentDuplicatedError, e:
             raise e
@@ -724,7 +724,7 @@ class EnvironmentInterface(BaseModel):
         """Add new interface_do_ambiente"""
 
         try:
-            return self.save(authenticated_user)
+            return self.save()
         except Exception, e:
             self.log.error(u'Failed to add interface_do_ambiente.')
             raise InterfaceError(

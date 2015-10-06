@@ -510,7 +510,7 @@ class EquipamentoAmbienteResource(RestResource):
                 equip_environment = EquipamentoAmbiente().get_by_equipment_environment(
                     equip_id, environment_id)
                 equip_environment.is_router = is_router
-                equip_environment.save(user)
+                equip_environment.save()
 
             except EquipamentoAmbienteNotFoundError:
                 self.log.warning(

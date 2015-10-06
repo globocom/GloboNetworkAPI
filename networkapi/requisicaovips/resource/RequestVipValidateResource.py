@@ -65,7 +65,7 @@ class RequestVipValidateResource(RestResource):
 
             with distributedlock(LOCK_VIP % id_vip):
                 vip.validado = True
-                vip.save(user)
+                vip.save()
 
             return self.response(dumps_networkapi({}))
 

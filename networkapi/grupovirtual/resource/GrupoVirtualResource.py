@@ -101,7 +101,7 @@ class GroupVirtualResource(RestResource):
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
                                     vip.vip_criado = 0
-                                    vip.save(user)
+                                    vip.save()
                                 else:
                                     return self.response_error(2, stdout + stderr)
 

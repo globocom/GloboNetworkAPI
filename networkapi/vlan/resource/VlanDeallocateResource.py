@@ -133,7 +133,7 @@ class VlanDeallocateResource(RestResource):
             with distributedlock(LOCK_VLAN % id_vlan):
 
                 # Remove Vlan
-                vlan.delete(user)
+                vlan.delete()
 
                 return self.response(dumps_networkapi({}))
 

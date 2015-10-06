@@ -49,7 +49,7 @@ def create_dhcprelayIPv4_object(user, ipv4_id, networkipv4_id):
 	with distributedlock(LOCK_DCHCPv4_NET % networkipv4_id):
 		dhcprelay_obj = DHCPRelayIPv4()
 		dhcprelay_obj.create(ipv4_id, networkipv4_id)
-		dhcprelay_obj.save(user)
+		dhcprelay_obj.save()
 		return dhcprelay_obj
 
 def create_dhcprelayIPv6_object(user, ipv6_id, networkipv6_id):
@@ -57,7 +57,7 @@ def create_dhcprelayIPv6_object(user, ipv6_id, networkipv6_id):
 	with distributedlock(LOCK_DCHCPv6_NET % networkipv6_id):
 		dhcprelay_obj = DHCPRelayIPv6()
 		dhcprelay_obj.create(ipv6_id, networkipv6_id)
-		dhcprelay_obj.save(user)
+		dhcprelay_obj.save()
 		return dhcprelay_obj
 
 def delete_dhcprelayipv4(user, dhcprelayipv4_id):
@@ -66,7 +66,7 @@ def delete_dhcprelayipv4(user, dhcprelayipv4_id):
 
 	with distributedlock(LOCK_NETWORK_IPV4 % dhcprelayipv4_obj.networkipv4.id):
 		if not dhcprelayipv4_obj.networkipv4.active:
-			dhcprelayipv4_obj.delete(user)
+			dhcprelayipv4_obj.delete()
 			return True
 		else:
 			raise exceptions.CannotRemoveDHCPRelayFromActiveNetwork()
@@ -77,7 +77,7 @@ def delete_dhcprelayipv6(user, dhcprelayipv6_id):
 
 	with distributedlock(LOCK_NETWORK_IPV6 % dhcprelayipv6_obj.networkipv6.id):
 		if not dhcprelayipv6_obj.networkipv6.active:
-			dhcprelayipv6_obj.delete(user)
+			dhcprelayipv6_obj.delete()
 			return True
 		else:
 			raise exceptions.CannotRemoveDHCPRelayFromActiveNetwork()

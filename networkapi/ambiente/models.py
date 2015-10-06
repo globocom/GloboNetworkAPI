@@ -724,7 +724,7 @@ class Ambiente(BaseModel):
                     raise FilterNotFoundError(
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
 
-            return self.save(authenticated_user)
+            return self.save()
 
         except FilterNotFoundError, e:
             raise e

@@ -92,7 +92,7 @@ class ModelAddResource(RestResource):
 
             try:
                 # save Model
-                model.save(user)
+                model.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Model.')
                 raise EquipamentoError(e, u'Failed to save the Model.')

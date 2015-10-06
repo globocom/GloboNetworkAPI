@@ -133,7 +133,7 @@ class UserAlterRemoveResource(RestResource):
 
                 try:
                     # update User
-                    usr.save(user)
+                    usr.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the user.')
                     raise UsuarioError(e, u'Failed to update the user.')
@@ -194,7 +194,7 @@ class UserAlterRemoveResource(RestResource):
                             None, u'Existe grupo associado ao usuario %s' % user.id)
 
                     # remove User
-                    usr.delete(user)
+                    usr.delete()
 
                 except UsuarioHasEventOrGrupoError, e:
                     raise e

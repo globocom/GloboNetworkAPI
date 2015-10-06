@@ -73,7 +73,7 @@ class RequestVipL7Resource(RestResource):
             vip.filter_valid = 0
             vip.rule = None
 
-        vip.save(user)
+        vip.save()
 
         map = dict()
         map['sucesso'] = 'sucesso'

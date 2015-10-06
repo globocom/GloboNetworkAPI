@@ -908,7 +908,7 @@ class RequisicaoVips(BaseModel):
     def update_vip_created(self, authenticated_user, vip_created):
         try:
             self.vip_criado = vip_created
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(
                 u'Falha ao atualizar o campo vip_criado da requisição de vip.')
@@ -1063,7 +1063,7 @@ class RequisicaoVips(BaseModel):
         try:
             self.validado = validado
 
-            self.save(authenticated_user)
+            self.save()
         except RequisicaoVipsError, e:
             self.log.error(u'Falha ao validar a requisição de vip.')
             raise RequisicaoVipsError(
@@ -1148,7 +1148,7 @@ class RequisicaoVips(BaseModel):
         self.set_variables(variables_map)
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir a requisição de vip.')
             raise RequisicaoVipsError(
@@ -1572,7 +1572,7 @@ class RequisicaoVips(BaseModel):
             healthcheck_obj.healthcheck_expect=healthcheck_expect
             healthcheck_obj.destination='*:*'
 
-            healthcheck_obj.save(user)
+            healthcheck_obj.save()
     
         # Reals
         reals_map = vip_map.get('reals')
@@ -1641,10 +1641,10 @@ class RequisicaoVips(BaseModel):
                 server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
 
-            server_pool.save(user)
+            server_pool.save()
 
             vip_port_to_pool.server_pool = server_pool
-            vip_port_to_pool.save(user)
+            vip_port_to_pool.save()
 
             vip_port_list.append({'port_vip': vip_port, 'server_pool': server_pool})
 
@@ -1662,7 +1662,7 @@ class RequisicaoVips(BaseModel):
                 requisicao_vip=self
             ).uniqueResult()
 
-            vip_port_to_pool.delete(user)
+            vip_port_to_pool.delete()
 
             # Removing unused ServerPool
             # Safe to remove because server pools are not created (tested earlier)
@@ -1670,7 +1670,7 @@ class RequisicaoVips(BaseModel):
                 server_pool=sp)
             if not vip_port_to_pool:
                 self.log.info("Removing unused ServerPool %s %s" % (sp.id, sp.identifier))
-                sp.delete(user)
+                sp.delete()
 
         # save ServerPoolMember
         server_pool_member_pks = []
@@ -1732,7 +1732,7 @@ class RequisicaoVips(BaseModel):
             server_pool_member.weight = weight or 0
             server_pool_member.limit = 0 or vip_map.get('maxcon')
 
-            server_pool_member.save(user)
+            server_pool_member.save()
 
             server_pool_member_pks.append(server_pool_member.id)
 
@@ -1741,7 +1741,7 @@ class RequisicaoVips(BaseModel):
             id__in=server_pool_member_pks)
         for spm in server_pool_members_to_delete:
             self.log.debug("Removendo server_pool_member %s" % spm.ip)
-            spm.delete(user)
+            spm.delete()
 
     def get_vips_and_reals(self, id_vip):
 
@@ -1802,12 +1802,12 @@ class RequisicaoVips(BaseModel):
                 server_pool_members = ServerPoolMember.objects.filter(
                     server_pool=vip_port.server_pool)
                 for server_pool_member in server_pool_members:
-                    server_pool_member.delete(user)
-                vip_port.delete(user)
+                    server_pool_member.delete()
+                vip_port.delete()
                 server_pool_list.append(vip_port.server_pool)
 
         for server_pool in server_pool_list:
-            server_pool.delete(user)
+            server_pool.delete()
 
 
 class OptionVip(BaseModel):
@@ -2113,7 +2113,7 @@ class ServerPool(BaseModel):
 
     def prepare_and_save(self, default_port, user):
         self.default_port = default_port
-        self.save(user)
+        self.save()
 
     @cached_property
     def vip_ports(self):
@@ -2233,7 +2233,7 @@ class VipPortToPool(BaseModel):
         self.server_pool = server_pool
         self.port_vip = port_vip
 
-        self.save(user)
+        self.save()
 
     @classmethod
     def get_by_vip_id(cls, id_vip):

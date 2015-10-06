@@ -98,7 +98,7 @@ class GroupUserAddResource(RestResource):
 
             try:
                 # save user group
-                ugroup.save(user)
+                ugroup.save()
 
                 adm_perm = PermissaoAdministrativa()
 
@@ -110,7 +110,7 @@ class GroupUserAddResource(RestResource):
                     adm_perm.ugrupo = ugroup
                     adm_perm.leitura = False
                     adm_perm.escrita = True
-                    adm_perm.save(user)
+                    adm_perm.save()
 
             except Exception, e:
                 self.log.error(u'Failed to save the GroupUser.')

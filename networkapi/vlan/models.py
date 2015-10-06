@@ -372,7 +372,7 @@ class Vlan(BaseModel):
 
         try:
             self.ativada = 1
-            self.save(authenticated_user)
+            self.save()
             # Send to Queue
             queue_manager = QueueManager()
             serializer = VlanSerializer(self)
@@ -399,7 +399,7 @@ class Vlan(BaseModel):
         try:
 
             self.ativada = 0
-            self.save(authenticated_user)
+            self.save()
             # Send to Queue
             queue_manager = QueueManager()
             serializer = VlanSerializer(self)
@@ -443,7 +443,7 @@ class Vlan(BaseModel):
         self.ativada = 0
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             msg = u'Error persisting a VLAN.'
             self.log.error(msg)
@@ -522,7 +522,7 @@ class Vlan(BaseModel):
         self.ativada = 0
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir a VLAN.')
             raise VlanError(e, u'Falha ao inserir a VLAN.')
@@ -653,7 +653,7 @@ class Vlan(BaseModel):
                 None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
-            return self.save(authenticated_user)
+            return self.save()
 
         except Exception, e:
             self.log.error(u'Falha ao inserir VLAN.')
@@ -721,7 +721,7 @@ class Vlan(BaseModel):
                     None, 'Name VLAN can not be duplicated in the environment.')
 
         try:
-            return self.save(authenticated_user)
+            return self.save()
 
         except Exception, e:
             self.log.error(u'Falha ao inserir VLAN.')

@@ -73,7 +73,7 @@ class RequestVipL7ValidateResource(RestResource):
 
                 vip.filter_valid = True
 
-                vip.save(user)
+                vip.save()
 
                 map = dict()
                 map['sucesso'] = 'sucesso'

@@ -78,7 +78,7 @@ class UserGroupDissociateResource(RestResource):
                 try:
 
                     # remove UserGroup
-                    user_group.delete(user)
+                    user_group.delete()
 
                 except Exception, e:
                     self.log.error(u'Failed to remove the UserGroup.')

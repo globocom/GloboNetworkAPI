@@ -68,7 +68,7 @@ class FilterAddResource(RestResource):
 
             try:
                 # Save filter
-                filter_.save(user)
+                filter_.save()
             except Exception, e:
                 self.log.error(u'Failed to save the filter.')
                 raise FilterError(e, u'Failed to save the filter')

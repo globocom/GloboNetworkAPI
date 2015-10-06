@@ -30,7 +30,7 @@ class UsuarioFactory(factory.DjangoModelFactory):
 
     try:
         # save User
-        usr.save(user)
+        usr.save()
     except Exception, e:
         self.log.error(u'Failed to save the user.')
         raise UsuarioError(e, u'Failed to save the user.')

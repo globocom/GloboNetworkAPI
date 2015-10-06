@@ -309,7 +309,7 @@ class NetworkIPv4(BaseModel):
             data_to_queue.update({'description': queue_keys.NETWORKv4_ACTIVATE})
             queue_manager.append({'action': queue_keys.NETWORKv4_ACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
             queue_manager.send()
-            self.save(authenticated_user)
+            self.save()
 
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv4.')
@@ -344,7 +344,7 @@ class NetworkIPv4(BaseModel):
         try:
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Error on update NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error on update NetworkIPv4.')
@@ -464,7 +464,7 @@ class NetworkIPv4(BaseModel):
                 try:
                     self.network_type = internal_network_type
                     self.ambient_vip = evip
-                    self.save(user)
+                    self.save()
                     transaction.commit()
                 except Exception, e:
                     self.log.error(u'Error persisting a NetworkIPv4.')
@@ -612,7 +612,7 @@ class Ip(BaseModel):
         try:
 
             ip = self.get_by_pk(id_ip)
-            ip.delete(user)
+            ip.delete()
 
         except IpNotFoundError, e:
             raise IpNotFoundError(None, e)
@@ -791,7 +791,7 @@ class Ip(BaseModel):
                         self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
 
             if flag:
-                self.save(user)
+                self.save()
             else:
                 raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (
                     self.oct1, self.oct2, self.oct3, self.oct4, self.networkipv4.id))
@@ -865,14 +865,14 @@ class Ip(BaseModel):
                 ip_equipment = IpEquipamento()
                 if not already_ip:
                     self.networkipv4_id = net.id
-                    self.save(user)
+                    self.save()
                     ip_equipment.ip = self
 
                 else:
                     ip_equipment.ip = ip_aux
                     if self.descricao is not None and len(self.descricao) > 0:
                         ip_aux.descricao = self.descricao
-                        ip_aux.save(user)
+                        ip_aux.save()
 
                 ip_equipment.equipamento = equipment
 
@@ -910,7 +910,7 @@ class Ip(BaseModel):
 
                 # # Filter case 2 - end ##
 
-                ip_equipment.save(user)
+                ip_equipment.save()
 
                 # Makes Environment Equipment association
                 try:
@@ -1012,7 +1012,7 @@ class Ip(BaseModel):
         equipment = Equipamento().get_by_pk(equipment_id)
 
         try:
-            self.save(authenticated_user)
+            self.save()
 
             ip_equipment = IpEquipamento()
             ip_equipment.ip = self
@@ -1315,7 +1315,7 @@ class IpEquipamento(BaseModel):
                     ambiente=self.ip.networkipv4.vlan.ambiente, equipamento=self.equipamento)
                 ea.save(authenticated_user)
 
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir um ip_equipamento.')
             raise IpError(e, u'Falha ao inserir um ip_equipamento.')
@@ -1463,7 +1463,7 @@ class NetworkIPv6(BaseModel):
 
         try:
             self.active = 1
-            self.save(authenticated_user)
+            self.save()
             # Send to Queue
             queue_manager = QueueManager()
             serializer = NetworkIPv6Serializer(self)
@@ -1503,7 +1503,7 @@ class NetworkIPv6(BaseModel):
         try:
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Error on update NetworkIPv6.')
             raise NetworkIPv4Error(e, u'Error on update NetworkIPv6.')
@@ -1623,7 +1623,7 @@ class NetworkIPv6(BaseModel):
             self.network_type = internal_network_type
             # Set Environment VIP
             self.ambient_vip = evip
-            self.save(user)
+            self.save()
 
         except Exception, e:
             self.log.error(u'Error persisting a NetworkIPv6.')
@@ -1886,7 +1886,7 @@ class Ipv6(BaseModel):
         try:
 
             ip = self.get_by_pk(id_ip)
-            ip.delete(user)
+            ip.delete()
 
         except IpNotFoundError, e:
             raise IpNotFoundError(None, e)
@@ -1950,7 +1950,7 @@ class Ipv6(BaseModel):
                         self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.networkipv6.id))
 
             if flag:
-                self.save(user)
+                self.save()
 
             else:
                 raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' % (
@@ -2037,14 +2037,14 @@ class Ipv6(BaseModel):
                 ip6_equipment = Ipv6Equipament()
                 if not already_ip:
                     self.networkipv6_id = net.id
-                    self.save(user)
+                    self.save()
                     ip6_equipment.ip = self
 
                 else:
                     ip6_equipment.ip = ip_aux
                     if self.description is not None and len(self.description) > 0:
                         ip_aux.description = self.description
-                        ip_aux.save(user)
+                        ip_aux.save()
 
                 ip6_equipment.equipamento = equipment
 
@@ -2086,7 +2086,7 @@ class Ipv6(BaseModel):
 
                 # # Filter case 2 - end ##
 
-                ip6_equipment.save(user)
+                ip6_equipment.save()
 
                 # Makes Environment Equipment association
                 try:
@@ -2174,7 +2174,7 @@ class Ipv6(BaseModel):
         equipment = Equipamento().get_by_pk(equipment_id)
 
         try:
-            self.save(authenticated_user)
+            self.save()
 
             ipv6_equipment = Ipv6Equipament()
             ipv6_equipment.ip = self
@@ -2463,7 +2463,7 @@ class Ipv6Equipament(BaseModel):
                     ambiente=self.ip.networkipv6.vlan.ambiente, equipamento=self.equipamento)
                 ea.save(authenticated_user)
 
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir um ip_equipamento.')
             raise IpError(e, u'Falha ao inserir um ip_equipamento.')
