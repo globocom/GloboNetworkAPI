@@ -188,7 +188,7 @@ class PortChannel(BaseModel):
             cls.log.error(u'Failure to search the Group L3.')
             raise AmbienteError(e, u'Failure to search the Group L3.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django method to remove port channel.
         '''
         id = self.id
@@ -196,7 +196,7 @@ class PortChannel(BaseModel):
         for interface in interfaces:
             interface.channel = None
             interface.save(authenticated_user)
-        super(PortChannel, self).delete(authenticated_user)
+        super(PortChannel, self).delete()
 
     def list_interfaces(self):
         '''Override Django method to remove port channel.
@@ -682,7 +682,7 @@ class Interface(BaseModel):
                 raise InterfaceUsedByOtherInterfaceError(
                     None, u'Interface used by other interface.')
 
-            return interface.delete(authenticated_user)
+            return interface.delete()
 
         except InterfaceUsedByOtherInterfaceError, e:
             raise e
@@ -690,7 +690,7 @@ class Interface(BaseModel):
             cls.log.error(u'Failed to remove interface')
             raise InterfaceError(e, u'Failed to remove interface')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django method to remove interface.
 
         Before removing interface, removes all relationships between this interface and others.
@@ -703,7 +703,7 @@ class Interface(BaseModel):
             i.ligacao_back = None
             i.save(authenticated_user)
 
-        super(Interface, self).delete(authenticated_user)
+        super(Interface, self).delete()
 
 
 

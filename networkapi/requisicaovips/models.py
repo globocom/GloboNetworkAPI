@@ -346,7 +346,7 @@ class RequisicaoVips(BaseModel):
 
             with distributedlock(LOCK_VIP % vip_id):
 
-                vip.delete(authenticated_user)
+                vip.delete()
         except RequisicaoVipsNotFoundError, e:
             cls.log.error(u'Requisao Vip nao encontrada')
             raise RequisicaoVipsNotFoundError(
@@ -1994,7 +1994,7 @@ class OptionVip(BaseModel):
             cls.log.error(u'Failure to list all Option Vip.')
             raise OptionVipError(e, u'Failure to list all Option Vip.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django's method to remove option vip
 
         Before removing the option vip removes all relationships with environment vip.
@@ -2002,9 +2002,9 @@ class OptionVip(BaseModel):
 
         # Remove all EnvironmentVIP OptionVip related
         for option_environment in OptionVipEnvironmentVip.objects.filter(option=self.id):
-            option_environment.delete(authenticated_user)
+            option_environment.delete()
 
-        super(OptionVip, self).delete(authenticated_user)
+        super(OptionVip, self).delete()
 
 
 class OptionVipEnvironmentVip(BaseModel):

@@ -781,22 +781,22 @@ class Vlan(BaseModel):
 
         return False
 
-    def delete(self, authenticated_user):
+    def delete(self):
         from networkapi.ip.models import IpCantBeRemovedFromVip
         try:
 
             if not self.ativada:
 
                 for net4 in self.networkipv4_set.all():
-                    net4.delete(authenticated_user)
+                    net4.delete()
 
                 for net6 in self.networkipv6_set.all():
-                    net6.delete(authenticated_user)
+                    net6.delete()
             else:
                 raise VlanCantDeallocate(
                     str(self.nome), 'Cant deallocate all relationships between vlan because its active.')
 
-            super(Vlan, self).delete(authenticated_user)
+            super(Vlan, self).delete()
 
         except IpCantBeRemovedFromVip, e:
             cause = e.cause

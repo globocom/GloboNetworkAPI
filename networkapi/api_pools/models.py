@@ -151,7 +151,7 @@ class OptionPool (BaseModel):
                 e, u'Failure to list all Option Pool in environment id' ) #, %(optiontype, id_environment)
 
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django's method to remove option vip
 
         Before removing the option pool removes all relationships with environment vip.
@@ -159,9 +159,9 @@ class OptionPool (BaseModel):
 
         # Remove all related OptionPool environment
         for option_environment in OptionPoolEnvironment.objects.filter(option=self.id):
-            option_environment.delete(authenticated_user)
+            option_environment.delete()
 
-        super(OptionPool, self).delete(authenticated_user)
+        super(OptionPool, self).delete()
 
 
 

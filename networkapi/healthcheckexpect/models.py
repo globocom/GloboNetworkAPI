@@ -102,7 +102,7 @@ class HealthcheckExpect(BaseModel):
                         hce.save(authenticated_user)
                     # Else, delete HealthcheckExpect object
                     else:
-                        hce.delete(authenticated_user)
+                        hce.delete()
 
         except Exception, e:
             self.log.error(u'Falha ao desassociar os healthcheck_expects.')

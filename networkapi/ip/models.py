@@ -503,14 +503,14 @@ class NetworkIPv4(BaseModel):
 
         return map
 
-    def delete(self, authenticated_user):
+    def delete(self):
 
         try:
 
             for ip in self.ip_set.all():
-                ip.delete(authenticated_user)
+                ip.delete()
 
-            super(NetworkIPv4, self).delete(authenticated_user)
+            super(NetworkIPv4, self).delete()
 
         except IpCantBeRemovedFromVip, e:
             # Network id and ReqVip id
@@ -1162,7 +1162,7 @@ class Ip(BaseModel):
             cls.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Sobrescreve o método do Django para remover um IP.
         Antes de remover o IP remove todas as suas requisições de VIP e os relacionamentos com equipamentos.
         '''
@@ -1179,7 +1179,7 @@ class Ip(BaseModel):
                         r.save(authenticated_user)
                         r_alter = True
                 if not r_alter:
-                    r.delete(authenticated_user)
+                    r.delete()
 
             for ie in self.ipequipamento_set.all():
                 # Codigo removido, pois não devemos remover o ambiente do equipamento mesmo que não tenha IP
@@ -1196,10 +1196,10 @@ class Ip(BaseModel):
                 #
                 # if len(ips) <= 1 and len(ips6) <= 0:
                 #
-                #     ambienteequip.delete(authenticated_user)
+                #     ambienteequip.delete()
 
-                    ie.delete(authenticated_user)
-            super(Ip, self).delete(authenticated_user)
+                    ie.delete()
+            super(Ip, self).delete()
 
         except EquipamentoAmbienteNotFoundError, e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
@@ -1320,7 +1320,7 @@ class IpEquipamento(BaseModel):
             self.log.error(u'Falha ao inserir um ip_equipamento.')
             raise IpError(e, u'Falha ao inserir um ip_equipamento.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django's method to remove Ip and Equipment relationship.
         If Ip from this Ip-Equipment is associated with created Vip Request, and the Equipment
         is the last balancer associated, the IpEquipment association cannot be removed.
@@ -1350,7 +1350,7 @@ class IpEquipamento(BaseModel):
                             r.validado = 0
                             r.save(authenticated_user)
                         else:
-                            r.delete(authenticated_user)
+                            r.delete()
 
         if self.ip.serverpoolmember_set.count() > 0:
 
@@ -1366,11 +1366,11 @@ class IpEquipamento(BaseModel):
             raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
                                                "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
-        super(IpEquipamento, self).delete(authenticated_user)
+        super(IpEquipamento, self).delete()
 
         # If IP is not related to any other equipments, its removed
         if self.ip.ipequipamento_set.count() == 0:
-            self.ip.delete(authenticated_user)
+            self.ip.delete()
 
     def remove(self, authenticated_user, ip_id, equip_id):
         '''Search and remove relationship between IP and equipment.
@@ -1383,7 +1383,7 @@ class IpEquipamento(BaseModel):
         ip_equipamento = self.get_by_ip_equipment(ip_id, equip_id)
 
         try:
-            ip_equipamento.delete(authenticated_user)
+            ip_equipamento.delete()
         except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip), e:
             raise e
         except Exception, e:
@@ -1666,14 +1666,14 @@ class NetworkIPv6(BaseModel):
 
         return map
 
-    def delete(self, authenticated_user):
+    def delete(self):
 
         try:
 
             for ip in self.ipv6_set.all():
-                ip.delete(authenticated_user)
+                ip.delete()
 
-            super(NetworkIPv6, self).delete(authenticated_user)
+            super(NetworkIPv6, self).delete()
 
         except IpCantBeRemovedFromVip, e:
             # Network id and ReqVip id
@@ -2297,7 +2297,7 @@ class Ipv6(BaseModel):
             self.log.error(u'Failure to search the Ipv6.')
             raise IpError(e, u'Failure to search the Ipv6.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Sobrescreve o método do Django para remover um IP.
         Antes de remover o IP remove todas as suas requisições de VIP e os relacionamentos com equipamentos.
         '''
@@ -2316,7 +2316,7 @@ class Ipv6(BaseModel):
                         r_alter = True
 
                 if not r_alter:
-                    r.delete(authenticated_user)
+                    r.delete()
 
             # Delete all EquipmentIp and EnviromentEquip associated
             for ie in self.ipv6equipament_set.all():
@@ -2334,11 +2334,11 @@ class Ipv6(BaseModel):
                 #
                 # if len(ips) <= 0 and len(ips6) <= 1:
                 #
-                #     ambienteequip.delete(authenticated_user)
+                #     ambienteequip.delete()
 
-                ie.delete(authenticated_user)
+                ie.delete()
 
-            super(Ipv6, self).delete(authenticated_user)
+            super(Ipv6, self).delete()
 
         except EquipamentoAmbienteNotFoundError, e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
@@ -2477,7 +2477,7 @@ class Ipv6Equipament(BaseModel):
         ip_equipamento = self.get_by_ip_equipment(ip_id, equip_id)
 
         try:
-            ip_equipamento.delete(authenticated_user)
+            ip_equipamento.delete()
 
         except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip), e:
             raise e
@@ -2485,7 +2485,7 @@ class Ipv6Equipament(BaseModel):
             self.log.error(u'Failure to remove the Ipv6Equipament.')
             raise IpError(e, u'Failure to remove the Ipv6Equipament.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django's method to remove Ipv6 and Equipment relationship.
         If Ip from this Ip-Equipment is associated with created Vip Request, and the Equipment
         is the last balancer associated, the IpEquipment association cannot be removed.
@@ -2515,7 +2515,7 @@ class Ipv6Equipament(BaseModel):
                             r.validado = 0
                             r.save(authenticated_user)
                         else:
-                            r.delete(authenticated_user)
+                            r.delete()
 
         if self.ip.serverpoolmember_set.count() > 0:
 
@@ -2531,11 +2531,11 @@ class Ipv6Equipament(BaseModel):
             raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(self.ip), 'equip_name': self.equipamento.nome, 'server_pool_identifiers': server_pool_identifiers},
                                                "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (self.equipamento.nome, server_pool_identifiers))
 
-        super(Ipv6Equipament, self).delete(authenticated_user)
+        super(Ipv6Equipament, self).delete()
 
         # If ip has no other equipment, than he will be removed to
         if self.ip.ipv6equipament_set.count() == 0:
-            self.ip.delete(authenticated_user)
+            self.ip.delete()
 
 def network_in_range(vlan, network, version):
     # Get all vlans environments from equipments of the current

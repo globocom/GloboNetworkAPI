@@ -70,7 +70,7 @@ class FilterEquipType(BaseModel):
         except ObjectDoesNotExist:
             pass
 
-    def delete(self, authenticated_user):
+    def delete(self):
 
         from networkapi.ambiente.models import Ambiente
         from networkapi.ip.models import NetworkIPv4, NetworkIPv6, IpEquipamento, Ipv6Equipament
@@ -191,4 +191,4 @@ class FilterEquipType(BaseModel):
 
             # End of filter test case 3
 
-        super(FilterEquipType, self).delete(authenticated_user)
+        super(FilterEquipType, self).delete()
