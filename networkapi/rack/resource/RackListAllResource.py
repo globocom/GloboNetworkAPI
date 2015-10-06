@@ -21,12 +21,12 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 
 class RackListAllResource(RestResource):
 
-    log = Log('RackListAllResource')
+    log = logging.getLogger('RackListAllResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all Racks

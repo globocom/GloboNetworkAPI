@@ -20,7 +20,7 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.equipamento.models import Equipamento, TipoEquipamento, Modelo, TipoEquipamentoNotFoundError, ModeloNotFoundError, EquipamentoNotFoundError, EquipamentoNameDuplicatedError, EquipamentoError, EquipTypeCantBeChangedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex,\
@@ -34,7 +34,7 @@ from django.db.models import Count
 
 class EquipamentoEditResource(RestResource):
 
-    log = Log('EquipamentoResource')
+    log = logging.getLogger('EquipamentoResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Trata uma requisicao POST para editar um equipamento.
@@ -256,7 +256,7 @@ class EquipamentoEditResource(RestResource):
                 destroy_cache_function([equip_id], True)
 
                 modelo = Modelo.get_by_pk(id_modelo)
-                equip.edit(user, nome, tipo_equip, modelo)
+                equip.edit(user, nome, tipo_equip, modelo, maintenance)
 
                 return self.response(dumps_networkapi({}))
 

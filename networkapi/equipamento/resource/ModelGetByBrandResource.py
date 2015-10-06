@@ -19,7 +19,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Marca, Modelo, EquipamentoError, MarcaNotFoundError
 from networkapi.exception import InvalidValueError
@@ -28,7 +28,7 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 class ModelGetByBrandResource(RestResource):
 
-    log = Log('ModelGetByBrandResource')
+    log = logging.getLogger('ModelGetByBrandResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all the Model by Brand.

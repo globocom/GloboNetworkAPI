@@ -20,7 +20,7 @@ from django.db import models
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 from networkapi.exception import InvalidValueError
@@ -75,7 +75,7 @@ class Filter(BaseModel):
     description = models.CharField(
         max_length=200, null=True, blank=True, db_column='description')
 
-    log = Log('Filter')
+    log = logging.getLogger('Filter')
 
     class Meta(BaseModel.Meta):
         db_table = u'filter'

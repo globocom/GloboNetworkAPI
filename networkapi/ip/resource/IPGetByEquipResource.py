@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.ip.models import  Ip, IpNotFoundError, IpError, IpEquipmentNotFoundError, IpEquipamento,\
@@ -30,7 +30,7 @@ from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError,
 
 class IPGetByEquipResource(RestResource):
 
-    log = Log('IPGetByEquipResource')
+    log = logging.getLogger('IPGetByEquipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to get a ipv4 and ipv6 of determined Equip.

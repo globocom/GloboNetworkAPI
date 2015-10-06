@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
@@ -36,7 +36,7 @@ from networkapi.ip.models import NetworkIPv4AddressNotAvailableError, IpNotAvail
 
 class VlanInsertResource(RestResource):
 
-    log = Log('VlanInsertResource')
+    log = logging.getLogger('VlanInsertResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Treat POST requests to insert vlan
@@ -82,6 +82,7 @@ class VlanInsertResource(RestResource):
             description = vlan_map.get('description')
             network_ipv4 = vlan_map.get('network_ipv4')
             network_ipv6 = vlan_map.get('network_ipv6')
+            vrf = vlan_map.get('vrf')
 
             # Valid environment_id ID
             if not is_valid_int_greater_zero_param(environment_id):
@@ -109,6 +110,12 @@ class VlanInsertResource(RestResource):
                 self.log.error(
                     u'Parameter network_ipv6 is invalid. Value: %s.', network_ipv6)
                 raise InvalidValueError(None, 'network_ipv6', network_ipv6)
+
+            # vrf can NOT be greater than 100
+            if not is_valid_string_maxsize(vrf, 100, False):
+                self.log.error(
+                    u'Parameter vrf is invalid. Value: %s.', vrf)
+                raise InvalidValueError(None, 'vrf', vrf)
 
             network_ipv4 = int(network_ipv4)
             network_ipv6 = int(network_ipv6)

@@ -21,16 +21,18 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.distributedlock import distributedlock, LOCK_SCRIPT
 from networkapi.exception import InvalidValueError
-from networkapi.roteiro.models import Roteiro, TipoRoteiro, TipoRoteiroNotFoundError, RoteiroError, RoteiroNotFoundError, RoteiroNameDuplicatedError, RoteiroHasEquipamentoError
+from networkapi.roteiro.models import Roteiro, TipoRoteiro, TipoRoteiroNotFoundError, RoteiroError, RoteiroNotFoundError, \
+                                      RoteiroNameDuplicatedError, RoteiroHasEquipamentoError
+from networkapi.equipamento.models import ModeloRoteiro, Modelo, Equipamento, EquipamentoRoteiro
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
 
 
 class ScriptAlterRemoveResource(RestResource):
 
-    log = Log('ScriptAlterRemoveResource')
+    log = logging.getLogger('ScriptAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to edit Script.
@@ -43,8 +45,7 @@ class ScriptAlterRemoveResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             id_script = kwargs.get('id_script')
@@ -53,7 +54,6 @@ class ScriptAlterRemoveResource(RestResource):
             xml_map, attrs_map = loads(request.raw_post_data)
 
             # XML data format
-
             networkapi_map = xml_map.get('networkapi')
             if networkapi_map is None:
                 return self.response_error(3, u'There is no value to the networkapi tag  of XML request.')
@@ -65,12 +65,12 @@ class ScriptAlterRemoveResource(RestResource):
             # Get XML data
             script = script_map.get('script')
             id_script_type = script_map.get('id_script_type')
+            models = script_map.get('model')
             description = script_map.get('description')
 
             # Valid ID Script
             if not is_valid_int_greater_zero_param(id_script):
-                self.log.error(
-                    u'The id_script parameter is not a valid value: %s.', id_script)
+                self.log.error(u'The id_script parameter is not a valid value: %s.', id_script)
                 raise InvalidValueError(None, 'id_script', id_script)
 
             # Valid Script
@@ -97,10 +97,46 @@ class ScriptAlterRemoveResource(RestResource):
             # Find Script Type by ID to check if it exist
             script_type = TipoRoteiro.get_by_pk(id_script_type)
 
+            models_old = []
+            scr_models = ModeloRoteiro.objects.all().filter(roteiro__id=scr.id)
+            for i in scr_models:
+                models_old.append(int(i.modelo.id))
+
+            if models is not None and type(models) is not list:
+                var = int (models)
+                models = []
+                models.append(var)
+            else:
+                models = [ int(x) for x in models ]
+
+            desassociar = set(models_old) - set(models)
+            for i in desassociar:
+                scr_model = ModeloRoteiro()
+                scr_model.remover(user, int(i), int(scr.id))
+            associar = set(models) - set(models_old)
+            for i in associar:
+                scr_models = ModeloRoteiro()
+                scr_models.roteiro = scr
+                scr_models.modelo = Modelo.get_by_pk(i)
+                scr_models.create(user)
+
+            #verificar se há equipamento daquele modelo que não está associado a um roteiro
+            for ids in models:
+                equipamentos = Equipamento.objects.filter(modelo__id=int(ids))
+                for equip in equipamentos:
+                    equip_roteiro = EquipamentoRoteiro().search(None, equip.id, scr.tipo_roteiro)
+                    try:
+                        equip_roteiro = EquipamentoRoteiro()
+                        equip_roteiro.equipamento = equip
+                        equip_roteiro.roteiro = scr
+                        equip_roteiro.create(user)
+                    except:
+                        pass
+
             with distributedlock(LOCK_SCRIPT % id_script):
 
                 try:
-                    if not (scr.roteiro.lower() == script.lower() and scr.tipo_roteiro.id == id_script_type):
+                    if not scr.roteiro.lower() == script.lower() and not scr.tipo_roteiro.id == id_script_type:
                         Roteiro.get_by_name_script(script, id_script_type)
                         raise RoteiroNameDuplicatedError(
                             None, u'Já existe um roteiro com o nome %s com tipo de roteiro %s.' % (script, script_type.tipo))

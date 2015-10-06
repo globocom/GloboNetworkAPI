@@ -19,7 +19,7 @@ from __future__ import with_statement
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.settings import NETWORKIPV4_REMOVE, NETWORKIPV6_REMOVE
 from networkapi.util import is_valid_version_ip, is_valid_int_greater_zero_param
@@ -34,7 +34,7 @@ from networkapi.admin_permission import AdminPermission
 
 class NetworkRemoveResource(RestResource):
 
-    log = Log('NetworkRemoveResource')
+    log = logging.getLogger('NetworkRemoveResource')
 
     NETWORK_TYPE_V4 = 'v4'
     CODE_MESSAGE_INACTIVE_NETWORK = 363
@@ -137,32 +137,28 @@ class NetworkRemoveResource(RestResource):
                 u'The type network parameter is invalid value: %s.', network_type)
             raise InvalidValueError(None, 'network_type', network_type)
 
-        if network_type == self.NETWORK_TYPE_V4:
-            net = NetworkIPv4.get_by_pk(id_network)
-
-            if not self.is_active_netwok(net):
-                raise NetworkInactiveError(
-                    message=error_messages.get(self.CODE_MESSAGE_INACTIVE_NETWORK))
-
-            command = NETWORKIPV4_REMOVE % int(id_network)
-
-            code, stdout, stderr = exec_script(command)
-            if code == 0:
-                net = NetworkIPv4.get_by_pk(id_network)
-                net.deactivate(user)
+        if not self.is_active_netwok(net):
+            code = 0
+            stdout = 'Nothing to do. Network is not active.'
+            stderr = ''
         else:
+            if network_type == self.NETWORK_TYPE_V4:
+                net = NetworkIPv4.get_by_pk(id_network)
 
-            net = NetworkIPv6.get_by_pk(id_network)
+                command = NETWORKIPV4_REMOVE % int(id_network)
 
-            if not self.is_active_netwok(net):
-                raise NetworkInactiveError(
-                    message=error_messages.get(self.CODE_MESSAGE_INACTIVE_NETWORK))
+                code, stdout, stderr = exec_script(command)
+                if code == 0:
+                    net = NetworkIPv4.get_by_pk(id_network)
+                    net.deactivate(user)
+            else:
+                net = NetworkIPv6.get_by_pk(id_network)
 
-            command = NETWORKIPV6_REMOVE % int(id_network)
+                command = NETWORKIPV6_REMOVE % int(id_network)
 
-            code, stdout, stderr = exec_script(command)
-            if code == 0:
-                net.deactivate(user)
+                code, stdout, stderr = exec_script(command)
+                if code == 0:
+                    net.deactivate(user)
 
         return code, stdout, stderr
 

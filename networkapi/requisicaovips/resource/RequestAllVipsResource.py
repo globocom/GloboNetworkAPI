@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips, \
     RequisicaoVipsNotFoundError, RequisicaoVipsError
 from networkapi.rest import RestResource
@@ -28,7 +28,7 @@ from networkapi.rest import RestResource
 
 class RequestAllVipsResource(RestResource):
 
-    log = Log('RequestAllVipsResource')
+    log = logging.getLogger('RequestAllVipsResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """

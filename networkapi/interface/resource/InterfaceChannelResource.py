@@ -18,7 +18,7 @@
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError, loads
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface
 from networkapi.exception import InvalidValueError
@@ -73,7 +73,7 @@ def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, 
 
 class InterfaceChannelResource(RestResource):
 
-    log = Log('InterfaceChannelResource')
+    log = logging.getLogger('InterfaceChannelResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.

@@ -20,12 +20,11 @@ import base64
 
 from django.conf import settings
 
-from networkapi.log import Log
+import logging
 from networkapi.extra_logging import local, REQUEST_ID_HEADER, NO_REQUEST_ID, NO_REQUEST_USER
+from networkapi.util import search_hide_password
 
-
-logger = Log(__name__)
-
+logger = logging.getLogger(__name__)
 
 def get_identity(request):
     x_request_id = getattr(settings, REQUEST_ID_HEADER, None)
@@ -71,13 +70,14 @@ class ExtraLoggingMiddleware(object):
         local.request_path = request.get_full_path()
         request.id = identity
 
-        logger.rest(u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data))
+        msg = u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data)
+        logger.debug(search_hide_password(msg))
 
     def process_response(self, request, response):
 
         if 399 < response.status_code < 600:
             #logger.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
-            logger.debug(u'Requisição concluída com falha. Conteúdo: [].' )
+            logger.warning(u'Requisição concluída com falha. Conteúdo: [].' )
         else:
             logger.debug(u'Requisição concluída com sucesso.')
 

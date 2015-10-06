@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.log import Log
+import logging
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
@@ -35,7 +35,7 @@ logger = logging.getLogger('VlanCheckNumberAvailable')
 
 class VlanCheckNumberAvailable(RestResource):
 
-    log = Log('VlanCheckNumberAvailable')
+    log = logging.getLogger('VlanCheckNumberAvailable')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handle GET requests to check if environment has a number available.

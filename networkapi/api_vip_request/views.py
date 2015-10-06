@@ -22,7 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 
-from networkapi.log import Log
+import logging
 from networkapi.api_vip_request.permissions import Read, Write
 from networkapi.requisicaovips.models import ServerPool, VipPortToPool, \
     RequisicaoVips, RequisicaoVipsError
@@ -36,7 +36,7 @@ from networkapi.api_vip_request import facade
 from networkapi.requisicaovips.models import DsrL3_to_Vip, RequisicaoVipsMissingDSRL3idError
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['POST'])

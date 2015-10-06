@@ -22,7 +22,7 @@ from networkapi.filter.models import Filter, FilterError, FilterNotFoundError
 from networkapi.filterequiptype.models import FilterEquipType, FilterEquipTypeDuplicateError
 from networkapi.equipamento.models import TipoEquipamento, TipoEquipamentoNotFoundError
 from networkapi.auth import has_perm
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.exception import InvalidValueError
@@ -32,7 +32,7 @@ class FilterAssociateResource(RestResource):
 
     '''Class that receives requests to add associations between Filter and TipoEquipamento.'''
 
-    log = Log('FilterAssociateResource')
+    log = logging.getLogger('FilterAssociateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to associate Filter and TipoEquipamento.

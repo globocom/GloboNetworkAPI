@@ -17,7 +17,7 @@
 
 from __future__ import with_statement
 
-from networkapi.log import Log
+import logging
 from networkapi.blockrules.models import Rule, BlockRules
 from django.forms.models import model_to_dict
 from networkapi.rest import RestResource, UserNotAuthorizedError
@@ -35,7 +35,7 @@ class RuleGetResource(RestResource):
 
     URL: environment/rule/all/<id_environment>/
     """
-    log = Log('RuleResource')
+    log = logging.getLogger('RuleResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         try:

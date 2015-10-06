@@ -24,14 +24,14 @@ from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4NotFoundError, IpError, NetworkIPv4Error, IpNotFoundByEquipAndVipError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_regex
 
 
 class IPEquipEvipResource(RestResource):
 
-    log = Log('IPEquipEvipResource')
+    log = logging.getLogger('IPEquipEvipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to get all Ips (v4) or (v6) of equip on Divisao DC and Ambiente Logico of fisrt Network4 and 6 (if exists) of Environment Vip.

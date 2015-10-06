@@ -21,14 +21,14 @@ from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
 from networkapi.grupo.models import GrupoError
-from networkapi.log import Log
+import logging
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, convert_boolean_to_int
 from networkapi.blockrules.models import Rule
 
 
 class RequestVipL7Resource(RestResource):
-    log = Log('RequestVipL7Resource')
+    log = logging.getLogger('RequestVipL7Resource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """ Handles a PUT request to edit the L7 filter.

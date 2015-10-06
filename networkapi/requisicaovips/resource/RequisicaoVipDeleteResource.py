@@ -23,7 +23,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import IpCantRemoveFromServerPool, IpCantBeRemovedFromVip
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsNotFoundError, RequisicaoVipsError, \
     ServerPoolMember
@@ -34,7 +34,7 @@ from networkapi.exception import InvalidValueError
 
 class RequisicaoVipDeleteResource(RestResource):
 
-    log = Log('RequisicaoVipDeleteResource')
+    log = logging.getLogger('RequisicaoVipDeleteResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """

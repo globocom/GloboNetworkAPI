@@ -21,7 +21,7 @@ from networkapi.rest import RestResource
 from networkapi.filter.models import Filter, FilterError, FilterDuplicateError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
-from networkapi.log import Log
+import logging
 from networkapi.exception import InvalidValueError
 
 
@@ -29,7 +29,7 @@ class FilterAddResource(RestResource):
 
     '''Class that receives requests to add new Filters.'''
 
-    log = Log('FilterAddResource')
+    log = logging.getLogger('FilterAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat POST requests to add new Filter.

@@ -29,7 +29,7 @@ from networkapi.admin_permission import AdminPermission
 
 from networkapi.auth import has_perm
 
-from networkapi.log import Log
+import logging
 
 from networkapi.grupo.models import GrupoError
 
@@ -45,7 +45,7 @@ from networkapi.requisicaovips.models import ServerPoolMember
 
 class Ipv6RemoveResource(RestResource):
 
-    log = Log('Ipv6RemoveResource')
+    log = logging.getLogger('Ipv6RemoveResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         '''Treat DELETE requests to remove the relationship between IPv6 and equipment.

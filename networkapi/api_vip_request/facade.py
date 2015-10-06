@@ -22,7 +22,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.error_message_utils import error_messages
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
-from networkapi.log import Log
+import logging
 from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
 from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, convert_boolean_to_int
@@ -30,7 +30,7 @@ from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 def get_by_pk(pk):

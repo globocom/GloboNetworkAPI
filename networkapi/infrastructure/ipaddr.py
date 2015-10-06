@@ -551,6 +551,19 @@ class _BaseNet(_IPAddrBase):
             cur += 1
             yield IPAddress(cur - 1, version=self._version)
 
+    def iterhostsTopDown(self):
+        """Generate Iterator over usable hosts in a network.
+
+           This is like __iter__ except it doesn't return the network
+           or broadcast addresses.
+
+        """
+        network = int(self.network) + 1
+        cur = int(self.broadcast) - 1
+        while cur >= network:
+            cur -= 1
+            yield IPAddress(cur + 1, version=self._version)
+
     def __iter__(self):
         cur = int(self.network)
         bcast = int(self.broadcast)

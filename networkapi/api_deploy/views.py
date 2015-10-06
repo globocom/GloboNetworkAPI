@@ -22,18 +22,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 
-from networkapi.log import Log
+import logging
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.interface.models import InterfaceNotFoundError
 from networkapi.api_deploy.permissions import Read, Write, DeployConfig
 from networkapi.api_deploy import exceptions
 from networkapi.api_deploy import facade
-from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_SCRIPT
+from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
 from networkapi.settings import USER_SCRIPTS_REL_PATH
 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 @api_view(['PUT'])
@@ -51,7 +51,7 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
         script = request.DATA["script_data"]
         script_file = facade.create_file_from_script(script, USER_SCRIPTS_REL_PATH)
         equipment_id = int(equipment_id)
-        lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_SCRIPT % (equipment_id)
+        lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
         data = dict()
         data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
         data["status"] = "OK"
@@ -87,7 +87,7 @@ def deploy_sync_copy_script_to_multiple_equipments(request):
         script_file = facade.create_file_from_script(script, USER_SCRIPTS_REL_PATH)
         for id_equip in id_equips:
             equipment_id = int(id_equip)
-            lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_SCRIPT % (equipment_id)
+            lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
             output_data[equipment_id] = dict()
             try:
                 output_data[equipment_id]["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)

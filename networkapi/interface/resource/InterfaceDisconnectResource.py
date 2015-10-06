@@ -23,7 +23,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceInvalidBackFrontError,\
                                         PortChannel
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
@@ -32,7 +32,7 @@ from networkapi.util import is_valid_int_greater_zero_param, is_valid_zero_one_p
 
 class InterfaceDisconnectResource(RestResource):
 
-    log = Log('InterfaceDisconnectResource')
+    log = logging.getLogger('InterfaceDisconnectResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat DELETE requests to remove the connection of two interfaces by front or back

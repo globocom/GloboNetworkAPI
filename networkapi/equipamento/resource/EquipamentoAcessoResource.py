@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAccessDuplicatedError, EquipamentoNotFoundError, EquipamentoError
 from networkapi.tipoacesso.models import TipoAcesso
@@ -34,7 +34,7 @@ class EquipamentoAcessoResource(RestResource):
 
     '''Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela equiptos_acesso.'''
 
-    log = Log('EquipamentoAcessoResource')
+    log = logging.getLogger('EquipamentoAcessoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Trata as requisições GET para consulta de Informações de Acesso a Equipamentos.

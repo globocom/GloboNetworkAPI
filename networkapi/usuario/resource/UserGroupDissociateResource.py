@@ -23,7 +23,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError, UGrupo, UGrupoNotFoundError
 from networkapi.usuario.models import Usuario, UsuarioGrupo, UsuarioError, UsuarioNotFoundError, UserGroupNotFoundError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
@@ -31,7 +31,7 @@ from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
 
 class UserGroupDissociateResource(RestResource):
 
-    log = Log('UserGroupDissociateResource')
+    log = logging.getLogger('UserGroupDissociateResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat DELETE requests to dissociate User and Group.

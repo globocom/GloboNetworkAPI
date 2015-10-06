@@ -22,7 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from networkapi.admin_permission import AdminPermission
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 
@@ -128,7 +128,7 @@ class UGrupo(BaseModel):
     edicao = models.CharField(max_length=1)
     exclusao = models.CharField(max_length=1)
 
-    log = Log('UGrupo')
+    log = logging.getLogger('UGrupo')
 
     class Meta(BaseModel.Meta):
         db_table = u'grupos'
@@ -173,7 +173,7 @@ class Permission(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_permission')
     function = models.CharField(max_length=100, unique=True)
 
-    log = Log('Permission')
+    log = logging.getLogger('Permission')
 
     class Meta(BaseModel.Meta):
         db_table = u'permissions'
@@ -206,7 +206,7 @@ class PermissaoAdministrativa(BaseModel):
     escrita = models.BooleanField()
     ugrupo = models.ForeignKey(UGrupo, db_column='grupos_id')
 
-    log = Log('PermissaoAdministrativa')
+    log = logging.getLogger('PermissaoAdministrativa')
 
     class Meta(BaseModel.Meta):
         db_table = u'permissoes_administrativas'
@@ -320,7 +320,7 @@ class EGrupo(BaseModel):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
 
-    log = Log('EGrupo')
+    log = logging.getLogger('EGrupo')
 
     class Meta(BaseModel.Meta):
         db_table = u'grupos_equip'
@@ -448,7 +448,7 @@ class DireitosGrupoEquipamento(BaseModel):
     alterar_config = models.BooleanField()
     exclusao = models.BooleanField()
 
-    log = Log('DireitosGrupoEquipamento')
+    log = logging.getLogger('DireitosGrupoEquipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'direitos_grupoequip'
@@ -549,7 +549,7 @@ class DireitosGrupoEquipamento(BaseModel):
     @classmethod
     def search(cls, ugroup_id=None, equip_operation=None, egroup_id=None):
         try:
-            q = DireitosGrupoEquipamento.objects.all()
+            q = DireitosGrupoEquipamento.objects.select_related('egrupo').all()
 
             if ugroup_id is not None:
                 q = q.filter(ugrupo__id=ugroup_id)

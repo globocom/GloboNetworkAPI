@@ -22,7 +22,7 @@ from networkapi.roteiro.models import TipoRoteiro
 from networkapi.api_deploy import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.log import Log
+import logging
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.plugins.factory import PluginFactory
 
@@ -35,7 +35,7 @@ import time
 import re
 import pkgutil 
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 def __applyConfig(equipment,filename, equipment_access=None,source_server=None,port=22):
 	'''Apply configuration file on equipment
@@ -53,6 +53,9 @@ def __applyConfig(equipment,filename, equipment_access=None,source_server=None,p
 	Raises:
 	'''
 
+	if equipment.maintenance == True:
+		return "Equipment is in maintenance mode. No action taken."
+		
 	if source_server == None:
 		source_server = TFTP_SERVER_ADDR
 	

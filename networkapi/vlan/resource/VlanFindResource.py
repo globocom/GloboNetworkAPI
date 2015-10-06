@@ -23,7 +23,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, is_valid_boolean_param, is_valid_int_greater_equal_zero_param,\
     cache_function
@@ -133,7 +133,7 @@ def prepares_network(vlan, half):
 
     vlan_dict["is_more"] = False
     netv4_itens = []
-    for netv4 in vlan.networkipv4_set.all():
+    for netv4 in vlan.networkipv4_set.all().prefetch_related("network_type"):
         net_dict = dict()
         net = str(netv4.oct1) + "." + str(netv4.oct2) + "." + \
             str(netv4.oct3) + "." + str(netv4.oct4) + "/" + str(netv4.block)
@@ -146,9 +146,8 @@ def prepares_network(vlan, half):
             for ip in netv4.ip_set.all():
                 for ip_equip in ip.ipequipamento_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
-                            if equip_amb.is_router is True:
-                                equip_itens.append(ip_equip.equipamento.nome)
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
+                            equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -175,9 +174,8 @@ def prepares_network(vlan, half):
             for ip in netv6.ipv6_set.all():
                 for ip_equip in ip.ipv6equipament_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
-                            if equip_amb.is_router is True:
-                                equip_itens.append(ip_equip.equipamento.nome)
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
+                            equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -234,7 +232,7 @@ def verify_subnet(vlan, network_ip, version):
 
 class VlanFindResource(RestResource):
 
-    log = Log('VlanFindResource')
+    log = logging.getLogger('VlanFindResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to find all VLANs by search parameters.

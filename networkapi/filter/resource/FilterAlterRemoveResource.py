@@ -23,7 +23,7 @@ from networkapi.auth import has_perm
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
 from networkapi.exception import InvalidValueError
-from networkapi.log import Log
+import logging
 from networkapi.filterequiptype.models import CantDissociateError
 
 
@@ -31,7 +31,7 @@ class FilterAlterRemoveResource(RestResource):
 
     '''Class that receives requests to edit and remove Filters.'''
 
-    log = Log('FilterAlterRemoveResource')
+    log = logging.getLogger('FilterAlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to edit Filters.

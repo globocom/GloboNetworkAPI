@@ -20,14 +20,14 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import Rack , RackError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from django.forms.models import model_to_dict
 
 class GetRackResource(RestResource):
 
-    log = Log('GetRackResource')
+    log = logging.getLogger('GetRackResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all Racks

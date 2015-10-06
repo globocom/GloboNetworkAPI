@@ -25,17 +25,24 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.api_pools.models import OpcaoPoolAmbiente, OpcaoPool, OptionPool, OptionPoolEnvironment
 from networkapi.settings import POOL_REAL_CHECK
 
+class HealthcheckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Healthcheck
+        fields = ('id',
+                  'identifier',
+                  'healthcheck_type',
+                  'healthcheck_request',
+                  'healthcheck_expect',
+                  'destination'
+                  )
 
 class ServerPoolDatatableSerializer(serializers.ModelSerializer):
 
-    healthcheck = serializers.RelatedField(
-        source='healthcheck.healthcheck_type'
-    )
+    healthcheck = HealthcheckSerializer()
 
-    environment = serializers.RelatedField(
-        source='environment.name'
-    )
-
+    environment = serializers.RelatedField(source='environment.name')
+    maxcom = serializers.CharField(source='default_limit')
+    vip_port = serializers.SerializerMethodField('get_vip_port')
 
     class Meta:
         model = ServerPool
@@ -45,9 +52,19 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
             'default_port',
             'healthcheck',
             'environment',
-            'pool_created'
+            'pool_created',
+            'lb_method',
+            'maxcom',
+            'vip_port'
         )
 
+    def get_vip_port(self, obj):
+
+        return obj.vip_ports[0].port_vip if obj.vip_ports else 0
+
+    # def get_vip_ports(self, obj):
+    #
+    #     return [p.port_vip for p in obj.vip_ports]
 
 class Ipv4Serializer(serializers.ModelSerializer):
 
@@ -64,12 +81,22 @@ class Ipv6Serializer(serializers.ModelSerializer):
     class Meta:
         model = Ipv6
 
+class EquipamentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Equipamento
+        fields = ('id',
+                  'tipo_equipamento',
+                  'modelo',
+                  'nome',
+                  'grupos'
+                 )
+
 
 class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
     #pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
-
     equipment_name = serializers.SerializerMethodField('get_name_equipment')
+    equipment_id = serializers.SerializerMethodField('get_id_equipment')
     last_status_update_formated = serializers.Field(source='last_status_update_formated')
 
     ip = Ipv4Serializer()
@@ -91,6 +118,7 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
                   'last_status_update',
                   'last_status_update_formated',
                   'equipment_name',
+                  'equipment_id',
                   )
 
     def check_pool_member_enabled(self, obj):
@@ -107,20 +135,11 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
     def get_name_equipment(self, obj):
 
-        ipv4 = obj.ip
-        ipv6 = obj.ipv6
+        return obj.equipment.nome
 
-        ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
+    def get_id_equipment(self, obj):
 
-        for ipequip in ip_equipment_set.select_related():
-            if ipequip.equipamento.nome == obj.identifier:
-                return obj.identifier
-
-        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
-        equipment = ip_equipment_obj.equipamento
-
-        return equipment.nome
-
+        return obj.equipment.id
 
 class ServerPoolSerializer(serializers.ModelSerializer):
 
@@ -152,28 +171,6 @@ class PoolSerializer(serializers.ModelSerializer):
             'environment',
             'pool_created'
         )
-
-
-class HealthcheckSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Healthcheck
-        fields = ('id',
-                  'identifier',
-                  'healthcheck_type',
-                  'healthcheck_request',
-                  'healthcheck_expect',
-                  'destination'
-                  )
-
-class EquipamentoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Equipamento
-        fields = ('id',
-                  'tipo_equipamento',
-                  'modelo',
-                  'nome',
-                  'grupos'
-                 )
 
 class OpcaoPoolAmbienteSerializer(serializers.ModelSerializer):
     class Meta:

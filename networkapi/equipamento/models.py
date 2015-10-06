@@ -28,7 +28,7 @@ from networkapi.roteiro.models import Roteiro
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 
@@ -126,6 +126,22 @@ class ModeloNotFoundError(EquipamentoError):
         EquipamentoError.__init__(self, cause, message)
 
 
+class ModeloRoteiroDuplicatedError(EquipamentoError):
+
+    """Retorna exceção quando o modelo_roteiro já existe."""
+
+    def __init__(self, cause, message=None):
+        EquipamentoError.__init__(self, cause, message)
+
+
+class ModeloRoteiroNotFoundError(EquipamentoError):
+
+    """Retorna exceção para pesquisa de modelo_roteiro."""
+
+    def __init__(self, cause, message=None):
+        EquipamentoError.__init__(self, cause, message)
+
+
 class MarcaNotFoundError(EquipamentoError):
 
     """Retorna exceção para pesquisa de modelo de equipamento por chave primária."""
@@ -216,7 +232,7 @@ class Marca(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_marca')
     nome = models.CharField(max_length=100)
 
-    log = Log('Marca')
+    log = logging.getLogger('Marca')
 
     class Meta(BaseModel.Meta):
         db_table = u'marcas'
@@ -322,7 +338,7 @@ class Modelo(BaseModel):
     nome = models.CharField(max_length=100)
     marca = models.ForeignKey(Marca, db_column='id_marca')
 
-    log = Log('Modelo')
+    log = logging.getLogger('Modelo')
 
     class Meta(BaseModel.Meta):
         db_table = u'modelos'
@@ -410,7 +426,7 @@ class TipoEquipamento(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_tipo_equipamento')
     tipo_equipamento = models.CharField(max_length=100)
 
-    log = Log('TipoEquipamento')
+    log = logging.getLogger('TipoEquipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'tipo_equipamento'
@@ -529,7 +545,7 @@ class Equipamento(BaseModel):
     grupos = models.ManyToManyField(EGrupo, through='EquipamentoGrupo')
     maintenance = models.BooleanField(db_column='maintenance')
 
-    log = Log('Equipamento')
+    log = logging.getLogger('Equipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'equipamentos'
@@ -624,7 +640,7 @@ class Equipamento(BaseModel):
             raise EquipamentoError(e, u'Falha ao inserir o equipamento.')
 
     @classmethod
-    def get_by_pk(cls, pk):
+    def get_by_pk(cls, pk, *prefetch_list):
         """Get Equipament by id.
 
             @return: Equipament.
@@ -634,7 +650,11 @@ class Equipamento(BaseModel):
             @raise OperationalError: Lock wait timeout exceeded. 
         """
         try:
-            return Equipamento.objects.filter(id=pk).uniqueResult()
+            query = Equipamento.objects.filter(id=pk)
+            if prefetch_list:
+                return query.prefetch_related(prefetch_list).uniqueResult()
+            else:
+                return query.uniqueResult()
         except ObjectDoesNotExist, e:
             raise EquipamentoNotFoundError(
                 e, u'Dont there is a equipament by pk = %s.' % id)
@@ -646,11 +666,14 @@ class Equipamento(BaseModel):
             cls.log.error(u'Failure to search the equipament.')
             raise EquipamentoError(e, u'Failure to search the equipament.')
 
-    def edit(self, user, nome, tipo_equip, modelo):
+    def edit(self, user, nome, tipo_equip, modelo, maintenance=None):
         try:
+            if maintenance == None:
+                maintenance = self.maintenance
             self.modelo = modelo
             self.tipo_equipamento = tipo_equip
             self.nome = nome
+            self.maintenance = maintenance
             self.save(user)
         except EquipamentoNameDuplicatedError, e:
             raise EquipamentoNameDuplicatedError(e.message)
@@ -769,7 +792,7 @@ class EquipamentoAmbiente(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     is_router = models.BooleanField(db_column='is_router')
 
-    log = Log('EquipamentoAmbiente')
+    log = logging.getLogger('EquipamentoAmbiente')
 
     class Meta(BaseModel.Meta):
         db_table = u'equip_do_ambiente'
@@ -863,7 +886,7 @@ class EquipamentoGrupo(BaseModel):
     egrupo = models.ForeignKey(EGrupo, db_column='id_egrupo')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
-    log = Log('EquipamentoGrupo')
+    log = logging.getLogger('EquipamentoGrupo')
 
     class Meta(BaseModel.Meta):
         db_table = u'equip_do_grupo'
@@ -964,7 +987,7 @@ class EquipamentoAcesso(BaseModel):
     tipo_acesso = models.ForeignKey(TipoAcesso, db_column='id_tipo_acesso')
     enable_pass = models.CharField(max_length=20, blank=True)
 
-    log = Log('EquipamentoAcesso')
+    log = logging.getLogger('EquipamentoAcesso')
 
     class Meta(BaseModel.Meta):
         db_table = u'equiptos_access'
@@ -1112,7 +1135,7 @@ class EquipamentoRoteiro(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     roteiro = models.ForeignKey(Roteiro, db_column='id_roteiros')
 
-    log = Log('EquipamentoRoteiro')
+    log = logging.getLogger('EquipamentoRoteiro')
 
     class Meta(BaseModel.Meta):
         db_table = u'equiptos_roteiros'
@@ -1201,3 +1224,66 @@ class EquipamentoRoteiro(BaseModel):
                 u'Falha ao remover uma associação entre um Equipamento e um Roteiro.')
             raise EquipamentoError(
                 e, u'Falha ao remover uma associação entre um Equipamento e um Roteiro.')
+
+
+class ModeloRoteiro(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id_modelo_roteiro')
+    modelo = models.ForeignKey(Modelo, db_column='id_modelo')
+    roteiro = models.ForeignKey(Roteiro, db_column='id_roteiro')
+
+    log = logging.getLogger('ModeloRoteiro')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'modelo_roteiro'
+        managed = True
+        unique_together = ('modelo', 'roteiro')
+
+    def create(self, authenticated_user):
+        ''' Insere uma nova associação entre um Modelo e um Roteiro.
+            @return: Nothing
+            @raise RoteiroNotFoundError: Roteiro não cadastrado.
+            @raise RoteiroError: Falha ao pesquisar o roteiro.
+            @raise ModeloRoteiroDuplicatedError: Equipamento já está associado ao roteiro.
+            @raise ModeloError: Falha ao inserir o modelo no roteiro.
+        '''
+        self.modelo = Modelo().get_by_pk(self.modelo.id)
+        self.roteiro = Roteiro.get_by_pk(self.roteiro.id)
+        try:
+            try:
+                roteiros = ModeloRoteiro.objects.filter(modelo__id=self.modelo.id)
+                for rot in roteiros:
+                    if rot.roteiro.id == self.roteiro.id:
+                        raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
+            except ObjectDoesNotExist:
+                pass
+            self.save(authenticated_user)
+        except ModeloRoteiroDuplicatedError, e:
+            raise e
+        except Exception, e:
+            self.log.error(u'Falha ao inserir a associação modelo/roteiro: %s/%s. %s' % (self.modelo.id, self.roteiro.id, e))
+            raise EquipamentoError(e, u'Falha ao inserir a associação modelo/roteiro: %s/%s.' % (self.modelo.id, self.roteiro.id))
+
+    @classmethod
+    def get_by_pk(cls, idt):
+        try:
+            return ModeloRoteiro.objects.filter(id=idt).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise ObjectDoesNotExist(
+                e, u'Dont there is a object by pk = %s.' % idt)
+        except Exception, e:
+            cls.log.error(u'Failure to search the object.')
+            raise EquipamentoError(e, u'Failure to search object.')
+
+    @classmethod
+    def remover(cls, authenticated_user, model_id, script_id):
+        try:
+            model_script = ModeloRoteiro.objects.get(modelo__id=model_id, roteiro__id=script_id)
+            model_script.delete(authenticated_user)
+
+        except ObjectDoesNotExist, n:
+            cls.log.debug(u'Não existe um modelo_roteiro com o modelo = %s e o roteiro = %s.' % (model_id, script_id))
+            raise ObjectDoesNotExist(
+                n, u'Não existe um modelo_roteiro com o modelo = %s e o roteiro = %s.' % (model_id, script_id))
+        except Exception, e:
+            cls.log.error(u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
+            raise EquipamentoError(e, u'Falha ao remover uma associação entre um Modelo e um Roteiro.')

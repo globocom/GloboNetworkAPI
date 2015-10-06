@@ -24,7 +24,7 @@ from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4NotFoundError, Ip, IpNotAvailableError, IpError, NetworkIPv4Error, NetworkIPv4, \
     IpEquipmentAlreadyAssociation, IpEquipamento, IpEquipmentNotFoundError, IpNotFoundError, IpRangeAlreadyAssociation
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_int_param,\
@@ -36,7 +36,7 @@ from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV4
 
 class IPv4SaveResource(RestResource):
 
-    log = Log('IPv4SaveResource')
+    log = logging.getLogger('IPv4SaveResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to add an IP and associate it to an equipment.

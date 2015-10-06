@@ -26,7 +26,7 @@ from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckEx
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
 from networkapi.ip.models import IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError
-from networkapi.log import Log
+import logging
 from networkapi.requisicaovips.models import RequisicaoVips, OptionVip, \
     RequisicaoVipsNotFoundError, RequisicaoVipsError, \
     InvalidFinalidadeValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
@@ -42,7 +42,7 @@ from string import upper
 
 class RequestPersistenceResource(RestResource):
 
-    log = Log(__name__)
+    log = logging.getLogger(__name__)
 
     def handle_put(self, request, user, *args, **kwargs):
         """

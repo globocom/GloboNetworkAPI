@@ -22,6 +22,19 @@ from networkapi.models.BaseModel import BaseModel
 
 import collections
 
+from functools import wraps
+
+def disable_for_loaddata(signal_handler):
+    """
+    Decorator that turns off signal handlers when loading fixture data.
+    """
+
+    @wraps(signal_handler)
+    def wrapper(*args, **kwargs):
+        if kwargs['raw']:
+            return
+        signal_handler(*args, **kwargs)
+    return wrapper
 
 class MissingUserError(Exception):
 
@@ -96,7 +109,7 @@ def networkapi_post_save(sender, instance, created, **kwargs):
             id_objeto = values_map['id']
             try:
                 parametro_anterior = EventLog.objects.values_list('parametro_atual', flat=True).filter(
-                    id_objeto=id_objeto, funcionalidade=classe.__name__).order_by('-hora_evento')[0]
+                    id_objeto=id_objeto, funcionalidade=classe.__name__).order_by("-id")[0]
             except:
                 parametro_anterior = ''
 

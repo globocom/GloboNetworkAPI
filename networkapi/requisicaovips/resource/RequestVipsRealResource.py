@@ -27,7 +27,7 @@ from networkapi.grupo.models import GrupoError, EGrupoNotFoundError
 from networkapi.ambiente.models import IP_VERSION, EnvironmentVip
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
 from networkapi.settings import VIP_REAL_v4_CREATE, VIP_REAL_v6_CREATE, VIP_REAL_v4_REMOVE, \
@@ -45,7 +45,7 @@ from django.db import transaction
 
 class RequestVipsRealResource(RestResource):
 
-    log = Log('RequestVipsRealResource')
+    log = logging.getLogger('RequestVipsRealResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to Add/Del/Enable/Disable/Check  requestIP - Real.

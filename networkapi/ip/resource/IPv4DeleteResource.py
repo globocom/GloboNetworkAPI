@@ -24,7 +24,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import Ip, IpError, NetworkIPv4Error, IpNotFoundError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
     IpCantRemoveFromServerPool
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
@@ -33,7 +33,7 @@ from networkapi.distributedlock import distributedlock, LOCK_IPV4
 
 class IPv4DeleteResource(RestResource):
 
-    log = Log('IPv4DeleteResource')
+    log = logging.getLogger('IPv4DeleteResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Handles GET requests for delete an IP4 

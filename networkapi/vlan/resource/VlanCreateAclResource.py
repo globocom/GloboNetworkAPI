@@ -18,7 +18,7 @@ from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
 
 from networkapi.rest import RestResource
-from networkapi.log import Log
+import logging
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, \
     XMLError
 from networkapi.admin_permission import AdminPermission
@@ -41,7 +41,7 @@ logger = logging.getLogger('VlanCreateAcl')
 
 class VlanCreateAclResource(RestResource):
 
-    log = Log('VlanCreateAcl')
+    log = logging.getLogger('VlanCreateAcl')
 
     CODE_MESSAGE_FAIL_READ_XML = 3
     CODE_MESSAGE_VLAN_NOT_FOUND = 116

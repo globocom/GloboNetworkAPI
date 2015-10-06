@@ -11,6 +11,9 @@ class ValidationException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Validation Bad Request.'
 
+    def __init__(self, param=None):
+        self.detail = u'Error validating request parameter: %s' % (param)
+
 
 class ObjectDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
@@ -23,6 +26,5 @@ class ScriptException(APIException):
 
 
 class EnvironmentEnvironmentVipNotBoundedException(APIException):
-
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'There is no link between environment and environment vip.'

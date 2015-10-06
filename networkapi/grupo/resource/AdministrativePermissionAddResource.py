@@ -23,14 +23,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError, PermissaoAdministrativa, PermissaoAdministrativaNotFoundError, Permission, UGrupo, PermissionNotFoundError, UGrupoNotFoundError, PermissionError, PermissaoAdministrativaDuplicatedError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_boolean_param, convert_string_or_int_to_boolean
 
 
 class AdministrativePermissionAddResource(RestResource):
 
-    log = Log('AdministrativePermissionAddResource')
+    log = logging.getLogger('AdministrativePermissionAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Administrative Permission.

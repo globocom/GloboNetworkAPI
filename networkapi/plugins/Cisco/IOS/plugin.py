@@ -17,16 +17,27 @@
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.log import Log
+import logging
 from ...base import BasePlugin
 import re
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 class IOS(BasePlugin):
 
 	admin_privileges = 15
 	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
+
+	def create_svi(self, svi_number, svi_description='no description'):
+		'''
+		Create SVI in switch
+		'''
+		self.ensure_privilege_level(self)
+		self.channel.send("terminal length 0\nconfigure terminal\n \
+			interface Vlan%s \n description %s \n end \n" % (svi_number, svi_description))
+		recv = self.waitString("#")
+
+		return recv
 
 	def copyScriptFileToConfig (self, filename, use_vrf=None, destination="running-config"):
 		'''
@@ -47,8 +58,9 @@ class IOS(BasePlugin):
 
 	def ensure_privilege_level(self, privilege_level=None):
 
-		if privilege_level  is None:
+		if privilege_level == None:
 			privilege_level = self.admin_privileges
+
 		self.channel.send("\n")
 		recv = self.waitString(">|#")
 		self.channel.send("show privilege\n")
@@ -61,3 +73,14 @@ class IOS(BasePlugin):
 			recv = self.waitString("Password:")
 			self.channel.send("%s\n" % self.equipment_access.enable_pass)
 			recv = self.waitString("#")
+
+	def remove_svi(self, svi_number):
+		'''
+		Delete SVI from switch
+		'''
+		self.ensure_privilege_level()
+		self.channel.send("terminal length 0\nconfigure terminal\n \
+			no interface Vlan%s \n end \n" % (svi_number))
+		recv = self.waitString("#")
+
+		return recv

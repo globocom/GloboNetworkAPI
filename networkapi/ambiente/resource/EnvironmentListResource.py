@@ -22,7 +22,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
@@ -74,7 +74,7 @@ def get_envs(self, user, no_blocks=False):
 
 class EnvironmentListResource(RestResource):
 
-    log = Log('EnvironmentListResource')
+    log = logging.getLogger('EnvironmentListResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests POST to list all Environments.

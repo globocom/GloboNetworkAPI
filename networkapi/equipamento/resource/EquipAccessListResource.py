@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.grupo.models import GrupoError
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
 from networkapi.exception import InvalidValueError
@@ -31,7 +31,7 @@ from django.forms.models import model_to_dict
 
 class EquipAccessListResource(RestResource):
 
-    log = Log('EquipAccessListResource')
+    log = logging.getLogger('EquipAccessListResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to list all equip access by equipment name.

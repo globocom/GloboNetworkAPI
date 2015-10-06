@@ -17,9 +17,9 @@
 
 import time
 import uuid
-from networkapi.log import Log
+import logging
 
-log = Log('MemcachedLock')
+log = logging.getLogger('MemcachedLock')
 
 __all__ = ['MemcachedLock']
 

@@ -21,7 +21,7 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.auth import has_perm
 from networkapi.exception import OptionVipError, EnvironmentVipError, EnvironmentVipNotFoundError, InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.requisicaovips.models import OptionVip
@@ -29,7 +29,7 @@ from networkapi.requisicaovips.models import OptionVip
 
 class OptionVipGetPersistenciaByEVipResource(RestResource):
 
-    log = Log('OptionVipGetTimeoutByEVipResource')
+    log = logging.getLogger('OptionVipGetTimeoutByEVipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to list all persistencia of the Option VIP by Environment Vip. 

@@ -28,7 +28,7 @@ from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkap
 
 from networkapi.ip.models import NetworkIPv6NotFoundError, Ipv6, IpNotAvailableError, IpError, NetworkIPv6Error
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource, UserNotAuthorizedError
 
@@ -42,7 +42,7 @@ from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV6
 
 class IPv6AddResource(RestResource):
 
-    log = Log('IPv6AddResource')
+    log = logging.getLogger('IPv6AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to add an IP and associate it to an equipment.

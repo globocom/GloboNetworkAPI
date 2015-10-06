@@ -18,7 +18,7 @@
 
 from django.db import models
 
-from networkapi.log import Log
+import logging
 
 
 class SemaforoError(Exception):
@@ -38,7 +38,7 @@ class Semaforo(models.Model):
     id = models.AutoField(primary_key=True, db_column='id_semaforo')
     descricao = models.CharField(max_length=50)
 
-    log = Log('Semaforo')
+    log = logging.getLogger('Semaforo')
 
     CRIAR_IP_ID = 1
     ALOCAR_VLAN_ID = 2

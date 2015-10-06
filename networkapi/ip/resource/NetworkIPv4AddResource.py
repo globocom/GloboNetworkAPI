@@ -22,7 +22,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4, NetworkIPv4AddressNotAvailableError,\
     IpNotAvailableError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError
@@ -38,7 +38,7 @@ from networkapi.config.models import Configuration
 
 class NetworkIPv4AddResource(RestResource):
 
-    log = Log('NetworkIPv4AddResource')
+    log = logging.getLogger('NetworkIPv4AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''
@@ -202,8 +202,25 @@ class NetworkIPv4AddResource(RestResource):
 
                 ip_model.save(user)
 
+                if len(list_equip_routers_ambient) > 1:
+                    multiple_ips = True
+                else:
+                    multiple_ips = False
+
                 for equip in list_equip_routers_ambient:
                     IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
+
+                    if multiple_ips:
+                        router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                        router_ip = str(router_ip).split('.')
+                        ip_model2 = Ip()
+                        ip_model2.oct1 = router_ip[0]
+                        ip_model2.oct2 = router_ip[1]
+                        ip_model2.oct3 = router_ip[2]
+                        ip_model2.oct4 = router_ip[3]
+                        ip_model2.networkipv4_id = network_ipv4.id
+                        ip_model2.save(user)
+                        IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))

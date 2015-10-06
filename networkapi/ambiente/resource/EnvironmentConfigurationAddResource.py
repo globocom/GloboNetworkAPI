@@ -26,7 +26,7 @@ from networkapi.grupo.models import GrupoError, PermissionError
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import IpError, NetworkIPv6Error, NetworkIPv4Error, NetworkIPRangeEnvError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_version_ip, \
     is_valid_int_param
@@ -38,7 +38,7 @@ from networkapi.vlan.models import TipoRede
 
 class EnvironmentConfigurationAddResource(RestResource):
 
-    log = Log('EnvironmentConfigurationAddResource')
+    log = logging.getLogger('EnvironmentConfigurationAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat POST requests to add new Environment Configuration Prefix

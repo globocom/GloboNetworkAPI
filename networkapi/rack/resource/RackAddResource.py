@@ -22,14 +22,14 @@ from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.rack.models import RackNameDuplicatedError, RackNumberDuplicatedValueError, Rack , RackError, InvalidMacValueError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Equipamento
 
 
 class RackAddResource(RestResource):
 
-    log = Log('RackAddResource')
+    log = logging.getLogger('RackAddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.

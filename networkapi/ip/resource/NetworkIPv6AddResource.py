@@ -32,7 +32,7 @@ from networkapi.ip.models import NetworkIPv6, NetworkIPv6NotFoundError, IpNotAva
 
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError, VlanError
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource
 
@@ -46,7 +46,7 @@ from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV6,\
 
 class NetworkIPv6AddResource(RestResource):
 
-    log = Log('NetworkIPv6AddResource')
+    log = logging.getLogger('NetworkIPv6AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''
@@ -214,10 +214,30 @@ class NetworkIPv6AddResource(RestResource):
 
                 ipv6_model.save(user)
 
+                if len(list_equip_routers_ambient) > 1:
+                    multiple_ips = True
+                else:
+                    multiple_ips = False
+
                 for equip in list_equip_routers_ambient:
 
                     Ipv6Equipament().create(
                         user, ipv6_model.id, equip.equipamento.id)
+
+                    if multiple_ips:
+                        router_ip = Ipv6.get_first_available_ip6(network_ipv6.id, True)
+                        ipv6_model2 = Ipv6()
+                        ipv6_model2.block1 = router_ip[0]
+                        ipv6_model2.block2 = router_ip[1]
+                        ipv6_model2.block3 = router_ip[2]
+                        ipv6_model2.block4 = router_ip[3]
+                        ipv6_model2.block5 = router_ip[4]
+                        ipv6_model2.block6 = router_ip[5]
+                        ipv6_model2.block7 = router_ip[6]
+                        ipv6_model2.block8 = router_ip[7]
+                        ipv6_model2.networkipv6_id = network_ipv6.id
+                        ipv6_model2.save(user)
+                        Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))

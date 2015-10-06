@@ -22,7 +22,7 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError, EnvironmentVipError, EnvironmentVipNotFoundError
 from networkapi.grupo.models import GrupoError
@@ -34,7 +34,7 @@ class EnvironmentVipResource(RestResource):
 
     '''Class that receives requests related to the table 'EnvironmentVip'.'''
 
-    log = Log('EnvironmentVipResource')
+    log = logging.getLogger('EnvironmentVipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests list all Environment VIP.

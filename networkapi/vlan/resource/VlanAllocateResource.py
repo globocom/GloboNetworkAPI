@@ -20,7 +20,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
 from networkapi.vlan.models import Vlan, VlanError, VlanNameDuplicatedError, VlanNumberNotAvailableError
@@ -32,7 +32,7 @@ from django.forms.models import model_to_dict
 
 class VlanAllocateResource(RestResource):
 
-    log = Log('VlanAllocateResource')
+    log = logging.getLogger('VlanAllocateResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         """Handles POST requests to create new VLAN without add NetworkIPv4.
@@ -73,6 +73,7 @@ class VlanAllocateResource(RestResource):
             environment = vlan_map.get('environment_id')
             name = vlan_map.get('name')
             description = vlan_map.get('description')
+            vrf = vlan_map.get('vrf')
 
             # Name must NOT be none and 50 is the maxsize
             if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 50):
@@ -84,6 +85,12 @@ class VlanAllocateResource(RestResource):
                 self.log.error(
                     u'Parameter description is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'description', description)
+                
+            # vrf can NOT be greater than 100
+            if not is_valid_string_maxsize(vrf, 100, False):
+                self.log.error(
+                    u'Parameter vrf is invalid. Value: %s.', vrf)
+                raise InvalidValueError(None, 'vrf', vrf)
 
             # Environment
             try:

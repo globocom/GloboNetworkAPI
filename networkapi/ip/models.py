@@ -21,7 +21,7 @@ from django.db import models
 from django.db import transaction
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteNotFoundError, \
     EquipamentoAmbienteDuplicatedError, EquipamentoError
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.vlan.models import Vlan, TipoRede
 from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironment, IP_VERSION, ConfigEnvironmentInvalidError, Ambiente
@@ -33,6 +33,8 @@ from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.equipamento.models import TipoEquipamento
 from networkapi.exception import InvalidValueError
 from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
+from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.queue_manager import QueueManager
 
 class NetworkIPv4Error(Exception):
 
@@ -254,7 +256,7 @@ class NetworkIPv4(BaseModel):
         EnvironmentVip, null=True, db_column='id_ambientevip')
     active = models.BooleanField()
 
-    log = Log('NetworkIPv4')
+    log = logging.getLogger('NetworkIPv4')
 
     class Meta(BaseModel.Meta):
         db_table = u'redeipv4'
@@ -288,9 +290,20 @@ class NetworkIPv4(BaseModel):
             raise NetworkIPv4Error(e, u'Failure to search the NetworkIPv4.')
 
     def activate(self, authenticated_user):
+
+        from networkapi.api_network.serializers import NetworkIPv4Serializer
+        
         try:
             self.active = 1
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv4Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv4_ACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv4_ACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
+            queue_manager.send()
             self.save(authenticated_user)
+
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv4.')
@@ -301,9 +314,19 @@ class NetworkIPv4(BaseModel):
             @param authenticated_user: User authenticate
             @raise NetworkIPv4Error: Error disabling a NetworkIPv4.
         '''
+        
+        from networkapi.api_network.serializers import NetworkIPv4Serializer
+
         try:
 
             self.active = 0
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv4Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv4_DEACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv4_DEACTIVATE,'kind': queue_keys.NETWORKv4_KEY,'data': data_to_queue})
+            queue_manager.send()
             self.save(authenticated_user, commit=commit)
 
         except Exception, e:
@@ -501,7 +524,7 @@ class Ip(BaseModel):
     descricao = models.CharField(max_length=100, blank=True)
     networkipv4 = models.ForeignKey(NetworkIPv4, db_column='id_redeipv4')
 
-    log = Log('Ip')
+    log = logging.getLogger('Ip')
 
     class Meta(BaseModel.Meta):
         db_table = u'ips'
@@ -637,8 +660,51 @@ class Ip(BaseModel):
                 None, u'No IP available to NETWORK %s.' % networkipv4.id)
 
     @classmethod
-    def get_first_available_ip(self, id_network):
+    def get_first_available_ip(self, id_network, topdown=False):
         """Get a first available Ipv4 for networkIPv4
+            @return: Available Ipv4
+            @raise IpNotAvailableError: NetworkIPv4 does not has available Ipv4
+        """
+
+        networkipv4 = NetworkIPv4().get_by_pk(id_network)
+
+        # Cast to API
+        net4 = IPv4Network('%d.%d.%d.%d/%d' % (networkipv4.oct1, networkipv4.oct2,
+                                               networkipv4.oct3, networkipv4.oct4, networkipv4.block))
+
+        # Find all ips ralated to network
+        ips = Ip.objects.filter(networkipv4__id=networkipv4.id)
+
+        # Cast all to API class
+        ipsv4 = set(
+            [(IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4))) for ip in ips])
+
+        selected_ip = None
+
+        if topdown:
+            method = net4.iterhostsTopDown
+        else:
+            method = net4.iterhosts
+            
+        # For each ip generated
+        for ip in method():
+
+            # If IP generated was not used
+            if ip not in ipsv4:
+
+                # Use it
+                selected_ip = ip
+
+                # Stop generation
+                return selected_ip
+
+        if selected_ip is None:
+            raise IpNotAvailableError(
+                None, u'No IP available to NETWORK %s.' % networkipv4.id)
+
+    @classmethod
+    def get_last_available_ip(self, id_network):
+        """Get an available Ipv4 for networkIPv4 from end of range
             @return: Available Ipv4
             @raise IpNotAvailableError: NetworkIPv4 does not has available Ipv4
         """
@@ -1142,7 +1208,7 @@ class IpEquipamento(BaseModel):
     ip = models.ForeignKey(Ip, db_column='id_ip')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
-    log = Log('IpEquipamento')
+    log = logging.getLogger('IpEquipamento')
 
     class Meta(BaseModel.Meta):
         db_table = u'ips_dos_equipamentos'
@@ -1345,7 +1411,7 @@ class NetworkIPv6(BaseModel):
     mask8 = models.CharField(max_length=4, db_column='mask_bloco8')
     active = models.BooleanField()
 
-    log = Log('NetworkIPv6')
+    log = logging.getLogger('NetworkIPv6')
 
     class Meta(BaseModel.Meta):
         db_table = u'redeipv6'
@@ -1369,7 +1435,7 @@ class NetworkIPv6(BaseModel):
             return NetworkIPv6.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
             raise NetworkIPv6NotFoundError(
-                e, u'Can not find a NetworkIPv4 with id = %s.' % id)
+                e, u'Can not find a NetworkIPv6 with id = %s.' % id)
         except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -1379,9 +1445,19 @@ class NetworkIPv6(BaseModel):
             raise NetworkIPv6Error(e, u'Error finding NetworkIPv6.')
 
     def activate(self, authenticated_user):
+
+        from networkapi.api_network.serializers import NetworkIPv6Serializer
+
         try:
             self.active = 1
             self.save(authenticated_user)
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv6Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv6_ACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv6_ACTIVATE,'kind': queue_keys.NETWORKv6_KEY,'data': data_to_queue})
+            queue_manager.send()
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv6.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv6.')
@@ -1392,11 +1468,20 @@ class NetworkIPv6(BaseModel):
             @param authenticated_user: User authenticate
             @raise NetworkIPv6Error: Error disabling NetworkIPv6.
         '''
+
+        from networkapi.api_network.serializers import NetworkIPv6Serializer
+
         try:
 
             self.active = 0
             self.save(authenticated_user, commit=commit)
-
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = NetworkIPv6Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({'description': queue_keys.NETWORKv6_DEACTIVATE})
+            queue_manager.append({'action': queue_keys.NETWORKv6_DEACTIVATE,'kind': queue_keys.NETWORKv6_KEY,'data': data_to_queue})
+            queue_manager.send()
         except Exception, e:
             self.log.error(u'Error disabling NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error disabling NetworkIPv6.')
@@ -1603,7 +1688,7 @@ class Ipv6(BaseModel):
     block7 = models.CharField(max_length=4, db_column='bloco7')
     block8 = models.CharField(max_length=4, db_column='bloco8')
 
-    log = Log('Ipv6')
+    log = logging.getLogger('Ipv6')
 
     class Meta(BaseModel.Meta):
         db_table = u'ipsv6'
@@ -2256,7 +2341,7 @@ class Ipv6Equipament(BaseModel):
     ip = models.ForeignKey(Ipv6, db_column='id_ipv6')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
 
-    log = Log('Ipv6Equipament')
+    log = logging.getLogger('Ipv6Equipament')
 
     class Meta(BaseModel.Meta):
         db_table = u'ipsv6_dos_equipamentos'
@@ -2471,7 +2556,7 @@ def network_in_range(vlan, network, version):
     #if there is a network that is sub or super network of the current
     #network being tested
     for env in envs:
-        for vlan in env.vlan_set.all().prefetch_related('networkipv4_set'):
+        for vlan in env.vlan_set.all().prefetch_related('networkipv4_set').prefetch_related('networkipv6_set'):
             ids_all.append(vlan.id)
             is_subnet = verify_subnet(vlan, network, version)
             if is_subnet:

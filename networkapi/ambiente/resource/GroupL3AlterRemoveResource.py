@@ -24,14 +24,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import GrupoL3, GrupoL3NameDuplicatedError, AmbienteError, GroupL3NotFoundError, GrupoL3UsedByEnvironmentError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
 
 
 class GroupL3AlterRemoveResource(RestResource):
 
-    log = Log('GroupL3AlterRemoveResource')
+    log = logging.getLogger('GroupL3AlterRemoveResource')
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to edit Group l3.

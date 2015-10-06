@@ -22,7 +22,7 @@ from networkapi.ambiente.models import Ambiente
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from networkapi.log import Log
+import logging
 
 from networkapi.models.BaseModel import BaseModel
 
@@ -62,7 +62,7 @@ class HealthcheckExpect(BaseModel):
     match_list = models.CharField(max_length=50)
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente', null=True)
 
-    log = Log('HealthcheckExpect')
+    log = logging.getLogger('HealthcheckExpect')
 
     class Meta(BaseModel.Meta):
         db_table = u'healthcheck_expect'
@@ -196,7 +196,7 @@ class Healthcheck(BaseModel):
     destination = models.CharField(max_length=45, default='*:*')
 
 
-    log = Log('Healthcheck')
+    log = logging.getLogger('Healthcheck')
 
     class Meta(BaseModel.Meta):
         db_table = u'healthcheck'

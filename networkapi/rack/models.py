@@ -18,7 +18,7 @@
 from __future__ import with_statement
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from networkapi.log import Log
+import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.equipamento.models import Equipamento
 from networkapi.ambiente.models import Ambiente, AmbienteError
@@ -85,7 +85,7 @@ class RackAplError(Exception):
 
 class Rack(BaseModel):
 
-    log = Log('Rack')
+    log = logging.getLogger('Rack')
 
     id = models.AutoField(primary_key=True, db_column='id_rack')
     numero = models.IntegerField(unique=True)
@@ -202,7 +202,7 @@ class EnvironmentRackNotFoundError(EnvironmentRackError):
 
 class EnvironmentRack(BaseModel):
 
-    log = Log('EnvironmentRack')
+    log = logging.getLogger('EnvironmentRack')
 
     id = models.AutoField(primary_key=True, db_column='id_ambienterack')
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')

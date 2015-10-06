@@ -24,7 +24,7 @@ from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkap
 
 from networkapi.ip.models import Ipv6, IpError, Ip, IpNotFoundError, IpNotAvailableError, NetworkNotInEvip
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource, UserNotAuthorizedError
 
@@ -38,7 +38,7 @@ from networkapi.ambiente.models import EnvironmentVip
 
 class IpCheckForVipResource(RestResource):
 
-    log = Log('IpCheckForVipResource')
+    log = logging.getLogger('IpCheckForVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to check an IPv4 or Ipv6 for vip request.

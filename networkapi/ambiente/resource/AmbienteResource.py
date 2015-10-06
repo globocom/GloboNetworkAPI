@@ -34,7 +34,7 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLErro
 
 from networkapi.ip.models import IpError, IpNotFoundError, Ip
 
-from networkapi.log import Log
+import logging
 
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, \
@@ -65,6 +65,8 @@ def get_environment_map(environment):
         environment_map['id_filter'] = environment.filter.id
         environment_map['filter_name'] = environment.filter.name
 
+    if environment.vrf is not None:
+        environment_map['vrf'] = environment.vrf
     return environment_map
 
 
@@ -72,7 +74,7 @@ class AmbienteResource(RestResource):
 
     '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
 
-    log = Log('AmbienteResource')
+    log = logging.getLogger('AmbienteResource')
 
     CODE_MESSAGE_CONFIG_ENVIRONMENT_ALREADY_EXISTS = 302
 
@@ -269,6 +271,11 @@ class AmbienteResource(RestResource):
                 min_num_vlan_2 = min_num_vlan_1
             # validate  max_num_vlan_2 and min_num_vlan_2
 
+            vrf = environment_map.get('vrf')
+            if not is_valid_string_maxsize(vrf, 100, False):
+                self.log.error(u'Parameter vrf is invalid. Value: %s', vrf)
+                raise InvalidValueError(None, 'link', vrf)
+
             environment = Ambiente()
             environment.grupo_l3 = GrupoL3()
             environment.ambiente_logico = AmbienteLogico()
@@ -283,6 +290,7 @@ class AmbienteResource(RestResource):
             environment.min_num_vlan_1 = min_num_vlan_1
             environment.max_num_vlan_2 = max_num_vlan_2
             environment.min_num_vlan_2 = min_num_vlan_2
+            environment.vrf = vrf
 
             if filter_id is not None:
                 environment.filter = Filter()
@@ -421,6 +429,11 @@ class AmbienteResource(RestResource):
                 self.log.error(u'Parameter link is invalid. Value: %s', link)
                 raise InvalidValueError(None, 'link', link)
 
+            vrf = environment_map.get('vrf')
+            if not is_valid_string_maxsize(link, 100, False):
+                self.log.error(u'Parameter vrf is invalid. Value: %s', vrf)
+                raise InvalidValueError(None, 'vrf', vrf)
+
             filter_id = environment_map.get('id_filter')
             if filter_id is not None:
                 if not is_valid_int_greater_zero_param(filter_id):
@@ -535,6 +548,7 @@ class AmbienteResource(RestResource):
                                 divisao_dc_id=dc_division_id,
                                 filter_id=filter_id,
                                 link=link,
+                                vrf=vrf,
                                 acl_path=fix_acl_path(acl_path),
                                 ipv4_template=ipv4_template,
                                 ipv6_template=ipv6_template,
@@ -631,7 +645,7 @@ class AmbienteEquipamentoResource(RestResource):
 
     '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
 
-    log = Log('AmbienteEquipamentoResource')
+    log = logging.getLogger('AmbienteEquipamentoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET para consulta de um ambiente.

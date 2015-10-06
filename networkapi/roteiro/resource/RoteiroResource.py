@@ -26,7 +26,7 @@ from networkapi.auth import has_perm
 
 from networkapi.grupo.models import GrupoError
 
-from networkapi.log import Log
+import logging
 
 from networkapi.roteiro.models import *
 
@@ -36,7 +36,7 @@ from networkapi.distributedlock import distributedlock, LOCK_SCRIPT
 
 
 class RoteiroResource(RestResource):
-    log = Log('RoteiroResource')
+    log = logging.getLogger('RoteiroResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET para listar Roteiros.

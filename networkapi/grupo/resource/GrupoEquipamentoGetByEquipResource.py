@@ -24,7 +24,7 @@ from networkapi.admin_permission import AdminPermission
 
 from networkapi.auth import has_perm
 
-from networkapi.log import Log
+import logging
 
 from networkapi.equipamento.models import EquipamentoGrupo, Equipamento,\
     EquipamentoNotFoundError, EquipamentoError
@@ -35,7 +35,7 @@ from networkapi.grupo.models import EGrupo, EGrupoNotFoundError
 
 class GrupoEquipamentoGetByEquipResource(RestResource):
 
-    log = Log('GrupoEquipamentoGetByEquipResource')
+    log = logging.getLogger('GrupoEquipamentoGetByEquipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET para listar todos os grupos de equipamento de um determindo equipamento.

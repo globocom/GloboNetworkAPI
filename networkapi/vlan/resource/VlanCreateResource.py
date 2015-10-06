@@ -21,9 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, NetworkIPv6, NetworkIPv6NotFoundError, NetworkIPv6Error, NetworkIPv4Error
-from networkapi.log import Log
-from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+import logging
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.vlan.models import VlanNotFoundError, VlanError
@@ -33,12 +31,11 @@ from networkapi.ambiente.models import IP_VERSION, AmbienteError
 from networkapi.settings import VLAN_CREATE, NETWORKIPV4_CREATE,\
     NETWORKIPV6_CREATE
 from networkapi.equipamento.models import Equipamento
-from networkapi.vlan.serializers import VlanSerializer
 
 
 class VlanCreateResource(RestResource):
 
-    log = Log('VlanCreateResource')
+    log = logging.getLogger('VlanCreateResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Treat POST requests to run script creation for vlan and networks
@@ -145,10 +142,8 @@ class VlanCreateResource(RestResource):
 
             if IP_VERSION.IPv4[0] == network_version:
                 command = NETWORKIPV4_CREATE % (network_ip.id)
-                description_to_queue = queue_keys.VLAN_CREATE_NETWORK_IPV4
             else:
                 command = NETWORKIPV6_CREATE % (network_ip.id)
-                description_to_queue = queue_keys.VLAN_CREATE_NETWORK_IPV6
             # Execute command
             code, stdout, stderr = exec_script(command)
 
@@ -171,16 +166,6 @@ class VlanCreateResource(RestResource):
             map['sucesso'] = success_map
 
             vlan_obj = network_ip.vlan
-
-            # Send to Queue
-            queue_manager = QueueManager()
-
-            serializer = VlanSerializer(vlan_obj)
-            data_to_queue = serializer.data
-            data_to_queue.update({'description': description_to_queue})
-            queue_manager.append({'action': description_to_queue,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
-
-            queue_manager.send()
 
             # Return XML
             return self.response(dumps_networkapi(map))

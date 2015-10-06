@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
 from networkapi.ip.models import NetworkIPv4NotFoundError, NetworkIPv4Error, NetworkIPv4, NetworkIPv6NotFoundError, NetworkIPv6, NetworkIPv6Error, NetworkIpAddressNotAvailableError
-from networkapi.log import Log
+import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError, EnvironmentVipError
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_int_param
@@ -41,7 +41,7 @@ from networkapi.equipamento.models import Equipamento
 
 class NetworkEditResource(RestResource):
 
-    log = Log('NetworkEditResource')
+    log = logging.getLogger('NetworkEditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
         '''Handles POST requests to edit an Network.
@@ -235,9 +235,9 @@ class NetworkEditResource(RestResource):
 
             # Check permission group equipments
             equips_from_ipv4 = Equipamento.objects.filter(
-                ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1)
+                ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1).distinct()
             equips_from_ipv6 = Equipamento.objects.filter(
-                ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1)
+                ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1).distinct()
             for equip in equips_from_ipv4:
                 # User permission
                 if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):

@@ -51,7 +51,7 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 
     #Vlan para cadastrar
     variablestochangecore["VLAN_SO"]= str(BASE_SO+rack)
-    variablestochangecore["VLAN_NAME"]="VLAN_SO"+"_"+name_rack
+    variablestochangecore["VLAN_NAME"]="OOB_SO_"+name_rack
     variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack)
 
     #Rede para cadastrar
@@ -151,17 +151,74 @@ def dic_lf_spn(user, rack):
     vlans['BORDA'] = [VLANBORDA, VLANBORDACACHOS]
     vlans['BORDACACHOS'] = [VLANBORDACACHOS, 3921]
 
+    ipv4_spn1 = dict()
+    ipv4_spn2 = dict()
+    ipv4_spn3 = dict()
+    ipv4_spn4 = dict()
+    redev6_spn1 = dict()
+    redev6_spn2 = dict()
+    redev6_spn3 = dict()
+    redev6_spn4 = dict()
+
+    ipv4_spn1['REDE_IP']=str(subSPINE1ipv4[rack].ip)
+    ipv4_spn1['REDE_MASK']=subSPINE1ipv4[rack].prefixlen
+    ipv4_spn1['NETMASK']=str(subSPINE1ipv4[rack].netmask)
+    ipv4_spn1['BROADCAST']=str(subSPINE1ipv4[rack].broadcast)
+
+    ipv4_spn2['REDE_IP']=str(subSPINE2ipv4[rack].ip)
+    ipv4_spn2['REDE_MASK']=subSPINE2ipv4[rack].prefixlen
+    ipv4_spn2['NETMASK']=str(subSPINE2ipv4[rack].netmask)
+    ipv4_spn2['BROADCAST']=str(subSPINE2ipv4[rack].broadcast)
+
+    ipv4_spn3['REDE_IP']=str(subSPINE3ipv4[rack].ip)
+    ipv4_spn3['REDE_MASK']=subSPINE3ipv4[rack].prefixlen
+    ipv4_spn3['NETMASK']=str(subSPINE3ipv4[rack].netmask)
+    ipv4_spn3['BROADCAST']=str(subSPINE3ipv4[rack].broadcast)
+
+    ipv4_spn4['REDE_IP']=str(subSPINE4ipv4[rack].ip)
+    ipv4_spn4['REDE_MASK']=subSPINE4ipv4[rack].prefixlen
+    ipv4_spn4['NETMASK']=str(subSPINE4ipv4[rack].netmask)
+    ipv4_spn4['BROADCAST']=str(subSPINE4ipv4[rack].broadcast)
+
+    redev6_spn1['REDE_IP']=str(subSPINE1ipv6[rack].ip)
+    redev6_spn1['REDE_MASK']=subSPINE1ipv6[rack].prefixlen
+    redev6_spn1['NETMASK']=str(subSPINE1ipv6[rack].netmask)
+    redev6_spn1['BROADCAST']=str(subSPINE1ipv6[rack].broadcast)
+
+    redev6_spn2['REDE_IP']=str(subSPINE2ipv6[rack].ip)
+    redev6_spn2['REDE_MASK']=subSPINE2ipv6[rack].prefixlen
+    redev6_spn2['NETMASK']=str(subSPINE2ipv6[rack].netmask)
+    redev6_spn2['BROADCAST']=str(subSPINE2ipv6[rack].broadcast)
+
+    redev6_spn3['REDE_IP']=str(subSPINE3ipv6[rack].ip)
+    redev6_spn3['REDE_MASK']=subSPINE3ipv6[rack].prefixlen
+    redev6_spn3['NETMASK']=str(subSPINE3ipv6[rack].netmask)
+    redev6_spn3['BROADCAST']=str(subSPINE3ipv6[rack].broadcast)
+
+    redev6_spn4['REDE_IP']=str(subSPINE4ipv6[rack].ip)
+    redev6_spn4['REDE_MASK']=subSPINE4ipv6[rack].prefixlen
+    redev6_spn4['NETMASK']=str(subSPINE4ipv6[rack].netmask)
+    redev6_spn4['BROADCAST']=str(subSPINE4ipv6[rack].broadcast)
+
     redes = dict()
     redes['SPINE1ipv4'] = str(SPINE1ipv4)
+    redes['SPINE1ipv4_net'] = ipv4_spn1
     redes['SPINE2ipv4'] = str(SPINE2ipv4)
+    redes['SPINE2ipv4_net'] = ipv4_spn2
     redes['SPINE3ipv4'] = str(SPINE3ipv4)
+    redes['SPINE3ipv4_net'] = ipv4_spn3
     redes['SPINE4ipv4'] = str(SPINE4ipv4)
+    redes['SPINE4ipv4_net'] = ipv4_spn4
 
     ipv6 = dict()
     ipv6['SPINE1ipv6'] = str(SPINE1ipv6)
+    ipv6['SPINE1ipv6_net'] = redev6_spn1
     ipv6['SPINE2ipv6'] = str(SPINE2ipv6)
+    ipv6['SPINE2ipv6_net'] = redev6_spn2
     ipv6['SPINE3ipv6'] = str(SPINE3ipv6)
+    ipv6['SPINE3ipv6_net'] = redev6_spn3
     ipv6['SPINE4ipv6'] = str(SPINE4ipv6)
+    ipv6['SPINE4ipv6_net'] = redev6_spn4
 
     return vlans, redes, ipv6
 

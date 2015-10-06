@@ -24,7 +24,7 @@ from networkapi.admin_permission import AdminPermission
 
 from networkapi.auth import has_perm
 
-from networkapi.log import Log
+import logging
 
 from networkapi.equipamento.models import EquipamentoGrupo, Equipamento,\
     EquipamentoNotFoundError, EquipamentoError, EquipamentoGrupoNotFoundError
@@ -36,7 +36,7 @@ from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_GROUP
 
 class GrupoEquipamentoRemoveAssociationEquipResource(RestResource):
 
-    log = Log('GrupoEquipamentoRemoveAssociationEquipResource')
+    log = logging.getLogger('GrupoEquipamentoRemoveAssociationEquipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         '''Trata as requisições de GET remover a associação entre um grupo de equipamento e um equipamento.

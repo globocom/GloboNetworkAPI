@@ -20,7 +20,7 @@ from networkapi.rest import RestResource
 from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.log import Log
+import logging
 from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
 from django.forms.models import model_to_dict
@@ -29,7 +29,7 @@ from networkapi.ip.models import NetworkIPv6NotFoundError, NetworkIPv6Error, Net
 
 class NetworkIPv6GetResource(RestResource):
 
-    log = Log('NetworkIPv4GetResource')
+    log = logging.getLogger('NetworkIPv4GetResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to list all network IPv6 by network ipv6 id.
