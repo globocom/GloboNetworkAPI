@@ -35,6 +35,9 @@ class UsuarioFactory(factory.DjangoModelFactory):
         self.log.error(u'Failed to save the user.')
         raise UsuarioError(e, u'Failed to save the user.')
     """
+
+    # class Meta:
+    #     model = models.Usuario
     FACTORY_FOR = models.Usuario
 
     user = factory.Sequence(lambda n: 'user-{0}'.format(n))
@@ -44,39 +47,12 @@ class UsuarioFactory(factory.DjangoModelFactory):
     email = factory.Sequence(lambda n: 'user-{0}@email.com'.format(n))
     user_ldap = None
 
-    @classmethod
-    def _create(cls, target_class, *args, **kwargs):
-        """Create an instance of the model, and save it to the database."""
-        manager = cls._get_manager(target_class)
 
-        if cls.FACTORY_DJANGO_GET_OR_CREATE:
-            return cls._get_or_create(target_class, *args, **kwargs)
+class UsuarioGrupoFactory(factory.django.DjangoModelFactory):
+    FACTORY_FOR = models.UsuarioGrupo
 
-        usr = models.Usuario()
+    usuario = factory.SubFactory(UsuarioFactory)
+    ugrupo = factory.SubFactory(UGrupoFactory)
 
-        # set variables
-        usr.user = kwargs.get('user')
-        usr.pwd = kwargs.get('pwd')
-        usr.nome = kwargs.get('nome')
-        usr.email = kwargs.get('email')
-        usr.ativo = kwargs.get('ativo')
-        usr.user_ldap = kwargs.get('user_ldap')
-
-        try:
-            # save User
-            usr.save(None)
-        except Exception, e:
-            LOG.exception(u"Failed to save the user {0}.".format(usr))
-
-    @factory.post_generation
-    def grupos(self, create, extracted, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
-
-        if extracted:
-            # A list of groups were passed in, use them
-            for grupo in extracted:
-                self.grupos.add(grupo)
-        else:
-            self.grupos.add(UGrupoFactory())
+class UserWithGroupFactory(UsuarioFactory):
+    group = factory.RelatedFactory(UsuarioGrupoFactory, 'usuario')

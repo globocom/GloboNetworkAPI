@@ -531,7 +531,7 @@ class TipoEquipamento(BaseModel):
             self.log.error(e.message)
             raise TipoEquipamentoDuplicateNameError(e, e.message)
         except Exception, e:
-            self.log.error(u'Falha ao inserir tipo de equipamentos.')
+            self.log.exception(u'Falha ao inserir tipo de equipamentos.')
             raise EquipamentoError(
                 e, u'Falha ao inserir tipo de equipamentos.')
 
