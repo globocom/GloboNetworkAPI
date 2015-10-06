@@ -44,7 +44,7 @@ class EventLog(models.Model):
     DELETE = 2
 
     id = models.AutoField(primary_key=True, db_column='id_evento')
-    usuario = models.ForeignKey(Usuario, db_column='id_user')
+    usuario = models.ForeignKey(Usuario, db_column='id_user', blank=True, null=True)
     hora_evento = models.DateTimeField()
     acao = models.TextField()
     funcionalidade = models.TextField()
@@ -93,9 +93,9 @@ class EventLog(models.Model):
             event_log.save()
         except Exception, e:
             cls.logger.error(
-                u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario.id))
+                u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario))
             raise EventLogError(
-                e, u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario.id))
+                e, u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario))
 
     @classmethod
     def uniqueUsers(cls):
