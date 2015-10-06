@@ -196,7 +196,8 @@ def save_audit(instance, operation, kwargs={}):
                     if audit_request:
                         EventLog.log(audit_request.user, event)
                     else:
-                        LOG.warning("Cannot save audit because audit_request is None")
+                        LOG.warning("saving audit with id_user=None")
+                        EventLog.log(None, event)
 
             else:
                 obj_description = (instance and unicode(instance) and '')[:100]
@@ -217,7 +218,8 @@ def save_audit(instance, operation, kwargs={}):
                 if audit_request:
                     EventLog.log(audit_request.user, event)
                 else:
-                    LOG.warning("Cannot save audit because audit_request is None")
+                    LOG.warning("saving audit with id_user=None")
+                    EventLog.log(None, event)
     except:
         LOG.error(u'Error registering auditing to %s: (%s) %s',
             repr(instance), type(instance), getattr(instance, '__dict__', None), exc_info=True)
