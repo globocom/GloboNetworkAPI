@@ -134,7 +134,7 @@ class UGrupo(BaseModel):
         db_table = u'grupos'
         managed = True
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Sobrescreve o método do Django para remover o grupo de usuário.
 
         Além de remover o grupo também remove as permissões administrativas do grupo,
@@ -142,13 +142,13 @@ class UGrupo(BaseModel):
         grupos de equipamento.
         '''
         for p in self.permissaoadministrativa_set.all():
-            p.delete(authenticated_user)
+            p.delete()
         for ug in self.usuariogrupo_set.all():
-            ug.delete(authenticated_user)
+            ug.delete()
         for d in self.direitosgrupoequipamento_set.all():
-            d.delete(authenticated_user)
+            d.delete()
 
-        super(UGrupo, self).delete(authenticated_user)
+        super(UGrupo, self).delete()
 
     @classmethod
     def get_by_pk(cls, id):
@@ -234,7 +234,7 @@ class PermissaoAdministrativa(BaseModel):
 
         try:
             self.ugrupo = UGrupo.objects.get(id=self.ugrupo.id)
-            return self.save(authenticated_user)
+            return self.save()
 
         except UGrupo.DoesNotExist, e:
             raise e
@@ -362,7 +362,7 @@ class EGrupo(BaseModel):
             except EGrupo.DoesNotExist:
                 pass
 
-            self.save(authenticated_user)
+            self.save()
         except EGrupoNameDuplicatedError, e:
             raise e
         except Exception, e:
@@ -419,24 +419,24 @@ class EGrupo(BaseModel):
             raise GroupDontRemoveError(egrupo.nome, msg)
 
         try:
-            egrupo.delete(authenticated_user)
+            egrupo.delete()
         except Exception, e:
             cls.log.error(u'Falha ao remover o grupo de equipamento.')
             raise GrupoError(e, u'Falha ao remover o grupo de equipamento.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Sobrescreve o método do Django para remover o grupo de equipamento.
 
         Além de remover o grupo também remove os relacionamentos do grupo 
         com equipamentos e os relacionamentos do grupo com grupos de usuário.
         '''
         for eg in self.equipamentogrupo_set.all():
-            eg.delete(authenticated_user)
+            eg.delete()
 
         for d in self.direitosgrupoequipamento_set.all():
-            d.delete(authenticated_user)
+            d.delete()
 
-        super(EGrupo, self).delete(authenticated_user)
+        super(EGrupo, self).delete()
 
 
 class DireitosGrupoEquipamento(BaseModel):
@@ -486,7 +486,7 @@ class DireitosGrupoEquipamento(BaseModel):
                 raise DireitoGrupoEquipamentoDuplicatedError(
                     None, u'Direito Grupo Equipamento para o grupo de usuário %d e grupo de equipamento %s já cadastrado.' % (self.ugrupo_id, self.egrupo_id))
 
-            self.save(authenticated_user)
+            self.save()
         except UGrupo.DoesNotExist, e:
             raise e
         except DireitoGrupoEquipamentoDuplicatedError, e:
@@ -539,7 +539,7 @@ class DireitosGrupoEquipamento(BaseModel):
         '''
         direito = DireitosGrupoEquipamento.get_by_pk(pk)
         try:
-            direito.delete(authenticated_user)
+            direito.delete()
         except Exception, e:
             cls.log.error(
                 u'Falha ao remover os direitos de um grupo de usuário em um grupo de equipamento.')

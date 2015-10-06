@@ -93,9 +93,9 @@ class Ipv6AssociateResource(RestResource):
                                                           for ea in ipv6_equipment.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
                         ea = EquipamentoAmbiente(
                             ambiente=ipv6_equipment.ip.networkipv6.vlan.ambiente, equipamento=ipv6_equipment.equipamento)
-                        ea.save(user)
+                        ea.save()
 
-                    ipv6_equipment.save(user)
+                    ipv6_equipment.save()
                 except Exception, e:
                     self.log.error(u'Failed to insert a ip_equipamento.')
                     raise IpError(e, u'Failed to insert a ip_equipamento.')

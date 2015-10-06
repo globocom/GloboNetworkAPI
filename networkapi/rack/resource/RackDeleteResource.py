@@ -44,7 +44,7 @@ def desativar_vlan_rede(user, rack):
 
             for net4 in vlan.networkipv4_set.all():
                 for ip in net4.ip_set.all():
-                    ip.delete(user)
+                    ip.delete()
 
                 if net4.active:
                     try:
@@ -55,7 +55,7 @@ def desativar_vlan_rede(user, rack):
 
             for net6 in vlan.networkipv6_set.all():
                 for ip6 in net6.ipv6_set.all():
-                    ip6.delete(user)
+                    ip6.delete()
 
                 if net6.active:
                     try:
@@ -78,7 +78,7 @@ def remover_ambiente_rack(user, rack):
 
     for var in lista_amb_rack:
         lista_amb.append(var.ambiente)
-        var.delete(user)
+        var.delete()
 
     return lista_amb
 
@@ -89,7 +89,7 @@ def remover_ambiente(user, lista_amb, rack):
     grupo_l3 = GrupoL3()
     try:
         grupo_l3 = grupo_l3.get_by_name(rack.nome)
-        grupo_l3.delete(user)
+        grupo_l3.delete()
     except:
         pass
 
@@ -126,7 +126,7 @@ def remover_vlan_so(user, rack):
     vlan = Vlan()
     try:
         vlan = vlan.get_by_name(nome)
-        vlan.delete(user)
+        vlan.delete()
     except:
         pass
 
@@ -192,7 +192,7 @@ class RackDeleteResource(RestResource):
             with distributedlock(LOCK_RACK % rack_id):
 
                 try:
-                    rack.delete(user)
+                    rack.delete()
                 except RackNumberNotFoundError, e:
                     raise e
                 except Exception, e:

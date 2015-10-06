@@ -74,7 +74,7 @@ class FilterAlterRemoveResource(RestResource):
 
             try:
                 # Save filter
-                fil.save(user)
+                fil.save()
             except Exception, e:
                 self.log.error(u'Failed to edit the filter.')
                 raise e
@@ -121,7 +121,7 @@ class FilterAlterRemoveResource(RestResource):
 
             try:
                 # Remove filter and its relationships
-                fil.delete(user)
+                fil.delete()
             except Exception, e:
                 self.log.error(u'Failed to remove the filter.')
                 raise e

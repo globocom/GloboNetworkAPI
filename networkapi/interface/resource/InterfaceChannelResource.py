@@ -51,12 +51,12 @@ def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, 
 
     var.tipo = int_type
     var.vlan_nativa = vlan
-    var.save(user)
+    var.save()
 
     if "trunk" in int_type.tipo:
         interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
         for int_env in interface_list:
-            int_env.delete(user)
+            int_env.delete()
         if envs is not None:
             if not type(envs)==unicode:
                 for env in envs:
@@ -166,7 +166,7 @@ class InterfaceChannelResource(RestResource):
                     if "trunk" in int_type.tipo:
                         interface_list = EnvironmentInterface.objects.all().filter(interface=sw_router.id)
                         for int_env in interface_list:
-                            int_env.delete(user)
+                            int_env.delete()
                         if envs is not None:
                             if not type(envs)==unicode:
                                 for env in envs:
@@ -250,7 +250,7 @@ class InterfaceChannelResource(RestResource):
 
             channel = PortChannel.get_by_name(str(channel_name))
 
-            channel.delete(user)
+            channel.delete()
 
             return self.response(dumps_networkapi({}))
 
@@ -329,7 +329,7 @@ class InterfaceChannelResource(RestResource):
                 for item in desassociar:
                     item = interface.get_by_pk(int(item))
                     item.channel = None
-                    item.save(user)
+                    item.save()
             else:
                 if ids_interface is not None:
                     ids_interface = int(ids_interface)
@@ -337,13 +337,13 @@ class InterfaceChannelResource(RestResource):
                         for item in ids_list:
                             item = interface.get_by_pk(int(item))
                             item.channel = None
-                            item.save(user)
+                            item.save()
                     else:
                         for item in ids_list:
                             if not item== ids_interface:
                                 item = interface.get_by_pk(int(item))
                                 item.channel = None
-                                item.save(user)
+                                item.save()
 
 
 
@@ -352,7 +352,7 @@ class InterfaceChannelResource(RestResource):
             port_channel = port_channel.get_by_pk(id_channel)
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
-            port_channel.save(user)
+            port_channel.save()
 
             int_type = TipoInterface.get_by_name(str(int_type))
 

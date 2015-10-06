@@ -95,7 +95,7 @@ class GroupL3AlterRemoveResource(RestResource):
 
                 try:
                     # update Group l3
-                    groupl3.save(user)
+                    groupl3.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Group l3.')
                     raise AmbienteError(e, u'Failed to update the Group l3.')
@@ -152,7 +152,7 @@ class GroupL3AlterRemoveResource(RestResource):
                             None, u"O GrupoL3 %s tem ambiente associado." % groupl3.id)
 
                     # remove Group l3
-                    groupl3.delete(user)
+                    groupl3.delete()
 
                 except GrupoL3UsedByEnvironmentError, e:
                     raise e

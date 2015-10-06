@@ -58,7 +58,7 @@ def save_or_update(self, request, user, update=False):
 
         if update:
             for block in environment.blockrules_set.all():
-                block.delete(user)
+                block.delete()
         else:
             if environment.blockrules_set.count() > 0:
                 return self.response_error(357)
@@ -74,7 +74,7 @@ def save_or_update(self, request, user, update=False):
                 block.order = order
                 block.environment = environment
 
-                block.save(user)
+                block.save()
 
         return self.response(dumps_networkapi({}))
 

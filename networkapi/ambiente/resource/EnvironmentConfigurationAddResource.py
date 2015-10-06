@@ -87,13 +87,13 @@ class EnvironmentConfigurationAddResource(RestResource):
             ip_config.type = ip_version
             ip_config.network_type = network_type
 
-            ip_config.save(user)
+            ip_config.save()
 
             config_environment = ConfigEnvironment()
             config_environment.environment = environment
             config_environment.ip_config = ip_config
 
-            config_environment.save(user)
+            config_environment.save()
 
             return self.response(dumps_networkapi({'network': network_map}))
 

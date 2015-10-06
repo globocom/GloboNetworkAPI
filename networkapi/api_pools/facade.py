@@ -55,7 +55,7 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
     except ObjectDoesNotExist:
         hc = Healthcheck(identifier=identifier, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
                          healthcheck_expect=healthcheck_expect, destination=healthcheck_destination)
-        hc.save(user)
+        hc.save()
 
     #Get the fisrt occureny and warn if redundant HCs are present
     except MultipleObjectsReturned, e:
@@ -103,7 +103,7 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
     else:
         sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
                         environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn, servicedownaction=servicedownaction)
-        sp.save(user)
+        sp.save()
 
     return sp, (old_healthcheck.id if old_healthcheck else None)
 
@@ -114,7 +114,7 @@ def update_pool_fields(default_port, env, identifier, old_healthcheck, old_lb_me
     sp.healthcheck = old_healthcheck
     sp.lb_method = old_lb_method
     sp.identifier = identifier
-    sp.save(user)
+    sp.save()
 
 def validate_change_of_environment(id_pool_member, sp):
     if sp.pool_created:
@@ -129,7 +129,7 @@ def validate_change_of_environment(id_pool_member, sp):
 
 def update_pool_maxconn(maxconn, old_maxconn, sp, user):
     sp.default_limit = maxconn
-    sp.save(user)
+    sp.save()
 
     #If pool member  exists, checks if all of them have the same maxconn before changing its default maxconn
     if(len(sp.serverpoolmember_set.all()) > 0):
@@ -140,7 +140,7 @@ def update_pool_maxconn(maxconn, old_maxconn, sp, user):
                     raise exceptions.ScriptAlterLimitPoolDiffMembersException()
                 else:
                     serverpoolmember.limit = maxconn
-                    serverpoolmember.save(user)
+                    serverpoolmember.save()
 
             transaction.commit()
             command = settings.POOL_MANAGEMENT_LIMITS % (sp.id)
@@ -149,50 +149,50 @@ def update_pool_maxconn(maxconn, old_maxconn, sp, user):
                 sp.default_limit = old_maxconn
                 for serverpoolmember in sp.serverpoolmember_set.all():
                     serverpoolmember.limit = old_maxconn
-                    serverpoolmember.save(user)
+                    serverpoolmember.save()
 
-                sp.save(user)
+                sp.save()
                 transaction.commit()
                 raise exceptions.ScriptAlterLimitPoolException()
 
 def apply_health_check(hc, old_healthcheck, sp, user):
     # Applies new healthcheck in pool
     sp.healthcheck = hc
-    sp.save(user)
+    sp.save()
     if (old_healthcheck.id != hc.id and sp.pool_created):
         transaction.commit()
         command = settings.POOL_HEALTHCHECK % (sp.id)
         code, _, _ = exec_script(command)
         if code != 0:
             sp.healthcheck = old_healthcheck
-            sp.save(user)
+            sp.save()
             transaction.commit()
             raise exceptions.ScriptCreatePoolException()
 
 def apply_service_down_action(old_servicedownaction, servicedownaction, sp, user):
     # Applies new service-down-action in pool
     sp.servicedownaction = servicedownaction
-    sp.save(user)
+    sp.save()
     if (old_servicedownaction != sp.servicedownaction and sp.pool_created):
         transaction.commit()
         command = settings.POOL_SERVICEDOWNACTION % (sp.id)
         code, _, _ = exec_script(command)
         if code != 0:
             sp.servicedownaction = old_servicedownaction
-            sp.save(user)
+            sp.save()
             transaction.commit()
             raise exceptions.ScriptAlterServiceDownActionException()
 
 def update_load_balancing_method(balancing, old_lb_method, sp, user):
     sp.lb_method = balancing
-    sp.save(user)
+    sp.save()
     if (old_lb_method != sp.lb_method and sp.pool_created):
         transaction.commit()
         command = settings.POOL_MANAGEMENT_LB_METHOD % (sp.id)
         code, _, _ = exec_script(command)
         if code != 0:
             sp.lb_method = old_lb_method
-            sp.save(user)
+            sp.save()
             transaction.commit()
             raise exceptions.ScriptCreatePoolException()
 
@@ -261,7 +261,7 @@ def save_server_pool_member(user, pool, list_server_pool_member):
             else:
                 pool_member = ServerPoolMember()
                 update_pool_member(pool, pool_member, dic, ip_object, ipv6_object, user)
-                pool_member.save(user)
+                pool_member.save()
 
                 old_priorities_list.append(dic['priority'])
 
@@ -289,7 +289,7 @@ def update_pool_member(pool, pool_member, dic, ip_object, ipv6_object, user):
     pool_member.weight = dic['weight']
     pool_member.priority = dic['priority']
     pool_member.port_real = dic['port_real']
-    pool_member.save(user)
+    pool_member.save()
 
 
 def get_ip_objects(dic):
@@ -313,7 +313,7 @@ def remove_pool_members(id_pool_member_noempty, sp, user):
     if del_smp:
         for obj in del_smp:
 
-            obj.delete(user)
+            obj.delete()
 
             # execute script remove real if pool already created
             # commit transaction after each successful script call
@@ -333,7 +333,7 @@ def deploy_pool_member_config(id_ip, id_pool, port_ip, spm, user):
     command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
     code, _, _ = exec_script(command)
     if code != 0:
-        spm.delete(user)
+        spm.delete()
         transaction.commit()
         raise exceptions.ScriptCreatePoolException()
 
@@ -348,7 +348,7 @@ def apply_priorities(list_pool_member, old_priorities_list, sp, user):
     if code != 0:
         for i in range(0, len(old_priorities_list)):
             list_pool_member[i].priority = old_priorities_list[i]
-            list_pool_member[i].save(user)
+            list_pool_member[i].save()
         transaction.commit()
         raise exceptions.ScriptAlterPriorityPoolMembersException()
 
@@ -506,13 +506,13 @@ def save_option_pool(user, type, description):
 
         sp.type = type
         sp.description = description
-        sp.save(user)
+        sp.save()
 
 
     else:'''
 
     sp = OptionPool(type=type, name=description)
-    sp.save(user)
+    sp.save()
 
     return sp
 
@@ -524,7 +524,7 @@ def update_option_pool(user, option_id, type, description):
     sp.type = type
     sp.name=description
 
-    sp.save(user)
+    sp.save()
 
     return sp
 
@@ -536,9 +536,9 @@ def delete_option_pool(user, option_id):
     environment_options = environment_options.filter(option=option_id)
 
     for eop in environment_options:
-        eop.delete(user)
+        eop.delete()
 
-    pool_option.delete(user)
+    pool_option.delete()
 
     return option_id
 
@@ -556,7 +556,7 @@ def save_environment_option_pool(user, option_id, environment_id):
 
     ope.environment=env
     ope.option=op
-    ope.save(user)
+    ope.save()
 
     return ope
 
@@ -570,14 +570,14 @@ def update_environment_option_pool(user, environment_option_id, option_id, envir
     ope.option = op
     ope.environment = env
 
-    ope.save(user)
+    ope.save()
 
     return ope
 
 def delete_environment_option_pool(user, environment_option_id):
 
     ope=OptionPoolEnvironment.objects.get(id=environment_option_id)
-    ope.delete(user)
+    ope.delete()
 
     return environment_option_id
 

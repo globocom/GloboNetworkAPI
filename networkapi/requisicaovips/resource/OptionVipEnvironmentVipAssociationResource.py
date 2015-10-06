@@ -88,7 +88,7 @@ class OptionVipEnvironmentVipAssociationResource(RestResource):
                 opt_vip_env_vip.validate()
 
                 # Persist
-                opt_vip_env_vip.save(user)
+                opt_vip_env_vip.save()
 
                 # Return XML
                 opt_vip_env_vip_map = dict()
@@ -159,7 +159,7 @@ class OptionVipEnvironmentVipAssociationResource(RestResource):
                 option_vip.id, environment_vip.id)
 
             # Delete
-            opt_vip_env_vip.delete(user)
+            opt_vip_env_vip.delete()
 
             # Return nothing
             return self.response(dumps_networkapi({}))

@@ -85,7 +85,7 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
                 environment_environment_vip.validate()
 
                 # Persist
-                environment_environment_vip.save(user)
+                environment_environment_vip.save()
 
                 # Return XML
                 environment_environment_vip_map = {}
@@ -152,7 +152,7 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
                 raise EnvironmentEnvironmentServerPoolLinked({'environment': environment.name})
 
             # Delete
-            environment_environment_vip.delete(user)
+            environment_environment_vip.delete()
 
             # Return nothing
             return self.response(dumps_networkapi({}))

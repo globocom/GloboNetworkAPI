@@ -93,7 +93,7 @@ class DivisionDcAlterRemoveResource(RestResource):
 
                 try:
                     # update Division Dc
-                    division_dc.save(user)
+                    division_dc.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Division Dc.')
                     raise AmbienteError(
@@ -151,7 +151,7 @@ class DivisionDcAlterRemoveResource(RestResource):
                             None, u"A Divisão DC %s tem ambiente associado." % division_dc.id)
 
                     # remove Division Dc
-                    division_dc.delete(user)
+                    division_dc.delete()
 
                 except DivisaoDcUsedByEnvironmentError, e:
                     raise e

@@ -118,7 +118,7 @@ class GroupUserAlterRemoveResource(RestResource):
             with distributedlock(LOCK_GROUP_USER % id_ugroup):
                 try:
                     # save user group
-                    ugroup.save(user)
+                    ugroup.save()
                 except Exception, e:
                     self.log.error(u'Failed to save the GroupUser.')
                     raise GrupoError(e, u'Failed to save the GroupUser.')
@@ -167,7 +167,7 @@ class GroupUserAlterRemoveResource(RestResource):
 
             with distributedlock(LOCK_GROUP_USER % id_ugroup):
 
-                ugroup.delete(user)
+                ugroup.delete()
                 return self.response(dumps_networkapi({}))
 
         except InvalidValueError, e:

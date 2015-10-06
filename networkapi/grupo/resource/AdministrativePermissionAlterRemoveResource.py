@@ -126,7 +126,7 @@ class AdministrativePermissionAlterRemoveResource(RestResource):
 
                 try:
                     # update Administrative Permission
-                    adm_perm.save(user)
+                    adm_perm.save()
                 except Exception, e:
                     self.log.error(
                         u'Failed to update the administrative permission.')
@@ -186,7 +186,7 @@ class AdministrativePermissionAlterRemoveResource(RestResource):
 
                 try:
                     # Remove Administrative Permission
-                    adm_perm.delete(user)
+                    adm_perm.delete()
                 except Exception, e:
                     self.log.error(u'Failed to remove the permission.')
                     raise GrupoError(e, u'Failed to remove the permission.')

@@ -200,7 +200,7 @@ class NetworkIPv4AddResource(RestResource):
                 ip_model.oct4 = ip[3]
                 ip_model.networkipv4_id = network_ipv4.id
 
-                ip_model.save(user)
+                ip_model.save()
 
                 if len(list_equip_routers_ambient) > 1:
                     multiple_ips = True
@@ -219,7 +219,7 @@ class NetworkIPv4AddResource(RestResource):
                         ip_model2.oct3 = router_ip[2]
                         ip_model2.oct4 = router_ip[3]
                         ip_model2.networkipv4_id = network_ipv4.id
-                        ip_model2.save(user)
+                        ip_model2.save()
                         IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
             # Return XML

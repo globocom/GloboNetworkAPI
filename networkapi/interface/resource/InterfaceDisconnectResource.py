@@ -110,8 +110,8 @@ class InterfaceDisconnectResource(RestResource):
                     interface_2.ligacao_back = None
 
                 # Save
-                interface_1.save(user)
-                interface_2.save(user)
+                interface_1.save()
+                interface_2.save()
 
             #sai do channel
             if interface_1.channel is not None:
@@ -119,13 +119,13 @@ class InterfaceDisconnectResource(RestResource):
 
                 id_channel = interface_1.channel.id
                 interface_1.channel = None
-                interface_1.save(user)
+                interface_1.save()
 
                 interfaces = Interface.objects.all().filter(channel__id=id_channel)
                 if not len(interfaces) > 0:
                     self.log.info("len "+str(len(interfaces)))
 
-                    PortChannel.delete(user)
+                    PortChannel.delete()
 
             # Return None for success
             return self.response(dumps_networkapi({}))

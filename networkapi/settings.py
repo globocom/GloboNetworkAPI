@@ -91,6 +91,9 @@ DATABASES = {
     }
 }
 
+if 'test' in sys.argv:
+    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
+
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
@@ -244,18 +247,20 @@ if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
-        #        'django.contrib.sessions.middleware.SessionMiddleware',
-        #        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'networkapi.SQLLogMiddleware.SQLLogMiddleware',
+       'django.contrib.sessions.middleware.SessionMiddleware',
+       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'networkapi.middlewares.SQLLogMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
+        'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
 else:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
-        #        'django.contrib.sessions.middleware.SessionMiddleware',
-        #        'django.contrib.auth.middleware.AuthenticationMiddleware',
+       'django.contrib.sessions.middleware.SessionMiddleware',
+       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
 
 ROOT_URLCONF = 'networkapi.urls'
@@ -313,6 +318,8 @@ REST_FRAMEWORK = {
 }
 
 
+#DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
+
 NETWORKAPI_VERSION = "1.0"
 
 # Intervals to calculate the vlan_num in POST request /vlan/.
@@ -324,8 +331,6 @@ MAX_VLAN_NUMBER_02 = 4094
 # Intervals to calculate the oct4 of the IP in POST request /ip/.
 MIN_OCT4 = 5
 MAX_OCT4 = 250
-
-TEST_RUNNER = 'django_pytest.test_runner.TestRunner'
 
 ##########
 # Scripts
@@ -537,7 +542,6 @@ INTEGRATION = os.getenv('CI', '0') == '1'
 INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
 
 TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
-
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--verbosity=2', '--no-byte-compile', '-d', '-s']

@@ -104,7 +104,7 @@ class VlanCreateAclResource(RestResource):
                 acl_name, environment, network_type, user)
 
             if is_suggest_acl_name:
-                vlan.save(user)
+                vlan.save()
 
             createAclCvs(acl_name, environment, network_type, user)
 

@@ -76,7 +76,7 @@ class DivisionDcAddResource(RestResource):
 
             try:
                 # save Division Dc
-                division_dc.save(user)
+                division_dc.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Division Dc.')
                 raise AmbienteError(e, u'Failed to save the Division Dc.')

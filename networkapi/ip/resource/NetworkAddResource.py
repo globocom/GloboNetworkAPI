@@ -393,7 +393,7 @@ class NetworkAddResource(RestResource):
 
                 # Delete vlan's cache
                 destroy_cache_function([id_vlan])
-                network_ip.save(user)
+                network_ip.save()
 
                 list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
                     ambiente=network_ip.vlan.ambiente.id, is_router=True)
@@ -418,7 +418,7 @@ class NetworkAddResource(RestResource):
                             ip_model.oct4 = ip[3]
                             ip_model.networkipv4_id = network_ip.id
 
-                            ip_model.save(user)
+                            ip_model.save()
 
                             if len(list_equip_routers_ambient) > 1 and network_ip.block < 30:
                                 multiple_ips = True
@@ -463,7 +463,7 @@ class NetworkAddResource(RestResource):
                             ipv6_model.block8 = ipv6[7]
                             ipv6_model.networkipv6_id = network_ip.id
 
-                            ipv6_model.save(user)
+                            ipv6_model.save()
 
                             if len(list_equip_routers_ambient) > 1 and network_ip.block < 126:
                                 multiple_ips = True

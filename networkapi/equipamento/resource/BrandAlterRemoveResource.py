@@ -94,7 +94,7 @@ class BrandAlterRemoveResource(RestResource):
 
                 try:
                     # update Brand
-                    brand.save(user)
+                    brand.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Brand.')
                     raise EquipamentoError(e, u'Failed to update the Brand.')
@@ -151,7 +151,7 @@ class BrandAlterRemoveResource(RestResource):
                             None, u"A marca %d tem modelo associado." % brand.id)
 
                     # remove Brand
-                    brand.delete(user)
+                    brand.delete()
 
                 except MarcaUsedByModeloError, e:
                     raise e

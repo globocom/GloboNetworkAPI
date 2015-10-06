@@ -125,11 +125,11 @@ def save(request):
     obj_req_vip.validado = False
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
-    obj_req_vip.save(user)
+    obj_req_vip.save()
 
     for v_port in obj_req_vip.vip_ports_to_pools:
         v_port.requisicao_vip = obj_req_vip
-        v_port.save(user)
+        v_port.save()
 
     return req_vip_serializer.data
 
@@ -169,7 +169,7 @@ def update(request, pk):
         obj_req_vip.validado = False
         set_l7_filter_for_vip(obj_req_vip)
         obj_req_vip.set_new_variables(data)
-        obj_req_vip.save(user)
+        obj_req_vip.save()
 
         vip_port_serializer = VipPortToPoolSerializer(data=vip_ports, many=True)
 
@@ -188,7 +188,7 @@ def update(request, pk):
         server_pool_ips_can_associate_with_vip_request(obj_req_vip, vip_port_to_pool_to_remove)
 
         for v_port_to_del in vip_port_to_pool_to_remove:
-            v_port_to_del.delete(user)
+            v_port_to_del.delete()
 
         for vip_port in vip_ports:
             vip_port_obj = VipPortToPool()
@@ -196,7 +196,7 @@ def update(request, pk):
             vip_port_obj.server_pool = ServerPool(id=vip_port.get('server_pool'))
             vip_port_obj.port_vip = vip_port.get('port_vip')
             vip_port_obj.requisicao_vip = obj_req_vip
-            vip_port_obj.save(user)
+            vip_port_obj.save()
 
         return req_vip_serializer.data
 

@@ -122,7 +122,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.mask1, network_ip.mask2, network_ip.mask3, network_ip.mask4, network_ip.mask5, network_ip.mask6, network_ip.mask7, network_ip.mask8 = str(variablestochangecore1.get("NETMASK")).split(':')
 
     destroy_cache_function([vlan.id])
-    network_ip.save(user)    
+    network_ip.save()
  
     return network_ip
 
@@ -143,7 +143,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.active = 1
 
     destroy_cache_function([vlan.id])
-    network_ip.save(user)
+    network_ip.save()
  
     return network_ip
 
@@ -197,7 +197,7 @@ def config_ambiente(user, hosts, ambientes):
     tipo = tiporede.get_by_name(hosts.get("TIPO"))
     ip_config.network_type = tipo
 
-    ip_config.save(user)
+    ip_config.save()
 
     #ambiente
     config_environment = ConfigEnvironment()
@@ -211,7 +211,7 @@ def config_ambiente(user, hosts, ambientes):
             
     config_environment.ip_config = ip_config
 
-    config_environment.save(user)
+    config_environment.save()
 
 def inserir_equip(user, variablestochangecore, rede_id):
     
@@ -243,7 +243,7 @@ def ambiente_spn_lf(user, rack, environment_list):
 
     grupol3 = GrupoL3()
     grupol3.nome = rack.nome
-    grupol3.save(user)
+    grupol3.save()
 
     ambientes= dict()   
     ambientes['L3']= rack.nome
@@ -593,7 +593,7 @@ class RackAplicarConfigResource(RestResource):
             environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
-            rack.save(user)
+            rack.save()
 
             success_map = dict()
             success_map['rack_conf'] = True

@@ -75,7 +75,7 @@ class FilterAssociateResource(RestResource):
             association.validate()
 
             # Save association
-            association.save(user)
+            association.save()
 
             fil_et_map = dict()
             fil_et_map['id'] = association.id

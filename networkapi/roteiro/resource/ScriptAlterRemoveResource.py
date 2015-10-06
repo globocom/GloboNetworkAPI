@@ -150,7 +150,7 @@ class ScriptAlterRemoveResource(RestResource):
 
                 try:
                     # update Script
-                    scr.save(user)
+                    scr.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Script.')
                     raise RoteiroError(e, u'Failed to update the Script.')
@@ -210,7 +210,7 @@ class ScriptAlterRemoveResource(RestResource):
                             None, u'Existe equipamento associado ao roteiro %s' % script.id)
 
                     # remove Script
-                    script.delete(user)
+                    script.delete()
 
                 except RoteiroHasEquipamentoError, e:
                     raise e

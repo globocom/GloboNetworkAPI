@@ -117,7 +117,7 @@ class Ipv6GetAvailableForVipResource(RestResource):
                                     new_ip_equip = Ipv6Equipament()
                                     new_ip_equip.ip = ip_new
                                     new_ip_equip.equipamento = equipment
-                                    new_ip_equip.save(user)
+                                    new_ip_equip.save()
 
                                 balanceador_found_flag = True
 
