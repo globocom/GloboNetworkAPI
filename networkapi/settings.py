@@ -332,8 +332,6 @@ MAX_VLAN_NUMBER_02 = 4094
 MIN_OCT4 = 5
 MAX_OCT4 = 250
 
-TEST_RUNNER = 'django_pytest.test_runner.TestRunner'
-
 ##########
 # Scripts
 
