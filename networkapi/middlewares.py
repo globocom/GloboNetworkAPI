@@ -19,7 +19,6 @@
 import logging
 from django.conf import settings
 
-from networkapi.eventlog.models import AuditRequest
 from networkapi.api_rest.authentication import BasicAuthentication
 from networkapi.rest import RestResource
 
@@ -52,6 +51,7 @@ class TrackingRequestOnThreadLocalMiddleware(object):
         return ip
 
     def process_request(self, request):
+        from networkapi.eventlog.models import AuditRequest
         if not request.user.is_anonymous():
             ip = self._get_ip(request)
             AuditRequest.new_request(request.get_full_path(), request.user, ip)
@@ -68,5 +68,6 @@ class TrackingRequestOnThreadLocalMiddleware(object):
                 AuditRequest.new_request(request.get_full_path(), user, ip)
 
     def process_response(self, request, response):
+        from networkapi.eventlog.models import AuditRequest
         AuditRequest.cleanup_request()
         return response
