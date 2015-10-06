@@ -23,8 +23,6 @@ from datetime import datetime
 
 from django.utils.translation import ugettext_lazy as _
 
-from networkapi.usuario.models import Usuario
-
 
 class EventLogError(Exception):
 
@@ -101,6 +99,7 @@ class EventLog(models.Model):
 
     @classmethod
     def uniqueUsers(cls):
+        from networkapi.usuario.models import Usuario
         userlist = Usuario.objects.all().order_by('user')
 
         return userlist
