@@ -1099,7 +1099,7 @@ class ConfigEnvironment(BaseModel):
             raise ConfigEnvironmentError(
                 e, u'Error removing ConfigEnvironment.')
 
-    def save(self, authenticated_user):
+    def save(self):
         '''
             Save ConfigEnvironment
 
@@ -1107,7 +1107,7 @@ class ConfigEnvironment(BaseModel):
         '''
         try:
 
-            super(ConfigEnvironment, self).save(authenticated_user)
+            super(ConfigEnvironment, self).save()
 
         except IntegrityError, e:
             self.log.error(u'Error saving ConfigEnvironment: %r' % str(e))
