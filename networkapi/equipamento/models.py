@@ -880,6 +880,10 @@ class EquipamentoAmbiente(BaseModel):
             raise EquipamentoError(
                 e, u'Falha ao remover uma associação entre um Equipamento e um Ambiente.')
 
+    @classmethod
+    def get_routers_by_environment(self, environment_id):
+        EquipamentoAmbiente.objects.select_related('equipamento').filter(ambiente=environment_id, is_router=True)
+
 
 class EquipamentoGrupo(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_equip_do_grupo')

@@ -21,7 +21,7 @@ class PoolFacadeTestCase(unittest.TestCase):
         self.mock_transaction()
 
     def tearDown(self):
-        pass
+        patch.stopall()
 
     def test_get_healthcheck_given_invalid_healthcheck_identifier(self):
         find_health_check_mock = self.mock_find_healthcheck(ObjectDoesNotExist())

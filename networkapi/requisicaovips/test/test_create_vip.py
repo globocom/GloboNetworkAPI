@@ -32,7 +32,7 @@ class CreateVipTestCase(unittest.TestCase):
         self.vip = RequisicaoVips(id = 1, ip = self.ip)
 
     def tearDown(self):
-        pass
+       patch.stopall()
 
     @mock_login
     def test_create_vip_given_user_without_permission(self):
