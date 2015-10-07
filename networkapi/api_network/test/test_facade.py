@@ -34,7 +34,7 @@ class NetworkFacadeTestCase(unittest.TestCase):
         self.mock_transaction()
 
     def tearDown(self):
-        pass
+       patch.stopall()
 
     def test_deploy_networkIPv4_configuration_given_network_already_active(self):
         self.networkv4.active = True

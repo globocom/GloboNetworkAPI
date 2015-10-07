@@ -22,7 +22,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_environment_by_id(Ambiente(id = 1))
 
     def tearDown(self):
-        pass
+        patch.stopall()
 
     @mock_login
     def test_save_pool_given_no_service_down_action_available(self):

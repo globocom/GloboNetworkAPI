@@ -2,12 +2,11 @@
 from __future__ import absolute_import, unicode_literals
 import unittest
 from django.test import Client
-from mock import patch, Mock, MagicMock
-from networkapi.ambiente.models import EnvironmentVip
+from mock import patch, Mock
 from networkapi.equipamento.models import Equipamento, TipoEquipamento
 from networkapi.infrastructure.ipaddr import IPv4Address
 from networkapi.infrastructure.xml_utils import loads
-from networkapi.ip.models import NetworkIPv4, IpNotAvailableError, Ip, IpEquipamento
+from networkapi.ip.models import NetworkIPv4, IpNotAvailableError, IpEquipamento
 from networkapi.test import mock_login
 
 XML = """
@@ -25,7 +24,7 @@ class CreateVipTestCase(unittest.TestCase):
         self.client = Client()
 
     def tearDown(self):
-        pass
+        patch.stopall()
 
     @mock_login
     def test_check_available_ip_given_user_withou_permission(self):
