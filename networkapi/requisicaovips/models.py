@@ -2281,6 +2281,8 @@ class DsrL3_to_Vip(BaseModel):
 
     id_dsrl3 = models.IntegerField(db_column='id_dsrl3')
 
+    log = logging.getLogger('DsrL3_to_Vip')
+
 
     class Meta(BaseModel.Meta):
         db_table = u'dsrl3_to_vip'
@@ -2307,3 +2309,17 @@ class DsrL3_to_Vip(BaseModel):
             cls.log.error(u'Failure to list id of DSR L3 by id_vip.')
             raise RequisicaoVipsError(
                 e, u'Failure to list Request DsrL3_to_Vip by id_vip.')
+
+    @classmethod
+    def get_all(cls):
+        """Get All Option Vip.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+            return DsrL3_to_Vip.objects.all()
+        except Exception, e:
+            cls.log.error(u'Failure to list all DsrL3_to_Vip .')
+            raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
