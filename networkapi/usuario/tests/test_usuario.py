@@ -11,7 +11,7 @@ LOG = logging.getLogger(__name__)
 
 class UsuarioTestCase(TestCase):
 
-    #fixtures = ['initial_usuario.json']
+    fixtures = ['initial_usuario.json']
 
     def setUp(self):
         self.usuario = factory.UserWithGroupFactory()
