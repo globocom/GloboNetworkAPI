@@ -23,9 +23,6 @@ class TipoEquipamentoTestCase(NetworkApiTestCase):
     def setUp(self):
         self.client = Client()
 
-    def __get_http_authorization(self):
-        return "Basic dGVzdDp0ZXN0"
-
     def tearDown(self):
         pass
 
@@ -35,7 +32,7 @@ class TipoEquipamentoTestCase(NetworkApiTestCase):
         response = self.client.post('/equipmenttype/',
                                     data=data,
                                     content_type='text/xml',
-                                    HTTP_AUTHORIZATION=self.__get_http_authorization())
+                                    HTTP_AUTHORIZATION=self.get_http_authorization())
 
         LOG.debug(response)
         expected_response = '<?xml version="1.0" encoding="UTF-8"?><networkapi versao="1.0"><equipment_type><id>1</id></equipment_type></networkapi>'

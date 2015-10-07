@@ -20,7 +20,7 @@ class NetworkApiTestCase(TestCase):
     def setUp(self):
         pass
 
-    def __get_http_authorization(self):
+    def get_http_authorization(self):
         return "Basic dGVzdDp0ZXN0"
 
     def tearDown(self):
