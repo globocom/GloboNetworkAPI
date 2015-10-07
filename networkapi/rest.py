@@ -72,7 +72,7 @@ class RestResource(object):
         """
         response = None
         try:
-            user = self.authenticate_user(request)
+            user = RestResource.authenticate_user(request)
 
             if (user is None):
                 response = self.not_authenticated()
@@ -99,7 +99,7 @@ class RestResource(object):
             self.log.error(u'Erro não esperado.')
             response = self.response_error(1)
         finally:
-            username, password, user_ldap = self.read_user_data(request)
+            username, password, user_ldap = RestResource.read_user_data(request)
             password = '****'
             if response is not None:
                 if response.status_code == 200:
@@ -128,15 +128,20 @@ class RestResource(object):
         """Trata uma requisição com o método PUT"""
         return self.not_implemented()
 
+    @classmethod
     def read_user_data(self, request):
         username = request.META.get('HTTP_NETWORKAPI_USERNAME')
         password = request.META.get('HTTP_NETWORKAPI_PASSWORD')
         user_ldap = request.META.get('HTTP_NETWORKAPI_USERLDAP')
         return username, password, user_ldap
 
+    @classmethod
     def authenticate_user(self, request):
+        if not request.user.is_anonymous():
+            return request.user
+
         user = None
-        username, password, user_ldap = self.read_user_data(request)
+        username, password, user_ldap = RestResource.read_user_data(request)
 
         if user_ldap is None:
             user = authenticate(username, password)
@@ -146,6 +151,9 @@ class RestResource(object):
         if user is None:
             credentials = BasicAuthentication().authenticate(request)
             user = credentials[0] if credentials is not None else None
+
+        if user:
+            request.user = user
 
         return user
 

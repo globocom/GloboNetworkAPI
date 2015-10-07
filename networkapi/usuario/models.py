@@ -18,7 +18,6 @@
 from __future__ import with_statement
 import hashlib
 from django.db import models
-from networkapi.grupo.models import UGrupo
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import logging
 from networkapi.models.BaseModel import BaseModel
@@ -86,7 +85,7 @@ class Usuario(BaseModel):
     nome = models.CharField(max_length=200)
     ativo = models.BooleanField()
     email = models.CharField(max_length=300)
-    grupos = models.ManyToManyField(UGrupo, through='UsuarioGrupo')
+    grupos = models.ManyToManyField('grupo.UGrupo', through='UsuarioGrupo')
     user_ldap = models.CharField(
         unique=True, max_length=45, null=True, blank=True)
 
@@ -96,12 +95,20 @@ class Usuario(BaseModel):
         db_table = u'usuarios'
         managed = True
 
+    def is_anonymous(self):
+        return False
+
     def is_authenticated(self):
         return Usuario.objects.filter(
             user=self.user.lower(),
             pwd=self.pwd,
             ativo=1
         )
+
+    @classmethod
+    def uniqueUsers(cls):
+        userlist = Usuario.objects.all().order_by('user')
+        return userlist
 
     @classmethod
     def encode_password(cls, pwd):
@@ -187,7 +194,7 @@ class Usuario(BaseModel):
 class UsuarioGrupo(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_usuarios_do_grupo')
     usuario = models.ForeignKey(Usuario, db_column='id_user')
-    ugrupo = models.ForeignKey(UGrupo, db_column='id_grupo')
+    ugrupo = models.ForeignKey('grupo.UGrupo', db_column='id_grupo')
 
     log = logging.getLogger('UsuarioGrupo')
 

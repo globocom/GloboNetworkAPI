@@ -377,14 +377,14 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
                                 vip_id, ip_id, port_real, port_vip)
                             pool_members = ServerPoolMember.objects.filter(
                                 ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                            [pool_member.delete(user)
+                            [pool_member.delete()
                              for pool_member in pool_members]
                         else:
                             command = VIP_REAL_v4_REMOVE % (
                                 vip_id, real_name, end_ip)
                             pool_members = ServerPoolMember.objects.filter(
                                 ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                            [pool_member.delete(user)
+                            [pool_member.delete()
                              for pool_member in pool_members]
                     else:
                         if new_call:
@@ -392,14 +392,14 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
                                 vip_id, ip_id, port_real, port_vip)
                             pool_members = ServerPoolMember.objects.filter(
                                 ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                            [pool_member.delete(user)
+                            [pool_member.delete()
                              for pool_member in pool_members]
                         else:
                             command = VIP_REAL_v6_REMOVE % (
                                 vip_id, real_name, end_ip)
                             pool_members = ServerPoolMember.objects.filter(
                                 ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                            [pool_member.delete(user)
+                            [pool_member.delete()
                              for pool_member in pool_members]
 
                 elif (operation == 'ena'):
@@ -473,23 +473,23 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
                     if new_call:
                         pool_members = ServerPoolMember.objects.filter(
                             ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                        [pool_member.delete(user)
+                        [pool_member.delete()
                          for pool_member in pool_members]
                     else:
                         pool_members = ServerPoolMember.objects.filter(
                             ip=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                        [pool_member.delete(user)
+                        [pool_member.delete()
                          for pool_member in pool_members]
                 else:
                     if new_call:
                         pool_members = ServerPoolMember.objects.filter(
                             ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id, server_pool__vipporttopool__port_vip=port_vip, port_real=port_real)
-                        [pool_member.delete(user)
+                        [pool_member.delete()
                          for pool_member in pool_members]
                     else:
                         pool_members = ServerPoolMember.objects.filter(
                             ipv6=ip_id, server_pool__vipporttopool__requisicao_vip__id=vip_id)
-                        [pool_member.delete(user)
+                        [pool_member.delete()
                          for pool_member in pool_members]
             # commit to rollback when script return error
             transaction.commit()

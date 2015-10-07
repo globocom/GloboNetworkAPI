@@ -102,7 +102,7 @@ class ScriptTypeAlterRemoveResource(RestResource):
 
                 try:
                     # update Script Type
-                    script_type.save(user)
+                    script_type.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Script Type.')
                     raise RoteiroError(e, u'Failed to update the Script Type.')
@@ -159,7 +159,7 @@ class ScriptTypeAlterRemoveResource(RestResource):
                             None, u'Existe roteiros associado ao tipo de roteiro %d' % script_type.id)
 
                     # remove Script Type
-                    script_type.delete(user)
+                    script_type.delete()
 
                 except TipoRoteiroHasRoteiroError, e:
                     raise e

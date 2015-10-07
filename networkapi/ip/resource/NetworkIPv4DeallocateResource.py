@@ -101,7 +101,7 @@ class NetworkIPv4DeallocateResource(RestResource):
                 destroy_cache_function(key_list_eqs, True)
                 # Business Rules
                 # Remove NetworkIPv4 (will remove all relationships by cascade)
-                network_ipv4.delete(user)
+                network_ipv4.delete()
 
                 # Return nothing
                 return self.response(dumps_networkapi({}))

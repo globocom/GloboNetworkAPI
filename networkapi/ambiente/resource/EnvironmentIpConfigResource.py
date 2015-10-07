@@ -84,7 +84,7 @@ class EnvironmentIpConfigResource(RestResource):
             config.ip_config = ip_conf
             config.environment = environment
 
-            config.save(user)
+            config.save()
 
             # Make return xml
             conf_env_map = dict()

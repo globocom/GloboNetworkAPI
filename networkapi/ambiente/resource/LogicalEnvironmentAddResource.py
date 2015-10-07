@@ -76,7 +76,7 @@ class LogicalEnvironmentAddResource(RestResource):
 
             try:
                 # save Logical Environment
-                log_env.save(user)
+                log_env.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Logical Environment.')
                 raise AmbienteError(

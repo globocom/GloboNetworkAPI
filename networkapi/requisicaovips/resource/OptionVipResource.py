@@ -81,7 +81,7 @@ class OptionVipResource(RestResource):
 
             try:
                 # Save Option Vip
-                option_vip.save(user)
+                option_vip.save()
             except Exception, e:
                 self.log.error(u'Failed to save the option vip.')
                 raise OptionVipError(e, u'Failed to save the option vip')
@@ -150,7 +150,7 @@ class OptionVipResource(RestResource):
 
                 try:
                     # Update Option Vip
-                    option_vip.save(user)
+                    option_vip.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the option vip.')
                     raise OptionVipError(e, u'Failed to update the option vip')
@@ -204,7 +204,7 @@ class OptionVipResource(RestResource):
 
                 try:
                     # Delete Option Vip
-                    option_vip.delete(user)
+                    option_vip.delete()
                 except Exception, e:
                     self.log.error(u'Failed to delete the option vip.')
                     raise OptionVipError(e, u'Failed to delete the option vip')

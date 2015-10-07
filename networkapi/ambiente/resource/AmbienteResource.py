@@ -321,7 +321,7 @@ class AmbienteResource(RestResource):
                 config.environment = environment
                 config.ip_config = ip_conf
 
-                config.save(user)
+                config.save()
 
             environment_map = dict()
             environment_map['id'] = environment.id

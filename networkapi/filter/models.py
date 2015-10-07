@@ -99,7 +99,7 @@ class Filter(BaseModel):
             cls.log.error(u'Failure to search the filter.')
             raise FilterError(e, u'Failure to search the filter.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django's method to remove filter
 
         Before removing the filter removes all relationships with equipment type.
@@ -107,9 +107,9 @@ class Filter(BaseModel):
 
         # Remove all Filter and TipoEquipamento relations
         for filter_equiptype in self.filterequiptype_set.all():
-            filter_equiptype.delete(authenticated_user)
+            filter_equiptype.delete()
 
-        super(Filter, self).delete(authenticated_user)
+        super(Filter, self).delete()
 
     def validate_filter(self, filter_map):
         '''Validates filter fields before add

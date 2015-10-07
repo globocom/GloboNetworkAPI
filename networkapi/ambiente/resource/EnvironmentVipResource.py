@@ -108,7 +108,7 @@ class EnvironmentVipResource(RestResource):
 
             try:
                 # Save Environment Vip
-                environment_vip.save(user)
+                environment_vip.save()
             except Exception, e:
                 self.log.error(u'Failed to save the environment vip.')
                 raise EnvironmentVipError(
@@ -179,7 +179,7 @@ class EnvironmentVipResource(RestResource):
 
                 try:
                     # Update Environment Vip
-                    environment_vip.save(user)
+                    environment_vip.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the environment vip.')
                     raise EnvironmentVipError(
@@ -245,7 +245,7 @@ class EnvironmentVipResource(RestResource):
 
                 try:
                     # Delete Environment Vip
-                    environment_vip.delete(user)
+                    environment_vip.delete()
                 except Exception, e:
                     self.log.error(u'Failed to delete the environment vip.')
                     raise EnvironmentVipError(

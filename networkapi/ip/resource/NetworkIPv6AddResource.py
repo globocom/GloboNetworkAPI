@@ -212,7 +212,7 @@ class NetworkIPv6AddResource(RestResource):
                 ipv6_model.block8 = ipv6[7]
                 ipv6_model.networkipv6_id = network_ipv6.id
 
-                ipv6_model.save(user)
+                ipv6_model.save()
 
                 if len(list_equip_routers_ambient) > 1:
                     multiple_ips = True
@@ -225,7 +225,7 @@ class NetworkIPv6AddResource(RestResource):
                         user, ipv6_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                        router_ip = Ipv6.get_first_available_ip6(network_ipv6.id, True)
                         ipv6_model2 = Ipv6()
                         ipv6_model2.block1 = router_ip[0]
                         ipv6_model2.block2 = router_ip[1]
@@ -236,7 +236,7 @@ class NetworkIPv6AddResource(RestResource):
                         ipv6_model2.block7 = router_ip[6]
                         ipv6_model2.block8 = router_ip[7]
                         ipv6_model2.networkipv6_id = network_ipv6.id
-                        ipv6_model2.save(user)
+                        ipv6_model2.save()
                         Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 
             # Return XML

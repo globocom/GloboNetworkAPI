@@ -1,0 +1,41 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+--
+-- Table structure for table `dhcprelay_ipv4`
+--
+DROP TABLE IF EXISTS `dhcprelay_ipv4`;
+CREATE TABLE `dhcprelay_ipv4` (
+  `id_dhcprelay_ipv4` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ip` int(10) unsigned NOT NULL,
+  `id_networkipv4` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_dhcprelay_ipv4`),
+  UNIQUE KEY `dhcprelayipv4_unique` (`id_ip`,`id_networkipv4`),
+  KEY `fk_dhcprelay_ipv4_id_ip` (`id_ip`),
+  KEY `fk_dhcprelay_ipv4_id_networkipv4` (`id_networkipv4`),
+  CONSTRAINT `fk_dhcprelay_ipv4_id_ip` FOREIGN KEY (`id_ip`) REFERENCES `ips` (`id_ip`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_dhcprelay_ipv4_id_networkipv4` FOREIGN KEY (`id_networkipv4`) REFERENCES `redeipv4` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `dhcprelay_ipv6`
+--
+DROP TABLE IF EXISTS `dhcprelay_ipv6`;
+CREATE TABLE `dhcprelay_ipv6` (
+  `id_dhcprelay_ipv6` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_ipv6` int(10) unsigned NOT NULL,
+  `id_networkipv6` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id_dhcprelay_ipv6`),
+  UNIQUE KEY `dhcprelayipv6_unique` (`id_ipv6`,`id_networkipv6`),
+  KEY `fk_dhcprelay_ipv6_id_ip` (`id_ipv6`),
+  KEY `fk_dhcprelay_ipv6_id_networkipv6` (`id_networkipv6`),
+  CONSTRAINT `fk_dhcprelay_ipv6_id_ip` FOREIGN KEY (`id_ipv6`) REFERENCES `ipsv6` (`id_ipv6`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_dhcprelay_ipv6_id_networkipv6` FOREIGN KEY (`id_networkipv6`) REFERENCES `redeipv6` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+"""
+
+SQL_DOWN = u"""
+DROP TABLE IF EXISTS `dhcprelay_ipv4`;
+DROP TABLE IF EXISTS `dhcprelay_ipv6`;
+"""

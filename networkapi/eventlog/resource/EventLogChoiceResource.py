@@ -23,7 +23,7 @@ from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
 from networkapi.eventlog.models import EventLog, EventLogError, Functionality
-
+from networkapi.usuario.models import Usuario
 
 def ValuesQuerySetToList(vqs):
     data = list()
@@ -82,7 +82,7 @@ class EventLogChoiceResource(RestResource):
             functionalities = Functionality.objects
 
             acoes = ['Alterar', 'Cadastrar', 'Remover']
-            usuarios = EventLog.uniqueUsers()
+            usuarios = Usuario.uniqueUsers()
 
             funcionalidades = functionalities.all()
 

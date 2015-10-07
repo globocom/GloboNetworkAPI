@@ -106,7 +106,7 @@ class ModelAlterRemoveResource(RestResource):
 
                 try:
                     # update Model
-                    model.save(user)
+                    model.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Model.')
                     raise EquipamentoError(e, u'Failed to update the Model.')
@@ -166,7 +166,7 @@ class ModelAlterRemoveResource(RestResource):
                             None, u"O modelo %s tem equipamento associado." % model.id)
 
                     # remove Model
-                    model.delete(user)
+                    model.delete()
 
                 except ModeloUsedByEquipamentoError, e:
                     raise e

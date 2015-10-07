@@ -82,7 +82,7 @@ class UsuarioChangePassResource(RestResource):
 
                 try:
                     # update User
-                    usr.save(user)
+                    usr.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the user.')
                     raise UsuarioError(e, u'Failed to update the user.')

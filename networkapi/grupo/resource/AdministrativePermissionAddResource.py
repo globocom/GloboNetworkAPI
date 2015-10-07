@@ -114,7 +114,7 @@ class AdministrativePermissionAddResource(RestResource):
 
             try:
                 # save Administrative Permission
-                adm_perm.save(user)
+                adm_perm.save()
             except Exception, e:
                 self.log.error(
                     u'Failed to save the administrative permission.')

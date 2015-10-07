@@ -94,7 +94,7 @@ class LogicalEnvironmentAlterRemoveResource(RestResource):
 
                 try:
                     # update Logical Environment
-                    loc_env.save(user)
+                    loc_env.save()
                 except Exception, e:
                     self.log.error(
                         u'Failed to update the Logical Environment.')
@@ -154,7 +154,7 @@ class LogicalEnvironmentAlterRemoveResource(RestResource):
                             None, u"O Ambiente Lógico %s tem ambiente associado." % loc_env.id)
 
                     # remove Logical Environment
-                    loc_env.delete(user)
+                    loc_env.delete()
 
                 except AmbienteLogicoUsedByEnvironmentError, e:
                     raise e
