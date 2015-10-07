@@ -106,6 +106,11 @@ class Usuario(BaseModel):
         )
 
     @classmethod
+    def uniqueUsers(cls):
+        userlist = Usuario.objects.all().order_by('user')
+        return userlist
+
+    @classmethod
     def encode_password(cls, pwd):
         return hashlib.md5(pwd).hexdigest()
 

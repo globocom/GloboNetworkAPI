@@ -97,12 +97,6 @@ class EventLog(models.Model):
             raise EventLogError(
                 e, u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario))
 
-    @classmethod
-    def uniqueUsers(cls):
-        from networkapi.usuario.models import Usuario
-        userlist = Usuario.objects.all().order_by('user')
-
-        return userlist
 
 class AuditRequest(models.Model):
     """
