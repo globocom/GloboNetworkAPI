@@ -94,4 +94,5 @@ class EquipmentTypeAddResource(RestResource):
             return self.response_error(1)
 
         except XMLError, e:
+            self.log.exception(e)
             return self.response_error(1)
