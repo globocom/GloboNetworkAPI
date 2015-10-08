@@ -21,11 +21,15 @@ from networkapi.api_pools.views import reals_can_associate_server_pool
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.error_message_utils import error_messages
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
-from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
+from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, \
+    EnvironmentVip
 import logging
-from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
-from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool
-from networkapi.util import is_valid_int_greater_zero_param, convert_boolean_to_int
+from networkapi.api_vip_request.serializers import RequestVipSerializer, \
+    VipPortToPoolSerializer
+from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, \
+    ServerPool
+from networkapi.util import is_valid_int_greater_zero_param, \
+    convert_boolean_to_int
 from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 
@@ -60,7 +64,8 @@ def get_by_pk(pk):
 
     pools = []
 
-    vip_to_ports_query = VipPortToPool.objects.filter(requisicao_vip=vip_request)
+    vip_to_ports_query = VipPortToPool.objects.filter(
+        requisicao_vip=vip_request)
 
     for vip_port in vip_to_ports_query:
 

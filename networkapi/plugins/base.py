@@ -170,3 +170,6 @@ class BasePlugin(object):
 				string_ok = 1
 
 		return recv_string
+
+	def getStateName(self, status):
+		return status

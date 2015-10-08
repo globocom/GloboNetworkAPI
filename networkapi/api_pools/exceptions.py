@@ -189,4 +189,16 @@ class ScriptDeleteEnvironmentPoolOptionException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute delete script for environment pool option.'
 
+class AllEquipamentMaintenance(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'All equipments is in maintenance.'
 
+    def __init__(self, msg=None):
+        self.detail = u'All equipments is in maintenance. Pool: <<%s>>' % (msg)
+
+class DiffStatesEquipament(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Poolmember has states different in equipments.'
+
+    def __init__(self, msg=None):
+        self.detail = u'The poolmember <<%s>> has states different in equipments.' % (msg)
