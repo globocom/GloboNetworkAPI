@@ -11,11 +11,11 @@ LOG = logging.getLogger(__name__)
 class NetworkApiTestCase(TestCase):
 
     fixtures = ['initial_ugrupo.json',
-                'initial_usuario.json',
                 'initial_equip_grupos.json',
                 'initial_permissions.json',
                 'initial_permissoes_administrativas.json',
-                'initial_direitos_grupos_equip.json']
+                'initial_direitos_grupos_equip.json',
+                'initial_usuario.json',]
 
     def setUp(self):
         pass
