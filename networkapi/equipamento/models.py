@@ -255,7 +255,7 @@ class Marca(BaseModel):
             pass
         
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception:
             self.log.error(u'Falha ao inserir marca de equipamento.')
             raise EquipamentoError(u'Falha ao inserir marca de equipamento.')
@@ -288,7 +288,7 @@ class Marca(BaseModel):
             if brand.modelo_set.count() > 0:
                 raise MarcaUsedByModeloError(None, u"A marca %d tem modelo associado." % brand.id)
 
-            brand.delete(authenticated_user)
+            brand.delete()
         except MarcaUsedByModeloError, e:
             raise e
         except Exception, e:
@@ -524,14 +524,14 @@ class TipoEquipamento(BaseModel):
                 pass
 
             self.tipo_equipamento = name
-            self.save(authenticated_user)
+            self.save()
             return self.id
 
         except TipoEquipamentoDuplicateNameError, e:
             self.log.error(e.message)
             raise TipoEquipamentoDuplicateNameError(e, e.message)
         except Exception, e:
-            self.log.error(u'Falha ao inserir tipo de equipamentos.')
+            self.log.exception(u'Falha ao inserir tipo de equipamentos.')
             raise EquipamentoError(
                 e, u'Falha ao inserir tipo de equipamentos.')
 
@@ -627,7 +627,7 @@ class Equipamento(BaseModel):
             self.log.debug('Equipamento com o mesmo nome não encontrado.')
 
         try:
-            self.save(authenticated_user)
+            self.save()
 
             equipment_group = EquipamentoGrupo()
             equipment_group.egrupo = egroup
@@ -674,7 +674,7 @@ class Equipamento(BaseModel):
             self.tipo_equipamento = tipo_equip
             self.nome = nome
             self.maintenance = maintenance
-            self.save(user)
+            self.save()
         except EquipamentoNameDuplicatedError, e:
             raise EquipamentoNameDuplicatedError(e.message)
         except Exception, e:
@@ -715,7 +715,7 @@ class Equipamento(BaseModel):
             self.log.error(u'Falha ao pesquisar os equipamentos.')
             raise EquipamentoError(e, u'Falha ao pesquisar os equipamentos.')
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Sobrescreve o metodo do Django para remover um equipamento.
 
         Antes de remover o equipamento remove todos os seus relacionamentos.
@@ -729,7 +729,7 @@ class Equipamento(BaseModel):
         for ip_equipment in self.ipequipamento_set.all():
             try:
                 ip = ip_equipment.ip
-                ip_equipment.delete(authenticated_user)
+                ip_equipment.delete()
             except Exception, e:
                 is_error = True
                 ipv4_error += " %s.%s.%s.%s - Vip %s ," % (
@@ -739,7 +739,7 @@ class Equipamento(BaseModel):
 
             try:
                 ip = ip_v6_equipment.ip
-                ip_v6_equipment.delete(authenticated_user)
+                ip_v6_equipment.delete()
             except Exception, e:
                 is_error = True
                 ipv6_error += " %s:%s:%s:%s:%s:%s:%s:%s - Vip %s ," % (
@@ -749,21 +749,21 @@ class Equipamento(BaseModel):
             raise IpCantBeRemovedFromVip(ipv4_error, ipv6_error)
 
         for equipment_access in self.equipamentoacesso_set.all():
-            equipment_access.delete(authenticated_user)
+            equipment_access.delete()
 
         for equipment_script in self.equipamentoroteiro_set.all():
-            equipment_script.delete(authenticated_user)
+            equipment_script.delete()
 
         for interface in self.interface_set.all():
-            interface.delete(authenticated_user)
+            interface.delete()
 
         for equipment_environment in self.equipamentoambiente_set.all():
-            equipment_environment.delete(authenticated_user)
+            equipment_environment.delete()
 
         for equipment_group in self.equipamentogrupo_set.all():
-            equipment_group.delete(authenticated_user)
+            equipment_group.delete()
 
-        super(Equipamento, self).delete(authenticated_user)
+        super(Equipamento, self).delete()
 
     def remove(self, authenticated_user, equip_id):
         '''Pesquisa e remove o equipamento.
@@ -778,7 +778,7 @@ class Equipamento(BaseModel):
 
         equipment = self.get_by_pk(equip_id)
         try:
-            equipment.delete(authenticated_user)
+            equipment.delete()
         except IpCantBeRemovedFromVip, e:
             raise e
         except Exception, e:
@@ -823,7 +823,7 @@ class EquipamentoAmbiente(BaseModel):
             pass
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir a associação equipamento/ambiente: %s/%s.' %
                            (self.equipamento.id, self.ambiente.id))
@@ -867,7 +867,7 @@ class EquipamentoAmbiente(BaseModel):
         try:
             equipenvironment = EquipamentoAmbiente.objects.get(
                 equipamento__id=equip_id, ambiente__id=environ_id)
-            equipenvironment.delete(authenticated_user)
+            equipenvironment.delete()
 
         except ObjectDoesNotExist, n:
             cls.log.error(u'Não existe um equipamento_ambiente com o equipamento = %s e o ambiente = %s.' % (
@@ -879,6 +879,10 @@ class EquipamentoAmbiente(BaseModel):
                 u'Falha ao remover uma associação entre um Equipamento e um Ambiente.')
             raise EquipamentoError(
                 e, u'Falha ao remover uma associação entre um Equipamento e um Ambiente.')
+
+    @classmethod
+    def get_routers_by_environment(self, environment_id):
+        EquipamentoAmbiente.objects.select_related('equipamento').filter(ambiente=environment_id, is_router=True)
 
 
 class EquipamentoGrupo(BaseModel):
@@ -918,7 +922,7 @@ class EquipamentoGrupo(BaseModel):
             pass
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir a associação equipamento/grupo: %d/%d.' %
                            (self.equipamento.id, self.egrupo.id))
@@ -965,7 +969,7 @@ class EquipamentoGrupo(BaseModel):
 
         if len(equipments) > 1:
             try:
-                equip_group.delete(authenticated_user)
+                equip_group.delete()
             except Exception, e:
                 cls.log.error(
                     u'Falha ao remover uma associação entre um Equipamento e um Grupo.')
@@ -1064,7 +1068,7 @@ class EquipamentoAcesso(BaseModel):
                     None, u'Já existe esta associação de equipamento e tipo de acesso cadastrada.')
 
             # Persiste a informação
-            return self.save(authenticated_user)
+            return self.save()
 
         except TipoAcesso.DoesNotExist, e:
             raise e
@@ -1119,7 +1123,7 @@ class EquipamentoAcesso(BaseModel):
             equipamento_acesso = EquipamentoAcesso.objects.get(
                 equipamento__id=id_equipamento, tipo_acesso__id=id_tipo_acesso)
 
-            return equipamento_acesso.delete(authenticated_user)
+            return equipamento_acesso.delete()
 
         except EquipamentoAcesso.DoesNotExist, e:
             raise e
@@ -1190,7 +1194,7 @@ class EquipamentoRoteiro(BaseModel):
             except ObjectDoesNotExist:
                 pass
 
-            self.save(authenticated_user)
+            self.save()
         except EquipamentoRoteiroDuplicatedError, e:
             raise e
         except Exception, e:
@@ -1212,7 +1216,7 @@ class EquipamentoRoteiro(BaseModel):
         try:
             equip_script = EquipamentoRoteiro.objects.get(
                 equipamento__id=equip_id, roteiro__id=script_id)
-            equip_script.delete(authenticated_user)
+            equip_script.delete()
 
         except EquipamentoRoteiro.DoesNotExist, n:
             cls.log.debug(u'Não existe um equipamento_roteiro com o equipamento = %s e o roteiro = %s.' % (
@@ -1256,7 +1260,7 @@ class ModeloRoteiro(BaseModel):
                         raise ModeloRoteiroDuplicatedError(None, u'Modelo id %s já está associado a um roteiro.' % str(self.modelo.id))
             except ObjectDoesNotExist:
                 pass
-            self.save(authenticated_user)
+            self.save()
         except ModeloRoteiroDuplicatedError, e:
             raise e
         except Exception, e:
@@ -1278,7 +1282,7 @@ class ModeloRoteiro(BaseModel):
     def remover(cls, authenticated_user, model_id, script_id):
         try:
             model_script = ModeloRoteiro.objects.get(modelo__id=model_id, roteiro__id=script_id)
-            model_script.delete(authenticated_user)
+            model_script.delete()
 
         except ObjectDoesNotExist, n:
             cls.log.debug(u'Não existe um modelo_roteiro com o modelo = %s e o roteiro = %s.' % (model_id, script_id))

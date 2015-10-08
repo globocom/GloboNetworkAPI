@@ -98,7 +98,7 @@ class RequestVipRuleResource(RestResource):
                 # remove the rule if is a vip rule and this rule is not applied
                 if vip.rule:
                     if rule_applied != vip.rule and vip.rule.vip:
-                        vip.rule.delete(user)
+                        vip.rule.delete()
 
                 # duplicate rule with new block
                 new_rule_content.id = None
@@ -124,7 +124,7 @@ class RequestVipRuleResource(RestResource):
                 new_rule_content.name = 'regra_' + host + diff_name
                 new_rule_content.vip = vip
                 new_rule_content.environment = environment
-                new_rule_content.save(user)
+                new_rule_content.save()
 
             new_content = '\n'.join(d['content'] for d in block_in_rules)
 
@@ -134,14 +134,14 @@ class RequestVipRuleResource(RestResource):
                 rule_content.content = block_in_rules[i]['content']
                 rule_content.order = i
                 rule_content.rule = new_rule_content
-                rule_content.save(user)
+                rule_content.save()
 
             if override or not vip.l7_filter:
                 # update filter and rule with new block
                 vip.l7_filter = new_content
                 vip.rule = new_rule_content
                 vip.filter_valid = True
-                vip.save(user)
+                vip.save()
             else:
                 self.log.error(
                     u'Block can not be added because there is already a rule to apply, and the value of zero is overwritten.')

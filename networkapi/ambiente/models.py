@@ -556,7 +556,7 @@ class EnvironmentVip(BaseModel):
         self.ambiente_p44_txt = ambiente_p44_txt
         self.description = description
 
-    def delete(self, authenticated_user):
+    def delete(self):
         '''Override Django's method to remove environment vip
 
         Before removing the environment vip removes all relationships with option vip.
@@ -565,9 +565,9 @@ class EnvironmentVip(BaseModel):
 
         # Remove all EnvironmentVIP OptionVip related
         for option_environment in OptionVipEnvironmentVip.objects.filter(environment=self.id):
-            option_environment.delete(authenticated_user)
+            option_environment.delete()
 
-        super(EnvironmentVip, self).delete(authenticated_user)
+        super(EnvironmentVip, self).delete()
 
     def show_environment_vip(self):
         return "%s - %s - %s" % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
@@ -724,7 +724,7 @@ class Ambiente(BaseModel):
                     raise FilterNotFoundError(
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
 
-            return self.save(authenticated_user)
+            return self.save()
 
         except FilterNotFoundError, e:
             raise e
@@ -842,7 +842,7 @@ class Ambiente(BaseModel):
             try:
                 if vlan.ativada:
                     vlan.remove(authenticated_user)
-                vlan.delete(authenticated_user)
+                vlan.delete()
             except VlanCantDeallocate, e:
                 raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
             except IpCantBeRemovedFromVip, e:
@@ -876,7 +876,7 @@ class Ambiente(BaseModel):
 
         # Remove the environment
         try:
-            environment.delete(authenticated_user)
+            environment.delete()
         except Exception, e:
             cls.log.error(u'Falha ao remover o Ambiente.')
             raise AmbienteError(e, u'Falha ao remover o Ambiente.')
@@ -975,9 +975,9 @@ class IPConfig(BaseModel):
             config_environment = ConfigEnvironment.objects.filter(
                 ip_config=ip_config, environment=environment_id)
 
-            config_environment.get().delete(authenticated_user)
+            config_environment.get().delete()
 
-            ip_config.get().delete(authenticated_user)
+            ip_config.get().delete()
 
             return ip_config
 
@@ -1086,7 +1086,7 @@ class ConfigEnvironment(BaseModel):
         try:
             ces = ConfigEnvironment.objects.filter(environment=id_environment)
             for ce in ces:
-                ce.delete(authenticated_user)
+                ce.delete()
         except ObjectDoesNotExist, e:
             raise ConfigEnvironmentNotFoundError(
                 e, u'Can not find a ConfigEnvironment with Environment ID = %s.' % id_environment)
@@ -1099,7 +1099,7 @@ class ConfigEnvironment(BaseModel):
             raise ConfigEnvironmentError(
                 e, u'Error removing ConfigEnvironment.')
 
-    def save(self, authenticated_user):
+    def save(self):
         '''
             Save ConfigEnvironment
 
@@ -1107,7 +1107,7 @@ class ConfigEnvironment(BaseModel):
         '''
         try:
 
-            super(ConfigEnvironment, self).save(authenticated_user)
+            super(ConfigEnvironment, self).save()
 
         except IntegrityError, e:
             self.log.error(u'Error saving ConfigEnvironment: %r' % str(e))

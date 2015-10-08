@@ -55,7 +55,7 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
     except ObjectDoesNotExist:
         hc = Healthcheck(identifier=identifier, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request,
                          healthcheck_expect=healthcheck_expect, destination=healthcheck_destination)
-        hc.save(user)
+        hc.save()
 
     #Get the fisrt occureny and warn if redundant HCs are present
     except MultipleObjectsReturned, e:
@@ -76,113 +76,125 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
     if id:
         sp = ServerPool.objects.get(id=id)
 
-        # storage old healthcheck , lb method and service-down-action
+        # store old healthcheck,lb method and service-down-action
         old_servicedownaction = sp.servicedownaction
         old_identifier = sp.identifier
         old_healthcheck = Healthcheck.objects.get(id=sp.healthcheck.id)
         old_lb_method =  sp.lb_method
         old_maxconn = sp.default_limit
 
-        #valid change environment
+        #validate change of environment
         if sp.environment and sp.environment.id != env.id:
-            if sp.pool_created:
-                raise exceptions.UpdateEnvironmentPoolCreatedException()
-            del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member)
-            vip = sp.vipporttopool_set.count()
-            if vip > 0:
-                raise exceptions.UpdateEnvironmentVIPException()
-
-            if len(del_smp) > 0:
-                raise exceptions.UpdateEnvironmentServerPoolMemberException()
+            validate_change_of_environment(id_pool_member, sp)
 
         #Pool already created, it is not possible to change Pool Identifier
         if(old_identifier != identifier and sp.pool_created):
             raise exceptions.CreatedPoolIdentifierException()
 
-        sp.default_port = default_port
-        sp.environment = env
-        sp.default_limit = old_maxconn
-        sp.healthcheck = old_healthcheck
-        sp.lb_method = old_lb_method
-        sp.identifier = identifier
-        sp.save(user)
+        update_pool_fields(default_port, env, identifier, old_healthcheck, old_lb_method, old_maxconn, sp, user)
 
-        sp.default_limit = maxconn
-        sp.save(user)
+        update_pool_maxconn(maxconn, old_maxconn, sp, user)
 
-        #If exists pool member, checks if all them have the same maxconn
-        #before changing default maxconn of pool
-        if(len(sp.serverpoolmember_set.all()) > 0):
-            if(old_maxconn != sp.default_limit and sp.pool_created):
-
-                for serverpoolmember in sp.serverpoolmember_set.all():
-                    if serverpoolmember.limit != old_maxconn:
-                        raise exceptions.ScriptAlterLimitPoolDiffMembersException()
-                    else:
-                        serverpoolmember.limit = maxconn
-                        serverpoolmember.save(user)
-
-                transaction.commit()
-                command = settings.POOL_MANAGEMENT_LIMITS % (sp.id)
-                code, _, _ = exec_script(command)
-                if code != 0:
-                    sp.default_limit = old_maxconn
-                    for serverpoolmember in sp.serverpoolmember_set.all():
-                        serverpoolmember.limit = old_maxconn
-                        serverpoolmember.save(user)
-
-                    sp.save(user)
-                    transaction.commit()
-                    raise exceptions.ScriptAlterLimitPoolException()
-
-        #Applies new healthcheck in pool
-        #Todo - new method
-        sp.healthcheck = hc
-        sp.save(user)
-        if(old_healthcheck.id != hc.id and sp.pool_created):
-            transaction.commit()
-            command = settings.POOL_HEALTHCHECK % (sp.id)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                sp.healthcheck = old_healthcheck
-                sp.save(user)
-                transaction.commit()
-                raise exceptions.ScriptCreatePoolException()
+        apply_health_check(hc, old_healthcheck, sp, user)
             
-        #Applies new lb method in pool
-        #Todo - new method
-        sp.lb_method = balancing
-        sp.save(user)
-        if(old_lb_method != sp.lb_method and sp.pool_created):
-            transaction.commit()
-            command = settings.POOL_MANAGEMENT_LB_METHOD % (sp.id)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                sp.lb_method = old_lb_method
-                sp.save(user)
-                transaction.commit()
-                raise exceptions.ScriptCreatePoolException()
+        update_load_balancing_method(balancing, old_lb_method, sp, user)
 
-        #Applies new service-down-action in pool
-        #Todo - new method
-        sp.servicedownaction = servicedownaction
-        sp.save(user)
-        if(old_servicedownaction != sp.servicedownaction and sp.pool_created):
-            transaction.commit()
-            command = settings.POOL_SERVICEDOWNACTION % (sp.id)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                sp.servicedownaction = old_servicedownaction
-                sp.save(user)
-                transaction.commit()
-                raise exceptions.ScriptAlterServiceDownActionException()
-
+        apply_service_down_action(old_servicedownaction, servicedownaction, sp, user)
     else:
         sp = ServerPool(identifier=identifier, default_port=default_port, healthcheck=hc,
                         environment=env, pool_created=False, lb_method=balancing, default_limit=maxconn, servicedownaction=servicedownaction)
-        sp.save(user)
+        sp.save()
 
     return sp, (old_healthcheck.id if old_healthcheck else None)
+
+def update_pool_fields(default_port, env, identifier, old_healthcheck, old_lb_method, old_maxconn, sp, user):
+    sp.default_port = default_port
+    sp.environment = env
+    sp.default_limit = old_maxconn
+    sp.healthcheck = old_healthcheck
+    sp.lb_method = old_lb_method
+    sp.identifier = identifier
+    sp.save()
+
+def validate_change_of_environment(id_pool_member, sp):
+    if sp.pool_created:
+        raise exceptions.UpdateEnvironmentPoolCreatedException()
+    del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member)
+    vip = sp.vipporttopool_set.count()
+    if vip > 0:
+        raise exceptions.UpdateEnvironmentVIPException()
+    if len(del_smp) > 0:
+        raise exceptions.UpdateEnvironmentServerPoolMemberException()
+
+
+def update_pool_maxconn(maxconn, old_maxconn, sp, user):
+    sp.default_limit = maxconn
+    sp.save()
+
+    #If pool member  exists, checks if all of them have the same maxconn before changing its default maxconn
+    if(len(sp.serverpoolmember_set.all()) > 0):
+        if(old_maxconn != sp.default_limit and sp.pool_created):
+
+            for serverpoolmember in sp.serverpoolmember_set.all():
+                if serverpoolmember.limit != old_maxconn:
+                    raise exceptions.ScriptAlterLimitPoolDiffMembersException()
+                else:
+                    serverpoolmember.limit = maxconn
+                    serverpoolmember.save()
+
+            transaction.commit()
+            command = settings.POOL_MANAGEMENT_LIMITS % (sp.id)
+            code, _, _ = exec_script(command)
+            if code != 0:
+                sp.default_limit = old_maxconn
+                for serverpoolmember in sp.serverpoolmember_set.all():
+                    serverpoolmember.limit = old_maxconn
+                    serverpoolmember.save()
+
+                sp.save()
+                transaction.commit()
+                raise exceptions.ScriptAlterLimitPoolException()
+
+def apply_health_check(hc, old_healthcheck, sp, user):
+    # Applies new healthcheck in pool
+    sp.healthcheck = hc
+    sp.save()
+    if (old_healthcheck.id != hc.id and sp.pool_created):
+        transaction.commit()
+        command = settings.POOL_HEALTHCHECK % (sp.id)
+        code, _, _ = exec_script(command)
+        if code != 0:
+            sp.healthcheck = old_healthcheck
+            sp.save()
+            transaction.commit()
+            raise exceptions.ScriptCreatePoolException()
+
+def apply_service_down_action(old_servicedownaction, servicedownaction, sp, user):
+    # Applies new service-down-action in pool
+    sp.servicedownaction = servicedownaction
+    sp.save()
+    if (old_servicedownaction != sp.servicedownaction and sp.pool_created):
+        transaction.commit()
+        command = settings.POOL_SERVICEDOWNACTION % (sp.id)
+        code, _, _ = exec_script(command)
+        if code != 0:
+            sp.servicedownaction = old_servicedownaction
+            sp.save()
+            transaction.commit()
+            raise exceptions.ScriptAlterServiceDownActionException()
+
+def update_load_balancing_method(balancing, old_lb_method, sp, user):
+    sp.lb_method = balancing
+    sp.save()
+    if (old_lb_method != sp.lb_method and sp.pool_created):
+        transaction.commit()
+        command = settings.POOL_MANAGEMENT_LB_METHOD % (sp.id)
+        code, _, _ = exec_script(command)
+        if code != 0:
+            sp.lb_method = old_lb_method
+            sp.save()
+            transaction.commit()
+            raise exceptions.ScriptCreatePoolException()
 
 
 def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight, id_pool_member, id_equips):
@@ -222,97 +234,123 @@ def prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, we
     return list_server_pool_member
 
 
-def save_server_pool_member(user, sp, list_server_pool_member):
+def save_server_pool_member(user, pool, list_server_pool_member):
 
     list_pool_member = list()
     old_priorities_list = list()
-    # Remove empty values from list
-    id_pool_member_noempty = [x['id_pool_member'] for x in list_server_pool_member if x['id_pool_member'] != '']
 
-    #exclue server pool member
-    del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_noempty)
-    if del_smp:
-        for obj in del_smp:
-
-            obj.delete(user)
-
-            #execute script remove real if pool already created
-            #commit transaction after each successful script call
-            if sp.pool_created:
-                command = settings.POOL_REAL_REMOVE % (obj.server_pool_id, obj.ip_id if obj.ip else obj.ipv6_id, obj.port_real)
-                code, _, _ = exec_script(command)
-                if code != 0:
-                    raise exceptions.ScriptCreatePoolException()
-                transaction.commit()
+    pool_members_to_be_removed = get_pool_members_to_be_removed(list_server_pool_member)
+    remove_pool_members(pool_members_to_be_removed, pool, user)
 
     if list_server_pool_member:
         apply_new_priorities = False
+
         for dic in list_server_pool_member:
-        #
-            ip_object = None
-            ipv6_object = None
-            if len(dic['ip']) <= 15:
-                ip_object = Ip.get_by_pk(dic['id'])
-            else:
-                ipv6_object = Ipv6.get_by_pk(dic['id'])
+            ip_object, ipv6_object = get_ip_objects(dic)
 
-            id_pool = sp.id
-            id_ip = ip_object and ip_object.id or ipv6_object and ipv6_object.id
-            port_ip = dic['port_real']
+            pool_member_id = dic['id_pool_member']
+            if pool_member_id:
+                pool_member = ServerPoolMember.objects.get(id=pool_member_id)
+                old_member_priority = pool_member.priority
+                old_priorities_list.append(old_member_priority)
 
-            if dic['id_pool_member']:
-                spm = ServerPoolMember.objects.get(id=dic['id_pool_member'])
-                spm.server_pool = sp
-                spm.identifier = dic['nome_equips']
-                spm.ip = ip_object
-                spm.ipv6 = ipv6_object
-                spm.weight = dic['weight']
-                spm.limit = sp.default_limit
-                old_spm_priority = spm.priority
-                old_priorities_list.append(old_spm_priority)
-                spm.priority = dic['priority']
-                spm.port_real = dic['port_real']
-                spm.save(user)
-                if(old_spm_priority != spm.priority and sp.pool_created):
+                update_pool_member(pool, pool_member, dic, ip_object, ipv6_object, user)
+
+                if(old_member_priority != pool_member.priority and pool.pool_created):
                     apply_new_priorities = True
             else:
-                spm = ServerPoolMember(server_pool=sp, identifier=dic['nome_equips'], ip=ip_object, ipv6=ipv6_object,
-                                       priority=dic['priority'], weight=dic['weight'], limit=sp.default_limit,
-                                       port_real=dic['port_real'])
-                spm.save(user)
+                pool_member = ServerPoolMember()
+                update_pool_member(pool, pool_member, dic, ip_object, ipv6_object, user)
+                pool_member.save()
 
                 old_priorities_list.append(dic['priority'])
 
                 #execute script to create real if pool already created
                 #commits transaction. Rolls back if script returns error
-                if sp.pool_created:
-                    transaction.commit()
-                    #def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
-                    #spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
-                    command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
-                    code, _, _ = exec_script(command)
-                    if code != 0:
-                        spm.delete(user)
-                        transaction.commit()
-                        raise exceptions.ScriptCreatePoolException()
+                if pool.pool_created:
+                    ip_id = ip_object and ip_object.id or ipv6_object and ipv6_object.id
+                    deploy_pool_member_config(ip_id, pool.id, dic['port_real'], pool_member, user)
 
-                #if sp.healthcheck_id:
-                #    spm.healthcheck = sp.healthcheck
-            list_pool_member.append(spm)
+            list_pool_member.append(pool_member)
 
         #Applies new priority in pool - only 1 script run for all members
         if(apply_new_priorities):
-            transaction.commit()
-            command = settings.POOL_MEMBER_PRIORITIES % (sp.id)
-            code, _, _ = exec_script(command)
-            if code != 0:
-                for i in len(old_priorities_list):
-                    list_pool_member[i].priority = old_priorities_list[i]
-                    list_pool_member[i].save(user)
-                transaction.commit()
-                raise exceptions.ScriptAlterPriorityPoolMembersException()
+            apply_priorities(list_pool_member, old_priorities_list, pool, user)
 
     return list_pool_member
+
+
+def update_pool_member(pool, pool_member, dic, ip_object, ipv6_object, user):
+    pool_member.server_pool = pool
+    pool_member.limit = pool.default_limit
+    pool_member.ip = ip_object
+    pool_member.ipv6 = ipv6_object
+    pool_member.identifier = dic['nome_equips']
+    pool_member.weight = dic['weight']
+    pool_member.priority = dic['priority']
+    pool_member.port_real = dic['port_real']
+    pool_member.save()
+
+
+def get_ip_objects(dic):
+    ip_object = None
+    ipv6_object = None
+    if len(dic['ip']) <= 15:
+        ip_object = Ip.get_by_pk(dic['id'])
+    else:
+        ipv6_object = Ipv6.get_by_pk(dic['id'])
+    return ip_object, ipv6_object
+
+
+def get_pool_members_to_be_removed(list_server_pool_member):
+    # Remove empty values from list
+    return [x['id_pool_member'] for x in list_server_pool_member if x['id_pool_member'] != '']
+
+
+def remove_pool_members(id_pool_member_noempty, sp, user):
+    # exclue server pool member
+    del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_noempty)
+    if del_smp:
+        for obj in del_smp:
+
+            obj.delete()
+
+            # execute script remove real if pool already created
+            # commit transaction after each successful script call
+            if sp.pool_created:
+                command = settings.POOL_REAL_REMOVE % (
+                obj.server_pool_id, obj.ip_id if obj.ip else obj.ipv6_id, obj.port_real)
+                code, _, _ = exec_script(command)
+                if code != 0:
+                    raise exceptions.ScriptCreatePoolException()
+                transaction.commit()
+
+
+def deploy_pool_member_config(id_ip, id_pool, port_ip, spm, user):
+    transaction.commit()
+    # def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
+    # spm.prepare_and_save(sp, ip_object, IP_VERSION.IPv4[1], dic['priority'], dic['weight'], dic['port_real'], user, True)
+    command = settings.POOL_REAL_CREATE % (id_pool, id_ip, port_ip)
+    code, _, _ = exec_script(command)
+    if code != 0:
+        spm.delete()
+        transaction.commit()
+        raise exceptions.ScriptCreatePoolException()
+
+        # if sp.healthcheck_id:
+        #    spm.healthcheck = sp.healthcheck
+
+
+def apply_priorities(list_pool_member, old_priorities_list, sp, user):
+    transaction.commit()
+    command = settings.POOL_MEMBER_PRIORITIES % (sp.id)
+    code, _, _ = exec_script(command)
+    if code != 0:
+        for i in range(0, len(old_priorities_list)):
+            list_pool_member[i].priority = old_priorities_list[i]
+            list_pool_member[i].save()
+        transaction.commit()
+        raise exceptions.ScriptAlterPriorityPoolMembersException()
 
 
 def exec_script_check_poolmember_by_pool(pool_id):
@@ -574,13 +612,13 @@ def save_option_pool(user, type, description):
 
         sp.type = type
         sp.description = description
-        sp.save(user)
+        sp.save()
 
 
     else:'''
 
     sp = OptionPool(type=type, name=description)
-    sp.save(user)
+    sp.save()
 
     return sp
 
@@ -592,7 +630,7 @@ def update_option_pool(user, option_id, type, description):
     sp.type = type
     sp.name=description
 
-    sp.save(user)
+    sp.save()
 
     return sp
 
@@ -604,9 +642,9 @@ def delete_option_pool(user, option_id):
     environment_options = environment_options.filter(option=option_id)
 
     for eop in environment_options:
-        eop.delete(user)
+        eop.delete()
 
-    pool_option.delete(user)
+    pool_option.delete()
 
     return option_id
 
@@ -624,7 +662,7 @@ def save_environment_option_pool(user, option_id, environment_id):
 
     ope.environment=env
     ope.option=op
-    ope.save(user)
+    ope.save()
 
     return ope
 
@@ -638,14 +676,14 @@ def update_environment_option_pool(user, environment_option_id, option_id, envir
     ope.option = op
     ope.environment = env
 
-    ope.save(user)
+    ope.save()
 
     return ope
 
 def delete_environment_option_pool(user, environment_option_id):
 
     ope=OptionPoolEnvironment.objects.get(id=environment_option_id)
-    ope.delete(user)
+    ope.delete()
 
     return environment_option_id
 

@@ -76,7 +76,7 @@ class GroupL3AddResource(RestResource):
 
             try:
                 # save Group l3
-                l3_group.save(user)
+                l3_group.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Group l3.')
                 raise AmbienteError(e, u'Failed to save the Group l3.')

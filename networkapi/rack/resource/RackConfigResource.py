@@ -347,7 +347,7 @@ class RackConfigResource(RestResource):
             var = gera_config(rack)
 
             rack.__dict__.update(id=rack_id, config=var)
-            rack.save(user) 
+            rack.save()
 
             success_map = dict()
             success_map['rack_conf'] = var

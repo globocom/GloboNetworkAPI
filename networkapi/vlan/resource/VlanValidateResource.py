@@ -77,7 +77,7 @@ class VlanValidateResource(RestResource):
                 else:
                     vlan.acl_valida_v6 = 1
 
-                vlan.save(user)
+                vlan.save()
 
                 return self.response(dumps_networkapi({}))
 

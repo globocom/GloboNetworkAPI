@@ -114,13 +114,12 @@ class Ipv4GetAvailableForVipResource(RestResource):
                                     new_ip_equip = IpEquipamento()
                                     new_ip_equip.ip = ip_new
                                     new_ip_equip.equipamento = equipment
-                                    new_ip_equip.save(user)
+                                    new_ip_equip.save()
 
                                 balanceador_found_flag = True
 
                     if not balanceador_found_flag:
-                        cont_balanceador_not_found = cont_balanceador_not_found + \
-                            1
+                        cont_balanceador_not_found = cont_balanceador_not_found + 1
                     else:
                         break
 

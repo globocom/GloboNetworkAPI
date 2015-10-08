@@ -168,7 +168,7 @@ class Rack(BaseModel):
             pass
 
         try:
-            return self.save(authenticated_user)
+            return self.save()
         except Exception, e:
             self.log.error(u'Falha ao inserir Rack.')
             raise RackError(e, u'Falha ao inserir Rack.')
@@ -236,7 +236,7 @@ class EnvironmentRack(BaseModel):
             pass
 
         try:
-            self.save(authenticated_user)
+            self.save()
         except Exception, e:
             self.log.error(u'Error trying to insert EnvironmentRack: %s/%s.' %
                            (self.rack.id, self.ambiente.id))

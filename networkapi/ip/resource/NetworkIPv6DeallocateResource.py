@@ -98,7 +98,7 @@ class NetworkIPv6DeallocateResource(RestResource):
                     ipv6equipament__ip__networkipv6=network_ipv6).values_list('id', flat=True)
                 destroy_cache_function(key_list_eqs, True)
                 # Remove NetworkIPv6 (will remove all relationships by cascade)
-                network_ipv6.delete(user)
+                network_ipv6.delete()
 
                 # Return nothing
                 return self.response(dumps_networkapi({}))

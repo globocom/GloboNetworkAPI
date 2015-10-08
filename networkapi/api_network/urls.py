@@ -5,14 +5,9 @@ from networkapi.api_network.views import DHCPRelayIPv4ByPkView, DHCPRelayIPv6ByP
 	DHCPRelayIPv4View, DHCPRelayIPv6View
 '''
 TODO (v4 and v6)
-GET /api/network - list networks
 POST /api/network - allocate network
-GET /api/vlan/ID - list network
 DELETE /api/vlan/ID - remove network
 PUT /api/network/ID - modify network
-
-POST /api/network/ID/equipments - deploy config (L3) on switches
-DELETE /api/network/ID/equipments - remove config (L3) from switches
 '''
 
 urlpatterns = patterns('networkapi.api_network.views',

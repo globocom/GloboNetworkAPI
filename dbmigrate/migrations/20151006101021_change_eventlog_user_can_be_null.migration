@@ -1,0 +1,13 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `event_log` MODIFY id_user int(10) unsigned NULL;
+
+"""
+
+SQL_DOWN = u"""
+
+UPDATE `event_log` set id_user = 3 WHERE id_user is null;
+
+ALTER TABLE `event_log` MODIFY id_user int(10) unsigned NOT NULL;
+"""

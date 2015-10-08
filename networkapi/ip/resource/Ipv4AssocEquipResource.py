@@ -227,7 +227,7 @@ class Ipv4AssocEquipResource(RestResource):
 
                     ## Filter case 2 - end ##
 
-                    ip_equipment.save(user)
+                    ip_equipment.save()
 
                     # Makes Environment Equipment association
                     try:
