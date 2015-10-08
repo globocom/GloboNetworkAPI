@@ -25,7 +25,6 @@ XML = """
 class NetworkAddTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.patches = []
         self.client = Client()
         self.mock_user_has_permission(True)
 
