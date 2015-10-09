@@ -23,11 +23,13 @@ from rest_framework import status
 from rest_framework.response import Response
 import logging
 from networkapi.api_vlan.permissions import Read, Write
-from networkapi.system.facade import save_variable, get_all_variables
+from networkapi.system.facade import save_variable, get_all_variables, delete_variable, get_by_name
+from networkapi.system.exceptions import *
 from networkapi.system.serializers import VariableSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.system import exceptions
 from django.core.exceptions import ObjectDoesNotExist
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 
@@ -44,6 +46,17 @@ def save(request):
         value = request.DATA.get('value')
         description = request.DATA.get('description')
 
+        var = False
+
+        try:
+            get_by_name(name)
+            var = True
+        except:
+            pass
+
+        if var:
+            raise exceptions.VariableDuplicateNotExistException()
+
         variable = save_variable(request.user, name, value, description)
 
         data = dict()
@@ -52,7 +65,8 @@ def save(request):
 
         return Response(data, status=status.HTTP_201_CREATED)
 
-    except (exceptions.InvalidIdNameException, exceptions.InvalidIdValueException)as exception:
+    except (exceptions.InvalidIdNameException, exceptions.InvalidIdValueException,
+            exceptions.VariableDuplicateNotExistException)as exception:
         log.exception(exception)
         raise exception
 
@@ -78,3 +92,26 @@ def get_all(request):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
+
+@api_view(['DELETE'])
+@permission_classes((IsAuthenticated, Write))
+def delete(request, variable_id):
+    try:
+        log.info("DELETE VARIABLE")
+
+        if not is_valid_int_greater_zero_param(variable_id, False):
+            raise api_exceptions.ValidationException('Variable id invalid.')
+
+        delete_variable(request.user, variable_id)
+        data = dict()
+        data['variable'] = "ok"
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise exceptions.VariableDoesNotExistException()
+
+    except Exception, exception:
+        log.exception(exception)
+        raise api_exceptions.ValidationException('Variable id invalid.')

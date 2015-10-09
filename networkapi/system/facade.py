@@ -18,6 +18,8 @@
 import logging
 from networkapi.system.models import Variable
 from networkapi.system import exceptions
+from django.core.exceptions import ObjectDoesNotExist
+from networkapi.api_rest import exceptions as api_exceptions
 
 log = logging.getLogger(__name__)
 
@@ -42,3 +44,24 @@ def get_all_variables():
 
     return variables
 
+def get_by_id(variable_id):
+    try:
+        var = Variable.objects.filter(id=variable_id).uniqueResult()
+    except ObjectDoesNotExist:
+        raise exceptions.VariableDoesNotExistException()
+    return var
+
+def get_by_name(name):
+    try:
+        var = Variable.objects.filter(name=name).uniqueResult()
+    except ObjectDoesNotExist:
+        raise exceptions.VariableDoesNotExistException()
+    return var
+
+def delete_variable(user, variable_id):
+    try:
+        variable = get_by_id(variable_id)
+        variable.delete(user)
+    except Exception, exception:
+        log.exception(exception)
+        raise api_exceptions.NetworkAPIException()
