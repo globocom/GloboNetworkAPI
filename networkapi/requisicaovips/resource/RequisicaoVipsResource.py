@@ -29,7 +29,7 @@ from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLErro
 from networkapi.ip.models import Ip, IpError, IpNotFoundError, \
     IpNotFoundByEquipAndVipError
 import logging
-from networkapi.requisicaovips.models import RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
+from networkapi.requisicaovips.models import OptionVip, RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
     InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
     InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError, \
@@ -116,7 +116,7 @@ def insert_vip_request(vip_map, user):
     if code is not None:
         return code, vip
 
-    # get environmentVip dor validation dynamic heathcheck
+    # get environmentVip for validation dynamic heathcheck
 
     finalidade = vip_map.get('finalidade')
     cliente = vip_map.get('cliente')
@@ -141,11 +141,23 @@ def insert_vip_request(vip_map, user):
         raise EnvironmentVipNotFoundError(
             e, 'The fields finality or client or ambiente is None')
 
+
     # Valid HealthcheckExpect
     vip_map, vip, code = vip.valid_values_healthcheck(
         vip_map, vip, environment_vip)
     if code is not None:
         return code, vip
+
+
+    #get traffic return
+    #traffic_return=OptionVip.objects.filter(nome_opcao_txt=traffic)
+    traffic_id=vip_map.get('traffic_id')
+    if traffic_id is None:
+        traffic=OptionVip.get_all_trafficreturn(environment_vip.id)
+        traffic=traffic.filter(nome_opcao_txt='Normal')
+        traffic_id=traffic.id
+    vip.traffic_return=OptionVip()
+    vip.traffic_return.id=traffic_id
 
     # Valid maxcon
     if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
@@ -198,6 +210,14 @@ def update_vip_request(vip_id, vip_map, user):
     else:
         ip_id = int(ip_id)
 
+    traffic_id = vip_map.get('traffic_id')
+    if not is_valid_int_greater_zero_param(traffic_id):
+        log.error(u'The traffic_id parameter is not a valid value: %s.', traffic_id)
+        raise InvalidValueError(None, 'traffic_id', traffic_id)
+    else:
+        traffic_id = int(traffic_id)
+
+
     validated = vip_map.get('validado')
     if validated is None:
         return 246
@@ -218,6 +238,7 @@ def update_vip_request(vip_id, vip_map, user):
     else:
         return 245
 
+
     # Valid maxcon
     if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
         log.error(
@@ -230,7 +251,8 @@ def update_vip_request(vip_id, vip_map, user):
                                  healthcheck_expect_id=healthcheck_expect_id,
                                  ip_id=ip_id,
                                  vip_criado=vip_created,
-                                 validado=validated)
+                                 validado=validated,
+                                 traffic_return_id=traffic_id)
 
     if code is not None:
         return code

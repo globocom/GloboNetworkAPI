@@ -11,12 +11,15 @@ from networkapi.requisicaovips.resource.OptionVipGetHealthcheckByEVipResource im
 from networkapi.requisicaovips.resource.OptionVipGetPersistenciaByEVipResource import OptionVipGetPersistenciaByEVipResource
 from networkapi.requisicaovips.resource.OptionVipGetTimeoutByEVipResource import OptionVipGetTimeoutByEVipResource
 from networkapi.requisicaovips.resource.RequestVipGetRulesByEVipResource import RequestVipGetRulesByEVipResource
+from networkapi.requisicaovips.resource.OptionVipGetTrafficReturnByEVipResource import OptionVipGetTrafficReturnByEVipResource
+
 
 opt_vip_timeout = OptionVipGetTimeoutByEVipResource()
 opt_vip_grupocache = OptionVipGetGrupoCacheByEVipResource()
 opt_vip_persistencia = OptionVipGetPersistenciaByEVipResource()
 opt_vip_balanceamento = OptionVipGetBalanceamentoByEVipResource()
 opt_vip_healthcheck = OptionVipGetHealthcheckByEVipResource()
+opt_vip_trafficreturn = OptionVipGetTrafficReturnByEVipResource()
 environment_vip_finality = EnvironmentVipGetFinalityResource()
 environment_vip_cliente_txt = EnvironmentVipGetClienteTxtResource()
 environment_vip_ambientep44_txt = EnvironmentVipGetAmbienteP44TxtResource()
@@ -40,5 +43,8 @@ urlpatterns = patterns('',
     url(r'^get/rules/(?P<id_evip>[^/]+)(?:/(?P<id_vip>[^/]+))?/$', environment_vip_rules.handle_request,
         name='environment-vip.get.rules'),
     url(r'^get/healthcheck/(?P<id_evip>[^/]+)/$', opt_vip_healthcheck.handle_request,
-        name='environment-vip.get.healthcheck')
+        name='environment-vip.get.healthcheck'),
+    url(r'^get/trafficreturn/(?P<id_evip>[^/]+)/$', opt_vip_trafficreturn.handle_request,
+        name='environment-vip.get.trafficreturn')
+
 )

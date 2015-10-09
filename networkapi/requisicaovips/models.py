@@ -133,6 +133,11 @@ class InvalidPersistenciaValueError(RequisicaoVipsError):
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+class InvalidTrafficReturnValueError(RequisicaoVipsError):
+    """Retorna exceção quando o valor da variável traffic return é inválido."""
+
+    def __init__(self, cause, message=None):
+        RequisicaoVipsError.__init__(self, cause, message)
 
 class InvalidHealthcheckTypeValueError(RequisicaoVipsError):
     """Retorna exceção quando o valor da variável healthcheck_type é inválido."""
@@ -361,6 +366,30 @@ class OptionVip(BaseModel):
             raise OptionVipError(
                 e, u'Failure to list all Option Vip Healthcheck.')
 
+
+    @classmethod
+    def get_all_trafficreturn(cls, id_environment_vip):
+        """Get All Option Vip Traffic Return by environmentvip_id.
+
+            @return: Get All Option Vip Traffic Return.
+
+            @raise OperationalError: Failed to search for all Option Vip Traffic Return.
+        """
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+            ovips = ovips.filter(tipo_opcao__icontains='Retorno de trafego')
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip Traffic Return.')
+            raise OptionVipError(
+                e, u'Failure to list all Option Vip Traffic Return.')
+
+
     @classmethod
     def get_all_persistencia(cls, id_environment_vip):
         """Get All Option Vip Persistence by environmentvip_id.
@@ -444,7 +473,7 @@ class RequisicaoVips(BaseModel):
         null=True
     )
 
-    id_traffic_return = models.ForeignKey(
+    traffic_return = models.ForeignKey(
         OptionVip,
         db_column='id_traffic_return',
         default=12
@@ -556,7 +585,7 @@ class RequisicaoVips(BaseModel):
 
 
             """ if vip has DSRl3 """
-            if vip.id_traffic_return == 47:
+            if vip.traffic_return.id == 47:
                 try:
                     dsrl3= DsrL3_to_Vip.get_by_vip_id(vip_id)
                     dsrl3.delete(authenticated_user)
@@ -772,6 +801,7 @@ class RequisicaoVips(BaseModel):
         timeout = data.get('timeout')
         grupo_cache = data.get('cache')
         persistencia = data.get('persistencia')
+        traffic = data.get('traffic')
 
         grupos_cache = [(gc.nome_opcao_txt)
                         for gc in OptionVip.get_all_grupo_cache(evip.id)]
@@ -779,6 +809,9 @@ class RequisicaoVips(BaseModel):
                     for t in OptionVip.get_all_timeout(evip.id)]
         persistencias = [(p.nome_opcao_txt)
                          for p in OptionVip.get_all_persistencia(evip.id)]
+        traffics = [(tr.nome_opcao_txt)
+                         for tr in OptionVip.get_all_trafficreturn(evip.id)]
+
 
         if timeout not in timeouts:
             log.error(
@@ -789,17 +822,24 @@ class RequisicaoVips(BaseModel):
 
         if grupo_cache not in grupos_cache:
             log.error(
-                u'The grupo_cache not in OptionVip, invalid value: %s.', grupo_cache)
+                u'The grupo_cache is not in OptionVip, invalid value: %s.', grupo_cache)
             raise InvalidCacheValueError(
                 None, 'grupo_cache com valor inválido: %s.' % grupo_cache)
         self.add_variable('cache', grupo_cache)
 
         if persistencia not in persistencias:
             log.error(
-                u'The persistencia not in OptionVip, invalid value: %s.', persistencia)
+                u'The persistencia is not in OptionVip, invalid value: %s.', persistencia)
             raise InvalidPersistenciaValueError(
                 None, 'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
+
+        if traffic not in traffics:
+            log.error(
+                u'The traffic return is not in OptionVip, invalid value: %s.', traffic)
+            raise InvalidTrafficReturnValueError(
+                None, 'traffic return com valor inválido %s.' % traffic)
+        self.add_variable('traffic', traffic)
 
         priority_pools = []
 
@@ -1335,6 +1375,8 @@ class RequisicaoVips(BaseModel):
         @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
         '''
         self.ip = Ip().get_by_pk(self.ip.id)
+
+        self.traffic_return = OptionVip.get_by_pk(self.traffic_return.id)
 
         # Valid list reals_prioritys
         if variables_map.get('reals_prioritys') is None:
@@ -2296,7 +2338,18 @@ class DsrL3_to_Vip(BaseModel):
         self.save(user)
 
     @classmethod
-    def get_by_vip_id(cls, id_vip):
+    def get_dsrl3(self, id_vip, user):
+
+        #TODO FIND ID
+        id_dsrl3 = 0
+
+        self.prepare_and_save(id_dsrl3,id_vip, user)
+
+        return id_dsrl3
+
+
+    @classmethod
+    def get_by_vip_id(self, id_vip):
         """Get Request VipPortToPool associated with id_vip.
 
             @return: Request VipPortToPool with given id_vip.
@@ -2306,12 +2359,12 @@ class DsrL3_to_Vip(BaseModel):
         try:
             return DsrL3_to_Vip.objects.filter(requisicao_vip__id=id_vip)
         except Exception, e:
-            cls.log.error(u'Failure to list id of DSR L3 by id_vip.')
+            self.log.error(u'Failure to list id of DSR L3 by id_vip.')
             raise RequisicaoVipsError(
                 e, u'Failure to list Request DsrL3_to_Vip by id_vip.')
 
     @classmethod
-    def get_all(cls):
+    def get_all(self):
         """Get All Option Vip.
 
             @return: All Option Vip.
@@ -2321,5 +2374,6 @@ class DsrL3_to_Vip(BaseModel):
         try:
             return DsrL3_to_Vip.objects.all()
         except Exception, e:
-            cls.log.error(u'Failure to list all DsrL3_to_Vip .')
+            self.log.error(u'Failure to list all DsrL3_to_Vip .')
             raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
+

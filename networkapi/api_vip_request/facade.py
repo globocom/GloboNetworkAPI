@@ -24,10 +24,11 @@ from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
 import logging
 from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
-from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool
+from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool, OptionVip, DsrL3_to_Vip
 from networkapi.util import is_valid_int_greater_zero_param, convert_boolean_to_int
 from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.requisicaovips.models import RequisicaoVipsMissingDSRL3idError
 
 
 log = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ def get_by_pk(pk):
     data['id_healthcheck_expect'] = vip_request.healthcheck_expect_id
     data['l7_filter'] = vip_request.l7_filter
     data['rule_id'] = vip_request.rule_id
+    data['traffic_return'] = vip_request.traffic_return.nome_opcao_txt
 
     pools = []
 
@@ -125,11 +127,17 @@ def save(request):
     obj_req_vip.validado = False
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
+    obj_req_vip.traffic_return=OptionVip.objects.filter(nome_opcao_txt=data['traffic_return'])
+
+    if data['traffic_return'] == "DSRL3":
+        req_vip_serializer.data['traffic_return_num']=DsrL3_to_Vip.get_dsrl3(obj_req_vip.id, user)
+
     obj_req_vip.save(user)
 
     for v_port in obj_req_vip.vip_ports_to_pools:
         v_port.requisicao_vip = obj_req_vip
         v_port.save(user)
+
 
     return req_vip_serializer.data
 
@@ -169,6 +177,24 @@ def update(request, pk):
         obj_req_vip.validado = False
         set_l7_filter_for_vip(obj_req_vip)
         obj_req_vip.set_new_variables(data)
+
+        old_traffic_return=obj_req_vip.traffic_return
+        if old_traffic_return.nome_opcao_txt != data['traffic_return']:
+            obj_req_vip.traffic_return=OptionVip.objects.filter(nome_opcao_txt=data['traffic_return'])
+
+            if old_traffic_return.nome_opcao_txt == "DSRL3" and  data['traffic_return'] == "Normal":
+                try:
+                    dsrl3= DsrL3_to_Vip.get_by_vip_id(pk)
+                    dsrl3.delete(user)
+                except RequisicaoVipsMissingDSRL3idError, e:
+                    log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
+                    raise RequisicaoVipsMissingDSRL3idError(
+                        e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % pk)
+
+            if old_traffic_return.nome_opcao_txt == "Normal" and  data['traffic_return'] == "DSRL3":
+                req_vip_serializer.data['traffic_return_num']=DsrL3_to_Vip.get_dsrl3(pk, user)
+
+
         obj_req_vip.save(user)
 
         vip_port_serializer = VipPortToPoolSerializer(data=vip_ports, many=True)
