@@ -450,6 +450,7 @@ def aplicar(rack):
     #Get all files and search for equipments of the rack
     for var in arquivos: 
         filename_equipments = var.split('/')[-1]
+        rel_filename = "../"+settings.REL_PATH_TO_CONFIG+filename_equipments
         #Check if file is config relative to this rack
         if rack.nome in filename_equipments:
             #Apply config only in spines. Leaves already have all necessary config in startup
@@ -459,7 +460,7 @@ def aplicar(rack):
                 try:
                     equip = Equipamento.get_by_name(equipment_name)
                     if not equip.maintenance:
-                        (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (var, equipment_name))
+                        (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
                         if erro:
                             raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
                 except RackAplError, e:
