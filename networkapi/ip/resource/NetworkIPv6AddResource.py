@@ -190,14 +190,14 @@ class NetworkIPv6AddResource(RestResource):
                 user, vlan_id, net, evip, prefix)
 
             list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
-                ambiente=network_ipv6.vlan.ambiente.id, is_router=True)
+                ambiente=vlan_map['vlan']['id_ambiente'], is_router=True)
 
             if list_equip_routers_ambient:
 
                 # Add Adds the first available ipv6 on all equipment
                 # that is configured as a router for the environment related to
                 # network
-                ipv6 = Ipv6.get_first_available_ip6(network_ipv6.id)
+                ipv6 = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'])
 
                 ipv6 = str(ipv6).split(':')
 
@@ -210,7 +210,7 @@ class NetworkIPv6AddResource(RestResource):
                 ipv6_model.block6 = ipv6[5]
                 ipv6_model.block7 = ipv6[6]
                 ipv6_model.block8 = ipv6[7]
-                ipv6_model.networkipv6_id = network_ipv6.id
+                ipv6_model.networkipv6_id = vlan_map['vlan']['id_network']
 
                 ipv6_model.save()
 
@@ -225,7 +225,7 @@ class NetworkIPv6AddResource(RestResource):
                         user, ipv6_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ipv6.get_first_available_ip6(network_ipv6.id, True)
+                        router_ip = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'], True)
                         ipv6_model2 = Ipv6()
                         ipv6_model2.block1 = router_ip[0]
                         ipv6_model2.block2 = router_ip[1]
@@ -235,7 +235,7 @@ class NetworkIPv6AddResource(RestResource):
                         ipv6_model2.block6 = router_ip[5]
                         ipv6_model2.block7 = router_ip[6]
                         ipv6_model2.block8 = router_ip[7]
-                        ipv6_model2.networkipv6_id = network_ipv6.id
+                        ipv6_model2.networkipv6_id = vlan_map['vlan']['id_network']
                         ipv6_model2.save()
                         Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 

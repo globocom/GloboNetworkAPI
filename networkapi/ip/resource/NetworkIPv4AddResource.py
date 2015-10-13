@@ -182,14 +182,14 @@ class NetworkIPv4AddResource(RestResource):
             vlan_map = network_ipv4.add_network_ipv4(user, vlan_id, net, evip, prefix)
 
             list_equip_routers_ambient = EquipamentoAmbiente.objects.select_related('equipamento').filter(
-                ambiente=network_ipv4.vlan.ambiente.id, is_router=True)
+                ambiente=vlan_map['vlan']['id_ambiente'], is_router=True)
 
             if list_equip_routers_ambient:
 
                 # Add Adds the first available ipv4 on all equipment
                 # that is configured as a router for the environment related to
                 # network
-                ip = Ip.get_first_available_ip(network_ipv4.id)
+                ip = Ip.get_first_available_ip(vlan_map['vlan']['id_network'])
 
                 ip = str(ip).split('.')
 
@@ -211,14 +211,14 @@ class NetworkIPv4AddResource(RestResource):
                     IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                        router_ip = Ip.get_first_available_ip(vlan_map['vlan']['id_network'], True)
                         router_ip = str(router_ip).split('.')
                         ip_model2 = Ip()
                         ip_model2.oct1 = router_ip[0]
                         ip_model2.oct2 = router_ip[1]
                         ip_model2.oct3 = router_ip[2]
                         ip_model2.oct4 = router_ip[3]
-                        ip_model2.networkipv4_id = network_ipv4.id
+                        ip_model2.networkipv4_id = vlan_map['vlan']['id_network']
                         ip_model2.save()
                         IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
