@@ -882,7 +882,7 @@ class EquipamentoAmbiente(BaseModel):
 
     @classmethod
     def get_routers_by_environment(self, environment_id):
-        EquipamentoAmbiente.objects.select_related('equipamento').filter(ambiente=environment_id, is_router=True)
+        return EquipamentoAmbiente.objects.select_related('equipamento').filter(ambiente=environment_id, is_router=True)
 
 
 class EquipamentoGrupo(BaseModel):

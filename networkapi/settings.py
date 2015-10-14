@@ -424,6 +424,7 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 
 PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE','/vagrant/networkapi/rack/roteiros/')
 PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG','/vagrant/networkapi/rack/roteiros/')
+REL_PATH_TO_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_CONFIG','networkapi/rack/roteiros/')
 PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV','/vagrant/networkapi/rack/roteiros/')
 
 LEAF = "LF-CM"
