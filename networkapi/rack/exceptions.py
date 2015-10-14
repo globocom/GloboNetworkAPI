@@ -1,13 +1,17 @@
 from rest_framework.exceptions import APIException
 from rest_framework import status
 
-class InvalidIdNameException(APIException):
+class RackNumberDuplicatedValueError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Invalid Name for Variable.'
+    default_detail = 'Numero de Rack ja existe.'
 
-class InvalidIdValueException(APIException):
+class RackNameDuplicatedError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Invalid Value for Variable.'
+    default_detail = 'Nome ja existe.'
+
+class InvalidInputException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid input.'
 
 class VariableDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
@@ -16,7 +20,3 @@ class VariableDoesNotExistException(APIException):
 class VariableDuplicateNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Variable already exists.'
-
-class InvalidInputException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Invalid input.'
