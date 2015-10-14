@@ -31,7 +31,7 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
     update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
-    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state
+    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_pool
 from networkapi.error_message_utils import error_messages
 from networkapi.ip.models import IpEquipamento, Ip, Ipv6
 from networkapi.equipamento.models import Equipamento
@@ -173,6 +173,18 @@ def poolmember_state(request):
 
     request = request.DATA.get("pools", [])
     response = set_poolmember_state(request)
+
+    return Response(response)
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+def create_pool(request):
+
+    pools = request.DATA.get("id_pools")
+    servers_pools = ServerPool.objects.filter(id__in=pools)
+    
+    response = create_pool(servers_pools)
 
     return Response(response)
 

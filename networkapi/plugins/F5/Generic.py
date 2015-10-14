@@ -72,12 +72,22 @@ class Generic(BasePlugin):
         }
     }
 
+    LB_METHOD = {
+        'least-conn': 'LB_METHOD_LEAST_CONNECTION_MEMBER',
+        'round-robin': 'LB_METHOD_ROUND_ROBIN',
+        'weighted': ''
+    }
+
     def __init__(self, **kwargs):
         if 'equipment' in kwargs:
             self.equipment = kwargs.get('equipment')
 
     def getStatusName(self, status):
         return self.STATUS_POOL_MEMBER[status]
+
+
+    def getMethodName(self, method):
+        return self.LB_METHOD[method]
 
     def connect(self, **kwargs):
 
@@ -97,7 +107,7 @@ class Generic(BasePlugin):
         self.channel = self.channel.with_session_id()
         self.channel.System.Session.set_transaction_timeout(99)
 
-    def setState(self, pools):
+    def setStateMember(self, pools):
 
         self.connect(
             fqdn=pools['fqdn'],
@@ -125,7 +135,7 @@ class Generic(BasePlugin):
             log.error("Error  %s" % e)
             raise base_exceptions.CommandErrorException(e)
 
-    def getState(self, pools):
+    def getStateMember(self, pools):
 
         self.connect(
             fqdn=pools['fqdn'],
@@ -134,7 +144,6 @@ class Generic(BasePlugin):
 
         self.newSession()
 
-        log.info(pools)
         try:
             with bigsuds.Transaction(self.channel):
                 monitors = self.channel.LocalLB.Pool.get_member_monitor_status(
@@ -178,6 +187,33 @@ class Generic(BasePlugin):
 
                 return status_pools
 
+        except bigsuds.OperationFailed, e:
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
+
+        except Exception, e:
+            log.error("Error  %s" % e)
+            raise base_exceptions.CommandErrorException(e)
+
+    def createPool(self, pools):
+        self.connect(
+            fqdn=pools['fqdn'],
+            user=pools['user'],
+            password=pools['password'])
+
+        self.newSession()
+
+        log.info(pools)
+        try:
+            with bigsuds.Transaction(self.channel):
+
+                self.channel.LocalLB.Pool.create_v2(
+                    pools['pools_name'],
+                    pools['pools_lbmethod'],
+                    pools['pools_members'])
+
+            return True
+        
         except bigsuds.OperationFailed, e:
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
