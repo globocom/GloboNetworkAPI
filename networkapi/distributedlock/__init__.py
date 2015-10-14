@@ -64,7 +64,7 @@ from networkapi.distributedlock.memcachedlock import MemcachedLock
 
 DEBUG = False
 DEFAULT_TIMEOUT = 600
-DEFAULT_BLOCKING = False
+DEFAULT_BLOCKING = True
 DEFAULT_MEMCACHED_CLIENT = cache
 DEFAULT_LOCK_FACTORY = lambda key: MemcachedLock(
     key, DEFAULT_MEMCACHED_CLIENT, DEFAULT_TIMEOUT)
