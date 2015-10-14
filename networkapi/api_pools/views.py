@@ -224,6 +224,7 @@ def list_all_members(request):
         if checkstatus:
             status = get_poolmember_state(servers_pools)
 
+        data["pools"] = []
         for server_pool in servers_pools:
 
             if checkstatus:
@@ -248,14 +249,12 @@ def list_all_members(request):
                 many=True
             )
 
-            data["pools"] = []
-
             data["pools"].append({
                 "server_pool" : serializer_server_pool.data,
                 "server_pool_members" : serializer_server_pool_member.data
             })
 
-            return Response(data)
+        return Response(data)
 
     except Exception, exception:
         log.exception(exception)

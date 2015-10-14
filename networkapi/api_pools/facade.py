@@ -585,7 +585,7 @@ def get_poolmember_state(servers_pools):
                 raise exceptions.AllEquipamentMaintenance()
           
         ps = {}
-        status = {}   
+        status = {}
         for lb in load_balance:
             states = load_balance[lb]['plugin'].getStateMember(load_balance[lb])
             for idx, state in enumerate(states):

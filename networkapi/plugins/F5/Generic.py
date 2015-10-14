@@ -178,9 +178,6 @@ class Generic(BasePlugin):
                         else:
                             session = '0'
 
-                        log.info('brilhante'+healthcheck)
-                        log.info('brilhante'+session)
-                        log.info('brilhante'+monitor)
                         status.append(int(healthcheck+session+monitor,2))
 
                     status_pools.append(status)
