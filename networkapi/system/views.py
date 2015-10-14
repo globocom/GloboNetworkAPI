@@ -16,14 +16,15 @@
 # limitations under the License.
 
 
+import logging
 from django.db.transaction import commit_on_success
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
-import logging
-from networkapi.api_vlan.permissions import Read, Write
-from networkapi.system.facade import save_variable, get_all_variables, delete_variable, get_by_name
+from rest_framework.views import APIView
+from networkapi.system.permissions import Read, Write
+from networkapi.system import facade
 from networkapi.system.exceptions import *
 from networkapi.system.serializers import VariableSerializer
 from networkapi.api_rest import exceptions as api_exceptions
@@ -32,86 +33,93 @@ from django.core.exceptions import ObjectDoesNotExist
 from networkapi.util import is_valid_int_greater_zero_param
 
 
-
 log = logging.getLogger(__name__)
 
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, Write))
-@commit_on_success
-def save(request):
-    try:
-        log.info("POST VARIABLE")
+class VariableView(APIView):
 
-        name = request.DATA.get('name')
-        value = request.DATA.get('value')
-        description = request.DATA.get('description')
-
-        var = False
-
+    @permission_classes((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, *args, **kwargs):
         try:
-            get_by_name(name)
-            var = True
-        except:
-            pass
+            log.info("POST VARIABLE")
 
-        if var:
-            raise exceptions.VariableDuplicateNotExistException()
+            data = self.request.DATA
 
-        variable = save_variable(request.user, name, value, description)
+            try:
+                name = data['name']
+                value = data['value']
+                description = data['description']
+            except Exception:
+                raise exceptions.InvalidInputException()
 
-        data = dict()
-        variable_serializer = VariableSerializer(variable)
-        data['variable'] = variable_serializer.data
+            var = False
 
-        return Response(data, status=status.HTTP_201_CREATED)
+            try:
+                facade.get_by_name(name)
+                var = True
+            except:
+                pass
 
-    except (exceptions.InvalidIdNameException, exceptions.InvalidIdValueException,
-            exceptions.VariableDuplicateNotExistException)as exception:
-        log.exception(exception)
-        raise exception
+            if var:
+                raise exceptions.VariableDuplicateNotExistException()
 
-    except Exception, exception:
-        log.exception(exception)
-        raise api_exceptions.NetworkAPIException()
+            variable = facade.save_variable(self.request.user, name, value, description)
 
-@api_view(['GET'])
-@permission_classes((IsAuthenticated, Read))
-def get_all(request):
-    try:
-        log.info("GET ALL VARIABLES")
+            data = dict()
+            variable_serializer = VariableSerializer(variable)
+            data['variable'] = variable_serializer.data
 
-        variable_query = get_all_variables()
-        serializer_variable = VariableSerializer(variable_query, many=True)
+            return Response(data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer_variable.data)
+        except (exceptions.InvalidIdNameException, exceptions.InvalidIdValueException,
+                exceptions.VariableDuplicateNotExistException)as exception:
+            log.exception(exception)
+            raise exception
 
-    except ObjectDoesNotExist, exception:
-        log.error(exception)
-        raise api_exceptions.ObjectDoesNotExistException('Variable Does Not Exist')
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
 
-    except Exception, exception:
-        log.exception(exception)
-        raise api_exceptions.NetworkAPIException()
+    @permission_classes((IsAuthenticated, Read))
+    def get(self, *args, **kwargs):
+        try:
+            log.info("GET ALL VARIABLES")
 
-@api_view(['DELETE'])
-@permission_classes((IsAuthenticated, Write))
-def delete(request, variable_id):
-    try:
-        log.info("DELETE VARIABLE")
+            variable_query = facade.get_all_variables()
+            serializer_variable = VariableSerializer(variable_query, many=True)
 
-        if not is_valid_int_greater_zero_param(variable_id, False):
+            return Response(serializer_variable.data)
+
+        except ObjectDoesNotExist, exception:
+            log.error(exception)
+            raise api_exceptions.ObjectDoesNotExistException('Variable Does Not Exist')
+
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
+class VariablebyPkView(APIView):
+
+    @permission_classes((IsAuthenticated, Write))
+    def delete(self, *args, **kwargs):
+        try:
+            log.info("DELETE VARIABLE")
+
+            variable_id = kwargs['variable_id']
+
+            if not is_valid_int_greater_zero_param(variable_id, False):
+                raise api_exceptions.ValidationException('Variable id invalid.')
+
+            facade.delete_variable(self.request.user, variable_id)
+            data = dict()
+            data['variable'] = "ok"
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except ObjectDoesNotExist, exception:
+            log.error(exception)
+            raise exceptions.VariableDoesNotExistException()
+
+        except Exception, exception:
+            log.exception(exception)
             raise api_exceptions.ValidationException('Variable id invalid.')
-
-        delete_variable(request.user, variable_id)
-        data = dict()
-        data['variable'] = "ok"
-
-        return Response(data, status=status.HTTP_200_OK)
-
-    except ObjectDoesNotExist, exception:
-        log.error(exception)
-        raise exceptions.VariableDoesNotExistException()
-
-    except Exception, exception:
-        log.exception(exception)
-        raise api_exceptions.ValidationException('Variable id invalid.')
