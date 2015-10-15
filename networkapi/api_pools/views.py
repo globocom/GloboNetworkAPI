@@ -210,25 +210,24 @@ def list_all_members(request):
         }
     """
 
-    try:
+    pools = request.DATA.get("id_pools")
+    checkstatus = request.DATA.get("checkstatus")
+    if checkstatus is None:
+        checkstatus = False
 
-        pools = request.DATA.get("id_pools")
-        checkstatus = request.DATA.get("checkstatus")
-        if checkstatus is None:
-            checkstatus = False
+    data = dict()
 
-        data = dict()
+    servers_pools = ServerPool.objects.filter(id__in=pools)
+    
+    if checkstatus:
+        status = get_poolmember_state(servers_pools)
 
-        servers_pools = ServerPool.objects.filter(id__in=pools)
-        
+    data["pools"] = []
+    for server_pool in servers_pools:
+
         if checkstatus:
-            status = get_poolmember_state(servers_pools)
 
-        data["pools"] = []
-        for server_pool in servers_pools:
-
-            if checkstatus:
-
+            if status.get(server_pool.id):
                 query_pools = ServerPoolMember.objects.filter(server_pool=server_pool)
 
                 for pm in query_pools:
@@ -238,27 +237,24 @@ def list_all_members(request):
                     pm.last_status_update = datetime.now()
                     pm.save(request.user)
 
-            server_pool_members = ServerPoolMember.objects.filter(
-                server_pool=server_pool
-            )
+        server_pool_members = ServerPoolMember.objects.filter(
+            server_pool=server_pool
+        )
 
-            serializer_server_pool = ServerPoolSerializer(server_pool)
+        serializer_server_pool = ServerPoolSerializer(server_pool)
 
-            serializer_server_pool_member = ServerPoolMemberSerializer(
-                server_pool_members,
-                many=True
-            )
+        serializer_server_pool_member = ServerPoolMemberSerializer(
+            server_pool_members,
+            many=True
+        )
 
-            data["pools"].append({
-                "server_pool" : serializer_server_pool.data,
-                "server_pool_members" : serializer_server_pool_member.data
-            })
+        data["pools"].append({
+            "server_pool" : serializer_server_pool.data,
+            "server_pool_members" : serializer_server_pool_member.data
+        })
 
-        return Response(data)
+    return Response(data)
 
-    except Exception, exception:
-        log.exception(exception)
-        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['GET', 'POST'])

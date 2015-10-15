@@ -366,75 +366,70 @@ def exec_script_check_poolmember_by_pool(pool_id):
 
 
 def create_pool(pools):
-    try:
+    
+    load_balance = {}
 
-        load_balance = {}
+    for server_pool in servers_pools:
 
-        for server_pool in servers_pools:
+        members = []
+        pools_lbmethod = []
+        server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
+        for pool_member in server_pool_members:
+            if pool_member.ipv6 is None:
+                ip = pool_member.ip.ip_formated
+            else:
+                ip = pool_member.ipv6.ip_formated
 
-            members = []
-            pools_lbmethod = []
-            server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
-            for pool_member in server_pool_members:
-                if pool_member.ipv6 is None:
-                    ip = pool_member.ip.ip_formated
-                else:
-                    ip = pool_member.ipv6.ip_formated
+            port_real = pool_member.port_real
 
-                port_real = pool_member.port_real
+            members.append({'address':ip, 'port':port_real})
 
-                members.append({'address':ip, 'port':port_real})
-
-            pool_name = server_pool.identifier
-            pools_lbmethod = server_pool.lb_method
+        pool_name = server_pool.identifier
+        pools_lbmethod = server_pool.lb_method
 
 
-            equips = EquipamentoAmbiente.objects.filter(
-                ambiente__id=server_pool.environment.id, 
-                equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+        equips = EquipamentoAmbiente.objects.filter(
+            ambiente__id=server_pool.environment.id, 
+            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
 
-            any_eqpt = False
+        any_eqpt = False
 
-            for e in equips:
-                eqpt_id = str(e.equipamento.id)
-                equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.equipamento.id, 
-                    protocolo="https"
-                ).uniqueResult()
-                equipment = Equipamento.get_by_pk(e.equipamento.id)
+        for e in equips:
+            eqpt_id = str(e.equipamento.id)
+            equipment_access = EquipamentoAcesso.search(
+                equipamento=e.equipamento.id, 
+                protocolo="https"
+            ).uniqueResult()
+            equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-                if equipment.maintenance is not True:
+            if equipment.maintenance is not True:
 
-                    any_eqpt = True
+                any_eqpt = True
 
-                    plugin = PluginFactory.factory(equipment)
-                    
-                    if not load_balance.get(eqpt_id):
+                plugin = PluginFactory.factory(equipment)
+                
+                if not load_balance.get(eqpt_id):
 
-                        load_balance[eqpt_id] = {
-                            'plugin': plugin,
-                            'fqdn': equipment_access.fqdn,
-                            'user': equipment_access.user,
-                            'password': equipment_access.password,
-                            'pools_name': [],
-                            'pools_members': [],
-                            'pools_lbmethod': [],
-                        }
+                    load_balance[eqpt_id] = {
+                        'plugin': plugin,
+                        'fqdn': equipment_access.fqdn,
+                        'user': equipment_access.user,
+                        'password': equipment_access.password,
+                        'pools_name': [],
+                        'pools_members': [],
+                        'pools_lbmethod': [],
+                    }
 
-                    load_balance[eqpt_id]['pools_members'].append(members)
-                    load_balance[eqpt_id]['pools_lbmethod'].append(pools_lbmethod)
-                    load_balance[eqpt_id]['pools_name'].append(pool_name)
-            if not any_eqpt:
-                log.error('All equipments is in maintenance(Pool:%s'%pool_name)
-                raise exceptions.AllEquipamentMaintenance()
-          
-        for lb in load_balance:
-            load_balance[lb]['plugin'].createPool(load_balance[lb])
-        return {}
-
-    except Exception, exception:
-        log.error(exception)
-        raise exception
+                load_balance[eqpt_id]['pools_members'].append(members)
+                load_balance[eqpt_id]['pools_lbmethod'].append(pools_lbmethod)
+                load_balance[eqpt_id]['pools_name'].append(pool_name)
+        if not any_eqpt:
+            log.error('All equipments is in maintenance(Pool:%s'%pool_name)
+            raise exceptions.AllEquipamentMaintenance()
+      
+    for lb in load_balance:
+        load_balance[lb]['plugin'].createPool(load_balance[lb])
+    return {}
 
 
 def set_poolmember_state(pools):
@@ -516,26 +511,26 @@ def set_poolmember_state(pools):
 
 def get_poolmember_state(servers_pools):
 
-    try:
+    load_balance = {}
 
-        load_balance = {}
+    for server_pool in servers_pools:
 
-        for server_pool in servers_pools:
+        members = []
+        members_id = []
+        server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
+        for pool_member in server_pool_members:
+            if pool_member.ipv6 is None:
+                ip = pool_member.ip.ip_formated
+            else:
+                ip = pool_member.ipv6.ip_formated
 
-            members = []
-            members_id = []
-            server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
-            for pool_member in server_pool_members:
-                if pool_member.ipv6 is None:
-                    ip = pool_member.ip.ip_formated
-                else:
-                    ip = pool_member.ipv6.ip_formated
+            port_real = pool_member.port_real
 
-                port_real = pool_member.port_real
+            members.append({'address':ip, 'port':port_real})
 
-                members.append({'address':ip, 'port':port_real})
+            members_id.append(pool_member.id)
 
-                members_id.append(pool_member.id)
+        if members:
 
             pool_name = server_pool.identifier
             pool_id = server_pool.id
@@ -582,36 +577,32 @@ def get_poolmember_state(servers_pools):
 
             if not any_eqpt:
                 log.error('All equipments is in maintenance(Pool:%s'%pool_name)
-                raise exceptions.AllEquipamentMaintenance()
+                raise exceptions.AllEquipamentMaintenance(pool_name)
           
-        ps = {}
-        status = {}
-        for lb in load_balance:
-            states = load_balance[lb]['plugin'].getStateMember(load_balance[lb])
-            for idx, state in enumerate(states):
-                pool_id = load_balance[lb]['info']['pools'][idx]
-                if not ps.get(pool_id):
-                    ps[pool_id] = {}
-                    status[pool_id] = {}
+    ps = {}
+    status = {}
+    for lb in load_balance:
+        states = load_balance[lb]['plugin'].getStateMember(load_balance[lb])
+        for idx, state in enumerate(states):
+            pool_id = load_balance[lb]['info']['pools'][idx]
+            if not ps.get(pool_id):
+                ps[pool_id] = {}
+                status[pool_id] = {}
 
-                for idx_m, st in enumerate(state):
-                    member_id = load_balance[lb]['info']['pools_members'][idx][idx_m]
-                    if not ps[pool_id].get(member_id):
-                        ps[pool_id][member_id] = []
-                    
-                    ps[pool_id][member_id].append(st)
-                    status[pool_id][member_id] = st
+            for idx_m, st in enumerate(state):
+                member_id = load_balance[lb]['info']['pools_members'][idx][idx_m]
+                if not ps[pool_id].get(member_id):
+                    ps[pool_id][member_id] = []
+                
+                ps[pool_id][member_id].append(st)
+                status[pool_id][member_id] = st
 
-                    if len(ps[pool_id][member_id])>1:
-                        if ps[pool_id][member_id][idx_m] != ps[pool_id][member_id][idx_m-1]:
-                            msg = load_balance[lb]['pools_members'][idx][idx_m]['address']+':'+load_balance[lb]['pools_members'][idx][idx_m]['port']
-                            log('The poolmember <<%s>> has states different in equipments.'%msg)
-                            raise exceptions.DiffStatesEquipament(msg)
-        return status
-
-    except Exception, exception:
-        log.error(exception)
-        raise exception
+                if len(ps[pool_id][member_id])>1:
+                    if ps[pool_id][member_id][idx_m] != ps[pool_id][member_id][idx_m-1]:
+                        msg = load_balance[lb]['pools_members'][idx][idx_m]['address']+':'+load_balance[lb]['pools_members'][idx][idx_m]['port']
+                        log('The poolmember <<%s>> has states different in equipments.'%msg)
+                        raise exceptions.DiffStatesEquipament(msg)
+    return status
 
 def manager_pools(request):
     """
