@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from django.conf.urls import patterns, url
-from networkapi.rack.resource.RackAddResource import RackAddResource
 from networkapi.rack.resource.RackAplicarConfigResource import RackAplicarConfigResource
 from networkapi.rack.resource.RackConfigResource import RackConfigResource
 from networkapi.rack.resource.RackDeleteResource import RackDeleteResource
@@ -13,7 +12,6 @@ from networkapi.rack.resource.RackGetByEquipResource import RackGetByEquipResour
 from networkapi.rack.resource.RackListAllResource import RackListAllResource
 from networkapi.rack.views import RackView
 
-rack_add_resource = RackAddResource()
 find_rack_resource = RackFindResource()
 edit_rack_resource = RackEditResource()
 delete_rack_resource = RackDeleteResource()

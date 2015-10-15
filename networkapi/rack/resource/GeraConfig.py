@@ -24,7 +24,6 @@ def replace(filein,fileout, dicionario):
     except:
         raise RackConfigError(None,None, "Erro no template. Arquivo de entrada %s nao encontrado." %(filein))
 
-
 def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))
     return subnets[posicao]
@@ -41,10 +40,6 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 
     #valor base para as vlans e portchannels
     BASE_SO = 1010
-
-    #variavels para manipular as redes
-    SO_OOB_NETipv4 = {}
-    subSO_OOB_NETipv4={}
 
     #rede para conectar cores aos racks
     SO_OOB_NETipv4= IPNetwork('10.143.0.0/18')
@@ -75,7 +70,6 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 def dic_lf_spn(user, rack):
 
     BASE_RACK = 120
-    BASE_AS = 65100
 
     VLANBE = 2000
     VLANFE = 2480
@@ -227,7 +221,6 @@ def dic_pods(rack):
     subnetsRackBEipv4 = {}
     subnetsRackBEipv4[rack] = []
 
-    CIDRBEipv4 = {}
     PODSBEipv4 = {}
     redesPODSBEipv4 = {}
     PODSBEFEipv4 = {}
@@ -580,7 +573,6 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     variablestochangeoob = dic_vlan_core(variablestochangeoob, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
 
     #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-
     fileoutcore1=settings.PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutcore2=settings.PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
     fileoutoob=settings.PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
@@ -649,13 +641,11 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     VLANBORDALEAF = {}
     VLANBORDACACHOSLEAF = {}
     #
-    CIDRBEipv4 = {}
     PODSBEipv4 = {}
     redesPODSBEipv4 = {}
     #
     subnetsRackBEipv4 = {}
     #
-    CIDRBEipv6 = {}
     PODSBEipv6 = {}
     redesPODSBEipv6 = {}
     PODSBEFEipv6 = {}
@@ -793,13 +783,11 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
 
 
     ############################################################################
-    ############################################################################
     #CIDR sala 01 => 10.128.0.0/12
     CIDRBEipv4 = IPNetwork('10.128.0.0/12')
     CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
 
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
-
     #Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
     subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack)
     subnetsRackBEipv6[rack]=splitnetworkbyrack(CIDRBEipv6,55,rack)
@@ -811,8 +799,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     #dic_hosts()
 
     #    ::::::::::::::::::::::::::::::::::: FRONTEND
-
-
     CIDRFEipv4 = {}
     CIDRFEipv6 = {}
 
@@ -823,7 +809,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     CIDRFEipv6[0] = IPNetwork('fdfe:fefe:fedc:0100::/50')
 
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
-
     #Sumário do rack => 172.20.0.0/21
     subnetsRackFEipv4[rack]=splitnetworkbyrack(CIDRFEipv4[0],21,rack)
     subnetsRackFEipv6[rack]=splitnetworkbyrack(CIDRFEipv6[0],57,rack)
@@ -841,8 +826,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine4={}
     variablestochangeleaf1={}
     variablestochangeleaf2={}
-    variablestochangecore1={}
-    variablestochangecore2={}
 
     variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])
     variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])
