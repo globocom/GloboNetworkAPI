@@ -84,8 +84,8 @@ def dict_diff(old, new):
                 pass
             diff[key] = (old_value, new_value)
 
-    if diff:
-        LOG.debug("dict_diff: %s" % diff)
+    # if diff:
+    #     LOG.debug("dict_diff: %s" % diff)
     return diff
 
 
@@ -172,7 +172,7 @@ def save_audit(instance, operation, kwargs={}):
             action = "Cadastrar"
             description = _('Added %s') % unicode(instance)
 
-        LOG.debug("called audit with operation=%s instance=%s persist=%s" % (operation, instance, persist_audit))
+        #LOG.debug("called audit with operation=%s instance=%s persist=%s" % (operation, instance, persist_audit))
         if persist_audit:
             if m2m_change:
                 for description in descriptions:
@@ -196,7 +196,6 @@ def save_audit(instance, operation, kwargs={}):
                     if audit_request:
                         EventLog.log(audit_request.user, event)
                     else:
-                        LOG.warning("saving audit with id_user=None")
                         EventLog.log(None, event)
 
             else:
@@ -218,7 +217,6 @@ def save_audit(instance, operation, kwargs={}):
                 if audit_request:
                     EventLog.log(audit_request.user, event)
                 else:
-                    LOG.warning("saving audit with id_user=None")
                     EventLog.log(None, event)
     except:
         LOG.error(u'Error registering auditing to %s: (%s) %s',

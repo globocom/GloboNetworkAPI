@@ -28,11 +28,9 @@ from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironmentInvalidError
-from networkapi.vlan.models import Vlan
 from networkapi.ip.models import Ip, IpEquipamento
 from networkapi.equipamento.models import EquipamentoAmbiente
-from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV4,\
-    MAX_IPV4_HOSTS
+from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV4,MAX_IPV4_HOSTS
 from networkapi.config.models import Configuration
 
 
@@ -181,15 +179,14 @@ class NetworkIPv4AddResource(RestResource):
             network_ipv4 = NetworkIPv4()
             vlan_map = network_ipv4.add_network_ipv4(user, vlan_id, net, evip, prefix)
 
-            list_equip_routers_ambient = EquipamentoAmbiente.objects.select_related('equipamento').filter(
-                ambiente=network_ipv4.vlan.ambiente.id, is_router=True)
+            list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(vlan_map['vlan']['id_ambiente'])
 
             if list_equip_routers_ambient:
 
                 # Add Adds the first available ipv4 on all equipment
                 # that is configured as a router for the environment related to
                 # network
-                ip = Ip.get_first_available_ip(network_ipv4.id)
+                ip = Ip.get_first_available_ip(vlan_map['vlan']['id_network'])
 
                 ip = str(ip).split('.')
 
@@ -211,14 +208,14 @@ class NetworkIPv4AddResource(RestResource):
                     IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                        router_ip = Ip.get_first_available_ip(vlan_map['vlan']['id_network'], True)
                         router_ip = str(router_ip).split('.')
                         ip_model2 = Ip()
                         ip_model2.oct1 = router_ip[0]
                         ip_model2.oct2 = router_ip[1]
                         ip_model2.oct3 = router_ip[2]
                         ip_model2.oct4 = router_ip[3]
-                        ip_model2.networkipv4_id = network_ipv4.id
+                        ip_model2.networkipv4_id = vlan_map['vlan']['id_network']
                         ip_model2.save()
                         IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
@@ -238,15 +235,11 @@ class NetworkIPv4AddResource(RestResource):
             return self.response_error(3, e)
         except GrupoError, e:
             return self.response_error(1)
-        except NetworkTypeNotFoundError, e:
-            return self.response_error(111)
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
         except NetworkIPv4AddressNotAvailableError:
             return self.response_error(295)
         except ConfigEnvironmentInvalidError:
-            return self.response_error(294)
-        except NetworkIPv4AddressNotAvailableError, e:
             return self.response_error(294)
         except IpNotAvailableError, e:
             return self.response_error(150, e)

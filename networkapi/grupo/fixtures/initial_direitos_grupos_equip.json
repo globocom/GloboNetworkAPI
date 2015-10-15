@@ -1,0 +1,302 @@
+[
+  {
+    "pk": 87, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 1, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 88, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 2, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 89, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 3, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 90, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 4, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 91, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 5, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 92, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 6, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 93, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 7, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 94, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 8, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 95, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 9, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 96, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 10, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 97, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 11, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 98, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 12, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 99, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 13, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 100, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 14, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 101, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 15, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 102, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 16, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 103, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 17, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 104, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 18, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 124, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 19, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 132, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 20, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 138, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 21, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 145,
+    "model": "grupo.direitosgrupoequipamento",
+    "fields": {
+      "escrita": "1",
+      "ugrupo": 1,
+      "alterar_config": "1",
+      "exclusao": "1",
+      "egrupo": 23,
+      "leitura": "1"
+    }
+  },
+  {
+    "pk": 147, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 22, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 160, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 24, 
+      "leitura": "1"
+    }
+  }, 
+  {
+    "pk": 163, 
+    "model": "grupo.direitosgrupoequipamento", 
+    "fields": {
+      "escrita": "1", 
+      "ugrupo": 1, 
+      "alterar_config": "1", 
+      "exclusao": "1", 
+      "egrupo": 25, 
+      "leitura": "1"
+    }
+  }
+]

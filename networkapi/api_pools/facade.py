@@ -365,75 +365,244 @@ def exec_script_check_poolmember_by_pool(pool_id):
     return stdout
 
 
-def poolmember_state(request):
-
+def create_pool(pools):
+    
     load_balance = {}
 
-    for pool in request:
+    for server_pool in servers_pools:
 
         members = []
-        members_monitor_state = []
-        members_session_state = []
-        for pool_member in pool['server_pool_members']:
-            if pool_member['ipv6'] is None:
-                ip = pool_member['ip']['ip_formated']
+        pools_lbmethod = []
+        server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
+        for pool_member in server_pool_members:
+            if pool_member.ipv6 is None:
+                ip = pool_member.ip.ip_formated
             else:
-                ip = pool_member['ipv6']['ip_formated']
+                ip = pool_member.ipv6.ip_formated
 
-            port_real = pool_member['port_real']
+            port_real = pool_member.port_real
 
             members.append({'address':ip, 'port':port_real})
-            members_monitor_state.append(settings.STATUS_POOL_MEMBER[str(pool_member['member_status'])]['monitor'])
-            members_session_state.append(settings.STATUS_POOL_MEMBER[str(pool_member['member_status'])]['session'])
 
-        equips = EquipamentoAmbiente.objects.filter(ambiente__id=pool['server_pool']['environment'],equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
-        
+        pool_name = server_pool.identifier
+        pools_lbmethod = server_pool.lb_method
+
+
+        equips = EquipamentoAmbiente.objects.filter(
+            ambiente__id=server_pool.environment.id, 
+            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+
+        any_eqpt = False
+
         for e in equips:
             eqpt_id = str(e.equipamento.id)
-            equipment_access = EquipamentoAcesso.search(equipamento=e.equipamento.id, protocolo="https").uniqueResult()
+            equipment_access = EquipamentoAcesso.search(
+                equipamento=e.equipamento.id, 
+                protocolo="https"
+            ).uniqueResult()
             equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-            if not load_balance.get(eqpt_id):
-                load_balance[eqpt_id] = {
-                    'plugin': PluginFactory.factory(equipment),
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
-                    'pools_name' : [],
-                    'pools_members' : [],
-                    'pools_members_monitor_state' : [],
-                    'pools_members_session_state' : []
-                }
+            if equipment.maintenance is not True:
 
-            load_balance[eqpt_id]['pools_members'].append(members)
-            load_balance[eqpt_id]['pools_members_monitor_state'].append(members_monitor_state)
-            load_balance[eqpt_id]['pools_members_session_state'].append(members_session_state)
-            load_balance[eqpt_id]['pools_name'].append(pool['server_pool']['identifier'])
+                any_eqpt = True
 
-    return load_balance
+                plugin = PluginFactory.factory(equipment)
+                
+                if not load_balance.get(eqpt_id):
+
+                    load_balance[eqpt_id] = {
+                        'plugin': plugin,
+                        'fqdn': equipment_access.fqdn,
+                        'user': equipment_access.user,
+                        'password': equipment_access.password,
+                        'pools_name': [],
+                        'pools_members': [],
+                        'pools_lbmethod': [],
+                    }
+
+                load_balance[eqpt_id]['pools_members'].append(members)
+                load_balance[eqpt_id]['pools_lbmethod'].append(pools_lbmethod)
+                load_balance[eqpt_id]['pools_name'].append(pool_name)
+        if not any_eqpt:
+            log.error('All equipments is in maintenance(Pool:%s'%pool_name)
+            raise exceptions.AllEquipamentMaintenance()
+      
+    for lb in load_balance:
+        load_balance[lb]['plugin'].createPool(load_balance[lb])
+    return {}
 
 
-def set_poolmember_state(request):
-
-    load_balance = poolmember_state(request)
+def set_poolmember_state(pools):
 
     try:
+        load_balance = {}
+
+        for pool in pools:
+
+            members = []
+            members_monitor_state = []
+            members_session_state = []
+            for pool_member in pool['server_pool_members']:
+                if pool_member['ipv6'] is None:
+                    ip = pool_member['ip']['ip_formated']
+                else:
+                    ip = pool_member['ipv6']['ip_formated']
+
+                port_real = pool_member['port_real']
+
+                members.append({'address':ip, 'port':port_real})
+                members_monitor_state.append(str(pool_member['member_status']))
+                members_session_state.append(str(pool_member['member_status']))
+
+            pool_name = pool['server_pool']['identifier']
+
+            equips = EquipamentoAmbiente.objects.filter(
+                ambiente__id=pool['server_pool']['environment']['id'], 
+                equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+            
+            any_eqpt = False
+
+            for e in equips:
+                eqpt_id = str(e.equipamento.id)
+                equipment_access = EquipamentoAcesso.search(
+                    equipamento=e.equipamento.id, 
+                    protocolo="https"
+                ).uniqueResult()
+                equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+                if equipment.maintenance is not True:
+
+                    any_eqpt = True
+
+                    plugin = PluginFactory.factory(equipment)
+                    
+                    if not load_balance.get(eqpt_id):
+
+                        load_balance[eqpt_id] = {
+                            'plugin': plugin,
+                            'fqdn': equipment_access.fqdn,
+                            'user': equipment_access.user,
+                            'password': equipment_access.password,
+                            'pools_name': [],
+                            'pools_members': [],
+                            'pools_members_monitor_state': [],
+                            'pools_members_session_state': []
+                        }
+
+                    members_monitor_state = [plugin.getStatusName(m)['monitor'] for m in members_monitor_state]
+                    members_session_state = [plugin.getStatusName(m)['session'] for m in members_session_state]
+                    load_balance[eqpt_id]['pools_members'].append(members)
+                    load_balance[eqpt_id]['pools_members_monitor_state'].append(members_monitor_state)
+                    load_balance[eqpt_id]['pools_members_session_state'].append(members_session_state)
+                    load_balance[eqpt_id]['pools_name'].append(pool_name)
+
+            if not any_eqpt:
+                log.error('All equipments is in maintenance(Pool:%s'%pool_name)
+                raise exceptions.AllEquipamentMaintenance()
+
         for lb in load_balance:
-            load_balance[lb]['plugin'].setState(load_balance[lb])
+            load_balance[lb]['plugin'].setStateMember(load_balance[lb])
         return {}
+
     except Exception, exception:
+        log.error(exception)
         raise exception
 
 
-def get_poolmember_state(request):
+def get_poolmember_state(servers_pools):
 
-    load_balance = poolmember_state(request)
+    load_balance = {}
 
+    for server_pool in servers_pools:
+
+        members = []
+        members_id = []
+        server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
+        for pool_member in server_pool_members:
+            if pool_member.ipv6 is None:
+                ip = pool_member.ip.ip_formated
+            else:
+                ip = pool_member.ipv6.ip_formated
+
+            port_real = pool_member.port_real
+
+            members.append({'address':ip, 'port':port_real})
+
+            members_id.append(pool_member.id)
+
+        if members:
+
+            pool_name = server_pool.identifier
+            pool_id = server_pool.id
+
+            equips = EquipamentoAmbiente.objects.filter(
+                ambiente__id=server_pool.environment.id, 
+                equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+
+            any_eqpt = False
+
+            for e in equips:
+                eqpt_id = str(e.equipamento.id)
+                equipment_access = EquipamentoAcesso.search(
+                    equipamento=e.equipamento.id, 
+                    protocolo="https"
+                ).uniqueResult()
+                equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+                if equipment.maintenance is not True:
+
+                    any_eqpt = True
+
+                    plugin = PluginFactory.factory(equipment)
+                    
+                    if not load_balance.get(eqpt_id):
+
+                        load_balance[eqpt_id] = {
+                            'plugin': plugin,
+                            'fqdn': equipment_access.fqdn,
+                            'user': equipment_access.user,
+                            'password': equipment_access.password,
+                            'pools_name': [],
+                            'pools_members': [],
+                            'info': {
+                                'pools': [],
+                                'pools_members': []
+                            },
+                        }
+
+                    load_balance[eqpt_id]['pools_members'].append(members)
+                    load_balance[eqpt_id]['pools_name'].append(pool_name)
+                    load_balance[eqpt_id]['info']['pools'].append(pool_id)
+                    load_balance[eqpt_id]['info']['pools_members'].append(members_id)
+
+            if not any_eqpt:
+                log.error('All equipments is in maintenance(Pool:%s'%pool_name)
+                raise exceptions.AllEquipamentMaintenance(pool_name)
+          
+    ps = {}
+    status = {}
     for lb in load_balance:
-        status = load_balance[lb]['plugin'].getState(load_balance[lb])
-        load_balance[lb]['pools_members_monitor_state'] = status['monitor']
-        load_balance[lb]['pools_members_session_state'] = status['session']
+        states = load_balance[lb]['plugin'].getStateMember(load_balance[lb])
+        for idx, state in enumerate(states):
+            pool_id = load_balance[lb]['info']['pools'][idx]
+            if not ps.get(pool_id):
+                ps[pool_id] = {}
+                status[pool_id] = {}
 
+            for idx_m, st in enumerate(state):
+                member_id = load_balance[lb]['info']['pools_members'][idx][idx_m]
+                if not ps[pool_id].get(member_id):
+                    ps[pool_id][member_id] = []
+                
+                ps[pool_id][member_id].append(st)
+                status[pool_id][member_id] = st
+
+                if len(ps[pool_id][member_id])>1:
+                    if ps[pool_id][member_id][idx_m] != ps[pool_id][member_id][idx_m-1]:
+                        msg = load_balance[lb]['pools_members'][idx][idx_m]['address']+':'+load_balance[lb]['pools_members'][idx][idx_m]['port']
+                        log('The poolmember <<%s>> has states different in equipments.'%msg)
+                        raise exceptions.DiffStatesEquipament(msg)
+    return status
 
 def manager_pools(request):
     """

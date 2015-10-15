@@ -96,7 +96,7 @@ class RestResource(object):
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
         except Exception, e:
-            self.log.error(u'Erro não esperado.')
+            self.log.exception(u'Erro não esperado.')
             response = self.response_error(1)
         finally:
             username, password, user_ldap = RestResource.read_user_data(request)

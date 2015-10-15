@@ -1,0 +1,184 @@
+[
+  {
+    "pk": 1, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos Orquestracao"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Densidade Producao"
+    }
+  }, 
+  {
+    "pk": 3, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Densidade Homologacao"
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos localizados nos parceiros"
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Core Producao"
+    }
+  }, 
+  {
+    "pk": 6, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos de Eventos"
+    }
+  }, 
+  {
+    "pk": 7, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos de acesso parceiros"
+    }
+  }, 
+  {
+    "pk": 8, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Densidade Gerencia"
+    }
+  }, 
+  {
+    "pk": 9, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Backup"
+    }
+  }, 
+  {
+    "pk": 10, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches/Roteadores Corporativos"
+    }
+  }, 
+  {
+    "pk": 11, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Servidores"
+    }
+  }, 
+  {
+    "pk": 12, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Balanceamento Producao"
+    }
+  }, 
+  {
+    "pk": 13, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Balanceamento Homologacao"
+    }
+  }, 
+  {
+    "pk": 14, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Balanceamento Parceiros"
+    }
+  }, 
+  {
+    "pk": 15, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos geridos por S.O."
+    }
+  }, 
+  {
+    "pk": 16, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Patch Panels"
+    }
+  }, 
+  {
+    "pk": 17, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos geridos por Sup. Seguranca"
+    }
+  }, 
+  {
+    "pk": 18, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches SAN"
+    }
+  }, 
+  {
+    "pk": 19, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Balanceamento GCloud"
+    }
+  }, 
+  {
+    "pk": 20, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Ambiente Cloud DC-RJ"
+    }
+  }, 
+  {
+    "pk": 21, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches Ambiente Cloud CT-RJ"
+    }
+  }, 
+  {
+    "pk": 22, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Servidores Cloud Producao"
+    }
+  }, 
+  {
+    "pk": 23, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Servidores Cloud DEV"
+    }
+  }, 
+  {
+    "pk": 24, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos de TESTES"
+    }
+  }, 
+  {
+    "pk": 25, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Equipamentos Spine/Leaf DC-CM"
+    }
+  }, 
+  {
+    "pk": 26, 
+    "model": "grupo.egrupo", 
+    "fields": {
+      "nome": "Switches core Gerencia"
+    }
+  }
+]

@@ -396,50 +396,6 @@ VIP_REALS_v6_DISABLE = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip 
 VIP_REALS_v4_CHECK = 'gerador_vips -i %s --id_ip %s --port_ip %s --port_vip %s --chk'
 VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s --chk'
 
-#STATUS POOL MEMBER
-STATUS_POOL_MEMBER = {
-    '0':{
-        'monitor':'STATE_DISABLED',
-        'session':'STATE_DISABLED',
-        'healthcheck':'STATE_DISABLED'
-    },
-    '1':{
-        'monitor':'STATE_DISABLED',
-        'session':'STATE_DISABLED',
-        'healthcheck':'STATE_DISABLED'
-    },
-    '2':{
-        'monitor':'STATE_DISABLED',
-        'session':'STATE_ENABLED',
-        'healthcheck':'STATE_DISABLED'
-    },
-    '3':{
-        'monitor':'STATE_ENABLED',
-        'session':'STATE_ENABLED',
-        'healthcheck':'STATE_DISABLED'
-    },
-    '4':{
-        'monitor':'STATE_DISABLED',
-        'session':'STATE_DISABLED',
-        'healthcheck':'STATE_ENABLED'
-    },
-    '5':{
-        'monitor':'STATE_ENABLED',
-        'session':'STATE_DISABLED',
-        'healthcheck':'STATE_ENABLED'
-    },
-    '6':{
-        'monitor':'STATE_DISABLED',
-        'session':'STATE_ENABLED',
-        'healthcheck':'STATE_ENABLED'
-    },
-    '7':{
-        'monitor':'STATE_ENABLED',
-        'session':'STATE_ENABLED',
-        'healthcheck':'STATE_ENABLED'
-    }
-}
-
 
 ##################################
 #       QUEUE SETTINGS
@@ -468,6 +424,7 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 
 PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE','/vagrant/networkapi/rack/roteiros/')
 PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG','/vagrant/networkapi/rack/roteiros/')
+REL_PATH_TO_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_CONFIG','networkapi/rack/roteiros/')
 PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV','/vagrant/networkapi/rack/roteiros/')
 
 LEAF = "LF-CM"
