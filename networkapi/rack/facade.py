@@ -26,8 +26,7 @@ log = logging.getLogger(__name__)
 def save_rack(user, rack_dict):
 
     rack = Rack()
-    rack.numero = rack_dict.get('number')
-    rack.nome = rack_dict.get('name')
+
     rack.mac_sw1 = rack_dict.get('sw1_mac')
     rack.mac_sw2 = rack_dict.get('sw2_mac')
     rack.mac_ilo = rack_dict.get('sw3_mac')
@@ -35,6 +34,14 @@ def save_rack(user, rack_dict):
     id_sw2 = rack_dict.get('sw2_id')
     id_sw3 = rack_dict.get('sw3_id')
 
+    if not rack_dict.get('name'):
+        raise exceptions.InvalidInputException("O nome do Rack não foi informado.")
+    else:
+        rack.nome = rack_dict.get('name')
+    if not rack_dict.get('number'):
+        raise exceptions.InvalidInputException("O número do Rack não foi informado.")
+    else:
+        rack.numero = rack_dict.get('number')
     try:
         Rack.objects.get(numero__iexact=rack.numero)
         raise exceptions.RackNumberDuplicatedValueError()
@@ -48,18 +55,10 @@ def save_rack(user, rack_dict):
 
     if id_sw1 is not None:
         rack.id_sw1 = Equipamento(id=int(id_sw1))
-    else:
-        rack.id_sw1 = None
-
     if id_sw2 is not None:
         rack.id_sw2 = Equipamento(id=int(id_sw2))
-    else:
-        rack.id_sw2 = None
-
     if id_sw3 is not None:
         rack.id_ilo = Equipamento(id=int(id_sw3))
-    else:
-        rack.id_ilo = None
 
     rack.save(user)
     return rack

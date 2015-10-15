@@ -41,19 +41,29 @@ class RackView(APIView):
             log.info("Add Rack")
 
             data_ = self.request.DATA
+            if not data_:
+                raise exceptions.InvalidInputException()
+
             rack_dict = dict()
 
-            try:
-                rack_dict['number'] = data_.get('number')
-                rack_dict['name'] = data_.get('name')
-                rack_dict['sw1_mac'] = data_.get('mac_address_sw1')
-                rack_dict['sw2_mac'] = data_.get('mac_address_sw2')
-                rack_dict['sw3_mac'] = data_.get('mac_address_ilo')
+            rack_dict['number'] = data_.get('number')
+            rack_dict['name'] = data_.get('name')
+            rack_dict['sw1_mac'] = data_.get('mac_address_sw1')
+            rack_dict['sw2_mac'] = data_.get('mac_address_sw2')
+            rack_dict['sw3_mac'] = data_.get('mac_address_ilo')
+
+            if not data_.get('id_sw1'):
+                rack_dict['sw1_id'] = None
+            else:
                 rack_dict['sw1_id'] = data_.get('id_sw1')
+            if not data_.get('id_sw2'):
+                rack_dict['sw2_id'] = None
+            else:
                 rack_dict['sw2_id'] = data_.get('id_sw2')
+            if not data_.get('id_ilo'):
+                rack_dict['sw3_id'] = None
+            else:
                 rack_dict['sw3_id'] = data_.get('id_ilo')
-            except Exception:
-                raise exceptions.InvalidInputException()
 
             rack = facade.save_rack(self.request.user, rack_dict)
 
@@ -63,7 +73,8 @@ class RackView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError) as exception:
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
             log.exception(exception)
             raise exception
         except Exception, exception:

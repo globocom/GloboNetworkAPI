@@ -25,7 +25,7 @@ get_rack_by_equip_resource = RackGetByEquipResource()
 
 
 urlpatterns = patterns('',
-    url(r'^[/]?$', RackView.as_view()),
+    url(r'^$', RackView.as_view()),
     url(r'^list[/]?$', list_all_racks_resource.handle_request,
         name='list.rack'),
     url(r'^find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,
