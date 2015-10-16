@@ -25,6 +25,8 @@ log = logging.getLogger(__name__)
 
 class IOS(BasePlugin):
 
+	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
+
 	admin_privileges = 15
 	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
 

@@ -25,6 +25,7 @@ from networkapi.api_rest import exceptions as api_exceptions
 import logging
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 
 from networkapi.settings import TFTPBOOT_FILES_PATH, TFTP_SERVER_ADDR, CONFIG_FILES_PATH, CONFIG_FILES_REL_PATH
 
@@ -132,6 +133,10 @@ def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tft
 	else:
 		log.error("Invalid data for equipment")
 		raise api_exceptions.NetworkAPIException()
+
+	if equipment.maintenance:
+		raise AllEquipmentsAreInMaintenanceException()
+
 
 	with distributedlock(lockvar):
 		return __applyConfig(equipment, rel_filename, equipment_access, tftpserver)

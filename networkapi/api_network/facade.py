@@ -43,6 +43,15 @@ TEMPLATE_NETWORKv4_DEACTIVATE = "ipv4_deactivate_network_configuration"
 TEMPLATE_NETWORKv6_ACTIVATE = "ipv6_activate_network_configuration"
 TEMPLATE_NETWORKv6_DEACTIVATE = "ipv6_deactivate_network_configuration"
 
+def all_equipments_are_in_maintenance(equipment_list):
+
+	all_equips_in_maintenance = True
+
+	for equipment in equipment_list:
+		all_equips_in_maintenance &= equipment.maintenance
+
+	return all_equips_in_maintenance
+
 
 def create_dhcprelayIPv4_object(user, ipv4_id, networkipv4_id):
 
