@@ -58,6 +58,13 @@ def get_by_name(name):
         raise exceptions.VariableDoesNotExistException()
     return var
 
+def get_value(name):
+    try:
+        var = Variable.objects.filter(name=name).uniqueResult()
+    except ObjectDoesNotExist:
+        raise exceptions.VariableDoesNotExistException()
+    return var.value
+
 def delete_variable(user, variable_id):
     try:
         variable = get_by_id(variable_id)
