@@ -14,3 +14,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import logging
+
+log = logging.getLogger(__name__)
+
+def all_equipments_are_in_maintenance(equipment_list):
+	
+	all_equips_in_maintenance = True
+	for equipment in equipment_list:
+		all_equips_in_maintenance &= equipment.maintenance
+
+	return all_equips_in_maintenance
