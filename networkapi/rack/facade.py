@@ -54,11 +54,20 @@ def save_rack(user, rack_dict):
         pass
 
     if id_sw1 is not None:
-        rack.id_sw1 = Equipamento(id=int(id_sw1))
+        try:
+            rack.id_sw1 = Equipamento.get_by_pk(int(id_sw1))
+        except:
+            raise exceptions.InvalidInputException("O Leaf de id %s não existe." % id_sw1)
     if id_sw2 is not None:
-        rack.id_sw2 = Equipamento(id=int(id_sw2))
+        try:
+            rack.id_sw2 = Equipamento.get_by_pk(int(id_sw2))
+        except:
+            raise exceptions.InvalidInputException("O Leaf de id %s não existe." % id_sw2)
     if id_sw3 is not None:
-        rack.id_ilo = Equipamento(id=int(id_sw3))
+        try:
+            rack.id_ilo = Equipamento.get_by_pk(int(id_sw3))
+        except:
+            raise exceptions.InvalidInputException("O OOB de id %s não existe." % id_sw3)
 
     rack.save(user)
     return rack

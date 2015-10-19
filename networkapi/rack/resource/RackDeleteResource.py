@@ -16,21 +16,23 @@
 # limitations under the License.
 
 
+import shutil
+import glob
+import commands
+import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.rack.models import RackNumberNotFoundError, Rack , RackError, EnvironmentRack, RackAplError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
 from networkapi.ambiente.models import Ambiente, GrupoL3
 from networkapi.distributedlock import distributedlock, LOCK_RACK
 from networkapi import settings
-import shutil
-import glob
-import commands
-
+from networkapi.system.facade import get_value as get_variable
+from networkapi.system import exceptions as var_exceptions
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def desativar_vlan_rede(user, rack):
@@ -95,7 +97,12 @@ def remover_ambiente(user, lista_amb, rack):
 
 def aplicar(rack):
 
-    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
+    try:
+        PATH_TO_CONFIG = get_variable("path_to_config")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG.")
+
+    path_config = PATH_TO_CONFIG +'*'+rack.nome+'*'
     arquivos = glob.glob(path_config)
     for var in arquivos: 
         name_equipaments = var.split('/')[-1][:-4]      
@@ -154,24 +161,34 @@ class RackDeleteResource(RestResource):
 
             ######################################################## Mover os arquivos de configuracao que foram gerados
             try:
+                LEAF = get_variable("leaf")
+                OOB = get_variable("oob")
+                SPN = get_variable("spn")
+                FORMATO = get_variable("formato")
+                PATH_TO_CONFIG = get_variable("path_to_config")
+                PATH_TO_MV = get_variable("path_to_mv")
+            except ObjectDoesNotExist:
+                raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis <LEAF,OOB,SPN> ou FORMATO ou PATH_TO_<MV,CONFIG>.")
+
+            try:
                 for i in range(1,3):
-                    nome_lf = settings.LEAF+"-"+rack.nome+"-0"+str(i)+settings.FORMATO
-                    nome_lf_b = settings.PATH_TO_CONFIG+nome_lf
-                    nome_lf_a = settings.PATH_TO_MV+nome_lf
+                    nome_lf = LEAF+"-"+rack.nome+"-0"+str(i)+FORMATO
+                    nome_lf_b = PATH_TO_CONFIG+nome_lf
+                    nome_lf_a = PATH_TO_MV+nome_lf
                     shutil.move(nome_lf_b, nome_lf_a)
-                    nome_oob = settings.OOB+"-0"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
-                    nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
-                    nome_oob_a = settings.PATH_TO_MV+nome_oob
+                    nome_oob = OOB+"-0"+str(i)+"-ADD-"+rack.nome+FORMATO
+                    nome_oob_b = PATH_TO_CONFIG+nome_oob
+                    nome_oob_a = PATH_TO_MV+nome_oob
                     shutil.move(nome_oob_b, nome_oob_a)
                 for i in range(1,5):
-                    nome_spn = settings.SPN+"-0"+str(i)+"-ADD-"+rack.nome+settings.FORMATO
-                    nome_spn_b = settings.PATH_TO_CONFIG+nome_spn
-                    nome_spn_a = settings.PATH_TO_MV+nome_spn
+                    nome_spn = SPN+"-0"+str(i)+"-ADD-"+rack.nome+FORMATO
+                    nome_spn_b = PATH_TO_CONFIG+nome_spn
+                    nome_spn_a = PATH_TO_MV+nome_spn
                     shutil.move(nome_spn_b, nome_spn_a)
 
-                nome_oob = settings.OOB+"-"+rack.nome+"-01"+settings.FORMATO
-                nome_oob_b = settings.PATH_TO_CONFIG+nome_oob
-                nome_oob_a = settings.PATH_TO_MV+nome_oob
+                nome_oob = OOB+"-"+rack.nome+"-01"+FORMATO
+                nome_oob_b = PATH_TO_CONFIG+nome_oob
+                nome_oob_a = PATH_TO_MV+nome_oob
                 shutil.move(nome_oob_b, nome_oob_a)
             except:
                 pass
@@ -186,7 +203,7 @@ class RackDeleteResource(RestResource):
                 raise RackError(None, u'Failed to remove the Vlans and Environments.')
 
             ########################################################         Remove rack config from spines and core oob
-            aplicar(rack)
+            #aplicar(rack)
 
             ########################################################                                         Remove Rack
             with distributedlock(LOCK_RACK % rack_id):
@@ -221,3 +238,7 @@ class RackDeleteResource(RestResource):
 
         except RackAplError, e:
             return self.response_error(383, e.param, e.value)
+
+        except ObjectDoesNotExist, exception:
+            self.log.error(exception)
+            raise var_exceptions.VariableDoesNotExistException()

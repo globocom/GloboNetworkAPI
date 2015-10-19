@@ -16,12 +16,13 @@
 # limitations under the License.
 
 
-from django.core.exceptions import ObjectDoesNotExist
+import glob
+import commands
+import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
@@ -31,9 +32,10 @@ from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.util import destroy_cache_function
 from networkapi.filter.models import Filter
-from networkapi import settings
-import glob
-import commands
+from networkapi.system.facade import get_value as get_variable
+from networkapi.system import exceptions as var_exceptions
+from django.core.exceptions import ObjectDoesNotExist
+
 
 def get_core_name(rack):
 
@@ -176,7 +178,7 @@ def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None, vrf=None
         try:
             filter_obj = Filter.objects.get(name__iexact=filter)
             environment.filter = filter_obj
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             pass
 
 
@@ -444,13 +446,20 @@ def ambiente_borda(user,rack, environment_list):
 
 def aplicar(rack):
 
-    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
+    try:
+        PATH_TO_CONFIG = get_variable("path_to_config")
+        REL_PATH_TO_CONFIG = get_variable("rel_path_to_config")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG ou REL_PATH_TO_CONFIG.")
+
+    path_config = PATH_TO_CONFIG +'*'+rack.nome+'*'
     arquivos = glob.glob(path_config)
 
     #Get all files and search for equipments of the rack
+    """
     for var in arquivos: 
         filename_equipments = var.split('/')[-1]
-        rel_filename = "../"+settings.REL_PATH_TO_CONFIG+filename_equipments
+        rel_filename = "../"+REL_PATH_TO_CONFIG+filename_equipments
         #Check if file is config relative to this rack
         if rack.nome in filename_equipments:
             #Apply config only in spines. Leaves already have all necessary config in startup
@@ -468,7 +477,7 @@ def aplicar(rack):
                 except:
                     #Error equipment not found, do nothing
                     pass
-
+    """
 def environment_rack(user, environment_list, rack):
 
     #Insert all environments in environment rack table
@@ -535,9 +544,16 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################           VLAN Gerencia SO
             ambientes=dict()
-            ambientes['DC']=settings.DIVISAODC_MGMT
-            ambientes['LOG']=settings.AMBLOG_MGMT
-            ambientes['L3']=settings.GRPL3_MGMT
+            try:
+                DIVISAODC_MGMT = get_variable("divisaodc_mngt")
+                AMBLOG_MGMT = get_variable("amblog_mngt")
+                GRPL3_MGMT = get_variable("grpl3_mngt")
+            except ObjectDoesNotExist:
+                raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis <DIVISAODC,AMBLOG,GRPL3>_MGMT.")
+
+            ambientes['DC']=DIVISAODC_MGMT
+            ambientes['LOG']=AMBLOG_MGMT
+            ambientes['L3']=GRPL3_MGMT
     
             try:
                 #criar e ativar a vlan
@@ -618,4 +634,6 @@ class RackAplicarConfigResource(RestResource):
         except RackError:
             return self.response_error(383)
 
-
+        except ObjectDoesNotExist, exception:
+            self.log.error(exception)
+            raise var_exceptions.VariableDoesNotExistException()
