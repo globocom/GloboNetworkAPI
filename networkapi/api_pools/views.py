@@ -169,6 +169,17 @@ def pool_list_by_reqvip(request):
 def poolmember_state(request):
     """
     Enable/Disable pool member by list
+
+    param: Following dictionary: {
+            "pools": [
+                {
+                    "server_pool": {
+                    },
+                    "server_pool_members": [
+                    ]
+                }
+            ]
+        }
     """
 
     request = request.DATA.get("pools", [])
@@ -196,7 +207,7 @@ def list_all_members(request):
 
     """
     Return pool member list by POST request method
-    Param: {"id_pools":[<id_pool>], "checkstatus":"<True or False>"}
+    Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}
     Return: 
           {
             "pools": [
