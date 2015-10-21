@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS `variables`;
 CREATE TABLE `variables` (
   `id_variable` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
-  `value` varchar(50) NOT NULL,
+  `value` varchar(100) NOT NULL,
   `description` varchar(100) default NULL,
   PRIMARY KEY  (`id_variable`),
   UNIQUE KEY `name` (`name`)
