@@ -3,6 +3,13 @@ SQL_UP = u"""
 
 BEGIN;
 
+CREATE TABLE `django_site` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `domain` varchar(100) NOT NULL,
+    `name` varchar(50) NOT NULL
+)
+;
+
 CREATE TABLE `django_content_type` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `name` varchar(100) NOT NULL,
@@ -96,25 +103,24 @@ COMMIT;
 
 SQL_DOWN = u"""
 
-DROP TABLE auth_permission;
-
+BEGIN;
 ALTER TABLE auth_group_permissions DROP FOREIGN KEY permission_id_refs_id_a7792de1;
 ALTER TABLE auth_group_permissions DROP FOREIGN KEY group_id_refs_id_3cea63fe;
 DROP TABLE auth_group_permissions;
 
-DROP TABLE auth_group;
-
 ALTER TABLE `auth_user_user_permissions` DROP FOREIGN KEY `permission_id_refs_id_67e79cb`;
+ALTER TABLE `auth_user_user_permissions` DROP FOREIGN KEY `user_id_refs_id_f2045483`;
 DROP TABLE auth_user_user_permissions;
 
+ALTER TABLE `auth_permission` DROP FOREIGN KEY `content_type_id_refs_id_728de91f`;
+DROP TABLE auth_permission;
+
 ALTER TABLE `auth_user_groups` DROP FOREIGN KEY `group_id_refs_id_f0ee9890`;
+ALTER TABLE `auth_user_groups` DROP FOREIGN KEY `user_id_refs_id_831107f1`;
 DROP TABLE `auth_user_groups`;
 
-ALTER TABLE `auth_user_user_permissions` DROP FOREIGN KEY `user_id_refs_id_f2045483`;
-ALTER TABLE `auth_user_groups` DROP FOREIGN KEY `user_id_refs_id_831107f1`;
-ALTER TABLE `auth_permission` DROP FOREIGN KEY `content_type_id_refs_id_728de91f`;
 DROP TABLE `auth_user`;
-
+DROP TABLE auth_group;
 
 ALTER TABLE `django_admin_log` DROP FOREIGN KEY `content_type_id_refs_id_288599e6`;
 ALTER TABLE `django_admin_log` DROP FOREIGN KEY `user_id_refs_id_c8665aa`;
@@ -124,4 +130,7 @@ DROP TABLE django_content_type;
 
 DROP TABLE django_session;
 
+DROP TABLE django_site;
+
+COMMIT;
 """
