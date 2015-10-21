@@ -237,18 +237,13 @@ VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
 
 # List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    #     'django.template.loaders.eggs.Loader',
-)
-
 if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
-       'django.contrib.sessions.middleware.SessionMiddleware',
-       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
         'networkapi.middlewares.SQLLogMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
         'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
@@ -258,12 +253,32 @@ else:
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
-       'django.contrib.sessions.middleware.SessionMiddleware',
-       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
         'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
 
 ROOT_URLCONF = 'networkapi.urls'
+
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages",
+    'django.core.context_processors.request',
+)
+
+
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    #     'django.template.loaders.eggs.Loader',
+)
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -273,10 +288,13 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    #    'django.contrib.auth',
-    #    'django.contrib.contenttypes',
-    #    'django.contrib.sessions',
-    #    'django.contrib.sites',
+    #'bootstrap_admin',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
     'networkapi.ambiente',
     'networkapi.equipamento',
     'networkapi.eventlog',
