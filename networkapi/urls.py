@@ -16,8 +16,10 @@
 # limitations under the License.
 
 from django.conf.urls.defaults import *
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 from django.contrib import admin
+from django.conf import settings
 from networkapi.check.CheckAction import CheckAction
 
 # Uncomment the next two lines to enable the admin:
@@ -129,3 +131,6 @@ urlpatterns = patterns('',
     # django admin
     url(r'^admin/', include(admin.site.urls)),
 )
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
