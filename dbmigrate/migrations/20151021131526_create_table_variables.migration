@@ -10,9 +10,9 @@ DROP TABLE IF EXISTS `variables`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `variables` (
   `id_variable` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `value` varchar(50) NOT NULL,
-  `description` varchar(100) default NULL,
+  `name` varchar(200) NOT NULL,
+  `value` varchar(200) NOT NULL,
+  `description` varchar(200) default NULL,
   PRIMARY KEY  (`id_variable`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET=utf8;
