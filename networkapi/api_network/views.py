@@ -33,6 +33,8 @@ from networkapi.api_network.permissions import Read, Write, DeployConfig
 from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer, DHCPRelayIPv4Serializer, DHCPRelayIPv6Serializer
 from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
 from networkapi.api_network import exceptions
+from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
+from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv4NotFoundError, NetworkIPv6NotFoundError
 from networkapi.equipamento.models import Equipamento
@@ -311,6 +313,9 @@ def networkIPv4_deploy(request, network_id):
             log.error(u'User does not have permission to perform the operation.')
             raise PermissionDenied("No permission to configure equipment %s-%s" % (equip.id, equip.nome) )
 
+    if all_equipments_are_in_maintenance(equipment_list):
+        raise AllEquipmentsAreInMaintenanceException()
+
     #deploy network configuration
     if request.method == 'POST':
         returned_data = facade.deploy_networkIPv4_configuration(request.user, networkipv4, equipment_list)
@@ -419,6 +424,9 @@ def networkIPv6_deploy(request, network_id):
         if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
             log.error(u'User does not have permission to perform the operation.')
             raise PermissionDenied("No permission to configure equipment %s-%s" % (equip.id, equip.nome) )
+
+    if all_equipments_are_in_maintenance(equipment_list):
+        raise AllEquipmentsAreInMaintenanceException()
 
     #deploy network configuration
     if request.method == 'POST':
