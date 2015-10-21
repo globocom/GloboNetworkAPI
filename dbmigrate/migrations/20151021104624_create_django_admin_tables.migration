@@ -102,6 +102,11 @@ CREATE TABLE `django_admin_log` (
 -- The following references should be added but depend on non-existent tables:
 ALTER TABLE `django_admin_log` ADD CONSTRAINT `content_type_id_refs_id_288599e6` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
 ALTER TABLE `django_admin_log` ADD CONSTRAINT `user_id_refs_id_c8665aa` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
+
+INSERT INTO `auth_user` (id,username,first_name,last_name,email,password,is_staff,is_active,is_superuser,last_login,date_joined) VALUES
+(1,'admin','','','admin@example.com','pbkdf2_sha256$10000$G6vBqYpXG7DG$obTQjiHNNmPHs16d9pjLOGvf2I5YbSx73Atcv/07Drc=',1,1,1,STR_TO_DATE('2015-10-21 15:36:58','%Y-%m-%d %H:%i:%s'),STR_TO_DATE('2015-10-21 15:36:58','%Y-%m-%d %H:%i:%s'))
+;
+
 COMMIT;
 """
 
