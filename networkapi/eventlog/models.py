@@ -23,6 +23,7 @@ from datetime import datetime
 
 from django.utils.translation import ugettext_lazy as _
 
+LOG = logging.getLogger(__name__)
 
 class EventLogError(Exception):
 
@@ -120,9 +121,27 @@ class AuditRequest(models.Model):
         Create a new request from a path, user and ip and put it on thread context.
         The new request should not be saved until first use or calling method current_request(True)
         """
+        from networkapi.usuario.models import Usuario
+
+        if not isinstance(user, Usuario):
+
+
+            # try to find a Usuario with the same email
+            # Need to do this because we are using django 1.4 and we cannot change the user model
+            usuario, created = Usuario.objects.get_or_create(user=user.username,
+                                                          defaults={'ativo': user.is_active,
+                                                                    'nome' : user.get_full_name(),
+                                                                    'email': user.email,
+                                                                    'user' : user.username})
+
+        else:
+            usuario = user
+
+
+
         audit_request = AuditRequest()
         audit_request.ip = ip
-        audit_request.user = user
+        audit_request.user = usuario
         audit_request.path = path
         audit_request.request_id = uuid.uuid4().hex
         while AuditRequest.objects.filter(request_id=audit_request.request_id).exists():
