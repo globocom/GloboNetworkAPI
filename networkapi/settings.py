@@ -156,7 +156,7 @@ LOGGING = {
             'filters': ['user_filter'],
         },
         'console':{
-            'level':'DEBUG',
+            'level':'INFO',
             'class':'logging.StreamHandler',
             'formatter': 'simple',
             'filters': ['user_filter'],
@@ -516,7 +516,7 @@ if CI:
         },
         'handlers': {
             'console':{
-                'level':'DEBUG',
+                'level':'INFO',
                 'class':'logging.StreamHandler',
                 'formatter': 'simple'
             },
@@ -525,11 +525,11 @@ if CI:
             'django': {
                 'handlers':['console'],
                 'propagate': True,
-                'level':'DEBUG',
+                'level':'INFO',
             },
             'django.request': {
                 'handlers': ['console'],
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'propagate': False,
             },
             'django.db.backends': {
@@ -539,7 +539,7 @@ if CI:
             },
         },
         'root': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
             'handlers': ['console'],
         },

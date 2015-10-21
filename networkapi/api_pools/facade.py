@@ -18,6 +18,7 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
+from django.db.models import Q
 
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
@@ -442,17 +443,59 @@ def set_poolmember_state(pools):
             members = []
             members_monitor_state = []
             members_session_state = []
+            
+            q_filters = []
             for pool_member in pool['server_pool_members']:
+                
+                port_real = pool_member['port_real']
+
                 if pool_member['ipv6'] is None:
                     ip = pool_member['ip']['ip_formated']
+
+                    ip_ft = '.'.join(str(x) for x in [pool_member['ip']['oct1'], pool_member['ip']['oct2'], pool_member['ip']['oct3'],
+                        pool_member['ip']['oct4']])
+
+                    if ip != ip_ft:
+                        raise exceptions.InvalidIpNotExist()
+
+
+                    q_filters.append({
+                        'ip__oct1':pool_member['ip']['oct1'],
+                        'ip__oct2':pool_member['ip']['oct2'],
+                        'ip__oct3':pool_member['ip']['oct3'],
+                        'ip__oct4':pool_member['ip']['oct4'],
+                        'port_real':port_real
+                    })
                 else:
                     ip = pool_member['ipv6']['ip_formated']
 
-                port_real = pool_member['port_real']
+                    ip_ft = '.'.join(str(x) for x in [pool_member['ipv6']['block1'], pool_member['ipv6']['block2'], pool_member['ipv6']['block3'],
+                        pool_member['ipv6']['block4'], pool_member['ipv6']['block5'], pool_member['ipv6']['block6'],
+                        pool_member['ipv6']['block7'], pool_member['ipv6']['block8']])
+                    
+                    if ip != ip_ft:
+                        raise exceptions.InvalidIpNotExist()
+
+                    q_filters.append({
+                        'ipv6__block1':pool_member['ipv6']['block1'],
+                        'ipv6__block2':pool_member['ipv6']['block2'],
+                        'ipv6__block3':pool_member['ipv6']['block3'],
+                        'ipv6__block4':pool_member['ipv6']['block4'],
+                        'ipv6__block5':pool_member['ipv6']['block5'],
+                        'ipv6__block6':pool_member['ipv6']['block6'],
+                        'ipv6__block7':pool_member['ipv6']['block7'],
+                        'ipv6__block8':pool_member['ipv6']['block8'],
+                        'port_real':port_real
+                    })
 
                 members.append({'address':ip, 'port':port_real})
                 members_monitor_state.append(str(pool_member['member_status']))
                 members_session_state.append(str(pool_member['member_status']))
+
+            server_pool_members = ServerPoolMember.objects.filter(reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]))
+            
+            if len(server_pool_members) != len(members):
+                raise exceptions.PoolmemberNotExist()
 
             pool_name = pool['server_pool']['identifier']
 
@@ -517,6 +560,7 @@ def get_poolmember_state(servers_pools):
 
         members = []
         members_id = []
+
         server_pool_members = ServerPoolMember.objects.filter(server_pool=server_pool)
         for pool_member in server_pool_members:
             if pool_member.ipv6 is None:
