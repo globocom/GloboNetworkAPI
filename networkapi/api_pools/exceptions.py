@@ -202,3 +202,12 @@ class DiffStatesEquipament(APIException):
 
     def __init__(self, msg=None):
         self.detail = u'The poolmember <<%s>> has states different in equipments.' % (msg)
+
+class PoolmemberNotExist(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Poolmember has no in load balance.'
+
+class InvalidIpNotExist(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Poolmember has invalid ip.'
+
