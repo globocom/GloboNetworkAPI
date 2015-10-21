@@ -261,6 +261,10 @@ else:
 
 ROOT_URLCONF = 'networkapi.urls'
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.4/howto/static-files/
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(os.getenv('NETWORKAPI_STATIC_FILE', SITE_ROOT), 'sitestatic')
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -295,6 +299,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'networkapi.ambiente',
     'networkapi.equipamento',
     'networkapi.eventlog',
