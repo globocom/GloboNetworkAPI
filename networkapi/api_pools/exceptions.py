@@ -207,6 +207,10 @@ class PoolmemberNotExist(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Poolmember has no in load balance.'
 
+class PoolNotExist(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool has no in load balance.'
+
 class InvalidIpNotExist(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Poolmember has invalid ip.'

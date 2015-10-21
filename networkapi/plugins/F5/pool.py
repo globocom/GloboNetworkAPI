@@ -3,6 +3,7 @@ import F5.util
 
 from networkapi.plugins import exceptions as base_exceptions
 
+
 class Pool(object):
 
     def __init__(self, lb=None):
@@ -11,8 +12,8 @@ class Pool(object):
 
         self._lb = lb
 
-	def createPool(self, pools):
-		self._lb._channel.LocalLB.Pool.create_v2(
-		    pools['pools_name'],
-		    pools['pools_lbmethod'],
-		    pools['pools_members'])
+        def createPool(self, pools):
+            self._lb._channel.LocalLB.Pool.create_v2(
+                pools['pools_name'],
+                pools['pools_lbmethod'],
+                pools['pools_members'])
