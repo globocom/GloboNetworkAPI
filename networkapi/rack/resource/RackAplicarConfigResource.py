@@ -456,8 +456,7 @@ def aplicar(rack):
     arquivos = glob.glob(path_config)
 
     #Get all files and search for equipments of the rack
-    """
-    for var in arquivos: 
+    for var in arquivos:
         filename_equipments = var.split('/')[-1]
         rel_filename = "../"+REL_PATH_TO_CONFIG+filename_equipments
         #Check if file is config relative to this rack
@@ -477,7 +476,7 @@ def aplicar(rack):
                 except:
                     #Error equipment not found, do nothing
                     pass
-    """
+
 def environment_rack(user, environment_list, rack):
 
     #Insert all environments in environment rack table

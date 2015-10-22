@@ -567,8 +567,8 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
         #valor base para as vlans e portchannels
         BASE_SO = int(get_variable("base_so"))
         #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-        fileoutcore1=get_variable("path_to_config")+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-        fileoutcore2=get_variable("path_to_config")+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutcore1=get_variable("path_to_add_config")+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutcore2=get_variable("path_to_add_config")+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
         fileoutoob=get_variable("path_to_config")+HOSTNAME_OOB+".cfg"
     except ObjectDoesNotExist, exception:
         log.error(exception)
@@ -1023,15 +1023,15 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2["INTERFACE_OOB"]= INTERFACE_OOB_LF2
 
     try:
-        fileoutspine1=get_variable("path_to_config")+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-        fileoutspine2=get_variable("path_to_config")+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-        fileoutspine3=get_variable("path_to_config")+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-        fileoutspine4=get_variable("path_to_config")+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine1=get_variable("path_to_add_config")+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine2=get_variable("path_to_add_config")+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine3=get_variable("path_to_add_config")+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine4=get_variable("path_to_add_config")+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
         fileoutleaf1=get_variable("path_to_config")+HOSTNAME_LF1+".cfg"
         fileoutleaf2=get_variable("path_to_config")+HOSTNAME_LF2+".cfg"
     except ObjectDoesNotExist, exception:
         log.error(exception)
-        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG.")
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG ou PATH_TO_ADD_CONFIG.")
 
     replace(fileinspine1,fileoutspine1,variablestochangespine1)
     replace(fileinspine2,fileoutspine2,variablestochangespine2)

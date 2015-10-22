@@ -29,7 +29,6 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.vlan.models import Vlan, VlanNetworkError, VlanInactiveError
 from networkapi.ambiente.models import Ambiente, GrupoL3
 from networkapi.distributedlock import distributedlock, LOCK_RACK
-from networkapi import settings
 from networkapi.system.facade import get_value as get_variable
 from networkapi.system import exceptions as var_exceptions
 from django.core.exceptions import ObjectDoesNotExist
