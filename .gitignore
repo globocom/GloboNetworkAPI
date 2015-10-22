@@ -19,3 +19,4 @@ build
 *.idea*
 *.db
 sqldump_vm_teste.sql
+sitestatic/
