@@ -323,6 +323,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
+    'networkapi.system',
     'django_extensions',
 )
 

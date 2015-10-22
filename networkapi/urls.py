@@ -129,4 +129,9 @@ urlpatterns = patterns('',
     #eventlog
     url(r'^eventlog/', include('networkapi.eventlog.urls')),
 
+    # django admin
+    url(r'^admin/', include(admin.site.urls)),
 )
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
