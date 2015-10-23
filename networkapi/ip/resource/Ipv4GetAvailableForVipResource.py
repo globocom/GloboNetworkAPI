@@ -30,6 +30,8 @@ from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.ambiente.models import EnvironmentVip
 from django.forms.models import model_to_dict
 from networkapi.distributedlock import distributedlock, LOCK_GET_IPV4_AVAILABLE
+from django.db import transaction
+
 
 
 class Ipv4GetAvailableForVipResource(RestResource):
@@ -88,7 +90,6 @@ class Ipv4GetAvailableForVipResource(RestResource):
 
                     try:
                         ip_available = ipv4.get_available_ip(net.id)
-
                         ip_new = Ip()
                         ip_available = ip_available.exploded
                         ip_available = ip_available.split(".")
@@ -136,6 +137,8 @@ class Ipv4GetAvailableForVipResource(RestResource):
                             raise IpNotAvailableError(None, "Não há ipv4 disponivel para as redes associdas com o Ambiente "
                                                             "Vip: %s - %s - %s"
                                                       % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
+
+                transaction.commit()
 
                 return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))
 

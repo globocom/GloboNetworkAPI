@@ -30,6 +30,8 @@ from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.ambiente.models import EnvironmentVip
 from django.forms.models import model_to_dict
 from networkapi.distributedlock import distributedlock, LOCK_GET_IPV6_AVAILABLE
+from django.db import transaction
+
 
 
 class Ipv6GetAvailableForVipResource(RestResource):
@@ -142,6 +144,7 @@ class Ipv6GetAvailableForVipResource(RestResource):
                                                             "Ambiente Vip: %s - %s - %s"
                                                       % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
+                transaction.commit()
                 return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))
 
         except NetworkNotInEvip, e:
