@@ -60,7 +60,7 @@ def get_core_name(rack):
 
     return name_core1, name_core2
 
-def criar_vlan(user, variablestochangecore1, ambientes):
+def criar_vlan(user, variablestochangecore1, ambientes, active=1):
 
     #get environment
     ambiente = Ambiente()
@@ -80,7 +80,7 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     vlan.nome = variablestochangecore1.get("VLAN_NAME")
     vlan.descricao = ""
     vlan.ambiente = id_ambiente
-    vlan.ativada = 1
+    vlan.ativada = active
     vlan.acl_valida = 0
     vlan.acl_valida_v6 = 0
 
@@ -88,7 +88,7 @@ def criar_vlan(user, variablestochangecore1, ambientes):
 
     return vlan
 
-def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
+def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan, active=1):
 
     tiporede = TipoRede()
     net_id = tiporede.get_by_name(tipo_rede)
@@ -98,7 +98,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
-    network_ip.active = 1
+    network_ip.active = active
     network_ip.block = variablestochangecore1.get("REDE_MASK")
     
     while str(variablestochangecore1.get("REDE_IP")).endswith(":"):
@@ -126,7 +126,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
  
     return network_ip
 
-def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
+def criar_rede(user, tipo_rede, variablestochangecore1, vlan, active=1):
 
     tiporede = TipoRede()
     net_id = tiporede.get_by_name(tipo_rede)
@@ -140,7 +140,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
-    network_ip.active = 1
+    network_ip.active = active
 
     destroy_cache_function([vlan.id])
     network_ip.save()
@@ -374,10 +374,10 @@ def ambiente_cloud(user, rack, environment_list):
         variables['VLAN_NUM'] = hosts.get(numero)
         variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
         
-        vlan = criar_vlan(user, variables, ambientes)
+        vlan = criar_vlan(user, variables, ambientes, 0)
         #criar rede
-        criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
-        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
+        criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan, 0)
+        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan, 0)
 
     return environment_list
 
