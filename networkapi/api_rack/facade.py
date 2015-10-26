@@ -17,8 +17,8 @@
 
 import logging
 from networkapi.equipamento.models import Equipamento
-from networkapi.rack.models import Rack
-from networkapi.rack import exceptions
+from networkapi.api_rack.models import Rack
+from networkapi.api_rack import exceptions
 from django.core.exceptions import ObjectDoesNotExist
 
 log = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ def save_rack(user, rack_dict):
 
     rack = Rack()
 
+    rack.numero = rack_dict.get('number')
     rack.mac_sw1 = rack_dict.get('sw1_mac')
     rack.mac_sw2 = rack_dict.get('sw2_mac')
     rack.mac_ilo = rack_dict.get('sw3_mac')
@@ -36,12 +37,8 @@ def save_rack(user, rack_dict):
 
     if not rack_dict.get('name'):
         raise exceptions.InvalidInputException("O nome do Rack não foi informado.")
-    else:
+    elif rack_dict.get('name') is not 0:
         rack.nome = rack_dict.get('name')
-    if not rack_dict.get('number'):
-        raise exceptions.InvalidInputException("O número do Rack não foi informado.")
-    else:
-        rack.numero = rack_dict.get('number')
     try:
         Rack.objects.get(numero__iexact=rack.numero)
         raise exceptions.RackNumberDuplicatedValueError()

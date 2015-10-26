@@ -20,3 +20,15 @@ class VariableDoesNotExistException(APIException):
 class VariableDuplicateNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Variable already exists.'
+
+class RackError(Exception):
+
+    """Representa um erro ocorrido durante acesso ?|  tabela racks."""
+
+    def __init__(self, cause, message=None):
+        self.cause = cause
+        self.message = message
+
+    def __str__(self):
+        msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
+        return msg.encode('utf-8', 'replace')

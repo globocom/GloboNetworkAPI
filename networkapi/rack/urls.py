@@ -10,7 +10,6 @@ from networkapi.rack.resource.RackEnvironmentResource import RackEnvironmentReso
 from networkapi.rack.resource.RackFindResource import RackFindResource
 from networkapi.rack.resource.RackGetByEquipResource import RackGetByEquipResource
 from networkapi.rack.resource.RackListAllResource import RackListAllResource
-from networkapi.rack.views import RackView
 
 find_rack_resource = RackFindResource()
 edit_rack_resource = RackEditResource()
@@ -23,7 +22,6 @@ get_rack_by_equip_resource = RackGetByEquipResource()
 
 
 urlpatterns = patterns('',
-    url(r'^$', RackView.as_view()),
     url(r'^list[/]?$', list_all_racks_resource.handle_request,
         name='list.rack'),
     url(r'^find/(?P<rack_name>[^/]+)/$', find_rack_resource.handle_request,

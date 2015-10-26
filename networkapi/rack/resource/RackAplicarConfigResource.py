@@ -16,8 +16,6 @@
 # limitations under the License.
 
 
-import glob
-import commands
 import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
@@ -444,39 +442,6 @@ def ambiente_borda(user,rack, environment_list):
 
     return environment_list
 
-def aplicar(rack):
-
-    try:
-        PATH_TO_CONFIG = get_variable("path_to_config")
-        REL_PATH_TO_CONFIG = get_variable("rel_path_to_config")
-    except ObjectDoesNotExist:
-        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG ou REL_PATH_TO_CONFIG.")
-
-    path_config = PATH_TO_CONFIG +'*'+rack.nome+'*'
-    arquivos = glob.glob(path_config)
-
-    #Get all files and search for equipments of the rack
-    for var in arquivos:
-        filename_equipments = var.split('/')[-1]
-        rel_filename = "../"+REL_PATH_TO_CONFIG+filename_equipments
-        #Check if file is config relative to this rack
-        if rack.nome in filename_equipments:
-            #Apply config only in spines. Leaves already have all necessary config in startup
-            if "ADD" in filename_equipments:
-                #Check if equipment in under maintenance. If so, does not aplly on it
-                equipment_name = filename_equipments.split('-ADD-')[0]
-                try:
-                    equip = Equipamento.get_by_name(equipment_name)
-                    if not equip.maintenance:
-                        (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
-                        if erro:
-                            raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
-                except RackAplError, e:
-                    raise e
-                except:
-                    #Error equipment not found, do nothing
-                    pass
-
 def environment_rack(user, environment_list, rack):
 
     #Insert all environments in environment rack table
@@ -605,7 +570,6 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################                   Backuper
 
-            aplicar(rack)
             environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)

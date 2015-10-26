@@ -325,6 +325,7 @@ INSTALLED_APPS = (
     'networkapi.api_pools',
     'networkapi.system',
     'django_extensions',
+    'networkapi.api_rack',
 )
 
 
