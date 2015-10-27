@@ -128,8 +128,8 @@ class RackDeployView(APIView):
                             if not equip.maintenance:
                                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
                                 if erro:
-                                    raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
-                        except RackAplError, e:
+                                    raise exceptions.RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+                        except exceptions.RackAplError, e:
                             raise e
                         except:
                             #Error equipment not found, do nothing

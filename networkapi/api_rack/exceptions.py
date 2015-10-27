@@ -32,3 +32,12 @@ class RackError(Exception):
     def __str__(self):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
+class RackAplError(Exception):
+
+    """Retorna excecao quao a configuracao nao pode ser aplicada."""
+
+    def __init__(self, cause, param=None, value=None):
+        self.cause = cause
+        self.param = param
+        self.value = value
