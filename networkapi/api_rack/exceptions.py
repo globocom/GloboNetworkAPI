@@ -41,3 +41,10 @@ class RackAplError(Exception):
         self.cause = cause
         self.param = param
         self.value = value
+
+class RackNumberNotFoundError(RackError):
+
+    """Retorna excecao quando rack nao for encontrado."""
+
+    def __init__(self, cause, message=None):
+        RackError.__init__(self, cause, message)

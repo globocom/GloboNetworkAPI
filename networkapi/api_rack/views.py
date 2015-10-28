@@ -97,26 +97,22 @@ class RackDeployView(APIView):
         try:
             log.info("RACK deploy.")
 
-            data_ = self.request.DATA
-            if not data_:
-                raise exceptions.InvalidInputException()
-
-            rack_id = data_.get('rack_id')
-            rack = facade.get_by_id(self.request.user, rack_id)
+            rack_id = kwargs.get("rack_id")
+            rack = facade.get_by_pk(self.request.user, rack_id)
 
             try:
-                PATH_TO_CONFIG = get_variable("path_to_config")
-                REL_PATH_TO_CONFIG = get_variable("rel_path_to_config")
+                PATH_TO_ADD_CONFIG = get_variable("path_to_add_config")
+                REL_PATH_TO_ADD_CONFIG = get_variable("rel_path_to_add_config")
             except ObjectDoesNotExist:
-                raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG ou REL_PATH_TO_CONFIG.")
+                raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
 
-            path_config = PATH_TO_CONFIG +'*'+rack.nome+'*'
+            path_config = PATH_TO_ADD_CONFIG +'*'+rack.nome+'*'
             arquivos = glob.glob(path_config)
 
             #Get all files and search for equipments of the rack
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
-                rel_filename = "../"+REL_PATH_TO_CONFIG+filename_equipments
+                rel_filename = "../"+REL_PATH_TO_ADD_CONFIG+filename_equipments
                 #Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
                     #Apply config only in spines. Leaves already have all necessary config in startup
@@ -128,7 +124,7 @@ class RackDeployView(APIView):
                             if not equip.maintenance:
                                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
                                 if erro:
-                                    raise exceptions.RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
+                                    raise exceptions.RackAplError(None, None, "Falha ao aplicar as configuracoes:%s" %(result))
                         except exceptions.RackAplError, e:
                             raise e
                         except:
@@ -136,8 +132,10 @@ class RackDeployView(APIView):
                             pass
 
             datas = dict()
-            rack_serializer = RackSerializer(rack)
-            datas['rack'] = rack_serializer.data
+            success_map = dict()
+
+            success_map['rack_conf'] = True
+            datas['sucesso'] = success_map
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
@@ -145,6 +143,9 @@ class RackDeployView(APIView):
                 exceptions.InvalidInputException) as exception:
             log.exception(exception)
             raise exception
+        except var_exceptions.VariableDoesNotExistException as exception:
+            log.error(exception)
+            raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()

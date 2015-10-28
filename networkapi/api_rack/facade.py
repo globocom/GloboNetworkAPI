@@ -68,3 +68,13 @@ def save_rack(user, rack_dict):
 
     rack.save(user)
     return rack
+
+def get_by_pk(user, idt):
+
+    try:
+        return Rack.objects.filter(id=idt).uniqueResult()
+    except ObjectDoesNotExist, e:
+        raise exceptions.RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+    except Exception, e:
+        log.error(u'Failure to search the Rack.')
+        raise exceptions.RackError(e, u'Failure to search the Rack.')

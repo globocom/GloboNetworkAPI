@@ -80,7 +80,7 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     vlan.nome = variablestochangecore1.get("VLAN_NAME")
     vlan.descricao = ""
     vlan.ambiente = id_ambiente
-    vlan.ativada = 1
+    vlan.ativada = 0
     vlan.acl_valida = 0
     vlan.acl_valida_v6 = 0
 
@@ -98,7 +98,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
-    network_ip.active = 1
+    network_ip.active = 0
     network_ip.block = variablestochangecore1.get("REDE_MASK")
     
     while str(variablestochangecore1.get("REDE_IP")).endswith(":"):
@@ -140,7 +140,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
-    network_ip.active = 1
+    network_ip.active = 0
 
     destroy_cache_function([vlan.id])
     network_ip.save()
@@ -475,7 +475,7 @@ class RackAplicarConfigResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to create the configuration file.
 
-        URL: rack/aplicar-config/id_rack
+        URL: rack/alocar-config/id_rack
         """
         try:
 
@@ -520,12 +520,12 @@ class RackAplicarConfigResource(RestResource):
             ambientes['L3']=GRPL3_MGMT
     
             try:
-                #criar e ativar a vlan
+                #criar vlan
                 vlan = criar_vlan(user, variablestochangecore1, ambientes)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
-                #criar e ativar a rede
+                #criar rede
                 network = criar_rede(user, "Rede invalida equipamentos", variablestochangecore1, vlan)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
