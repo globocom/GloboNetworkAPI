@@ -78,7 +78,7 @@ class BasePlugin(object):
 		if self.equipment_access==None:
 			try:
 				self.equipment_access = EquipamentoAcesso.search(None, self.equipment, "ssh").uniqueResult()
-			except e:
+			except Exception, e:
 				log.error("Access type %s not found for equipment %s." % ("ssh", self.equipment.nome))
 				raise exceptions.InvalidEquipmentAccessException()
 
