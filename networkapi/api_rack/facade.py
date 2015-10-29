@@ -74,7 +74,7 @@ def get_by_pk(user, idt):
     try:
         return Rack.objects.filter(id=idt).uniqueResult()
     except ObjectDoesNotExist, e:
-        raise exceptions.RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+        raise exceptions.RackNumberNotFoundError("Rack id %s nao foi encontrado" % (idt))
     except Exception, e:
         log.error(u'Failure to search the Rack.')
-        raise exceptions.RackError(e, u'Failure to search the Rack.')
+        raise exceptions.RackError("Failure to search the Rack. %s" % (e))

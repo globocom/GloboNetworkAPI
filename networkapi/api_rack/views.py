@@ -124,7 +124,7 @@ class RackDeployView(APIView):
                             if not equip.maintenance:
                                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
                                 if erro:
-                                    raise exceptions.RackAplError(None, None, "Falha ao aplicar as configuracoes:%s" %(result))
+                                    raise exceptions.RackAplError()
                         except exceptions.RackAplError, e:
                             raise e
                         except:
@@ -139,15 +139,15 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except exceptions.RackAplError, e:
-            return self.response_error(383, e.param, e.value)
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
+        except exceptions.RackAplError, exception:
             log.exception(exception)
-            raise exception
-        except var_exceptions.VariableDoesNotExistException as exception:
+            raise exceptions.RackAplError("Falha ao aplicar as configuracoes: %s" %(result))
+        except exceptions.RackNumberNotFoundError, exception:
+            log.exception(exception)
+            raise exceptions.RackNumberNotFoundError()
+        except var_exceptions.VariableDoesNotExistException, exception:
             log.error(exception)
             raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
         except Exception, exception:
             log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+            raise api_exceptions.NetworkAPIException(exception)

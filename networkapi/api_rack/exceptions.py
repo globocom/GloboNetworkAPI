@@ -21,30 +21,14 @@ class VariableDuplicateNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Variable already exists.'
 
-class RackError(Exception):
+class RackError(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'RackError.'
 
-    """Representa um erro ocorrido durante acesso ?|  tabela racks."""
+class RackAplError(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Erro aplicando a configuracao no Rack.'
 
-    def __init__(self, cause, message=None):
-        self.cause = cause
-        self.message = message
-
-    def __str__(self):
-        msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
-        return msg.encode('utf-8', 'replace')
-
-class RackAplError(Exception):
-
-    """Retorna excecao quao a configuracao nao pode ser aplicada."""
-
-    def __init__(self, cause, param=None, value=None):
-        self.cause = cause
-        self.param = param
-        self.value = value
-
-class RackNumberNotFoundError(RackError):
-
-    """Retorna excecao quando rack nao for encontrado."""
-
-    def __init__(self, cause, message=None):
-        RackError.__init__(self, cause, message)
+class RackNumberNotFoundError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Rack does not exist.'
