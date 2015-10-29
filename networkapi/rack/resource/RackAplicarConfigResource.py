@@ -19,12 +19,12 @@
 import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
+from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack,\
+                                    EnvironmentRackDuplicatedError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteDuplicatedError
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
-from networkapi.rack.models import EnvironmentRackDuplicatedError, EquipamentoAmbienteDuplicatedError
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.vlan.models import TipoRede, Vlan
