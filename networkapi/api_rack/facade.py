@@ -17,7 +17,7 @@
 
 import logging
 from networkapi.equipamento.models import Equipamento
-from networkapi.api_rack.models import Rack
+from networkapi.rack.models import Rack
 from networkapi.api_rack import exceptions
 from django.core.exceptions import ObjectDoesNotExist
 
