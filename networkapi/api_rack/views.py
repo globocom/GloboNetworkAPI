@@ -139,6 +139,8 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
+        except exceptions.RackAplError, e:
+            return self.response_error(383, e.param, e.value)
         except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
                 exceptions.InvalidInputException) as exception:
             log.exception(exception)
