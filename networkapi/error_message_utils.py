@@ -324,6 +324,7 @@ error_messages = {
     401: u'As mudancas nao foram salvas',
     405: u'Channel não pode ser criado. %s',
     406: u'Channel não pode ser editado. %s',
+    407: u'Erro ao remover a variável.',
 }
 
 

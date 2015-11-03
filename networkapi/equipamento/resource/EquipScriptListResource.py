@@ -87,8 +87,8 @@ class EquipScriptListResource(RestResource):
             # List access related with equip
             equip_script_list = equip.equipamentoroteiro_set.all()
             # Permissions
-            equip_script_list = equip_script_list.filter(equipamento__grupos__direitosgrupoequipamento__ugrupo__in=user.grupos.all(
-            ), equipamento__grupos__direitosgrupoequipamento__escrita='1')
+            equip_script_list = equip_script_list.filter(equipamento__grupos__direitosgrupoequipamento__ugrupo__in=user.grupos.all(),
+                                                         equipamento__grupos__direitosgrupoequipamento__escrita='1')
 
             map_dicts = []
             for equip_script in equip_script_list:
@@ -97,13 +97,11 @@ class EquipScriptListResource(RestResource):
                 es_map['roteiro_id'] = equip_script.roteiro.id
                 es_map['roteiro_name'] = equip_script.roteiro.roteiro
                 es_map['roteiro_desc'] = equip_script.roteiro.descricao
-                es_map[
-                    'tipo_roteiro_id'] = equip_script.roteiro.tipo_roteiro.id
-                es_map[
-                    'tipo_roteiro_name'] = equip_script.roteiro.tipo_roteiro.tipo
-                es_map[
-                    'tipo_roteiro_desc'] = equip_script.roteiro.tipo_roteiro.descricao
-                map_dicts.append(es_map)
+                es_map['tipo_roteiro_id'] = equip_script.roteiro.tipo_roteiro.id
+                es_map['tipo_roteiro_name'] = equip_script.roteiro.tipo_roteiro.tipo
+                es_map['tipo_roteiro_desc'] = equip_script.roteiro.tipo_roteiro.descricao
+                if es_map not in map_dicts:
+                    map_dicts.append(es_map)
 
             equip_map = dict()
             equip_map['id'] = equip.id

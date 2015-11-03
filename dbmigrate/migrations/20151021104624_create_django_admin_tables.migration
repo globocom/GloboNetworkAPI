@@ -1,0 +1,145 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+BEGIN;
+
+CREATE TABLE `django_site` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `domain` varchar(100) NOT NULL,
+    `name` varchar(50) NOT NULL
+)
+;
+
+INSERT INTO `django_site` (id,domain,name) VALUES
+(1,'example.com','example.com')
+;
+
+CREATE TABLE `django_content_type` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `name` varchar(100) NOT NULL,
+    `app_label` varchar(100) NOT NULL,
+    `model` varchar(100) NOT NULL,
+    UNIQUE (`app_label`, `model`)
+)
+;
+
+CREATE TABLE `django_session` (
+    `session_key` varchar(40) NOT NULL PRIMARY KEY,
+    `session_data` longtext NOT NULL,
+    `expire_date` datetime NOT NULL
+)
+;
+
+CREATE TABLE `auth_permission` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `name` varchar(50) NOT NULL,
+    `content_type_id` integer NOT NULL,
+    `codename` varchar(100) NOT NULL,
+    UNIQUE (`content_type_id`, `codename`)
+)
+;
+CREATE TABLE `auth_group_permissions` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `group_id` integer NOT NULL,
+    `permission_id` integer NOT NULL,
+    UNIQUE (`group_id`, `permission_id`)
+)
+;
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `permission_id_refs_id_a7792de1` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`);
+CREATE TABLE `auth_group` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `name` varchar(80) NOT NULL UNIQUE
+)
+;
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `group_id_refs_id_3cea63fe` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`);
+CREATE TABLE `auth_user_user_permissions` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `user_id` integer NOT NULL,
+    `permission_id` integer NOT NULL,
+    UNIQUE (`user_id`, `permission_id`)
+)
+;
+ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `permission_id_refs_id_67e79cb` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`);
+CREATE TABLE `auth_user_groups` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `user_id` integer NOT NULL,
+    `group_id` integer NOT NULL,
+    UNIQUE (`user_id`, `group_id`)
+)
+;
+ALTER TABLE `auth_user_groups` ADD CONSTRAINT `group_id_refs_id_f0ee9890` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`);
+CREATE TABLE `auth_user` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `username` varchar(30) NOT NULL UNIQUE,
+    `first_name` varchar(30) NOT NULL,
+    `last_name` varchar(30) NOT NULL,
+    `email` varchar(75) NOT NULL,
+    `password` varchar(128) NOT NULL,
+    `is_staff` bool NOT NULL,
+    `is_active` bool NOT NULL,
+    `is_superuser` bool NOT NULL,
+    `last_login` datetime NOT NULL,
+    `date_joined` datetime NOT NULL
+)
+;
+ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `user_id_refs_id_f2045483` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
+ALTER TABLE `auth_user_groups` ADD CONSTRAINT `user_id_refs_id_831107f1` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
+
+-- The following references should be added but depend on non-existent tables:
+ALTER TABLE `auth_permission` ADD CONSTRAINT `content_type_id_refs_id_728de91f` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
+
+CREATE TABLE `django_admin_log` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `action_time` datetime NOT NULL,
+    `user_id` integer NOT NULL,
+    `content_type_id` integer,
+    `object_id` longtext,
+    `object_repr` varchar(200) NOT NULL,
+    `action_flag` smallint UNSIGNED NOT NULL,
+    `change_message` longtext NOT NULL
+)
+;
+-- The following references should be added but depend on non-existent tables:
+ALTER TABLE `django_admin_log` ADD CONSTRAINT `content_type_id_refs_id_288599e6` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
+ALTER TABLE `django_admin_log` ADD CONSTRAINT `user_id_refs_id_c8665aa` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
+
+INSERT INTO `auth_user` (id,username,first_name,last_name,email,password,is_staff,is_active,is_superuser,last_login,date_joined) VALUES
+(1,'admin','','','admin@example.com','pbkdf2_sha256$10000$G6vBqYpXG7DG$obTQjiHNNmPHs16d9pjLOGvf2I5YbSx73Atcv/07Drc=',1,1,1,STR_TO_DATE('2015-10-21 15:36:58','%Y-%m-%d %H:%i:%s'),STR_TO_DATE('2015-10-21 15:36:58','%Y-%m-%d %H:%i:%s'))
+;
+
+COMMIT;
+"""
+
+SQL_DOWN = u"""
+
+BEGIN;
+ALTER TABLE auth_group_permissions DROP FOREIGN KEY permission_id_refs_id_a7792de1;
+ALTER TABLE auth_group_permissions DROP FOREIGN KEY group_id_refs_id_3cea63fe;
+DROP TABLE auth_group_permissions;
+
+ALTER TABLE `auth_user_user_permissions` DROP FOREIGN KEY `permission_id_refs_id_67e79cb`;
+ALTER TABLE `auth_user_user_permissions` DROP FOREIGN KEY `user_id_refs_id_f2045483`;
+DROP TABLE auth_user_user_permissions;
+
+ALTER TABLE `auth_permission` DROP FOREIGN KEY `content_type_id_refs_id_728de91f`;
+DROP TABLE auth_permission;
+
+ALTER TABLE `auth_user_groups` DROP FOREIGN KEY `group_id_refs_id_f0ee9890`;
+ALTER TABLE `auth_user_groups` DROP FOREIGN KEY `user_id_refs_id_831107f1`;
+DROP TABLE `auth_user_groups`;
+
+ALTER TABLE `django_admin_log` DROP FOREIGN KEY `content_type_id_refs_id_288599e6`;
+ALTER TABLE `django_admin_log` DROP FOREIGN KEY `user_id_refs_id_c8665aa`;
+DROP TABLE `django_admin_log`;
+
+DROP TABLE `auth_user`;
+DROP TABLE auth_group;
+
+DROP TABLE django_content_type;
+
+DROP TABLE django_session;
+
+DROP TABLE django_site;
+
+COMMIT;
+"""

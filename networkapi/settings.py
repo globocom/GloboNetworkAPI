@@ -237,18 +237,13 @@ VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
 
 # List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    #     'django.template.loaders.eggs.Loader',
-)
-
 if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES = (
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
-       'django.contrib.sessions.middleware.SessionMiddleware',
-       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
         'networkapi.middlewares.SQLLogMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
         'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
@@ -258,25 +253,54 @@ else:
         'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
         'django.middleware.common.CommonMiddleware',
         'networkapi.processExceptionMiddleware.LoggingMiddleware',
-       'django.contrib.sessions.middleware.SessionMiddleware',
-       'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
         'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
 
 ROOT_URLCONF = 'networkapi.urls'
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.4/howto/static-files/
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(os.getenv('NETWORKAPI_STATIC_FILE', SITE_ROOT), 'sitestatic')
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages",
+    'django.core.context_processors.request',
+)
+
+
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    #     'django.template.loaders.eggs.Loader',
+)
+
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(SITE_ROOT, 'templates')
+    os.path.join(SITE_ROOT, 'templates'),
+    os.path.join(SITE_ROOT, 'networkapi', 'templates')
 )
 
 INSTALLED_APPS = (
-    #    'django.contrib.auth',
-    #    'django.contrib.contenttypes',
-    #    'django.contrib.sessions',
-    #    'django.contrib.sites',
+    #'bootstrap_admin',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
     'networkapi.ambiente',
     'networkapi.equipamento',
     'networkapi.eventlog',
@@ -299,7 +323,9 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
+    'networkapi.system',
     'django_extensions',
+    'networkapi.api_rack',
 )
 
 
@@ -423,8 +449,10 @@ IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
 #### <<<<<
 
 PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE','/vagrant/networkapi/rack/roteiros/')
+PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_PATH_TO_ADD_GUIDE','/vagrant/networkapi/rack/configuracao/')
 PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG','/vagrant/networkapi/rack/roteiros/')
 REL_PATH_TO_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_CONFIG','networkapi/rack/roteiros/')
+REL_PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_ADD_CONFIG','networkapi/rack/configuracao/')
 PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV','/vagrant/networkapi/rack/roteiros/')
 
 LEAF = "LF-CM"

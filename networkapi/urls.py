@@ -16,12 +16,15 @@
 # limitations under the License.
 
 from django.conf.urls.defaults import *
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
+from django.contrib import admin
+from django.conf import settings
 from networkapi.check.CheckAction import CheckAction
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
-# admin.autodiscover()
+admin.autodiscover()
 
 api_prefix = r'^api/'
 
@@ -32,9 +35,11 @@ urlpatterns = patterns('',
     url(api_prefix, include('networkapi.api_interface.urls')),
     url(api_prefix, include('networkapi.api_network.urls')),
     url(api_prefix, include('networkapi.api_pools.urls')),
+    url(api_prefix, include('networkapi.api_rack.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.snippets.urls')),
+    url(api_prefix, include('networkapi.system.urls')),
 
     #app healthchecks
     url(r'^check$', CheckAction().check, name='check'),
@@ -124,4 +129,10 @@ urlpatterns = patterns('',
 
     #eventlog
     url(r'^eventlog/', include('networkapi.eventlog.urls')),
+
+    # django admin
+    url(r'^admin/', include(admin.site.urls)),
 )
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()

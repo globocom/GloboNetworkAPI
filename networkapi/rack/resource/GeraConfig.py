@@ -1,9 +1,13 @@
 #coding=utf-8
-from netaddr import IPNetwork
 import re
+import logging
+from netaddr import IPNetwork
 from networkapi.rack.models import RackConfigError
-from networkapi import settings
+from networkapi.system.facade import get_value as get_variable
+from networkapi.system import exceptions as var_exceptions
+from django.core.exceptions import ObjectDoesNotExist
 
+log = logging.getLogger(__name__)
 
 def replace(filein,fileout, dicionario):
     try:
@@ -11,19 +15,23 @@ def replace(filein,fileout, dicionario):
         file_handle = open(filein, 'r')
         file_string = file_handle.read()
         file_handle.close()
+    except:
+        raise RackConfigError(None,None, "Erro abrindo roteiro: %s." %(filein))
+    try:
         #
         for key in dicionario:
         # Use RE package to allow for replacement (also allowing for (multiline) REGEX)
             file_string = (re.sub(key, dicionario[key], file_string))
-
+    except:
+        raise RackConfigError(None,None, "Erro atualizando as variáveis no roteiro: %s." %(filein))
+    try:
         # Write contents to file.
         # Using mode 'w' truncates the file.
         file_handle = open(fileout, 'w')
         file_handle.write(file_string)
         file_handle.close()
     except:
-        raise RackConfigError(None,None, "Erro no template. Arquivo de entrada %s nao encontrado." %(filein))
-
+        raise RackConfigError(None,None, "Erro salvando arquivo de configuração: %s." %(fileout))
 
 def splitnetworkbyrack(net,bloco,posicao):
     subnets=list(net.subnet(bloco))
@@ -39,19 +47,19 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 
     core = int(name_core.split("-")[2])
 
-    #valor base para as vlans e portchannels
-    BASE_SO = 1010
+    try:
+        #valor base para as vlans e portchannels
+        BASE_SO = int(get_variable("base_so"))
+        #rede para conectar cores aos racks
+        SO_OOB_NETipv4= IPNetwork(get_variable("net_core"))
+        #Vlan para cadastrar
+        vlan_so_name = get_variable("vlan_so_name")
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável BASE_SO ou SO_OOB_NETipv4.")
 
-    #variavels para manipular as redes
-    SO_OOB_NETipv4 = {}
-    subSO_OOB_NETipv4={}
-
-    #rede para conectar cores aos racks
-    SO_OOB_NETipv4= IPNetwork('10.143.0.0/18')
-
-    #Vlan para cadastrar
     variablestochangecore["VLAN_SO"]= str(BASE_SO+rack)
-    variablestochangecore["VLAN_NAME"]="OOB_SO_"+name_rack
+    variablestochangecore["VLAN_NAME"]=vlan_so_name+name_rack
     variablestochangecore["VLAN_NUM"]=str(BASE_SO+rack)
 
     #Rede para cadastrar
@@ -74,14 +82,6 @@ def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
 
 def dic_lf_spn(user, rack):
 
-    BASE_RACK = 120
-    BASE_AS = 65100
-
-    VLANBE = 2000
-    VLANFE = 2480
-    VLANBORDA = 2960
-    VLANBORDACACHOS = 3440
-
     CIDREBGP = {}
     CIDRBE = {}
     ########
@@ -95,24 +95,44 @@ def dic_lf_spn(user, rack):
     VLANBORDALEAF[rack]=[]
     VLANBORDACACHOSLEAF[rack]=[]
 
-    #CIDR sala 01 => 10.128.0.0/12
-    CIDRBE[0] = IPNetwork('10.128.0.0/12')
-    CIDREBGP[0] = IPNetwork('10.126.0.0/22')
+    ipv4_spn1 = dict()
+    ipv4_spn2 = dict()
+    ipv4_spn3 = dict()
+    ipv4_spn4 = dict()
+    redev6_spn1 = dict()
+    redev6_spn2 = dict()
+    redev6_spn3 = dict()
+    redev6_spn4 = dict()
 
-    SPINE1ipv4 = IPNetwork('10.126.0.0/24')
-    SPINE2ipv4 = IPNetwork('10.126.1.0/24')
-    SPINE3ipv4 = IPNetwork('10.126.2.0/24')
-    SPINE4ipv4 = IPNetwork('10.126.3.0/24')
+    try:
+        BASE_RACK = int(get_variable("base_rack"))
+        VLANBE = int(get_variable("vlanbe"))
+        VLANFE = int(get_variable("vlanfe"))
+        VLANBORDA = int(get_variable("vlanborda"))
+        VLANBORDACACHOS = int(get_variable("vlanbordacachos"))
+        VLANBETORxTOR = int(get_variable("vlanbetorxtor"))
+        #CIDR sala 01 => 10.128.0.0/12
+        CIDRBE[0] = IPNetwork(get_variable("cidr_sl01"))
+        CIDREBGP[0] = IPNetwork(get_variable("cidr_bgp"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável BASE_RACK ou VLAN<BE,FE,BORDA,CACHOS,TORxTOR> ou CIDR<BE,EBGP>.")
+
+
+    SPINE1ipv4 = IPNetwork(get_variable("net_spn01"))
+    SPINE2ipv4 = IPNetwork(get_variable("net_spn02"))
+    SPINE3ipv4 = IPNetwork(get_variable("net_spn03"))
+    SPINE4ipv4 = IPNetwork(get_variable("net_spn04"))
     #REDE subSPINE1ipv4[rack]
     subSPINE1ipv4=list(SPINE1ipv4.subnet(31))
     subSPINE2ipv4=list(SPINE2ipv4.subnet(31))
     subSPINE3ipv4=list(SPINE3ipv4.subnet(31))
     subSPINE4ipv4=list(SPINE4ipv4.subnet(31))
 
-    SPINE1ipv6 = IPNetwork('fdbe:0:0:1eaf::/120')
-    SPINE2ipv6 = IPNetwork('fdbe:0:0:1eaf::100/120')
-    SPINE3ipv6 = IPNetwork('fdbe:0:0:1eaf::200/120')
-    SPINE4ipv6 = IPNetwork('fdbe:0:0:1eaf::300/120')
+    SPINE1ipv6 = IPNetwork(get_variable("net_spn01_v6"))
+    SPINE2ipv6 = IPNetwork(get_variable("net_spn02_v6"))
+    SPINE3ipv6 = IPNetwork(get_variable("net_spn03_v6"))
+    SPINE4ipv6 = IPNetwork(get_variable("net_spn04_v6"))
     subSPINE1ipv6=list(SPINE1ipv6.subnet(127))
     subSPINE2ipv6=list(SPINE2ipv6.subnet(127))
     subSPINE3ipv6=list(SPINE3ipv6.subnet(127))
@@ -149,16 +169,7 @@ def dic_lf_spn(user, rack):
     vlans['BE'] = [VLANBE, VLANFE]
     vlans['FE'] = [VLANFE, VLANBORDA]
     vlans['BORDA'] = [VLANBORDA, VLANBORDACACHOS]
-    vlans['BORDACACHOS'] = [VLANBORDACACHOS, 3921]
-
-    ipv4_spn1 = dict()
-    ipv4_spn2 = dict()
-    ipv4_spn3 = dict()
-    ipv4_spn4 = dict()
-    redev6_spn1 = dict()
-    redev6_spn2 = dict()
-    redev6_spn3 = dict()
-    redev6_spn4 = dict()
+    vlans['BORDACACHOS'] = [VLANBORDACACHOS, VLANBETORxTOR]
 
     ipv4_spn1['REDE_IP']=str(subSPINE1ipv4[rack].ip)
     ipv4_spn1['REDE_MASK']=subSPINE1ipv4[rack].prefixlen
@@ -227,7 +238,6 @@ def dic_pods(rack):
     subnetsRackBEipv4 = {}
     subnetsRackBEipv4[rack] = []
 
-    CIDRBEipv4 = {}
     PODSBEipv4 = {}
     redesPODSBEipv4 = {}
     PODSBEFEipv4 = {}
@@ -266,10 +276,13 @@ def dic_pods(rack):
     redesPODSBECAipv6[rack]=[]
     subnetsRackBEipv6[rack]=[]
 
-    #CIDR sala 01 => 10.128.0.0/12
-    CIDRBEipv4 = IPNetwork('10.128.0.0/12')
-    CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
-
+    try:
+        #CIDR sala 01 => 10.128.0.0/12
+        CIDRBEipv4 = IPNetwork(get_variable("cidr_be_v4"))
+        CIDRBEipv6 = IPNetwork(get_variable("cidr_be_v6"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável CIDR<BEv4,BEv6>.")
 
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
 
@@ -307,29 +320,29 @@ def dic_pods(rack):
 
     redes = dict()
     ipv6=dict()
-    redes['BE_VLAN_MIN']= 2
-    redes['BE_VLAN_MAX']= 129
+    redes['BE_VLAN_MIN']= int(get_variable("be_vlan_min"))
+    redes['BE_VLAN_MAX']= int(get_variable("be_vlan_max"))
     redes['BE_PREFIX']= str(redesPODSBEipv4[rack][0].prefixlen)
     redes['BE_REDE']= str(PODSBEipv4[rack])
     ipv6['BE_PREFIX']=str(redesPODSBEipv6[rack][0].prefixlen)
     ipv6['BE_REDE']= str(PODSBEipv6[rack])
 
-    redes['BEFE_VLAN_MIN']= 130
-    redes['BEFE_VLAN_MAX']= 193
+    redes['BEFE_VLAN_MIN']= int(get_variable("befe_vlan_min"))
+    redes['BEFE_VLAN_MAX']= int(get_variable("befe_vlan_max"))
     redes['BEFE_PREFIX']= str(redesPODSBEFEipv4[rack][0].prefixlen)
     redes['BEFE_REDE']= str(PODSBEFEipv4[rack])
     ipv6['BEFE_PREFIX']= str(redesPODSBEFEipv6[rack][0].prefixlen)
     ipv6['BEFE_REDE']= str(PODSBEFEipv6[rack])
 
-    redes['BEBORDA_VLAN_MIN']= 194
-    redes['BEBORDA_VLAN_MAX']= 257
+    redes['BEBORDA_VLAN_MIN']= int(get_variable("beborda_vlan_min"))
+    redes['BEBORDA_VLAN_MAX']= int(get_variable("beborda_vlan_max"))
     redes['BEBORDA_PREFIX']= str(redesPODSBEBOipv4[rack][0].prefixlen)
     redes['BEBORDA_REDE']= str(PODSBEBOipv4[rack])
     ipv6['BEBORDA_PREFIX']= str(redesPODSBEBOipv6[rack][0].prefixlen)
     ipv6['BEBORDA_REDE']= str(PODSBEBOipv6[rack])
 
-    redes['BECACHOS_VLAN_MIN']= 258
-    redes['BECACHOS_VLAN_MAX']= 289
+    redes['BECACHOS_VLAN_MIN']= int(get_variable("becachos_vlan_min"))
+    redes['BECACHOS_VLAN_MAX']= int(get_variable("becachos_vlan_max"))
     redes['BECACHOS_PREFIX']= str(redesPODSBECAipv4[rack][0].prefixlen)
     redes['BECACHOS_REDE']= str(PODSBECAipv4[rack])
     ipv6['BECACHOS_PREFIX']= str(redesPODSBECAipv6[rack][0].prefixlen)
@@ -369,9 +382,32 @@ def dic_hosts_cloud(rack):
     redeHostsFILERipv6={}
     redeHostsFILERipv6[rack]=[]
 
-    #CIDR sala 01 => 10.128.0.0/12
-    CIDRBEipv4 = IPNetwork('10.128.0.0/12')
-    CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
+    hosts=dict()
+    BE=dict()
+    FE=dict()
+    BO=dict()
+    CA= dict()
+    FILER=dict()
+    ipv6=dict()
+    BE_ipv6=dict()
+    FE_ipv6=dict()
+    BO_ipv6=dict()
+    CA_ipv6= dict()
+    FILER_ipv6=dict()
+
+    try:
+        #CIDR sala 01 => 10.128.0.0/12
+        CIDRBEipv4 = IPNetwork(get_variable("cidr_be_v4"))
+        CIDRBEipv6 = IPNetwork(get_variable("cidr_be_v6"))
+        hosts['VLAN_MNGT_BE']=int(get_variable("vlan_mngt_be"))
+        hosts['VLAN_MNGT_FE']=int(get_variable("vlan_mngt_fe"))
+        hosts['VLAN_MNGT_BO']=int(get_variable("vlan_mngt_bo"))
+        hosts['VLAN_MNGT_CA']=int(get_variable("vlan_mngt_ca"))
+        hosts['VLAN_MNGT_FILER']=int(get_variable("vlan_mngt_filer"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável VLAN_MNGT<BE,FE,BO,CA,FILER> ou CIDR<BEv4,BEv6>.")
+
 
     subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack) #10.128.32.0/19
     subnetteste=subnetsRackBEipv4[rack] #10.128.32.0/19
@@ -403,17 +439,6 @@ def dic_hosts_cloud(rack):
     redeHostsFILERipv4[rack] = splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(redesHostsipv4[rack],24,1),25,1),26,1),27,1)
     redeHostsFILERipv6[rack]= splitnetworkbyrack(subnetteste_ipv6,64,7)
 
-    hosts=dict()
-    BE=dict()
-    FE=dict()
-    BO=dict()
-    CA= dict()
-    FILER=dict()
-    hosts['VLAN_MNGT_BE']=296
-    hosts['VLAN_MNGT_FE']=297
-    hosts['VLAN_MNGT_BO']=298
-    hosts['VLAN_MNGT_CA']=299
-    hosts['VLAN_MNGT_FILER']=300
     hosts['PREFIX']=str(redesHostsipv4[rack].prefixlen)
     hosts["REDE"]=str(redesHostsipv4[rack])
     BE['REDE_IP']=str(redeHostsBEipv4[rack].ip)
@@ -442,12 +467,6 @@ def dic_hosts_cloud(rack):
     FILER['BROADCAST']=str(redeHostsFILERipv4[rack].broadcast)
     hosts['FILER']=FILER
 
-    ipv6=dict()
-    BE_ipv6=dict()
-    FE_ipv6=dict()
-    BO_ipv6=dict()
-    CA_ipv6= dict()
-    FILER_ipv6=dict()
     ipv6['PREFIX']=str(redesHostsipv6[rack].prefixlen)
     ipv6['REDE']=str(redesHostsipv6[rack])
     BE_ipv6['REDE_IP']=str(redeHostsBEipv6[rack].ip)
@@ -489,34 +508,39 @@ def dic_fe_prod(rack):
     subnetsRackFEipv6 = {}
     subnetsRackFEipv6[rack] = []
 
-    #CIDR sala 01 => 172.20.0.0/14
-    #Sumário do rack => 172.20.0.0/21
-    CIDRFEipv4[0] = IPNetwork('172.20.0.0/14')
-    #CIDRFE[1] = IPNetwork('172.20.1.0/14')
-    CIDRFEipv6[0] = IPNetwork('fdfe:fefe:fedc:0100::/50')
+    redes=dict()
+    ranges=dict()
+    ipv6=dict()
+
+    try:
+        #CIDR sala 01 => 172.20.0.0/14
+        #Sumário do rack => 172.20.0.0/21
+        CIDRFEipv4[0] = IPNetwork(get_variable("cidr_fe_v4"))
+        #CIDRFE[1] = IPNetwork('172.20.1.0/14')
+        CIDRFEipv6[0] = IPNetwork(get_variable("cidr_fe_v6"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável VLAN_MNGT<BE,FE,BO,CA,FILER> ou CIDR<FEv4,FEv6>.")
 
     #Sumário do rack => 172.20.0.0/21
     subnetsRackFEipv4[rack]=splitnetworkbyrack(CIDRFEipv4[0],21,rack)
     subnetsRackFEipv6[rack]=splitnetworkbyrack(CIDRFEipv6[0],57,rack)
 
-    redes=dict()
-    ranges=dict()
-    ranges['MAX']=365
-    ranges['MIN']=301
+    ranges['MAX']=int(get_variable("fe_vlan_min"))
+    ranges['MIN']=int(get_variable("fe_vlan_max"))
     redes['PREFIX']=subnetsRackFEipv4[rack].prefixlen
     redes['REDE']=str(subnetsRackFEipv4[rack])
 
-    ipv6=dict()
     ipv6['PREFIX']= subnetsRackFEipv6[rack].prefixlen
     ipv6['REDE']=str(subnetsRackFEipv6[rack])
     return redes, ranges, ipv6
 
 def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
-    #roteiro para configuracao de core
-    fileincore1=settings.PATH_TO_GUIDE+FILEINCR1
-    fileincore2=settings.PATH_TO_GUIDE+FILEINCR2
-    fileinoob=settings.PATH_TO_GUIDE+FILEINOOB
+    #gerando dicionarios para substituir paravras chaves do roteiro
+    variablestochangecore1={}
+    variablestochangecore2={}
+    variablestochangeoob={}
 
     #nome dos cores, do console de gerencia dos lf do rack, e do rack
     HOSTNAME_CORE1=name_core1
@@ -525,9 +549,6 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     HOSTNAME_RACK = HOSTNAME_OOB.split("-")
     HOSTNAME_LF1 = name_lf1
     HOSTNAME_LF2 = name_lf2
-
-    #valor base para as vlans e portchannels
-    BASE_SO = 1000
 
     #interfaces de conexão entre os cores e o console
     INT_OOBC1_UPLINK = int_oob_core1
@@ -538,10 +559,20 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     #ip de gerencia do oob
     IP_GERENCIA_OOB = ip_mgmtoob
 
-    #gerando dicionarios para substituir paravras chaves do roteiro
-    variablestochangecore1={}
-    variablestochangecore2={}
-    variablestochangeoob={}
+    try:
+        #roteiro para configuracao de core
+        fileincore1=get_variable("path_to_guide")+FILEINCR1
+        fileincore2=get_variable("path_to_guide")+FILEINCR2
+        fileinoob=get_variable("path_to_guide")+FILEINOOB
+        #valor base para as vlans e portchannels
+        BASE_SO = int(get_variable("base_so"))
+        #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
+        fileoutcore1=get_variable("path_to_add_config")+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutcore2=get_variable("path_to_add_config")+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutoob=get_variable("path_to_config")+HOSTNAME_OOB+".cfg"
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_<GUIDE, CONFIG> ou BASE_SO.")
 
     variablestochangeoob["OWN_IP_MGMT"]= IP_GERENCIA_OOB
     variablestochangeoob["INT_OOBC1_UPLINK"]= INT_OOBC1_UPLINK
@@ -579,12 +610,6 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack, HOSTNAME_CORE2, HOSTNAME_RACK[2])
     variablestochangeoob = dic_vlan_core(variablestochangeoob, rack, HOSTNAME_CORE1, HOSTNAME_RACK[2])
 
-    #arquivos de saida, OOB-CM-01.cfg e OOB-CM-02.cfg
-
-    fileoutcore1=settings.PATH_TO_CONFIG+HOSTNAME_CORE1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutcore2=settings.PATH_TO_CONFIG+HOSTNAME_CORE2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutoob=settings.PATH_TO_CONFIG+HOSTNAME_OOB+".cfg"
-
     #gerando arquivos de saida
     replace(fileincore1,fileoutcore1,variablestochangecore1)
     replace(fileincore2,fileoutcore2,variablestochangecore2)
@@ -593,44 +618,6 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
     return True
 
 def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4,name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
-
-
-    fileinleaf1=settings.PATH_TO_GUIDE+FILEINLF1
-    fileinleaf2=settings.PATH_TO_GUIDE+FILEINLF2
-    fileinspine1=settings.PATH_TO_GUIDE+FILEINSP1
-    fileinspine2=settings.PATH_TO_GUIDE+FILEINSP2
-    fileinspine3=settings.PATH_TO_GUIDE+FILEINSP3
-    fileinspine4=settings.PATH_TO_GUIDE+FILEINSP4
-
-    HOSTNAME_LF1=name_lf1
-    HOSTNAME_LF2=name_lf2
-    HOSTNAME_OOB=name_oob
-
-    HOSTNAME_SP1=name_sp1
-    HOSTNAME_SP2=name_sp2
-    HOSTNAME_SP3=name_sp3
-    HOSTNAME_SP4=name_sp4
-
-    HOSTNAME_RACK=HOSTNAME_OOB.split("-")
-
-    IP_GERENCIA_LF1=ip_mgmtlf1
-    IP_GERENCIA_LF2=ip_mgmtlf2
-
-    INTERFACE_SP1=int_sp1
-    INTERFACE_SP2=int_sp2
-    INTERFACE_SP3=int_sp3
-    INTERFACE_SP4=int_sp4
-    INTERFACE_OOB_LF1=int_oob_mgmtlf1
-    INTERFACE_OOB_LF2=int_oob_mgmtlf2
-
-    BASE_RACK = 120
-    BASE_AS = 65100
-
-    VLANBE = 2000
-    VLANFE = 2480
-    VLANBORDA = 2960
-    VLANBORDACACHOS = 3440
-
 
     # STRUCTURE: IPSPINE[rack][spine]: ip a configurar no spine 'spine' relativo à leaf do rack 'rack'
     # STRUCTURE: IPLEAF[rack][spine]: ip a configurar na leaf do rack 'rack' relativo ao spine 'spine'
@@ -649,13 +636,11 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     VLANBORDALEAF = {}
     VLANBORDACACHOSLEAF = {}
     #
-    CIDRBEipv4 = {}
     PODSBEipv4 = {}
     redesPODSBEipv4 = {}
     #
     subnetsRackBEipv4 = {}
     #
-    CIDRBEipv6 = {}
     PODSBEipv6 = {}
     redesPODSBEipv6 = {}
     PODSBEFEipv6 = {}
@@ -713,35 +698,88 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     subnetsRackFEipv6[rack] = []
     redesPODSFEipv6[rack] = []
 
-    #CIDR sala 01 => 10.128.0.0/12
-    CIDRBE[0] = IPNetwork('10.128.0.0/12')
-    CIDREBGP[0] = IPNetwork('10.126.0.0/22')
+    CIDRFEipv4 = {}
+    CIDRFEipv6 = {}
 
-    SPINE1ipv4 = IPNetwork('10.126.0.0/24')
-    SPINE2ipv4 = IPNetwork('10.126.1.0/24')
-    SPINE3ipv4 = IPNetwork('10.126.2.0/24')
-    SPINE4ipv4 = IPNetwork('10.126.3.0/24')
+    variablestochangespine1={}
+    variablestochangespine2={}
+    variablestochangespine3={}
+    variablestochangespine4={}
+    variablestochangeleaf1={}
+    variablestochangeleaf2={}
+
+    try:
+        fileinleaf1=get_variable("path_to_guide")+FILEINLF1
+        fileinleaf2=get_variable("path_to_guide")+FILEINLF2
+        fileinspine1=get_variable("path_to_guide")+FILEINSP1
+        fileinspine2=get_variable("path_to_guide")+FILEINSP2
+        fileinspine3=get_variable("path_to_guide")+FILEINSP3
+        fileinspine4=get_variable("path_to_guide")+FILEINSP4
+        BASE_RACK = int(get_variable("base_rack"))
+        BASE_AS = int(get_variable("base_as"))
+        VLANBE = int(get_variable("vlanbe"))
+        VLANFE = int(get_variable("vlanfe"))
+        VLANBORDA = int(get_variable("vlanborda"))
+        VLANBORDACACHOS = int(get_variable("vlanbordacachos"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_GUIDE ou BASE_<RACK,AS> ou VLAN<BE,FE,BORDA,CACHOS>.")
+
+    HOSTNAME_LF1=name_lf1
+    HOSTNAME_LF2=name_lf2
+    HOSTNAME_OOB=name_oob
+
+    HOSTNAME_SP1=name_sp1
+    HOSTNAME_SP2=name_sp2
+    HOSTNAME_SP3=name_sp3
+    HOSTNAME_SP4=name_sp4
+
+    HOSTNAME_RACK=HOSTNAME_OOB.split("-")
+
+    IP_GERENCIA_LF1=ip_mgmtlf1
+    IP_GERENCIA_LF2=ip_mgmtlf2
+
+    INTERFACE_SP1=int_sp1
+    INTERFACE_SP2=int_sp2
+    INTERFACE_SP3=int_sp3
+    INTERFACE_SP4=int_sp4
+    INTERFACE_OOB_LF1=int_oob_mgmtlf1
+    INTERFACE_OOB_LF2=int_oob_mgmtlf2
+
+    try:
+        #CIDR sala 01 => 10.128.0.0/12
+        CIDRBE[0] = IPNetwork(get_variable("cidr_be_v4"))
+        CIDREBGP[0] = IPNetwork(get_variable("cidr_be_v6"))
+        SPINE1ipv4 = IPNetwork(get_variable("net_spn01"))
+        SPINE2ipv4 = IPNetwork(get_variable("net_spn02"))
+        SPINE3ipv4 = IPNetwork(get_variable("net_spn03"))
+        SPINE4ipv4 = IPNetwork(get_variable("net_spn04"))
+        SPINE1ipv6 = IPNetwork(get_variable("net_spn01_v6"))
+        SPINE2ipv6 = IPNetwork(get_variable("net_spn02_v6"))
+        SPINE3ipv6 = IPNetwork(get_variable("net_spn03_v6"))
+        SPINE4ipv6 = IPNetwork(get_variable("net_spn04_v6"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável CIDR<BE,EBGP> ou <BE,FE,BORDA,CACHOS> ou SPINE<1,2,3,4>ipv6.")
+
     subSPINE1ipv4=list(SPINE1ipv4.subnet(31))
     subSPINE2ipv4=list(SPINE2ipv4.subnet(31))
     subSPINE3ipv4=list(SPINE3ipv4.subnet(31))
     subSPINE4ipv4=list(SPINE4ipv4.subnet(31))
-
-    SPINE1ipv6 = IPNetwork('fdbe:0:0:1eaf::/120')
-    SPINE2ipv6 = IPNetwork('fdbe:0:0:1eaf::100/120')
-    SPINE3ipv6 = IPNetwork('fdbe:0:0:1eaf::200/120')
-    SPINE4ipv6 = IPNetwork('fdbe:0:0:1eaf::300/120')
     subSPINE1ipv6=list(SPINE1ipv6.subnet(127))
     subSPINE2ipv6=list(SPINE2ipv6.subnet(127))
     subSPINE3ipv6=list(SPINE3ipv6.subnet(127))
     subSPINE4ipv6=list(SPINE4ipv6.subnet(127))
 
+    try:
+        IBGPToRLxLipv4 = IPNetwork(get_variable("ibgptorlxlip_v4"))
+        IBGPToRLxLipv6 = IPNetwork(get_variable("ibgptorlxlip_v6"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável IBGPToRLxL<ipv4,ipv6>.")
 
-    IBGPToRLxLipv4 = IPNetwork('10.126.4.0/24')
     subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
-
-    IBGPToRLxLipv6 = IPNetwork('fdbe:0:0:1eaf:8100::/120')
     subIBGPToRLxLipv6 = list(IBGPToRLxLipv6.subnet(127))
-
 
     IPSPINEipv4[rack].append(subSPINE1ipv4[rack][0])
     IPSPINEipv4[rack].append(subSPINE2ipv4[rack][0])
@@ -791,15 +829,21 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     #
     ASLEAF[rack].append(BASE_AS+rack)
 
-
     ############################################################################
-    ############################################################################
-    #CIDR sala 01 => 10.128.0.0/12
-    CIDRBEipv4 = IPNetwork('10.128.0.0/12')
-    CIDRBEipv6 = IPNetwork('fdbe:bebe:bedc::/48')
+    try:
+        #CIDR sala 01 => 10.128.0.0/12
+        CIDRBEipv4 = IPNetwork(get_variable("cidr_be_v4"))
+        CIDRBEipv6 = IPNetwork(get_variable("cidr_be_v6"))
+        #CIDR sala 01 => 172.20.0.0/14
+        #Sumário do rack => 172.20.0.0/21
+        CIDRFEipv4[0] = IPNetwork(get_variable("cidr_fe_v4"))
+        #CIDRFE[1] = IPNetwork('172.20.1.0/14')
+        CIDRFEipv6[0] = IPNetwork(get_variable("cidr_fe_v6"))
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável CIDR<FE,BE><ipv4,ipv6>.")
 
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
-
     #Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
     subnetsRackBEipv4[rack]=splitnetworkbyrack(CIDRBEipv4,19,rack)
     subnetsRackBEipv6[rack]=splitnetworkbyrack(CIDRBEipv6,55,rack)
@@ -807,23 +851,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     #PODS BE => /20
     subnetteste=subnetsRackBEipv4[rack]
 
-    #dic_pods()
-    #dic_hosts()
-
     #    ::::::::::::::::::::::::::::::::::: FRONTEND
-
-
-    CIDRFEipv4 = {}
-    CIDRFEipv6 = {}
-
-    #CIDR sala 01 => 172.20.0.0/14
-    #Sumário do rack => 172.20.0.0/21
-    CIDRFEipv4[0] = IPNetwork('172.20.0.0/14')
-    #CIDRFE[1] = IPNetwork('172.20.1.0/14')
-    CIDRFEipv6[0] = IPNetwork('fdfe:fefe:fedc:0100::/50')
-
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
-
     #Sumário do rack => 172.20.0.0/21
     subnetsRackFEipv4[rack]=splitnetworkbyrack(CIDRFEipv4[0],21,rack)
     subnetsRackFEipv6[rack]=splitnetworkbyrack(CIDRFEipv6[0],57,rack)
@@ -833,16 +862,22 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     redesPODSBEipv4[rack] = list(subnetsRackFEipv4[rack].subnet(27))
     redesPODSBEipv6[rack] = list(subnetsRackFEipv6[rack].subnet(64))
 
-
-
-    variablestochangespine1={}
-    variablestochangespine2={}
-    variablestochangespine3={}
-    variablestochangespine4={}
-    variablestochangeleaf1={}
-    variablestochangeleaf2={}
-    variablestochangecore1={}
-    variablestochangecore2={}
+    try:
+        variablestochangespine1["ASSPINE"]=get_variable("base_as_spn01")
+        variablestochangespine2["ASSPINE"]=get_variable("base_as_spn02")
+        variablestochangespine3["ASSPINE"]=get_variable("base_as_spn03")
+        variablestochangespine4["ASSPINE"]=get_variable("base_as_spn04")
+        variablestochangeleaf1["ASSPINE1"]=get_variable("base_as_spn01")
+        variablestochangeleaf1["ASSPINE2"]=get_variable("base_as_spn02")
+        variablestochangeleaf1["KICKSTART_SO_LF"]= get_variable("kickstart_so_lf")
+        variablestochangeleaf1["IMAGE_SO_LF"]= get_variable("image_so_lf")
+        variablestochangeleaf2["KICKSTART_SO_LF"]= get_variable("kickstart_so_lf")
+        variablestochangeleaf2["IMAGE_SO_LF"]= get_variable("image_so_lf")
+        variablestochangeleaf2["ASSPINE1"]=get_variable("base_as_spn03")
+        variablestochangeleaf2["ASSPINE2"]=get_variable("base_as_spn04")
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável ASSPINE<1,2,3,4> ou KICKSTART_SO_LF ou IMAGE_SO_LF.")
 
     variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])
     variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])
@@ -850,7 +885,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine1["VLANFELEAF"]=str(VLANFELEAF[rack][0])
     variablestochangespine1["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][0])
     variablestochangespine1["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][0])
-    variablestochangespine1["ASSPINE"]=str(64601)
     variablestochangespine1["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine1["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][0])
     variablestochangespine1["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][0])
@@ -865,7 +899,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine2["VLANFELEAF"]=str(VLANFELEAF[rack][1])
     variablestochangespine2["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][1])
     variablestochangespine2["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][1])
-    variablestochangespine2["ASSPINE"]=str(64602)
     variablestochangespine2["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine2["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][1])
     variablestochangespine2["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][1])
@@ -880,7 +913,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine3["VLANFELEAF"]=str(VLANFELEAF[rack][2])
     variablestochangespine3["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][2])
     variablestochangespine3["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][2])
-    variablestochangespine3["ASSPINE"]=str(64603)
     variablestochangespine3["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine3["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][2])
     variablestochangespine3["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][2])
@@ -895,7 +927,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine4["VLANFELEAF"]=str(VLANFELEAF[rack][3])
     variablestochangespine4["VLANBORDALEAF"]=str(VLANBORDALEAF[rack][3])
     variablestochangespine4["VLANBORDACACHOSLEAF"]=str(VLANBORDACACHOSLEAF[rack][3])
-    variablestochangespine4["ASSPINE"]=str(64604)
     variablestochangespine4["ASLEAF"]=str(ASLEAF[rack][0])
     variablestochangespine4["IPNEIGHLEAFIPV4"]=str(IPLEAFipv4[rack][3])
     variablestochangespine4["IPNEIGHLEAFIPV6"]=str(IPLEAFipv6[rack][3])
@@ -919,8 +950,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"]=str(VLANBORDACACHOSLEAF[rack][0])
     variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"]=str(VLANBORDACACHOSLEAF[rack][1])
     variablestochangeleaf1["ASLEAF"]=str(ASLEAF[rack][0])
-    variablestochangeleaf1["ASSPINE1"]=str(64601)
-    variablestochangeleaf1["ASSPINE2"]=str(64602)
     variablestochangeleaf1["IPNEIGHSPINE1IPV4"]=str(IPSPINEipv4[rack][0])
     variablestochangeleaf1["IPNEIGHSPINE2IPV4"]=str(IPSPINEipv4[rack][1])
     variablestochangeleaf1["IPNEIGHIBGPIPV4"]=str(IPSIBGPipv4[rack][1])
@@ -948,8 +977,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf1["INTERFACE_SP2"]= INTERFACE_SP2
     variablestochangeleaf1["HOSTNAME_OOB"]= HOSTNAME_OOB
     variablestochangeleaf1["INTERFACE_OOB"]= INTERFACE_OOB_LF1
-    variablestochangeleaf1["KICKSTART_SO_LF"]= settings.KICKSTART_SO_LF
-    variablestochangeleaf1["IMAGE_SO_LF"]= settings.IMAGE_SO_LF
     #
     #
     variablestochangeleaf2["IPLEAFSP1IPV4"]=str(IPLEAFipv4[rack][2])
@@ -967,8 +994,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2["VLANBORDACACHOSLEAFSP1"]=str(VLANBORDACACHOSLEAF[rack][2])
     variablestochangeleaf2["VLANBORDACACHOSLEAFSP2"]=str(VLANBORDACACHOSLEAF[rack][3])
     variablestochangeleaf2["ASLEAF"]=str(ASLEAF[rack][0])
-    variablestochangeleaf2["ASSPINE1"]=str(64603)
-    variablestochangeleaf2["ASSPINE2"]=str(64604)
     variablestochangeleaf2["IPNEIGHSPINE1IPV4"]=str(IPSPINEipv4[rack][2])
     variablestochangeleaf2["IPNEIGHSPINE2IPV4"]=str(IPSPINEipv4[rack][3])
     variablestochangeleaf2["IPNEIGHIBGPIPV4"]=str(IPSIBGPipv4[rack][0])
@@ -996,16 +1021,17 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2["INTERFACE_SP2"]= INTERFACE_SP4
     variablestochangeleaf2["HOSTNAME_OOB"]= HOSTNAME_OOB
     variablestochangeleaf2["INTERFACE_OOB"]= INTERFACE_OOB_LF2
-    variablestochangeleaf2["KICKSTART_SO_LF"]= settings.KICKSTART_SO_LF
-    variablestochangeleaf2["IMAGE_SO_LF"]= settings.IMAGE_SO_LF
 
-
-    fileoutspine1=settings.PATH_TO_CONFIG+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutspine2=settings.PATH_TO_CONFIG+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutspine3=settings.PATH_TO_CONFIG+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutspine4=settings.PATH_TO_CONFIG+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
-    fileoutleaf1=settings.PATH_TO_CONFIG+HOSTNAME_LF1+".cfg"
-    fileoutleaf2=settings.PATH_TO_CONFIG+HOSTNAME_LF2+".cfg"
+    try:
+        fileoutspine1=get_variable("path_to_add_config")+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine2=get_variable("path_to_add_config")+HOSTNAME_SP2+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine3=get_variable("path_to_add_config")+HOSTNAME_SP3+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutspine4=get_variable("path_to_add_config")+HOSTNAME_SP4+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
+        fileoutleaf1=get_variable("path_to_config")+HOSTNAME_LF1+".cfg"
+        fileoutleaf2=get_variable("path_to_config")+HOSTNAME_LF2+".cfg"
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_CONFIG ou PATH_TO_ADD_CONFIG.")
 
     replace(fileinspine1,fileoutspine1,variablestochangespine1)
     replace(fileinspine2,fileoutspine2,variablestochangespine2)

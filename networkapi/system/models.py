@@ -15,9 +15,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, url
+from __future__ import with_statement
+from django.db import models
+from networkapi.models.BaseModel import BaseModel
+import logging
 
-urlpatterns = patterns('networkapi.api_deploy.views',
-    url(r'^deploy/sync/copy_script_to_equipments/(?P<equipment_id>\d+)/$', 'deploy_sync_copy_script_to_equipment'),
-    url(r'^deploy/sync/copy_script_to_equipments/$', 'deploy_sync_copy_script_to_multiple_equipments')
-)
+
+
+class Variable (BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id_variable')
+    name = models.CharField(max_length=50, blank=False, db_column='name')
+    value = models.CharField(max_length=50, blank=False, db_column='value')
+    description = models.CharField(max_length=100, blank=True, db_column='description')
+
+    log = logging.getLogger('Variable')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'variables'
+        managed = True

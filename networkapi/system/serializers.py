@@ -15,9 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, url
+from rest_framework import serializers
+from networkapi.system.models import Variable
 
-urlpatterns = patterns('networkapi.api_deploy.views',
-    url(r'^deploy/sync/copy_script_to_equipments/(?P<equipment_id>\d+)/$', 'deploy_sync_copy_script_to_equipment'),
-    url(r'^deploy/sync/copy_script_to_equipments/$', 'deploy_sync_copy_script_to_multiple_equipments')
-)
+
+
+class VariableSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Variable
+        fields = ('id',
+                  'name',
+                  'value',
+                  'description')

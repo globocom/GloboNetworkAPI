@@ -15,9 +15,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, url
+from rest_framework import serializers
+from networkapi.rack.models import Rack
 
-urlpatterns = patterns('networkapi.api_deploy.views',
-    url(r'^deploy/sync/copy_script_to_equipments/(?P<equipment_id>\d+)/$', 'deploy_sync_copy_script_to_equipment'),
-    url(r'^deploy/sync/copy_script_to_equipments/$', 'deploy_sync_copy_script_to_multiple_equipments')
-)
+
+
+class RackSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Rack
+        fields = ('id',
+                  'nome',
+                  'numero',
+                  'mac_sw1',
+                  'mac_sw2',
+                  'mac_ilo',
+                  'id_sw1',
+                  'id_sw2',
+                  'id_ilo',
+                  'config',
+                  'create_vlan_amb')

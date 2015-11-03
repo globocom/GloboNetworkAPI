@@ -16,14 +16,14 @@
 # limitations under the License.
 
 
-from django.core.exceptions import ObjectDoesNotExist
+import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack
+from networkapi.rack.models import RackAplError, RackConfigError, RackNumberNotFoundError, Rack , RackError, EnvironmentRack,\
+                                    EnvironmentRackDuplicatedError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAmbienteDuplicatedError
 from networkapi.rack.resource.GeraConfig import dic_fe_prod, dic_lf_spn, dic_vlan_core, dic_pods, dic_hosts_cloud
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip
 from networkapi.interface.models import Interface, InterfaceNotFoundError
@@ -31,9 +31,10 @@ from networkapi.vlan.models import TipoRede, Vlan
 from networkapi.ambiente.models import IP_VERSION, ConfigEnvironment, IPConfig, AmbienteLogico, DivisaoDc, GrupoL3, Ambiente
 from networkapi.util import destroy_cache_function
 from networkapi.filter.models import Filter
-from networkapi import settings
-import glob
-import commands
+from networkapi.system.facade import get_value as get_variable
+from networkapi.system import exceptions as var_exceptions
+from django.core.exceptions import ObjectDoesNotExist
+
 
 def get_core_name(rack):
 
@@ -60,7 +61,7 @@ def get_core_name(rack):
 
     return name_core1, name_core2
 
-def criar_vlan(user, variablestochangecore1, ambientes):
+def criar_vlan(user, variablestochangecore1, ambientes, active=1):
 
     #get environment
     ambiente = Ambiente()
@@ -80,7 +81,7 @@ def criar_vlan(user, variablestochangecore1, ambientes):
     vlan.nome = variablestochangecore1.get("VLAN_NAME")
     vlan.descricao = ""
     vlan.ambiente = id_ambiente
-    vlan.ativada = 1
+    vlan.ativada = active
     vlan.acl_valida = 0
     vlan.acl_valida_v6 = 0
 
@@ -88,7 +89,7 @@ def criar_vlan(user, variablestochangecore1, ambientes):
 
     return vlan
 
-def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
+def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan, active=1):
 
     tiporede = TipoRede()
     net_id = tiporede.get_by_name(tipo_rede)
@@ -98,7 +99,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
-    network_ip.active = 1
+    network_ip.active = active
     network_ip.block = variablestochangecore1.get("REDE_MASK")
     
     while str(variablestochangecore1.get("REDE_IP")).endswith(":"):
@@ -126,7 +127,7 @@ def criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan):
  
     return network_ip
 
-def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
+def criar_rede(user, tipo_rede, variablestochangecore1, vlan, active=1):
 
     tiporede = TipoRede()
     net_id = tiporede.get_by_name(tipo_rede)
@@ -140,7 +141,7 @@ def criar_rede(user, tipo_rede, variablestochangecore1, vlan):
     network_ip.vlan = vlan
     network_ip.network_type = network_type
     network_ip.ambient_vip = None
-    network_ip.active = 1
+    network_ip.active = active
 
     destroy_cache_function([vlan.id])
     network_ip.save()
@@ -176,7 +177,7 @@ def criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None, vrf=None
         try:
             filter_obj = Filter.objects.get(name__iexact=filter)
             environment.filter = filter_obj
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             pass
 
 
@@ -374,10 +375,10 @@ def ambiente_cloud(user, rack, environment_list):
         variables['VLAN_NUM'] = hosts.get(numero)
         variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
         
-        vlan = criar_vlan(user, variables, ambientes)
+        vlan = criar_vlan(user, variables, ambientes, 0)
         #criar rede
-        criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan)
-        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan)
+        criar_rede(user, "Rede invalida equipamentos", hosts.get(amb), vlan, 0)
+        criar_rede_ipv6(user, "Rede invalida equipamentos", ipv6.get(amb), vlan, 0)
 
     return environment_list
 
@@ -442,33 +443,6 @@ def ambiente_borda(user,rack, environment_list):
 
     return environment_list
 
-def aplicar(rack):
-
-    path_config = settings.PATH_TO_CONFIG +'*'+rack.nome+'*'
-    arquivos = glob.glob(path_config)
-
-    #Get all files and search for equipments of the rack
-    for var in arquivos: 
-        filename_equipments = var.split('/')[-1]
-        rel_filename = "../"+settings.REL_PATH_TO_CONFIG+filename_equipments
-        #Check if file is config relative to this rack
-        if rack.nome in filename_equipments:
-            #Apply config only in spines. Leaves already have all necessary config in startup
-            if "ADD" in filename_equipments:
-                #Check if equipment in under maintenance. If so, does not aplly on it
-                equipment_name = filename_equipments.split('-ADD-')[0]
-                try:
-                    equip = Equipamento.get_by_name(equipment_name)
-                    if not equip.maintenance:
-                        (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
-                        if erro:
-                            raise RackAplError(None, None, "Falha ao aplicar as configuracoes: %s" %(result))
-                except RackAplError, e:
-                    raise e
-                except:
-                    #Error equipment not found, do nothing
-                    pass
-
 def environment_rack(user, environment_list, rack):
 
     #Insert all environments in environment rack table
@@ -502,7 +476,7 @@ class RackAplicarConfigResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to create the configuration file.
 
-        URL: rack/aplicar-config/id_rack
+        URL: rack/alocar-config/id_rack
         """
         try:
 
@@ -535,17 +509,24 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################           VLAN Gerencia SO
             ambientes=dict()
-            ambientes['DC']=settings.DIVISAODC_MGMT
-            ambientes['LOG']=settings.AMBLOG_MGMT
-            ambientes['L3']=settings.GRPL3_MGMT
+            try:
+                DIVISAODC_MGMT = get_variable("divisaodc_mngt")
+                AMBLOG_MGMT = get_variable("amblog_mngt")
+                GRPL3_MGMT = get_variable("grpl3_mngt")
+            except ObjectDoesNotExist:
+                raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis <DIVISAODC,AMBLOG,GRPL3>_MGMT.")
+
+            ambientes['DC']=DIVISAODC_MGMT
+            ambientes['LOG']=AMBLOG_MGMT
+            ambientes['L3']=GRPL3_MGMT
     
             try:
-                #criar e ativar a vlan
+                #criar vlan
                 vlan = criar_vlan(user, variablestochangecore1, ambientes)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
             try:
-                #criar e ativar a rede
+                #criar rede
                 network = criar_rede(user, "Rede invalida equipamentos", variablestochangecore1, vlan)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
@@ -590,7 +571,6 @@ class RackAplicarConfigResource(RestResource):
 
             #######################################################################                   Backuper
 
-            aplicar(rack)
             environment_rack(user, environment_list, rack)
 
             rack.__dict__.update(id=rack.id, create_vlan_amb=True)
@@ -618,4 +598,6 @@ class RackAplicarConfigResource(RestResource):
         except RackError:
             return self.response_error(383)
 
-
+        except ObjectDoesNotExist, exception:
+            self.log.error(exception)
+            raise var_exceptions.VariableDoesNotExistException()
