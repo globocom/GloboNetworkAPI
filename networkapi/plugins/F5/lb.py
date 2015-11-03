@@ -24,7 +24,6 @@ class Lb(object):
             raise base_exceptions.CommandErrorException(e)
         else:
             self._version = self._channel.System.SystemInfo.get_version()
-            log.info(self._version)
             if not 'BIG-IP_v11' in self._version:
                 raise base_exceptions.UnsupportedVersion(
                     'This plugin only supports BIG-IP v11')
