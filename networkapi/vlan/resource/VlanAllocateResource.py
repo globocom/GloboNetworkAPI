@@ -28,6 +28,9 @@ from networkapi.exception import InvalidValueError
 from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, AmbienteError
 from networkapi import settings
 from django.forms.models import model_to_dict
+from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
+from networkapi.filterequiptype.models import FilterEquipType
+from networkapi.equipamento.models import Equipamento
 
 
 class VlanAllocateResource(RestResource):
@@ -130,13 +133,41 @@ class VlanAllocateResource(RestResource):
                 min_num_02 = settings.MIN_VLAN_NUMBER_02
                 max_num_02 = settings.MAX_VLAN_NUMBER_02
 
+            #To avoid allocation same vlan number twice for different environments in same equipments
+            #Lock all environments related to this environment when allocating vlan number
+            #select all equipments from this environment that are not part of a filter
+            # and them selects all environments from all these equipments and lock them out
+            filtered_equipment_type_ids = list()
+            for fet in FilterEquipType.objects.filter(filter=env.filter.id):
+                filtered_equipment_type_ids.append(fet.equiptype.id)
+
+            filtered_environment_equips = Equipamento.objects.filter(equipamentoambiente__ambiente=env).exclude(
+                tipo_equipamento__in=filtered_equipment_type_ids)
+
+            #select all environments from the equips that were not filtered
+            locks_list = list()
+            environments_list = Ambiente.objects.filter(equipamentoambiente__equipamento__in=filtered_environment_equips).distinct()
+            for environment in environments_list:
+                lock = distributedlock(LOCK_ENVIRONMENT % environment.id)
+                lock.__enter__()
+                locks_list.append(lock)
+
             # Persist
-            vlan.create_new(user,
+            try:
+                vlan.create_new(user,
                             min_num_01,
                             max_num_01,
                             min_num_02,
                             max_num_02
                             )
+            except Exception, e:
+                #release all the locks if failed
+                for lock in locks_list:
+                    lock.__exit__('', '', '')
+                raise e
+
+            for lock in locks_list:
+                lock.__exit__('', '', '')
 
             vlan_map = dict()
             vlan_map['vlan'] = model_to_dict(vlan)
