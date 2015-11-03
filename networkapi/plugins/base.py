@@ -179,12 +179,6 @@ class BasePlugin(object):
 
         return recv_string
 
-    def getStatusName(self, status):
-        '''
-        Return state name of poolmember
-        '''
-        raise NotImplementedError()
-
     def getStateMember(self, status):
         '''
         Return state of poolmember
