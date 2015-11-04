@@ -138,7 +138,14 @@ class VlanAllocateResource(RestResource):
             #select all equipments from this environment that are not part of a filter
             # and them selects all environments from all these equipments and lock them out
             filtered_equipment_type_ids = list()
-            for fet in FilterEquipType.objects.filter(filter=env.filter.id):
+
+            env_filter = None
+            try:
+                env_filter = env.filter.id
+            except:
+                pass
+                
+            for fet in FilterEquipType.objects.filter(filter=env_filter):
                 filtered_equipment_type_ids.append(fet.equiptype.id)
 
             filtered_environment_equips = Equipamento.objects.filter(equipamentoambiente__ambiente=env).exclude(
