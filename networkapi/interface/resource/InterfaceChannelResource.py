@@ -22,7 +22,7 @@ import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface
 from networkapi.exception import InvalidValueError
-from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util import convert_string_or_int_to_boolean, is_valid_int_greater_zero_param
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
 
@@ -295,6 +295,8 @@ class InterfaceChannelResource(RestResource):
             # Get XML data
             id_channel = channel_map.get('id_channel')
             nome = channel_map.get('nome')
+            if not is_valid_int_greater_zero_param(nome):
+                raise InvalidValueError(None, "Numero do Channel", "Variavel deve ser um numero inteiro.")
             lacp = channel_map.get('lacp')
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')

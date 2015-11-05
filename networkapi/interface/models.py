@@ -20,7 +20,7 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 from networkapi.models.BaseModel import BaseModel
-from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_regex, is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import Equipamento, TipoEquipamento
 from networkapi.ambiente.models import Ambiente
@@ -156,7 +156,7 @@ class PortChannel(BaseModel):
 
         # Checks if name is valid
         try:
-            if not is_valid_regex(self.nome, "[a-zA-Z\-]+[0-9]+$"):
+            if not is_valid_int_greater_zero_param(self.nome):
                 raise InvalidValueError(None, 'nome', self.nome)
         except Exception, e:
             raise InvalidValueError(None, e.param, e.value)
