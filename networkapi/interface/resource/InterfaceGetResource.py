@@ -32,6 +32,7 @@ from networkapi.util import is_valid_int_greater_zero_param
 def get_new_interface_map(interface):
     int_map = model_to_dict(interface)
     int_map['nome'] = interface.interface
+    int_map['descricao'] = interface.descricao
     int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
     int_map['equipamento_nome'] = interface.equipamento.nome
     int_map['marca'] = interface.equipamento.modelo.marca_id
