@@ -22,6 +22,7 @@ import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface, \
     InterfaceNotFoundError
+from networkapi.equipamento.models import Equipamento
 from networkapi.exception import InvalidValueError
 from networkapi.util import convert_string_or_int_to_boolean, is_valid_int_greater_zero_param
 from networkapi.ambiente.models import Ambiente
@@ -133,9 +134,10 @@ class InterfaceChannelResource(RestResource):
                     if sw_router.channel is not None:
                         raise InterfaceError("Interface %s já está em um Channel" % sw_router.interface)
 
-                    for i in interface.search(sw_router.equipamento.id):
-                        if i.channel is not None:
-                            raise InterfaceError("Equipamento %s já possui um Channel" % sw_router.equipamento.nome)
+                    # verificar apenas no servidor
+                    #for i in interface.search(sw_router.equipamento.id):
+                     #   if i.channel is not None:
+                      #      raise InterfaceError("Equipamento %s já possui um Channel" % sw_router.equipamento.nome)
 
                     if cont is []:
                         cont.append(int(sw_router.equipamento.id))
@@ -205,8 +207,7 @@ class InterfaceChannelResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Get XML data
@@ -219,7 +220,13 @@ class InterfaceChannelResource(RestResource):
             channel_name = kwargs.get('channel_name')
 
             channel = PortChannel.get_by_name(channel_name)
-            channel = model_to_dict(channel)
+
+            try:
+                for ch in channel:
+                    channel = model_to_dict(ch)
+            except:
+                channel = model_to_dict(channel)
+                pass
 
             return self.response(dumps_networkapi({'channel': channel}))
 
