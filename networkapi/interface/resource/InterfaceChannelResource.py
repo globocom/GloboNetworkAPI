@@ -107,6 +107,7 @@ class InterfaceChannelResource(RestResource):
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')
             envs = channel_map.get('envs')
+
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
@@ -123,6 +124,7 @@ class InterfaceChannelResource(RestResource):
             for var in interfaces:
                 if not var=="" and not var==None:
                     interf = interface.get_by_pk(int(var))
+
                     try:
                         sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
                     except:
@@ -130,11 +132,6 @@ class InterfaceChannelResource(RestResource):
 
                     if sw_router.channel is not None:
                         raise InterfaceError("Interface %s já está em um Channel" % sw_router.interface)
-
-                    # verificar apenas no servidor
-                    #for i in interface.search(sw_router.equipamento.id):
-                     #   if i.channel is not None:
-                      #      raise InterfaceError("Equipamento %s já possui um Channel" % sw_router.equipamento.nome)
 
                     if cont is []:
                         cont.append(int(sw_router.equipamento.id))
