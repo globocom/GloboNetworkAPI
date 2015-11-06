@@ -180,10 +180,9 @@ class PortChannel(BaseModel):
     @classmethod
     def get_by_name(cls, name):
         try:
-            return PortChannel.objects.get(nome__iexact=name)
+            return PortChannel.objects.filter(nome=name)
         except ObjectDoesNotExist, e:
-            raise InterfaceNotFoundError(
-                e, u'Can not find a Channel with name = %s.' % id)
+            raise InterfaceNotFoundError(e, u'Can not find a Channel with name = %s.' % id)
         except Exception, e:
             cls.log.error(u'Failure to search the Group L3.')
             raise InterfaceError(e, u'Failure to search the Group L3.')

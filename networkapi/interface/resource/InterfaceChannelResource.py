@@ -22,7 +22,6 @@ import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface, \
     InterfaceNotFoundError
-from networkapi.equipamento.models import Equipamento
 from networkapi.exception import InvalidValueError
 from networkapi.util import convert_string_or_int_to_boolean, is_valid_int_greater_zero_param
 from networkapi.ambiente.models import Ambiente
@@ -79,7 +78,6 @@ class InterfaceChannelResource(RestResource):
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.
-
         URL: channel/inserir/
         """
         try:
@@ -87,8 +85,7 @@ class InterfaceChannelResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -241,11 +238,8 @@ class InterfaceChannelResource(RestResource):
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Trata uma requisição DELETE para excluir um port channel
-
-        URL: /channel/delete/<channel_name>/
-
+            URL: /channel/delete/<channel_name>/<interface_id>
         """
-        # Get request data and check permission
         try:
             self.log.info("Delete Channel")
 
@@ -254,9 +248,40 @@ class InterfaceChannelResource(RestResource):
                 self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
-            channel_name = kwargs.get('channel_name')
+            interface_id = kwargs.get('channel_name')
+            interface = Interface.get_by_pk(int(interface_id))
 
-            channel = PortChannel.get_by_name(str(channel_name))
+            try:
+                interface.channel.id
+                channel = interface.channel
+            except:
+                channel = interface.ligacao_front.channel
+                pass
+            try:
+                interfaces = Interface.objects.all().filter(channel__id=channel.id)
+            except:
+                return self.response(dumps_networkapi({}))
+
+            for interf in interfaces:
+                try:
+                    front = interf.ligacao_front.id
+                except:
+                    front = None
+                    pass
+                try:
+                    back = interf.ligacao_back.id
+                except:
+                    back = None
+                    pass
+                interf.update(user,
+                                  interf.id,
+                                  interface=interf.interface,
+                                  protegida=interf.protegida,
+                                  descricao=interf.descricao,
+                                  ligacao_front_id=front,
+                                  ligacao_back_id=back,
+                                  tipo=interf.tipo,
+                                  vlan_nativa=interf.vlan_nativa)
 
             channel.delete(user)
 
