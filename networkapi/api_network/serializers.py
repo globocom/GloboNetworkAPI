@@ -42,6 +42,7 @@ class NetworkIPv4Serializer(serializers.ModelSerializer):
     mask_oct3 = serializers.Field()
     mask_oct4 = serializers.Field()
     broadcast = serializers.Field()
+    networkv4 = serializers.Field()
     vlan = serializers.PrimaryKeyRelatedField(
         many=False,
         required=True
@@ -72,11 +73,12 @@ class NetworkIPv4Serializer(serializers.ModelSerializer):
             'mask_oct3',
             'mask_oct4',
             'broadcast',
+            'networkv4',
             'vlan',
             'network_type',
             'ambient_vip',
             'active',
-            'dhcprelay'
+            'dhcprelay',
         )
 
 
@@ -112,6 +114,7 @@ class NetworkIPv6Serializer(serializers.ModelSerializer):
     mask6 = serializers.Field()
     mask7 = serializers.Field()
     mask8 = serializers.Field()
+    networkv6 = serializers.Field()
     active = serializers.Field()
     dhcprelay = DHCPRelayIPv6Serializer()
 
@@ -136,6 +139,7 @@ class NetworkIPv6Serializer(serializers.ModelSerializer):
             'mask6',
             'mask7',
             'mask8',
+            'networkv6',
             'vlan',
             'network_type',
             'ambient_vip',

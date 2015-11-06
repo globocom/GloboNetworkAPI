@@ -221,14 +221,21 @@ def networksIPv4(request):
     try:
 
         environment_vip = ''
+        vlan_environment = ''
 
         if request.QUERY_PARAMS.has_key("environment_vip"):
             environment_vip = str(request.QUERY_PARAMS["environment_vip"])
+
+        if request.QUERY_PARAMS.has_key("vlan_environment"):
+            vlan_environment = str(request.QUERY_PARAMS["vlan_environment"])
 
         networkIPv4_obj = NetworkIPv4.objects.all()
 
         if environment_vip:
             networkIPv4_obj = networkIPv4_obj.filter(ambient_vip__id=environment_vip)
+
+        if vlan_environment:
+            networkIPv4_obj = networkIPv4_obj.filter(vlan__ambiente=vlan_environment)
 
         serializer_options = NetworkIPv4Serializer(
             networkIPv4_obj,
@@ -334,14 +341,21 @@ def networksIPv6(request):
     try:
 
         environment_vip = ''
+        vlan_environment = ''
 
         if request.QUERY_PARAMS.has_key("environment_vip"):
             environment_vip = str(request.QUERY_PARAMS["environment_vip"])
+
+        if request.QUERY_PARAMS.has_key("vlan_environment"):
+            vlan_environment = str(request.QUERY_PARAMS["vlan_environment"])
 
         networkIPv6_obj = NetworkIPv6.objects.all()
 
         if environment_vip:
             networkIPv6_obj = networkIPv6_obj.filter(ambient_vip__id=environment_vip)
+
+        if vlan_environment:
+            networkIPv6_obj = networkIPv6_obj.filter(vlan__ambiente=vlan_environment)
 
         serializer_options = NetworkIPv6Serializer(
             networkIPv6_obj,
