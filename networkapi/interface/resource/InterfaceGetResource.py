@@ -113,8 +113,9 @@ class InterfaceGetResource(RestResource):
             if channel is not None:
                 if equip_name is not None:
                     interfaces = Interface.objects.all().filter(channel__nome=channel)
+                    channel_id = None
                     for interf in interfaces:
-                        if interf.equipamento.nome == equip_name:
+                        if interf.equipamento.nome == equip_name or interf.ligacao_front.equipamento.nome == equip_name:
                             channel_id = interf.channel.id
                     for interf in interfaces:
                         if interf.channel.id == channel_id:
