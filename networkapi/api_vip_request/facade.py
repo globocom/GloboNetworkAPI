@@ -128,10 +128,7 @@ def save(request):
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
     obj_req_vip.traffic_return=OptionVip.objects.filter(nome_opcao_txt=data['traffic_return'])
-
-    if data['traffic_return'] == "DSRL3":
-        req_vip_serializer.data['traffic_return_num']=DsrL3_to_Vip.get_dsrl3(obj_req_vip.id, user)
-
+    if data['traffic_return'] == "DSRL3": DsrL3_to_Vip.get_dsrl3(obj_req_vip.id, user)
     obj_req_vip.save(user)
 
     for v_port in obj_req_vip.vip_ports_to_pools:
@@ -192,7 +189,7 @@ def update(request, pk):
                         e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % pk)
 
             if old_traffic_return.nome_opcao_txt == "Normal" and  data['traffic_return'] == "DSRL3":
-                req_vip_serializer.data['traffic_return_num']=DsrL3_to_Vip.get_dsrl3(pk, user)
+                DsrL3_to_Vip.get_dsrl3(pk, user)
 
 
         obj_req_vip.save(user)

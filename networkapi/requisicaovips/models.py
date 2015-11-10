@@ -37,6 +37,8 @@ from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.api_pools.models import OptionPool
+from networkapi.util.decorators import cached_property
+
 
 
 class RequisicaoVipsError(Exception):
@@ -546,6 +548,13 @@ class RequisicaoVips(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'requisicao_vips'
         managed = True
+
+
+    @cached_property
+    def dsrl3id(self):
+
+        return DsrL3_to_Vip.objects.filter(requisicao_vip=self)
+
 
     @classmethod
     def get_by_pk(cls, id):
