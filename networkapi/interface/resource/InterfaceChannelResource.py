@@ -290,7 +290,6 @@ class InterfaceChannelResource(RestResource):
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
 
-
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.
 
@@ -407,7 +406,7 @@ class InterfaceChannelResource(RestResource):
                                       descricao=interface_server.descricao,
                                       ligacao_front_id=front,
                                       ligacao_back_id=back,
-                                      tipo=interface_server.tipo,
+                                      tipo=int_type,
                                       vlan_nativa=int(vlan))
 
             else:
@@ -434,7 +433,7 @@ class InterfaceChannelResource(RestResource):
                                   descricao=interface_server.descricao,
                                   ligacao_front_id=front,
                                   ligacao_back_id=back,
-                                  tipo=interface_server.tipo,
+                                  tipo=int_type,
                                   vlan_nativa=int(vlan))
 
 
