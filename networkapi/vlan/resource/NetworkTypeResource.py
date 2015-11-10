@@ -108,7 +108,7 @@ class NetworkTypeResource(RestResource):
                 pass
 
             try:
-                net_type.save(user)
+                net_type.save()
             except Exception, e:
                 self.log.error(u'Failed to insert network type.')
                 raise VlanError(e, u'Failed to insert network type.')
@@ -184,7 +184,7 @@ class NetworkTypeResource(RestResource):
 
                 net_type.tipo_rede = name
                 try:
-                    net_type.save(user)
+                    net_type.save()
                 except Exception, e:
                     self.log.error(u'Failed to edit network type.')
                     raise VlanError(e, u'Failed to edit network type.')
@@ -237,7 +237,7 @@ class NetworkTypeResource(RestResource):
                         None, u'Network type used by network.')
 
                 try:
-                    net_type.delete(user)
+                    net_type.delete()
                 except Exception, e:
                     self.log.error(u'Failed to remove network type.')
                     raise VlanError(e, u'Failed to remove network type.')

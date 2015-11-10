@@ -180,7 +180,7 @@ def _generate_dict(interface):
     key_dict["NATIVE_VLAN"] = interface.vlan_nativa
     key_dict["USE_MCLAG"] = 1
     key_dict["INTERFACE_NAME"] = interface.interface
-    key_dict["INTERFACE_DESCRIPTION"] = "description to be defined"
+    key_dict["INTERFACE_DESCRIPTION"] = str(interface.ligacao_front.equipamento.nome) + ' ' + str(interface.ligacao_front.interface)
     key_dict["INTERFACE_TYPE"] = interface.tipo.tipo
     if key_dict["INTERFACE_TYPE"] in "trunk":
         key_dict["VLAN_RANGE"] = get_vlan_range(interface)

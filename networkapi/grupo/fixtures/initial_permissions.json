@@ -1,0 +1,226 @@
+[
+  {
+    "pk": 1, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "administracao_usuarios"
+    }
+  }, 
+  {
+    "pk": 25, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "administracao_vips"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "administrativa"
+    }
+  }, 
+  {
+    "pk": 3, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "alocar_vlan"
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "ambiente_vip"
+    }
+  }, 
+  {
+    "pk": 28, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "aplicar_acl"
+    }
+  }, 
+  {
+    "pk": 26, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "audit_logs"
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "authenticate"
+    }
+  }, 
+  {
+    "pk": 6, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_ambiente"
+    }
+  }, 
+  {
+    "pk": 7, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_equipamentos"
+    }
+  }, 
+  {
+    "pk": 8, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_grupos_equipamentos"
+    }
+  }, 
+  {
+    "pk": 9, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_marca"
+    }
+  }, 
+  {
+    "pk": 29, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_pool"
+    }
+  }, 
+  {
+    "pk": 10, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_roteiro"
+    }
+  }, 
+  {
+    "pk": 11, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_tipo_acesso"
+    }
+  }, 
+  {
+    "pk": 12, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_tipo_rede"
+    }
+  }, 
+  {
+    "pk": 13, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_vlans"
+    }
+  }, 
+  {
+    "pk": 14, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "cadastro_de_vm"
+    }
+  }, 
+  {
+    "pk": 15, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "healthcheck_expect"
+    }
+  }, 
+  {
+    "pk": 16, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "ips"
+    }
+  }, 
+  {
+    "pk": 17, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "opcao_vip"
+    }
+  }, 
+  {
+    "pk": 18, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "requisicao_vips"
+    }
+  }, 
+  {
+    "pk": 32, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_alterar_pool"
+    }
+  }, 
+  {
+    "pk": 19, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_alterar_vip"
+    }
+  }, 
+  {
+    "pk": 20, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_alterar_vlan"
+    }
+  }, 
+  {
+    "pk": 31, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_criacao_pool"
+    }
+  }, 
+  {
+    "pk": 21, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_criacao_vip"
+    }
+  }, 
+  {
+    "pk": 22, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_criacao_vlan"
+    }
+  }, 
+  {
+    "pk": 30, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_remover_pool"
+    }
+  }, 
+  {
+    "pk": 27, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "script_remover_vip"
+    }
+  }, 
+  {
+    "pk": 23, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "validar_acl_vlans"
+    }
+  }, 
+  {
+    "pk": 24, 
+    "model": "grupo.permission", 
+    "fields": {
+      "function": "validar_vip"
+    }
+  }
+]

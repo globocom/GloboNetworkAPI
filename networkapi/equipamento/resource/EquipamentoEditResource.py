@@ -41,7 +41,6 @@ class EquipamentoEditResource(RestResource):
 
         URL: equipmento/edit/
         """
-
         try:
             # Load XML data
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -104,6 +103,11 @@ class EquipamentoEditResource(RestResource):
                 self.log.error(u'The maintenance parameter is not a valid value: %s.', maintenance)
                 raise InvalidValueError(None, 'maintenance', maintenance)
 
+            if maintenance in ['1', 'True', True]:
+                maintenance = True
+            else:
+                maintenance = False
+            
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip_id, AdminPermission.EQUIP_WRITE_OPERATION):
                 raise UserNotAuthorizedError(

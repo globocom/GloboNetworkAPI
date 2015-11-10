@@ -118,7 +118,7 @@ class InterfaceEnvironmentResource(RestResource):
             #deletar associacoes
             interface_list = EnvironmentInterface.objects.all().filter(interface__exact=interface)
             for var in interface_list:
-                var.delete(user)
+                var.delete()
 
             return self.response(dumps_networkapi({}))
 

@@ -650,7 +650,7 @@ def remove_reals_after_script(port_vip, ip_type, vip, port_real, priority, weigh
                                                           priority=priority,
                                                           weight=weight,
                                                           ipv6=id_ip)
-    server_pool_member.delete(user)
+    server_pool_member.delete()
     transaction.commit()
 
 

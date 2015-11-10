@@ -131,7 +131,7 @@ class RuleResource(RestResource):
             new_rule = Rule()
             new_rule.name = name
             new_rule.environment = environment
-            new_rule.save(user)
+            new_rule.save()
 
             self.__save_rule_contents(
                 contents, blocks_id, environment, new_rule, user)
@@ -217,10 +217,10 @@ class RuleResource(RestResource):
             RequisicaoVips.objects.filter(
                 rule_rollback=rule).update(rule_rollback=None)
 
-            rule.save(user)
+            rule.save()
 
             for rule_cotent in rule.rulecontent_set.all():
-                rule_cotent.delete(user)
+                rule_cotent.delete()
 
             self.__save_rule_contents(
                 contents, blocks_id, environment, rule, user)
@@ -267,7 +267,7 @@ class RuleResource(RestResource):
                 raise InvalidValueError(None, 'id_rule', id_rule)
 
             rule = Rule.objects.get(pk=id_rule)
-            rule.delete(user)
+            rule.delete()
 
             return self.response(dumps_networkapi({}))
 
@@ -304,4 +304,4 @@ class RuleResource(RestResource):
             rule_content.order = i
             rule_content.rule = rule
 
-            rule_content.save(user)
+            rule_content.save()

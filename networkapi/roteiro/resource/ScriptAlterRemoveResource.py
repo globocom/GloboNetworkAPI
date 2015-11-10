@@ -75,20 +75,17 @@ class ScriptAlterRemoveResource(RestResource):
 
             # Valid Script
             if not is_valid_string_minsize(script, 3) or not is_valid_string_maxsize(script, 40):
-                self.log.error(
-                    u'Parameter script is invalid. Value: %s', script)
+                self.log.error(u'Parameter script is invalid. Value: %s', script)
                 raise InvalidValueError(None, 'script', script)
 
             # Valid ID Script Type
             if not is_valid_int_greater_zero_param(id_script_type):
-                self.log.error(
-                    u'The id_script_type parameter is not a valid value: %s.', id_script_type)
+                self.log.error(u'The id_script_type parameter is not a valid value: %s.', id_script_type)
                 raise InvalidValueError(None, 'id_script_type', id_script_type)
 
             # Valid description
             if not is_valid_string_minsize(description, 3) or not is_valid_string_maxsize(description, 100):
-                self.log.error(
-                    u'Parameter description is invalid. Value: %s', description)
+                self.log.error(u'Parameter description is invalid. Value: %s', description)
                 raise InvalidValueError(None, 'description', description)
 
             # Find Script by ID to check if it exist
@@ -124,13 +121,14 @@ class ScriptAlterRemoveResource(RestResource):
             for ids in models:
                 equipamentos = Equipamento.objects.filter(modelo__id=int(ids))
                 for equip in equipamentos:
-                    equip_roteiro = EquipamentoRoteiro().search(None, equip.id, scr.tipo_roteiro)
                     try:
-                        equip_roteiro = EquipamentoRoteiro()
-                        equip_roteiro.equipamento = equip
-                        equip_roteiro.roteiro = scr
-                        equip_roteiro.create(user)
+                        equip_roteiro = EquipamentoRoteiro.objects.filter(equipamento__id=equip.id, roteiro__tipo_roteiro__id=scr.tipo_roteiro.id).uniqueResult()
+                        equip_roteiro.id
                     except:
+                        equip_rot = EquipamentoRoteiro()
+                        equip_rot.equipamento = equip
+                        equip_rot.roteiro = scr
+                        equip_rot.create(user)
                         pass
 
             with distributedlock(LOCK_SCRIPT % id_script):
@@ -150,7 +148,7 @@ class ScriptAlterRemoveResource(RestResource):
 
                 try:
                     # update Script
-                    scr.save(user)
+                    scr.save()
                 except Exception, e:
                     self.log.error(u'Failed to update the Script.')
                     raise RoteiroError(e, u'Failed to update the Script.')
@@ -210,7 +208,7 @@ class ScriptAlterRemoveResource(RestResource):
                             None, u'Existe equipamento associado ao roteiro %s' % script.id)
 
                     # remove Script
-                    script.delete(user)
+                    script.delete()
 
                 except RoteiroHasEquipamentoError, e:
                     raise e

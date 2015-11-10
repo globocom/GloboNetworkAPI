@@ -233,7 +233,7 @@ class Ipv6AssocEquipResource(RestResource):
 
                     # Delete vlan's cache
                     destroy_cache_function([net.vlan_id])
-                    ip_equipment.save(user)
+                    ip_equipment.save()
 
                     # Makes Environment Equipment association
                     try:

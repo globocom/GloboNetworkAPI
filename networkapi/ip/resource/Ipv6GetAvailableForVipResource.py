@@ -29,6 +29,9 @@ from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.ambiente.models import EnvironmentVip
 from django.forms.models import model_to_dict
+from networkapi.distributedlock import distributedlock, LOCK_GET_IPV6_AVAILABLE
+from django.db import transaction
+
 
 
 class Ipv6GetAvailableForVipResource(RestResource):
@@ -46,8 +49,7 @@ class Ipv6GetAvailableForVipResource(RestResource):
         try:
             # User permission
             if not has_perm(user, AdminPermission.IPS, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
@@ -55,7 +57,6 @@ class Ipv6GetAvailableForVipResource(RestResource):
 
             # XML data format
             networkapi_map = xml_map.get('networkapi')
-
             ip_map = networkapi_map.get('ip_map')
 
             # Get XML data
@@ -63,84 +64,88 @@ class Ipv6GetAvailableForVipResource(RestResource):
             name = ip_map.get('name')
 
             if not is_valid_int_greater_zero_param(id_evip):
-                self.log.error(
-                    u'Parameter id_evip is invalid. Value: %s.', id_evip)
+                self.log.error(u'Parameter id_evip is invalid. Value: %s.', id_evip)
                 raise InvalidValueError(None, 'id_evip', id_evip)
 
             # Business Rules
             evip = EnvironmentVip.get_by_pk(id_evip)
 
-            ipv6 = Ipv6()
-            len_network = len(evip.networkipv6_set.all())
+            with distributedlock(LOCK_GET_IPV6_AVAILABLE % id_evip):
 
-            if len_network <= 0:
-                raise NetworkNotInEvip(
-                    None, 'Não há rede no ambiente vip fornecido')
+                ipv6 = Ipv6()
+                len_network = len(evip.networkipv6_set.all())
 
-            raise_not_found_balanceamento = False
+                if len_network <= 0:
+                    raise NetworkNotInEvip(None, 'Não há rede no ambiente vip fornecido')
 
-            cont_network = 0
-            cont_balanceador_not_found = 0
+                raise_not_found_balanceamento = False
 
-            for net in evip.networkipv6_set.all():
+                cont_network = 0
+                cont_balanceador_not_found = 0
 
-                balanceador_found_flag = False
-                cont_network = cont_network + 1
-                list_ips_equips = list()
+                for net in evip.networkipv6_set.all():
 
-                try:
-                    ip_available = ipv6.get_available_ip6(net.id)
-                    ip_new = Ipv6()
+                    balanceador_found_flag = False
+                    cont_network = cont_network + 1
+                    list_ips_equips = list()
 
-                    ip_available = ip_available.split(":")
-                    ip_new.block1 = ip_available[0]
-                    ip_new.block2 = ip_available[1]
-                    ip_new.block3 = ip_available[2]
-                    ip_new.block4 = ip_available[3]
-                    ip_new.block5 = ip_available[4]
-                    ip_new.block6 = ip_available[5]
-                    ip_new.block7 = ip_available[6]
-                    ip_new.block8 = ip_available[7]
-                    ip_new.description = name
+                    try:
+                        ip_available = ipv6.get_available_ip6(net.id)
+                        ip_new = Ipv6()
 
-                    for env_equipment in net.vlan.ambiente.equipamentoambiente_set.all():
-                        equipment = env_equipment.equipamento
-                        if equipment.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
+                        ip_available = ip_available.split(":")
+                        ip_new.block1 = ip_available[0]
+                        ip_new.block2 = ip_available[1]
+                        ip_new.block3 = ip_available[2]
+                        ip_new.block4 = ip_available[3]
+                        ip_new.block5 = ip_available[4]
+                        ip_new.block6 = ip_available[5]
+                        ip_new.block7 = ip_available[6]
+                        ip_new.block8 = ip_available[7]
+                        ip_new.description = name
 
-                            if equipment.id not in list_ips_equips:
+                        for env_equipment in net.vlan.ambiente.equipamentoambiente_set.all():
+                            equipment = env_equipment.equipamento
+                            if equipment.tipo_equipamento == TipoEquipamento.get_tipo_balanceador():
 
-                                list_ips_equips.append(equipment.id)
+                                if equipment.id not in list_ips_equips:
 
-                                if ip_new.id is None:
-                                    ip_new.save_ipv6(equipment.id, user, net)
-                                else:
-                                    new_ip_equip = Ipv6Equipament()
-                                    new_ip_equip.ip = ip_new
-                                    new_ip_equip.equipamento = equipment
-                                    new_ip_equip.save(user)
+                                    list_ips_equips.append(equipment.id)
 
-                                balanceador_found_flag = True
+                                    if ip_new.id is None:
+                                        ip_new.save_ipv6(equipment.id, user, net)
+                                    else:
+                                        new_ip_equip = Ipv6Equipament()
+                                        new_ip_equip.ip = ip_new
+                                        new_ip_equip.equipamento = equipment
+                                        new_ip_equip.save()
 
-                    if not balanceador_found_flag:
-                        cont_balanceador_not_found = cont_balanceador_not_found + \
-                            1
-                    else:
-                        break
+                                    balanceador_found_flag = True
 
-                    if cont_balanceador_not_found == len_network:
-                        raise_not_found_balanceamento = True
-                        raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associadas com o Ambiente Vip: %s - %s - %s, pois não existe equipamentos do Tipo Balanceador nessas redes." % (
-                            evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
+                        if not balanceador_found_flag:
+                            cont_balanceador_not_found = cont_balanceador_not_found + \
+                                1
+                        else:
+                            break
 
-                except (IpNotAvailableError, IpRangeAlreadyAssociation), e:
-                    cont_balanceador_not_found = cont_balanceador_not_found + 1
-                    if raise_not_found_balanceamento:
-                        raise IpNotAvailableError(None, e.message)
-                    elif len_network == cont_network:
-                        raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associdas com o Ambiente Vip: %s - %s - %s" % (
-                            evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
+                        if cont_balanceador_not_found == len_network:
+                            raise_not_found_balanceamento = True
+                            raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associadas com o "
+                                                            "Ambiente Vip: %s - %s - %s, pois não existe equipamentos "
+                                                            "do Tipo Balanceador nessas redes."
+                                                      % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
-            return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))
+                    except (IpNotAvailableError, IpRangeAlreadyAssociation), e:
+                        cont_balanceador_not_found = cont_balanceador_not_found + 1
+                        if raise_not_found_balanceamento:
+                            raise IpNotAvailableError(None, e.message)
+                        elif len_network == cont_network:
+                            raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associdas com o "
+                                                            "Ambiente Vip: %s - %s - %s"
+                                                      % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
+
+                transaction.commit()
+                return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))
 
         except NetworkNotInEvip, e:
             return self.response_error(321, 'ipv6')

@@ -133,7 +133,7 @@ class VlanDeallocateResource(RestResource):
             with distributedlock(LOCK_VLAN % id_vlan):
 
                 # Remove Vlan
-                vlan.delete(user)
+                vlan.delete()
 
                 return self.response(dumps_networkapi({}))
 
@@ -154,9 +154,8 @@ class VlanDeallocateResource(RestResource):
         except (VlanError):
             return self.response_error(1)
         except Exception, e:
+            self.log.exception(u'Failed to deallocate vlan.')
             if isinstance(e, IntegrityError):
-                # IP associated VIP
-                self.log.error(u'Failed to update the request vip.')
                 return self.response_error(356, id_vlan)
             else:
                 return self.response_error(1)

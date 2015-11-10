@@ -21,7 +21,7 @@ import pytest
 import httplib
 
 # exporting
-from networkapi.test.utils import *
+from networkapi.test.utils import show_sql, xml2dict, dict2xml, permute, mock_login, load_json
 from networkapi.test.assertions import *
 from networkapi.test.mock_scripts import *
 

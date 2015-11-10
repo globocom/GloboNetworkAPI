@@ -20,6 +20,8 @@ from __future__ import with_statement
 LOCK_LOGICAL_ENVIRONMENT = "logical_environment:%s"
 LOCK_ENVIRONMENT = "environment:%s"
 LOCK_DC_DIVISION = "division:%s"
+LOCK_DCHCPv4_NET = "DHCPrelayIPv4Network:%s"
+LOCK_DCHCPv6_NET = "DHCPrelayIPv6Network:%s"
 LOCK_ENVIRONMENT_VIP = "environment_vip:%s"
 LOCK_EQUIPMENT_ACCESS = "equipment_access:%s"
 LOCK_EQUIPMENT = "equipment:%s"
@@ -54,6 +56,8 @@ LOCK_USER_GROUP = "user_group:%s:%s"
 LOCK_USER = "user:%s"
 LOCK_VLAN = "vlan:%s"
 LOCK_RACK = "rack:%s"
+LOCK_GET_IPV4_AVAILABLE = "Ipv4_get_available_for_vip:%s"
+LOCK_GET_IPV6_AVAILABLE = "Ipv6_get_available_for_vip:%s"
 
 
 # Adjusts settings
@@ -62,7 +66,7 @@ from networkapi.distributedlock.memcachedlock import MemcachedLock
 
 DEBUG = False
 DEFAULT_TIMEOUT = 600
-DEFAULT_BLOCKING = False
+DEFAULT_BLOCKING = True
 DEFAULT_MEMCACHED_CLIENT = cache
 DEFAULT_LOCK_FACTORY = lambda key: MemcachedLock(
     key, DEFAULT_MEMCACHED_CLIENT, DEFAULT_TIMEOUT)

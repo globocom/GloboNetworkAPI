@@ -86,7 +86,7 @@ class UserGroupAssociateResource(RestResource):
 
             try:
                 # save UserGroup
-                user_group.save(user)
+                user_group.save()
             except Exception, e:
                 self.log.error(u'Failed to save the UserGroup.')
                 raise UsuarioError(e, u'Failed to save the UserGroup.')

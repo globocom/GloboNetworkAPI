@@ -81,7 +81,7 @@ class BrandAddResource(RestResource):
 
             try:
                 # save Brand
-                brand.save(user)
+                brand.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Brand.')
                 raise EquipamentoError(e, u'Failed to save the Brand.')

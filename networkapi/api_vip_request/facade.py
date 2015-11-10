@@ -21,11 +21,16 @@ from networkapi.api_pools.views import reals_can_associate_server_pool
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.error_message_utils import error_messages
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
-from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
+from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, \
+    EnvironmentVip
 import logging
-from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
-from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool, OptionVip, DsrL3_to_Vip
-from networkapi.util import is_valid_int_greater_zero_param, convert_boolean_to_int
+
+from networkapi.api_vip_request.serializers import RequestVipSerializer, \
+    VipPortToPoolSerializer
+from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, \
+    ServerPool, OptionVip, DsrL3_to_Vip
+from networkapi.util import is_valid_int_greater_zero_param, \
+    convert_boolean_to_int
 from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.requisicaovips.models import RequisicaoVipsMissingDSRL3idError
@@ -62,7 +67,8 @@ def get_by_pk(pk):
 
     pools = []
 
-    vip_to_ports_query = VipPortToPool.objects.filter(requisicao_vip=vip_request)
+    vip_to_ports_query = VipPortToPool.objects.filter(
+        requisicao_vip=vip_request)
 
     for vip_port in vip_to_ports_query:
 
@@ -127,13 +133,15 @@ def save(request):
     obj_req_vip.validado = False
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
+
     obj_req_vip.traffic_return=OptionVip.objects.filter(nome_opcao_txt=data['traffic_return'])
     if data['traffic_return'] == "DSRL3": DsrL3_to_Vip.get_dsrl3(obj_req_vip.id, user)
-    obj_req_vip.save(user)
+    obj_req_vip.save()
+
 
     for v_port in obj_req_vip.vip_ports_to_pools:
         v_port.requisicao_vip = obj_req_vip
-        v_port.save(user)
+        v_port.save()
 
 
     return req_vip_serializer.data
@@ -192,7 +200,7 @@ def update(request, pk):
                 DsrL3_to_Vip.get_dsrl3(pk, user)
 
 
-        obj_req_vip.save(user)
+        obj_req_vip.save()
 
         vip_port_serializer = VipPortToPoolSerializer(data=vip_ports, many=True)
 
@@ -211,7 +219,7 @@ def update(request, pk):
         server_pool_ips_can_associate_with_vip_request(obj_req_vip, vip_port_to_pool_to_remove)
 
         for v_port_to_del in vip_port_to_pool_to_remove:
-            v_port_to_del.delete(user)
+            v_port_to_del.delete()
 
         for vip_port in vip_ports:
             vip_port_obj = VipPortToPool()
@@ -219,7 +227,7 @@ def update(request, pk):
             vip_port_obj.server_pool = ServerPool(id=vip_port.get('server_pool'))
             vip_port_obj.port_vip = vip_port.get('port_vip')
             vip_port_obj.requisicao_vip = obj_req_vip
-            vip_port_obj.save(user)
+            vip_port_obj.save()
 
         return req_vip_serializer.data
 

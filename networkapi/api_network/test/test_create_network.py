@@ -21,7 +21,7 @@ class NetworkCreateTestCase(unittest.TestCase):
         self.mock_networkv6_get_by_pk()
 
     def tearDown(self):
-        pass
+       patch.stopall()
 
     @mock_login
     def test_network_ipv4_deploy_given_empty_equipment_list(self):
@@ -201,15 +201,15 @@ class NetworkCreateTestCase(unittest.TestCase):
         return equipment_find_mock
 
     def mock_networkv4_get_by_pk(self):
-        network_mock = patch('networkapi.ip.models.NetworkIPv4').start()
+        network_mock = patch('networkapi.ip.models.NetworkIPv4.get_by_pk').start()
         self.networkv4 = NetworkIPv4(vlan = Vlan(ambiente = Ambiente()))
-        network_mock.get_by_pk = lambda network_id: self.networkv4
+        network_mock.return_value = self.networkv4
         return network_mock
 
     def mock_networkv6_get_by_pk(self):
-        network_mock = patch('networkapi.ip.models.NetworkIPv6').start()
+        network_mock = patch('networkapi.ip.models.NetworkIPv6.get_by_pk').start()
         self.networkv6 = NetworkIPv6(vlan = Vlan(ambiente = Ambiente()))
-        network_mock.get_by_pk = lambda network_id: self.networkv6
+        network_mock.return_value =  self.networkv6
         return network_mock
 
     def mock_user_has_permission(self, has_permission):

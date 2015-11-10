@@ -18,7 +18,7 @@
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoError, Equipamento
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError
@@ -31,7 +31,9 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 def get_new_interface_map(interface):
     int_map = model_to_dict(interface)
+    int_map['id'] = interface.id
     int_map['nome'] = interface.interface
+    int_map['descricao'] = interface.descricao
     int_map['tipo_equip'] = interface.equipamento.tipo_equipamento_id
     int_map['equipamento_nome'] = interface.equipamento.nome
     int_map['marca'] = interface.equipamento.modelo.marca_id
@@ -91,6 +93,7 @@ class InterfaceGetResource(RestResource):
             interface = kwargs.get('id_interface')
             channel = kwargs.get('channel_name')
             equipamento = kwargs.get('id_equipamento')
+            equip_name = kwargs.get('equip_name')
 
             equipInterface_list = []
             interface_list = []
@@ -108,12 +111,17 @@ class InterfaceGetResource(RestResource):
                 return self.response(dumps_networkapi({'interface': int_map}))
 
             if channel is not None:
-                if equipamento is None:
+                if equip_name is not None:
                     interfaces = Interface.objects.all().filter(channel__nome=channel)
+                    channel_id = None
                     for interf in interfaces:
-                        equipInterface_list.append(get_new_interface_map(interf))
+                        if interf.equipamento.nome == equip_name or interf.ligacao_front.equipamento.nome == equip_name:
+                            channel_id = interf.channel.id
+                    for interf in interfaces:
+                        if interf.channel.id == channel_id:
+                            equipInterface_list.append(get_new_interface_map(interf))
                     return self.response(dumps_networkapi({'interfaces': equipInterface_list}))
-                else:
+                if equipamento is not None:
                     interfaces = Interface.objects.all().filter(channel__nome=channel)
                     for interf in interfaces:
                         if interf.equipamento.id==int(equipamento):

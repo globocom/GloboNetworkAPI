@@ -89,7 +89,7 @@ class ScriptTypeAddResource(RestResource):
 
             try:
                 # save Script Type
-                script_type.save(user)
+                script_type.save()
             except Exception, e:
                 self.log.error(u'Failed to save the Script Type.')
                 raise RoteiroError(e, u'Failed to save the Script Type.')

@@ -209,7 +209,7 @@ class RequestVipsResource(RestResource):
 
             try:
                 # save Resquest Vip
-                vip.save(user)
+                vip.save()
 
                 # save VipPortToPool, ServerPool and ServerPoolMember
                 vip.save_vips_and_ports(vip_map, user)
@@ -469,7 +469,7 @@ class RequestVipsResource(RestResource):
 
                 try:
                     # update Resquest Vip
-                    vip.save(user)
+                    vip.save()
                     # update ServerPool, VipPortToPool, ServerPoolMembers
                     vip.save_vips_and_ports(vip_map, user)
 

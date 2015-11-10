@@ -30,11 +30,11 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
 
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
-    update_environment_option_pool, delete_environment_option_pool, delete_option_pool
+    update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
+    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_pool
 from networkapi.error_message_utils import error_messages
 from networkapi.ip.models import IpEquipamento, Ip, Ipv6
 from networkapi.equipamento.models import Equipamento
-from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
@@ -69,7 +69,6 @@ def pool_list(request):
     try:
 
         data = dict()
-
         environment_id = request.DATA.get("environment_id")
         start_record = request.DATA.get("start_record")
         end_record = request.DATA.get("end_record")
@@ -162,6 +161,111 @@ def pool_list_by_reqvip(request):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, Write))
+@commit_on_success
+def poolmember_state(request):
+    """
+    Enable/Disable pool member by list
+
+    param: Following dictionary: {
+            "pools": [
+                {
+                    "server_pool": {
+                    },
+                    "server_pool_members": [
+                    ]
+                }
+            ]
+        }
+    """
+
+    request = request.DATA.get("pools", [])
+    response = set_poolmember_state(request)
+
+    return Response(response)
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Write))
+def create_pool(request):
+
+    pools = request.DATA.get("id_pools")
+    servers_pools = ServerPool.objects.filter(id__in=pools)
+    
+    response = create_pool(servers_pools)
+
+    return Response(response)
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, Read))
+@commit_on_success
+def list_all_members(request):
+
+    """
+    Return pool member list by POST request method
+    Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}
+    Return: 
+          {
+            "pools": [
+                {
+                    "server_pool": {
+                    },
+                    "server_pool_members": [
+                    ]
+                }
+            ]
+        }
+    """
+
+    pools = request.DATA.get("id_pools")
+    checkstatus = request.DATA.get("checkstatus")
+    if checkstatus is None:
+        checkstatus = False
+
+    data = dict()
+
+    servers_pools = ServerPool.objects.filter(id__in=pools)
+    
+    if checkstatus:
+        status = get_poolmember_state(servers_pools)
+
+    data["pools"] = []
+    for server_pool in servers_pools:
+
+        if checkstatus:
+
+            if status.get(server_pool.id):
+                query_pools = ServerPoolMember.objects.filter(server_pool=server_pool)
+
+                for pm in query_pools:
+
+                    member_checked_status = status[server_pool.id][pm.id]
+                    pm.member_status = member_checked_status
+                    pm.last_status_update = datetime.now()
+                    pm.save(request.user)
+
+        server_pool_members = ServerPoolMember.objects.filter(
+            server_pool=server_pool
+        )
+
+        serializer_server_pool = ServerPoolSerializer(server_pool)
+
+        serializer_server_pool_member = ServerPoolMemberSerializer(
+            server_pool_members,
+            many=True
+        )
+
+        data["pools"].append({
+            "server_pool" : serializer_server_pool.data,
+            "server_pool_members" : serializer_server_pool_member.data
+        })
+
+    return Response(data)
+
 
 
 @api_view(['GET', 'POST'])
@@ -270,8 +374,8 @@ def get_equipamento_by_ip(request, id_ip):
 @commit_on_success
 def delete(request):
     """
-	Delete Pools by list id.
-	"""
+    Delete Pools by list id.
+    """
 
     try:
 
@@ -325,8 +429,8 @@ def delete(request):
 @commit_on_success
 def remove(request):
     """
-	Remove Pools by list id running script and update to not created.
-	"""
+    Remove Pools by list id running script and update to not created.
+    """
 
     try:
 
@@ -374,8 +478,8 @@ def remove(request):
 @commit_on_success
 def create(request):
     """
-	Create Pools by list id running script and update to created.
-	"""
+    Create Pools by list id running script and update to created.
+    """
 
     try:
 
@@ -486,8 +590,8 @@ def get_by_pk(request, id_server_pool):
 @commit_on_success
 def enable(request):
     """
-	Create Pools by list id running script and update to created.
-	"""
+    Create Pools by list id running script and update to created.
+    """
 
     try:
 
@@ -541,8 +645,8 @@ def enable(request):
 @commit_on_success
 def disable(request):
     """
-	Create Pools by list id running script and update to created.
-	"""
+    Create Pools by list id running script and update to created.
+    """
 
     try:
 
@@ -809,7 +913,6 @@ def save_reals(request):
 @commit_on_success
 def save(request):
     try:
-
         id = request.DATA.get('id')
         identifier = request.DATA.get('identifier')
         default_port = request.DATA.get('default_port')
@@ -1155,8 +1258,8 @@ def __list_option_by_pk_get(request, option_id):
 @commit_on_success
 def __delete_pool_option(request,option_id):
     """
-	Delete options Pools by id.
-	"""
+    Delete options Pools by id.
+    """
 
     try:
 
@@ -1200,8 +1303,8 @@ def __delete_pool_option(request,option_id):
 @commit_on_success
 def __modify_pool_option(request,option_id):
     """
-	Delete options Pools by id.
-	"""
+    Delete options Pools by id.
+    """
     try:
 
         OptionPool.objects.get(id=option_id)

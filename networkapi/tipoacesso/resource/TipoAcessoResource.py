@@ -104,7 +104,7 @@ class TipoAcessoResource(RestResource):
 
             try:
                 # save access type
-                access_type.save(user)
+                access_type.save()
             except Exception, e:
                 self.log.error(u'Failed to save TipoAcesso.')
                 raise TipoAcessoError(e, u'Failed to save TipoAcesso.')
@@ -176,7 +176,7 @@ class TipoAcessoResource(RestResource):
 
                 try:
                     # save access type
-                    tpa.save(user)
+                    tpa.save()
                 except Exception, e:
                     self.log.error(u'Failed to update TipoAcesso.')
                     raise TipoAcessoError(e, u'Failed to update TipoAcesso.')
@@ -229,7 +229,7 @@ class TipoAcessoResource(RestResource):
                     raise AccessTypeUsedByEquipmentError(
                         None, u'Access Type in use by equipment.')
 
-                tpa.delete(user)
+                tpa.delete()
 
             return self.response(dumps_networkapi({}))
 

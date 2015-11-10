@@ -118,7 +118,7 @@ class RemoveVipResource(RestResource):
                         'stdout': stdout, 'stderr': stderr}
 
                     vip.vip_criado = 0
-                    vip.save(user)
+                    vip.save()
 
                     #Marks the server pool as not created if the
                     # server pool is not used in another already created vip request
@@ -134,7 +134,7 @@ class RemoveVipResource(RestResource):
 
                         if not vip_with_server_pool_is_created and server_pool.pool_created:
                             server_pool.pool_created = 0
-                            server_pool.save(user)
+                            server_pool.save()
 
                         map = dict()
                         map['sucesso'] = success_map

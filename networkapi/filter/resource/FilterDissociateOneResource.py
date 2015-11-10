@@ -74,7 +74,7 @@ class FilterDissociateOneResource(RestResource):
                     filter=fil.id, equiptype=eq_tp.id)
 
                 ## Only delete if there's no conflicts ##
-                association.delete(user)
+                association.delete()
 
             except ObjectDoesNotExist, e:
                 # Association doesn't exist, ok

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import os
 import unittest
 from django.core.exceptions import ObjectDoesNotExist
 from mock import patch, MagicMock
@@ -21,13 +22,13 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_environment_by_id(Ambiente(id = 1))
 
     def tearDown(self):
-        pass
+        patch.stopall()
 
     @mock_login
     def test_save_pool_given_no_service_down_action_available(self):
         self.mock_get_service_down_action_by_environment(None)
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals("Invalid value for Service-Down-Action.", response.data.get('detail'))
 
@@ -36,7 +37,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
         self.mock_filter_server_pool_by_identifier(ServerPool(identifier = "pool_1"))
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals("Identifier already exists.", response.data.get('detail'))
 
@@ -44,7 +45,7 @@ class PoolSaveTestCase(unittest.TestCase):
     def test_save_pool_given_invalid_service_down_action_id(self):
         self.mock_get_service_down_action_by_pk(None)
 
-        response = self.client.post('/api/pools/save/', load_json('pool_with_service_down_action.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool_with_service_down_action.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals("Invalid value for Service-Down-Action.", response.data.get('detail'))
 
@@ -53,7 +54,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
         self.mock_filter_server_pool_by_identifier(None)
 
-        response = self.client.post('/api/pools/save/', load_json('pool_with_invalid_identifier.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool_with_invalid_identifier.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals("The first character of the identifier field can not be a number.", response.data.get('detail'))
 
@@ -62,7 +63,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
         self.mock_filter_server_pool_by_identifier(None)
 
-        response = self.client.post('/api/pools/save/', load_json('pool_with_invalid_health_check.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool_with_invalid_health_check.json'), format='json')
         self.assertEquals(500, response.status_code)
         self.assertEquals("Failed to access the data source.", response.data.get('detail'))
 
@@ -73,7 +74,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(UpdateEnvironmentPoolCreatedException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Ambiente nao pode ser alterado pois o server pool ja esta criado no equipamento.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -85,7 +86,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(UpdateEnvironmentVIPException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Ambiente nao pode ser alterado pois o server pool esta associado com um ou mais VIP.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -97,7 +98,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(UpdateEnvironmentServerPoolMemberException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Ambiente nao pode ser alterado pois o server pool esta associado com um ou mais server pool member.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -109,7 +110,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(CreatedPoolIdentifierException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Pool already created. Cannot change Identifier.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -121,7 +122,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptAlterLimitPoolDiffMembersException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Failed to change limits for pool. Members limit differs from pool default limit     Set all members with the same default limit before changing default pool limit.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -133,7 +134,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptAlterLimitPoolException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Failed to execute limits script for pool.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -145,7 +146,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptCreatePoolException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Failed to execute create script for pool.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -157,7 +158,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptAlterServiceDownActionException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Failed to execute service-down-action script for pool.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -170,7 +171,7 @@ class PoolSaveTestCase(unittest.TestCase):
         save_pool_mock = self.mock_save_server_pool((self.create_server_pool_model(), None))
         prepare_to_save_reals_mock = self.mock_prepare_to_save_reals(InvalidRealPoolException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Parametros invalidos do real.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -185,7 +186,7 @@ class PoolSaveTestCase(unittest.TestCase):
         prepare_to_save_reals_mock = self.mock_prepare_to_save_reals([self.create_real_dict()])
         reals_can_associate_server_pool_mock = self.mock_reals_can_associate_server_pool(EnvironmentEnvironmentVipNotBoundedException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('There is no link between environment and environment vip.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -228,7 +229,7 @@ class PoolSaveTestCase(unittest.TestCase):
         reals_can_associate_server_pool_mock = self.mock_reals_can_associate_server_pool(None)
         save_server_pool_member_mock = self.mock_save_server_pool_member(ScriptCreatePoolException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Failed to execute create script for pool.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -246,7 +247,7 @@ class PoolSaveTestCase(unittest.TestCase):
         reals_can_associate_server_pool_mock = self.mock_reals_can_associate_server_pool(None)
         save_server_pool_member_mock = self.mock_save_server_pool_member(ScriptAlterPriorityPoolMembersException())
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
         self.assertEquals('Failed to execute priority script for pool.', response.data.get('detail'))
         self.assertTrue(save_pool_mock.called)
@@ -264,7 +265,7 @@ class PoolSaveTestCase(unittest.TestCase):
         reals_can_associate_server_pool_mock = self.mock_reals_can_associate_server_pool(None)
         save_server_pool_member_mock = self.mock_save_server_pool_member([self.create_pool_member()])
 
-        response = self.client.post('/api/pools/save/', load_json('pool.json'), format='json')
+        response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(201, response.status_code)
         self.assertEquals("pool_1", response.data.get("server_pool").get("identifier"))
         self.assertEquals(8080, response.data.get("server_pool").get("default_port"))
@@ -313,6 +314,10 @@ class PoolSaveTestCase(unittest.TestCase):
 
     def create_environment(self):
         return Ambiente(divisao_dc=DivisaoDc(nome='division_1'), ambiente_logico=AmbienteLogico(nome='env'), grupo_l3 = GrupoL3(nome='l3'))
+    
+    def load_pool_json(self, file_name):
+        path = os.path.dirname(os.path.realpath(__file__)) + '/' + file_name
+        return load_json(path)
 
     #MOCKS
     def mock_get_service_down_action_by_environment(self, option_pool):

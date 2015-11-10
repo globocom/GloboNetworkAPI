@@ -26,10 +26,15 @@ from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.rack.resource.GeraConfig import autoprovision_splf, autoprovision_coreoob
 from networkapi.ip.models import Ip, IpEquipamento
-from networkapi import settings
 from netaddr import IPNetwork
 from requests.exceptions import RequestException
-if settings.USE_FOREMAN:
+from networkapi.system.facade import get_value as get_variable
+from networkapi.system import exceptions as var_exceptions
+from django.core.exceptions import ObjectDoesNotExist
+
+log = logging.getLogger(__name__)
+
+if int(get_variable("use_foreman")):
     from foreman.client import Foreman, ForemanException
 
 def buscar_roteiro(id_sw, tipo):
@@ -61,23 +66,14 @@ def buscar_ip(id_sw):
 
 def gera_config(rack):
 
-    num_rack=None
-    id_lf1=None
-    name_lf1=None
-    id_lf2=None
-    name_lf2=None
-    id_oob=None
     id_core1=None
     id_core2=None
-
-    name_oob=None
-    name_sp1=None   
+    name_sp1=None
     name_sp2=None   
     name_sp3=None   
     name_sp4=None   
     name_core1=None
     name_core2=None
-
     int_sp1=None
     int_sp2=None   
     int_sp3=None   
@@ -85,12 +81,7 @@ def gera_config(rack):
     int_lf1_sp1=None   
     int_lf1_sp2=None   
     int_lf2_sp3=None   
-    int_lf2_sp4=None   
-
-    ip_mgmtlf1=None
-    ip_mgmtlf2=None
-    ip_mgmtoob=None
-
+    int_lf2_sp4=None
     int_oob_mgmtlf1=None
     int_oob_mgmtlf2=None
     int_oob_core1=None  
@@ -207,12 +198,6 @@ def gera_config(rack):
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 01.")
 
-    #Roteiro SPN01
-    try:
-        FILEINSP1 = buscar_roteiro(id_sp1, "CONFIGURACAO")    
-    except:
-        raise RackConfigError(None,rack.nome,"Erro ao buscar o roteiro do Spine 01.")
-
     #Roteiro SPN02
     try:
         FILEINSP2 = buscar_roteiro(id_sp2, "CONFIGURACAO")    
@@ -267,10 +252,18 @@ def gera_config(rack):
     except:
         raise RackConfigError(None,rack.nome,"Erro ao buscar o ip de gerencia do oob.")
 
+    try:
+        NETWORKAPI_USE_FOREMAN = int(get_variable("use_foreman"))
+        NETWORKAPI_FOREMAN_URL = get_variable("foreman_url")
+        NETWORKAPI_FOREMAN_USERNAME = get_variable("foreman_username")
+        NETWORKAPI_FOREMAN_PASSWORD = get_variable("foreman_password")
+        FOREMAN_HOSTS_ENVIRONMENT_ID = get_variable("foreman_hosts_environment_id")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis relativas ao Foreman.")
 
     #begin - Create Foreman entries for rack switches
-    if settings.USE_FOREMAN:
-        foreman = Foreman(settings.FOREMAN_URL, (settings.FOREMAN_USERNAME, settings.FOREMAN_PASSWORD), api_version=2)
+    if NETWORKAPI_USE_FOREMAN:
+        foreman = Foreman(NETWORKAPI_FOREMAN_URL, (NETWORKAPI_FOREMAN_USERNAME, NETWORKAPI_FOREMAN_PASSWORD), api_version=2)
 
         #for each switch, check the switch ip against foreman know networks, finds foreman hostgroup
         # based on model and brand and inserts the host in foreman
@@ -281,7 +274,6 @@ def gera_config(rack):
                 raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There is no mac address." % (switch.nome)))
 
             ip = buscar_ip(switch.id)
-            model_name = switch.modelo.nome
             switch_cadastrado=0
             for subnet in foreman.subnets.index()['results']:
                 network = IPNetwork(ip+'/'+subnet['mask']).network
@@ -305,7 +297,7 @@ def gera_config(rack):
                     else:
                         hostgroup_id = hostgroups['results'][0]['id']
 
-                    host = foreman.hosts.create(host={'name': switch.nome, 'ip': ip, 'mac': mac, 'environment_id': settings.FOREMAN_HOSTS_ENVIRONMENT_ID, 'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id, 'build': 'true', 'overwrite': 'true'})
+                    host = foreman.hosts.create(host={'name': switch.nome, 'ip': ip, 'mac': mac, 'environment_id': FOREMAN_HOSTS_ENVIRONMENT_ID, 'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id, 'build': 'true', 'overwrite': 'true'})
                     switch_cadastrado=1
                     
             if not switch_cadastrado:
@@ -334,8 +326,7 @@ class RackConfigResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             rack_id = kwargs.get('id_rack')
@@ -347,7 +338,7 @@ class RackConfigResource(RestResource):
             var = gera_config(rack)
 
             rack.__dict__.update(id=rack_id, config=var)
-            rack.save(user) 
+            rack.save()
 
             success_map = dict()
             success_map['rack_conf'] = var
@@ -364,7 +355,7 @@ class RackConfigResource(RestResource):
             return self.not_authorized()
 
         except RackNumberNotFoundError:
-            return self.response_error(379, id_rack)
+            return self.response_error(379, rack_id)
 
         except RackError:
             return self.response_error(382)
@@ -372,8 +363,13 @@ class RackConfigResource(RestResource):
         except InterfaceNotFoundError:
             return self.response_error(141)
 
+        except ObjectDoesNotExist, exception:
+            self.log.error(exception)
+            raise var_exceptions.VariableDoesNotExistException()
+
         except ForemanException, e:
             self.log.error("Error acessing Foreman Server %s" % str(e))
             return self.response_error(391, str(e))
+
         except RequestException, e:
             return self.response_error(391, e)

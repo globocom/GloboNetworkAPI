@@ -87,7 +87,7 @@ class RackEditResource(RestResource):
                     racks.id_ilo = Equipamento.get_by_pk(id_ilo)
 
                 # save 
-                racks.save(user)
+                racks.save()
 
                 rack_map = dict()
                 rack_map['rack'] = model_to_dict(racks)

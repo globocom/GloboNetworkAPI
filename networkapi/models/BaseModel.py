@@ -14,12 +14,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from django.db import models, transaction, router
 from networkapi.models.BaseManager import BaseManager
 from django.db.models.deletion import Collector
-
 
 class BaseModel(models.Model):
 
@@ -35,28 +32,35 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    def __unicode__(self):
+        if hasattr(self, 'nome'):
+            return u"{0}".format(self.nome)
+        elif hasattr(self, 'id'):
+            return u"{0}".format(self.id)
+        else:
+            return u"{0}".format(self.__str__())
+
     def set_authenticated_user(self, user):
         self.authenticated_user = user
 
-    def save(self, user, force_insert=False, force_update=False, commit=False):
-        self.set_authenticated_user(user)
-        super(BaseModel, self).save(force_insert, force_update)
+    def save(self, user=None, force_insert=False, force_update=False, commit=False, **kwargs):
+        if user:
+            self.set_authenticated_user(user)
+        super(BaseModel, self).save(force_insert, force_update, **kwargs)
         if commit == True:
             transaction.commit()
 
-    def delete(self, user):
+    def delete(self, *args, **kwargs):
         '''
         Replace  super(BaseModel, self).delete()
         Cause: When delete relationship in cascade  default no have attribute User to Log.
         '''
+
         using = router.db_for_write(self.__class__, instance=self)
         assert self._get_pk_val() is not None, "%s object can't be deleted because its %s attribute is set to None." % (
             self._meta.object_name, self._meta.pk.attname)
 
         collector = Collector(using=using)
         collector.collect([self])
-
-        for key in collector.data.keys():
-            key.authenticated_user = user
 
         collector.delete()
