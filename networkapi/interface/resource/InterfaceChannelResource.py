@@ -114,13 +114,32 @@ class InterfaceChannelResource(RestResource):
 
             cont = []
 
+            interfaces = str(interfaces).split('-')
+            interface_id = None
+
+            channels = PortChannel.objects.filter(nome=nome)
+            channels_id = []
+            for ch in channels:
+                channels_id.append(int(ch.id))
+            if channels_id:
+                for var in interfaces:
+                    if not var=="" and not var==None:
+                        interface_id = int(var)
+                interface_id = interface.get_by_pk(interface_id)
+                equip_id = interface_id.equipamento.id
+                equip_interfaces = interface.search(equip_id)
+                for i in equip_interfaces:
+                    sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    if sw.channel is not None:
+                        if sw.channel.id in channels_id:
+                            raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
+
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
             port_channel.create(user)
 
-            interfaces = str(interfaces).split('-')
-
             int_type = TipoInterface.get_by_name(str(int_type))
+
             for var in interfaces:
                 if not var=="" and not var==None:
                     interf = interface.get_by_pk(int(var))
@@ -132,6 +151,8 @@ class InterfaceChannelResource(RestResource):
 
                     if sw_router.channel is not None:
                         raise InterfaceError("Interface %s já está em um Channel" % sw_router.interface)
+
+
 
                     if cont is []:
                         cont.append(int(sw_router.equipamento.id))
