@@ -538,5 +538,86 @@
       "value": "teste", 
       "description": ""
     }
+  },
+  {
+    "pk": 150,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dsr_vlan_min",
+      "value": "366",
+      "description": ""
+    }
+  },
+  {
+    "pk": 151,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dsr_vlan_max",
+      "value": "381",
+      "description": ""
+    }
+  },
+  {
+    "pk": 152,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dmz_vlan_min",
+      "value": "382",
+      "description": ""
+    }
+  },
+  {
+    "pk": 153,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dmz_vlan_max",
+      "value": "400",
+      "description": ""
+    }
+  },
+  {
+    "pk": 154,
+    "model": "system.variable",
+    "fields": {
+      "name": "bordacachos_vlan_min",
+      "value": "401",
+      "description": ""
+    }
+  },
+  {
+    "pk": 155,
+    "model": "system.variable",
+    "fields": {
+      "name": "bordacachos_vlan_max",
+      "value": "410",
+      "description": ""
+    }
+  },
+  {
+    "pk": 156,
+    "model": "system.variable",
+    "fields": {
+      "name": "num_vlan_acl_be",
+      "value": "4080",
+      "description": ""
+    }
+  },
+  {
+    "pk": 157,
+    "model": "system.variable",
+    "fields": {
+      "name": "num_vlan_acl_fe",
+      "value": "4084",
+      "description": ""
+    }
+  },
+  {
+    "pk": 158,
+    "model": "system.variable",
+    "fields": {
+      "name": "num_vlan_acl_bordadsr",
+      "value": "4085",
+      "description": ""
+    }
   }
 ]

@@ -1,0 +1,8 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `variables` VALUES (150,'borda_dsr_vlan_min','366',''),(151,'borda_dsr_vlan_max','381',''),(152,'borda_dmz_vlan_min','382',''),(153,'borda_dmz_vlan_max','400',''),(154,'bordacachos_vlan_min','401',''),(155,'bordacachos_vlan_max','410',''),(156,'num_vlan_acl_be','4080',''),(157,'num_vlan_acl_fe','4084',''),(158,'num_vlan_acl_bordadsr','4085','');
+"""
+
+SQL_DOWN = u"""
+
+"""
