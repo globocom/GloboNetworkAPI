@@ -190,7 +190,7 @@ class Usuario(BaseModel):
                 else:
                     bypass = 1
             except exceptions.VariableDoesNotExistException, e:
-                self.log.error("Error getting LDAP config variables. Trying local authentication")
+                self.log.error("Error getting LDAP config variables (use_ldap). Trying local authentication")
                 bypass = 1
             except UsuarioNotFoundError, e:
                 self.log.error("Using local authentication for user \'%s\'" % username)
@@ -209,6 +209,8 @@ class Usuario(BaseModel):
                 return return_user
             except ldap.INVALID_CREDENTIALS, e:
                 self.log.error('LDAP authentication error %s' % e)
+            except exceptions.VariableDoesNotExistException, e:
+                self.log.error("Error getting LDAP config variables (ldap_server, ldap_param).")
             
 
         except ObjectDoesNotExist:
