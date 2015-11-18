@@ -17,6 +17,10 @@ class PoolMember(object):
         self._lb = _lb
 
     def setStates(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.set_member_session_enabled_state(
             kwargs['names'],
             kwargs['members'],
@@ -27,6 +31,10 @@ class PoolMember(object):
             kwargs['monitor_state'])
 
     def getStates(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         monitors = self._lb._channel.LocalLB.Pool.get_member_monitor_status(
             kwargs['names'],
             kwargs['members'])
@@ -65,23 +73,39 @@ class PoolMember(object):
         return status_pools
 
     def setConnectionLimit(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.set_member_connection_limit(
             kwargs['names'],
             kwargs['members'],
             kwargs['connection_limit'])
 
     def setPriority(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.set_member_priority(
             kwargs['names'],
             kwargs['members'],
             kwargs['priority'],)
 
     def create(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.add_member_v2(
             kwargs['names'],
             kwargs['members'])
 
     def remove(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.remove_member_v2(
             kwargs['names'],
             kwargs['members'])

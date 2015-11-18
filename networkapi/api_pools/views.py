@@ -31,7 +31,7 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
     update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
-    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_pool as create_pool_
+    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_pool, update_pool, delete_pool
 from networkapi.error_message_utils import error_messages
 from networkapi.ip.models import IpEquipamento, Ip, Ipv6
 from networkapi.equipamento.models import Equipamento
@@ -188,14 +188,30 @@ def poolmember_state(request):
     return Response(response)
 
 
-@api_view(['POST'])
+@api_view(['POST', 'PUT', 'DELETE'])
 @permission_classes((IsAuthenticated, Write))
-def create_pool(request):
+@commit_on_success
+def pool_action(request):
+    """
+    Create/Update/Delete real pool member by list
 
-    pools = request.DATA.get("id_pools")
-    servers_pools = ServerPool.objects.filter(id__in=pools)
-    
-    response = create_pool_(servers_pools)
+    param: Following dictionary: {
+            "pools": [
+                {
+                    "server_pool": {
+                    },
+                    "server_pool_members": [
+                    ]
+                }
+            ]
+        }
+    """
+    if request.method == 'POST':
+        response = update_pool(request)
+    elif request.method == 'PUT':
+        response = create_pool(request)
+    elif request.method == 'DELETE':
+        response = delete_pool(request)
 
     return Response(response)
 
@@ -204,7 +220,6 @@ def create_pool(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_all_members(request):
-
     """
     Return pool member list by POST request method
     Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}
@@ -229,7 +244,7 @@ def list_all_members(request):
     data = dict()
 
     servers_pools = ServerPool.objects.filter(id__in=pools)
-    
+
     if checkstatus:
         status = get_poolmember_state(servers_pools)
 
@@ -260,12 +275,11 @@ def list_all_members(request):
         )
 
         data["pools"].append({
-            "server_pool" : serializer_server_pool.data,
-            "server_pool_members" : serializer_server_pool_member.data
+            "server_pool": serializer_server_pool.data,
+            "server_pool_members": serializer_server_pool_member.data
         })
 
     return Response(data)
-
 
 
 @api_view(['GET', 'POST'])
@@ -879,8 +893,7 @@ def save_reals(request):
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
 
-
-        #valid if reals can linked by environment/environment vip relationship rule
+        # valid if reals can linked by environment/environment vip relationship rule
         reals_can_associate_server_pool(sp, list_server_pool_member)
 
         # Save reals
@@ -953,7 +966,6 @@ def save(request):
             log.warning("Multiple service-down-action entries found for the given parameters")
             raise exceptions.InvalidServiceDownActionException()
 
-
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
         # Cleans id_pool_member. It should be used only with existing pool
@@ -969,7 +981,7 @@ def save(request):
         if has_identifier.count() > 0:
             raise exceptions.InvalidIdentifierAlreadyPoolException()
 
-        #Valid fist caracter is not is number
+        # Valid fist caracter is not is number
         if identifier[0].isdigit():
             raise exceptions.InvalidIdentifierFistDigitPoolException()
 
@@ -1191,6 +1203,7 @@ def list_all_options(request):
         log.exception(exception)
         raise exceptions.OptionPoolDoesNotExistException()
 
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def list_environment_environment_vip_related(request):
@@ -1221,7 +1234,7 @@ def list_environment_environment_vip_related(request):
             env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
             env_map["divisao_dc_name"] = environment.divisao_dc.nome
             if environment.filter is not None:
-                    env_map["filter_name"] = environment.filter.name
+                env_map["filter_name"] = environment.filter.name
 
             environment_list_dict.append(env_map)
 
@@ -1253,10 +1266,11 @@ def __list_option_by_pk_get(request, option_id):
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['DELETE'])
 @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
 @commit_on_success
-def __delete_pool_option(request,option_id):
+def __delete_pool_option(request, option_id):
     """
     Delete options Pools by id.
     """
@@ -1266,18 +1280,16 @@ def __delete_pool_option(request,option_id):
         OptionPool.objects.get(id=option_id)
 
         try:
-            #TODO AFTER INTEGRATION MODEL OPTIONPOOL
-            #if ServerPool.objects.filter(healthcheck=option_id):
+            # TODO AFTER INTEGRATION MODEL OPTIONPOOL
+            # if ServerPool.objects.filter(healthcheck=option_id):
             #    raise exceptions.OptionPoolConstraintPoolException()
 
             if ServerPool.objects.filter(servicedownaction=option_id):
                 raise exceptions.OptionPoolConstraintPoolException()
 
+            po = delete_option_pool(request.user, option_id)
 
-
-            po=delete_option_pool(request.user, option_id)
-
-            return Response({"id":po})
+            return Response({"id": po})
 
         except ObjectDoesNotExist:
             pass
@@ -1298,10 +1310,11 @@ def __delete_pool_option(request,option_id):
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
 
+
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, Write, ScriptAlterPermission))
 @commit_on_success
-def __modify_pool_option(request,option_id):
+def __modify_pool_option(request, option_id):
     """
     Delete options Pools by id.
     """
@@ -1312,7 +1325,6 @@ def __modify_pool_option(request,option_id):
         try:
             type = request.DATA.get('type')
             description = request.DATA.get('name')
-
 
             # tipo_opcao can NOT be greater than 50
             if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
@@ -1366,7 +1378,6 @@ def list_option_by_pk(request, option_id):
         return __modify_pool_option(request, option_id)
 
 
-
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
@@ -1376,7 +1387,6 @@ def save_pool_option(request):
         #log.warning("RECEBEU %s" % request.DATA)
         type = request.DATA.get('type')
         description = request.DATA.get('name')
-
 
         # tipo_opcao can NOT be greater than 50
         if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
@@ -1406,7 +1416,6 @@ def save_pool_option(request):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
-
 
 
 @api_view(['GET'])
@@ -1470,6 +1479,7 @@ def __list_environment_options_by_pk(request, environment_option_id):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
+
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
@@ -1602,11 +1612,11 @@ def reals_can_associate_server_pool(server_pool, list_server_pool_member):
         log.exception(error)
         raise error
 
+
 def __update_environment_options_by_pk(request, environment_option_id):
     try:
 
         OptionPoolEnvironment.objects.get(id=environment_option_id)
-
 
         try:
 
@@ -1656,9 +1666,9 @@ def __delete_environment_options_by_pk(request, environment_option_id):
         OptionPoolEnvironment.objects.get(id=environment_option_id)
 
         try:
-            depo=delete_environment_option_pool(request.user, environment_option_id)
+            depo = delete_environment_option_pool(request.user, environment_option_id)
 
-            return Response({"id":depo})
+            return Response({"id": depo})
 
         except ObjectDoesNotExist:
             pass
@@ -1685,7 +1695,6 @@ def environment_options_by_pk(request, environment_option_id):
         return __delete_environment_options_by_pk(request, environment_option_id)
     elif request.method == 'PUT':
         return __update_environment_options_by_pk(request, environment_option_id)
-
 
 
 @api_view(['POST'])
@@ -1721,8 +1730,6 @@ def save_environment_options(request):
         log.exception(exception)
         raise exception
 
-
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
-

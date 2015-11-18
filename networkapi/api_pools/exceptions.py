@@ -244,3 +244,19 @@ class PoolAlreadyCreated(APIException):
     def __init__(self, msg=None):
         self.detail = u'Poolmember <<%s>> already created.' % (
             msg)
+
+class PoolNameChange(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Not is possible change name of pool.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Not is possible change name of pool. <<%s>>' % (
+            msg)
+
+class PoolEnvironmentChange(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Not is possible change environment of pool.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Not is possible change environment of pool. <<%s>>' % (
+            msg)

@@ -1,8 +1,10 @@
 import bigsuds
-from functools import wraps
 import logging
+from functools import wraps
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
+from networkapi.util import is_healthcheck_valid
+
 
 log = logging.getLogger(__name__)
 
@@ -16,8 +18,7 @@ def transation(func):
     def inner(self, *args, **kwargs):
         if not kwargs.__contains__('connection') or kwargs['connection']:
             try:
-                self._lb = lb.Lb(
-                    args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+                self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
                 if not kwargs.__contains__('transation') or kwargs['transation']:
                     log.info('Transaction Started')
                     with bigsuds.Transaction(self._lb._channel):
@@ -32,6 +33,18 @@ def transation(func):
                 raise base_exceptions.CommandErrorException(e)
         else:
             return func(self, *args, **kwargs)
+    return inner
+
+
+def connection(func):
+    @wraps(func)
+    def inner(self, *args, **kwargs):
+        try:
+            self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+            return func(self, *args, **kwargs)
+        except bigsuds.OperationFailed, e:
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
     return inner
 
 
@@ -51,6 +64,7 @@ def getMethodName(lb_method):
         msg = 'Member lb_method invalid: %s' % (lb_method)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
+
 
 def getServiceDownActionName(action):
     try:
@@ -86,6 +100,7 @@ def _trataParam(pools):
                 getMethodName(p['lb_method']))
 
         if p.get('healthcheck'):
+            is_healthcheck_valid(p['healthcheck'])
             pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):

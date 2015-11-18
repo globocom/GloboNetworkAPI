@@ -17,46 +17,63 @@ class Pool(object):
         self._lb = _lb
 
     def create(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.create_v2(
             kwargs['names'],
             kwargs['lbmethod'],
             kwargs['members'])
 
+    def delete(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.Pool.delete_pool(
+            kwargs['names'])
+
     def setServiceDownAction(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.set_action_on_service_down(
             kwargs['names'],
             kwargs['actions']
         )
 
+    def setLbMethod(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.Pool.set_lb_method(
+            kwargs['names'],
+            kwargs['lbmethod'])
+
     def setMonitorAssociation(self, **kwargs):
-        monitor_associations = []
-
-        for i, pool in enumerate(kwargs['names']):
-            monitor_association = {
-                'pool_name': None,
-                'monitor_rule': {
-                    'monitor_templates': None,
-                    'type': None,
-                    'quorum': None
-                }
-            }
-
-            monitor_association['pool_name'] = kwargs['names'][i]
-
-            if isinstance(kwargs['healthcheck'], str):
-                monitor_templates = [kwargs['healthcheck'].lower()]
-            else:
-                monitor_templates = [h.lower() for h in kwargs['healthcheck']]
-
-            monitor_association['monitor_rule'][
-                'monitor_templates'] = monitor_templates
-
-            monitor_association['monitor_rule'][
-                'type'] = 'MONITOR_RULE_TYPE_SINGLE'
-
-            monitor_association['monitor_rule']['quorum'] = 0
-
-            monitor_associations.append(monitor_association)
+        for k, v in kwargs.items():
+            if v == []:
+                return
 
         self._lb._channel.LocalLB.Pool.set_monitor_association(
-            monitor_associations=monitor_associations)
+            monitor_associations=kwargs['monitor_associations'])
+
+    def removeMonitorAssociation(self, **kwargs):
+        # for k, v in kwargs.items():
+        #     if v == []:
+        #         return
+        log.info(kwargs['names'])
+        self._lb._channel.LocalLB.Pool.remove_monitor_association(pool_names=kwargs['names'])
+
+    def getMonitorAssociation(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        monitor_associations = self._lb._channel.LocalLB.Pool.get_monitor_association(
+            pool_names=kwargs['names'])
+
+        return monitor_associations

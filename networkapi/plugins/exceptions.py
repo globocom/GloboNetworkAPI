@@ -95,9 +95,19 @@ class PluginUninstanced(APIException):
 
 class NamePropertyInvalid(APIException):
 
-    """Return message error: Member status invalid"""
+    """Return message error: Property Name is invalid"""
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Property Name is invalid'
 
     def __init__(self, msg=None):
         self.detail = u'Property Name is invalid: <<%s>>' % (msg)
+
+
+class ValueInvalid(APIException):
+
+    """Return message error: value is invalid"""
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = u'Value is invalid'
+
+    def __init__(self, msg=None):
+        self.detail = u'Value is invalid: <<%s>>' % (msg)

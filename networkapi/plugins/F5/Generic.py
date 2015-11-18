@@ -3,8 +3,11 @@ from networkapi.plugins import exceptions as base_exceptions
 import logging
 from ..base import BasePlugin
 import json
+import bigsuds
+import itertools
 
-from networkapi.plugins.F5 import lb, pool, poolmember, util
+
+from networkapi.plugins.F5 import lb, pool, poolmember, util, monitor
 
 log = logging.getLogger(__name__)
 
@@ -78,44 +81,132 @@ class Generic(BasePlugin):
             names=pls['pools_names'],
             members=pls['pools_members']['members'])
 
-
     #######################################
     # POOL
     #######################################
-    @util.transation
+    @util.connection
     def createPool(self, pools):
+
+        monitor_associations = []
+        pls = util._trataParam(pools)
+
+        mon = monitor.Monitor(self._lb)
+
+        monitor_associations = mon.createTemplate(
+            names=pls['pools_names'],
+            healthcheck=pls['pools_healthcheck']
+        )
+
+        try:
+            self._lb._channel.System.Session.start_transaction()
+
+            pl = pool.Pool(self._lb)
+
+            pl.create(
+                names=pls['pools_names'],
+                lbmethod=pls['pools_lbmethod'],
+                members=pls['pools_members']['members'])
+
+            pl.setMonitorAssociation(monitor_associations=monitor_associations)
+
+            pl.setServiceDownAction(
+                names=pls['pools_names'],
+                actions=pls['pools_actions'])
+
+            plm = poolmember.PoolMember(self._lb)
+
+            plm.setConnectionLimit(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                connection_limit=pls['pools_members']['limit'])
+
+            plm.setPriority(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                priority=pls['pools_members']['priority'])
+
+            plm.setStates(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                monitor_state=pls['pools_members']['monitor'],
+                session_state=pls['pools_members']['session'])
+
+        except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
+            if monitor_associations != []:
+                template_names = [m['monitor_rule']['monitor_templates'] for m in monitor_associations]
+                mon.deleteTemplate(
+                    template_names=template_names
+                )
+            raise base_exceptions.CommandErrorException(e)
+        else:
+            self._lb._channel.System.Session.submit_transaction()
+
+    @util.connection
+    def updatePool(self, pools):
+
+        monitor_associations = []
+        pls = util._trataParam(pools)
+
+        pl = pool.Pool(self._lb)
+        mon = monitor.Monitor(self._lb)
+
+        mon.deleteTemplateAssoc(names=pls['pools_names'])
+
+        monitor_associations = mon.createTemplate(
+            names=pls['pools_names'],
+            healthcheck=pls['pools_healthcheck']
+        )
+
+        try:
+            self._lb._channel.System.Session.start_transaction()
+
+            pl.setMonitorAssociation(monitor_associations=monitor_associations)
+
+            pl.setLbMethod(
+                names=pls['pools_names'],
+                lbmethod=pls['pools_lbmethod'])
+
+            pl.setServiceDownAction(
+                names=pls['pools_names'],
+                actions=pls['pools_actions'])
+
+            plm = poolmember.PoolMember(self._lb)
+
+            plm.setConnectionLimit(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                connection_limit=pls['pools_members']['limit'])
+
+            plm.setPriority(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                priority=pls['pools_members']['priority'])
+
+            plm.setStates(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                monitor_state=pls['pools_members']['monitor'],
+                session_state=pls['pools_members']['session'])
+
+        except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
+            if monitor_associations != []:
+                template_names = [m['monitor_rule']['monitor_templates'] for m in monitor_associations]
+                mon.deleteTemplate(
+                    template_names=template_names
+                )
+            raise base_exceptions.CommandErrorException(e)
+        else:
+            self._lb._channel.System.Session.submit_transaction()
+
+    @util.connection
+    def deletePool(self, pools):
 
         pls = util._trataParam(pools)
 
         pl = pool.Pool(self._lb)
+        mon = monitor.Monitor(self._lb)
 
-        pl.create(
-            names=pls['pools_names'],
-            lbmethod=pls['pools_lbmethod'],
-            members=pls['pools_members']['members'])
-
-        pl.setServiceDownAction(
-            names=pls['pools_names'],
-            actions=pls['pools_actions'])
-
-        pl.setMonitorAssociation(
-            names=pls['pools_names'],
-            healthcheck=pls['pools_healthcheck'])
-
-        plm = poolmember.PoolMember(self._lb)
-        
-        plm.setConnectionLimit(
-            names=pls['pools_names'],
-            members=pls['pools_members']['members'],
-            connection_limit=pls['pools_members']['limit'])
-
-        plm.setPriority(
-            names=pls['pools_names'],
-            members=pls['pools_members']['members'],
-            priority=pls['pools_members']['priority'])
-
-        plm.setStates(
-            names=pls['pools_names'],
-            members=pls['pools_members']['members'],
-            monitor_state=pls['pools_members']['monitor'],
-            session_state=pls['pools_members']['session'])
+        mon.deleteTemplateAssoc(names=pls['pools_names'])
+        pl.delete(names=pls['pools_names'])

@@ -29,7 +29,3 @@ class Lb(object):
                     'This plugin only supports BIG-IP v11')
             else:
                 self._channel = self._channel.with_session_id()
-
-    # def __repr__(self):
-    #     log.info('hostname:%s, username:%s'%(self._hostname, self._username))
-    #     return 'hostname:%s, username:%s'%(self._hostname, self._username)
