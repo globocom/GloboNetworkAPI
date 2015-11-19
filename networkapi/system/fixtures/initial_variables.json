@@ -651,8 +651,44 @@
     "pk": 203,
     "model": "system.variable",
     "fields": {
+      "name": "template_remove_channel",
+      "value": "interface_channel_configuration_delete",
+      "description": ""
+    }
+  },
+  {
+    "pk": 204,
+    "model": "system.variable",
+    "fields": {
       "name": "template_remove_interface",
       "value": "interface_configuration_delete",
+      "description": ""
+    }
+  },
+  {
+    "pk": 205,
+    "model": "system.variable",
+    "fields": {
+      "name": "interface_config_toapply_rel_path",
+      "value": "",
+      "description": ""
+    }
+  },
+  {
+    "pk": 206,
+    "model": "system.variable",
+    "fields": {
+      "name": "interface_config_template_path",
+      "value": "",
+      "description": ""
+    }
+  },
+  {
+    "pk": 207,
+    "model": "system.variable",
+    "fields": {
+      "name": "interface_config_files_path",
+      "value": "",
       "description": ""
     }
   }
