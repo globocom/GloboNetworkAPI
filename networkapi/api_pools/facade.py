@@ -622,7 +622,7 @@ def get_poolmember_state(servers_pools):
             if not any_eqpt:
                 log.error('All equipments is in maintenance(Pool:%s'%pool_name)
                 raise exceptions.AllEquipamentMaintenance(pool_name)
-          
+  
     ps = {}
     status = {}
     for lb in load_balance:
@@ -641,11 +641,14 @@ def get_poolmember_state(servers_pools):
                 ps[pool_id][member_id].append(st)
                 status[pool_id][member_id] = st
 
-                if len(ps[pool_id][member_id])>1:
-                    if ps[pool_id][member_id][idx_m] != ps[pool_id][member_id][idx_m-1]:
-                        msg = load_balance[lb]['pools_members'][idx][idx_m]['address']+':'+load_balance[lb]['pools_members'][idx][idx_m]['port']
-                        log('The poolmember <<%s>> has states different in equipments.'%msg)
-                        raise exceptions.DiffStatesEquipament(msg)
+    # Verify diff state of pool member in eqpts
+    log.info(ps)
+    for idx in ps:
+        for idx_m in ps[idx]:
+            if len(set(ps[idx][idx_m])) > 1:
+                    msg = 'There are states differents in equipments.'
+                    log.error(msg)
+                    raise exceptions.DiffStatesEquipament(msg)
     return status
 
 def manager_pools(request):

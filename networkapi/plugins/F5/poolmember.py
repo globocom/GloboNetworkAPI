@@ -77,8 +77,9 @@ class PoolMember(object):
             pools['pools_members'],
             pools['pools_members_session_state'])
 
-    @util.transation
+    #@util.transation
     def getStates(self, pools):
+        self._lb._channel.System.Session.start_transaction()
         try:
             monitors = self._lb._channel.LocalLB.Pool.get_member_monitor_status(
                 pools['pools_name'],
@@ -89,8 +90,10 @@ class PoolMember(object):
                 pools['pools_name'],
                 pools['pools_members'])
         except Exception, e:
+            self._lb._channel.System.Session.rolback_transaction()
             raise e
         else:
+            self._lb._channel.System.Session.submit_transaction()
             status_pools = []
             for p, pool in enumerate(monitors):
                 status = []
