@@ -26,6 +26,7 @@ from networkapi.exception import InvalidValueError
 from networkapi.util import convert_string_or_int_to_boolean, is_valid_int_greater_zero_param
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
+from networkapi.api_interface import facade as api_interface_facade
 
 
 def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb):
@@ -268,6 +269,7 @@ class InterfaceChannelResource(RestResource):
 
             interface_id = kwargs.get('channel_name')
             interface = Interface.get_by_pk(int(interface_id))
+            equip_list = []
 
             try:
                 interface.channel.id
@@ -280,26 +282,42 @@ class InterfaceChannelResource(RestResource):
             except:
                 return self.response(dumps_networkapi({}))
 
-            for interf in interfaces:
-                try:
-                    front = interf.ligacao_front.id
-                except:
-                    front = None
-                    pass
-                try:
-                    back = interf.ligacao_back.id
-                except:
-                    back = None
-                    pass
-                interf.update(user,
-                                  interf.id,
-                                  interface=interf.interface,
-                                  protegida=interf.protegida,
-                                  descricao=interf.descricao,
+            for i in interfaces:
+                equip_list.append(i.equipamento.id)
+            self.log.info("list "+str(equip_list))
+            equip_list = set(equip_list)
+            equip_dict = dict()
+            for e in equip_list:
+                equip_dict[str(e)] = interfaces.filter(equipamento__id=e)
+            self.log.info("dict " +str(equip_dict))
+
+            for e in equip_dict:
+                self.log.info("for "+str(equip_dict.get(e)))
+                for i in equip_dict.get(e):
+                    self.log.info("for i "+str(i.interface))
+                    try:
+                        front = i.ligacao_front.id
+                    except:
+                        front = None
+                        pass
+                    try:
+                        back = i.ligacao_back.id
+                    except:
+                        back = None
+                        pass
+                    i.update(user,
+                                  i.id,
+                                  interface=i.interface,
+                                  protegida=i.protegida,
+                                  descricao=i.descricao,
                                   ligacao_front_id=front,
                                   ligacao_back_id=back,
-                                  tipo=interf.tipo,
-                                  vlan_nativa=interf.vlan_nativa)
+                                  tipo=i.tipo,
+                                  vlan_nativa=i.vlan_nativa)
+
+                api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
+
+            raise Exception ("done")
 
             channel.delete(user)
 
@@ -362,6 +380,26 @@ class InterfaceChannelResource(RestResource):
             amb = Ambiente()
             cont = []
 
+            channels = PortChannel.objects.filter(nome=nome)
+            channels_id = []
+            for ch in channels:
+                channels_id.append(int(ch.id))
+            if channels_id:
+                if type(ids_interface) is list:
+                    for var in ids_interface:
+                        if not var=="" and not var==None:
+                            interface_id = int(var)
+                else:
+                    interface_id = int(ids_interface)
+                interface_id = interface.get_by_pk(interface_id)
+                equip_id = interface_id.equipamento.id
+                equip_interfaces = interface.search(equip_id)
+                for i in equip_interfaces:
+                    sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    if sw.channel is not None:
+                        if sw.channel.id in channels_id:
+                            raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
+
             #buscar interfaces do channel
             interfaces = Interface.objects.all().filter(channel__id=id_channel)
             ids_list = []
@@ -390,8 +428,6 @@ class InterfaceChannelResource(RestResource):
                                 item = interface.get_by_pk(int(item))
                                 item.channel = None
                                 item.save()
-
-
 
 
             #update channel

@@ -15,27 +15,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.template import Context, Template
-#from jinja2 import Template
-import thread
 import re
-
+import logging
+from django.template import Context, Template
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.settings import INTERFACE_CONFIG_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
-import logging
 from networkapi.interface.models import EnvironmentInterface
-
 from networkapi.interface.models import Interface, PortChannel
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.api_interface import exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
-from networkapi.roteiro.models import TipoRoteiro
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 
 SUPPORTED_EQUIPMENT_BRANDS = ["Cisco"]
 TEMPLATE_TYPE_INT = "interface_configuration"
 TEMPLATE_TYPE_CHANNEL = "interface_channel_configuration"
+TEMPLATE_REMOVE_CHANNEL = "interface_channel_configuration_delete"
+TEMPLATE_REMOVE_INTERFACE = "interface_configuration_delete"
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +41,45 @@ log = logging.getLogger(__name__)
 #@register.filter
 #def get(dictionary, key):
 #    return dictionary.get(key)
+
+def delete_channel(user, equip_id, interface_list, channel):
+
+    key_dict = dict()
+    config_to_be_saved = ""
+    request_id = getattr(local, 'request_id', NO_REQUEST_ID)
+    filename_out = "equip_"+str(equip_id) +"_channel_"+str(channel.id)+"_remove_"+str(request_id)
+    filename_to_save = INTERFACE_CONFIG_TEMPLATE_PATH+filename_out
+    rel_file_to_deploy = INTERFACE_CONFIG_TEMPLATE_PATH+filename_out
+
+    key_dict['PORTCHANNEL_NAME'] = channel.nome
+
+    for i in interface_list:
+        key_dict['INTERFACE_NAME'] = i.interface
+        try:
+            interface_template_file = _load_template_file(int(equip_id),TEMPLATE_REMOVE_INTERFACE)
+            config_to_be_saved += interface_template_file.render(Context(key_dict))
+        except KeyError, exception:
+            log.error("Erro: %s " % exception)
+            raise exceptions.InvalidKeyException(exception)
+        log.info("facade "+str(i.interface))
+
+    try:
+        channel_template_file = _load_template_file(int(equip_id),TEMPLATE_REMOVE_CHANNEL)
+        config_to_be_saved += channel_template_file.render(Context(key_dict))
+    except KeyError, exception:
+        log.error("Erro: %s " % exception)
+        raise exceptions.InvalidKeyException(exception)
+
+    #Save new file
+    try:
+        file_handle = open(filename_to_save, 'w')
+        file_handle.write(config_to_be_saved)
+        file_handle.close()
+    except IOError, e:
+        log.error("Error writing to config file: %s" % filename_to_save)
+        raise e
+
+    return rel_file_to_deploy
 
 
 def generate_and_deploy_interface_config_sync(user, id_interface):
@@ -151,7 +187,7 @@ def _load_template_file(equipment_id, template_type):
         log.error("Template type %s not found." % template_type)
         raise exceptions.InterfaceTemplateException()
 
-    filename_in = INTERFACE_CONFIG_TEMPLATE_PATH+"/"+equipment_template.roteiro.roteiro
+    filename_in = INTERFACE_CONFIG_TEMPLATE_PATH+equipment_template.roteiro.roteiro
 
     # Read contents from file
     try:
