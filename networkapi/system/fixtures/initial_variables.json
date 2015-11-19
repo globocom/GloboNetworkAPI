@@ -619,5 +619,41 @@
       "value": "4085",
       "description": ""
     }
+  },
+  {
+    "pk": 200,
+    "model": "system.variable",
+    "fields": {
+      "name": "supported_equipment_brands",
+      "value": "Cisco",
+      "description": ""
+    }
+  },
+  {
+    "pk": 201,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_type_int",
+      "value": "interface_configuration",
+      "description": ""
+    }
+  },
+  {
+    "pk": 202,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_type_channel",
+      "value": "interface_channel_configuration",
+      "description": ""
+    }
+  },
+  {
+    "pk": 203,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_remove_interface",
+      "value": "interface_configuration_delete",
+      "description": ""
+    }
   }
 ]

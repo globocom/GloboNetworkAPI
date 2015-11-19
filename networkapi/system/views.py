@@ -72,7 +72,7 @@ class VariableView(APIView):
             return Response(data, status=status.HTTP_201_CREATED)
 
         except (exceptions.InvalidIdNameException, exceptions.InvalidIdValueException,
-                exceptions.VariableDuplicateNotExistException)as exception:
+                exceptions.VariableDuplicateNotExistException, exceptions.VariableError)as exception:
             log.exception(exception)
             raise exception
 

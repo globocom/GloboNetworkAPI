@@ -34,8 +34,11 @@ def save_variable(user, name, value, description):
     var.name = name
     var.value = value
     var.description = description
-    var.save(user)
-
+    try:
+        var.save(user)
+    except Exception, e:
+        log.info("Erro inserindo variavel: %s" % (e))
+        raise exceptions.VariableError()
     return var
 
 def get_all_variables():

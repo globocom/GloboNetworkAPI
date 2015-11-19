@@ -19,7 +19,6 @@ import re
 import logging
 from django.template import Context, Template
 from networkapi.extra_logging import local, NO_REQUEST_ID
-from networkapi.settings import INTERFACE_CONFIG_TOAPPLY_REL_PATH, INTERFACE_CONFIG_TEMPLATE_PATH, INTERFACE_CONFIG_FILES_PATH
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface, PortChannel
@@ -27,14 +26,28 @@ from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.api_interface import exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
-
-SUPPORTED_EQUIPMENT_BRANDS = ["Cisco"]
-TEMPLATE_TYPE_INT = "interface_configuration"
-TEMPLATE_TYPE_CHANNEL = "interface_channel_configuration"
-TEMPLATE_REMOVE_CHANNEL = "interface_channel_configuration_delete"
-TEMPLATE_REMOVE_INTERFACE = "interface_configuration_delete"
+from networkapi.system.facade import get_value as get_variable
+from django.core.exceptions import ObjectDoesNotExist
+from networkapi.system import exceptions as var_exceptions
 
 log = logging.getLogger(__name__)
+
+
+try:
+    SUPPORTED_EQUIPMENT_BRANDS = get_variable("supported_equipment_brands")
+    SUPPORTED_EQUIPMENT_BRANDS = [SUPPORTED_EQUIPMENT_BRANDS]
+    TEMPLATE_TYPE_INT = get_variable("template_type_int")
+    TEMPLATE_TYPE_CHANNEL = get_variable("template_type_channel")
+    TEMPLATE_REMOVE_CHANNEL = get_variable("template_remove_channel")
+    TEMPLATE_REMOVE_INTERFACE = get_variable("template_remove_interface")
+except ObjectDoesNotExist:
+    raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável SUPPORTED_EQUIPMENT_BRANDS ou TEMPLATE_<TYPE,REMOVE>_<CHANNEL,INTERFACE>.")
+try:
+    INTERFACE_CONFIG_TOAPPLY_REL_PATH = get_variable("interface_config_toapply_rel_path")
+    INTERFACE_CONFIG_TEMPLATE_PATH = get_variable("interface_config_template_path")
+    INTERFACE_CONFIG_FILES_PATH = get_variable("interface_config_files_path")
+except ObjectDoesNotExist:
+    raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável INTERFACE_CONFIG<TOAPPLY,TEMPLATE,FILES>_PATH.")
 
 #register = template.Library()
 
@@ -58,6 +71,9 @@ def delete_channel(user, equip_id, interface_list, channel):
         try:
             interface_template_file = _load_template_file(int(equip_id),TEMPLATE_REMOVE_INTERFACE)
             config_to_be_saved += interface_template_file.render(Context(key_dict))
+        except exceptions.InterfaceTemplateException, e:
+            log.error(e)
+            raise exceptions.InterfaceTemplateException()
         except KeyError, exception:
             log.error("Erro: %s " % exception)
             raise exceptions.InvalidKeyException(exception)
