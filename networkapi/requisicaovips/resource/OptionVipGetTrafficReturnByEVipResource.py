@@ -39,7 +39,7 @@ class OptionVipGetTrafficReturnByEVipResource(RestResource):
 
         try:
 
-            self.log.info("GET to list all the Option VIP by Environment Vip.")
+            self.log.info("GET to list all the Option VIP by Environment Vip - traffic return.")
 
             # User permission
             if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.READ_OPERATION):
@@ -59,7 +59,11 @@ class OptionVipGetTrafficReturnByEVipResource(RestResource):
             # Find Environment VIP by ID to check if it exist
             environment_vip = EnvironmentVip.get_by_pk(id_environment_vip)
 
+            #self.log.info(str(environment_vip))
+
             ovips = OptionVip.get_all_trafficreturn(environment_vip.id)
+
+            #self.log.info(str(ovips))
 
             ovip_dict = dict()
             ovip_list = []
@@ -68,6 +72,8 @@ class OptionVipGetTrafficReturnByEVipResource(RestResource):
                 ovip_dict['trafficreturn_opt'] = ovip.nome_opcao_txt
                 ovip_list.append(ovip_dict)
                 ovip_dict = dict()
+
+            self.log.info(str(ovip_list))
 
             return self.response(dumps_networkapi({'trafficreturn_opt': ovip_list}))
 

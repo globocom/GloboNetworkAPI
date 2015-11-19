@@ -156,7 +156,7 @@ class RequestVipSerializer(serializers.ModelSerializer):
             'healthcheck_expect', 'rule', 'rule_applied',
             'rule_rollback', 'areanegocio', 'nome_servico',
             'host', 'vip_ports_to_pools', 'finalidade',
-            'cliente', 'ambiente', 'traffic_return', 'traffic_return_num'
+            'cliente', 'ambiente', 'trafficreturn', 'trafficreturn_num'
         )
 
 

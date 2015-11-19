@@ -38,7 +38,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.api_pools.models import OptionPool
 from networkapi.util.decorators import cached_property
-
+import logging
 
 
 class RequisicaoVipsError(Exception):
@@ -377,12 +377,18 @@ class OptionVip(BaseModel):
 
             @raise OperationalError: Failed to search for all Option Vip Traffic Return.
         """
+        #log = logging.getLogger('get_all_trafficreturn')
+
         try:
 
             ovips = OptionVip.objects.select_related().all()
-            ovips = ovips.filter(tipo_opcao__icontains='Retorno de trafego')
-            ovips = ovips.filter(
-                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            ovips = ovips.filter(tipo_opcao__icontains='trafego')
+
+            #log.info(str(ovips))
+
+            #ovips = ovips.filter(
+            #    optionvipenvironmentvip__environment__id=int(id_environment_vip))
 
             return ovips
 
