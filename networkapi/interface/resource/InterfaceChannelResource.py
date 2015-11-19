@@ -15,18 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError, loads
-import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface, \
-    InterfaceNotFoundError
+                                        InterfaceNotFoundError
 from networkapi.exception import InvalidValueError
 from networkapi.util import convert_string_or_int_to_boolean, is_valid_int_greater_zero_param
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
 from networkapi.api_interface import facade as api_interface_facade
+from networkapi.api_interface import exceptions as api_interface_exceptions
+from networkapi.system import exceptions as var_exceptions
 
 
 def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb):
@@ -317,12 +319,16 @@ class InterfaceChannelResource(RestResource):
 
                 api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
 
-            raise Exception ("done")
-
             channel.delete(user)
 
             return self.response(dumps_networkapi({}))
 
+        except api_interface_exceptions.InvalidKeyException, e:
+            return api_interface_exceptions.InvalidKeyException(e)
+        except var_exceptions.VariableDoesNotExistException, e:
+            return var_exceptions.VariableDoesNotExistException(e)
+        except api_interface_exceptions.InterfaceTemplateException, e:
+            raise api_interface_exceptions.InterfaceTemplateException(e)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except XMLError, x:
