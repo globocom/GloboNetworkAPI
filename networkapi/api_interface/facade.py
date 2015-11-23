@@ -32,23 +32,6 @@ from networkapi.system import exceptions as var_exceptions
 
 log = logging.getLogger(__name__)
 
-
-try:
-    SUPPORTED_EQUIPMENT_BRANDS = get_variable("supported_equipment_brands")
-    SUPPORTED_EQUIPMENT_BRANDS = [SUPPORTED_EQUIPMENT_BRANDS]
-    TEMPLATE_TYPE_INT = get_variable("template_type_int")
-    TEMPLATE_TYPE_CHANNEL = get_variable("template_type_channel")
-    TEMPLATE_REMOVE_CHANNEL = get_variable("template_remove_channel")
-    TEMPLATE_REMOVE_INTERFACE = get_variable("template_remove_interface")
-except ObjectDoesNotExist:
-    raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável SUPPORTED_EQUIPMENT_BRANDS ou TEMPLATE_<TYPE,REMOVE>_<CHANNEL,INTERFACE>.")
-try:
-    INTERFACE_CONFIG_TOAPPLY_REL_PATH = get_variable("interface_config_toapply_rel_path")
-    INTERFACE_CONFIG_TEMPLATE_PATH = get_variable("interface_config_template_path")
-    INTERFACE_CONFIG_FILES_PATH = get_variable("interface_config_files_path")
-except ObjectDoesNotExist:
-    raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável INTERFACE_CONFIG<TOAPPLY,TEMPLATE,FILES>_PATH.")
-
 #register = template.Library()
 
 #@register.filter
@@ -56,6 +39,12 @@ except ObjectDoesNotExist:
 #    return dictionary.get(key)
 
 def delete_channel(user, equip_id, interface_list, channel):
+    try:
+        INTERFACE_CONFIG_TEMPLATE_PATH = get_variable("interface_config_template_path")
+        TEMPLATE_REMOVE_CHANNEL = get_variable("template_remove_channel")
+        TEMPLATE_REMOVE_INTERFACE = get_variable("template_remove_interface")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável INTERFACE_CONFIG_TEMPLATE_PATH, TEMPLATE_REMOVE_CHANNEL ou TEMPLATE_REMOVE_INTERFACE.")
 
     key_dict = dict()
     config_to_be_saved = ""
@@ -147,6 +136,14 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
 
 def _generate_config_file(interfaces_list):
 
+    try:
+        INTERFACE_CONFIG_TOAPPLY_REL_PATH = get_variable("interface_config_toapply_rel_path")
+        INTERFACE_CONFIG_FILES_PATH = get_variable("interface_config_files_path")
+        TEMPLATE_TYPE_INT = get_variable("template_type_int")
+        TEMPLATE_TYPE_CHANNEL = get_variable("template_type_channel")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável INTERFACE_CONFIG<TOAPPLY,TEMPLATE,FILES>_PATH.")
+
     #check if all interfaces are configuring same equipment
     #raises error if not
     equipment_interfaces = dict()
@@ -197,10 +194,16 @@ def _generate_config_file(interfaces_list):
     return rel_file_to_deploy
 
 def _load_template_file(equipment_id, template_type):
+
+    try:
+        INTERFACE_CONFIG_TEMPLATE_PATH = get_variable("interface_config_template_path")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável INTERFACE_CONFIG<TOAPPLY,TEMPLATE,FILES>_PATH.")
+
     try:
         equipment_template = (EquipamentoRoteiro.search(None, equipment_id, template_type)).uniqueResult()
     except:
-        log.error("Template type %s not found." % template_type)
+        log.error("Template type %s not found. Equip: %s" % (template_type, equipment_id))
         raise exceptions.InterfaceTemplateException()
 
     filename_in = INTERFACE_CONFIG_TEMPLATE_PATH+equipment_template.roteiro.roteiro
@@ -211,7 +214,7 @@ def _load_template_file(equipment_id, template_type):
         template_file = Template ( file_handle.read() )
         file_handle.close()
     except IOError, e:
-        log.error("Error opening template file for read: %s" % filename_in)
+        log.error("Error opening template file for read: %s. Equip: %s" % (filename_in, equipment_id))
         raise e
     except Exception, e:
         log.error("Syntax error when parsing template: %s " % e)
@@ -222,7 +225,14 @@ def _load_template_file(equipment_id, template_type):
 
 def _generate_dict(interface):
 
+    try:
+        SUPPORTED_EQUIPMENT_BRANDS = get_variable("supported_equipment_brands")
+        SUPPORTED_EQUIPMENT_BRANDS = [SUPPORTED_EQUIPMENT_BRANDS]
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável SUPPORTED_EQUIPMENT_BRANDS ou TEMPLATE_<TYPE,REMOVE>_<CHANNEL,INTERFACE>.")
+
     #Check if it is a supported equipment interface
+
     if interface.equipamento.modelo.marca.nome not in SUPPORTED_EQUIPMENT_BRANDS:
         raise exceptions.UnsupportedEquipmentException()
 

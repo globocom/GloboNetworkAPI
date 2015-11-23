@@ -286,17 +286,13 @@ class InterfaceChannelResource(RestResource):
 
             for i in interfaces:
                 equip_list.append(i.equipamento.id)
-            self.log.info("list "+str(equip_list))
             equip_list = set(equip_list)
             equip_dict = dict()
             for e in equip_list:
                 equip_dict[str(e)] = interfaces.filter(equipamento__id=e)
-            self.log.info("dict " +str(equip_dict))
 
             for e in equip_dict:
-                self.log.info("for "+str(equip_dict.get(e)))
                 for i in equip_dict.get(e):
-                    self.log.info("for i "+str(i.interface))
                     try:
                         front = i.ligacao_front.id
                     except:
