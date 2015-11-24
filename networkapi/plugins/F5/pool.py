@@ -62,10 +62,10 @@ class Pool(object):
             monitor_associations=kwargs['monitor_associations'])
 
     def removeMonitorAssociation(self, **kwargs):
-        # for k, v in kwargs.items():
-        #     if v == []:
-        #         return
-        log.info(kwargs['names'])
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
         self._lb._channel.LocalLB.Pool.remove_monitor_association(pool_names=kwargs['names'])
 
     def getMonitorAssociation(self, **kwargs):

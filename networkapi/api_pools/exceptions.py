@@ -239,24 +239,32 @@ class InvalidIpNotExist(APIException):
 
 class PoolAlreadyCreated(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Poolmember already created.'
+    default_detail = 'Pool already created.'
 
     def __init__(self, msg=None):
-        self.detail = u'Poolmember <<%s>> already created.' % (
+        self.detail = u'Pool <<%s>> already created.' % (
             msg)
 
 class PoolNameChange(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Not is possible change name of pool.'
+    default_detail = 'Not is possible change name of pool when pool is created.'
 
     def __init__(self, msg=None):
-        self.detail = u'Not is possible change name of pool. <<%s>>' % (
+        self.detail = u'Not is possible change name of pool when pool is created. <<%s>>' % (
             msg)
 
 class PoolEnvironmentChange(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Not is possible change environment of pool.'
+    default_detail = 'Not is possible change environment of pool when pool is created.'
 
     def __init__(self, msg=None):
-        self.detail = u'Not is possible change environment of pool. <<%s>>' % (
+        self.detail = u'Not is possible change environment of pool when pool is created. <<%s>>' % (
+            msg)
+
+class PoolMemberChange(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Not is possible to change pool members when pool is created.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Not is possible to change pool members when pool is created. <<%s>>' % (
             msg)

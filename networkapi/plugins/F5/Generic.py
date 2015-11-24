@@ -192,10 +192,11 @@ class Generic(BasePlugin):
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
             if monitor_associations != []:
-                template_names = [m['monitor_rule']['monitor_templates'] for m in monitor_associations]
-                mon.deleteTemplate(
-                    template_names=template_names
-                )
+                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                if template_names:
+                    mon.deleteTemplate(
+                        template_names=template_names
+                    )
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()

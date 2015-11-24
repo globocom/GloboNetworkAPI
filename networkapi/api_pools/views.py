@@ -31,7 +31,8 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
     update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
-    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_pool, update_pool, delete_pool
+    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_real_pool, update_real_pool, \
+    delete_real_pool, createLock, destroyLock
 from networkapi.error_message_utils import error_messages
 from networkapi.ip.models import IpEquipamento, Ip, Ipv6
 from networkapi.equipamento.models import Equipamento
@@ -51,8 +52,7 @@ from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
-from networkapi.api_pools.models import OpcaoPoolAmbiente
-from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
+from networkapi.api_pools.models import OpcaoPoolAmbiente, OptionPool, OptionPoolEnvironment
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_option
 from networkapi.exception import InvalidValueError
 
@@ -191,7 +191,7 @@ def poolmember_state(request):
 @api_view(['POST', 'PUT', 'DELETE'])
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
-def pool_action(request):
+def real_pool_action(request):
     """
     Create/Update/Delete real pool member by list
 
@@ -199,20 +199,25 @@ def pool_action(request):
             "pools": [
                 {
                     "server_pool": {
+                        ...
                     },
                     "server_pool_members": [
+                        ...
                     ]
                 }
             ]
         }
     """
-    if request.method == 'POST':
-        response = update_pool(request)
-    elif request.method == 'PUT':
-        response = create_pool(request)
-    elif request.method == 'DELETE':
-        response = delete_pool(request)
-
+    locks_list = createLock(request.DATA.get("pools", []))
+    try:
+        if request.method == 'POST':
+            response = update_real_pool(request)
+        elif request.method == 'PUT':
+            response = create_real_pool(request)
+        elif request.method == 'DELETE':
+            response = delete_real_pool(request)
+    finally:
+        destroyLock(locks_list)
     return Response(response)
 
 

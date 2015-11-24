@@ -20,7 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 from django.db.models import Q
 
-from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvironmentVip
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_pools import exceptions
@@ -33,6 +33,10 @@ from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param, is_healthcheck_valid
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.distributedlock import distributedlock, LOCK_POOL
+from networkapi.error_message_utils import error_messages
+
 
 from networkapi.ambiente.models import IP_VERSION
 import logging
@@ -113,75 +117,6 @@ def save_server_pool(user, id, identifier, default_port, hc, env, balancing, max
         sp.save()
 
     return sp, (old_healthcheck.id if old_healthcheck else None)
-
-
-def save_server_pool_v2(user, id, identifier, default_port, hc, env, balancing, maxconn, id_pool_member, servicedownaction):
-    load_balance = {}
-
-    for server_pool in servers_pools:
-
-        if server_pool.pool_created:
-            raise exceptions.PoolAlreadyCreated(server_pool.identifier)
-
-        pools_members = []
-        server_pool_members = ServerPoolMember.objects.filter(
-            server_pool=server_pool)
-        for pool_member in server_pool_members:
-            if pool_member.ipv6 is None:
-                ip = pool_member.ip.ip_formated
-            else:
-                ip = pool_member.ipv6.ip_formated
-
-            pools_members.append({
-                'id': pool_member.id,
-                'ip': ip,
-                'port': pool_member.port_real,
-                'member_status': pool_member.member_status,
-                'limit': pool_member.limit,
-                'priority': pool_member.priority,
-                'weight': pool_member.weight
-            })
-
-        equips = EquipamentoAmbiente.objects.filter(
-            ambiente__id=server_pool.environment.id,
-            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
-
-        equipment_list = [e.equipamento for e in equips]
-        if all_equipments_are_in_maintenance(equipment_list):
-            raise AllEquipmentsAreInMaintenanceException()
-
-        for e in equips:
-            eqpt_id = str(e.equipamento.id)
-            equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
-                protocolo="https"
-            ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
-
-            plugin = PluginFactory.factory(equipment)
-
-            if not load_balance.get(eqpt_id):
-
-                load_balance[eqpt_id] = {
-                    'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
-                    'pools': [],
-                }
-
-            load_balance[eqpt_id]['pools'].append({
-                'id': server_pool.id,
-                'nome': server_pool.identifier,
-                'lb_method': server_pool.lb_method,
-                'healthcheck': server_pool.healthcheck,
-                'action': server_pool.servicedownaction.name,
-                'pools_members': pools_members
-            })
-
-    for lb in load_balance:
-        load_balance[lb]['plugin'].savePool(load_balance[lb])
-    return {}
 
 
 def update_pool_fields(default_port, env, identifier, old_healthcheck, old_lb_method, old_maxconn, sp, user):
@@ -418,25 +353,6 @@ def remove_pool_members(id_pool_member_noempty, sp, user):
                 transaction.commit()
 
 
-def remove_pool_members_v2(id_pool_member_noempty, sp, user):
-    # exclue server pool member
-    del_smp = sp.serverpoolmember_set.exclude(id__in=id_pool_member_noempty)
-    if del_smp:
-        for obj in del_smp:
-
-            obj.delete()
-
-            # execute script remove real if pool already created
-            # commit transaction after each successful script call
-            if sp.pool_created:
-                command = settings.POOL_REAL_REMOVE % (
-                    obj.server_pool_id, obj.ip_id if obj.ip else obj.ipv6_id, obj.port_real)
-                code, _, _ = exec_script(command)
-                if code != 0:
-                    raise exceptions.ScriptCreatePoolException()
-                transaction.commit()
-
-
 def deploy_pool_member_config(id_ip, id_pool, port_ip, spm, user):
     transaction.commit()
     # def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
@@ -476,340 +392,157 @@ def exec_script_check_poolmember_by_pool(pool_id):
     return stdout
 
 
-def create_pool_v2(servers_pools):
-
-    load_balance = {}
-
-    for server_pool in servers_pools:
-
-        if server_pool.pool_created:
-            raise exceptions.PoolAlreadyCreated(server_pool.identifier)
-
-        pools_members = []
-        server_pool_members = ServerPoolMember.objects.filter(
-            server_pool=server_pool)
-        for pool_member in server_pool_members:
-            if pool_member.ipv6 is None:
-                ip = pool_member.ip.ip_formated
-            else:
-                ip = pool_member.ipv6.ip_formated
-
-            pools_members.append({
-                'id': pool_member.id,
-                'ip': ip,
-                'port': pool_member.port_real,
-                'member_status': pool_member.member_status,
-                'limit': pool_member.limit,
-                'priority': pool_member.priority,
-                'weight': pool_member.weight
-            })
-
-        equips = EquipamentoAmbiente.objects.filter(
-            ambiente__id=server_pool.environment.id,
-            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
-
-        equipment_list = [e.equipamento for e in equips]
-        if all_equipments_are_in_maintenance(equipment_list):
-            raise AllEquipmentsAreInMaintenanceException()
-
-        for e in equips:
-            eqpt_id = str(e.equipamento.id)
-            equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
-                protocolo="https"
-            ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
-
-            plugin = PluginFactory.factory(equipment)
-
-            if not load_balance.get(eqpt_id):
-
-                load_balance[eqpt_id] = {
-                    'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
-                    'pools': [],
-                }
-
-            load_balance[eqpt_id]['pools'].append({
-                'id': server_pool.id,
-                'nome': server_pool.identifier,
-                'lb_method': server_pool.lb_method,
-                'healthcheck': server_pool.healthcheck,
-                'action': server_pool.servicedownaction.name,
-                'pools_members': pools_members
-            })
-
-    for lb in load_balance:
-        load_balance[lb]['plugin'].createPool(load_balance[lb])
-    return {}
-
-
-def create_pool(request):
-    pools = request.DATA.get("pools", [])
-
-    load_balance = {}
-
-    for pool in pools:
-
-        if pool['server_pool']['pool_created']:
-            raise exceptions.PoolAlreadyCreated(pool['server_pool']['identifier'])
-
-        pools_members = []
-        for pool_member in pool['server_pool_members']:
-            if pool_member['ipv6'] is None:
-                ip = pool_member['ip']['ip_formated']
-            else:
-                ip = pool_member['ipv6']['ip_formated']
-
-            pools_members.append({
-                'id': pool_member['id'],
-                'ip': ip,
-                'port': pool_member['port_real'],
-                'member_status': pool_member['member_status'],
-                'limit': pool_member['limit'],
-                'priority': pool_member['priority'],
-                'weight': pool_member['weight']
-            })
-
-        equips = EquipamentoAmbiente.objects.filter(
-            ambiente__id=pool['server_pool']['environment']['id'],
-            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
-
-        equipment_list = [e.equipamento for e in equips]
-        if all_equipments_are_in_maintenance(equipment_list):
-            raise AllEquipmentsAreInMaintenanceException()
-
-        for e in equips:
-            eqpt_id = str(e.equipamento.id)
-            equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
-                protocolo="https"
-            ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
-
-            plugin = PluginFactory.factory(equipment)
-
-            if not load_balance.get(eqpt_id):
-
-                load_balance[eqpt_id] = {
-                    'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
-                    'pools': [],
-                }
-
-            load_balance[eqpt_id]['pools'].append({
-                'id': pool['server_pool']['id'],
-                'nome': pool['server_pool']['identifier'],
-                'lb_method': pool['server_pool']['lb_method'],
-                'healthcheck': pool['server_pool']['healthcheck'],
-                'action': pool['server_pool']['servicedownaction']['name'],
-                'pools_members': pools_members
-            })
-
-    for lb in load_balance:
-        load_balance[lb]['plugin'].createPool(load_balance[lb])
-
-    ids = [pool['server_pool']['id'] for pool in pools]
-    ServerPool.objects.filter(id__in=ids).update(pool_created=True)
-
-    return {}
-
-
-def update_pool(request):
-    pools = request.DATA.get("pools", [])
-    load_balance = {}
-
-    for pool in pools:
-
-        pools_members = []
-        for pool_member in pool['server_pool_members']:
-
-            if pool_member['ipv6'] is None:
-                ip = pool_member['ip']['ip_formated']
-            else:
-                ip = pool_member['ipv6']['ip_formated']
-
-            pools_members.append({
-                'id': pool_member['id'],
-                'ip': ip,
-                'port': pool_member['port_real'],
-                'member_status': pool_member['member_status'],
-                'limit': pool_member['limit'],
-                'priority': pool_member['priority'],
-                'weight': pool_member['weight']
-            })
-
-        equips = EquipamentoAmbiente.objects.filter(
-            ambiente__id=pool['server_pool']['environment']['id'],
-            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
-
-        equipment_list = [e.equipamento for e in equips]
-        if all_equipments_are_in_maintenance(equipment_list):
-            raise AllEquipmentsAreInMaintenanceException()
-
-        for e in equips:
-            eqpt_id = str(e.equipamento.id)
-            equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
-                protocolo="https"
-            ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
-
-            plugin = PluginFactory.factory(equipment)
-
-            if not load_balance.get(eqpt_id):
-
-                load_balance[eqpt_id] = {
-                    'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
-                    'pools': [],
-                }
-
-            load_balance[eqpt_id]['pools'].append({
-                'id': pool['server_pool']['id'],
-                'nome': pool['server_pool']['identifier'],
-                'lb_method': pool['server_pool']['lb_method'],
-                'healthcheck': pool['server_pool']['healthcheck'],
-                'action': pool['server_pool']['servicedownaction']['name'],
-                'pools_members': pools_members
-            })
-
-    pls = ServerPool.objects.filter(id__in=[pool['server_pool']['id'] for pool in pools])
-    ps = {}
-    for p in pools:
-        ps[str(p['server_pool']['id'])] = p
-    sp = {}
-    for p in pls:
-        sp[str(p.id)] = p
-
-    # get ids from pools created
-    names = [sp[p].id for idx, p in enumerate(ps) if sp[p].pool_created]
-    environments = [sp[p].id for idx, p in enumerate(ps) if sp[p].pool_created]
-
-    # return error when change names or environments in pool created
-    change_name = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].identifier != ps[str(p)]['server_pool']['identifier'] and sp[p].pool_created]
-    if len(change_name) > 0:
-        raise exceptions.PoolNameChange(','.join(change_name))
-
-    change_env = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].environment.id != ps[str(p)]['server_pool']['environment']['id'] and sp[p].pool_created]
-    if len(change_env) > 0:
-        raise exceptions.PoolEnvironmentChange(','.join(change_env))
-
-    change_env_all = [sp[p].id for idx, p in enumerate(ps) if sp[p].environment.id != ps[str(p)]['server_pool']['environment']['id']]
-    change_real = ServerPoolMember.objects.filter(server_pool_id__in=change_env_all)
-    if len(change_real) > 0:
-        raise exceptions.PoolEnvironmentChange('teste')
-
-    # call plugin to change in load balance
-    for lb in load_balance:
-        lbe = [l for l in load_balance[lb]['pools'] if l['id'] in names if l['id'] in environments]
-
-        if len(lbe) > 0:
-            json = load_balance[lb]
-            json['pools'] = lbe
-            json['plugin'].updatePool(json)
-
-    # save in DB
-    for idx in sp:
-        idx = str(idx)
-        sp[idx].identifier = ps[idx]['server_pool']['identifier']
-        sp[idx].environment = Ambiente.objects.get(
-            id=ps[idx]['server_pool']['environment']['id'])
-        sp[idx].default_limit = ps[idx]['server_pool']['default_limit']
-        sp[idx].default_port = ps[idx]['server_pool']['default_port']
-        sp[idx].lb_method = ps[idx]['server_pool']['lb_method']
-        sp[idx].servicedownaction = OptionPool.objects.get(
-            id=ps[idx]['server_pool']['servicedownaction']['id'])
-        is_healthcheck_valid(ps[idx]['server_pool']['healthcheck'])
-        ps[idx]['server_pool']['healthcheck'] = ps[idx]['server_pool']['healthcheck']
-        sp[idx].healthcheck = get_or_create_healthcheck(
-            request.user,
-            ps[idx]['server_pool']['healthcheck']['healthcheck_expect'],
-            ps[idx]['server_pool']['healthcheck']['healthcheck_type'],
-            ps[idx]['server_pool']['healthcheck']['healthcheck_request'],
-            ps[idx]['server_pool']['healthcheck']['destination'],
-            ps[idx]['server_pool']['healthcheck']['identifier'])
-
-        sp[idx].save()
-
-    return {}
-
-
-def delete_pool(request):
-    pools = request.DATA.get("pools", [])
-
-    load_balance = {}
-
-    for pool in pools:
-
-        pools_members = []
-        for pool_member in pool['server_pool_members']:
-            if pool_member['ipv6'] is None:
-                ip = pool_member['ip']['ip_formated']
-            else:
-                ip = pool_member['ipv6']['ip_formated']
-
-            pools_members.append({
-                'id': pool_member['id'],
-                'ip': ip,
-                'port': pool_member['port_real'],
-                'member_status': pool_member['member_status'],
-                'limit': pool_member['limit'],
-                'priority': pool_member['priority'],
-                'weight': pool_member['weight']
-            })
-
-        equips = EquipamentoAmbiente.objects.filter(
-            ambiente__id=pool['server_pool']['environment']['id'],
-            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
-
-        equipment_list = [e.equipamento for e in equips]
-        if all_equipments_are_in_maintenance(equipment_list):
-            raise AllEquipmentsAreInMaintenanceException()
-
-        for e in equips:
-            eqpt_id = str(e.equipamento.id)
-            equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
-                protocolo="https"
-            ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
-
-            plugin = PluginFactory.factory(equipment)
-
-            if not load_balance.get(eqpt_id):
-
-                load_balance[eqpt_id] = {
-                    'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
-                    'pools': [],
-                }
-
-            load_balance[eqpt_id]['pools'].append({
-                'id': pool['server_pool']['id'],
-                'nome': pool['server_pool']['identifier'],
-                'lb_method': pool['server_pool']['lb_method'],
-                'healthcheck': pool['server_pool']['healthcheck'],
-                'action': pool['server_pool']['servicedownaction']['name'],
-                'pools_members': pools_members
-            })
-
-    for lb in load_balance:
-        load_balance[lb]['plugin'].deletePool(load_balance[lb])
-
-    ids = [pool['server_pool']['id'] for pool in pools]
-    ServerPool.objects.filter(id__in=ids).update(pool_created=False)
-
-    return {}
+def manager_pools(request):
+    """
+    Manager Status Pool Members Enable/Disabled By Pool
 
+    :param request: HttpRequest
+
+    """
+
+    try:
+        pool_id = request.DATA.get("server_pool_id")
+        pool_members = request.DATA.get("server_pool_members", [])
+
+        # List to validate pool member status
+        valid_status = [0, 1, False, True]
+
+        pool_members_id = [member.get('id') for member in pool_members]
+
+        if not is_valid_int_greater_zero_param(pool_id):
+            raise exceptions.InvalidIdPoolException()
+
+        # Validate pool members id
+        is_valid_list_int_greater_zero_param(pool_members_id)
+
+        pool_obj = ServerPool.objects.get(id=pool_id)
+
+        related_pool_members = pool_obj.serverpoolmember_set.order_by('id')
+
+        received_pool_members = ServerPoolMember.objects.filter(
+            id__in=pool_members_id).order_by('id')
+
+        relates = list(related_pool_members)
+        receives = list(received_pool_members)
+
+        if relates != receives:
+            raise exceptions.InvalidIdPoolMemberException(
+                u'Required All Pool Members By Pool')
+
+        for member in pool_members:
+
+            member_id = member.get("id")
+            member_status = member.get("status")
+
+            if member_status not in valid_status:
+                raise exceptions.InvalidStatusPoolMemberException()
+
+            server_pool_member = ServerPoolMember.objects.get(id=member_id)
+            server_pool_member.status = member_status
+
+            server_pool_member.save(request.user, commit=True)
+
+        # Execute Script To Set Status
+        command = settings.POOL_MANAGEMENT_MEMBERS_STATUS % pool_id
+        code, _, _ = exec_script(command)
+        if code != 0:
+            raise exceptions.ScriptManagementPoolException()
+
+    except (exceptions.ScriptManagementPoolException, ScriptError), exception:
+
+        # Rollback
+        for old_member in related_pool_members:
+            old_member.save(request.user, commit=True)
+
+        raise exception
+
+
+def save_option_pool(user, type, description):
+    '''if id:
+        sp = OptionPool.objects.get(id=id)
+
+        sp.type = type
+        sp.description = description
+        sp.save()
+
+
+    else:'''
+
+    sp = OptionPool(type=type, name=description)
+    sp.save()
+
+    return sp
+
+
+def update_option_pool(user, option_id, type, description):
+
+    sp = OptionPool.objects.get(id=option_id)
+
+    sp.type = type
+    sp.name = description
+
+    sp.save()
+
+    return sp
+
+
+def delete_option_pool(user, option_id):
+
+    pool_option = OptionPool.objects.get(id=option_id)
+
+    environment_options = OptionPoolEnvironment.objects.all()
+    environment_options = environment_options.filter(option=option_id)
+
+    for eop in environment_options:
+        eop.delete()
+
+    pool_option.delete()
+
+    return option_id
+
+
+def save_environment_option_pool(user, option_id, environment_id):
+
+    op = OptionPool.objects.get(id=option_id)
+    env = Ambiente.objects.get(id=environment_id)
+
+
+#    log.warning("objetos buscados %s %s", serializer_options.data, serializer_env.data)
+
+    ope = OptionPoolEnvironment()
+
+    ope.environment = env
+    ope.option = op
+    ope.save()
+
+    return ope
+
+
+def update_environment_option_pool(user, environment_option_id, option_id, environment_id):
+
+    ope = OptionPoolEnvironment.objects.get(id=environment_option_id)
+    op = OptionPool.objects.get(id=option_id)
+    env = Ambiente.objects.get(id=environment_id)
+
+    ope.option = op
+    ope.environment = env
+
+    ope.save()
+
+    return ope
+
+
+def delete_environment_option_pool(user, environment_option_id):
+
+    ope = OptionPoolEnvironment.objects.get(id=environment_option_id)
+    ope.delete()
+
+    return environment_option_id
+
+
+########################
+# Manage Pool V2
+########################
 
 def set_poolmember_state(pools):
     """
@@ -1025,156 +758,418 @@ def get_poolmember_state(servers_pools):
         for idx in ps:
             for idx_m in ps[idx]:
                 if len(set(ps[idx][idx_m])) > 1:
-                        msg = 'There are states differents in equipments.'
-                        log.error(msg)
-                        raise exceptions.DiffStatesEquipament(msg)
+                    msg = 'There are states differents in equipments.'
+                    log.error(msg)
+                    raise exceptions.DiffStatesEquipament(msg)
 
     return status
 
 
-def manager_pools(request):
+def create_real_pool(request):
     """
-    Manager Status Pool Members Enable/Disabled By Pool
+        Create real pool in eqpt
+    """
+    pools = request.DATA.get("pools", [])
 
-    :param request: HttpRequest
+    load_balance = {}
+
+    for pool in pools:
+
+        if pool['server_pool']['pool_created']:
+            raise exceptions.PoolAlreadyCreated(pool['server_pool']['identifier'])
+
+        pools_members = []
+        for pool_member in pool['server_pool_members']:
+            if pool_member['ipv6'] is None:
+                ip = pool_member['ip']['ip_formated']
+            else:
+                ip = pool_member['ipv6']['ip_formated']
+
+            pools_members.append({
+                'id': pool_member['id'],
+                'ip': ip,
+                'port': pool_member['port_real'],
+                'member_status': pool_member['member_status'],
+                'limit': pool_member['limit'],
+                'priority': pool_member['priority'],
+                'weight': pool_member['weight']
+            })
+
+        equips = EquipamentoAmbiente.objects.filter(
+            ambiente__id=pool['server_pool']['environment']['id'],
+            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+
+        equipment_list = [e.equipamento for e in equips]
+        if all_equipments_are_in_maintenance(equipment_list):
+            raise AllEquipmentsAreInMaintenanceException()
+
+        for e in equips:
+            eqpt_id = str(e.equipamento.id)
+            equipment_access = EquipamentoAcesso.search(
+                equipamento=e.equipamento.id,
+                protocolo="https"
+            ).uniqueResult()
+            equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+            plugin = PluginFactory.factory(equipment)
+
+            if not load_balance.get(eqpt_id):
+
+                load_balance[eqpt_id] = {
+                    'plugin': plugin,
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'pools': [],
+                }
+
+            load_balance[eqpt_id]['pools'].append({
+                'id': pool['server_pool']['id'],
+                'nome': pool['server_pool']['identifier'],
+                'lb_method': pool['server_pool']['lb_method'],
+                'healthcheck': pool['server_pool']['healthcheck'],
+                'action': pool['server_pool']['servicedownaction']['name'],
+                'pools_members': pools_members
+            })
+
+    for lb in load_balance:
+        load_balance[lb]['plugin'].createPool(load_balance[lb])
+
+    ids = [pool['server_pool']['id'] for pool in pools]
+    ServerPool.objects.filter(id__in=ids).update(pool_created=True)
+
+    return {}
+
+
+def delete_real_pool(request):
+    """
+    delete real pool in eqpt
+    """
+    pools = request.DATA.get("pools", [])
+
+    load_balance = {}
+
+    for pool in pools:
+
+        pools_members = []
+        for pool_member in pool['server_pool_members']:
+            if pool_member['ipv6'] is None:
+                ip = pool_member['ip']['ip_formated']
+            else:
+                ip = pool_member['ipv6']['ip_formated']
+
+            pools_members.append({
+                'id': pool_member['id'],
+                'ip': ip,
+                'port': pool_member['port_real'],
+                'member_status': pool_member['member_status'],
+                'limit': pool_member['limit'],
+                'priority': pool_member['priority'],
+                'weight': pool_member['weight']
+            })
+
+        equips = EquipamentoAmbiente.objects.filter(
+            ambiente__id=pool['server_pool']['environment']['id'],
+            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+
+        equipment_list = [e.equipamento for e in equips]
+        if all_equipments_are_in_maintenance(equipment_list):
+            raise AllEquipmentsAreInMaintenanceException()
+
+        for e in equips:
+            eqpt_id = str(e.equipamento.id)
+            equipment_access = EquipamentoAcesso.search(
+                equipamento=e.equipamento.id,
+                protocolo="https"
+            ).uniqueResult()
+            equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+            plugin = PluginFactory.factory(equipment)
+
+            if not load_balance.get(eqpt_id):
+
+                load_balance[eqpt_id] = {
+                    'plugin': plugin,
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'pools': [],
+                }
+
+            load_balance[eqpt_id]['pools'].append({
+                'id': pool['server_pool']['id'],
+                'nome': pool['server_pool']['identifier'],
+                'lb_method': pool['server_pool']['lb_method'],
+                'healthcheck': pool['server_pool']['healthcheck'],
+                'action': pool['server_pool']['servicedownaction']['name'],
+                'pools_members': pools_members
+            })
+
+    for lb in load_balance:
+        load_balance[lb]['plugin'].deletePool(load_balance[lb])
+
+    ids = [pool['server_pool']['id'] for pool in pools]
+    ServerPool.objects.filter(id__in=ids).update(pool_created=False)
+
+    return {}
+
+
+def update_real_pool(request):
+    """
+    - update real pool in eqpt
+    - update data pool in db
+    """
+    pools = request.DATA.get("pools", [])
+    load_balance = {}
+
+    for pool in pools:
+
+        pools_members = []
+        for pool_member in pool['server_pool_members']:
+
+            if not pool_member['ipv6']:
+                ip = pool_member['ip']['ip_formated']
+            else:
+                ip = pool_member['ipv6']['ip_formated']
+
+            pools_members.append({
+                'id': pool_member['id'],
+                'ip': ip,
+                'port': pool_member['port_real'],
+                'limit': pool_member['limit'],
+                'priority': pool_member['priority'],
+                'weight': pool_member['weight'],
+            })
+
+        equips = EquipamentoAmbiente.objects.filter(
+            ambiente__id=pool['server_pool']['environment']['id'],
+            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+
+        equipment_list = [e.equipamento for e in equips]
+        if all_equipments_are_in_maintenance(equipment_list):
+            raise AllEquipmentsAreInMaintenanceException()
+
+        for e in equips:
+            eqpt_id = str(e.equipamento.id)
+            equipment_access = EquipamentoAcesso.search(
+                equipamento=e.equipamento.id,
+                protocolo="https"
+            ).uniqueResult()
+            equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+            plugin = PluginFactory.factory(equipment)
+
+            if not load_balance.get(eqpt_id):
+
+                load_balance[eqpt_id] = {
+                    'plugin': plugin,
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'pools': [],
+                }
+
+            load_balance[eqpt_id]['pools'].append({
+                'id': pool['server_pool']['id'],
+                'nome': pool['server_pool']['identifier'],
+                'lb_method': pool['server_pool']['lb_method'],
+                'healthcheck': pool['server_pool']['healthcheck'],
+                'action': pool['server_pool']['servicedownaction']['name'],
+                'pools_members': pools_members
+            })
+
+    # valid data for save in DB and apply in eqpt
+    ps, sp = valid_to_save_reals_v2(pools)
+
+    # get ids from pools created
+    names = [sp[p].id for idx, p in enumerate(ps) if sp[p].pool_created]
+    environments = [sp[p].id for idx, p in enumerate(ps) if sp[p].pool_created]
+
+    # call plugin to change in load balance
+    for lb in load_balance:
+        lbe = [l for l in load_balance[lb]['pools'] if l['id'] in names if l['id'] in environments]
+
+        if len(lbe) > 0:
+            json = load_balance[lb]
+            json['pools'] = lbe
+            json['plugin'].updatePool(json)
+
+    # save pool in DB
+    for idx in sp:
+        idx = str(idx)
+        sp[idx].identifier = ps[idx]['server_pool']['identifier']
+        sp[idx].environment = Ambiente.objects.get(
+            id=ps[idx]['server_pool']['environment']['id'])
+        sp[idx].default_limit = ps[idx]['server_pool']['default_limit']
+        sp[idx].default_port = ps[idx]['server_pool']['default_port']
+        sp[idx].lb_method = ps[idx]['server_pool']['lb_method']
+        sp[idx].servicedownaction = OptionPool.objects.get(
+            id=ps[idx]['server_pool']['servicedownaction']['id'])
+        is_healthcheck_valid(ps[idx]['server_pool']['healthcheck'])
+        ps[idx]['server_pool']['healthcheck'] = ps[idx]['server_pool']['healthcheck']
+        sp[idx].healthcheck = get_or_create_healthcheck(
+            request.user,
+            ps[idx]['server_pool']['healthcheck']['healthcheck_expect'],
+            ps[idx]['server_pool']['healthcheck']['healthcheck_type'],
+            ps[idx]['server_pool']['healthcheck']['healthcheck_request'],
+            ps[idx]['server_pool']['healthcheck']['destination'],
+            ps[idx]['server_pool']['healthcheck']['identifier'])
+
+        sp[idx].save()
+
+
+    members_id = [p['id'] for p in pool['server_pool_members'] for pool in pools if p['id']]
+    pms = ServerPoolMember.objects.filter(id__in=members_id)
+    pms_delete = ServerPoolMember.objects.exclude(id__in=members_id).filter(server_pool__id__in=[pool['server_pool']['id'] for pool in pools])
+
+    members = dict()
+    for pool in pools:
+        for member in pool['server_pool_members']:
+            if member['id']:
+                members[str(member['id'])] = member
+
+    # update pool members
+    for pm in pms:
+        if members.get(pm.id):
+            pm.port_real = members[pm.id]['port_real']
+            pm.priority = members[pm.id]['priority']
+            pm.weight = members[pm.id]['weight']
+            pm.save()
+
+    # delete pool members
+    for pm in pms_delete:
+        pm.delete()
+
+    #create new pool members
+    members = [p for p in pool['server_pool_members'] for pool in pools if not p['id']]
+    for member in members:
+        pm = ServerPoolMember()
+        pm.limit = member['limit']
+        pm.ip = member['ipv4']
+        pm.ipv6 = member['ipv6']
+        pm.identifier = member['identifier']
+        pm.weight = member['weight']
+        pm.priority = member['priority']
+        pm.port = member['port_real']
+
+        pool_member.save()
+
+    # Save reals
+    #save_server_pool_member(request.user, sp, list_server_pool_member)
+
+    return {}
+
+
+def valid_to_save_reals_v2(pools):
+    """
+    Valid values of pool member
 
     """
 
-    try:
-        pool_id = request.DATA.get("server_pool_id")
-        pool_members = request.DATA.get("server_pool_members", [])
+    for pool in pools:
 
-        # List to validate pool member status
-        valid_status = [0, 1, False, True]
+        # verify if port is invalid
+        invalid_ports_real = [member['port_real'] for member in pool['server_pool_members'] if int(member['port_real']) > 65535 or int(member['port_real']) < 1]
 
-        pool_members_id = [member.get('id') for member in pool_members]
+        # verify if priority is invalid
+        invalid_priority = [member['priority'] for member in pool['server_pool_members'] if int(member['priority']) > 4294967295 or int(member['priority']) < 0]
 
-        if not is_valid_int_greater_zero_param(pool_id):
-            raise exceptions.InvalidIdPoolException()
+        # verify if pool member is duplicate
+        ips_ports = [(member['port_real'], member['ip']['id'] if member['ip'] else member['ipv6']['id']) for member in pool['server_pool_members']]
 
-        # Validate pool members id
-        is_valid_list_int_greater_zero_param(pool_members_id)
+        environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(pool['server_pool']['environment']['id'])
 
-        pool_obj = ServerPool.objects.get(id=pool_id)
+        environment_vip_list_name = ', '.join([envvip.name for envvip in environment_vip_list])
 
-        related_pool_members = pool_obj.serverpoolmember_set.order_by('id')
+        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
 
-        received_pool_members = ServerPoolMember.objects.filter(
-            id__in=pool_members_id).order_by('id')
+        for members in pool['server_pool_members']:
+            if members['ip']:
+                environment = Ambiente.objects.filter(vlan__networkipv4__ip=members['ip']['id']).uniqueResult()
+                if environment not in environment_list_related:
+                    raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                        error_messages.get(396) % (environment.name, members['ip']['ip_formated'], environment_vip_list_name)
+                    )
 
-        relates = list(related_pool_members)
-        receives = list(received_pool_members)
+        for members in pool['server_pool_members']:
+            if members['ipv6']:
+                environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=members['ipv6']['id']).uniqueResult()
+                if environment not in environment_list_related:
+                    raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                        error_messages.get(396) % (server_pool.environment.name, imembers['ipv6']['ip_formated'], environment_vip_list_name)
+                    )
 
-        if relates != receives:
-            raise exceptions.InvalidIdPoolMemberException(
-                u'Required All Pool Members By Pool')
+    if invalid_ports_real:
+        raise exceptions.InvalidRealPoolException(
+            'O número da porta deve estar entre 1 e 65535.')
 
-        for member in pool_members:
+    if invalid_priority:
+        raise exceptions.InvalidRealPoolException(
+            'O valor da Prioridade deve estar entre 0 e 4294967295.')
 
-            member_id = member.get("id")
-            member_status = member.get("status")
+    if len(ips_ports) != len(set(ips_ports)):
+        raise exceptions.InvalidRealPoolException(
+            'Ips com portas iguais.')
 
-            if member_status not in valid_status:
-                raise exceptions.InvalidStatusPoolMemberException()
+    # if len(id_equips) != len(id_pool_member):
+    #     raise exceptions.InvalidRealPoolException(
+    #         'Quantidade de portas e equipamento difere.')
 
-            server_pool_member = ServerPoolMember.objects.get(id=member_id)
-            server_pool_member.status = member_status
+    # load data in variables for compare db with json
+    pls = ServerPool.objects.filter(id__in=[pool['server_pool']['id'] for pool in pools])
+    ps = {}
+    for p in pools:
+        ps[str(p['server_pool']['id'])] = p
+    sp = {}
+    for p in pls:
+        sp[str(p.id)] = p
 
-            server_pool_member.save(request.user, commit=True)
+        q_filters = list()
+        for members in pool['server_pool_members']:
+            q_filters.append({
+                'port_real': members['port_real'],
+                'id': members['id']
+            })
 
-        # Execute Script To Set Status
-        command = settings.POOL_MANAGEMENT_MEMBERS_STATUS % pool_id
-        code, _, _ = exec_script(command)
-        if code != 0:
-            raise exceptions.ScriptManagementPoolException()
+        members_par = ServerPoolMember.objects.filter(
+            reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]))
+        members_all = ServerPoolMember.objects.filter(server_pool__id=p.id)
 
-    except (exceptions.ScriptManagementPoolException, ScriptError), exception:
-
-        # Rollback
-        for old_member in related_pool_members:
-            old_member.save(request.user, commit=True)
-
-        raise exception
-
-
-def save_option_pool(user, type, description):
-    '''if id:
-        sp = OptionPool.objects.get(id=id)
-
-        sp.type = type
-        sp.description = description
-        sp.save()
-
-
-    else:'''
-
-    sp = OptionPool(type=type, name=description)
-    sp.save()
-
-    return sp
-
-
-def update_option_pool(user, option_id, type, description):
-
-    sp = OptionPool.objects.get(id=option_id)
-
-    sp.type = type
-    sp.name = description
-
-    sp.save()
-
-    return sp
+        if len(members_par) != len(members_all) and p.pool_created:
+            raise exceptions.PoolMemberChange(p.identifier)
 
 
-def delete_option_pool(user, option_id):
+    # return error when change names in pool created
+    change_name = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].identifier != ps[str(p)]['server_pool']['identifier'] and sp[p].pool_created]
+    if len(change_name) > 0:
+        raise exceptions.PoolNameChange(','.join(change_name))
 
-    pool_option = OptionPool.objects.get(id=option_id)
+    # return error when change environments in pool created
+    change_env = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].environment.id != ps[str(p)]['server_pool']['environment']['id'] and sp[p].pool_created]
+    change_env_all = [sp[p].id for idx, p in enumerate(ps) if sp[p].environment.id != ps[str(p)]['server_pool']['environment']['id']]
+    change_real = ServerPoolMember.objects.filter(server_pool_id__in=change_env_all)
+    if len(change_env) > 0 or len(change_real) > 0:
+        raise exceptions.PoolEnvironmentChange(','.join(change_env))
 
-    environment_options = OptionPoolEnvironment.objects.all()
-    environment_options = environment_options.filter(option=option_id)
-
-    for eop in environment_options:
-        eop.delete()
-
-    pool_option.delete()
-
-    return option_id
-
-
-def save_environment_option_pool(user, option_id, environment_id):
-
-    op = OptionPool.objects.get(id=option_id)
-    env = Ambiente.objects.get(id=environment_id)
+    return ps, sp
 
 
-#    log.warning("objetos buscados %s %s", serializer_options.data, serializer_env.data)
+def createLock(pools):
+    """
+    Create locks to pools list
+    """
+    locks_list = list()
+    for pool in pools:
+        lock = distributedlock(LOCK_POOL % pool['server_pool']['id'])
+        lock.__enter__()
+        locks_list.append(lock)
 
-    ope = OptionPoolEnvironment()
-
-    ope.environment = env
-    ope.option = op
-    ope.save()
-
-    return ope
-
-
-def update_environment_option_pool(user, environment_option_id, option_id, environment_id):
-
-    ope = OptionPoolEnvironment.objects.get(id=environment_option_id)
-    op = OptionPool.objects.get(id=option_id)
-    env = Ambiente.objects.get(id=environment_id)
-
-    ope.option = op
-    ope.environment = env
-
-    ope.save()
-
-    return ope
+    return locks_list
 
 
-def delete_environment_option_pool(user, environment_option_id):
-
-    ope = OptionPoolEnvironment.objects.get(id=environment_option_id)
-    ope.delete()
-
-    return environment_option_id
+def destroyLock(locks_list):
+    """
+    Destroy locks by pools list
+    """
+    for lock in locks_list:
+        lock.__exit__('', '', '')
