@@ -538,5 +538,158 @@
       "value": "teste", 
       "description": ""
     }
+  },
+  {
+    "pk": 150,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dsr_vlan_min",
+      "value": "366",
+      "description": ""
+    }
+  },
+  {
+    "pk": 151,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dsr_vlan_max",
+      "value": "381",
+      "description": ""
+    }
+  },
+  {
+    "pk": 152,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dmz_vlan_min",
+      "value": "382",
+      "description": ""
+    }
+  },
+  {
+    "pk": 153,
+    "model": "system.variable",
+    "fields": {
+      "name": "borda_dmz_vlan_max",
+      "value": "400",
+      "description": ""
+    }
+  },
+  {
+    "pk": 154,
+    "model": "system.variable",
+    "fields": {
+      "name": "bordacachos_vlan_min",
+      "value": "401",
+      "description": ""
+    }
+  },
+  {
+    "pk": 155,
+    "model": "system.variable",
+    "fields": {
+      "name": "bordacachos_vlan_max",
+      "value": "410",
+      "description": ""
+    }
+  },
+  {
+    "pk": 156,
+    "model": "system.variable",
+    "fields": {
+      "name": "num_vlan_acl_be",
+      "value": "4080",
+      "description": ""
+    }
+  },
+  {
+    "pk": 157,
+    "model": "system.variable",
+    "fields": {
+      "name": "num_vlan_acl_fe",
+      "value": "4084",
+      "description": ""
+    }
+  },
+  {
+    "pk": 158,
+    "model": "system.variable",
+    "fields": {
+      "name": "num_vlan_acl_bordadsr",
+      "value": "4085",
+      "description": ""
+    }
+  },
+  {
+    "pk": 200,
+    "model": "system.variable",
+    "fields": {
+      "name": "supported_equipment_brands",
+      "value": "Cisco",
+      "description": ""
+    }
+  },
+  {
+    "pk": 201,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_type_int",
+      "value": "interface_configuration",
+      "description": ""
+    }
+  },
+  {
+    "pk": 202,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_type_channel",
+      "value": "interface_channel_configuration",
+      "description": ""
+    }
+  },
+  {
+    "pk": 203,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_remove_channel",
+      "value": "interface_channel_configuration_delete",
+      "description": ""
+    }
+  },
+  {
+    "pk": 204,
+    "model": "system.variable",
+    "fields": {
+      "name": "template_remove_interface",
+      "value": "interface_configuration_delete",
+      "description": ""
+    }
+  },
+  {
+    "pk": 205,
+    "model": "system.variable",
+    "fields": {
+      "name": "interface_config_toapply_rel_path",
+      "value": "",
+      "description": ""
+    }
+  },
+  {
+    "pk": 206,
+    "model": "system.variable",
+    "fields": {
+      "name": "interface_config_template_path",
+      "value": "",
+      "description": ""
+    }
+  },
+  {
+    "pk": 207,
+    "model": "system.variable",
+    "fields": {
+      "name": "interface_config_files_path",
+      "value": "",
+      "description": ""
+    }
   }
 ]

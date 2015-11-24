@@ -1,0 +1,8 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `variables` VALUES (200,'supported_equipment_brands','Cisco',''),(201,'template_type_int','interface_configuration',''),(202,'template_type_channel','interface_channel_configuration',''),(203,'template_remove_channel','interface_channel_configuration_delete',''),(204,'template_remove_interface','interface_configuration_delete',''),(205,'interface_config_toapply_rel_path','',''),(206,'interface_config_template_path','',''),(207,'interface_config_files_path','','');
+"""
+
+SQL_DOWN = u"""
+
+"""
