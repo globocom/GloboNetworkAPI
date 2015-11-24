@@ -15,7 +15,8 @@ class NetworkApiTestCase(TestCase):
                 'initial_permissions.json',
                 'initial_permissoes_administrativas.json',
                 'initial_direitos_grupos_equip.json',
-                'initial_usuario.json',]
+                'initial_usuario.json',
+                'initial_variables.json']
 
     def setUp(self):
         pass

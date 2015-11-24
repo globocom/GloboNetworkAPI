@@ -754,13 +754,13 @@ def get_poolmember_state(servers_pools):
                 ps[pool_id][member_id].append(st)
                 status[pool_id][member_id] = st
 
-        # Verify diff state of pool member in eqpts
-        for idx in ps:
-            for idx_m in ps[idx]:
-                if len(set(ps[idx][idx_m])) > 1:
-                    msg = 'There are states differents in equipments.'
-                    log.error(msg)
-                    raise exceptions.DiffStatesEquipament(msg)
+    # Verify diff state of pool member in eqpts
+    for idx in ps:
+        for idx_m in ps[idx]:
+            if len(set(ps[idx][idx_m])) > 1:
+                msg = 'There are states differents in equipments.'
+                log.error(msg)
+                raise exceptions.DiffStatesEquipament(msg)
 
     return status
 

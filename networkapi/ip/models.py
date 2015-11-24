@@ -267,7 +267,7 @@ class NetworkIPv4(BaseModel):
         "Returns formated ip."
         return '%s.%s.%s.%s/%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.block)
 
-    ip_formated = property(_get_formated_ip)
+    networkv4 = property(_get_formated_ip)
 
     @cached_property
     def dhcprelay(self):
@@ -1428,7 +1428,7 @@ class NetworkIPv6(BaseModel):
         "Returns formated ip."
         return '%s.%s.%s.%s.%s.%s.%s.%s/%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8,  self.block)
 
-    ip_formated = property(_get_formated_ip)
+    networkv6 = property(_get_formated_ip)
 
     @cached_property
     def dhcprelay(self):

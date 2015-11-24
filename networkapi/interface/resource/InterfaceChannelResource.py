@@ -15,16 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError, loads
-import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface
+from networkapi.interface.models import PortChannel, Interface, InterfaceError, TipoInterface, EnvironmentInterface, \
+                                        InterfaceNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util import convert_string_or_int_to_boolean, is_valid_int_greater_zero_param
 from networkapi.ambiente.models import Ambiente
 from django.forms.models import model_to_dict
+from networkapi.api_interface import facade as api_interface_facade
+from networkapi.api_interface import exceptions as api_interface_exceptions
+from networkapi.system import exceptions as var_exceptions
 
 
 def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb):
@@ -77,7 +81,6 @@ class InterfaceChannelResource(RestResource):
 
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.
-
         URL: channel/inserir/
         """
         try:
@@ -85,8 +88,7 @@ class InterfaceChannelResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -108,22 +110,43 @@ class InterfaceChannelResource(RestResource):
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')
             envs = channel_map.get('envs')
+
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
 
             cont = []
 
+            interfaces = str(interfaces).split('-')
+            interface_id = None
+
+            channels = PortChannel.objects.filter(nome=nome)
+            channels_id = []
+            for ch in channels:
+                channels_id.append(int(ch.id))
+            if channels_id:
+                for var in interfaces:
+                    if not var=="" and not var==None:
+                        interface_id = int(var)
+                interface_id = interface.get_by_pk(interface_id)
+                equip_id = interface_id.equipamento.id
+                equip_interfaces = interface.search(equip_id)
+                for i in equip_interfaces:
+                    sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    if sw.channel is not None:
+                        if sw.channel.id in channels_id:
+                            raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
+
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
             port_channel.create(user)
 
-            interfaces = str(interfaces).split('-')
-
             int_type = TipoInterface.get_by_name(str(int_type))
+
             for var in interfaces:
                 if not var=="" and not var==None:
                     interf = interface.get_by_pk(int(var))
+
                     try:
                         sw_router = interf.get_switch_and_router_interface_from_host_interface(interf.protegida)
                     except:
@@ -132,9 +155,7 @@ class InterfaceChannelResource(RestResource):
                     if sw_router.channel is not None:
                         raise InterfaceError("Interface %s já está em um Channel" % sw_router.interface)
 
-                    for i in interface.search(sw_router.equipamento.id):
-                        if i.channel is not None:
-                            raise InterfaceError("Equipamento %s já possui um Channel" % sw_router.equipamento.nome)
+
 
                     if cont is []:
                         cont.append(int(sw_router.equipamento.id))
@@ -204,8 +225,7 @@ class InterfaceChannelResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Get XML data
@@ -218,7 +238,13 @@ class InterfaceChannelResource(RestResource):
             channel_name = kwargs.get('channel_name')
 
             channel = PortChannel.get_by_name(channel_name)
-            channel = model_to_dict(channel)
+
+            try:
+                for ch in channel:
+                    channel = model_to_dict(ch)
+            except:
+                channel = model_to_dict(channel)
+                pass
 
             return self.response(dumps_networkapi({'channel': channel}))
 
@@ -233,11 +259,8 @@ class InterfaceChannelResource(RestResource):
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Trata uma requisição DELETE para excluir um port channel
-
-        URL: /channel/delete/<channel_name>/
-
+            URL: /channel/delete/<channel_name>/<interface_id>
         """
-        # Get request data and check permission
         try:
             self.log.info("Delete Channel")
 
@@ -246,25 +269,67 @@ class InterfaceChannelResource(RestResource):
                 self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
-            channel_name = kwargs.get('channel_name')
+            interface_id = kwargs.get('channel_name')
+            interface = Interface.get_by_pk(int(interface_id))
+            equip_list = []
 
-            channel = PortChannel.get_by_name(str(channel_name))
+            try:
+                interface.channel.id
+                channel = interface.channel
+            except:
+                channel = interface.ligacao_front.channel
+                pass
+            try:
+                interfaces = Interface.objects.all().filter(channel__id=channel.id)
+            except:
+                return self.response(dumps_networkapi({}))
 
-            channel.delete()
+            for i in interfaces:
+                equip_list.append(i.equipamento.id)
+            equip_list = set(equip_list)
+            equip_dict = dict()
+            for e in equip_list:
+                equip_dict[str(e)] = interfaces.filter(equipamento__id=e)
+
+            for e in equip_dict:
+                for i in equip_dict.get(e):
+                    try:
+                        front = i.ligacao_front.id
+                    except:
+                        front = None
+                        pass
+                    try:
+                        back = i.ligacao_back.id
+                    except:
+                        back = None
+                        pass
+                    i.update(user,
+                                  i.id,
+                                  interface=i.interface,
+                                  protegida=i.protegida,
+                                  descricao=i.descricao,
+                                  ligacao_front_id=front,
+                                  ligacao_back_id=back,
+                                  tipo=i.tipo,
+                                  vlan_nativa=i.vlan_nativa)
+
+                api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
+
+            channel.delete(user)
 
             return self.response(dumps_networkapi({}))
 
+        except api_interface_exceptions.InvalidKeyException, e:
+            return api_interface_exceptions.InvalidKeyException(e)
+        except var_exceptions.VariableDoesNotExistException, e:
+            return var_exceptions.VariableDoesNotExistException(e)
+        except api_interface_exceptions.InterfaceTemplateException, e:
+            raise api_interface_exceptions.InterfaceTemplateException(e)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
-        except InterfaceNotFoundError:
-            return self.response_error(141)
-        except InterfaceUsedByOtherInterfaceError:
-            return self.response_error(214, id_interface)
-        except (InterfaceError, GrupoError, EquipamentoError):
-            return self.response_error(1)
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.
@@ -276,8 +341,7 @@ class InterfaceChannelResource(RestResource):
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             # Load XML data
@@ -295,6 +359,8 @@ class InterfaceChannelResource(RestResource):
             # Get XML data
             id_channel = channel_map.get('id_channel')
             nome = channel_map.get('nome')
+            if not is_valid_int_greater_zero_param(nome):
+                raise InvalidValueError(None, "Numero do Channel", "Variavel deve ser um numero inteiro.")
             lacp = channel_map.get('lacp')
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')
@@ -307,7 +373,7 @@ class InterfaceChannelResource(RestResource):
 
             if vlan is not None:
                 if int(vlan) < 1 or int(vlan) > 4096:
-                    raise InvalidValueError(None, "Vlan" , vlan)
+                    raise InvalidValueError(None, "Vlan Nativa", "Range valido: 1 - 4096.")
                 if int(vlan) < 1 or 3967 < int(vlan) < 4048 or int(vlan)==4096:
                     raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
 
@@ -315,6 +381,26 @@ class InterfaceChannelResource(RestResource):
             interface = Interface()
             amb = Ambiente()
             cont = []
+
+            channels = PortChannel.objects.filter(nome=nome)
+            channels_id = []
+            for ch in channels:
+                channels_id.append(int(ch.id))
+            if channels_id:
+                if type(ids_interface) is list:
+                    for var in ids_interface:
+                        if not var=="" and not var==None:
+                            interface_id = int(var)
+                else:
+                    interface_id = int(ids_interface)
+                interface_id = interface.get_by_pk(interface_id)
+                equip_id = interface_id.equipamento.id
+                equip_interfaces = interface.search(equip_id)
+                for i in equip_interfaces:
+                    sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    if sw.channel is not None:
+                        if sw.channel.id in channels_id:
+                            raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
 
             #buscar interfaces do channel
             interfaces = Interface.objects.all().filter(channel__id=id_channel)
@@ -346,8 +432,6 @@ class InterfaceChannelResource(RestResource):
                                 item.save()
 
 
-
-
             #update channel
             port_channel = port_channel.get_by_pk(id_channel)
             port_channel.nome = str(nome)
@@ -360,9 +444,56 @@ class InterfaceChannelResource(RestResource):
             if type(ids_interface) is list:
                 for var in ids_interface:
                     alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
+                    interface = Interface()
+                    server_obj = Interface()
+                    interface_sw = interface.get_by_pk(int(var))
+                    interface_server = server_obj.get_by_pk(interface_sw.ligacao_front.id)
+                    try:
+                        front = interface_server.ligacao_front.id
+                    except:
+                        front = None
+                        pass
+                    try:
+                        back = interface_server.ligacao_back.id
+                    except:
+                        back = None
+                        pass
+                    server_obj.update(user,
+                                      interface_server.id,
+                                      interface=interface_server.interface,
+                                      protegida=interface_server.protegida,
+                                      descricao=interface_server.descricao,
+                                      ligacao_front_id=front,
+                                      ligacao_back_id=back,
+                                      tipo=int_type,
+                                      vlan_nativa=int(vlan))
+
             else:
                 var = ids_interface
                 alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
+                interface = Interface()
+                server_obj = Interface()
+                interface_sw = interface.get_by_pk(int(var))
+                interface_server = server_obj.get_by_pk(interface_sw.ligacao_front.id)
+                try:
+                    front = interface_server.ligacao_front.id
+                except:
+                    front = None
+                    pass
+                try:
+                    back = interface_server.ligacao_back.id
+                except:
+                    back = None
+                    pass
+                server_obj.update(user,
+                                  interface_server.id,
+                                  interface=interface_server.interface,
+                                  protegida=interface_server.protegida,
+                                  descricao=interface_server.descricao,
+                                  ligacao_front_id=front,
+                                  ligacao_back_id=back,
+                                  tipo=int_type,
+                                  vlan_nativa=int(vlan))
 
 
             port_channel_map = dict()

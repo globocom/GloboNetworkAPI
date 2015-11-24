@@ -36,14 +36,15 @@ def LOCAL_FILES(path):
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
-#DEBUG = False
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
+CI = os.getenv('CI', '0') == '1'
 
 NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = NETWORKAPI_LOG_FILE
-LOG_LEVEL = logging.INFO
+
+LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
 # if DEBUG:
 #     LOG_LEVEL = logging.DEBUG
@@ -522,7 +523,6 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
 
 ## TESTS CONFIGS ##
 # If is running on CI: if CI=1 or running inside jenkins
-CI = os.getenv('CI', '0') == '1'
 INTEGRATION = os.getenv('CI', '0') == '1'
 INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
 

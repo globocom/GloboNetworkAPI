@@ -20,7 +20,7 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 from networkapi.models.BaseModel import BaseModel
-from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_regex, is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
 from networkapi.equipamento.models import Equipamento, TipoEquipamento
 from networkapi.ambiente.models import Ambiente
@@ -156,7 +156,7 @@ class PortChannel(BaseModel):
 
         # Checks if name is valid
         try:
-            if not is_valid_regex(self.nome, "[a-zA-Z\-]+[0-9]+$"):
+            if not is_valid_int_greater_zero_param(self.nome):
                 raise InvalidValueError(None, 'nome', self.nome)
         except Exception, e:
             raise InvalidValueError(None, e.param, e.value)
@@ -180,22 +180,21 @@ class PortChannel(BaseModel):
     @classmethod
     def get_by_name(cls, name):
         try:
-            return PortChannel.objects.get(nome__iexact=name)
+            return PortChannel.objects.filter(nome=name)
         except ObjectDoesNotExist, e:
-            raise InterfaceNotFoundError(
-                e, u'Can not find a Channel with name = %s.' % id)
+            raise InterfaceNotFoundError(e, u'Can not find a Channel with name = %s.' % id)
         except Exception, e:
             cls.log.error(u'Failure to search the Group L3.')
-            raise AmbienteError(e, u'Failure to search the Group L3.')
+            raise InterfaceError(e, u'Failure to search the Group L3.')
 
-    def delete(self):
+    def delete(self, user):
         '''Override Django method to remove port channel.
         '''
         id = self.id
         interfaces = Interface.objects.all().filter(channel=id)
         for interface in interfaces:
             interface.channel = None
-            interface.save(authenticated_user)
+            interface.save(user)
         super(PortChannel, self).delete()
 
     def list_interfaces(self):
@@ -568,7 +567,6 @@ class Interface(BaseModel):
 
         # Get interface
         interface = Interface.get_by_pk(id_interface)
-
         nome = kwargs['interface']
         marca = interface.equipamento.modelo.marca.id if interface.equipamento.tipo_equipamento.id != 2 else 0
 
@@ -591,14 +589,12 @@ class Interface(BaseModel):
         # Checks if name is valid according to the brand
         if not is_valid_regex(nome, regex):
             raise InvalidValueError(None, 'nome', nome)
-
         # Valid ligacao_front_id
         try:
             id_ligacao_front = kwargs['ligacao_front_id']
             if id_ligacao_front is not None:
                 if (interface.ligacao_front_id != id_ligacao_front):
-                    interface.ligacao_front = Interface.get_by_pk(
-                        id_ligacao_front)
+                    interface.ligacao_front = Interface.get_by_pk(id_ligacao_front)
             else:
                 interface.ligacao_front = None
         except InterfaceNotFoundError, e:
@@ -606,14 +602,12 @@ class Interface(BaseModel):
                 e, u'Frontend interface does not exist')
         except KeyError:
             pass
-
         # Valid ligacao_back_id
         try:
             id_ligacao_back = kwargs['ligacao_back_id']
             if id_ligacao_back is not None:
                 if (interface.ligacao_back_id != id_ligacao_back):
-                    interface.ligacao_back = Interface.get_by_pk(
-                        id_ligacao_back)
+                    interface.ligacao_back = Interface.get_by_pk(id_ligacao_back)
             else:
                 interface.ligacao_back = None
         except InterfaceNotFoundError, e:
@@ -621,7 +615,6 @@ class Interface(BaseModel):
                 e, u'Backend interface does not exist.')
         except KeyError:
             pass
-
 
         try:
             # Check if interface name already exists for this equipment
@@ -632,7 +625,6 @@ class Interface(BaseModel):
                         None, u'An interface with the same name on the same equipment already exists')
             except KeyError:
                 pass
-
             interface.interface = nome
             interface.descricao = kwargs['descricao']
             interface.protegida = kwargs['protegida']
