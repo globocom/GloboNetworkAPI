@@ -2,7 +2,8 @@
 
 from django.conf.urls import patterns, url
 
-urlpatterns = patterns('networkapi.api_pools.views',
+urlpatterns = patterns(
+    'networkapi.api_pools.views',
     url(r'^pools/save/$', 'save'),
     url(r'^pools/save_reals/$', 'save_reals'),
     url(r'^pools/delete/$', 'delete'),
@@ -41,7 +42,7 @@ urlpatterns = patterns('networkapi.api_pools.views',
     url(r'^pools/environment_options/$', 'list_all_environment_options'),
     url(r'^pools/environment_options/save/$', 'save_environment_options'),
     url(r'^pools/environment_options/(?P<environment_option_id>\d+)/$', 'environment_options_by_pk'),
-    
+
     url(r'^pools/list/environments/environmentvip/$', 'list_environment_environment_vip_related'),
     url(r'^pools/getipsbyambiente/(?P<equip_name>[^/]+)/(?P<id_ambiente>[^/]+)/$', 'get_available_ips_to_add_server_pool'),
 )

@@ -1017,7 +1017,6 @@ def update_real_pool(request):
 
         sp[idx].save()
 
-
     members_id = [p['id'] for p in pool['server_pool_members'] for pool in pools if p['id']]
     pms = ServerPoolMember.objects.filter(id__in=members_id)
     pms_delete = ServerPoolMember.objects.exclude(id__in=members_id).filter(server_pool__id__in=[pool['server_pool']['id'] for pool in pools])
@@ -1040,7 +1039,7 @@ def update_real_pool(request):
     for pm in pms_delete:
         pm.delete()
 
-    #create new pool members
+    # create new pool members
     members = [p for p in pool['server_pool_members'] for pool in pools if not p['id']]
     for member in members:
         pm = ServerPoolMember()
@@ -1137,7 +1136,6 @@ def valid_to_save_reals_v2(pools):
 
         if len(members_par) != len(members_all) and p.pool_created:
             raise exceptions.PoolMemberChange(p.identifier)
-
 
     # return error when change names in pool created
     change_name = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].identifier != ps[str(p)]['server_pool']['identifier'] and sp[p].pool_created]
