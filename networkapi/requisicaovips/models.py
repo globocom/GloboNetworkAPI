@@ -818,6 +818,8 @@ class RequisicaoVips(BaseModel):
         persistencia = data.get('persistencia')
         traffic = data.get('trafficreturn')
 
+        trafficint=int(traffic)
+        log.info(str(trafficint))
 
         grupos_cache = [(gc.nome_opcao_txt)
                         for gc in OptionVip.get_all_grupo_cache(evip.id)]
@@ -828,7 +830,7 @@ class RequisicaoVips(BaseModel):
         traffics = [(tr.id)
                          for tr in OptionVip.get_all_trafficreturn(evip.id)]
 
-
+        log.info(str(traffics))
         if timeout not in timeouts:
             log.error(
                 u'The timeout not in OptionVip, invalid value: %s.', timeout)
@@ -850,7 +852,7 @@ class RequisicaoVips(BaseModel):
                 None, 'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
 
-        if traffic not in traffics:
+        if trafficint not in traffics:
             log.error(
                 u'The traffic return is not in OptionVip, invalid value: %s.', traffic)
             raise InvalidTrafficReturnValueError(
