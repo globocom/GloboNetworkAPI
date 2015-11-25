@@ -481,7 +481,7 @@ class RequisicaoVips(BaseModel):
         null=True
     )
 
-    traffic_return = models.ForeignKey(
+    trafficreturn = models.ForeignKey(
         OptionVip,
         db_column='id_traffic_return',
         default=12
@@ -600,7 +600,7 @@ class RequisicaoVips(BaseModel):
 
 
             """ if vip has DSRl3 """
-            if vip.traffic_return.id == 47:
+            if vip.trafficreturn.id == 48:
                 try:
                     dsrl3= DsrL3_to_Vip.get_by_vip_id(vip_id)
                     dsrl3.delete(authenticated_user)
@@ -816,7 +816,8 @@ class RequisicaoVips(BaseModel):
         timeout = data.get('timeout')
         grupo_cache = data.get('cache')
         persistencia = data.get('persistencia')
-        traffic = data.get('traffic')
+        traffic = data.get('trafficreturn')
+
 
         grupos_cache = [(gc.nome_opcao_txt)
                         for gc in OptionVip.get_all_grupo_cache(evip.id)]
@@ -824,7 +825,7 @@ class RequisicaoVips(BaseModel):
                     for t in OptionVip.get_all_timeout(evip.id)]
         persistencias = [(p.nome_opcao_txt)
                          for p in OptionVip.get_all_persistencia(evip.id)]
-        traffics = [(tr.nome_opcao_txt)
+        traffics = [(tr.id)
                          for tr in OptionVip.get_all_trafficreturn(evip.id)]
 
 
@@ -854,7 +855,7 @@ class RequisicaoVips(BaseModel):
                 u'The traffic return is not in OptionVip, invalid value: %s.', traffic)
             raise InvalidTrafficReturnValueError(
                 None, 'traffic return com valor inválido %s.' % traffic)
-        self.add_variable('traffic', traffic)
+        self.add_variable('trafficreturn', traffic)
 
         priority_pools = []
 
@@ -1391,7 +1392,7 @@ class RequisicaoVips(BaseModel):
         '''
         self.ip = Ip().get_by_pk(self.ip.id)
 
-        self.traffic_return = OptionVip.get_by_pk(self.traffic_return.id)
+        self.trafficreturn = OptionVip.get_by_pk(self.trafficreturn.id)
 
         # Valid list reals_prioritys
         if variables_map.get('reals_prioritys') is None:

@@ -63,7 +63,7 @@ def get_by_pk(pk):
     data['id_healthcheck_expect'] = vip_request.healthcheck_expect_id
     data['l7_filter'] = vip_request.l7_filter
     data['rule_id'] = vip_request.rule_id
-    data['trafficreturn'] = vip_request.traffic_return.nome_opcao_txt
+    data['trafficreturn'] = vip_request.trafficreturn.nome_opcao_txt
 
     pools = []
 
@@ -134,7 +134,7 @@ def save(request):
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
 
-    obj_req_vip.traffic_return=OptionVip.objects.filter(nome_opcao_txt=data['trafficreturn'])
+    obj_req_vip.trafficreturn=OptionVip.objects.filter(nome_opcao_txt=data['trafficreturn'])
     if data['trafficreturn'] == "DSRL3": DsrL3_to_Vip.get_dsrl3(obj_req_vip.id, user)
     obj_req_vip.save()
 
@@ -183,11 +183,11 @@ def update(request, pk):
         set_l7_filter_for_vip(obj_req_vip)
         obj_req_vip.set_new_variables(data)
 
-        old_traffic_return=obj_req_vip.traffic_return
-        if old_traffic_return.nome_opcao_txt != data['trafficreturn']:
-            obj_req_vip.traffic_return=OptionVip.objects.filter(nome_opcao_txt=data['trafficreturn'])
+        old_trafficreturn=obj_req_vip.trafficreturn
+        if old_trafficreturn.nome_opcao_txt != data['trafficreturn']:
+            obj_req_vip.trafficreturn=OptionVip.objects.filter(nome_opcao_txt=data['trafficreturn'])
 
-            if old_traffic_return.nome_opcao_txt == "DSRL3" and  data['trafficreturn'] == "Normal":
+            if old_trafficreturn.nome_opcao_txt == "DSRL3" and  data['trafficreturn'] == "Normal":
                 try:
                     dsrl3= DsrL3_to_Vip.get_by_vip_id(pk)
                     dsrl3.delete(user)

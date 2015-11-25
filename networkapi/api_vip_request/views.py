@@ -119,8 +119,8 @@ def delete(request):
         for vrequest in vips_request:
             """ if vip has DSRl3 """
             #traffic=OptionVip.objects.filter(nome_opcao_txt='DSRL3')
-            #traffic.id should be equal 47
-            if vrequest.traffic_return.id == 47:
+            #traffic.id should be equal 48
+            if vrequest.trafficreturn.id == 48:
                 try:
                     dsrl3= DsrL3_to_Vip.get_by_vip_id(ids)
                     dsrl3.delete(request.user)

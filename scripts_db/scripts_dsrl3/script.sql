@@ -12,3 +12,6 @@ CREATE TABLE `dsrl3_to_vip` (
 
 
 update  opcoesvip set nome_opcao_txt= 'DSRL2' where id = 13;
+
+#essa linha poe os mesmos ambientes para o dsrl3 que o "normal" tem
+insert into opcoesvip_ambiente_xref (id_ambiente, id_opcoesvip) SELECT distinct id_ambiente, 48 from opcoesvip_ambiente_xref where id_opcoesvip=12;

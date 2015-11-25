@@ -151,13 +151,13 @@ def insert_vip_request(vip_map, user):
 
     #get traffic return
     #traffic_return=OptionVip.objects.filter(nome_opcao_txt=traffic)
-    traffic_id=vip_map.get('traffic_id')
+    traffic_id=vip_map.get('trafficreturn')
     if traffic_id is None:
         traffic=OptionVip.get_all_trafficreturn(environment_vip.id)
         traffic=traffic.filter(nome_opcao_txt='Normal')
         traffic_id=traffic.id
-    vip.traffic_return=OptionVip()
-    vip.traffic_return.id=traffic_id
+    vip.trafficreturn=OptionVip()
+    vip.trafficreturn.id=traffic_id
 
     # Valid maxcon
     if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
@@ -210,10 +210,10 @@ def update_vip_request(vip_id, vip_map, user):
     else:
         ip_id = int(ip_id)
 
-    traffic_id = vip_map.get('traffic_id')
+    traffic_id = vip_map.get('trafficreturn')
     if not is_valid_int_greater_zero_param(traffic_id):
         log.error(u'The traffic_id parameter is not a valid value: %s.', traffic_id)
-        raise InvalidValueError(None, 'traffic_id', traffic_id)
+        raise InvalidValueError(None, 'trafficreturn', traffic_id)
     else:
         traffic_id = int(traffic_id)
 

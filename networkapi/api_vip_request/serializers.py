@@ -60,12 +60,12 @@ class RequestVipSerializer(serializers.ModelSerializer):
         required=False
     )
 
-    traffic_return = serializers.PrimaryKeyRelatedField(
+    trafficreturn = serializers.PrimaryKeyRelatedField(
         many=False,
         required=False
     )
 
-    traffic_return_num = DsrL3toVipSerializer()
+    id_dsrl3 = DsrL3toVipSerializer()
 
     healthcheck_expect = serializers.PrimaryKeyRelatedField(
         many=False,
@@ -112,10 +112,6 @@ class RequestVipSerializer(serializers.ModelSerializer):
         required=True
     )
 
-    cliente = serializers.CharField(
-        required=True
-    )
-
     ambiente = serializers.CharField(
         required=True
     )
@@ -156,7 +152,7 @@ class RequestVipSerializer(serializers.ModelSerializer):
             'healthcheck_expect', 'rule', 'rule_applied',
             'rule_rollback', 'areanegocio', 'nome_servico',
             'host', 'vip_ports_to_pools', 'finalidade',
-            'cliente', 'ambiente', 'trafficreturn', 'trafficreturn_num'
+            'cliente', 'ambiente', 'trafficreturn'
         )
 
 

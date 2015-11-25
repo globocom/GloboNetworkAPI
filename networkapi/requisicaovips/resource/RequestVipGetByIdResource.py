@@ -80,7 +80,7 @@ class RequestVipGetByIdResource(RestResource):
             vip_map['validado'] = vip.validado
             vip_map['vip_criado'] = vip.vip_criado
             vip_map['rule_id'] = vip.rule_id
-            vip_map['trafficreturn']=vip.traffic_return.nome_opcao_txt if vip.traffic_return else ''
+            vip_map['trafficreturn']=vip.trafficreturn.nome_opcao_txt if vip.trafficreturn else ''
 
 
             #Maxcon, lbmethod e hc
