@@ -37,6 +37,8 @@ from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.api_pools.models import OptionPool
+from networkapi.util.decorators import cached_property
+import logging
 
 
 class RequisicaoVipsError(Exception):
@@ -66,6 +68,12 @@ class VipRequestNoBlockInRule(RequisicaoVipsError):
 
 
 class RequisicaoVipsNotFoundError(RequisicaoVipsError):
+    """Retorna exceção ao pesquisar a requisição de vip por chave primária."""
+
+    def __init__(self, cause, message=None):
+        RequisicaoVipsError.__init__(self, cause, message)
+
+class RequisicaoVipsMissingDSRL3idError(RequisicaoVipsError):
     """Retorna exceção ao pesquisar a requisição de vip por chave primária."""
 
     def __init__(self, cause, message=None):
@@ -127,6 +135,11 @@ class InvalidPersistenciaValueError(RequisicaoVipsError):
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+class InvalidTrafficReturnValueError(RequisicaoVipsError):
+    """Retorna exceção quando o valor da variável traffic return é inválido."""
+
+    def __init__(self, cause, message=None):
+        RequisicaoVipsError.__init__(self, cause, message)
 
 class InvalidHealthcheckTypeValueError(RequisicaoVipsError):
     """Retorna exceção quando o valor da variável healthcheck_type é inválido."""
@@ -212,6 +225,233 @@ class RequestVipServerPoolConstraintError(RequisicaoVipsError):
         RequisicaoVipsError.__init__(self, cause, message)
 
 
+
+class OptionVip(BaseModel):
+    id = models.AutoField(primary_key=True)
+    tipo_opcao = models.CharField(
+        max_length=50, blank=False, db_column='tipo_opcao')
+    nome_opcao_txt = models.CharField(
+        max_length=50, blank=False, db_column='nome_opcao_txt')
+
+    log = logging.getLogger('OptionVIP')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'opcoesvip'
+        managed = True
+
+    def valid_option_vip(self, optionvip_map):
+        '''Validate the values ​​of option vip
+
+        @param optionvip_map: Map with the data of the request.
+
+        @raise InvalidValueError: Represents an error occurred validating a value.
+        '''
+
+        # Get XML data
+        tipo_opcao = optionvip_map.get('tipo_opcao')
+        nome_opcao_txt = optionvip_map.get('nome_opcao_txt')
+
+        # tipo_opcao can NOT be greater than 50
+        if not is_valid_string_maxsize(tipo_opcao, 50, True) or not is_valid_option(tipo_opcao):
+            self.log.error(
+                u'Parameter tipo_opcao is invalid. Value: %s.', tipo_opcao)
+            raise InvalidValueError(None, 'tipo_opcao', tipo_opcao)
+
+        # nome_opcao_txt can NOT be greater than 50
+        if not is_valid_string_maxsize(nome_opcao_txt, 50, True) or not is_valid_option(nome_opcao_txt):
+            self.log.error(
+                u'Parameter nome_opcao_txt is invalid. Value: %s.', nome_opcao_txt)
+            raise InvalidValueError(None, 'nome_opcao_txt', nome_opcao_txt)
+
+        # set variables
+        self.tipo_opcao = tipo_opcao
+        self.nome_opcao_txt = nome_opcao_txt
+
+    @classmethod
+    def get_by_pk(cls, id):
+        """"Get  Option Vip by id.
+
+        @return: Option Vip.
+
+        @raise OptionVipNotFoundError: Option Vip is not registered.
+        @raise OptionVipError: Failed to search for the Option Vip.
+        @raise OperationalError: Lock wait timeout exceeded.
+        """
+        try:
+            return OptionVip.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise OptionVipNotFoundError(
+                e, u'Dont there is a option vip by pk = %s.' % id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            cls.log.error(u'Failure to search the option vip.')
+            raise OptionVipError(e, u'Failure to search the option vip.')
+
+    @classmethod
+    def get_all(cls):
+        """Get All Option Vip.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+            return OptionVip.objects.all()
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip.')
+            raise OptionVipError(e, u'Failure to list all Option Vip.')
+
+    @classmethod
+    def get_all_timeout(cls, id_environment_vip):
+        """Get All Option Vip Timeout by environmentvip_id.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+            ovips = ovips.filter(tipo_opcao__icontains='timeout')
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip.')
+            raise OptionVipError(e, u'Failure to list all Option Vip.')
+
+    @classmethod
+    def get_all_balanceamento(cls, id_environment_vip):
+        """Get All Option Vip Balancing by environmentvip_id.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+            ovips = ovips.filter(tipo_opcao__icontains='balanceamento')
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip.')
+            raise OptionVipError(e, u'Failure to list all Option Vip.')
+
+    @classmethod
+    def get_all_healthcheck(cls, id_environment_vip):
+        """Get All Option Vip Healthcheck by environmentvip_id.
+
+            @return: Get All Option Vip Healthcheck.
+
+            @raise OperationalError: Failed to search for all Option Vip Healthcheck.
+        """
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+            ovips = ovips.filter(tipo_opcao__icontains='HealthCheck')
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip Healthcheck.')
+            raise OptionVipError(
+                e, u'Failure to list all Option Vip Healthcheck.')
+
+
+    @classmethod
+    def get_all_trafficreturn(cls, id_environment_vip):
+        """Get All Option Vip Traffic Return by environmentvip_id.
+
+            @return: Get All Option Vip Traffic Return.
+
+            @raise OperationalError: Failed to search for all Option Vip Traffic Return.
+        """
+        #log = logging.getLogger('get_all_trafficreturn')
+
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+
+            ovips = ovips.filter(tipo_opcao__icontains='trafego')
+
+            #log.info(str(ovips))
+
+            #ovips = ovips.filter(
+            #    optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip Traffic Return.')
+            raise OptionVipError(
+                e, u'Failure to list all Option Vip Traffic Return.')
+
+
+    @classmethod
+    def get_all_persistencia(cls, id_environment_vip):
+        """Get All Option Vip Persistence by environmentvip_id.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+            ovips = ovips.filter(tipo_opcao__icontains='persistencia')
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip.')
+            raise OptionVipError(e, u'Failure to list all Option Vip.')
+
+    @classmethod
+    def get_all_grupo_cache(cls, id_environment_vip):
+        """Get All Option Vip Timeout by environmentvip_id.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+
+            ovips = OptionVip.objects.select_related().all()
+            ovips = ovips.filter(tipo_opcao__icontains='cache')
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
+
+            return ovips
+
+        except Exception, e:
+            cls.log.error(u'Failure to list all Option Vip.')
+            raise OptionVipError(e, u'Failure to list all Option Vip.')
+
+    def delete(self, authenticated_user):
+        '''Override Django's method to remove option vip
+
+        Before removing the option vip removes all relationships with environment vip.
+        '''
+
+        # Remove all EnvironmentVIP OptionVip related
+        for option_environment in OptionVipEnvironmentVip.objects.filter(option=self.id):
+            option_environment.delete(authenticated_user)
+
+        super(OptionVip, self).delete(authenticated_user)
+
 class RequisicaoVips(BaseModel):
     id = models.AutoField(
         primary_key=True,
@@ -233,11 +473,18 @@ class RequisicaoVips(BaseModel):
         null=True
     )
 
+
     ipv6 = models.ForeignKey(
         Ipv6,
         db_column='ipsv6_id_ipv6',
         blank=True,
         null=True
+    )
+
+    trafficreturn = models.ForeignKey(
+        OptionVip,
+        db_column='id_traffic_return',
+        default=12, blank=True, null=True
     )
 
     l7_filter = models.TextField(
@@ -308,6 +555,13 @@ class RequisicaoVips(BaseModel):
         db_table = u'requisicao_vips'
         managed = True
 
+
+    @cached_property
+    def dsrl3id(self):
+
+        return DsrL3_to_Vip.objects.filter(requisicao_vip=self)
+
+
     @classmethod
     def get_by_pk(cls, id):
         """Get Request Vip by id.
@@ -344,15 +598,24 @@ class RequisicaoVips(BaseModel):
         try:
             vip = RequisicaoVips.get_by_pk(vip_id)
 
-            with distributedlock(LOCK_VIP % vip_id):
+            try:
+                dsrl3 = DsrL3_to_Vip.get_by_vip_id(vip_id)
+                dsrl3.delete(authenticated_user)
+            except ObjectDoesNotExist, e:
+                pass
+            except RequisicaoVipsMissingDSRL3idError, e:
+                cls.log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
+                raise RequisicaoVipsMissingDSRL3idError(
+                    e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % vip_id)
 
-                vip.delete()
+            vip.delete()
+
         except RequisicaoVipsNotFoundError, e:
             cls.log.error(u'Requisao Vip nao encontrada')
             raise RequisicaoVipsNotFoundError(
                 e, 'Requisao Vip com id %s nao encontrada' % vip_id)
         except Exception, e:
-            cls.log.error(u'Falha ao remover o usuario.')
+            cls.log.error(u'Falha ao remover requisicao VIP.')
             raise RequisicaoVipsError(e, u'Falha ao remover requisicao VIP.')
 
     @classmethod
@@ -552,6 +815,11 @@ class RequisicaoVips(BaseModel):
         timeout = data.get('timeout')
         grupo_cache = data.get('cache')
         persistencia = data.get('persistencia')
+        traffic = data.get('trafficreturn')
+        if traffic is None:
+            traffic = '12'
+
+        trafficint=int(traffic)
 
         grupos_cache = [(gc.nome_opcao_txt)
                         for gc in OptionVip.get_all_grupo_cache(evip.id)]
@@ -559,6 +827,8 @@ class RequisicaoVips(BaseModel):
                     for t in OptionVip.get_all_timeout(evip.id)]
         persistencias = [(p.nome_opcao_txt)
                          for p in OptionVip.get_all_persistencia(evip.id)]
+        traffics = [(tr.id)
+                         for tr in OptionVip.get_all_trafficreturn(evip.id)]
 
         if timeout not in timeouts:
             log.error(
@@ -569,17 +839,24 @@ class RequisicaoVips(BaseModel):
 
         if grupo_cache not in grupos_cache:
             log.error(
-                u'The grupo_cache not in OptionVip, invalid value: %s.', grupo_cache)
+                u'The grupo_cache is not in OptionVip, invalid value: %s.', grupo_cache)
             raise InvalidCacheValueError(
                 None, 'grupo_cache com valor inválido: %s.' % grupo_cache)
         self.add_variable('cache', grupo_cache)
 
         if persistencia not in persistencias:
             log.error(
-                u'The persistencia not in OptionVip, invalid value: %s.', persistencia)
+                u'The persistencia is not in OptionVip, invalid value: %s.', persistencia)
             raise InvalidPersistenciaValueError(
                 None, 'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
+
+        if trafficint not in traffics:
+            log.error(
+                u'The traffic return is not in OptionVip, invalid value: %s.', traffic)
+            raise InvalidTrafficReturnValueError(
+                None, 'traffic return com valor inválido %s.' % traffic)
+        self.add_variable('trafficreturn', traffic)
 
         priority_pools = []
 
@@ -1115,6 +1392,8 @@ class RequisicaoVips(BaseModel):
         @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
         '''
         self.ip = Ip().get_by_pk(self.ip.id)
+
+        self.trafficreturn = OptionVip.get_by_pk(self.trafficreturn.id)
 
         # Valid list reals_prioritys
         if variables_map.get('reals_prioritys') is None:
@@ -1810,203 +2089,6 @@ class RequisicaoVips(BaseModel):
             server_pool.delete()
 
 
-class OptionVip(BaseModel):
-    id = models.AutoField(primary_key=True)
-    tipo_opcao = models.CharField(
-        max_length=50, blank=False, db_column='tipo_opcao')
-    nome_opcao_txt = models.CharField(
-        max_length=50, blank=False, db_column='nome_opcao_txt')
-
-    log = logging.getLogger('OptionVIP')
-
-    class Meta(BaseModel.Meta):
-        db_table = u'opcoesvip'
-        managed = True
-
-    def valid_option_vip(self, optionvip_map):
-        '''Validate the values ​​of option vip
-
-        @param optionvip_map: Map with the data of the request.
-
-        @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
-
-        # Get XML data
-        tipo_opcao = optionvip_map.get('tipo_opcao')
-        nome_opcao_txt = optionvip_map.get('nome_opcao_txt')
-
-        # tipo_opcao can NOT be greater than 50
-        if not is_valid_string_maxsize(tipo_opcao, 50, True) or not is_valid_option(tipo_opcao):
-            self.log.error(
-                u'Parameter tipo_opcao is invalid. Value: %s.', tipo_opcao)
-            raise InvalidValueError(None, 'tipo_opcao', tipo_opcao)
-
-        # nome_opcao_txt can NOT be greater than 50
-        if not is_valid_string_maxsize(nome_opcao_txt, 50, True) or not is_valid_option(nome_opcao_txt):
-            self.log.error(
-                u'Parameter nome_opcao_txt is invalid. Value: %s.', nome_opcao_txt)
-            raise InvalidValueError(None, 'nome_opcao_txt', nome_opcao_txt)
-
-        # set variables
-        self.tipo_opcao = tipo_opcao
-        self.nome_opcao_txt = nome_opcao_txt
-
-    @classmethod
-    def get_by_pk(cls, id):
-        """"Get  Option Vip by id.
-
-        @return: Option Vip.
-
-        @raise OptionVipNotFoundError: Option Vip is not registered.
-        @raise OptionVipError: Failed to search for the Option Vip.
-        @raise OperationalError: Lock wait timeout exceeded.
-        """
-        try:
-            return OptionVip.objects.filter(id=id).uniqueResult()
-        except ObjectDoesNotExist, e:
-            raise OptionVipNotFoundError(
-                e, u'Dont there is a option vip by pk = %s.' % id)
-        except OperationalError, e:
-            cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
-            cls.log.error(u'Failure to search the option vip.')
-            raise OptionVipError(e, u'Failure to search the option vip.')
-
-    @classmethod
-    def get_all(cls):
-        """Get All Option Vip.
-
-            @return: All Option Vip.
-
-            @raise OperationalError: Failed to search for all Option Vip.
-        """
-        try:
-            return OptionVip.objects.all()
-        except Exception, e:
-            cls.log.error(u'Failure to list all Option Vip.')
-            raise OptionVipError(e, u'Failure to list all Option Vip.')
-
-    @classmethod
-    def get_all_timeout(cls, id_environment_vip):
-        """Get All Option Vip Timeout by environmentvip_id.
-
-            @return: All Option Vip.
-
-            @raise OperationalError: Failed to search for all Option Vip.
-        """
-        try:
-
-            ovips = OptionVip.objects.select_related().all()
-            ovips = ovips.filter(tipo_opcao__icontains='timeout')
-            ovips = ovips.filter(
-                optionvipenvironmentvip__environment__id=int(id_environment_vip))
-
-            return ovips
-
-        except Exception, e:
-            cls.log.error(u'Failure to list all Option Vip.')
-            raise OptionVipError(e, u'Failure to list all Option Vip.')
-
-    @classmethod
-    def get_all_balanceamento(cls, id_environment_vip):
-        """Get All Option Vip Balancing by environmentvip_id.
-
-            @return: All Option Vip.
-
-            @raise OperationalError: Failed to search for all Option Vip.
-        """
-        try:
-
-            ovips = OptionVip.objects.select_related().all()
-            ovips = ovips.filter(tipo_opcao__icontains='balanceamento')
-            ovips = ovips.filter(
-                optionvipenvironmentvip__environment__id=int(id_environment_vip))
-
-            return ovips
-
-        except Exception, e:
-            cls.log.error(u'Failure to list all Option Vip.')
-            raise OptionVipError(e, u'Failure to list all Option Vip.')
-
-    @classmethod
-    def get_all_healthcheck(cls, id_environment_vip):
-        """Get All Option Vip Healthcheck by environmentvip_id.
-
-            @return: Get All Option Vip Healthcheck.
-
-            @raise OperationalError: Failed to search for all Option Vip Healthcheck.
-        """
-        try:
-
-            ovips = OptionVip.objects.select_related().all()
-            ovips = ovips.filter(tipo_opcao__icontains='HealthCheck')
-            ovips = ovips.filter(
-                optionvipenvironmentvip__environment__id=int(id_environment_vip))
-
-            return ovips
-
-        except Exception, e:
-            cls.log.error(u'Failure to list all Option Vip Healthcheck.')
-            raise OptionVipError(
-                e, u'Failure to list all Option Vip Healthcheck.')
-
-    @classmethod
-    def get_all_persistencia(cls, id_environment_vip):
-        """Get All Option Vip Persistence by environmentvip_id.
-
-            @return: All Option Vip.
-
-            @raise OperationalError: Failed to search for all Option Vip.
-        """
-        try:
-
-            ovips = OptionVip.objects.select_related().all()
-            ovips = ovips.filter(tipo_opcao__icontains='persistencia')
-            ovips = ovips.filter(
-                optionvipenvironmentvip__environment__id=int(id_environment_vip))
-
-            return ovips
-
-        except Exception, e:
-            cls.log.error(u'Failure to list all Option Vip.')
-            raise OptionVipError(e, u'Failure to list all Option Vip.')
-
-    @classmethod
-    def get_all_grupo_cache(cls, id_environment_vip):
-        """Get All Option Vip Timeout by environmentvip_id.
-
-            @return: All Option Vip.
-
-            @raise OperationalError: Failed to search for all Option Vip.
-        """
-        try:
-
-            ovips = OptionVip.objects.select_related().all()
-            ovips = ovips.filter(tipo_opcao__icontains='cache')
-            ovips = ovips.filter(
-                optionvipenvironmentvip__environment__id=int(id_environment_vip))
-
-            return ovips
-
-        except Exception, e:
-            cls.log.error(u'Failure to list all Option Vip.')
-            raise OptionVipError(e, u'Failure to list all Option Vip.')
-
-    def delete(self):
-        '''Override Django's method to remove option vip
-
-        Before removing the option vip removes all relationships with environment vip.
-        '''
-
-        # Remove all EnvironmentVIP OptionVip related
-        for option_environment in OptionVipEnvironmentVip.objects.filter(option=self.id):
-            option_environment.delete()
-
-        super(OptionVip, self).delete()
-
-
 class OptionVipEnvironmentVip(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id')
     option = models.ForeignKey(OptionVip, db_column='id_opcoesvip')
@@ -2249,3 +2331,73 @@ class VipPortToPool(BaseModel):
             cls.log.error(u'Failure to list Request VipPortToPool by id_vip.')
             raise RequisicaoVipsError(
                 e, u'Failure to list Request VipPortToPool by id_vip.')
+
+
+class DsrL3_to_Vip(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id_dsrl3_to_vip')
+
+    requisicao_vip = models.ForeignKey(RequisicaoVips, db_column='id_requisicao_vips')
+
+    id_dsrl3 = models.IntegerField(db_column='id_dsrl3')
+
+    log = logging.getLogger('DsrL3_to_Vip')
+
+
+    class Meta(BaseModel.Meta):
+        db_table = u'dsrl3_to_vip'
+        managed = True
+
+    def prepare_and_save(self, id_dsrl3, vip, user):
+
+        self.requisicao_vip = vip
+        self.id_dsrl3 = id_dsrl3
+
+        self.save(user)
+
+    def get_dsrl3(self, id_vip, user):
+
+        id=4
+        while 1:
+            try:
+                DsrL3_to_Vip.objects.get(id_dsrl3=id)
+            except ObjectDoesNotExist, e:
+                break
+            id=id+4
+
+        self.prepare_and_save(id,id_vip, user)
+
+        return id
+
+
+    @classmethod
+    def get_by_vip_id(self, id_vip):
+        """Get Request VipPortToPool associated with id_vip.
+
+            @return: Request VipPortToPool with given id_vip.
+
+            @raise RequisicaoVipsError: Failed to search for VipPortToPool.
+        """
+        try:
+            return DsrL3_to_Vip.objects.filter(requisicao_vip__id=id_vip).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise ObjectDoesNotExist(
+                e, u'There is not DSRL3 entry for vip = %s.' % id_vip)
+        except Exception, e:
+            self.log.error(u'Failure to list id of DSR L3 by id_vip.')
+            raise RequisicaoVipsError(
+                e, u'Failure to list Request DsrL3_to_Vip by id_vip.')
+
+    @classmethod
+    def get_all(self):
+        """Get All Option Vip.
+
+            @return: All Option Vip.
+
+            @raise OperationalError: Failed to search for all Option Vip.
+        """
+        try:
+            return DsrL3_to_Vip.objects.all()
+        except Exception, e:
+            self.log.error(u'Failure to list all DsrL3_to_Vip .')
+            raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
+

@@ -43,6 +43,7 @@ NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = NETWORKAPI_LOG_FILE
+
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
 # if DEBUG:
@@ -551,7 +552,7 @@ if CI:
         'loggers': {
             'django': {
                 'handlers':['console'],
-                'propagate': True,
+                'propagate': False,
                 'level':'INFO',
             },
             'django.request': {

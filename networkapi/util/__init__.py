@@ -28,6 +28,7 @@ import logging
 
 import time
 
+from networkapi.plugins import exceptions as plugins_exceptions
 from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
 from django.forms.models import model_to_dict
 from django.core import validators
@@ -596,3 +597,10 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
 
     return True
 
+def is_healthcheck_valid(healthcheck):
+    if healthcheck['healthcheck_type'] != 'HTTP' and healthcheck['healthcheck_type'] != 'HTTPS':
+        if healthcheck['healthcheck_expect'] != '':
+            raise plugins_exceptions.ValueInvalid('healthcheck expect must be empty')
+        if healthcheck['healthcheck_request'] != '':
+            raise plugins_exceptions.ValueInvalid('healthcheck request must be empty')
+    return True

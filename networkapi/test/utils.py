@@ -88,6 +88,7 @@ def mock_login(func):
 
         result = func(*args, **kwargs)
 
+
         authenticator.stop()
         permission_decorator.stop()
 

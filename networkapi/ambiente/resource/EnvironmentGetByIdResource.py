@@ -36,7 +36,6 @@ class EnvironmentGetByIdResource(RestResource):
 
             URLs: /environment/id/<environment_id>/,
         """
-
         try:
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()
