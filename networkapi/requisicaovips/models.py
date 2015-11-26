@@ -2356,12 +2356,17 @@ class DsrL3_to_Vip(BaseModel):
 
     def get_dsrl3(self, id_vip, user):
 
-        #TODO FIND ID
-        id_dsrl3 = 0
+        id=4
+        while 1:
+            try:
+                DsrL3_to_Vip.objects.get(id_dsrl3=id)
+            except ObjectDoesNotExist, e:
+                break
+            id=id+4
 
-        self.prepare_and_save(id_dsrl3,id_vip, user)
+        self.prepare_and_save(id,id_vip, user)
 
-        return id_dsrl3
+        return id
 
 
     @classmethod
