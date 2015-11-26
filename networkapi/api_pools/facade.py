@@ -941,7 +941,7 @@ def update_real_pool(request):
                 ip = pool_member['ipv6']['ip_formated']
 
             if pool_member['id']:
-                member = db_members[db_members_id.index(pool_member['id'])]
+                member = db_members[db_members_id.index(str(pool_member['id']))]
                 if not member.ipv6:
                     ip_db = member.ip.ip_formated
                 else:
@@ -1133,7 +1133,7 @@ def valid_to_save_reals_v2(pools):
         # verify if member is invalid
         for member in pool['server_pool_members']:
             if member['id']:
-                if member['id'] not in db_members_id:
+                if str(member['id']) not in db_members_id:
                     raise exceptions.InvalidRealPoolException()
 
         # verify if port is invalid
