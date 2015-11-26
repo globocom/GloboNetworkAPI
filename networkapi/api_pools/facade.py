@@ -1217,8 +1217,8 @@ def valid_to_save_reals_v2(pools):
         raise exceptions.PoolNameChange(','.join(change_name))
 
     # return error when change environments in pool created
-    change_env = [sp[p].identifier for idx, p in enumerate(ps) if str(sp[p].environment.id) != ps[str(p)]['server_pool']['environment']['id'] and sp[p].pool_created]
-    change_env_all = [sp[p].id for idx, p in enumerate(ps) if str(sp[p].environment.id) != ps[str(p)]['server_pool']['environment']['id']]
+    change_env = [sp[p].identifier for idx, p in enumerate(ps) if str(sp[p].environment.id) != str(ps[str(p)]['server_pool']['environment']['id']) and sp[p].pool_created]
+    change_env_all = [sp[p].id for idx, p in enumerate(ps) if str(sp[p].environment.id) != str(ps[str(p)]['server_pool']['environment']['id'])]
     change_real = ServerPoolMember.objects.filter(server_pool_id__in=change_env_all)
 
     if len(change_env) > 0 or len(change_real) > 0:
