@@ -203,7 +203,7 @@ def update(request, pk):
                 try:
                     dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(obj_req_vip.id)
                     dsrl3_to_vip_obj.delete(user)
-                except ObjectDoesNotExist(), e:
+                except ObjectDoesNotExist, e:
                     pass
 
         obj_req_vip.save()
