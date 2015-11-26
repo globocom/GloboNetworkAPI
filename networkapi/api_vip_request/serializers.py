@@ -65,8 +65,6 @@ class RequestVipSerializer(serializers.ModelSerializer):
         required=False
     )
 
-    id_dsrl3 = DsrL3toVipSerializer()
-
     healthcheck_expect = serializers.PrimaryKeyRelatedField(
         many=False,
         required=False
@@ -115,6 +113,8 @@ class RequestVipSerializer(serializers.ModelSerializer):
     ambiente = serializers.CharField(
         required=True
     )
+
+    dsrl3id = DsrL3toVipSerializer()
 
     def validate(self, attrs):
         """

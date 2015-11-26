@@ -64,6 +64,12 @@ def get_by_pk(pk):
     data['l7_filter'] = vip_request.l7_filter
     data['rule_id'] = vip_request.rule_id
     data['trafficreturn'] = vip_request.trafficreturn.nome_opcao_txt
+    try:
+        dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(vip_request.id)
+        data['dsrl3'] = dsrl3_to_vip_obj.id_dsrl3
+    except ObjectDoesNotExist, e:
+        pass
+
 
     pools = []
 
