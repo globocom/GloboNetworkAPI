@@ -141,6 +141,10 @@ class IpNotFoundByEnvironment(APIException):
 class InvalidRealPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Parametros invalidos do real.'
+        
+    def __init__(self, msg=None):
+        self.detail = u'Parametros invalidos do real: <<%s>>' % (
+            msg)
 
 
 class InvalidIdPoolException(APIException):
