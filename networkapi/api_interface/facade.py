@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 #def get(dictionary, key):
 #    return dictionary.get(key)
 
-def delete_channel(user, equip_id, interface_list, channel):
+def generate_delete_file(user, equip_id, interface_list, channel):
     try:
         INTERFACE_CONFIG_FILES_PATH = get_variable("interface_config_files_path")
         TEMPLATE_REMOVE_CHANNEL = get_variable("template_remove_channel")
@@ -87,7 +87,7 @@ def delete_channel(user, equip_id, interface_list, channel):
     return rel_file_to_deploy
 
 
-#def delete_channel(user, equip_id, interface_list, channel):
+def delete_channel(user, equip_id, interface_list, channel):
 
     file_to_deploy = generate_delete_file(user, equip_id, interface_list, channel)
 
