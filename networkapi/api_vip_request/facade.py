@@ -34,7 +34,7 @@ from networkapi.util import is_valid_int_greater_zero_param, \
 from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.requisicaovips.models import RequisicaoVipsMissingDSRL3idError
-
+from django.core.exceptions import ObjectDoesNotExist
 
 log = logging.getLogger(__name__)
 
@@ -134,7 +134,9 @@ def save(request):
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
 
-    obj_req_vip.trafficreturn=OptionVip.get_by_pk(int(data['trafficreturn']))
+    #obj_req_vip.trafficreturn=OptionVip.get_by_pk(int(data['trafficreturn']))
+    if obj_req_vip.trafficreturn is None:
+        obj_req_vip.trafficreturn = OptionVip.get_by_pk(12)
 
     obj_req_vip.save(user)
 
@@ -175,33 +177,34 @@ def update(request, pk):
         log.error(req_vip_serializer.errors)
         raise api_exceptions.ValidationException()
 
+    #test if request exists
     RequisicaoVips.objects.get(pk=pk)
 
     with distributedlock(LOCK_VIP % pk):
 
         obj_req_vip = req_vip_serializer.object
+        #compatibility issues
+        if obj_req_vip.trafficreturn is None:
+            obj_req_vip.trafficreturn = RequisicaoVips.objects.get(pk=pk).trafficreturn
+
         obj_req_vip.id = int(pk)
         obj_req_vip.filter_valid = True
         obj_req_vip.validado = False
         set_l7_filter_for_vip(obj_req_vip)
         obj_req_vip.set_new_variables(data)
 
-        old_trafficreturn=obj_req_vip.trafficreturn
-        if old_trafficreturn.nome_opcao_txt != data['trafficreturn']:
-            obj_req_vip.trafficreturn=OptionVip.objects.filter(nome_opcao_txt=data['trafficreturn'])
 
-            if old_trafficreturn.nome_opcao_txt == "DSRL3" and  data['trafficreturn'] == "Normal":
+        old_trafficreturn = RequisicaoVips.objects.get(pk=pk).trafficreturn
+        if old_trafficreturn.id != obj_req_vip.trafficreturn.id:
+            if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3": 
+                dsrl3_to_vip_obj = DsrL3_to_Vip()
+                dsrl3_to_vip_obj.get_dsrl3(obj_req_vip, user)
+            else:
                 try:
-                    dsrl3= DsrL3_to_Vip.get_by_vip_id(pk)
-                    dsrl3.delete(user)
-                except RequisicaoVipsMissingDSRL3idError, e:
-                    log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
-                    raise RequisicaoVipsMissingDSRL3idError(
-                        e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % pk)
-
-            if old_traffic_return.nome_opcao_txt == "Normal" and  data['trafficreturn'] == "DSRL3":
-                DsrL3_to_Vip.get_dsrl3(pk, user)
-
+                    dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(obj_req_vip.id)
+                    dsrl3_to_vip_obj.delete(user)
+                except ObjectDoesNotExist(), e:
+                    pass
 
         obj_req_vip.save()
 

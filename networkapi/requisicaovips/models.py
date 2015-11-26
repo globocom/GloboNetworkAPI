@@ -484,7 +484,7 @@ class RequisicaoVips(BaseModel):
     trafficreturn = models.ForeignKey(
         OptionVip,
         db_column='id_traffic_return',
-        default=12
+        default=12, blank=True, null=True
     )
 
     l7_filter = models.TextField(
@@ -597,7 +597,7 @@ class RequisicaoVips(BaseModel):
         '''
         try:
             vip = RequisicaoVips.get_by_pk(vip_id)
-            
+
             try:
                 dsrl3 = DsrL3_to_Vip.get_by_vip_id(vip_id)
                 dsrl3.delete(authenticated_user)
@@ -816,9 +816,10 @@ class RequisicaoVips(BaseModel):
         grupo_cache = data.get('cache')
         persistencia = data.get('persistencia')
         traffic = data.get('trafficreturn')
+        if traffic is None:
+            traffic = '12'
 
         trafficint=int(traffic)
-        log.info(str(trafficint))
 
         grupos_cache = [(gc.nome_opcao_txt)
                         for gc in OptionVip.get_all_grupo_cache(evip.id)]
@@ -829,7 +830,6 @@ class RequisicaoVips(BaseModel):
         traffics = [(tr.id)
                          for tr in OptionVip.get_all_trafficreturn(evip.id)]
 
-        log.info(str(traffics))
         if timeout not in timeouts:
             log.error(
                 u'The timeout not in OptionVip, invalid value: %s.', timeout)
