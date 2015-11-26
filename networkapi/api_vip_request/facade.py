@@ -24,15 +24,17 @@ from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, \
     EnvironmentVip
 import logging
+
 from networkapi.api_vip_request.serializers import RequestVipSerializer, \
     VipPortToPoolSerializer
 from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, \
-    ServerPool
+    ServerPool, OptionVip, DsrL3_to_Vip
 from networkapi.util import is_valid_int_greater_zero_param, \
     convert_boolean_to_int
 from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
-
+from networkapi.requisicaovips.models import RequisicaoVipsMissingDSRL3idError
+from django.core.exceptions import ObjectDoesNotExist
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +63,7 @@ def get_by_pk(pk):
     data['id_healthcheck_expect'] = vip_request.healthcheck_expect_id
     data['l7_filter'] = vip_request.l7_filter
     data['rule_id'] = vip_request.rule_id
+    data['trafficreturn'] = vip_request.trafficreturn.nome_opcao_txt
 
     pools = []
 
@@ -130,11 +133,21 @@ def save(request):
     obj_req_vip.validado = False
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
-    obj_req_vip.save()
+
+    #obj_req_vip.trafficreturn=OptionVip.get_by_pk(int(data['trafficreturn']))
+    if obj_req_vip.trafficreturn is None:
+        obj_req_vip.trafficreturn = OptionVip.get_by_pk(12)
+
+    obj_req_vip.save(user)
+
+    if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3": 
+        dsrl3_to_vip_obj = DsrL3_to_Vip()
+        dsrl3_to_vip_obj.get_dsrl3(obj_req_vip, user)
 
     for v_port in obj_req_vip.vip_ports_to_pools:
         v_port.requisicao_vip = obj_req_vip
         v_port.save()
+
 
     return req_vip_serializer.data
 
@@ -164,16 +177,35 @@ def update(request, pk):
         log.error(req_vip_serializer.errors)
         raise api_exceptions.ValidationException()
 
+    #test if request exists
     RequisicaoVips.objects.get(pk=pk)
 
     with distributedlock(LOCK_VIP % pk):
 
         obj_req_vip = req_vip_serializer.object
+        #compatibility issues
+        if obj_req_vip.trafficreturn is None:
+            obj_req_vip.trafficreturn = RequisicaoVips.objects.get(pk=pk).trafficreturn
+
         obj_req_vip.id = int(pk)
         obj_req_vip.filter_valid = True
         obj_req_vip.validado = False
         set_l7_filter_for_vip(obj_req_vip)
         obj_req_vip.set_new_variables(data)
+
+
+        old_trafficreturn = RequisicaoVips.objects.get(pk=pk).trafficreturn
+        if old_trafficreturn.id != obj_req_vip.trafficreturn.id:
+            if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3": 
+                dsrl3_to_vip_obj = DsrL3_to_Vip()
+                dsrl3_to_vip_obj.get_dsrl3(obj_req_vip, user)
+            else:
+                try:
+                    dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(obj_req_vip.id)
+                    dsrl3_to_vip_obj.delete(user)
+                except ObjectDoesNotExist, e:
+                    pass
+
         obj_req_vip.save()
 
         vip_port_serializer = VipPortToPoolSerializer(data=vip_ports, many=True)

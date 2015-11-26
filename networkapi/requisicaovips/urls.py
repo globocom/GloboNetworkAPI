@@ -22,6 +22,8 @@ from networkapi.requisicaovips.resource.RequestVipValidateResource import Reques
 from networkapi.requisicaovips.resource.RequestVipsRealResource import RequestVipsRealResource
 from networkapi.requisicaovips.resource.RequisicaoVipDeleteResource import RequisicaoVipDeleteResource
 from networkapi.requisicaovips.resource.RequisicaoVipsResource import RequisicaoVipsResource
+from networkapi.requisicaovips.resource.DsrL3toVipAllResource import DsrL3toVipAllResource
+from networkapi.requisicaovips.resource.DsrL3toVipResource import DsrL3toVipResource
 
 vip_l7_resource = RequestVipL7Resource()
 vip_l7_validate_resource = RequestVipL7ValidateResource()
@@ -43,6 +45,8 @@ vip_priority = RequestPriorityResource()
 vip_real = RequestVipsRealResource()
 vip_real_edit = RequestVipRealEditResource()
 vip_real_valid = RequestVipRealValidResource()
+dsrl3tovip = DsrL3toVipResource()
+drsl3_all = DsrL3toVipAllResource()
 
 urlpatterns = patterns('',
    url(r'^$', vip_request_resource.handle_request,
@@ -90,5 +94,9 @@ urlpatterns = patterns('',
    url(r'^l7/(?P<id_vip>[^/]+)/rollback/$', vip_l7_rollback_resource.handle_request,
         name='vip.l7.rollback.by.pk'),
    url(r'^add_block/(?P<id_vip>\d+)/(?P<id_block>\d+)/(?P<override>\d+)[/]?$',vip_add_block_resource.handle_request,
-        name='vip.add.block')
+        name='vip.add.block'),
+    url(r'^dsrl3/all/$', drsl3_all.handle_request,
+        name='dsrl3.vip.all'),
+    url(r'^dsrl3/(?P<id_dsrl3_vip>[^/]+)/$', dsrl3tovip.handle_request,
+        name='dsrl3.vip.search')
 )
