@@ -134,10 +134,13 @@ def save(request):
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
 
-    obj_req_vip.trafficreturn=OptionVip.objects.filter(nome_opcao_txt=data['trafficreturn'])
-    if data['trafficreturn'] == "DSRL3": DsrL3_to_Vip.get_dsrl3(obj_req_vip.id, user)
-    obj_req_vip.save()
+    obj_req_vip.trafficreturn=OptionVip.get_by_pk(int(data['trafficreturn']))
 
+    obj_req_vip.save(user)
+
+    if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3": 
+        dsrl3_to_vip_obj = DsrL3_to_Vip()
+        dsrl3_to_vip_obj.get_dsrl3(obj_req_vip, user)
 
     for v_port in obj_req_vip.vip_ports_to_pools:
         v_port.requisicao_vip = obj_req_vip

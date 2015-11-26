@@ -597,26 +597,25 @@ class RequisicaoVips(BaseModel):
         '''
         try:
             vip = RequisicaoVips.get_by_pk(vip_id)
+            
+            try:
+                dsrl3 = DsrL3_to_Vip.get_by_vip_id(vip_id)
+                dsrl3.delete(authenticated_user)
+            except ObjectDoesNotExist, e:
+                pass
+            except RequisicaoVipsMissingDSRL3idError, e:
+                cls.log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
+                raise RequisicaoVipsMissingDSRL3idError(
+                    e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % vip_id)
 
-
-            """ if vip has DSRl3 """
-            if vip.trafficreturn.id == 48:
-                try:
-                    dsrl3= DsrL3_to_Vip.get_by_vip_id(vip_id)
-                    dsrl3.delete(authenticated_user)
-                except RequisicaoVipsMissingDSRL3idError, e:
-                    cls.log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
-                    raise RequisicaoVipsMissingDSRL3idError(
-                        e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % vip_id)
-
-                vip.delete()
+            vip.delete()
 
         except RequisicaoVipsNotFoundError, e:
             cls.log.error(u'Requisao Vip nao encontrada')
             raise RequisicaoVipsNotFoundError(
                 e, 'Requisao Vip com id %s nao encontrada' % vip_id)
         except Exception, e:
-            cls.log.error(u'Falha ao remover o usuario.')
+            cls.log.error(u'Falha ao remover requisicao VIP.')
             raise RequisicaoVipsError(e, u'Falha ao remover requisicao VIP.')
 
     @classmethod
@@ -2355,7 +2354,6 @@ class DsrL3_to_Vip(BaseModel):
 
         self.save(user)
 
-    @classmethod
     def get_dsrl3(self, id_vip, user):
 
         #TODO FIND ID
@@ -2375,7 +2373,10 @@ class DsrL3_to_Vip(BaseModel):
             @raise RequisicaoVipsError: Failed to search for VipPortToPool.
         """
         try:
-            return DsrL3_to_Vip.objects.filter(requisicao_vip__id=id_vip)
+            return DsrL3_to_Vip.objects.filter(requisicao_vip__id=id_vip).uniqueResult()
+        except ObjectDoesNotExist, e:
+            raise ObjectDoesNotExist(
+                e, u'There is not DSRL3 entry for vip = %s.' % id_vip)
         except Exception, e:
             self.log.error(u'Failure to list id of DSR L3 by id_vip.')
             raise RequisicaoVipsError(
