@@ -291,6 +291,9 @@ class InterfaceChannelResource(RestResource):
             for e in equip_list:
                 equip_dict[str(e)] = interfaces.filter(equipamento__id=e)
 
+            tipo = TipoInterface()
+            tipo = tipo.get_by_name("access")
+
             for e in equip_dict:
                 for i in equip_dict.get(e):
                     try:
@@ -310,15 +313,17 @@ class InterfaceChannelResource(RestResource):
                                   descricao=i.descricao,
                                   ligacao_front_id=front,
                                   ligacao_back_id=back,
-                                  tipo=i.tipo,
-                                  vlan_nativa=i.vlan_nativa)
+                                  tipo=tipo,
+                                  vlan_nativa="1")
 
-                api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
+                status = api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
 
             channel.delete(user)
 
             return self.response(dumps_networkapi({}))
 
+        except api_interface_exceptions.InterfaceException, e:
+            return api_interface_exceptions.InterfaceException(e)
         except api_interface_exceptions.InvalidKeyException, e:
             return api_interface_exceptions.InvalidKeyException(e)
         except var_exceptions.VariableDoesNotExistException, e:
@@ -330,6 +335,7 @@ class InterfaceChannelResource(RestResource):
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
+
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.
