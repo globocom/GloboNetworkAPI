@@ -36,13 +36,14 @@ def LOCAL_FILES(path):
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
-DEBUG = os.getenv('NETWORKAPI_DEBUG', '1') == '1'
+DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 CI = os.getenv('CI', '0') == '1'
 
 NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = NETWORKAPI_LOG_FILE
+
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
 # if DEBUG:
@@ -551,7 +552,7 @@ if CI:
         'loggers': {
             'django': {
                 'handlers':['console'],
-                'propagate': True,
+                'propagate': False,
                 'level':'INFO',
             },
             'django.request': {

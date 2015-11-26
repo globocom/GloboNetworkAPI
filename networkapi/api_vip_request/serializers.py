@@ -1,8 +1,20 @@
 from rest_framework import serializers
-from networkapi.requisicaovips.models import VipPortToPool, RequisicaoVips
+from networkapi.requisicaovips.models import VipPortToPool, RequisicaoVips, DsrL3_to_Vip
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.exception import EnvironmentVipNotFoundError
 
+
+class DsrL3toVipSerializer(serializers.ModelSerializer):
+
+    id = serializers.Field()
+    requisicao_vip = serializers.PrimaryKeyRelatedField()
+    id_dsrl3 = serializers.Field()
+
+    class Meta:
+        model = DsrL3_to_Vip
+        fields = (
+            'id_dsrl3',
+            )
 
 class VipPortToPoolSerializer(serializers.ModelSerializer):
 
@@ -44,6 +56,11 @@ class RequestVipSerializer(serializers.ModelSerializer):
     )
 
     ipv6 = serializers.PrimaryKeyRelatedField(
+        many=False,
+        required=False
+    )
+
+    trafficreturn = serializers.PrimaryKeyRelatedField(
         many=False,
         required=False
     )
@@ -93,13 +110,11 @@ class RequestVipSerializer(serializers.ModelSerializer):
         required=True
     )
 
-    cliente = serializers.CharField(
-        required=True
-    )
-
     ambiente = serializers.CharField(
         required=True
     )
+
+    dsrl3id = DsrL3toVipSerializer()
 
     def validate(self, attrs):
         """
@@ -137,7 +152,7 @@ class RequestVipSerializer(serializers.ModelSerializer):
             'healthcheck_expect', 'rule', 'rule_applied',
             'rule_rollback', 'areanegocio', 'nome_servico',
             'host', 'vip_ports_to_pools', 'finalidade',
-            'cliente', 'ambiente'
+            'cliente', 'ambiente', 'trafficreturn'
         )
 
 
