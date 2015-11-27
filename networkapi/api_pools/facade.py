@@ -922,9 +922,17 @@ def update_real_pool(request):
     pools = request.DATA.get("pools", [])
     load_balance = {}
 
+    # valid data for save in DB and apply in eqpt
+    ps, sp = valid_to_save_reals_v2(pools)
+
     for pool in pools:
 
-        pools_members = []
+        ids = [p['id'] for p in pool['server_pool_members'] if p['id']]
+        db_members = ServerPoolMember.objects.filter(id__in=ids)
+        db_members_remove = ServerPoolMember.objects.filter(server_pool__id=pool['server_pool']['id']).exclude(id__in=ids)
+        db_members_id = [str(s.id) for s in db_members]
+
+        pools_members = list()
         for pool_member in pool['server_pool_members']:
 
             if not pool_member['ipv6']:
@@ -932,15 +940,63 @@ def update_real_pool(request):
             else:
                 ip = pool_member['ipv6']['ip_formated']
 
+            if pool_member['id']:
+                member = db_members[db_members_id.index(str(pool_member['id']))]
+                if not member.ipv6:
+                    ip_db = member.ip.ip_formated
+                else:
+                    ip_db = member.ipv6.ip_formated
+
+                if member.port_real == pool_member['port_real'] and ip_db == ip:
+                    pools_members.append({
+                        'id': pool_member['id'],
+                        'ip': ip,
+                        'port': pool_member['port_real'],
+                        'limit': pool_member['limit'],
+                        'priority': pool_member['priority'],
+                        'weight': pool_member['weight'],
+                    })
+                else:
+                    pools_members.append({
+                        'id': None,
+                        'ip': ip_db,
+                        'port': member.port_real,
+                        'remove': 1
+                    })
+                    pools_members.append({
+                        'id': pool_member['id'],
+                        'ip': ip,
+                        'port': pool_member['port_real'],
+                        'limit': pool_member['limit'],
+                        'priority': pool_member['priority'],
+                        'weight': pool_member['weight'],
+                        'new': 1
+                    })
+            else:
+                pools_members.append({
+                    'id': None,
+                    'ip': ip,
+                    'port': pool_member['port_real'],
+                    'limit': pool_member['limit'],
+                    'priority': pool_member['priority'],
+                    'weight': pool_member['weight'],
+                    'new': 1
+                })
+
+        #members to remove
+        for member in db_members_remove:
+            if not member.ipv6:
+                ip_db = member.ip.ip_formated
+            else:
+                ip_db = member.ipv6.ip_formated
             pools_members.append({
-                'id': pool_member['id'],
-                'ip': ip,
-                'port': pool_member['port_real'],
-                'limit': pool_member['limit'],
-                'priority': pool_member['priority'],
-                'weight': pool_member['weight'],
+                'id': member.id,
+                'ip': ip_db,
+                'port': member.port_real,
+                'remove': 1
             })
 
+        # get eqpts associate with pool
         equips = EquipamentoAmbiente.objects.filter(
             ambiente__id=pool['server_pool']['environment']['id'],
             equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
@@ -978,9 +1034,6 @@ def update_real_pool(request):
                 'pools_members': pools_members
             })
 
-    # valid data for save in DB and apply in eqpt
-    ps, sp = valid_to_save_reals_v2(pools)
-
     # get ids from pools created
     names = [sp[p].id for idx, p in enumerate(ps) if sp[p].pool_created]
     environments = [sp[p].id for idx, p in enumerate(ps) if sp[p].pool_created]
@@ -1017,7 +1070,6 @@ def update_real_pool(request):
 
         sp[idx].save()
 
-
     members_id = [p['id'] for p in pool['server_pool_members'] for pool in pools if p['id']]
     pms = ServerPoolMember.objects.filter(id__in=members_id)
     pms_delete = ServerPoolMember.objects.exclude(id__in=members_id).filter(server_pool__id__in=[pool['server_pool']['id'] for pool in pools])
@@ -1029,30 +1081,36 @@ def update_real_pool(request):
                 members[str(member['id'])] = member
 
     # update pool members
+
+    log.info(pools)
     for pm in pms:
-        if members.get(pm.id):
-            pm.port_real = members[pm.id]['port_real']
-            pm.priority = members[pm.id]['priority']
-            pm.weight = members[pm.id]['weight']
+        if members.get(str(pm.id)):
+            pm.port_real = members.get(str(pm.id))['port_real']
+            pm.priority = members.get(str(pm.id))['priority']
+            pm.weight = members.get(str(pm.id))['weight']
+            pm.limit = members.get(str(pm.id))['limit']
             pm.save()
 
     # delete pool members
     for pm in pms_delete:
         pm.delete()
 
-    #create new pool members
+    # create new pool members
     members = [p for p in pool['server_pool_members'] for pool in pools if not p['id']]
     for member in members:
         pm = ServerPoolMember()
+        pm.server_pool_id = member['server_pool']['id']
         pm.limit = member['limit']
-        pm.ip = member['ipv4']
-        pm.ipv6 = member['ipv6']
+        if member['ip']:
+            pm.ip_id = member['ip']['id']
+        if member['ipv6']:
+            pm.ipv6_id = member['ipv6']['id']
         pm.identifier = member['identifier']
         pm.weight = member['weight']
         pm.priority = member['priority']
-        pm.port = member['port_real']
+        pm.port_real = member['port_real']
 
-        pool_member.save()
+        pm.save()
 
     # Save reals
     #save_server_pool_member(request.user, sp, list_server_pool_member)
@@ -1067,6 +1125,16 @@ def valid_to_save_reals_v2(pools):
     """
 
     for pool in pools:
+
+        ids = [p['id'] for p in pool['server_pool_members'] if p['id']]
+        db_members = ServerPoolMember.objects.filter(id__in=ids)
+        db_members_id = [str(s.id) for s in db_members]
+
+        # verify if member is invalid
+        for member in pool['server_pool_members']:
+            if member['id']:
+                if str(member['id']) not in db_members_id:
+                    raise exceptions.InvalidRealPoolException()
 
         # verify if port is invalid
         invalid_ports_real = [member['port_real'] for member in pool['server_pool_members'] if int(member['port_real']) > 65535 or int(member['port_real']) < 1]
@@ -1124,20 +1192,24 @@ def valid_to_save_reals_v2(pools):
     for p in pls:
         sp[str(p.id)] = p
 
-        q_filters = list()
-        for members in pool['server_pool_members']:
-            q_filters.append({
-                'port_real': members['port_real'],
-                'id': members['id']
-            })
+        # q_filters = list()
+        # for members in pool['server_pool_members']:
+        #     if members['id']:
+        #         q_filters.append({
+        #             'port_real': members['port_real'],
+        #             'id': members['id']
+        #         })
 
-        members_par = ServerPoolMember.objects.filter(
-            reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]))
-        members_all = ServerPoolMember.objects.filter(server_pool__id=p.id)
+        # if len(q_filters)>0:
+        #     members_par = ServerPoolMember.objects.filter(
+        #         reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]))
+        # else:
+        #     members_par = list()
 
-        if len(members_par) != len(members_all) and p.pool_created:
-            raise exceptions.PoolMemberChange(p.identifier)
+        # members_all = ServerPoolMember.objects.filter(server_pool__id=p.id)
 
+        # if len(members_par) != len(members_all) and p.pool_created:
+        #     raise exceptions.PoolMemberChange(p.identifier)
 
     # return error when change names in pool created
     change_name = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].identifier != ps[str(p)]['server_pool']['identifier'] and sp[p].pool_created]
@@ -1145,9 +1217,10 @@ def valid_to_save_reals_v2(pools):
         raise exceptions.PoolNameChange(','.join(change_name))
 
     # return error when change environments in pool created
-    change_env = [sp[p].identifier for idx, p in enumerate(ps) if sp[p].environment.id != ps[str(p)]['server_pool']['environment']['id'] and sp[p].pool_created]
-    change_env_all = [sp[p].id for idx, p in enumerate(ps) if sp[p].environment.id != ps[str(p)]['server_pool']['environment']['id']]
+    change_env = [sp[p].identifier for idx, p in enumerate(ps) if str(sp[p].environment.id) != str(ps[str(p)]['server_pool']['environment']['id']) and sp[p].pool_created]
+    change_env_all = [sp[p].id for idx, p in enumerate(ps) if str(sp[p].environment.id) != str(ps[str(p)]['server_pool']['environment']['id'])]
     change_real = ServerPoolMember.objects.filter(server_pool_id__in=change_env_all)
+
     if len(change_env) > 0 or len(change_real) > 0:
         raise exceptions.PoolEnvironmentChange(','.join(change_env))
 

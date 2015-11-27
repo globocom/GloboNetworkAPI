@@ -19,7 +19,7 @@ import re
 import logging
 from django.template import Context, Template
 from networkapi.extra_logging import local, NO_REQUEST_ID
-from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
+from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG, LOCK_EQUIPMENT
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface, PortChannel
 from networkapi.util import is_valid_int_greater_zero_param
@@ -38,9 +38,9 @@ log = logging.getLogger(__name__)
 #def get(dictionary, key):
 #    return dictionary.get(key)
 
-def delete_channel(user, equip_id, interface_list, channel):
+def generate_delete_file(user, equip_id, interface_list, channel):
     try:
-        INTERFACE_CONFIG_TEMPLATE_PATH = get_variable("interface_config_template_path")
+        INTERFACE_CONFIG_FILES_PATH = get_variable("interface_config_files_path")
         TEMPLATE_REMOVE_CHANNEL = get_variable("template_remove_channel")
         TEMPLATE_REMOVE_INTERFACE = get_variable("template_remove_interface")
     except ObjectDoesNotExist:
@@ -50,8 +50,8 @@ def delete_channel(user, equip_id, interface_list, channel):
     config_to_be_saved = ""
     request_id = getattr(local, 'request_id', NO_REQUEST_ID)
     filename_out = "equip_"+str(equip_id) +"_channel_"+str(channel.id)+"_remove_"+str(request_id)
-    filename_to_save = INTERFACE_CONFIG_TEMPLATE_PATH+filename_out
-    rel_file_to_deploy = INTERFACE_CONFIG_TEMPLATE_PATH+filename_out
+    filename_to_save = INTERFACE_CONFIG_FILES_PATH+filename_out
+    rel_file_to_deploy = INTERFACE_CONFIG_FILES_PATH+filename_out
 
     key_dict['PORTCHANNEL_NAME'] = channel.nome
 
@@ -85,6 +85,23 @@ def delete_channel(user, equip_id, interface_list, channel):
         raise e
 
     return rel_file_to_deploy
+
+
+def delete_channel(user, equip_id, interface_list, channel):
+
+    file_to_deploy = generate_delete_file(user, equip_id, interface_list, channel)
+
+    #TODO Deploy config file
+    try:
+        lockvar = LOCK_EQUIPMENT % (equip_id)
+        status_deploy = deploy_config_in_equipment_synchronous(file_to_deploy, int(equip_id), lockvar)
+        log.info("Status: %s" % status_deploy)
+    except exceptions.InterfaceException, exception:
+        log.error(exception)
+        raise exceptions.InterfaceException(exception)
+
+
+    return status_deploy
 
 
 def generate_and_deploy_interface_config_sync(user, id_interface):

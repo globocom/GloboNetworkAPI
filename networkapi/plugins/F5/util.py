@@ -82,6 +82,8 @@ def _trataParam(pools):
         'pools_healthcheck': [],
         'pools_actions': [],
         'pools_members': {
+            'members_new': [],
+            'members_remove': [],
             'members': [],
             'monitor': [],
             'session': [],
@@ -112,6 +114,8 @@ def _trataParam(pools):
         member_priority = []
         member_weight = []
         member = []
+        member_new = []
+        member_remove = []
         for pool_member in p['pools_members']:
             if pool_member.get('member_status'):
                 status = getStatusName(
@@ -128,9 +132,21 @@ def _trataParam(pools):
             if pool_member.get('weight'):
                 member_weight.append(pool_member['weight'])
 
-            member.append({
-                'address': pool_member['ip'],
-                'port': pool_member['port']})
+            if not pool_member.get('remove'):
+                member.append({
+                    'address': pool_member['ip'],
+                    'port': pool_member['port']})
+
+            if pool_member.get('new'):
+                member_new.append({
+                    'address': pool_member['ip'],
+                    'port': pool_member['port']})
+
+            if pool_member.get('remove'):
+                member_remove.append({
+                    'address': pool_member['ip'],
+                    'port': pool_member['port']})
+
 
         pls['pools_members']['monitor'].append(member_status_monitor)
         pls['pools_members']['session'].append(member_status_session)
@@ -138,6 +154,8 @@ def _trataParam(pools):
         pls['pools_members']['priority'].append(member_priority)
         pls['pools_members']['weight'].append(member_weight)
         pls['pools_members']['members'].append(member)
+        pls['pools_members']['members_new'].append(member_new)
+        pls['pools_members']['members_remove'].append(member_remove)
 
     return pls
 

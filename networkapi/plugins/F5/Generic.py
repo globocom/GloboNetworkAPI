@@ -172,6 +172,17 @@ class Generic(BasePlugin):
                 actions=pls['pools_actions'])
 
             plm = poolmember.PoolMember(self._lb)
+            
+
+            if pls['pools_members']['members_remove']:
+                plm.remove(
+                    names=pls['pools_names'],
+                    members=pls['pools_members']['members_remove'])
+                
+            if pls['pools_members']['members_new']:
+                plm.create(
+                    names=pls['pools_names'],
+                    members=pls['pools_members']['members_new'])
 
             plm.setConnectionLimit(
                 names=pls['pools_names'],

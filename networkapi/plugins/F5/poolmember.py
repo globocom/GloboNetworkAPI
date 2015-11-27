@@ -97,18 +97,27 @@ class PoolMember(object):
             if v == []:
                 return
 
-        self._lb._channel.LocalLB.Pool.add_member_v2(
-            kwargs['names'],
-            kwargs['members'])
+        log.info(kwargs)
+        names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
+        members = [kwargs['members'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
+
+        if names:
+            self._lb._channel.LocalLB.Pool.add_member_v2(
+                pool_names=names,
+                members=members)
 
     def remove(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
                 return
 
-        self._lb._channel.LocalLB.Pool.remove_member_v2(
-            kwargs['names'],
-            kwargs['members'])
+        names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
+        members = [kwargs['members'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
+
+        if names:
+            self._lb._channel.LocalLB.Pool.remove_member_v2(
+                pool_names=names,
+                members=members)
 
     def __repr__(self):
         log.info('%s' % (self._lb))
