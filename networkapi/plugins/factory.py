@@ -22,50 +22,48 @@ import re
 
 log = logging.getLogger(__name__)
 
+
 class PluginFactory(object):
 
-	@classmethod
-	def plugin_exists(self, **kwargs):
+    @classmethod
+    def plugin_exists(self, **kwargs):
 
-		try:
-			self.get_plugin(kwargs)
-			return True
-		except NotImplementedError:
-			return False
+        try:
+            self.get_plugin(kwargs)
+            return True
+        except NotImplementedError:
+            return False
 
-	@classmethod
-	def get_plugin(self, **kwargs):
-		if 'modelo' in kwargs:
-			modelo = kwargs.get('modelo')
+    @classmethod
+    def get_plugin(self, **kwargs):
+        if 'modelo' in kwargs:
+            modelo = kwargs.get('modelo')
 
-			#TODO create a table in networkapi to specify wich plugin to load for 
-			#each equipment configuration
-			if re.search('NEXUS', modelo.upper(), re.DOTALL ):
-				from .Cisco.NXOS.plugin import NXOS
-				return NXOS
-			if re.search('WS-|C65', modelo.upper(), re.DOTALL ):
-				from .Cisco.IOS.plugin import IOS
-				return IOS
+            # TODO create a table in networkapi to specify wich plugin to load for
+            # each equipment configuration
+            if re.search('NEXUS', modelo.upper(), re.DOTALL):
+                from .Cisco.NXOS.plugin import NXOS
+                return NXOS
+            if re.search('WS-|C65', modelo.upper(), re.DOTALL):
+                from .Cisco.IOS.plugin import IOS
+                return IOS
 
-		if 'marca' in kwargs:
-			marca = kwargs.get('marca')
-			if re.search('HUAWEI', marca.upper(), re.DOTALL ):
-				from .Huawei import Generic
-				return Generic
-			if re.search('F5', marca.upper(), re.DOTALL ):
-				from .F5.Generic import Generic
-				return Generic
+        if 'marca' in kwargs:
+            marca = kwargs.get('marca')
+            if re.search('HUAWEI', marca.upper(), re.DOTALL):
+                from .Huawei import Generic
+                return Generic
+            if re.search('F5', marca.upper(), re.DOTALL):
+                from .F5.Generic import Generic
+                return Generic
 
-		raise NotImplementedError()
+        raise NotImplementedError()
 
-	@classmethod
-	def factory(self, equipment):
+    @classmethod
+    def factory(self, equipment):
 
-		marca = equipment.modelo.marca.nome
-		modelo = equipment.modelo.nome
-		plugin_name = self.get_plugin(modelo = modelo, marca = marca)
-	
-		return plugin_name(equipment = equipment)
+        marca = equipment.modelo.marca.nome
+        modelo = equipment.modelo.nome
+        plugin_name = self.get_plugin(modelo=modelo, marca=marca)
 
-
-
+        return plugin_name(equipment=equipment)

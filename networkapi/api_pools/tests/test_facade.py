@@ -270,7 +270,7 @@ class PoolFacadeTestCase(unittest.TestCase):
             prepare_to_save_reals([''], [], [], priorities, [], [1], [])
             self.fail()
         except InvalidRealPoolException, e:
-            self.assertEquals("O valor da Prioridade deve estar entre 0 e 4294967295.", e.detail)
+            self.assertEquals("Parametros invalidos do real: <<O valor da Prioridade deve estar entre 0 e 4294967295.>>", e.detail)
 
     def test_prepare_to_save_reals_given_invalid_port(self):
         priorities = [1]
@@ -279,7 +279,7 @@ class PoolFacadeTestCase(unittest.TestCase):
             prepare_to_save_reals([''], ports, [], priorities, [], [1], [])
             self.fail()
         except InvalidRealPoolException, e:
-            self.assertEquals("O número da porta deve estar entre 1 e 65535.", e.detail)
+            self.assertEquals("Parametros invalidos do real: <<O número da porta deve estar entre 1 e 65535.>>", e.detail)
 
     def test_prepare_to_save_reals_given_port_count_differs_from_equipment_count(self):
         priorities = [1, 1]
@@ -290,7 +290,7 @@ class PoolFacadeTestCase(unittest.TestCase):
             prepare_to_save_reals([], ports, [], priorities, [], pool_member_ids, id_equips)
             self.fail()
         except InvalidRealPoolException, e:
-            self.assertEquals("Quantidade de portas e equipamento difere.", e.detail)
+            self.assertEquals("Parametros invalidos do real: <<Quantidade de portas e equipamento difere.>>", e.detail)
 
     def test_prepare_to_save_reals_given_different_ips_with_matching_ports(self):
         priorities = [1, 1]
@@ -302,7 +302,7 @@ class PoolFacadeTestCase(unittest.TestCase):
             prepare_to_save_reals(ips, ports, [], priorities, [], pool_member_ids, id_equips)
             self.fail()
         except InvalidRealPoolException, e:
-            self.assertEquals("Ips com portas iguais.", e.detail)
+            self.assertEquals("Parametros invalidos do real: <<Ips com portas iguais.>>", e.detail)
 
     def test_prepare_to_save_reals_given_valid_parameter_combination(self):
         priorities = [1, 1]

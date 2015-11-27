@@ -120,15 +120,15 @@ def delete(request):
             """ if vip has DSRl3 """
             #traffic=OptionVip.objects.filter(nome_opcao_txt='DSRL3')
             #traffic.id should be equal 48
-            if vrequest.trafficreturn.id == 48:
-                try:
-                    dsrl3= DsrL3_to_Vip.get_by_vip_id(ids)
-                    dsrl3.delete(request.user)
-                except RequisicaoVipsMissingDSRL3idError, e:
-                    log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
-                    raise RequisicaoVipsMissingDSRL3idError(
-                            e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % ids)
-            vrequest.delete(request.user)
+            # if vrequest.trafficreturn.id == 48:
+            #     try:
+            #         dsrl3= DsrL3_to_Vip.get_by_vip_id(ids)
+            #         dsrl3.delete(request.user)
+            #     except RequisicaoVipsMissingDSRL3idError, e:
+            #         log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
+            #         raise RequisicaoVipsMissingDSRL3idError(
+            #                 e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % ids)
+            vrequest.remove(request.user, vrequest.id)
 
     except Exception, exception:
         log.error(exception)

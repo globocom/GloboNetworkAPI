@@ -306,6 +306,13 @@ def ambiente_prod(user, rack, environment_list):
 
     ranges=dict()
     hosts=dict()
+    vlans=dict()
+
+    try:
+        base_vlan = int(get_variable("num_vlan_acl_be"))
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável  NUM_VLAN_ACL_BE")
+
     hosts['TIPO']= "Rede invalida equipamentos"
     ipv6['TIPO']= "Rede invalida equipamentos"
 
@@ -337,6 +344,11 @@ def ambiente_prod(user, rack, environment_list):
         ipv6['REDE']=ipv6.get(rede)
         ipv6['VERSION']="ipv6"
         config_ambiente(user, ipv6, ambientes)
+
+        vlans['VLAN_NUM'] = base_vlan
+        base_vlan += 1
+        vlans['VLAN_NAME'] = "ACL_"+divisaodc+"_"+ambientes.get('L3')
+        criar_vlan(user, vlans, ambientes, 1)
 
     return environment_list
 
@@ -407,6 +419,15 @@ def ambiente_prod_fe(user, rack, environment_list):
     ipv6['VERSION']="ipv6"
     config_ambiente(user, ipv6, ambientes)
 
+    vlans=dict()
+    try:
+        vlans['VLAN_NUM'] = int(get_variable("num_vlan_acl_fe"))
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável  NUM_VLAN_ACL_FE")
+
+    vlans['VLAN_NAME'] = "ACL_"+ambientes.get('DC')+"_"+ambientes.get('L3')
+    criar_vlan(user, vlans, ambientes, 1)
+
     return environment_list
 
 def ambiente_borda(user,rack, environment_list):
@@ -415,14 +436,23 @@ def ambiente_borda(user,rack, environment_list):
     ranges['MAX']=None
     ranges['MIN']=None
     ranges_vlans = dict()
-    ranges_vlans['BORDA_DSR_VLAN_MIN']= 366
-    ranges_vlans['BORDA_DSR_VLAN_MAX']= 381
-    ranges_vlans['BORDA_DMZ_VLAN_MIN']= 382
-    ranges_vlans['BORDA_DMZ_VLAN_MAX']= 400
-    ranges_vlans['BORDACACHOS_VLAN_MIN']= 401
-    ranges_vlans['BORDACACHOS_VLAN_MAX']= 410
 
-    ambientes=dict()   
+    try:
+        ranges_vlans['BORDA_DSR_VLAN_MIN'] = int(get_variable("borda_dsr_vlan_min"))
+        ranges_vlans['BORDA_DSR_VLAN_MAX'] = int(get_variable("borda_dsr_vlan_max"))
+        ranges_vlans['BORDA_DMZ_VLAN_MIN'] = int(get_variable("borda_dmz_vlan_min"))
+        ranges_vlans['BORDA_DMZ_VLAN_MAX'] = int(get_variable("borda_dmz_vlan_max"))
+        ranges_vlans['BORDACACHOS_VLAN_MIN'] = int(get_variable("bordacachos_vlan_min"))
+        ranges_vlans['BORDACACHOS_VLAN_MAX'] = int(get_variable("bordacachos_vlan_max"))
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis BORDA<DSR,DMZ,CACHOS>_VLAN_<MAX,MIN>.")
+    try:
+        base_vlan = int(get_variable("num_vlan_acl_bordadsr"))
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável  NUM_VLAN_ACL_BORDADSR")
+
+    ambientes=dict()
+    vlans = dict()
     ambientes['LOG'] = "PRODUCAO"
     ambientes['L3']= rack.nome
     divisao_aclpaths = [['BORDA_DSR','BORDA-DSR', 'BordaVrf'],['BORDA_DMZ','BORDA-DMZ', 'BordaVrf'],['BORDACACHOS','BORDACACHOS', 'BordaCachosVrf']]
@@ -440,6 +470,11 @@ def ambiente_borda(user,rack, environment_list):
         ambientes['DC']= divisaodc
         env = criar_ambiente(user, ambientes,ranges, acl_path, "Servidores", vrf)
         environment_list.append(env)
+
+        vlans['VLAN_NUM'] = base_vlan
+        base_vlan += 1
+        vlans['VLAN_NAME'] = "ACL_"+divisaodc+"_"+ambientes.get('L3')
+        criar_vlan(user, vlans, ambientes, 1)
 
     return environment_list
 
@@ -548,6 +583,8 @@ class RackAplicarConfigResource(RestResource):
             #BE - PRODUCAO
             try:
                 environment_list = ambiente_prod(user, rack, environment_list)
+            except ObjectDoesNotExist, e:
+                raise var_exceptions.VariableDoesNotExistException(e)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de produção.")
 
@@ -560,12 +597,16 @@ class RackAplicarConfigResource(RestResource):
             #FE
             try:
                 environment_list = ambiente_prod_fe(user, rack, environment_list)
+            except ObjectDoesNotExist, e:
+                raise var_exceptions.VariableDoesNotExistException(e)
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de FE.")
 
             #Borda
             try:
                 environment_list = ambiente_borda(user, rack, environment_list)
+            except ObjectDoesNotExist:
+                raise var_exceptions.VariableDoesNotExistException()
             except:
                 raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de Borda.")
 
@@ -583,21 +624,18 @@ class RackAplicarConfigResource(RestResource):
 
             return self.response(dumps_networkapi(map))
 
-        except RackConfigError, e:
-            return self.response_error(382, e.param, e.value)
-
-        except RackAplError, e:
-            return self.response_error(383, e.param, e.value)
-
-        except UserNotAuthorizedError:
-            return self.not_authorized()
-
-        except RackNumberNotFoundError:
-            return self.response_error(379, rack_id)
-
-        except RackError:
-            return self.response_error(383)
-
         except ObjectDoesNotExist, exception:
             self.log.error(exception)
             raise var_exceptions.VariableDoesNotExistException()
+        except RackConfigError, e:
+            return self.response_error(382, e.param, e.value)
+        except RackAplError, e:
+            return self.response_error(383, e.param, e.value)
+        except UserNotAuthorizedError:
+            return self.not_authorized()
+        except RackNumberNotFoundError:
+            return self.response_error(379, rack_id)
+        except RackError:
+            return self.response_error(383)
+
+

@@ -2356,9 +2356,13 @@ class DsrL3_to_Vip(BaseModel):
 
     def get_dsrl3(self, id_vip, user):
 
-        id=0
+
+        id=4
         while 1:
-            if DsrL3_to_Vip.objects.filter(id_dsrl3=id)==None: break
+            try:
+                DsrL3_to_Vip.objects.get(id_dsrl3=id)
+            except ObjectDoesNotExist, e:
+                break
             id=id+4
 
         self.prepare_and_save(id,id_vip, user)

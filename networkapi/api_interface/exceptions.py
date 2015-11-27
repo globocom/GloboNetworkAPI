@@ -36,3 +36,7 @@ class InvalidKeyException(APIException):
 class InterfaceTemplateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No template or multiple templates found for interface configuration.'
+
+class InterfaceException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Error: .'

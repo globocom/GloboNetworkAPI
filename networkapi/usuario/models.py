@@ -22,7 +22,9 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import logging
 from networkapi.models.BaseModel import BaseModel
 from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
-
+from networkapi.system.facade import get_value
+import ldap
+from networkapi.system import exceptions
 
 class UsuarioError(Exception):
 
@@ -177,9 +179,40 @@ class Usuario(BaseModel):
 
         Retorna apenas usuário ativo.
         '''
+        bypass = 0
         try:
-            password = Usuario.encode_password(password)
-            return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
+            try:
+                use_ldap = get_value('use_ldap')
+                if use_ldap:
+                    ldap_param = get_value('ldap_config')
+                    ldap_server = get_value('ldap_server')
+                    return_user = self.get_by_ldap_user(username, True)
+                else:
+                    bypass = 1
+            except exceptions.VariableDoesNotExistException, e:
+                self.log.error("Error getting LDAP config variables (use_ldap). Trying local authentication")
+                bypass = 1
+            except UsuarioNotFoundError, e:
+                self.log.error("Using local authentication for user \'%s\'" % username)
+                bypass = 1
+
+            #local auth
+            if bypass:
+                password = Usuario.encode_password(password)
+                return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
+
+            #ldap auth
+            try:
+                connect = ldap.open(ldap_server)
+                user_dn = "cn="+username+","+ldap_param
+                connect.simple_bind_s(user_dn, password)
+                return return_user
+            except ldap.INVALID_CREDENTIALS, e:
+                self.log.error('LDAP authentication error %s' % e)
+            except exceptions.VariableDoesNotExistException, e:
+                self.log.error("Error getting LDAP config variables (ldap_server, ldap_param).")
+            
+
         except ObjectDoesNotExist:
             self.log.error(u'Usuário não autenticado ou inativo: %s', username)
         except MultipleObjectsReturned:

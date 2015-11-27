@@ -1,7 +1,12 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
 
-ALTER TABLE `requisicao_vips` ADD COLUMN `id_traffic_return` INT(11) DEFAULT 12;
+ALTER TABLE `requisicao_vips` ADD COLUMN `id_traffic_return` INT(10) UNSIGNED DEFAULT 12;
+  
+ALTER TABLE `requisicao_vips`
+ADD CONSTRAINT `fk_id_traffic_return`
+FOREIGN KEY (`id_traffic_return`) REFERENCES `opcoesvip` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 INSERT INTO opcoesvip (tipo_opcao,nome_opcao_txt) values ('Retorno de trafego', 'DSRL3');
 
 DROP TABLE IF EXISTS `dsrl3_to_vip`;
@@ -18,7 +23,8 @@ CREATE TABLE `dsrl3_to_vip` (
 
 SQL_DOWN = u"""
 
-ALTER TABLE `requisicao_vips` DROP COLUMN `id_traffic_return` INT(11) DEFAULT 12;
+ALTER TABLE requisicao_vips DROP FOREIGN KEY fk_id_traffic_return;
+ALTER TABLE `requisicao_vips` DROP COLUMN `id_traffic_return`;
 DROP TABLE `dsrl3_to_vip`;
 DELETE FROM opcoesvip where tipo_opcao='Retorno de trafego' and nome_opcao_txt = 'DSRL3'
 """
