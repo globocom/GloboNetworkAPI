@@ -42,9 +42,9 @@ def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, 
     elif not var.channel.id==port_channel.id:
         raise InterfaceError("Interface %s já está em um Channel" % var.interface)
 
-    for i in interface.search(var.equipamento.id):
-        if i.channel is not None and not i.channel.id==port_channel.id:
-            raise InterfaceError("Equipamento %s já possui um Channel" % var.equipamento.nome)
+    # for i in interface.search(var.equipamento.id):
+    #     if i.channel is not None and not i.channel.id==port_channel.id:
+    #         raise InterfaceError("Equipamento %s já possui um Channel" % var.equipamento.nome)
 
     if cont is []:
         cont.append(int(var.equipamento.id))
