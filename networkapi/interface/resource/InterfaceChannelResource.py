@@ -74,7 +74,6 @@ def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, 
                 amb_int.ambiente = amb.get_by_pk(int(envs))
                 amb_int.create(user)
 
-
 class InterfaceChannelResource(RestResource):
 
     log = logging.getLogger('InterfaceChannelResource')
@@ -366,7 +365,7 @@ class InterfaceChannelResource(RestResource):
             id_channel = channel_map.get('id_channel')
             nome = channel_map.get('nome')
             if not is_valid_int_greater_zero_param(nome):
-                raise InvalidValueError(None, "Numero do Channel", "Variavel deve ser um numero inteiro.")
+                raise InvalidValueError(None, "Numero do Channel", "Deve ser um numero inteiro.")
             lacp = channel_map.get('lacp')
             int_type = channel_map.get('int_type')
             vlan = channel_map.get('vlan')
@@ -386,13 +385,12 @@ class InterfaceChannelResource(RestResource):
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
-            cont = []
 
             channels = PortChannel.objects.filter(nome=nome)
             channels_id = []
             for ch in channels:
                 channels_id.append(int(ch.id))
-            if channels_id:
+            if len(channels_id)>1:
                 if type(ids_interface) is list:
                     for var in ids_interface:
                         if not var=="" and not var==None:
@@ -403,10 +401,15 @@ class InterfaceChannelResource(RestResource):
                 equip_id = interface_id.equipamento.id
                 equip_interfaces = interface.search(equip_id)
                 for i in equip_interfaces:
-                    sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
-                    if sw.channel is not None:
-                        if sw.channel.id in channels_id:
-                            raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
+                    try:
+                        sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    except:
+                        sw = None
+                        pass
+                    if sw is not None:
+                        if sw.channel is not None:
+                            if sw.channel.id in channels_id and sw.channel.id is not id_channel:
+                                raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
 
             #buscar interfaces do channel
             interfaces = Interface.objects.all().filter(channel__id=id_channel)
@@ -447,35 +450,11 @@ class InterfaceChannelResource(RestResource):
             int_type = TipoInterface.get_by_name(str(int_type))
 
             #update interfaces
-            if type(ids_interface) is list:
-                for var in ids_interface:
-                    alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
-                    interface = Interface()
-                    server_obj = Interface()
-                    interface_sw = interface.get_by_pk(int(var))
-                    interface_server = server_obj.get_by_pk(interface_sw.ligacao_front.id)
-                    try:
-                        front = interface_server.ligacao_front.id
-                    except:
-                        front = None
-                        pass
-                    try:
-                        back = interface_server.ligacao_back.id
-                    except:
-                        back = None
-                        pass
-                    server_obj.update(user,
-                                      interface_server.id,
-                                      interface=interface_server.interface,
-                                      protegida=interface_server.protegida,
-                                      descricao=interface_server.descricao,
-                                      ligacao_front_id=front,
-                                      ligacao_back_id=back,
-                                      tipo=int_type,
-                                      vlan_nativa=int(vlan))
-
-            else:
-                var = ids_interface
+            if type(ids_interface) is not list:
+                i = ids_interface
+                ids_interface = []
+                ids_interface.append(i)
+            for var in ids_interface:
                 alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
                 interface = Interface()
                 server_obj = Interface()
@@ -500,7 +479,6 @@ class InterfaceChannelResource(RestResource):
                                   ligacao_back_id=back,
                                   tipo=int_type,
                                   vlan_nativa=int(vlan))
-
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel
