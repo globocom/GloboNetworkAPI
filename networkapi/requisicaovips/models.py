@@ -2356,6 +2356,7 @@ class DsrL3_to_Vip(BaseModel):
 
     def get_dsrl3(self, id_vip, user):
 
+
         id=4
         while 1:
             try:

@@ -26,7 +26,8 @@ from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.exception import InvalidValueError
 from networkapi.requisicaovips.models import RequisicaoVips,\
-    RequisicaoVipsNotFoundError, ServerPool, InvalidHealthcheckValueError
+    RequisicaoVipsNotFoundError, ServerPool, InvalidHealthcheckValueError, DsrL3_to_Vip
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class RequestVipGetByIdResource(RestResource):
@@ -81,6 +82,11 @@ class RequestVipGetByIdResource(RestResource):
             vip_map['vip_criado'] = vip.vip_criado
             vip_map['rule_id'] = vip.rule_id
             vip_map['trafficreturn']=vip.trafficreturn.nome_opcao_txt if vip.trafficreturn else ''
+            try:
+                dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(vip.id)
+                vip_map['dsrl3'] = dsrl3_to_vip_obj.id_dsrl3
+            except ObjectDoesNotExist, e:
+                pass
 
 
             #Maxcon, lbmethod e hc
