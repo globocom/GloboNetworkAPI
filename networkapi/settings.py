@@ -428,9 +428,10 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 #       QUEUE SETTINGS
 ##################################
 
-BROKER_CONNECT_TIMEOUT=os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT','2')
+BROKER_CONNECT_TIMEOUT=os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
+BROKER_DESTINATION=os.getenv('NETWORKAPI_BROKER_DESTINATION', "/topic/networkapi_queue")
 BROKER_URI=os.getenv('NETWORKAPI_BROKER_URI',u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e")
-BROKER_DESTINATION="/topic/networkapi_queue"
+
 
 ###################################
 #    PATH ACLS
