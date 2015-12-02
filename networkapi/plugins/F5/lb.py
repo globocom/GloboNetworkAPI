@@ -23,9 +23,9 @@ class Lb(object):
             logging.critical("Unable to connect to BIG-IP. Details: %s" % (e))
             raise base_exceptions.CommandErrorException(e)
         else:
-            self._version = self._channel.System.SystemInfo.get_version()
-            if not 'BIG-IP_v11' in self._version:
+            self._version = self._channel.System.SystemInfo.get_version()            
+            if self._version[8:len(self._version)].split('.')[0] <= 10:
                 raise base_exceptions.UnsupportedVersion(
-                    'This plugin only supports BIG-IP v11')
+                    'This plugin only supports BIG-IP v11 or above')
             else:
                 self._channel = self._channel.with_session_id()
