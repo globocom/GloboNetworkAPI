@@ -282,7 +282,9 @@ def networkIPv4_deploy(request, network_id):
 
     networkipv4 = NetworkIPv4.get_by_pk(int(network_id))
     environment = networkipv4.vlan.ambiente
-    equipments_id_list = request.DATA.get("equipments", None)
+    equipments_id_list = None
+    if request.DATA is not None:
+        equipments_id_list = request.DATA.get("equipments", None)
 
     equipment_list = []
     
@@ -401,7 +403,9 @@ def networkIPv6_deploy(request, network_id):
 
     networkipv6 = NetworkIPv6.get_by_pk(int(network_id))
     environment = networkipv6.vlan.ambiente
-    equipments_id_list = request.DATA.get("equipments", None)
+    equipments_id_list = None
+    if request.DATA is not None:
+        equipments_id_list = request.DATA.get("equipments", None)
 
     equipment_list = []
     
