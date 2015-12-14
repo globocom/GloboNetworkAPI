@@ -193,7 +193,7 @@ class Usuario(BaseModel):
                 self.log.error("Error getting LDAP config variables (use_ldap). Trying local authentication")
                 bypass = 1
             except UsuarioNotFoundError, e:
-                self.log.error("Using local authentication for user \'%s\'" % username)
+                self.log.debug("Using local authentication for user \'%s\'" % username)
                 bypass = 1
 
             #local auth
