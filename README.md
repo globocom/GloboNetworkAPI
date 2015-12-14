@@ -9,7 +9,7 @@ Globo NetworkAPI is made to support a Web User Interface features, exposing its 
 
 This web tool helps network administrator manage and automate networking resources (routers, switches and load balancers) and document logical and physical networking.
 
-They were created to be vendor agnostic and to support different orquestrators and environments without loosing the centralized view of all network resources allocated.
+They were created to be vendor agnostic and to support different orchestrators and environments without loosing the centralized view of all network resources allocated.
 
 It was not created to be and inventory database, so it does not have CMDB functionalities.
 
