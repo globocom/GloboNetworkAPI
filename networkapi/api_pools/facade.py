@@ -617,7 +617,7 @@ def set_poolmember_state(pools):
                 })
 
             server_pool_members = ServerPoolMember.objects.filter(
-                reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]))
+                reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]), server_pool=pool['server_pool']['id'])
             if len(server_pool_members) != len(pools_members):
                 raise exceptions.PoolmemberNotExist()
 
