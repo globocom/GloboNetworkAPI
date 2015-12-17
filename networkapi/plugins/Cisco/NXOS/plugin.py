@@ -31,6 +31,7 @@ class NXOS(BasePlugin):
 	admin_privileges = -1
 	management_vrf = 'management'
 	VALID_TFTP_GET_MESSAGE = 'Copy complete.|Copy complete, now saving to disk'
+    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|utility is occupied'
 
 	def create_svi(self, svi_number, svi_description='no description'):
 		'''
@@ -68,7 +69,7 @@ class NXOS(BasePlugin):
 		recv = self.waitString(">|#")
 		self.channel.send("show privilege\n")
 		recv = self.waitString("Current privilege level:")
-		level = re.search('Current privilege level: (-[0-9]+?).*', recv, re.DOTALL ).group(1)
+		level = re.search('Current privilege level: (-?[0-9]+?).*', recv, re.DOTALL ).group(1)
 
 		level = (level.split(' '))[-1]
 		if int(level) < privilege_level:
