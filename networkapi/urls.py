@@ -40,6 +40,7 @@ urlpatterns = patterns('',
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.system.urls')),
+    url(api_prefix, include('networkapi.api_equipment.urls')),
 
     #app healthchecks
     url(r'^check$', CheckAction().check, name='check'),
