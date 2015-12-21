@@ -153,7 +153,7 @@ class VlanAllocateResource(RestResource):
 
             #select all environments from the equips that were not filtered
             locks_list = list()
-            environments_list = Ambiente.objects.filter(equipamentoambiente__equipamento__in=filtered_environment_equips).distinct()
+            environments_list = Ambiente.objects.filter(equipamentoambiente__equipamento__in=filtered_environment_equips).distinct().order_by('id')
             for environment in environments_list:
                 lock = distributedlock(LOCK_ENVIRONMENT % environment.id)
                 lock.__enter__()
