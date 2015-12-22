@@ -46,7 +46,7 @@ from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvi
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, \
-    is_valid_healthcheck_destination
+    is_valid_healthcheck_destination, is_valid_pool_identifier_text
 import logging
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.api_pools import exceptions
@@ -971,6 +971,10 @@ def save(request):
             log.warning("Multiple service-down-action entries found for the given parameters")
             raise exceptions.InvalidServiceDownActionException()
 
+        # Check identifier is a valid text
+        if not is_valid_pool_identifier_text(identifier):
+            raise exceptions.InvalidIdentifierPoolException()
+
         # Valid duplicate server pool
         has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
         # Cleans id_pool_member. It should be used only with existing pool
@@ -987,8 +991,8 @@ def save(request):
             raise exceptions.InvalidIdentifierAlreadyPoolException()
 
         # Valid fist caracter is not is number
-        if identifier[0].isdigit():
-            raise exceptions.InvalidIdentifierFistDigitPoolException()
+        #if identifier[0].isdigit():
+        #    raise exceptions.InvalidIdentifierFistDigitPoolException()
 
         healthcheck_identifier = ''
         if healthcheck_destination is None:
