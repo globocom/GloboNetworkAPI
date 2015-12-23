@@ -1060,7 +1060,8 @@ def save(request):
             exceptions.ScriptCreatePoolException,
             exceptions.ScriptAlterPriorityPoolMembersException,
             exceptions.InvalidRealPoolException,
-            exceptions.ScriptAlterServiceDownActionException)as exception:
+            exceptions.ScriptAlterServiceDownActionException,
+            exceptions.InvalidIdentifierPoolException)as exception:
         log.exception(exception)
         raise exception
 
