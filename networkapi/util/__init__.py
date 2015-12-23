@@ -303,7 +303,7 @@ def is_valid_pool_identifier_text(param, required=True):
     elif required == False and (param == None or param == ''):
         return True
 
-    pattern = r"^[a-zA-Z]+[a-zA-Z0-9_-]*$"
+    pattern = r"^[a-zA-Z]+[a-zA-Z0-9\._-]*$"
     return re.match(pattern, param)
 
 def is_valid_option(param):
