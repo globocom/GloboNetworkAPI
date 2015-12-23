@@ -37,6 +37,10 @@ class InterfaceTemplateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No template or multiple templates found for interface configuration.'
 
+class InterfaceTrunkAllowedVlanException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'There is no vlan range specified to configure interface in dot1q mode.'
+
 class InterfaceException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Error: .'
