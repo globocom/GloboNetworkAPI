@@ -288,6 +288,23 @@ def is_valid_text(param, required=True):
     pattern = r"^[a-zA-Z0-9\\-_\\\-\\ ]*$"
     return re.match(pattern, param)
 
+def is_valid_pool_identifier_text(param, required=True):
+    '''Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
+
+    @param param: Value to be validated.
+    @param required: Check if the value can be None
+
+    @return True if the parameter has a valid text value, or False otherwise.
+
+    '''
+    if required == True and param == None:
+        return False
+
+    elif required == False and (param == None or param == ''):
+        return True
+
+    pattern = r"^[a-zA-Z]+[a-zA-Z0-9\._-]*$"
+    return re.match(pattern, param)
 
 def is_valid_option(param):
     '''Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z] and special characters hyphen, underline and point.

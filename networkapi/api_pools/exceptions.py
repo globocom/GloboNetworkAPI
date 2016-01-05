@@ -36,6 +36,9 @@ class InvalidIdentifierAlreadyPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Identifier already exists.'
 
+class InvalidIdentifierPoolException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool identifier is invalid. Pool identifier must match "^[a-zA-Z]+[a-zA-Z0-9\._-]*$".'
 
 class InvalidIdentifierFistDigitPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

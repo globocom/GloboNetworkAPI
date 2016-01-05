@@ -45,6 +45,7 @@ class EnvironmentGetByEquipResource(RestResource):
             # Commons Validations
 
             # User permission
+
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
@@ -70,8 +71,9 @@ class EnvironmentGetByEquipResource(RestResource):
                 env_map["is_router"] = environment.is_router
 
                 try:
-                    if not environment.min_num_vlan_1==None and not environment.max_num_vlan_1==None:
-                        env_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_1)
+                    env_map['range'] = str(env.min_num_vlan_1) + " - " + str(env.max_num_vlan_1)
+                    if env.min_num_vlan_1 != env.min_num_vlan_2:
+                        env_map['range'] = env_map['range'] + "; " + str(env.min_num_vlan_2) + " - " + str(env.max_num_vlan_2)
                 except:
                     env_map['range'] = "Nao definido"
 

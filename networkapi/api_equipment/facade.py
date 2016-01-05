@@ -16,6 +16,8 @@
 # limitations under the License.
 
 import logging
+from networkapi.equipamento.models import EquipamentoAmbiente
+
 
 log = logging.getLogger(__name__)
 
@@ -26,3 +28,18 @@ def all_equipments_are_in_maintenance(equipment_list):
 		all_equips_in_maintenance &= equipment.maintenance
 
 	return all_equips_in_maintenance
+
+
+def get_routers_by_environment(environment_id):
+	return EquipamentoAmbiente.objects.select_related('equipamento').filter(ambiente=environment_id, is_router=True)
+
+def get_equipment_map(equipment):
+
+	equipment_map = dict()
+	equipment_map['id'] = equipment.id
+	equipment_map['nome'] = equipment.nome
+	equipment_map['tipo_equipamento'] = equipment.tipo_equipamento.tipo_equipamento
+	equipment_map['modelo'] = equipment.modelo.nome
+	equipment_map['maintenance'] = equipment.maintenance
+
+	return equipment_map

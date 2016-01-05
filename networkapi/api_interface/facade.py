@@ -300,5 +300,8 @@ def get_vlan_range(interface):
         elif vlan_range_temp not in vlan_range:
             vlan_range += ","+vlan_range_temp
 
+    if vlan_range == "":
+        raise exceptions.InterfaceTrunkAllowedVlanException()
+
     return vlan_range
 
