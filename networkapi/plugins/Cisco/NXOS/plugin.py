@@ -31,7 +31,7 @@ class NXOS(BasePlugin):
 	admin_privileges = -1
 	management_vrf = 'management'
 	VALID_TFTP_GET_MESSAGE = 'Copy complete.|Copy complete, now saving to disk'
-    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|utility is occupied'
+	ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|utility is occupied'
 
 	def create_svi(self, svi_number, svi_description='no description'):
 		'''
