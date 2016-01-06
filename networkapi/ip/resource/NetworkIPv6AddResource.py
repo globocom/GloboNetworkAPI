@@ -157,13 +157,16 @@ class NetworkIPv6AddResource(RestResource):
             # Network Type
 
             # Valid network_type ID
+            """
             if not is_valid_int_greater_zero_param(network_type):
                 self.log.error(
                     u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
                 raise InvalidValueError(None, 'id_tipo_rede', network_type)
-
+            """
             # Find network_type by ID to check if it exist
-            net = TipoRede.get_by_pk(network_type)
+            net = None
+            if network_type:
+                net = TipoRede.get_by_pk(network_type)
 
             # Environment Vip
 
@@ -225,6 +228,7 @@ class NetworkIPv6AddResource(RestResource):
 
                     if multiple_ips:
                         router_ip = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'], True)
+                        router_ip = str(router_ip).split(':')
                         ipv6_model2 = Ipv6()
                         ipv6_model2.block1 = router_ip[0]
                         ipv6_model2.block2 = router_ip[1]

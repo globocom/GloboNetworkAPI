@@ -148,13 +148,16 @@ class NetworkIPv4AddResource(RestResource):
             # Network Type
 
             # Valid network_type ID
+            """
             if not is_valid_int_greater_zero_param(network_type):
                 self.log.error(
                     u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
                 raise InvalidValueError(None, 'id_tipo_rede', network_type)
-
+            """
             # Find network_type by ID to check if it exist
-            net = TipoRede.get_by_pk(network_type)
+            net = None
+            if network_type:
+                net = TipoRede.get_by_pk(network_type)
 
             # Environment Vip
 
