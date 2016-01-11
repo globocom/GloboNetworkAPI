@@ -3,3 +3,6 @@ SQL_UP = u"""
 ALTER TABLE interfaces DROP COLUMN `vlans`;
 """
 
+SQL_DOWN = u"""
+
+"""
