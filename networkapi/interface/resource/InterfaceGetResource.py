@@ -21,7 +21,7 @@ from networkapi.auth import has_perm
 from networkapi.equipamento.models import EquipamentoError, Equipamento
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
-from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError
+from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, EnvironmentInterface
 import logging
 from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
@@ -46,6 +46,12 @@ def get_new_interface_map(interface):
         int_map['lacp'] = interface.channel.lacp
         int_map['id_channel'] = interface.channel.id
         int_map['sw_router'] = True
+        try:
+            vlans = EnvironmentInterface.objects.filter(interface=interface.id).uniqueResult()
+            int_map['vlans'] = vlans.vlans
+        except:
+            int_map['vlans'] = None
+            pass
     elif interface.ligacao_front is not None:
         try:
             sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
