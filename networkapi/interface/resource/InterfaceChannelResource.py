@@ -31,7 +31,7 @@ from networkapi.api_interface import exceptions as api_interface_exceptions
 from networkapi.system import exceptions as var_exceptions
 
 
-def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb):
+def alterar_interface(var, interface, port_channel, int_type, vlans, user, envs, amb):
 
     cont = []
 
@@ -54,7 +54,7 @@ def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, 
             raise InterfaceError("Mais de dois equipamentos foram selecionados")
 
     var.tipo = int_type
-    var.vlan_nativa = vlan
+    var.vlan_nativa = vlans.get('vlan_nativa')
     var.save()
 
     if "trunk" in int_type.tipo:
@@ -62,17 +62,19 @@ def alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, 
         for int_env in interface_list:
             int_env.delete()
         if envs is not None:
-            if not type(envs)==unicode:
-                for env in envs:
-                    amb_int = EnvironmentInterface()
-                    amb_int.interface = var
-                    amb_int.ambiente = amb.get_by_pk(int(env))
-                    amb_int.create(user)
-            else:
-                amb_int = EnvironmentInterface()
-                amb_int.interface = var
-                amb_int.ambiente = amb.get_by_pk(int(envs))
-                amb_int.create(user)
+            amb = amb.get_by_pk(int(envs))
+            amb_int = EnvironmentInterface()
+            amb_int.interface = var
+            amb_int.ambiente = amb
+            try:
+                range_vlans = vlans.get('range')
+            except:
+                range_vlans = None
+                pass
+            if range_vlans:
+                api_interface_facade.verificar_vlan_range(amb, range_vlans)
+                amb_int.vlans = range_vlans
+            amb_int.create(user)
 
 class InterfaceChannelResource(RestResource):
 
@@ -107,7 +109,7 @@ class InterfaceChannelResource(RestResource):
             nome = channel_map.get('nome')
             lacp = channel_map.get('lacp')
             int_type = channel_map.get('int_type')
-            vlan = channel_map.get('vlan')
+            vlans = channel_map.get('vlan')
             envs = channel_map.get('envs')
 
             port_channel = PortChannel()
@@ -119,6 +121,15 @@ class InterfaceChannelResource(RestResource):
             interfaces = str(interfaces).split('-')
             interface_id = None
 
+            # verifica a vlan_nativa
+            vlan = vlans.get('vlan_nativa')
+            if vlan is not None:
+                if int(vlan) < 1 or int(vlan) > 4096:
+                    raise InvalidValueError(None, "Vlan Nativa", "Range valido: 1 - 4096.")
+                if int(vlan) < 1 or 3967 < int(vlan) < 4048 or int(vlan)==4096:
+                    raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
+
+            # verifica se o nome do port channel já existe no equipamento
             channels = PortChannel.objects.filter(nome=nome)
             channels_id = []
             for ch in channels:
@@ -136,6 +147,7 @@ class InterfaceChannelResource(RestResource):
                         if sw.channel.id in channels_id:
                             raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
 
+            #cria o port channel
             port_channel.nome = str(nome)
             port_channel.lacp = convert_string_or_int_to_boolean(lacp)
             port_channel.create(user)
@@ -153,8 +165,6 @@ class InterfaceChannelResource(RestResource):
 
                     if sw_router.channel is not None:
                         raise InterfaceError("Interface %s já está em um Channel" % sw_router.interface)
-
-
 
                     if cont is []:
                         cont.append(int(sw_router.equipamento.id))
@@ -180,7 +190,7 @@ class InterfaceChannelResource(RestResource):
                                      ligacao_front_id=ligacao_front_id,
                                      ligacao_back_id=ligacao_back_id,
                                      tipo=int_type,
-                                     vlan_nativa=vlan,
+                                     vlan_nativa=vlans.get('vlan_nativa'),
                                      channel=port_channel)
 
                     if "trunk" in int_type.tipo:
@@ -188,17 +198,19 @@ class InterfaceChannelResource(RestResource):
                         for int_env in interface_list:
                             int_env.delete()
                         if envs is not None:
-                            if not type(envs)==unicode:
-                                for env in envs:
-                                    amb_int = EnvironmentInterface()
-                                    amb_int.interface = sw_router
-                                    amb_int.ambiente = amb.get_by_pk(int(env))
-                                    amb_int.create(user)
-                            else:
-                                amb_int = EnvironmentInterface()
-                                amb_int.interface = sw_router
-                                amb_int.ambiente = amb.get_by_pk(int(envs))
-                                amb_int.create(user)
+                            amb = amb.get_by_pk(int(envs))
+                            amb_int = EnvironmentInterface()
+                            amb_int.interface = sw_router
+                            amb_int.ambiente = amb
+                            try:
+                                range_vlans = vlans.get('range')
+                            except:
+                                range_vlans = None
+                                pass
+                            if range_vlans:
+                                api_interface_facade.verificar_vlan_range(amb, range_vlans)
+                                amb_int.vlans = range_vlans
+                            amb_int.create(user)
 
             port_channel_map = dict()
             port_channel_map['port_channel'] = port_channel
@@ -212,6 +224,8 @@ class InterfaceChannelResource(RestResource):
             return self.response_error(3, x)
         except InterfaceError, e:
            return self.response_error(405, e)
+        except api_interface_exceptions.InterfaceException, e:
+            return self.response_error(405, e)
 
     def handle_get(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de um channel.
@@ -368,7 +382,7 @@ class InterfaceChannelResource(RestResource):
                 raise InvalidValueError(None, "Numero do Channel", "Deve ser um numero inteiro.")
             lacp = channel_map.get('lacp')
             int_type = channel_map.get('int_type')
-            vlan = channel_map.get('vlan')
+            vlans = channel_map.get('vlan')
             envs = channel_map.get('envs')
             ids_interface = channel_map.get('ids_interface')
 
@@ -376,6 +390,8 @@ class InterfaceChannelResource(RestResource):
             if ids_interface is None:
                 raise InterfaceError("Nenhuma interface selecionada")
 
+            # verifica a vlan_nativa
+            vlan = vlans.get('vlan_nativa')
             if vlan is not None:
                 if int(vlan) < 1 or int(vlan) > 4096:
                     raise InvalidValueError(None, "Vlan Nativa", "Range valido: 1 - 4096.")
@@ -386,6 +402,7 @@ class InterfaceChannelResource(RestResource):
             interface = Interface()
             amb = Ambiente()
 
+            # verifica se o nome do port channel está sendo usado no equipamento
             channels = PortChannel.objects.filter(nome=nome)
             channels_id = []
             for ch in channels:
@@ -455,7 +472,7 @@ class InterfaceChannelResource(RestResource):
                 ids_interface = []
                 ids_interface.append(i)
             for var in ids_interface:
-                alterar_interface(var, interface, port_channel, int_type, vlan, user, envs, amb)
+                alterar_interface(var, interface, port_channel, int_type, vlans, user, envs, amb)
                 interface = Interface()
                 server_obj = Interface()
                 interface_sw = interface.get_by_pk(int(var))

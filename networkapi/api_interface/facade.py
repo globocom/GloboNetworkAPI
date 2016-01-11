@@ -20,8 +20,7 @@ import logging
 from django.template import Context, Template
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG, LOCK_EQUIPMENT
-from networkapi.interface.models import EnvironmentInterface
-from networkapi.interface.models import Interface, PortChannel
+from networkapi.interface.models import Interface, PortChannel, EnvironmentInterface
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.api_interface import exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
@@ -305,3 +304,10 @@ def get_vlan_range(interface):
 
     return vlan_range
 
+def verificar_vlan_range(amb, vlans):
+    for intervalo in vlans.split(';'):
+        for i in intervalo.split('-'):
+            i = int(i)
+            if not (i >= amb.min_num_vlan_1 and i <=amb.max_num_vlan_1):
+                if not (i >= amb.min_num_vlan_2 and i <=amb.max_num_vlan_2):
+                    raise exceptions.InterfaceException(u'Numero de vlan fora do range definido para o ambiente')
