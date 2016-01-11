@@ -1,0 +1,5 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE interfaces DROP COLUMN `vlans`;
+"""
+
