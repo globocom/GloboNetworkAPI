@@ -1,0 +1,8 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO variables (name, value, description) VALUES ('id_vlt_lf1','0','id de cada peer vlt'), ('id_vlt_lf2','1','id de cada peer vlt'), ('priority_vlt_lf1','4096','prioridade cada peer vlt'), ('priority_vlt_lf2','8192','prioridade cada peer vlt');
+"""
+
+SQL_DOWN = u"""
+
+"""

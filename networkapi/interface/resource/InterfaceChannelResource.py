@@ -42,9 +42,9 @@ def alterar_interface(var, interface, port_channel, int_type, vlans, user, envs,
     elif not var.channel.id==port_channel.id:
         raise InterfaceError("Interface %s já está em um Channel" % var.interface)
 
-    for i in interface.search(var.equipamento.id):
-        if i.channel is not None and not i.channel.id==port_channel.id:
-            raise InterfaceError("Equipamento %s já possui um Channel" % var.equipamento.nome)
+    # for i in interface.search(var.equipamento.id):
+    #     if i.channel is not None and not i.channel.id==port_channel.id:
+    #         raise InterfaceError("Equipamento %s já possui um Channel" % var.equipamento.nome)
 
     if cont is []:
         cont.append(int(var.equipamento.id))
@@ -142,7 +142,11 @@ class InterfaceChannelResource(RestResource):
                 equip_id = interface_id.equipamento.id
                 equip_interfaces = interface.search(equip_id)
                 for i in equip_interfaces:
-                    sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    try:
+                        sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+                    except:
+                        sw = None
+                        pass
                     if sw.channel is not None:
                         if sw.channel.id in channels_id:
                             raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
