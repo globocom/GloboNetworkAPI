@@ -879,6 +879,15 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
         log.error(exception)
         raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável ASSPINE<1,2,3,4> ou KICKSTART_SO_LF ou IMAGE_SO_LF.")
 
+    try:
+        ID_VLT_LF1 = get_variable("id_vlt_lf1")
+        ID_VLT_LF2 = get_variable("id_vlt_lf2")
+        PRIORITY_VLT_LF1 = get_variable("priority_vlt_lf1")
+        PRIORITY_VLT_LF2 = get_variable("priority_vlt_lf2")
+    except ObjectDoesNotExist, exception:
+        log.error(exception)
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis ID_VLT_LF<1,2> ou PRIORITY_VLT_LF<1,2>")
+
     variablestochangespine1["IPSPINEIPV4"]=str(IPSPINEipv4[rack][0])
     variablestochangespine1["IPSPINEIPV6"]=str(IPSPINEipv6[rack][0])
     variablestochangespine1["VLANBELEAF"]=str(VLANBELEAF[rack][0])
@@ -977,6 +986,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf1["INTERFACE_SP2"]= INTERFACE_SP2
     variablestochangeleaf1["HOSTNAME_OOB"]= HOSTNAME_OOB
     variablestochangeleaf1["INTERFACE_OOB"]= INTERFACE_OOB_LF1
+    variablestochangeleaf1["ID_VLT"]=ID_VLT_LF1
+    variablestochangeleaf1["PRIORITY_VLT"]=PRIORITY_VLT_LF1
     #
     #
     variablestochangeleaf2["IPLEAFSP1IPV4"]=str(IPLEAFipv4[rack][2])
@@ -1021,6 +1032,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangeleaf2["INTERFACE_SP2"]= INTERFACE_SP4
     variablestochangeleaf2["HOSTNAME_OOB"]= HOSTNAME_OOB
     variablestochangeleaf2["INTERFACE_OOB"]= INTERFACE_OOB_LF2
+    variablestochangeleaf2["ID_VLT"]=ID_VLT_LF2
+    variablestochangeleaf2["PRIORITY_VLT"]=PRIORITY_VLT_LF2
 
     try:
         fileoutspine1=get_variable("path_to_add_config")+HOSTNAME_SP1+"-ADD-"+HOSTNAME_RACK[2]+".cfg"
