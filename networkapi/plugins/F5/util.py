@@ -51,7 +51,7 @@ def connection(func):
 def getStatusName(status):
     try:
         return STATUS_POOL_MEMBER[status]
-    except Exception, e:
+    except Exception:
         msg = 'Member status invalid: %s' % (status)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
@@ -60,7 +60,7 @@ def getStatusName(status):
 def getMethodName(lb_method):
     try:
         return LB_METHOD[lb_method]
-    except Exception, e:
+    except Exception:
         msg = 'Member lb_method invalid: %s' % (lb_method)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
@@ -69,7 +69,7 @@ def getMethodName(lb_method):
 def getServiceDownActionName(action):
     try:
         return SERVICE_DOWN_ACTION[action]
-    except Exception, e:
+    except Exception:
         msg = '"%s" is not a valid value for Service Down Action' % (action)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
@@ -147,7 +147,6 @@ def _trataParam(pools):
                     'address': pool_member['ip'],
                     'port': pool_member['port']})
 
-
         pls['pools_members']['monitor'].append(member_status_monitor)
         pls['pools_members']['session'].append(member_status_session)
         pls['pools_members']['limit'].append(member_limit)
@@ -158,6 +157,13 @@ def _trataParam(pools):
         pls['pools_members']['members_remove'].append(member_remove)
 
     return pls
+
+
+def search_dict(mylist, lookup):
+    for val in mylist:
+        if lookup == val:
+            return True
+    return False
 
 
 #######################

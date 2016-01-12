@@ -24,20 +24,21 @@ def AddressType(value):
                 'port': ipport[1] if ipport[1] != '*' else '0'
             }
         }
-    except Exception, e:
+    except Exception:
         msg = 'Adress type not is invalid: %s' % (value)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
+
 
 def TemplateType(value):
 
     values = {
         # 'unset':'TTYPE_UNSET',
         # 'icmp':'TTYPE_ICMP',
-        'tcp':'TTYPE_TCP',
+        'tcp': 'TTYPE_TCP',
         # 'tcp_echo':'TTYPE_TCP_ECHO',
         # 'external':'TTYPE_EXTERNAL',
-        'http':'TTYPE_HTTP',
+        'http': 'TTYPE_HTTP',
         # 'https':'TTYPE_HTTPS',
         # 'nntp':'TTYPE_NNTP',
         # 'ftp':'TTYPE_FTP',
@@ -52,7 +53,7 @@ def TemplateType(value):
         # 'snmp_dca':'TTYPE_SNMP_DCA',
         # 'snmp_dca_base':'TTYPE_SNMP_DCA_BASE',
         # 'real_server':'TTYPE_REAL_SERVER',
-        'udp':'TTYPE_UDP',
+        'udp': 'TTYPE_UDP',
         # 'none':'TTYPE_NONE',
         # 'oracle':'TTYPE_ORACLE',
         # 'soap':'TTYPE_SOAP',
@@ -76,7 +77,7 @@ def TemplateType(value):
 
     try:
         return values[value.lower()]
-    except Exception, e:
+    except Exception:
         msg = 'Template type not is invalid: %s' % (value)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)

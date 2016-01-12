@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 
 
 class BasePlugin(object):
+
     '''
     Base plugin interface
     '''

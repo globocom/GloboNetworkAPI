@@ -38,6 +38,7 @@ from .decorators import deprecated
 LOCK = 'LOCK'
 PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
 
+
 def search_hide_password(msg):
     """
     Search and hide password
@@ -51,6 +52,7 @@ def search_hide_password(msg):
             msg = msg.replace(password, "****")
 
     return msg
+
 
 def is_valid_regex(string, regex):
     '''Checks if the parameter is a valid value by regex.
@@ -288,6 +290,7 @@ def is_valid_text(param, required=True):
     pattern = r"^[a-zA-Z0-9\\-_\\\-\\ ]*$"
     return re.match(pattern, param)
 
+
 def is_valid_pool_identifier_text(param, required=True):
     '''Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
 
@@ -305,6 +308,7 @@ def is_valid_pool_identifier_text(param, required=True):
 
     pattern = r"^[a-zA-Z]+[a-zA-Z0-9\._-]*$"
     return re.match(pattern, param)
+
 
 def is_valid_option(param):
     '''Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z] and special characters hyphen, underline and point.
@@ -330,6 +334,7 @@ def is_valid_email(param):
                          r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$', re.IGNORECASE)
 
     return re.match(pattern, param)
+
 
 def is_valid_healthcheck_destination(param):
     '''Checks if the parameter is a valid healthcheck_destination.
@@ -613,6 +618,7 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
         raise ValueError('Invalid List Parameter.')
 
     return True
+
 
 def is_healthcheck_valid(healthcheck):
     if healthcheck['healthcheck_type'] != 'HTTP' and healthcheck['healthcheck_type'] != 'HTTPS':

@@ -25,8 +25,7 @@ from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
-from networkapi.equipamento.models import Equipamento
-from networkapi.equipamento.models import EquipamentoAmbiente, EquipamentoAcesso
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAcesso
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ip, Ipv6
@@ -38,7 +37,7 @@ from networkapi.distributedlock import distributedlock, LOCK_POOL
 from networkapi.error_message_utils import error_messages
 
 
-from networkapi.ambiente.models import IP_VERSION
+# from networkapi.ambiente.models import IP_VERSION
 import logging
 
 log = logging.getLogger(__name__)
@@ -65,7 +64,7 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
         hc.save()
 
     # Get the fisrt occureny and warn if redundant HCs are present
-    except MultipleObjectsReturned, e:
+    except MultipleObjectsReturned:
         log.warning(
             "Multiple healthcheck entries found for the given parameters")
         if identifier == '':
@@ -696,7 +695,7 @@ def get_poolmember_state(servers_pools):
 
         if pools_members:
 
-            pool_name = server_pool.identifier
+            # pool_name = server_pool.identifier
             pool_id = server_pool.id
 
             equips = EquipamentoAmbiente.objects.filter(
@@ -983,7 +982,7 @@ def update_real_pool(request):
                     'new': 1
                 })
 
-        #members to remove
+        # members to remove
         for member in db_members_remove:
             if not member.ipv6:
                 ip_db = member.ip.ip_formated
@@ -1113,7 +1112,7 @@ def update_real_pool(request):
         pm.save()
 
     # Save reals
-    #save_server_pool_member(request.user, sp, list_server_pool_member)
+    # save_server_pool_member(request.user, sp, list_server_pool_member)
 
     return {}
 
@@ -1164,7 +1163,7 @@ def valid_to_save_reals_v2(pools):
                 environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=members['ipv6']['id']).uniqueResult()
                 if environment not in environment_list_related:
                     raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                        error_messages.get(396) % (server_pool.environment.name, imembers['ipv6']['ip_formated'], environment_vip_list_name)
+                        error_messages.get(396) % (environment.name, members['ipv6']['ip_formated'], environment_vip_list_name)
                     )
 
     if invalid_ports_real:
@@ -1227,7 +1226,7 @@ def valid_to_save_reals_v2(pools):
     return ps, sp
 
 
-def createLock(pools):
+def create_lock(pools):
     """
     Create locks to pools list
     """
@@ -1240,7 +1239,7 @@ def createLock(pools):
     return locks_list
 
 
-def destroyLock(locks_list):
+def destroy_lock(locks_list):
     """
     Destroy locks by pools list
     """

@@ -1,4 +1,3 @@
-from networkapi.plugins import F5
 from networkapi.plugins.F5 import lb
 
 from networkapi.plugins import exceptions as base_exceptions
@@ -67,7 +66,7 @@ class PoolMember(object):
                 else:
                     session = '0'
 
-                status.append(int(healthcheck+session+monitor, 2))
+                status.append(int(healthcheck + session + monitor, 2))
 
             status_pools.append(status)
         return status_pools
