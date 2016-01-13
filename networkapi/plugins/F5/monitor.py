@@ -4,7 +4,6 @@ import time
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb, types, pool, util
-from bigsuds import OperationFailed
 
 log = logging.getLogger(__name__)
 
@@ -133,17 +132,7 @@ class Monitor(object):
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
-
-            d = pl.get_list()
-            monitor_associations_all = pl.getMonitorAssociation(names=d)
-            monitor_associations_all = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_all])) if 'MONITOR' in m]
-            monitor_associations = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-
-            template_names = list()
-            for m in monitor_associations:
-                if not util.search_dict(monitor_associations_all, m):
-                    template_names.append(m)
-
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names:
                 self.deleteTemplate(template_names=template_names)
 

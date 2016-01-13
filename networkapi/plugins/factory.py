@@ -56,7 +56,7 @@ class PluginFactory(object):
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic
-            if re.search('Dell', marca.upper(), re.DOTALL):
+            if re.search('DELL', marca.upper(), re.DOTALL):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
 

@@ -23,7 +23,7 @@ import re
 
 log = logging.getLogger(__name__)
 
-class IOS(BasePlugin):
+class FTOS(BasePlugin):
 
 	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
 

@@ -84,7 +84,3 @@ class Pool(object):
             pool_names=kwargs['names'])
 
         return monitor_associations
-
-    def get_list(self):
-        list_pool = self._lb._channel.LocalLB.Pool.get_list()
-        return list_pool
