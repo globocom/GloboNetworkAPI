@@ -112,7 +112,7 @@ class RackDeployView(APIView):
             #Get all files and search for equipments of the rack
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
-                rel_filename = "../"+REL_PATH_TO_ADD_CONFIG+filename_equipments
+                rel_filename = "../../"+REL_PATH_TO_ADD_CONFIG+filename_equipments
                 #Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
                     #Apply config only in spines. Leaves already have all necessary config in startup
