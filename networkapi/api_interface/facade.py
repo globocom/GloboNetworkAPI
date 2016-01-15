@@ -28,6 +28,8 @@ from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.system.facade import get_value as get_variable
 from django.core.exceptions import ObjectDoesNotExist
 from networkapi.system import exceptions as var_exceptions
+from networkapi.exception import InvalidValueError
+
 
 log = logging.getLogger(__name__)
 
@@ -311,3 +313,37 @@ def verificar_vlan_range(amb, vlans):
             if not (i >= amb.min_num_vlan_1 and i <=amb.max_num_vlan_1):
                 if not (i >= amb.min_num_vlan_2 and i <=amb.max_num_vlan_2):
                     raise exceptions.InterfaceException(u'Numero de vlan fora do range definido para o ambiente')
+
+def verificar_vlan_nativa(vlan_nativa):
+
+    if vlan_nativa is not None:
+        if int(vlan_nativa) < 1 or int(vlan_nativa) > 4096:
+            raise InvalidValueError(None, "Vlan Nativa", "Range valido: 1 - 4096.")
+        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa)==4096:
+            raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
+
+def verificar_nome_channel(nome, interfaces):
+
+    interface = Interface()
+
+    channels = PortChannel.objects.filter(nome=nome)
+    channels_id = []
+    for ch in channels:
+        channels_id.append(int(ch.id))
+    if channels_id:
+        for var in interfaces:
+            if not var=="" and not var==None:
+                interface_id = int(var)
+        interface_id = interface.get_by_pk(interface_id)
+        equip_id = interface_id.equipamento.id
+        equip_interfaces = interface.search(equip_id)
+        for i in equip_interfaces:
+            try:
+                sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
+            except:
+                sw = None
+                pass
+            if sw is not None:
+                if sw.channel is not None:
+                    if sw.channel.id in channels_id:
+                        raise exceptions.InterfaceException(u"O nome do port channel ja foi utilizado no equipamento")

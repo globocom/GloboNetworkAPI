@@ -109,47 +109,22 @@ class InterfaceChannelResource(RestResource):
             nome = channel_map.get('nome')
             lacp = channel_map.get('lacp')
             int_type = channel_map.get('int_type')
-            vlans = channel_map.get('vlan')
-            envs = channel_map.get('envs')
+            vlan_nativa = channel_map.get('vlan')
+            envs_vlans = channel_map.get('envs')
+
+            self.log.info(str(envs_vlans))
 
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
-
             cont = []
-
-            interfaces = str(interfaces).split('-')
             interface_id = None
 
-            # verifica a vlan_nativa
-            vlan = vlans.get('vlan_nativa')
-            if vlan is not None:
-                if int(vlan) < 1 or int(vlan) > 4096:
-                    raise InvalidValueError(None, "Vlan Nativa", "Range valido: 1 - 4096.")
-                if int(vlan) < 1 or 3967 < int(vlan) < 4048 or int(vlan)==4096:
-                    raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
+            api_interface_facade.verificar_vlan_nativa(vlan_nativa)
 
             # verifica se o nome do port channel já existe no equipamento
-            channels = PortChannel.objects.filter(nome=nome)
-            channels_id = []
-            for ch in channels:
-                channels_id.append(int(ch.id))
-            if channels_id:
-                for var in interfaces:
-                    if not var=="" and not var==None:
-                        interface_id = int(var)
-                interface_id = interface.get_by_pk(interface_id)
-                equip_id = interface_id.equipamento.id
-                equip_interfaces = interface.search(equip_id)
-                for i in equip_interfaces:
-                    try:
-                        sw = i.get_switch_and_router_interface_from_host_interface(i.protegida)
-                    except:
-                        sw = None
-                        pass
-                    if sw.channel is not None:
-                        if sw.channel.id in channels_id:
-                            raise InterfaceError("O nome do port channel ja foi utilizado no equipamento")
+            interfaces = str(interfaces).split('-')
+            api_interface_facade.verificar_nome_channel(nome, interfaces)
 
             #cria o port channel
             port_channel.nome = str(nome)
@@ -194,20 +169,20 @@ class InterfaceChannelResource(RestResource):
                                      ligacao_front_id=ligacao_front_id,
                                      ligacao_back_id=ligacao_back_id,
                                      tipo=int_type,
-                                     vlan_nativa=vlans.get('vlan_nativa'),
+                                     vlan_nativa=vlan_nativa,
                                      channel=port_channel)
 
                     if "trunk" in int_type.tipo:
                         interface_list = EnvironmentInterface.objects.all().filter(interface=sw_router.id)
                         for int_env in interface_list:
                             int_env.delete()
-                        if envs is not None:
-                            amb = amb.get_by_pk(int(envs))
+                        for i in envs_vlans:
+                            amb = amb.get_by_pk(int(i.get("env")))
                             amb_int = EnvironmentInterface()
                             amb_int.interface = sw_router
                             amb_int.ambiente = amb
                             try:
-                                range_vlans = vlans.get('range')
+                                range_vlans = i.get("vlans")
                             except:
                                 range_vlans = None
                                 pass
