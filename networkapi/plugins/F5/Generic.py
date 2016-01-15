@@ -1,13 +1,11 @@
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.plugins import exceptions as base_exceptions
-import logging
-from ..base import BasePlugin
-import json
 import bigsuds
 import itertools
+import logging
 
+from ..base import BasePlugin
+from networkapi.plugins import exceptions as base_exceptions
+from networkapi.plugins.F5 import pool, poolmember, util, monitor
 
-from networkapi.plugins.F5 import lb, pool, poolmember, util, monitor
 
 log = logging.getLogger(__name__)
 
@@ -144,15 +142,17 @@ class Generic(BasePlugin):
 
     @util.connection
     def updatePool(self, pools):
-
+        log.info('updatePool')
         monitor_associations = []
         pls = util._trataParam(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
 
-        mon.deleteTemplateAssoc(names=pls['pools_names'])
+        # get template currents
+        monitor_associations_old = pl.getMonitorAssociation(names=pls['pools_names'])
 
+        # creates templates
         monitor_associations = mon.createTemplate(
             names=pls['pools_names'],
             healthcheck=pls['pools_healthcheck']
@@ -160,6 +160,8 @@ class Generic(BasePlugin):
 
         try:
             self._lb._channel.System.Session.start_transaction()
+
+            pl.removeMonitorAssociation(names=pls['pools_names'])
 
             pl.setMonitorAssociation(monitor_associations=monitor_associations)
 
@@ -172,13 +174,12 @@ class Generic(BasePlugin):
                 actions=pls['pools_actions'])
 
             plm = poolmember.PoolMember(self._lb)
-            
 
             if pls['pools_members']['members_remove']:
                 plm.remove(
                     names=pls['pools_names'],
                     members=pls['pools_members']['members_remove'])
-                
+
             if pls['pools_members']['members_new']:
                 plm.create(
                     names=pls['pools_names'],
@@ -202,23 +203,45 @@ class Generic(BasePlugin):
 
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
-            if monitor_associations != []:
-                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-                if template_names:
-                    mon.deleteTemplate(
-                        template_names=template_names
-                    )
+
+            # delete templates created
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
+            if template_names:
+                mon.deleteTemplate(
+                    template_names=template_names
+                )
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
 
     @util.connection
     def deletePool(self, pools):
+        log.info('deletePool')
 
         pls = util._trataParam(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
-
-        mon.deleteTemplateAssoc(names=pls['pools_names'])
-        pl.delete(names=pls['pools_names'])
+        self._lb._channel.System.Session.start_transaction()
+        try:
+            monitor_associations = pl.getMonitorAssociation(names=pls['pools_names'])
+            pl.removeMonitorAssociation(names=pls['pools_names'])
+        except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
+            raise base_exceptions.CommandErrorException(e)
+        else:
+            self._lb._channel.System.Session.submit_transaction()
+            try:
+                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                if template_names:
+                    mon.deleteTemplate(template_names=template_names)
+            except bigsuds.OperationFailed:
+                pass
+            finally:
+                self._lb._channel.System.Session.start_transaction()
+                try:
+                    pl.delete(names=pls['pools_names'])
+                    self._lb._channel.System.Session.submit_transaction()
+                except Exception, e:
+                    self._lb._channel.System.Session.rollback_transaction()
+                    raise base_exceptions.CommandErrorException(e)

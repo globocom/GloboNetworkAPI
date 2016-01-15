@@ -17,6 +17,7 @@ class Pool(object):
         self._lb = _lb
 
     def create(self, **kwargs):
+        log.info('pool:create:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -27,6 +28,7 @@ class Pool(object):
             kwargs['members'])
 
     def delete(self, **kwargs):
+        log.info('pool:delete:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -35,6 +37,7 @@ class Pool(object):
             kwargs['names'])
 
     def setServiceDownAction(self, **kwargs):
+        log.info('pool:setServiceDownAction:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -45,6 +48,7 @@ class Pool(object):
         )
 
     def setLbMethod(self, **kwargs):
+        log.info('pool:setLbMethod:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -54,6 +58,7 @@ class Pool(object):
             kwargs['lbmethod'])
 
     def setMonitorAssociation(self, **kwargs):
+        log.info('pool:setMonitorAssociation:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -62,6 +67,7 @@ class Pool(object):
             monitor_associations=kwargs['monitor_associations'])
 
     def removeMonitorAssociation(self, **kwargs):
+        log.info('pool:removeMonitorAssociation:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -69,6 +75,7 @@ class Pool(object):
         self._lb._channel.LocalLB.Pool.remove_monitor_association(pool_names=kwargs['names'])
 
     def getMonitorAssociation(self, **kwargs):
+        log.info('pool:getMonitorAssociation:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -77,3 +84,7 @@ class Pool(object):
             pool_names=kwargs['names'])
 
         return monitor_associations
+
+    def get_list(self):
+        list_pool = self._lb._channel.LocalLB.Pool.get_list()
+        return list_pool
