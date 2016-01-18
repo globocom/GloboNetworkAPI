@@ -309,10 +309,14 @@ def get_vlan_range(interface):
 def verificar_vlan_range(amb, vlans):
     for intervalo in vlans.split(';'):
         for i in intervalo.split('-'):
-            i = int(i)
-            if not (i >= amb.min_num_vlan_1 and i <=amb.max_num_vlan_1):
-                if not (i >= amb.min_num_vlan_2 and i <=amb.max_num_vlan_2):
-                    raise exceptions.InterfaceException(u'Numero de vlan fora do range definido para o ambiente')
+            try:
+                i = int(i)
+            except:
+                raise InvalidValueError(None, None, "Numero da Vlan")
+            if amb.min_num_vlan_1:
+                if not (i >= amb.min_num_vlan_1 and i <=amb.max_num_vlan_1):
+                    if not (i >= amb.min_num_vlan_2 and i <=amb.max_num_vlan_2):
+                        raise exceptions.InterfaceException(u'Numero de vlan fora do range definido para o ambiente')
 
 def verificar_vlan_nativa(vlan_nativa):
 

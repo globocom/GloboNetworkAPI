@@ -112,8 +112,6 @@ class InterfaceChannelResource(RestResource):
             vlan_nativa = channel_map.get('vlan')
             envs_vlans = channel_map.get('envs')
 
-            self.log.info(str(envs_vlans))
-
             port_channel = PortChannel()
             interface = Interface()
             amb = Ambiente()
