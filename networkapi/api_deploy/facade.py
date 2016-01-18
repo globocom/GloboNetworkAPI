@@ -59,7 +59,8 @@ def __applyConfig(equipment,filename, equipment_access=None,source_server=None,p
 		
 	if source_server == None:
 		source_server = TFTP_SERVER_ADDR
-	
+
+	#TODO: Handle exceptions from the following methods and generate response for the caller
 	equip_plugin = PluginFactory.factory(equipment)
 	equip_plugin.connect()
 	equip_plugin.ensure_privilege_level()

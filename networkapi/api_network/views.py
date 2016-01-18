@@ -287,7 +287,6 @@ def networkIPv4_deploy(request, network_id):
         equipments_id_list = request.DATA.get("equipments", None)
 
     equipment_list = []
-    
     if equipments_id_list is not None:
         if type(equipments_id_list) is not list:
             raise api_exceptions.ValidationException("equipments")

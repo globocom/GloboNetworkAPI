@@ -121,10 +121,14 @@ class BasePlugin(object):
         '''
         Send single command to equipment and than closes connection channel
         '''
+        if self.channel == None:
+            log.error("No channel connection to the equipment %s. Was the connect() funcion ever called?" % self.equipment.nome)
+            raise exceptions.PluginNotConnected()
+
         try:
             stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
         except Exception, e:
-            log.error("Error in connection. Cannot send command.", e)
+            log.error("Error in connection. Cannot send command %s: %s"% (command,e))
             raise api_exceptions.NetworkAPIException
 
         equip_output_lines = stdout.readlines()

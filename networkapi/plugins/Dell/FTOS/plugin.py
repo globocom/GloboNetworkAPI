@@ -23,7 +23,7 @@ import re
 
 log = logging.getLogger(__name__)
 
-class IOS(BasePlugin):
+class FTOS(BasePlugin):
 
 	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
 
@@ -67,7 +67,7 @@ class IOS(BasePlugin):
 		recv = self.waitString(">|#")
 		self.channel.send("show privilege\n")
 		recv = self.waitString("Current privilege level is")
-		level = re.search('Current privilege level is ([0-9]+?).*', recv, re.DOTALL ).group(1)
+		level = re.search('Current privilege level is ([0-9]+).*', recv, re.DOTALL ).group(1)
 
 		level = (level.split(' '))[-1]
 		if int(level) < privilege_level:

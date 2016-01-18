@@ -92,6 +92,14 @@ class PluginUninstanced(APIException):
     def __init__(self, msg=None):
         self.detail = u'Plugin uninstanced: <<%s>>' % (msg)
 
+class PluginNotConnected(APIException):
+
+    """Return message error: Plugin uninstanced"""
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = u'Plugin not connected'
+
+    def __init__(self):
+        self.detail = u'Plugin not connected'
 
 class NamePropertyInvalid(APIException):
 
