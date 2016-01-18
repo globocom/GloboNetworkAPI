@@ -274,6 +274,9 @@ def gera_config(rack):
                 raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There is no mac address." % (switch.nome)))
 
             ip = buscar_ip(switch.id)
+            if ip == None:
+                raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There is no management IP." % (switch.nome)))
+
             switch_cadastrado=0
             for subnet in foreman.subnets.index()['results']:
                 network = IPNetwork(ip+'/'+subnet['mask']).network
