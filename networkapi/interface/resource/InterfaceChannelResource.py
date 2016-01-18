@@ -299,15 +299,15 @@ class InterfaceChannelResource(RestResource):
                     except:
                         back = None
                         pass
-                    i.update(user,
-                                  i.id,
-                                  interface=i.interface,
-                                  protegida=i.protegida,
-                                  descricao=i.descricao,
-                                  ligacao_front_id=front,
-                                  ligacao_back_id=back,
-                                  tipo=tipo,
-                                  vlan_nativa="1")
+                    i.update( user,
+                              i.id,
+                              interface=i.interface,
+                              protegida=i.protegida,
+                              descricao=i.descricao,
+                              ligacao_front_id=front,
+                              ligacao_back_id=back,
+                              tipo=tipo,
+                              vlan_nativa="1")
 
                 status = api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
 
@@ -316,13 +316,13 @@ class InterfaceChannelResource(RestResource):
             return self.response(dumps_networkapi({}))
 
         except api_interface_exceptions.InterfaceException, e:
-            return api_interface_exceptions.InterfaceException(e)
+            return self.response_error(410, e)
         except api_interface_exceptions.InvalidKeyException, e:
-            return api_interface_exceptions.InvalidKeyException(e)
+            return self.response_error(410, e)
         except var_exceptions.VariableDoesNotExistException, e:
-            return var_exceptions.VariableDoesNotExistException(e)
+            return self.response_error(410, e)
         except api_interface_exceptions.InterfaceTemplateException, e:
-            raise api_interface_exceptions.InterfaceTemplateException(e)
+            return self.response_error(410, e)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except XMLError, x:
