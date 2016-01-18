@@ -1,10 +1,11 @@
-from networkapi.plugins import exceptions as base_exceptions
-import logging
-from ..base import BasePlugin
+import bigsuds
 import itertools
+import logging
 
-
+from ..base import BasePlugin
+from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import pool, poolmember, util, monitor
+
 
 log = logging.getLogger(__name__)
 
@@ -148,8 +149,8 @@ class Generic(BasePlugin):
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
 
-        # deletes template's association and templates
-        mon.deleteTemplateAssoc(names=pls['pools_names'])
+        # get template currents
+        monitor_associations_old = pl.getMonitorAssociation(names=pls['pools_names'])
 
         # creates templates
         monitor_associations = mon.createTemplate(
@@ -160,7 +161,8 @@ class Generic(BasePlugin):
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            # creates template's association
+            pl.removeMonitorAssociation(names=pls['pools_names'])
+
             pl.setMonitorAssociation(monitor_associations=monitor_associations)
 
             pl.setLbMethod(
@@ -201,28 +203,45 @@ class Generic(BasePlugin):
 
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
-            if monitor_associations != []:
-                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-                if template_names:
-                    mon.deleteTemplate(
-                        template_names=template_names
-                    )
 
+            # delete templates created
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
+            if template_names:
+                mon.deleteTemplate(
+                    template_names=template_names
+                )
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
 
     @util.connection
     def deletePool(self, pools):
+        log.info('deletePool')
 
         pls = util._trataParam(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
-
-        monitor_associations_old = pl.getMonitorAssociation(names=pls['pools_names'])
-        mon.deleteTemplateAssoc(names=pls['pools_names'])
-        pl.delete(names=pls['pools_names'])
-        template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
-        if template_names:
-            mon.deleteTemplate(names=template_names)
+        self._lb._channel.System.Session.start_transaction()
+        try:
+            monitor_associations = pl.getMonitorAssociation(names=pls['pools_names'])
+            pl.removeMonitorAssociation(names=pls['pools_names'])
+        except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
+            raise base_exceptions.CommandErrorException(e)
+        else:
+            self._lb._channel.System.Session.submit_transaction()
+            try:
+                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                if template_names:
+                    mon.deleteTemplate(template_names=template_names)
+            except bigsuds.OperationFailed:
+                pass
+            finally:
+                self._lb._channel.System.Session.start_transaction()
+                try:
+                    pl.delete(names=pls['pools_names'])
+                    self._lb._channel.System.Session.submit_transaction()
+                except Exception, e:
+                    self._lb._channel.System.Session.rollback_transaction()
+                    raise base_exceptions.CommandErrorException(e)

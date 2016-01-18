@@ -1,9 +1,10 @@
+import bigsuds
 import itertools
 import logging
 import time
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import lb, types, pool, util
+from networkapi.plugins.F5 import lb, types, pool
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,6 @@ class Monitor(object):
         monitor_associations = []
 
         try:
-            templates_exists = self._lb._channel.LocalLB.Monitor.get_template_list()
 
             for i, pool in enumerate(kwargs['names']):
 
@@ -46,9 +46,6 @@ class Monitor(object):
                         'template_name': name,
                         'template_type': types.TemplateType(kwargs['healthcheck'][i]['healthcheck_type'])
                     }
-                    if util.search_dict(templates_exists, template):
-                        template['template_name'] += str(time.time())
-                        name = template['template_name']
 
                     templates.append(template)
                     template_attributes.append({
@@ -114,35 +111,39 @@ class Monitor(object):
             log.error(e)
         return monitor_associations
 
-    def deleteTemplateAssoc(self, **kwargs):
-        log.info('monitor:deleteTemplateAssoc:%s' % kwargs)
-        for k, v in kwargs.items():
-            if v == []:
-                return
+    # def deleteTemplateAssoc(self, **kwargs):
+    #     log.info('monitor:deleteTemplateAssoc:%s' % kwargs)
+    #     for k, v in kwargs.items():
+    #         if v == []:
+    #             return
 
-        try:
-            pl = pool.Pool(self._lb)
-            monitor_associations = pl.getMonitorAssociation(names=kwargs['names'])
+    #     self._lb._channel.System.Session.start_transaction()
+    #     try:
+    #         pl = pool.Pool(self._lb)
+    #         monitor_associations = pl.getMonitorAssociation(names=kwargs['names'])
 
-            self._lb._channel.System.Session.start_transaction()
-            pl.removeMonitorAssociation(names=kwargs['names'])
+    #         pl.removeMonitorAssociation(names=kwargs['names'])
 
-        except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
-            raise base_exceptions.CommandErrorException(e)
-        else:
-            self._lb._channel.System.Session.submit_transaction()
-            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-            if template_names:
-                self.deleteTemplate(template_names=template_names)
+    #     except Exception, e:
+    #         self._lb._channel.System.Session.rollback_transaction()
+    #         raise base_exceptions.CommandErrorException(e)
+    #     else:
+    #         self._lb._channel.System.Session.submit_transaction()
+
+    #         try:
+    #             template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+    #             if template_names:
+    #                 self.deleteTemplate(template_names=template_names)
+    #         except bigsuds.OperationFailed:
+    #             pass
 
     def deleteTemplate(self, **kwargs):
         log.info('monitor:deleteTemplate:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
+        self._lb._channel.System.Session.start_transaction()
         try:
-            self._lb._channel.System.Session.start_transaction()
             self._lb._channel.LocalLB.Monitor.delete_template(template_names=kwargs['template_names'])
         except Exception:
             self._lb._channel.System.Session.rollback_transaction()
@@ -150,4 +151,4 @@ class Monitor(object):
             self._lb._channel.System.Session.submit_transaction()
 
     def generateName(self, identifier, number=0):
-        return '/Common/MONITOR_POOL_%s_%s' % (identifier, str(number))
+        return '/Common/MONITOR_POOL_%s_%s_%s' % (identifier, str(number), str(time.time()))
