@@ -118,7 +118,6 @@ class InterfaceChannelResource(RestResource):
             interface = Interface()
             amb = Ambiente()
             cont = []
-            interface_id = None
 
             api_interface_facade.verificar_vlan_nativa(vlan_nativa)
 
@@ -176,6 +175,10 @@ class InterfaceChannelResource(RestResource):
                         interface_list = EnvironmentInterface.objects.all().filter(interface=sw_router.id)
                         for int_env in interface_list:
                             int_env.delete()
+                        if type(envs_vlans) is not list:
+                            d = envs_vlans
+                            envs_vlans = []
+                            envs_vlans.append(d)
                         for i in envs_vlans:
                             amb = amb.get_by_pk(int(i.get("env")))
                             amb_int = EnvironmentInterface()
