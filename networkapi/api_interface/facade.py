@@ -17,6 +17,7 @@
 
 import re
 import logging
+import ast
 from django.template import Context, Template
 from networkapi.extra_logging import local, NO_REQUEST_ID
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG, LOCK_EQUIPMENT
@@ -244,10 +245,12 @@ def _load_template_file(equipment_id, template_type):
 def _generate_dict(interface):
 
     try:
-        SUPPORTED_EQUIPMENT_BRANDS = get_variable("supported_equipment_brands")
-        SUPPORTED_EQUIPMENT_BRANDS = [SUPPORTED_EQUIPMENT_BRANDS]
+        supported_string = get_variable("supported_equipment_brands")
+        SUPPORTED_EQUIPMENT_BRANDS = ast.literal_eval(supported_string)
     except ObjectDoesNotExist:
-        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável SUPPORTED_EQUIPMENT_BRANDS ou TEMPLATE_<TYPE,REMOVE>_<CHANNEL,INTERFACE>.")
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável supported_equipment_brands.")
+    except ValueError:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável supported_equipment_brands. Formato invalido. Deve ser uma string no formato de lista.")
 
     #Check if it is a supported equipment interface
 
