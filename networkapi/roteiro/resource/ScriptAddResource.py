@@ -126,14 +126,16 @@ class ScriptAddResource(RestResource):
             for ids in modelo_list:
                 equipamentos = Equipamento.objects.filter(modelo__id=ids.id)
                 for equip in equipamentos:
-                    equip_roteiro = EquipamentoRoteiro().search(None, equip.id, scr.tipo_roteiro)
-                    try:
-                        equip_roteiro = EquipamentoRoteiro()
-                        equip_roteiro.equipamento = equip
-                        equip_roteiro.roteiro = scr
-                        equip_roteiro.create(user)
-                    except:
-                        pass
+                    equip_roteiro = EquipamentoRoteiro.objects.filter(equipamento=equip.id)
+                    for rot in equip_roteiro:
+                        if not rot.roteiro.tipo_roteiro==scr.tipo_roteiro:
+                            try:
+                                equip_roteiro = EquipamentoRoteiro()
+                                equip_roteiro.equipamento = equip
+                                equip_roteiro.roteiro = scr
+                                equip_roteiro.create(user)
+                            except:
+                                pass
 
             script_map = dict()
             script_map['script'] = model_to_dict(scr, exclude=["roteiro", "tipo_roteiro", "descricao"])
