@@ -367,7 +367,7 @@ def ambiente_cloud(user, rack, environment_list):
     aclpath = 'BECLOUD'
 
     #criar ambiente cloud
-    env = criar_ambiente(user, ambientes, ranges, aclpath, "Servidores")
+    env = criar_ambiente(user, ambientes, ranges, aclpath, "Servidores", "BEVrf")
     environment_list.append(env)
 
     #configuracao do ambiente

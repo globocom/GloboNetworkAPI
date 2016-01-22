@@ -28,8 +28,9 @@ from networkapi.ip.models import IpCantBeRemovedFromVip, IpEquipamento, Ipv6Equi
 from networkapi.grupo.models import EGrupoNotFoundError, GrupoError
 from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT, LOCK_BRAND, LOCK_MODEL, LOCK_EQUIPMENT_SCRIPT, LOCK_EQUIPMENT_ENVIRONMENT
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize,\
-                            destroy_cache_function, is_valid_boolean_param
+                            destroy_cache_function, is_valid_boolean_param, convert_string_or_int_to_boolean
 from networkapi.exception import InvalidValueError
+
 
 def add_script(user, equipamento):
     try:
@@ -151,7 +152,8 @@ def insert_equipment(equipment_map, user):
         log.error(u'The maintenance parameter is not a valid value: %s.', maintenance)
         raise InvalidValueError(None, 'maintenance', maintenance)
     else:
-        equipment.maintenance = maintenance
+        equipment.maintenance = convert_string_or_int_to_boolean(maintenance)
+
 
     equipment_group_id = equipment.create(user, group_id)
 
@@ -167,7 +169,7 @@ class EquipamentoResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Trata uma requisicao POST para inserir um equipamento.
 
-        URL: equipmento/
+        URL: equipamento/
         """
 
         try:
