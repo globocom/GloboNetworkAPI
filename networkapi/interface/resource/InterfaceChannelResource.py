@@ -31,6 +31,8 @@ from networkapi.api_interface import exceptions as api_interface_exceptions
 from networkapi.system import exceptions as var_exceptions
 
 
+logger = logging.getLogger(__name__)
+
 def alterar_interface(var, interface, port_channel, int_type, vlan_nativa, user, envs_vlans, amb):
 
     cont = []
@@ -53,10 +55,11 @@ def alterar_interface(var, interface, port_channel, int_type, vlan_nativa, user,
     var.vlan_nativa = vlan_nativa
     var.save()
 
+    interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
+    for int_env in interface_list:
+        int_env.delete()
+
     if "trunk" in int_type.tipo:
-        interface_list = EnvironmentInterface.objects.all().filter(interface=var.id)
-        for int_env in interface_list:
-            int_env.delete()
         if type(envs_vlans) is not list:
             d = envs_vlans
             envs_vlans = []
@@ -74,7 +77,11 @@ def alterar_interface(var, interface, port_channel, int_type, vlan_nativa, user,
             if range_vlans:
                 api_interface_facade.verificar_vlan_range(amb, range_vlans)
                 amb_int.vlans = range_vlans
-            amb_int.create(user)
+            try:
+                amb_int.create(user)
+            except Exception, e:
+                logger.error(e)
+                pass
 
 class InterfaceChannelResource(RestResource):
 
@@ -423,13 +430,11 @@ class InterfaceChannelResource(RestResource):
                 ids_interface = []
                 ids_interface.append(i)
             for var in ids_interface:
-                self.log.info("for var "+str(var)+" "+str(interface))
                 alterar_interface(var, interface, channel, int_type, vlan_nativa, user, envs_vlans, amb)
                 interface = Interface()
                 server_obj = Interface()
                 interface_sw = interface.get_by_pk(int(var))
                 interface_server = server_obj.get_by_pk(interface_sw.ligacao_front.id)
-                self.log.info("server "+str(interface_server)+ " "+str(interface_sw))
                 try:
                     front = interface_server.ligacao_front.id
                 except:
