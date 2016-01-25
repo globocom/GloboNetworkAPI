@@ -405,9 +405,16 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 	'''
 
 	try:
-		gateway_ip = Ipv6.get_by_blocks_and_net(networkipv6.block1, networkipv6.block2,
-			networkipv6.block3, networkipv6.block4, networkipv6.block5, networkipv6.block6,
-			networkipv6.block7, "{0:0{1}x}".format(int(networkipv6.block8, 16) + 1,4), networkipv6)
+		gateway_ip = Ipv6.get_by_blocks_and_net(
+			"{0:0{1}x}".format(int(networkipv6.block1, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block2, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block3, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block4, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block5, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block6, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block7, 16),4), 
+			"{0:0{1}x}".format(int(networkipv6.block8, 16) + 1,4), 
+			networkipv6)
 	except IpNotFoundError:
 		log.error("Equipment IPs not correctly registered. \
 			Router equipments should have first IP of network allocated for them.")
