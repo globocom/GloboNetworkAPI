@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.plugins import exceptions as base_exceptions
+from ... import exceptions
 import logging
 from ...base import BasePlugin
 import re
@@ -26,9 +26,43 @@ log = logging.getLogger(__name__)
 class FTOS(BasePlugin):
 
 	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
+	WARNING_REGEX = 'config ignored'
+	ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 
 	admin_privileges = 15
 	VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
+
+	def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
+		'''
+		Send single command to equipment and than closes connection channel
+		'''
+		if self.channel == None:
+			log.error("No channel connection to the equipment %s. Was the connect() funcion ever called?" % self.equipment.nome)
+			raise exceptions.PluginNotConnected()
+
+		try:
+			stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
+		except Exception, e:
+			log.error("Error in connection. Cannot send command %s: %s"% (command,e))
+			raise api_exceptions.NetworkAPIException
+
+		equip_output_lines = stdout.readlines()
+		output_text = ''.join(equip_output_lines)
+
+		for output_line in output_text.splitlines():
+			if re.search(self.INVALID_REGEX, output_line):
+				raise exceptions.InvalidCommandException(output_text)
+			elif re.search(error_regex, output_line):
+				if re.seatch(self.WARNING_REGEX, output_line):
+					log.warning("This is threated as a warning: %s" % output_line)
+				else:
+					raise exceptions.CommandErrorException
+
+		if re.search(success_regex, output_text, re.DOTALL):
+			return output_text
+		else:
+			raise exceptions.UnableToVerifyResponse()
+
 
 	def create_svi(self, svi_number, svi_description='no description'):
 		'''
