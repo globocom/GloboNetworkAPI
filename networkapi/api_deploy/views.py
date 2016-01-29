@@ -31,7 +31,8 @@ from networkapi.api_deploy import exceptions
 from networkapi.api_deploy import facade
 from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
 from networkapi.settings import USER_SCRIPTS_REL_PATH
-
+from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools import queue_keys
 
 log = logging.getLogger(__name__)
 
@@ -49,12 +50,19 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
 
     try:
         script = request.DATA["script_data"]
+        request_identifier = request.DATA["identifier"]
         script_file = facade.create_file_from_script(script, USER_SCRIPTS_REL_PATH)
         equipment_id = int(equipment_id)
         lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
         data = dict()
+        if request_identifier is not None:
+            queue_manager = QueueManager()
+            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': None})        
         data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
         data["status"] = "OK"
+        if request_identifier is not None:
+            queue_manager = QueueManager()
+            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': None})
         return Response(data)
 
     except KeyError, key:
