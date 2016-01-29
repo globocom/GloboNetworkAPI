@@ -65,35 +65,6 @@ class FTOS(BasePlugin):
 		else:
 			raise exceptions.UnableToVerifyResponse()
 
-def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
-
-	if wait_str_invalid_regex is None:
-		wait_str_invalid_regex = self.INVALID_REGEX
-
-	if wait_str_failed_regex is None:
-		wait_str_failed_regex = self.ERROR_REGEX
-
-	string_ok = 0
-	recv_string = ''
-	while not string_ok:
-		while not self.channel.recv_ready():
-			sleep(1)
-
-		recv_string = self.channel.recv(9999)
-		file_name_string = self.removeDisallowedChars(recv_string)
-
-		for output_line in recv_string.splitlines():
-			if re.search(self.WARNING_REGEX, output_line):
-				raise exceptions.CommandErrorException(file_name_string)
-			elif re.search(super.wait_str_invalid_regex, output_line):
-				raise exceptions.CommandErrorException(file_name_string)
-			elif re.search(super.wait_str_failed_regex, output_line):
-				raise exceptions.InvalidCommandException(file_name_string)
-			elif re.search(super.wait_str_ok_regex, output_line):
-				string_ok = 1
-
-		return recv_string
-
 	def create_svi(self, svi_number, svi_description='no description'):
 		'''
 		Create SVI in switch
@@ -150,3 +121,32 @@ def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str
 		recv = self.waitString("#")
 
 		return recv
+
+	def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
+
+		if wait_str_invalid_regex is None:
+			wait_str_invalid_regex = self.INVALID_REGEX
+
+		if wait_str_failed_regex is None:
+			wait_str_failed_regex = self.ERROR_REGEX
+
+		string_ok = 0
+		recv_string = ''
+		while not string_ok:
+			while not self.channel.recv_ready():
+				sleep(1)
+
+			recv_string = self.channel.recv(9999)
+			file_name_string = self.removeDisallowedChars(recv_string)
+
+			for output_line in recv_string.splitlines():
+				if re.search(self.WARNING_REGEX, output_line):
+					log.warning("This is threated as a warning: %s" % output_line)
+				elif re.search(wait_str_invalid_regex, output_line):
+					raise exceptions.CommandErrorException(file_name_string)
+				elif re.search(wait_str_failed_regex, output_line):
+					raise exceptions.InvalidCommandException(file_name_string)
+				elif re.search(wait_str_ok_regex, output_line):
+					string_ok = 1
+
+			return recv_string
