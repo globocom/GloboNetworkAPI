@@ -21,6 +21,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+import time
 
 import logging
 from networkapi.api_rest import exceptions as api_exceptions
@@ -57,12 +58,16 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
         data = dict()
         if request_identifier is not None:
             queue_manager = QueueManager()
-            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': None})        
+            timestamp_str = str(int(time.time()))
+            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': timestamp_str})
+            queue_maneger.send()
         data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
         data["status"] = "OK"
         if request_identifier is not None:
             queue_manager = QueueManager()
-            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': None})
+            timestamp_str = str(int(time.time()))
+            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': timestamp_str})
+            queue_maneger.send()
         return Response(data)
 
     except KeyError, key:
