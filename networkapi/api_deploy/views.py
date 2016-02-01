@@ -58,15 +58,15 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
         data = dict()
         if request_identifier is not None:
             queue_manager = QueueManager()
-            timestamp_str = str(int(time.time()))
-            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': timestamp_str})
+            data = {'timestamp': int(time.time())}
+            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': data})
             queue_maneger.send()
         data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
         data["status"] = "OK"
         if request_identifier is not None:
             queue_manager = QueueManager()
-            timestamp_str = str(int(time.time()))
-            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': timestamp_str})
+            data = {'timestamp': int(time.time()), 'status': 'OK'}
+            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': data})
             queue_maneger.send()
         return Response(data)
 
