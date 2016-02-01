@@ -60,14 +60,14 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
             queue_manager = QueueManager()
             data = {'timestamp': int(time.time())}
             queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': data})
-            queue_maneger.send()
+            queue_manager.send()
         data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
         data["status"] = "OK"
         if request_identifier is not None:
             queue_manager = QueueManager()
             data = {'timestamp': int(time.time()), 'status': 'OK'}
             queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': data})
-            queue_maneger.send()
+            queue_manager.send()
         return Response(data)
 
     except KeyError, key:
