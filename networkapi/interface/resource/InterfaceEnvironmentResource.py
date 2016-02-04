@@ -153,7 +153,7 @@ class InterfaceEnvironmentResource(RestResource):
             ambiente_map = []
 
             for ids in int_ambiente:
-                ambiente_map.append(self.get_environment_map(ids.ambiente))
+                ambiente_map.append(self.get_environment_map(ids.ambiente, ids.vlans))
 
             return self.response(dumps_networkapi({'ambiente': ambiente_map}))
 
@@ -165,7 +165,7 @@ class InterfaceEnvironmentResource(RestResource):
         except InterfaceError:
            return self.response_error(1)
 
-    def get_environment_map(self, environment):
+    def get_environment_map(self, environment, vlans):
         environment_map = dict()
         environment_map['id'] = environment.id
         environment_map['divisao_dc_name'] = environment.divisao_dc.nome
@@ -175,5 +175,6 @@ class InterfaceEnvironmentResource(RestResource):
             environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_2)
         else:
             environment_map['range'] = "Nao definido"
+        environment_map['vlans'] = vlans
 
         return environment_map

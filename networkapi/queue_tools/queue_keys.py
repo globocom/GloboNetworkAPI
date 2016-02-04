@@ -44,3 +44,9 @@ VLAN_ACTIVATE = "activate_vlan"
 VLAN_DEACTIVATE = "deactivate_vlan"
 VLAN_CREATE = "create"
 VLAN_REMOVE = "remove"
+
+"""
+ DEPLOY
+"""
+BEGIN_DEPLOY_SYNC_SCRIPT = "begin_deploy_script_sync"
+END_DEPLOY_SYNC_SCRIPT = "end_deploy_script_sync"
