@@ -87,7 +87,9 @@ def gera_config(rack):
     int_oob_core1=None  
     int_oob_core2=None  
     int_core1_oob=None  
-    int_core2_oob=None  
+    int_core2_oob=None
+    prefix_spine = 'SPN'
+    prefix_oob = 'OOB'  
 
 
     #Equipamentos
@@ -109,17 +111,18 @@ def gera_config(rack):
         for interface in interfaces:
             try: 
                 sw = interface.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[2]=='01' or sw.equipamento.nome.split('-')[2]=='1': 
-                    int_lf1_sp1 = interface.interface
-                    name_sp1 = sw.equipamento.nome
-                    id_sp1 = sw.equipamento.id
-                    int_sp1 =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='02' or sw.equipamento.nome.split('-')[2]=='2':
-                    int_lf1_sp2 = interface.interface
-                    name_sp2 = sw.equipamento.nome
-                    id_sp2 = sw.equipamento.id
-                    int_sp2 =  sw.interface 
-                elif sw.equipamento.nome.split('-')[0]=='OOB':
+                if sw.equipamento.nome.split('-')[0]==prefix_spine:
+                    if sw.equipamento.nome.split('-')[2]=='01' or sw.equipamento.nome.split('-')[2]=='1': 
+                        int_lf1_sp1 = interface.interface
+                        name_sp1 = sw.equipamento.nome
+                        id_sp1 = sw.equipamento.id
+                        int_sp1 =  sw.interface
+                    elif sw.equipamento.nome.split('-')[2]=='02' or sw.equipamento.nome.split('-')[2]=='2':
+                        int_lf1_sp2 = interface.interface
+                        name_sp2 = sw.equipamento.nome
+                        id_sp2 = sw.equipamento.id
+                        int_sp2 =  sw.interface 
+                elif sw.equipamento.nome.split('-')[0]==prefix_oob:
                     int_oob_mgmtlf1 = sw.interface
             except:
                 pass
@@ -135,17 +138,18 @@ def gera_config(rack):
         for interface1 in interfaces1:
             try:
                 sw = interface1.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[2]=='03' or sw.equipamento.nome.split('-')[2]=='3':
-                    int_lf2_sp3 = interface1.interface
-                    name_sp3 = sw.equipamento.nome
-                    id_sp3 = sw.equipamento.id
-                    int_sp3 =  sw.interface
-                elif sw.equipamento.nome.split('-')[2]=='04' or sw.equipamento.nome.split('-')[2]=='4':
-                    int_lf2_sp4 = interface1.interface
-                    name_sp4 = sw.equipamento.nome
-                    id_sp4 = sw.equipamento.id
-                    int_sp4 =  sw.interface
-                elif sw.equipamento.nome.split('-')[0]=='OOB':
+                if sw.equipamento.nome.split('-')[0]==prefix_spine:
+                    if sw.equipamento.nome.split('-')[2]=='03' or sw.equipamento.nome.split('-')[2]=='3':
+                        int_lf2_sp3 = interface1.interface
+                        name_sp3 = sw.equipamento.nome
+                        id_sp3 = sw.equipamento.id
+                        int_sp3 =  sw.interface
+                    elif sw.equipamento.nome.split('-')[2]=='04' or sw.equipamento.nome.split('-')[2]=='4':
+                        int_lf2_sp4 = interface1.interface
+                        name_sp4 = sw.equipamento.nome
+                        id_sp4 = sw.equipamento.id
+                        int_sp4 =  sw.interface
+                elif sw.equipamento.nome.split('-')[0]==prefix_oob:
                     int_oob_mgmtlf2 = sw.interface
             except:
                 pass
@@ -161,7 +165,7 @@ def gera_config(rack):
         for interface2 in interfaces2:
             try:
                 sw = interface2.get_switch_and_router_interface_from_host_interface(None)
-                if sw.equipamento.nome.split('-')[0]=='OOB':
+                if sw.equipamento.nome.split('-')[0]==prefix_oob:
                     if sw.equipamento.nome.split('-')[2]=='01' or sw.equipamento.nome.split('-')[2]=='1':
                         int_oob_core1 = interface2.interface
                         name_core1 = sw.equipamento.nome
