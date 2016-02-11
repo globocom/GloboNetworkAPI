@@ -23,6 +23,7 @@ from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceInvalidBackFrontError,\
                                         PortChannel
+from networkapi.api_interface import exceptions as api_interface_exceptions
 import logging
 from networkapi.rest import RestResource
 from networkapi.exception import InvalidValueError
@@ -71,6 +72,15 @@ class InterfaceDisconnectResource(RestResource):
 
             with distributedlock(LOCK_INTERFACE % id_interface):
 
+                if interface_1.channel:
+                    self.log.info("ok1")
+                    raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
+                else:
+                    sw = interface_1.get_switch_and_router_interface_from_host_interface(interface_1.protegida)
+                    if sw.channel:
+                        self.log.info("ok2")
+                        raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
+
                 # Is valid back or front connection
                 if back_or_front:
                     try:
@@ -86,6 +96,15 @@ class InterfaceDisconnectResource(RestResource):
                     except InterfaceNotFoundError:
                         raise InterfaceInvalidBackFrontError(
                             None, "Interface two has no connection with back of Interface one")
+
+                if interface_2.channel:
+                    self.log.info("ok3")
+                    raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
+                else:
+                    sw = interface_2.get_switch_and_router_interface_from_host_interface(interface_2.protegida)
+                    if sw.channel:
+                        self.log.info("ok4"+" "+ str(sw.id))
+                        raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
 
                 if interface_2.ligacao_front_id == interface_1.id:
                     back_or_front_2 = 1
@@ -113,20 +132,6 @@ class InterfaceDisconnectResource(RestResource):
                 interface_1.save()
                 interface_2.save()
 
-            #sai do channel
-            if interface_1.channel is not None:
-                self.log.info("channel")
-
-                id_channel = interface_1.channel.id
-                interface_1.channel = None
-                interface_1.save()
-
-                interfaces = Interface.objects.all().filter(channel__id=id_channel)
-                if not len(interfaces) > 0:
-                    self.log.info("len "+str(len(interfaces)))
-
-                    PortChannel.delete()
-
             # Return None for success
             return self.response(dumps_networkapi({}))
 
@@ -138,6 +143,8 @@ class InterfaceDisconnectResource(RestResource):
             return self.response_error(141)
         except (InterfaceError, GrupoError, EquipamentoError):
             return self.response_error(1)
+        except api_interface_exceptions.InterfaceException:
+            return self.response_error(413)
         except XMLError, e:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
