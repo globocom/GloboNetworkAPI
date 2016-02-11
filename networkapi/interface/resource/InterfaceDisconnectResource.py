@@ -73,12 +73,10 @@ class InterfaceDisconnectResource(RestResource):
             with distributedlock(LOCK_INTERFACE % id_interface):
 
                 if interface_1.channel:
-                    self.log.info("ok1")
                     raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
                 else:
                     sw = interface_1.get_switch_and_router_interface_from_host_interface(interface_1.protegida)
                     if sw.channel:
-                        self.log.info("ok2")
                         raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
 
                 # Is valid back or front connection
@@ -98,12 +96,10 @@ class InterfaceDisconnectResource(RestResource):
                             None, "Interface two has no connection with back of Interface one")
 
                 if interface_2.channel:
-                    self.log.info("ok3")
                     raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
                 else:
                     sw = interface_2.get_switch_and_router_interface_from_host_interface(interface_2.protegida)
                     if sw.channel:
-                        self.log.info("ok4"+" "+ str(sw.id))
                         raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
 
                 if interface_2.ligacao_front_id == interface_1.id:

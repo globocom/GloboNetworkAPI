@@ -15,9 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.plugins import exceptions as base_exceptions
-from . import exceptions
 import logging
 from ..base import BasePlugin
 
