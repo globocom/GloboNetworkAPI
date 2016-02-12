@@ -31,6 +31,7 @@ from requests.exceptions import RequestException
 from networkapi.system.facade import get_value as get_variable
 from networkapi.system import exceptions as var_exceptions
 from django.core.exceptions import ObjectDoesNotExist
+import re
 
 log = logging.getLogger(__name__)
 
@@ -50,19 +51,23 @@ def buscar_roteiro(id_sw, tipo):
     return roteiro_eq 
 
 def buscar_ip(id_sw):
+    '''Retuns switch IP that is registered in a management environment
+    '''
 
     ip_sw=None
 
     ips = IpEquipamento()
-    ips = ips.list_by_equip(id_sw)
+    ips_equip = ips.list_by_equip(id_sw)
+    regexp = re.compile(r'[Mm][Nn][Gg][Tt]|[Mm][Gg][Mm][Tt]')
 
-    for ip in ips:
-        ip_sw = Ip.get_by_pk(ip.ip.id)
+    mgnt_ip = None
+    for ip_equip in ips_equip:
+        ip_sw = ip_equip.ip
+        if not ip_sw==None:
+            if regexp.search(ip_sw.networkipv4.vlan.ambiente.ambiente_logico.nome) is not None:
+                mgnt_ip = str(ip_sw.oct1)+'.'+str(ip_sw.oct2)+'.'+str(ip_sw.oct3)+'.'+str(ip_sw.oct4)
 
-    if not ip_sw==None:
-        ip_sw = str(ip_sw.oct1)+'.'+str(ip_sw.oct2)+'.'+str(ip_sw.oct3)+'.'+str(ip_sw.oct4)
-
-    return ip_sw
+    return mgnt_ip
 
 def gera_config(rack):
 
