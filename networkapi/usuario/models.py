@@ -25,6 +25,7 @@ from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
 from networkapi.system.facade import get_value
 import ldap
 from networkapi.system import exceptions
+from networkapi.util import convert_string_or_int_to_boolean
 
 class UsuarioError(Exception):
 
@@ -182,7 +183,7 @@ class Usuario(BaseModel):
         bypass = 0
         try:
             try:
-                use_ldap = get_value('use_ldap')
+                use_ldap = convert_string_or_int_to_boolean(get_value('use_ldap'))
                 if use_ldap:
                     ldap_param = get_value('ldap_config')
                     ldap_server = get_value('ldap_server')
