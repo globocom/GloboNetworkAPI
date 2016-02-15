@@ -58,7 +58,7 @@ def buscar_ip(id_sw):
 
     ips = IpEquipamento()
     ips_equip = ips.list_by_equip(id_sw)
-    regexp = re.compile(r'[Mm][Nn][Gg][Tt]|[Mm][Gg][Mm][Tt]')
+    regexp = re.compile(r'GERENCIA')
 
     mgnt_ip = None
     for ip_equip in ips_equip:
