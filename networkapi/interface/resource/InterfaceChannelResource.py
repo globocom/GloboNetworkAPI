@@ -374,7 +374,11 @@ class InterfaceChannelResource(RestResource):
             ids_interface = channel_map.get('ids_interface')
             if ids_interface is None:
                 raise InterfaceError("Nenhuma interface selecionada")
-            interfaces = str(ids_interface).split('-')
+
+            if type(ids_interface) == list:
+                interfaces_list = ids_interface
+            else:
+                interfaces_list = str(ids_interface).split('-')
 
             port_channel = PortChannel()
             interface = Interface()
@@ -385,7 +389,7 @@ class InterfaceChannelResource(RestResource):
             # verifica se o nome do port channel já existe no equipamento
             channel = port_channel.get_by_pk(int(id_channel))
             if not nome==channel.nome:
-                api_interface_facade.verificar_nome_channel(nome, interfaces)
+                api_interface_facade.verificar_nome_channel(nome, interfaces_list)
 
             #buscar interfaces do channel
             interfaces = Interface.objects.all().filter(channel__id=id_channel)
