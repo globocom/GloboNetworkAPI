@@ -267,7 +267,9 @@ def _generate_dict(interface):
     key_dict["INTERFACE_DESCRIPTION"] = str(interface.ligacao_front.equipamento.nome) + ' ' + str(interface.ligacao_front.interface)
     key_dict["INTERFACE_TYPE"] = interface.tipo.tipo
     if key_dict["INTERFACE_TYPE"] in "trunk":
-        key_dict["VLAN_RANGE"] = get_vlan_range(interface)
+        vlan_range_results = get_vlan_range(interface)
+        key_dict["VLAN_RANGE"] = vlan_range_results[0]
+        key_dict["VLAN_RANGE_LIST"] = vlan_range_results[1]
 
     if interface.channel is not None:
         key_dict["BOOL_INTERFACE_IN_CHANNEL"] = 1
@@ -292,23 +294,28 @@ def get_vlan_range(interface):
     #TODO Generate vlan range
     env_ints = EnvironmentInterface.get_by_interface(interface.id)
     vlan_range = ""
+    vlan_range_list = []
     for env_int in env_ints:
         vlan_range_1 = str(env_int.ambiente.min_num_vlan_1)+"-"+str(env_int.ambiente.max_num_vlan_1)
         vlan_range_2 = str(env_int.ambiente.min_num_vlan_2)+"-"+str(env_int.ambiente.max_num_vlan_2)
         if vlan_range_1 is not vlan_range_2:
             vlan_range_temp = vlan_range_1+","+vlan_range_2
+            vlan_range_list_temp = [vlan_range_1, vlan_range_2]
         else:
             vlan_range_temp = vlan_range_1
+            vlan_range_list_temp = [vlan_range_1]
             
         if vlan_range is "":
             vlan_range = vlan_range_temp
+            vlan_range_list.extend(vlan_range_list_temp)
         elif vlan_range_temp not in vlan_range:
             vlan_range += ","+vlan_range_temp
+            vlan_range_list.extend(vlan_range_list_temp)
 
     if vlan_range == "":
         raise exceptions.InterfaceTrunkAllowedVlanException()
 
-    return vlan_range
+    return [vlan_range, vlan_range_list]
 
 def verificar_vlan_range(amb, vlans):
     for intervalo in vlans.split(';'):
