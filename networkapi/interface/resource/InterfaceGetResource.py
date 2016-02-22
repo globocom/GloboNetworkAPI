@@ -81,7 +81,7 @@ class InterfaceGetResource(RestResource):
         """Treat GET requests to list interface by ID or by channel
 
         URL: interface/<id_interface>/get/
-             interface/get-by-channel/<channel_name>/
+             interface/get-by-channel/<channel_name>/equip-name/
              interface/get/<channel_name>/<id_equip>
         """
 
