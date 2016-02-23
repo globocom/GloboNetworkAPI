@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 from django.test import TestCase
-from django.test.client import Client
 
 
 import logging
@@ -16,7 +15,11 @@ class NetworkApiTestCase(TestCase):
                 'initial_permissoes_administrativas.json',
                 'initial_direitos_grupos_equip.json',
                 'initial_usuario.json',
-                'initial_variables.json']
+                'initial_variables.json',
+                'initial_tipo_equip.json',
+                'initial_equip_marca.json',
+                'initial_equip_model.json',
+                'initial_equipments.json']
 
     def setUp(self):
         pass
@@ -26,5 +29,4 @@ class NetworkApiTestCase(TestCase):
 
     def tearDown(self):
         pass
-
 

@@ -538,8 +538,7 @@ class TipoEquipamento(BaseModel):
 
 class Equipamento(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_equip')
-    tipo_equipamento = models.ForeignKey(
-        TipoEquipamento, db_column='id_tipo_equipamento')
+    tipo_equipamento = models.ForeignKey(TipoEquipamento, db_column='id_tipo_equipamento')
     modelo = models.ForeignKey(Modelo, db_column='id_modelo')
     nome = models.CharField(unique=True, max_length=50)
     grupos = models.ManyToManyField(EGrupo, through='EquipamentoGrupo')

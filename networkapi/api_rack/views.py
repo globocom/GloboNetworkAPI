@@ -37,15 +37,16 @@ from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 
 log = logging.getLogger(__name__)
 
+@permission_classes((IsAuthenticated, Write))
 class RackView(APIView):
 
-    @permission_classes((IsAuthenticated, Write))
+
     @commit_on_success
-    def post(self, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
             log.info("Add Rack")
 
-            data_ = self.request.DATA
+            data_ = request.DATA
             if not data_:
                 raise exceptions.InvalidInputException()
 

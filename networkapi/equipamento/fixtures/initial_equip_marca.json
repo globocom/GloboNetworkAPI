@@ -1,0 +1,9 @@
+[
+  {
+    "pk": 1,
+    "model": "equipamento.marca",
+    "fields": {
+      "nome": "e_marca"
+    }
+  }
+]
