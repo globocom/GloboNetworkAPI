@@ -508,6 +508,11 @@ def dic_fe_prod(rack):
     subnetsRackFEipv6 = {}
     subnetsRackFEipv6[rack] = []
 
+    podsFEipv4 = {}
+    podsFEipv4[rack] = []
+    podsFEipv6 = {}
+    podsFEipv6[rack] = []
+
     redes=dict()
     ranges=dict()
     ipv6=dict()
@@ -526,12 +531,15 @@ def dic_fe_prod(rack):
     subnetsRackFEipv4[rack]=splitnetworkbyrack(CIDRFEipv4[0],21,rack)
     subnetsRackFEipv6[rack]=splitnetworkbyrack(CIDRFEipv6[0],57,rack)
 
+    podsFEipv4[rack]= splitnetworkbyrack(subnetsRackFEipv4[rack],27,0)
+    podsFEipv6[rack]= splitnetworkbyrack(subnetsRackFEipv6[rack],64,3)
+
     ranges['MAX']=int(get_variable("fe_vlan_min"))
     ranges['MIN']=int(get_variable("fe_vlan_max"))
-    redes['PREFIX']=subnetsRackFEipv4[rack].prefixlen
+    redes['PREFIX']=podsFEipv4[rack].prefixlen
     redes['REDE']=str(subnetsRackFEipv4[rack])
 
-    ipv6['PREFIX']= subnetsRackFEipv6[rack].prefixlen
+    ipv6['PREFIX']= podsFEipv6[rack].prefixlen
     ipv6['REDE']=str(subnetsRackFEipv6[rack])
     return redes, ranges, ipv6
 
