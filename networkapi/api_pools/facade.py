@@ -14,31 +14,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.cache import cache
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 
-from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvironmentVip
-from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
+from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
+from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoAcesso
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.distributedlock import distributedlock, LOCK_POOL
+from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
+from networkapi.error_message_utils import error_messages
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPoolMember, ServerPool
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param, is_healthcheck_valid
 from networkapi.plugins.factory import PluginFactory
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.distributedlock import distributedlock, LOCK_POOL
-from networkapi.error_message_utils import error_messages
-
+from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
+from networkapi.util import is_healthcheck_valid, is_valid_int_greater_zero_param, \
+    is_valid_list_int_greater_zero_param
 
 # from networkapi.ambiente.models import IP_VERSION
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -660,7 +661,7 @@ def set_poolmember_state(pools):
                 })
 
         for lb in load_balance:
-            load_balance[lb]['plugin'].setStateMember(load_balance[lb])
+            load_balance[lb]['plugin'].set_state_member(load_balance[lb])
         return {}
 
     except Exception, exception:
@@ -736,7 +737,7 @@ def get_poolmember_state(servers_pools):
         ps = {}
         status = {}
         # call plugin to get state member
-        states = load_balance[lb]['plugin'].getStateMember(load_balance[lb])
+        states = load_balance[lb]['plugin'].get_state_member(load_balance[lb])
 
         for idx, state in enumerate(states):
             pool_id = load_balance[lb]['pools'][idx]['id']
@@ -770,7 +771,8 @@ def create_real_pool(request):
     """
     pools = request.DATA.get("pools", [])
 
-    load_balance = {}
+    load_balance = dict()
+    keys_cache = list()
 
     for pool in pools:
 
@@ -822,6 +824,8 @@ def create_real_pool(request):
                     'pools': [],
                 }
 
+            keys_cache.append('pool:monitor:%s' % pool['server_pool']['identifier'])
+
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['server_pool']['id'],
                 'nome': pool['server_pool']['identifier'],
@@ -832,7 +836,10 @@ def create_real_pool(request):
             })
 
     for lb in load_balance:
-        load_balance[lb]['plugin'].createPool(load_balance[lb])
+        load_balance[lb]['plugin'].create_pool(load_balance[lb])
+
+    for key_cache in keys_cache:
+        cache.delete(key_cache)
 
     ids = [pool['server_pool']['id'] for pool in pools]
     ServerPool.objects.filter(id__in=ids).update(pool_created=True)
@@ -905,7 +912,7 @@ def delete_real_pool(request):
             })
 
     for lb in load_balance:
-        load_balance[lb]['plugin'].deletePool(load_balance[lb])
+        load_balance[lb]['plugin'].delete_pool(load_balance[lb])
 
     ids = [pool['server_pool']['id'] for pool in pools]
     ServerPool.objects.filter(id__in=ids).update(pool_created=False)
@@ -919,7 +926,8 @@ def update_real_pool(request):
     - update data pool in db
     """
     pools = request.DATA.get("pools", [])
-    load_balance = {}
+    load_balance = dict()
+    keys_cache = list()
 
     # valid data for save in DB and apply in eqpt
     ps, sp = valid_to_save_reals_v2(pools)
@@ -1024,6 +1032,8 @@ def update_real_pool(request):
                     'pools': [],
                 }
 
+            keys_cache.append('pool:monitor:%s' % pool['server_pool']['identifier'])
+
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['server_pool']['id'],
                 'nome': pool['server_pool']['identifier'],
@@ -1044,7 +1054,10 @@ def update_real_pool(request):
         if len(lbe) > 0:
             json = load_balance[lb]
             json['pools'] = lbe
-            json['plugin'].updatePool(json)
+            json['plugin'].update_pool(json)
+
+    for key_cache in keys_cache:
+        cache.delete(key_cache)
 
     # save pool in DB
     for idx in sp:
@@ -1080,8 +1093,6 @@ def update_real_pool(request):
                 members[str(member['id'])] = member
 
     # update pool members
-
-    log.info(pools)
     for pm in pms:
         if members.get(str(pm.id)):
             pm.port_real = members.get(str(pm.id))['port_real']

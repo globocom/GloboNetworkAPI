@@ -1,10 +1,11 @@
-import bigsuds
-import itertools
+# -*- coding: utf-8 -*-
 import logging
 import time
 
+from django.core.cache import cache
+
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import lb, types, pool
+from networkapi.plugins.F5 import lb, types
 
 log = logging.getLogger(__name__)
 
@@ -17,8 +18,8 @@ class Monitor(object):
 
         self._lb = _lb
 
-    def createTemplate(self, **kwargs):
-        log.info('monitor:createTemplate:%s' % kwargs)
+    def create_template(self, **kwargs):
+        log.info('monitor:create_template:%s' % kwargs)
 
         templates = []
         template_attributes = []
@@ -41,10 +42,15 @@ class Monitor(object):
 
                 if kwargs['healthcheck'][i]['healthcheck_request'] != '' or kwargs['healthcheck'][i]['healthcheck_expect'] != '':
 
-                    name = self.generateName(kwargs['names'][i])
+                    key = 'pool:monitor:%s' % kwargs['names'][i]
+                    name = cache.get(key)
+                    if not name:
+                        name = self.generate_name(kwargs['names'][i])
+                        cache.set(key, name)
+
                     template = {
                         'template_name': name,
-                        'template_type': types.TemplateType(kwargs['healthcheck'][i]['healthcheck_type'])
+                        'template_type': types.template_type(kwargs['healthcheck'][i]['healthcheck_type'])
                     }
 
                     templates.append(template)
@@ -52,7 +58,7 @@ class Monitor(object):
                         'parent_template': kwargs['healthcheck'][i]['healthcheck_type'].lower(),
                         'interval': 5,
                         'timeout': 16,
-                        'dest_ipport': types.AddressType(kwargs['healthcheck'][i]['destination']),
+                        'dest_ipport': types.address_type(kwargs['healthcheck'][i]['destination']),
                         'is_read_only': 0,
                         'is_directly_usable': 1
                     })
@@ -111,8 +117,8 @@ class Monitor(object):
             log.error(e)
         return monitor_associations
 
-    # def deleteTemplateAssoc(self, **kwargs):
-    #     log.info('monitor:deleteTemplateAssoc:%s' % kwargs)
+    # def delete_templateAssoc(self, **kwargs):
+    #     log.info('monitor:delete_templateAssoc:%s' % kwargs)
     #     for k, v in kwargs.items():
     #         if v == []:
     #             return
@@ -120,9 +126,9 @@ class Monitor(object):
     #     self._lb._channel.System.Session.start_transaction()
     #     try:
     #         pl = pool.Pool(self._lb)
-    #         monitor_associations = pl.getMonitorAssociation(names=kwargs['names'])
+    #         monitor_associations = pl.get_monitor_association(names=kwargs['names'])
 
-    #         pl.removeMonitorAssociation(names=kwargs['names'])
+    #         pl.remove_monitor_association(names=kwargs['names'])
 
     #     except Exception, e:
     #         self._lb._channel.System.Session.rollback_transaction()
@@ -133,12 +139,12 @@ class Monitor(object):
     #         try:
     #             template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
     #             if template_names:
-    #                 self.deleteTemplate(template_names=template_names)
+    #                 self.delete_template(template_names=template_names)
     #         except bigsuds.OperationFailed:
     #             pass
 
-    def deleteTemplate(self, **kwargs):
-        log.info('monitor:deleteTemplate:%s' % kwargs)
+    def delete_template(self, **kwargs):
+        log.info('monitor:delete_template:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -150,5 +156,5 @@ class Monitor(object):
         else:
             self._lb._channel.System.Session.submit_transaction()
 
-    def generateName(self, identifier, number=0):
+    def generate_name(self, identifier, number=0):
         return '/Common/MONITOR_POOL_%s_%s_%s' % (identifier, str(number), str(time.time()))

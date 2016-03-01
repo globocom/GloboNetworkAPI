@@ -1,6 +1,8 @@
-import bigsuds
-import logging
 from functools import wraps
+import logging
+
+import bigsuds
+
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
 from networkapi.util import is_healthcheck_valid
@@ -48,7 +50,7 @@ def connection(func):
     return inner
 
 
-def getStatusName(status):
+def get_status_name(status):
     try:
         return STATUS_POOL_MEMBER[status]
     except Exception:
@@ -57,7 +59,7 @@ def getStatusName(status):
         raise base_exceptions.NamePropertyInvalid(msg)
 
 
-def getMethodName(lb_method):
+def get_method_name(lb_method):
     try:
         return LB_METHOD[lb_method]
     except Exception:
@@ -66,7 +68,7 @@ def getMethodName(lb_method):
         raise base_exceptions.NamePropertyInvalid(msg)
 
 
-def getServiceDownActionName(action):
+def get_service_down_action_name(action):
     try:
         return SERVICE_DOWN_ACTION[action]
     except Exception:
@@ -75,7 +77,7 @@ def getServiceDownActionName(action):
         raise base_exceptions.NamePropertyInvalid(msg)
 
 
-def _trataParam(pools):
+def _trata_param(pools):
     pls = {
         'pools_names': [],
         'pools_lbmethod': [],
@@ -99,14 +101,14 @@ def _trataParam(pools):
 
         if p.get('lb_method'):
             pls['pools_lbmethod'].append(
-                getMethodName(p['lb_method']))
+                get_method_name(p['lb_method']))
 
         if p.get('healthcheck'):
             is_healthcheck_valid(p['healthcheck'])
             pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):
-            pls['pools_actions'].append(getServiceDownActionName(p['action']))
+            pls['pools_actions'].append(get_service_down_action_name(p['action']))
 
         member_status_monitor = []
         member_status_session = []
@@ -118,7 +120,7 @@ def _trataParam(pools):
         member_remove = []
         for pool_member in p['pools_members']:
             if pool_member.get('member_status'):
-                status = getStatusName(
+                status = get_status_name(
                     str(pool_member['member_status']))
                 member_status_monitor.append(status['monitor'])
                 member_status_session.append(status['session'])

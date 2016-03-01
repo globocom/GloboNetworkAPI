@@ -1,10 +1,11 @@
 import logging
+
 from networkapi.plugins import exceptions as base_exceptions
 
 log = logging.getLogger(__name__)
 
 
-def AddressType(value):
+def address_type(value):
 
     values = {
         # 'ATYPE_UNSET'
@@ -30,7 +31,7 @@ def AddressType(value):
         raise base_exceptions.NamePropertyInvalid(msg)
 
 
-def TemplateType(value):
+def template_type(value):
 
     values = {
         # 'unset':'TTYPE_UNSET',
