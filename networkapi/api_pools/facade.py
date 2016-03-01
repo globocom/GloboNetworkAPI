@@ -798,11 +798,13 @@ def create_real_pool(request):
 
         equips = EquipamentoAmbiente.objects.filter(
             ambiente__id=pool['server_pool']['environment']['id'],
-            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+            equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador',)
 
         equipment_list = [e.equipamento for e in equips]
         if all_equipments_are_in_maintenance(equipment_list):
             raise AllEquipmentsAreInMaintenanceException()
+
+        equips = equips.filter(equipamento__maintenance=0)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -881,6 +883,8 @@ def delete_real_pool(request):
         equipment_list = [e.equipamento for e in equips]
         if all_equipments_are_in_maintenance(equipment_list):
             raise AllEquipmentsAreInMaintenanceException()
+
+        equips = equips.filter(equipamento__maintenance=0)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -1011,6 +1015,8 @@ def update_real_pool(request):
         equipment_list = [e.equipamento for e in equips]
         if all_equipments_are_in_maintenance(equipment_list):
             raise AllEquipmentsAreInMaintenanceException()
+
+        equips = equips.filter(equipamento__maintenance=0)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
