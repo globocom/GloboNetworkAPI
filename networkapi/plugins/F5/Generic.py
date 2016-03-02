@@ -206,7 +206,7 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.rollback_transaction()
 
             # delete templates created
-            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names:
                 mon.delete_template(
                     template_names=template_names
@@ -214,6 +214,13 @@ class Generic(BasePlugin):
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
+
+            # delete templates old
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
+            if template_names:
+                mon.delete_template(
+                    template_names=template_names
+                )
 
     @util.connection
     def delete_pool(self, pools):
