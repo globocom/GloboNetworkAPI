@@ -14,17 +14,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from networkapi.api_rest import exceptions as api_exceptions
 import logging
-from . import exceptions
-from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
-from networkapi.settings import TFTP_SERVER_ADDR
 import re
+import string
 from time import sleep
 import unicodedata
-import string
+
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.settings import TFTP_SERVER_ADDR
+
 import paramiko
+
+from . import exceptions
+
 
 log = logging.getLogger(__name__)
 
@@ -78,7 +81,7 @@ class BasePlugin(object):
             Exception: for other unhandled exceptions
         '''
 
-        if self.equipment_access == None:
+        if self.equipment_access is None:
             try:
                 self.equipment_access = EquipamentoAcesso.search(None, self.equipment, "ssh").uniqueResult()
             except Exception, e:
@@ -121,14 +124,14 @@ class BasePlugin(object):
         '''
         Send single command to equipment and than closes connection channel
         '''
-        if self.channel == None:
+        if self.channel is None:
             log.error("No channel connection to the equipment %s. Was the connect() funcion ever called?" % self.equipment.nome)
             raise exceptions.PluginNotConnected()
 
         try:
             stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
         except Exception, e:
-            log.error("Error in connection. Cannot send command %s: %s"% (command,e))
+            log.error("Error in connection. Cannot send command %s: %s" % (command, e))
             raise api_exceptions.NetworkAPIException
 
         equip_output_lines = stdout.readlines()
@@ -178,25 +181,25 @@ class BasePlugin(object):
 
         return recv_string
 
-    def getStateMember(self, status):
+    def get_state_member(self, status):
         '''
         Return state of poolmember
         '''
         raise NotImplementedError()
 
-    def setStateMember(self, status):
+    def set_state_member(self, status):
         '''
         Set state of poolmember
         '''
         raise NotImplementedError()
 
-    def createMember(self, status):
+    def create_member(self, status):
         '''
         Crate poolmember
         '''
         raise NotImplementedError()
 
-    def removeMember(self, status):
+    def remove_member(self, status):
         '''
         Remove poolmember
         '''
