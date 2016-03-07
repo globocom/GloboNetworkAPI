@@ -387,8 +387,8 @@ class OptionVip(BaseModel):
 
             #log.info(str(ovips))
 
-            #ovips = ovips.filter(
-            #    optionvipenvironmentvip__environment__id=int(id_environment_vip))
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
 
             return ovips
 
