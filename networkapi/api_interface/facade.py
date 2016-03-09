@@ -296,15 +296,18 @@ def get_vlan_range(interface):
     vlan_range = ""
     vlan_range_list = []
     for env_int in env_ints:
-        vlan_range_1 = str(env_int.ambiente.min_num_vlan_1)+"-"+str(env_int.ambiente.max_num_vlan_1)
-        vlan_range_2 = str(env_int.ambiente.min_num_vlan_2)+"-"+str(env_int.ambiente.max_num_vlan_2)
-        if vlan_range_1 is not vlan_range_2:
-            vlan_range_temp = vlan_range_1+","+vlan_range_2
-            vlan_range_list_temp = [vlan_range_1, vlan_range_2]
+        if env_int.vlans:
+            vlan_range_temp = env_int.vlans
+            vlan_range_list_temp = [vlan_range_temp]
         else:
-            vlan_range_temp = vlan_range_1
-            vlan_range_list_temp = [vlan_range_1]
-            
+            vlan_range_1 = str(env_int.ambiente.min_num_vlan_1)+"-"+str(env_int.ambiente.max_num_vlan_1)
+            vlan_range_2 = str(env_int.ambiente.min_num_vlan_2)+"-"+str(env_int.ambiente.max_num_vlan_2)
+            if vlan_range_1 is not vlan_range_2:
+                vlan_range_temp = vlan_range_1+","+vlan_range_2
+                vlan_range_list_temp = [vlan_range_1, vlan_range_2]
+            else:
+                vlan_range_temp = vlan_range_1
+                vlan_range_list_temp = [vlan_range_1]
         if vlan_range is "":
             vlan_range = vlan_range_temp
             vlan_range_list.extend(vlan_range_list_temp)
