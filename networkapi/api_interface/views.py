@@ -108,18 +108,14 @@ class DisconnectView(APIView):
                     interface_1.ligacao_front = None
                     if interface_2.ligacao_front_id == interface_1.id:
                         interface_2.ligacao_front = None
-                        log.info("lig_1_fr_lig_2_fr")
                     else:
                         interface_2.ligacao_back = None
-                        log.info("lig_1_fr_lig_2_b")
                 elif interface_1.ligacao_back_id == interface_2.id:
                     interface_1.ligacao_back = None
                     if interface_2.ligacao_back_id == interface_1.id:
                         interface_2.ligacao_back = None
-                        log.info("lig_2_fr")
                     else:
                         interface_2.ligacao_front = None
-                        log.info("lig_1_b_lig_2_fr")
                 elif not interface_1.ligacao_front_id and not interface_1.ligacao_back_id:
                     raise exceptions.InterfaceException("Interface id %s não connectada" % interface_1)
 
