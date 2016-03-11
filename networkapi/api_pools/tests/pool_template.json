@@ -1,0 +1,117 @@
+{
+    "pools": [
+        {
+            "server_pool": {
+                "default_limit": 70,
+                "default_port": 803,
+                "environment": {
+                    "acl_path": null,
+                    "ambiente_logico": 93,
+                    "divisao_dc": 1,
+                    "filter": null,
+                    "grupo_l3": 52,
+                    "id": 121,
+                    "ipv4_template": null,
+                    "ipv6_template": null,
+                    "link": null,
+                    "max_num_vlan_1": null,
+                    "max_num_vlan_2": null,
+                    "min_num_vlan_1": null,
+                    "min_num_vlan_2": null,
+                    "vrf": null
+                },
+                "healthcheck": {
+                    "destination": "*:*",
+                    "healthcheck_expect": "",
+                    "healthcheck_request": "",
+                    "healthcheck_type": "TCP",
+                    "id": 1,
+                    "identifier": ""
+                },
+                "id": 17021,
+                "identifier": "teste12345_ederson1",
+                "lb_method": "weighted",
+                "pool_created": true,
+                "servicedownaction": {
+                    "id": 5,
+                    "name": "none",
+                    "type": "ServiceDownAction"
+                }
+            },
+            "server_pool_members": [
+                {
+                    "equipment_id": 22161,
+                    "equipment_name": "L-0F47DC6C-8A80-44CF-89F7-19CB921367B9",
+                    "healthcheck": null,
+                    "id": 28880,
+                    "identifier": "L-0F47DC6C-8A80-44CF-89F7-19CB921367B9",
+                    "ip": {
+                        "descricao": null,
+                        "id": 56942,
+                        "ip_formated": "10.170.16.6",
+                        "networkipv4": 4836,
+                        "oct1": 10,
+                        "oct2": 170,
+                        "oct3": 16,
+                        "oct4": 6
+                    },
+                    "ipv6": null,
+                    "last_status_update": "2015-10-30T17:07:45",
+                    "last_status_update_formated": "30/10/2015 17:07:45",
+                    "limit": 70,
+                    "member_status": 3,
+                    "port_real": 80,
+                    "priority": 1,
+                    "server_pool": {
+                        "default_limit": 70,
+                        "default_port": 803,
+                        "environment": 121,
+                        "healthcheck": 1,
+                        "id": 17021,
+                        "identifier": "teste12345_ederson1",
+                        "lb_method": "weighted",
+                        "pool_created": true,
+                        "servicedownaction": 5
+                    },
+                    "weight": 0
+                },
+                {
+                    "equipment_id": 22162,
+                    "equipment_name": "L-8FAEA6AA-F9D9-442F-926A-A917405F4860",
+                    "healthcheck": null,
+                    "id": 28879,
+                    "identifier": "L-8FAEA6AA-F9D9-442F-926A-A917405F4860",
+                    "ip": {
+                        "descricao": null,
+                        "id": 56943,
+                        "ip_formated": "10.170.16.151",
+                        "networkipv4": 4836,
+                        "oct1": 10,
+                        "oct2": 170,
+                        "oct3": 16,
+                        "oct4": 151
+                    },
+                    "ipv6": null,
+                    "last_status_update": "2015-10-30T17:07:45",
+                    "last_status_update_formated": "30/10/2015 17:07:45",
+                    "limit": 70,
+                    "member_status": 3,
+                    "port_real": 80,
+                    "priority": 2,
+                    "server_pool": {
+                        "default_limit": 70,
+                        "default_port": 803,
+                        "environment": 121,
+                        "healthcheck": 1,
+                        "id": 17021,
+                        "identifier": "teste12345_ederson1",
+                        "lb_method": "weighted",
+                        "pool_created": true,
+                        "servicedownaction": 5
+                    },
+                    "weight": 0
+                }
+            ]
+        }
+    ]
+}

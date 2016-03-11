@@ -15,29 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import json
 import logging
-from datetime import datetime
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.forms.models import model_to_dict
 
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from networkapi.ambiente.models import Ambiente, EnvironmentVip, EnvironmentEnvironmentVip
+from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, EnvironmentVip
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
     prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
     update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
-    exec_script_check_poolmember_by_pool, set_poolmember_state, get_poolmember_state, create_real_pool, update_real_pool, \
-    delete_real_pool, create_lock, destroy_lock
+    exec_script_check_poolmember_by_pool
 from networkapi.api_pools.models import OpcaoPoolAmbiente, OptionPool, OptionPoolEnvironment
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
@@ -51,12 +44,17 @@ from networkapi.exception import InvalidValueError
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.ip.models import IpEquipamento, Ip, Ipv6
+from networkapi.ip.models import Ip, IpEquipamento, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
     VipPortToPool
 from networkapi.util import is_valid_string_maxsize, is_valid_option, \
     is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, \
     is_valid_healthcheck_destination, is_valid_pool_identifier_text
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 log = logging.getLogger(__name__)
 
@@ -163,130 +161,6 @@ def pool_list_by_reqvip(request):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
-
-
-@api_view(['GET', 'POST'])
-@permission_classes((IsAuthenticated, Write))
-@commit_on_success
-def poolmember_state(request):
-    """
-    Enable/Disable pool member by list
-
-    param: Following dictionary: {
-            "pools": [
-                {
-                    "server_pool": {
-                    },
-                    "server_pool_members": [
-                    ]
-                }
-            ]
-        }
-    """
-
-    request = request.DATA.get("pools", [])
-    response = set_poolmember_state(request)
-
-    return Response(response)
-
-
-@api_view(['POST', 'PUT', 'DELETE'])
-@permission_classes((IsAuthenticated, Write))
-@commit_on_success
-def real_pool_action(request):
-    """
-    Create/Update/Delete real pool member by list
-
-    param: Following dictionary: {
-            "pools": [
-                {
-                    "server_pool": {
-                        ...
-                    },
-                    "server_pool_members": [
-                        ...
-                    ]
-                }
-            ]
-        }
-    """
-    locks_list = create_lock(request.DATA.get("pools", []))
-    try:
-        if request.method == 'POST':
-            response = update_real_pool(request)
-        elif request.method == 'PUT':
-            response = create_real_pool(request)
-        elif request.method == 'DELETE':
-            response = delete_real_pool(request)
-    finally:
-        destroy_lock(locks_list)
-    return Response(response)
-
-
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, Read))
-@commit_on_success
-def list_all_members(request):
-    """
-    Return pool member list by POST request method
-    Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}
-    Return:
-          {
-            "pools": [
-                {
-                    "server_pool": {
-                    },
-                    "server_pool_members": [
-                    ]
-                }
-            ]
-        }
-    """
-
-    pools = request.DATA.get("id_pools")
-    checkstatus = request.DATA.get("checkstatus")
-    if checkstatus is None:
-        checkstatus = False
-
-    data = dict()
-
-    servers_pools = ServerPool.objects.filter(id__in=pools)
-
-    if checkstatus:
-        status = get_poolmember_state(servers_pools)
-
-    data["pools"] = []
-    for server_pool in servers_pools:
-
-        if checkstatus:
-
-            if status.get(server_pool.id):
-                query_pools = ServerPoolMember.objects.filter(server_pool=server_pool)
-
-                for pm in query_pools:
-
-                    member_checked_status = status[server_pool.id][pm.id]
-                    pm.member_status = member_checked_status
-                    pm.last_status_update = datetime.now()
-                    pm.save(request.user)
-
-        server_pool_members = ServerPoolMember.objects.filter(
-            server_pool=server_pool
-        )
-
-        serializer_server_pool = ServerPoolSerializer(server_pool)
-
-        serializer_server_pool_member = ServerPoolMemberSerializer(
-            server_pool_members,
-            many=True
-        )
-
-        data["pools"].append({
-            "server_pool": serializer_server_pool.data,
-            "server_pool_members": serializer_server_pool_member.data
-        })
-
-    return Response(data)
 
 
 @api_view(['GET', 'POST'])
@@ -1745,180 +1619,3 @@ def save_environment_options(request):
     except Exception, exception:
         log.exception(exception)
         raise api_exceptions.NetworkAPIException()
-
-
-########################
-# Manage Pool V2
-########################
-class PoolmemberState(APIView):
-
-    @permission_classes((IsAuthenticated, Write))
-    @commit_on_success
-    def put(self, *args, **kwargs):
-        """
-        Enable/Disable pool member by list
-
-        param: Following dictionary: {
-                "pools": [
-                    {
-                        "server_pool": {
-                        },
-                        "server_pool_members": [
-                        ]
-                    }
-                ]
-            }
-        """
-
-        request = self.request.DATA.get("pools", [])
-        response = set_poolmember_state(request)
-
-        return Response(response)
-
-
-class PoolmemberList(APIView):
-
-    @permission_classes((IsAuthenticated, Read))
-    @commit_on_success
-    def post(self, *args, **kwargs):
-        """
-        Return pool member list by POST request method
-        Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}
-        Return:
-              {
-                "pools": [
-                    {
-                        "server_pool": {
-                        },
-                        "server_pool_members": [
-                        ]
-                    }
-                ]
-            }
-        """
-
-        pools = self.request.DATA.get("id_pools")
-        checkstatus = self.request.DATA.get("checkstatus")
-        if checkstatus is None:
-            checkstatus = False
-
-        data = dict()
-
-        servers_pools = ServerPool.objects.filter(id__in=pools)
-
-        if checkstatus:
-            status = get_poolmember_state(servers_pools)
-
-        data["pools"] = []
-        for server_pool in servers_pools:
-
-            if checkstatus:
-
-                if status.get(server_pool.id):
-                    query_pools = ServerPoolMember.objects.filter(server_pool=server_pool)
-
-                    for pm in query_pools:
-
-                        member_checked_status = status[server_pool.id][pm.id]
-                        pm.member_status = member_checked_status
-                        pm.last_status_update = datetime.now()
-                        pm.save(self.request.user)
-
-            server_pool_members = ServerPoolMember.objects.filter(
-                server_pool=server_pool
-            )
-
-            serializer_server_pool = ServerPoolSerializer(server_pool)
-
-            serializer_server_pool_member = ServerPoolMemberSerializer(
-                server_pool_members,
-                many=True
-            )
-
-            data["pools"].append({
-                "server_pool": serializer_server_pool.data,
-                "server_pool_members": serializer_server_pool_member.data
-            })
-
-        return Response(data)
-
-
-class Poolmember(APIView):
-
-    @permission_classes((IsAuthenticated, Write))
-    @commit_on_success
-    def post(self, *args, **kwargs):
-        """
-        Create real pool member by list
-
-        param: Following dictionary: {
-                "pools": [
-                    {
-                        "server_pool": {
-                            ...
-                        },
-                        "server_pool_members": [
-                            ...
-                        ]
-                    }
-                ]
-            }
-        """
-        locks_list = create_lock(self.request.DATA.get("pools", []))
-        try:
-            response = create_real_pool(self.request)
-        finally:
-            destroy_lock(locks_list)
-        return Response(response)
-
-    @permission_classes((IsAuthenticated, Write))
-    @commit_on_success
-    def put(self, *args, **kwargs):
-        """
-        Update real pool member by list
-
-        param: Following dictionary: {
-                "pools": [
-                    {
-                        "server_pool": {
-                            ...
-                        },
-                        "server_pool_members": [
-                            ...
-                        ]
-                    }
-                ]
-            }
-        """
-        locks_list = create_lock(self.request.DATA.get("pools", []))
-        try:
-            response = update_real_pool(self.request)
-        finally:
-            destroy_lock(locks_list)
-        return Response(response)
-
-    @permission_classes((IsAuthenticated, Write))
-    @commit_on_success
-    def delete(self, *args, **kwargs):
-        """
-        Delte real pool member by list
-
-        param: Following dictionary: {
-                "pools": [
-                    {
-                        "server_pool": {
-                            ...
-                        },
-                        "server_pool_members": [
-                            ...
-                        ]
-                    }
-                ]
-            }
-        """
-        locks_list = create_lock(self.request.DATA.get("pools", []))
-        try:
-            response = delete_real_pool(self.request)
-        finally:
-            destroy_lock(locks_list)
-        return Response(response)

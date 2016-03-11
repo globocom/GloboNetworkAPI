@@ -16,24 +16,25 @@
 # limitations under the License.
 
 from __future__ import absolute_import, unicode_literals
-from hashlib import sha1
-from django.core.cache import cache
-import warnings
-import functools
-import socket
+
 import copy
-import sys
-import re
+import functools
+from hashlib import sha1
 import logging
-
+import re
+import socket
+import sys
 import time
+import warnings
 
-from networkapi.plugins import exceptions as plugins_exceptions
-from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
-from django.forms.models import model_to_dict
 from django.core import validators
+from django.core.cache import cache
+from django.forms.models import model_to_dict
 
-from .decorators import deprecated
+from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
+from networkapi.plugins import exceptions as plugins_exceptions
+
+from .decorators import deprecated, logs_method_apiview, state_change, permission_classes_apiview
 
 LOCK = 'LOCK'
 PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]

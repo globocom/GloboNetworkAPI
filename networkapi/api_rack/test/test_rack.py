@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import os
-from django.test.client import Client
-from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.test import load_json
 
+from django.test.client import Client
+
+from networkapi.test import load_json
+from networkapi.test.test_case import NetworkApiTestCase
 
 
 class RackTestCase(NetworkApiTestCase):
@@ -17,7 +17,10 @@ class RackTestCase(NetworkApiTestCase):
 
     def test_post_success(self):
         """ resultado esperado status 201"""
-        response = self.client.post('/api/rack/', self.load_rack_json('rack.json'), HTTP_AUTHORIZATION=self.get_http_authorization())
+        response = self.client.post(
+            '/api/rack/',
+            self.load_rack_json('rack.json'),
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
         self.assertEqual(201, response.status_code, "Status code should be 201 and was %s" % response.status_code)
 
     def load_rack_json(self, file_name):

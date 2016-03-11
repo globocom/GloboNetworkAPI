@@ -78,16 +78,16 @@ def permute(**kargs):
 
 # map(lambda t: dict(t.items() + [('status', t in v)]), p)
 
+
 def mock_login(func):
 
     def func_wrapper(*args, **kwargs):
         authenticator = mock.patch('networkapi.api_rest.authentication.BasicAuthentication.authenticate').start()
-        authenticator.return_value = (Usuario(user='test'), None)
+        authenticator.return_value = (Usuario.objects.get(user='test'), None)
         permission_decorator = mock.patch('rest_framework.decorators.permission_classes').start()
         permission_decorator.return_value = lambda func: func
 
         result = func(*args, **kwargs)
-
 
         authenticator.stop()
         permission_decorator.stop()

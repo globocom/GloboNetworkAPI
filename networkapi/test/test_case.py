@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from django.test import TestCase
 
-
+import base64
 import logging
 
+from django.test import TestCase
+
 LOG = logging.getLogger(__name__)
+
 
 class NetworkApiTestCase(TestCase):
 
@@ -24,9 +26,8 @@ class NetworkApiTestCase(TestCase):
     def setUp(self):
         pass
 
-    def get_http_authorization(self):
-        return "Basic dGVzdDp0ZXN0"
+    def get_http_authorization(self, user):
+        return 'Basic %s' % base64.b64encode("%s:teste" % user)
 
     def tearDown(self):
         pass
-

@@ -15,11 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls.defaults import *
+from django.conf import settings
+from django.conf.urls import include, patterns, url
+from django.contrib import admin
+# from django.conf.urls.defaults import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
-from django.contrib import admin
-from django.conf import settings
+
 from networkapi.check.CheckAction import CheckAction
 
 # Uncomment the next two lines to enable the admin:
@@ -28,25 +30,27 @@ admin.autodiscover()
 
 api_prefix = r'^api/'
 
-urlpatterns = patterns('',
-    #new API URL patterns are all prefixed with '/api/'
+urlpatterns = patterns(
+    '',
+    # new API URL patterns are all prefixed with '/api/'
     url(api_prefix, include('networkapi.api_deploy.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
     url(api_prefix, include('networkapi.api_interface.urls')),
     url(api_prefix, include('networkapi.api_network.urls')),
     url(api_prefix, include('networkapi.api_pools.urls')),
     url(api_prefix, include('networkapi.api_rack.urls')),
+    url(api_prefix, include('networkapi.api_task.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.system.urls')),
     url(api_prefix, include('networkapi.api_equipment.urls')),
 
-    #app healthchecks
+    # app healthchecks
     url(r'^check$', CheckAction().check, name='check'),
     url(r'^healthcheck$', lambda _: HttpResponse("WORKING")),
 
-    #equipamento
+    # equipamento
     url(r'^equipamento/', include('networkapi.equipamento.urls')),
     url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
     url(r'^equipamentoacesso/', include('networkapi.equipamento.urls_equipamentoacesso')),
@@ -58,7 +62,7 @@ urlpatterns = patterns('',
     url(r'^brand/', include('networkapi.equipamento.urls_brand')),
     url(r'^model/', include('networkapi.equipamento.urls_model')),
 
-    #ambiente
+    # ambiente
     url(r'^ambiente/', include('networkapi.ambiente.urls')),
     url(r'^environment/', include('networkapi.ambiente.urls_environment')),
     url(r'^divisiondc/', include('networkapi.ambiente.urls_divisiondc')),
@@ -66,28 +70,28 @@ urlpatterns = patterns('',
     url(r'^logicalenvironment/', include('networkapi.ambiente.urls_logicalenvironment')),
     url(r'^ipconfig/', include('networkapi.ambiente.urls_ipconfig')),
 
-    #rules
+    # rules
     url(r'^rule/', include('networkapi.blockrules.urls')),
 
-    #vlan
+    # vlan
     url(r'^vlan/', include('networkapi.vlan.urls')),
     url(r'^net_type/', include('networkapi.vlan.urls_net_type')),
 
-    #ip
+    # ip
     url(r'^ip/', include('networkapi.ip.urls')),
     url(r'^ipv4/', include('networkapi.ip.urls_ipv4')),
     url(r'^ipv6/', include('networkapi.ip.urls_ipv6')),
     url(r'^network/', include('networkapi.ip.urls_network')),
     url(r'^ip4/', include('networkapi.ip.urls_ip4')),
 
-    #scripts
+    # scripts
     url(r'^script/', include('networkapi.roteiro.urls')),
     url(r'^scripttype/', include('networkapi.roteiro.urls_scripttype')),
 
-    #healthcheckexpect
+    # healthcheckexpect
     url(r'^healthcheckexpect/', include('networkapi.healthcheckexpect.urls')),
 
-    #vips
+    # vips
     url(r'^vip/', include('networkapi.requisicaovips.urls')),
     url(r'^requestvip/', include('networkapi.requisicaovips.urls_requestvip')),
     url(r'^real/', include('networkapi.requisicaovips.urls_real')),
@@ -95,26 +99,26 @@ urlpatterns = patterns('',
     url(r'^environmentvip/', include('networkapi.requisicaovips.urls_environmentvip')),
     url(r'^optionvip/', include('networkapi.requisicaovips.urls_optionvip')),
 
-    #grupovirtual
+    # grupovirtual
     url(r'^grupovirtual/', include('networkapi.grupovirtual.urls')),
 
-    #interface
+    # interface
     url(r'^interface/', include('networkapi.interface.urls')),
     url(r'^int/', include('networkapi.interface.urls_int')),
     url(r'^interfacetype/', include('networkapi.interface.urls_interfacetype')),
     url(r'^channel/', include('networkapi.interface.urls_channel')),
 
-    #usuario
+    # usuario
     url(r'^usuario/', include('networkapi.usuario.urls')),
     url(r'^user/', include('networkapi.usuario.urls_user')),
     url(r'^authenticate/', include('networkapi.usuario.urls_authenticate')),
     url(r'^user-change-pass/', include('networkapi.usuario.urls_user-change-pass')),
     url(r'^usergroup/', include('networkapi.usuario.urls_usergroup')),
 
-    #tipoacesso
+    # tipoacesso
     url(r'^tipoacesso/', include('networkapi.tipoacesso.urls')),
 
-    #grupos
+    # grupos
     url(r'^ugroup/', include('networkapi.grupo.urls')),
     url(r'^egroup/', include('networkapi.grupo.urls_egroup')),
     url(r'^egrupo/', include('networkapi.grupo.urls_egrupo')),
@@ -122,13 +126,13 @@ urlpatterns = patterns('',
     url(r'^aperms/', include('networkapi.grupo.urls_aperms')),
     url(r'^direitosgrupoequipamento/', include('networkapi.grupo.urls_direitosgrupoequipamento')),
 
-    #filter
+    # filter
     url(r'^filter/', include('networkapi.filter.urls')),
 
-    #rack
+    # rack
     url(r'^rack/', include('networkapi.rack.urls')),
 
-    #eventlog
+    # eventlog
     url(r'^eventlog/', include('networkapi.eventlog.urls')),
 
     # django admin

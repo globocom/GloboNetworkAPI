@@ -1,0 +1,135 @@
+{
+  "title": "Pool Member State",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "server_pools"
+  ],
+  "definitions": {
+    "ipv4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ip_formated"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_formated": {
+          "type": "string",
+          "oneOf": [
+            {
+              "format": "ipv4"
+            }
+          ]
+        }
+      }
+    },
+    "ipv6": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ip_formated"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_formated": {
+          "type": "string",
+          "oneOf": [
+            {
+              "format": "ipv6"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "server_pools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "integer"
+          },
+          "server_pool_members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "identifier": {
+                  "type": "string"
+                },
+                "ipv6": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/definitions/ipv6"
+                    }
+                  ]
+                },
+                "ip": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/definitions/ipv4"
+                    }
+                  ]
+                },
+                "port_real": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "member_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 7
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "identifier",
+                "ipv6",
+                "ip",
+                "port_real",
+                "member_status"
+              ]
+            }
+          },
+          "pool_created": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identifier",
+          "environment",
+          "server_pool_members"
+        ]
+      }
+    }
+  }
+}

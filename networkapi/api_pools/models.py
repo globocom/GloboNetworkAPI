@@ -14,17 +14,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from networkapi.ambiente.models import Ambiente
+
 import logging
+
+from _mysql_exceptions import OperationalError
+
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
+from networkapi.ambiente.models import Ambiente
 from networkapi.models.BaseModel import BaseModel
 from networkapi.exception import InvalidValueError, OptionPoolEnvironmentDuplicatedError, OptionPoolError, OptionPoolNotFoundError, \
     OptionPoolEnvironmentNotFoundError, OptionPoolEnvironmentError
 from networkapi.util import is_valid_string_maxsize, is_valid_option
-from _mysql_exceptions import OperationalError
 
 
 class OpcaoPool(BaseModel):
@@ -64,32 +68,32 @@ class OptionPool (BaseModel):
         managed = True
 
     def valid_option_pool(self, optionpool_map):
-            '''Validate the values ​​of option pool
+        '''Validate the values ​​of option pool
 
-            @param optionpool_map: Map with the data of the request.
+        @param optionpool_map: Map with the data of the request.
 
-            @raise InvalidValueError: Represents an error occurred validating a value.
-            '''
+        @raise InvalidValueError: Represents an error occurred validating a value.
+        '''
 
-            # Get XML data
-            type = optionpool_map.get('type')
-            name = optionpool_map.get('name')
+        # Get XML data
+        type = optionpool_map.get('type')
+        name = optionpool_map.get('name')
 
-            # type can NOT be greater than 50
-            if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
-                self.log.error(
-                    u'Parameter type is invalid. Value: %s.', type)
-                raise InvalidValueError(None, 'type', type)
+        # type can NOT be greater than 50
+        if not is_valid_string_maxsize(type, 50, True) or not is_valid_option(type):
+            self.log.error(
+                u'Parameter type is invalid. Value: %s.', type)
+            raise InvalidValueError(None, 'type', type)
 
-            # name_txt can NOT be greater than 50
-            if not is_valid_string_maxsize(name, 50, True) or not is_valid_option(name):
-                self.log.error(
-                    u'Parameter name_txt is invalid. Value: %s.', name)
-                raise InvalidValueError(None, 'name', name)
+        # name_txt can NOT be greater than 50
+        if not is_valid_string_maxsize(name, 50, True) or not is_valid_option(name):
+            self.log.error(
+                u'Parameter name_txt is invalid. Value: %s.', name)
+            raise InvalidValueError(None, 'name', name)
 
-            # set variables
-            self.type = type
-            self.name = name
+        # set variables
+        self.type = type
+        self.name = name
 
     @classmethod
     def get_by_pk(cls, id):
@@ -128,9 +132,8 @@ class OptionPool (BaseModel):
             cls.log.error(u'Failure to list all Option Pool.')
             raise OptionPoolError(e, u'Failure to list all Option Pool.')
 
-
     @classmethod
-    def get_all_by_type_and_environment (cls, optiontype, id_environment):
+    def get_all_by_type_and_environment(cls, optiontype, id_environment):
         """Get All Option pool by environmentvip_id and type.
 
             @return: Get All Option Pool by type.
@@ -146,10 +149,9 @@ class OptionPool (BaseModel):
 
             return opools
         except Exception, e:
-            cls.log.error(u'Failure to list all Option Pool in environment') #, %(optiontype, id_environment) )
+            cls.log.error(u'Failure to list all Option Pool in environment')  # , %(optiontype, id_environment) )
             raise OptionPoolError(
-                e, u'Failure to list all Option Pool in environment id' ) #, %(optiontype, id_environment)
-
+                e, u'Failure to list all Option Pool in environment id')  # , %(optiontype, id_environment)
 
     def delete(self):
         '''Override Django's method to remove option vip
@@ -164,9 +166,7 @@ class OptionPool (BaseModel):
         super(OptionPool, self).delete()
 
 
-
 class OptionPoolEnvironment(BaseModel):
-
 
     id = models.AutoField(primary_key=True, db_column='id_optionspool_environment_xref')
     option = models.ForeignKey(OptionPool, db_column='id_optionspool')
@@ -190,7 +190,7 @@ class OptionPoolEnvironment(BaseModel):
         """
         try:
             return OptionPoolEnvironment.objects.filter(option__id=option_id,
-                                                          environment__id=environment_id).uniqueResult()
+                                                        environment__id=environment_id).uniqueResult()
         except ObjectDoesNotExist, e:
             raise OptionPoolEnvironmentNotFoundError(
                 e, u'Dont there is a OptionPoolEnvironment by option_id = %s and environment_id = %s' % (
@@ -216,4 +216,3 @@ class OptionPoolEnvironment(BaseModel):
                 None, u'Option pool already registered for the environment vip.')
         except ObjectDoesNotExist:
             pass
-

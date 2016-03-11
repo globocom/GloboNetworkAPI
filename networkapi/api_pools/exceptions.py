@@ -1,5 +1,5 @@
-from rest_framework.exceptions import APIException
 from rest_framework import status
+from rest_framework.exceptions import APIException
 
 
 class PoolDoesNotExistException(APIException):
@@ -36,9 +36,11 @@ class InvalidIdentifierAlreadyPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Identifier already exists.'
 
+
 class InvalidIdentifierPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Pool identifier is invalid. Pool identifier must match "^[a-zA-Z]+[a-zA-Z0-9\._-]*$".'
+
 
 class InvalidIdentifierFistDigitPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -48,6 +50,15 @@ class InvalidIdentifierFistDigitPoolException(APIException):
 class CreatedPoolIdentifierException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Pool already created. Cannot change Identifier.'
+
+
+class CreatedPoolValuesException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool already created. Cannot change values.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Not is possible to change pool when pool is created. <<%s>>' % (
+            msg)
 
 
 class InvalidIdPoolMemberException(APIException):
@@ -144,15 +155,10 @@ class IpNotFoundByEnvironment(APIException):
 class InvalidRealPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Parametros invalidos do real.'
-        
+
     def __init__(self, msg=None):
         self.detail = u'Parametros invalidos do real: <<%s>>' % (
             msg)
-
-
-class InvalidIdPoolException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Invalid id for Pool.'
 
 
 class ScriptManagementPoolException(APIException):
@@ -252,6 +258,16 @@ class PoolAlreadyCreated(APIException):
         self.detail = u'Pool <<%s>> already created.' % (
             msg)
 
+
+class PoolNotCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Pool not created.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Pool <<%s>> not created.' % (
+            msg)
+
+
 class PoolNameChange(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Not is possible change name of pool when pool is created.'
@@ -260,6 +276,7 @@ class PoolNameChange(APIException):
         self.detail = u'Not is possible change name of pool when pool is created. <<%s>>' % (
             msg)
 
+
 class PoolEnvironmentChange(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Not is possible change environment of pool when pool is created.'
@@ -267,6 +284,7 @@ class PoolEnvironmentChange(APIException):
     def __init__(self, msg=None):
         self.detail = u'Not is possible change environment of pool when pool is created. <<%s>>' % (
             msg)
+
 
 class PoolMemberChange(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

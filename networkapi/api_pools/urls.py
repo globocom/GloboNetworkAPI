@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
-
 from django.conf.urls import patterns, url
+
+from networkapi.api_pools import views
 
 urlpatterns = patterns(
     'networkapi.api_pools.views',
@@ -17,10 +18,6 @@ urlpatterns = patterns(
     url(r'^pools/list_healthchecks/$', 'healthcheck_list'),
     url(r'^pools/getbypk/(?P<id_server_pool>[^/]+)/$', 'get_by_pk'),
     url(r'^pools/poolmember_state/$', 'poolmember_state'),
-    url(r'^pools/v2/$', 'real_pool_action'),
-    url(r'^pools/v2/list/$', 'list_all_members'),
-    url(r'^pools/v2/poolmember_state/$', 'poolmember_state'),
-    url(r'^pools/get_all_members/$', 'list_all_members'),
     url(r'^pools/get_all_members/(?P<id_server_pool>[^/]+)/$', 'list_all_members_by_pool'),
     url(r'^pools/get_equip_by_ip/(?P<id_ip>[^/]+)/$', 'get_equipamento_by_ip'),
     url(r'^pools/get_opcoes_pool_by_ambiente/$', 'get_opcoes_pool_by_ambiente'),
@@ -45,4 +42,14 @@ urlpatterns = patterns(
 
     url(r'^pools/list/environments/environmentvip/$', 'list_environment_environment_vip_related'),
     url(r'^pools/getipsbyambiente/(?P<equip_name>[^/]+)/(?P<id_ambiente>[^/]+)/$', 'get_available_ips_to_add_server_pool'),
+
+
+    ########################
+    # Manage Pool V3
+    ########################
+    url(r'^v3/pool/real/(?P<pools_ids>\d+)/member/status/$', views.PoolmemberStateView.as_view()),  # GET, PUT
+    url(r'^v3/pool/real/(?P<pools_ids>\d+)/$', views.PoolRealView.as_view()),  # POST, PUT, DELETE
+    url(r'^v3/pool/real/task/$', views.PoolRealTaskView.as_view()),  # POST, PUT, DELETE
+    url(r'^v3/pool/((?P<pool_id>\d+)/)?$', views.PoolOneView.as_view()),  # POST, PUT, GET, DELETE
+
 )

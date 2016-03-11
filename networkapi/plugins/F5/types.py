@@ -10,7 +10,7 @@ def address_type(value):
     values = {
         # 'ATYPE_UNSET'
         "*:*": 'ATYPE_STAR_ADDRESS_STAR_PORT',
-        # 'ATYPE_STAR_ADDRESS_EXPLICIT_PORT',
+        "*": 'ATYPE_STAR_ADDRESS_EXPLICIT_PORT',
         # 'ATYPE_EXPLICIT_ADDRESS_EXPLICIT_PORT',
         # 'ATYPE_STAR_ADDRESS',
         # 'ATYPE_EXPLICIT_ADDRESS',
@@ -18,8 +18,10 @@ def address_type(value):
 
     try:
         ipport = value.split(':')
+        key = [i for i in ipport if i == '*']
+
         return {
-            'address_type': values[value],
+            'address_type': values[key],
             'ipport': {
                 'address': ipport[0] if ipport[0] != '*' else '0.0.0.0',
                 'port': ipport[1] if ipport[1] != '*' else '0'
@@ -40,7 +42,7 @@ def template_type(value):
         # 'tcp_echo':'TTYPE_TCP_ECHO',
         # 'external':'TTYPE_EXTERNAL',
         'http': 'TTYPE_HTTP',
-        # 'https':'TTYPE_HTTPS',
+        'https': 'TTYPE_HTTPS',
         # 'nntp':'TTYPE_NNTP',
         # 'ftp':'TTYPE_FTP',
         # 'pop3':'TTYPE_POP3',

@@ -1,0 +1,211 @@
+{
+  "title": "Pool Member State",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "server_pools"
+  ],
+  "definitions": {
+    "ipv4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ip_formated"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_formated": {
+          "type": "string",
+          "oneOf": [
+            {
+              "format": "ipv4"
+            }
+          ]
+        }
+      }
+    },
+    "ipv6": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ip_formated"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_formated": {
+          "type": "string",
+          "oneOf": [
+            {
+              "format": "ipv6"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "server_pools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "null"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "default_port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "environment": {
+            "type": "integer"
+          },
+          "servicedownaction": {
+            "type": "integer"
+          },
+          "lb_method": {
+            "type": "string"
+          },
+          "healthcheck": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "null"
+              },
+              "identifier": {
+                "type": "string"
+              },
+              "healthcheck_type": {
+                "type": "string",
+                "enum": [
+                  "HTTP",
+                  "HTTPS",
+                  "UDP",
+                  "TCP"
+                ]
+              },
+              "healthcheck_request": {
+                "type": "string"
+              },
+              "healthcheck_expect": {
+                "type": "string"
+              },
+              "destination": {
+                "type": "string",
+                "pattern": "^(\\*):([0-9]+|\\*)$"
+              }
+            }
+          },
+          "default_limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "server_pool_members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "null"
+                },
+                "identifier": {
+                  "type": "string"
+                },
+                "ipv6": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/definitions/ipv6"
+                    }
+                  ]
+                },
+                "ip": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/definitions/ipv4"
+                    }
+                  ]
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "equipment": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "identifier": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "weight": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "port_real": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "member_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 7
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "identifier",
+                "ipv6",
+                "ip",
+                "priority",
+                "equipment",
+                "weight",
+                "limit",
+                "port_real",
+                "member_status"
+              ]
+            }
+          },
+          "pool_created": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identifier",
+          "default_port",
+          "environment",
+          "servicedownaction",
+          "lb_method",
+          "healthcheck",
+          "default_limit",
+          "server_pool_members"
+        ]
+      }
+    }
+  }
+}

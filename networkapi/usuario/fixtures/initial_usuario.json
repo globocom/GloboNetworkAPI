@@ -5,7 +5,7 @@
     "fields": {
       "user_ldap": null, 
       "nome": "Test Admin User",
-      "pwd": "098f6bcd4621d373cade4e832627b4f6",
+      "pwd": "698dc19d489c4e4db73e28a713eab07b",
       "user": "test",
       "ativo": true, 
       "email": "test@test.com"
@@ -17,6 +17,47 @@
     "fields": {
       "ugrupo": 1,
       "usuario": 1
+    }
+  },
+  {
+    "pk": 2, 
+    "model": "usuario.usuario", 
+    "fields": {
+      "user_ldap": null, 
+      "nome": "Test User",
+      "pwd": "698dc19d489c4e4db73e28a713eab07b",
+      "user": "test2",
+      "ativo": true, 
+      "email": "test2@test.com"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "usuario.usuariogrupo",
+    "fields": {
+      "ugrupo": 6,
+      "usuario": 2
+    }
+  }
+,
+  {
+    "pk": 3, 
+    "model": "usuario.usuario", 
+    "fields": {
+      "user_ldap": null, 
+      "nome": "Test 123",
+      "pwd": "698dc19d489c4e4db73e28a713eab07b",
+      "user": "test3",
+      "ativo": true, 
+      "email": "test3@test.com"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "usuario.usuariogrupo",
+    "fields": {
+      "ugrupo": 2,
+      "usuario": 3
     }
   }
 ]

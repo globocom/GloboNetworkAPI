@@ -16,9 +16,11 @@
 # limitations under the License.
 
 
+import logging
 import os
 import sys
-import logging
+
+import djcelery
 
 reload(sys)
 
@@ -26,7 +28,7 @@ sys.setdefaultencoding('utf-8')
 
 # Include base path in system path for Python old.
 syspath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-if not syspath in sys.path:
+if syspath not in sys.path:
     sys.path.insert(0, syspath)
 
 
@@ -38,7 +40,7 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
-DEBUG = 0
+DEBUG = 1
 CI = os.getenv('CI', '0') == '1'
 
 NETWORKAPI_LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
@@ -64,7 +66,7 @@ LOG_SHOW_TRACEBACK = True
 # O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
 # O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
 # O terceiro parâmetro é o nível de detalhamento do Log.
-#Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
+# Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
 
 if NETWORKAPI_USE_NEWRELIC:
     import newrelic.agent
@@ -111,7 +113,7 @@ CACHES = {
 
 
 # Diretório dos arquivos dos scripts
-#SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
+# SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
 SCRIPTS_DIR = os.getenv("NETWORKAPI_SCRIPTS_DIR", os.path.abspath(os.path.join(__file__, '../../scripts')))
 
 # Armazena a raiz do projeto.
@@ -140,6 +142,10 @@ LOGGING = {
             'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
+        'celery': {
+            'format': '[%(levelname)s] %(asctime)s - P:%(processName)s, N:%(name)s, MSG:%(message)s',
+            'datefmt': '%d/%b/%Y:%H:%M:%S %z',
+        },
         'simple': {
             'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
         },
@@ -155,6 +161,14 @@ LOGGING = {
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
             'formatter': 'verbose',
+            'mode': 'a',
+            'filters': ['user_filter'],
+        },
+        'log_celery': {
+            'level': LOG_LEVEL,
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': LOG_FILE,
+            'formatter': 'celery',
             'mode': 'a',
             'filters': ['user_filter'],
         },
@@ -185,6 +199,11 @@ LOGGING = {
             'level': LOG_DB_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
+        },
+        'celery': {
+            'level': LOG_LEVEL,
+            'propagate': True,
+            'handlers': ['log_celery'],
         },
     },
     'root': {
@@ -296,7 +315,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    #'bootstrap_admin',
+    # 'bootstrap_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -304,31 +323,33 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'django_extensions',
+    'djcelery',
     'networkapi.ambiente',
+    'networkapi.api_pools',
+    'networkapi.api_rack',
+    'networkapi.api_task',
+    'networkapi.blockrules',
+    'networkapi.config',
+    'networkapi.filter',
+    'networkapi.filterequiptype',
+    'networkapi.grupo',
+    'networkapi.grupovirtual',
+    'networkapi.healthcheckexpect',
     'networkapi.equipamento',
     'networkapi.eventlog',
-    'networkapi.grupo',
-    'networkapi.healthcheckexpect',
     'networkapi.interface',
     'networkapi.ip',
+    'networkapi.models',
+    'networkapi.rack',
     'networkapi.requisicaovips',
     'networkapi.roteiro',
+    'networkapi.snippets',
+    'networkapi.system',
     'networkapi.tipoacesso',
     'networkapi.usuario',
     'networkapi.vlan',
-    'networkapi.grupovirtual',
-    'networkapi.models',
-    'networkapi.filter',
-    'networkapi.filterequiptype',
-    'networkapi.blockrules',
-    'networkapi.config',
-    'networkapi.rack',
     'rest_framework',
-    'networkapi.snippets',
-    'networkapi.api_pools',
-    'networkapi.system',
-    'django_extensions',
-    'networkapi.api_rack',
 )
 
 
@@ -346,6 +367,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERYD_HIJACK_ROOT_LOGGER = False
+CELERY_REDIRECT_STDOUTS = True
+
+djcelery.setup_loader()
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
 
@@ -498,30 +525,32 @@ CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
 APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
 
 INTERFACE_CONFIG_REL_PATH = "interface/"
-#/mnt/config_templates/interface/
+# /mnt/config_templates/interface/
 INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + INTERFACE_CONFIG_REL_PATH
-#/mnt/tftpboot/networkapi/generated_config/interface/
+# /mnt/tftpboot/networkapi/generated_config/interface/
 INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
 # networkapi/generated_config/interface/
 INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
 
 USER_SCRIPTS_REL_PATH = "user_scripts/"
-#/mnt/tftpboot/networkapi/generated_config/user_scripts/
+# /mnt/tftpboot/networkapi/generated_config/user_scripts/
 USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
 # networkapi/generated_config/interface/
 USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
 
 NETWORK_CONFIG_REL_PATH = "network/"
-#/mnt/config_templates/interface/
+# /mnt/config_templates/interface/
 NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + NETWORK_CONFIG_REL_PATH
-#/mnt/tftpboot/networkapi/generated_config/interface/
+# /mnt/tftpboot/networkapi/generated_config/interface/
 NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
 # networkapi/generated_config/interface/
 NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
 ###################
 
 
-## TESTS CONFIGS ##
+####################
+# TESTS CONFIGS
+####################
 # If is running on CI: if CI=1 or running inside jenkins
 INTEGRATION = os.getenv('CI', '0') == '1'
 INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
