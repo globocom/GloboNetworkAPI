@@ -36,6 +36,7 @@ def create_real_pool(pools):
     load_balance = dict()
     keys_cache = list()
 
+    log.info(pools)
     for pool in pools:
 
         equips = validate_pool_members_to_apply(pool)
@@ -67,7 +68,7 @@ def create_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': get_option_pool(pool['servicedownaction']),
+                'action': get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
                 'pools_members': [{
                     'id': pool_member['id'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
@@ -92,11 +93,10 @@ def create_real_pool(pools):
 
 
 @commit_on_success
-def delete_real_pool(request):
+def delete_real_pool(pools):
     """
     delete real pool in eqpt
     """
-    pools = request.DATA.get("pools", [])
 
     load_balance = {}
 
@@ -129,7 +129,7 @@ def delete_real_pool(request):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': get_option_pool(pool['servicedownaction']),
+                'action': get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
                 'pools_members': [{
                     'id': pool_member['id'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
@@ -152,18 +152,17 @@ def delete_real_pool(request):
 
 
 @commit_on_success
-def update_real_pool(request):
+def update_real_pool(pools):
     """
     - update real pool in eqpt
     - update data pool in db
     """
-    pools = request.DATA.get("pools", [])
     load_balance = dict()
     keys_cache = list()
 
-    for pool in pools:
-
-        validate_save(pool)
+    for pool in pools['server_pools']:
+        log.info(pool)
+        validate_save(pool, permit_created=True)
 
         member_ids = [spm['id'] for spm in pool['server_pool_members'] if spm['id']]
 
@@ -233,7 +232,7 @@ def update_real_pool(request):
             })
 
         # get eqpts associate with pool
-        equips = validate_pool_to_apply(pool)
+        equips = validate_pool_to_apply(pool, update=True)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -262,7 +261,7 @@ def update_real_pool(request):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': get_option_pool(pool['servicedownaction']),
+                'action': get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
                 'pools_members': pools_members
             })
 
@@ -419,7 +418,6 @@ def create_pool(pool):
 
     sp.save()
 
-    log.info(sp.id)
     create_pool_member(pool['server_pool_members'], sp.id)
 
     return sp
@@ -536,7 +534,7 @@ def validate_save(pool, permit_created=False):
                 raise exceptions.PoolEnvironmentChange('pool id: %s' % pool['id'])
 
         members_db = [spm.id for spm in server_pool.serverpoolmember_set.all()]
-        has_identifier.exclude(id=pool['id'])
+        has_identifier = has_identifier.exclude(id=pool['id'])
 
     if has_identifier.count() > 0:
         raise exceptions.InvalidIdentifierAlreadyPoolException()
@@ -604,26 +602,27 @@ def destroy_lock(locks_list):
 
 def validate_pool_members_to_apply(pool):
 
-    q_filters = [{
-        'ipv6': pool_member['ipv6']['id'] if pool_member['ipv6'] else None,
-        'ip': pool_member['ip']['id'] if pool_member['ip'] else None,
-        'id': pool_member['id'],
-        'port_real': pool_member['port_real']
-    } for pool_member in pool['server_pool_members']]
+    if pool['server_pool_members']:
+        q_filters = [{
+            'ipv6': pool_member['ipv6']['id'] if pool_member['ipv6'] else None,
+            'ip': pool_member['ip']['id'] if pool_member['ip'] else None,
+            'id': pool_member['id'],
+            'port_real': pool_member['port_real']
+        } for pool_member in pool['server_pool_members']]
 
-    server_pool_members = ServerPoolMember.objects.filter(
-        reduce(
-            lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]),
-        server_pool=pool['id'])
-    if len(server_pool_members) != len(q_filters):
-        raise exceptions.PoolmemberNotExist()
+        server_pool_members = ServerPoolMember.objects.filter(
+            reduce(
+                lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]),
+            server_pool=pool['id'])
+        if len(server_pool_members) != len(q_filters):
+            raise exceptions.PoolmemberNotExist()
 
     equips = validate_pool_to_apply(pool)
 
     return equips
 
 
-def validate_pool_to_apply(pool):
+def validate_pool_to_apply(pool, update=False):
     server_pool = ServerPool.objects.get(
         identifier=pool['identifier'],
         environment=pool['environment'],
@@ -631,8 +630,8 @@ def validate_pool_to_apply(pool):
     if not server_pool:
         raise exceptions.PoolNotExist()
 
-    if not server_pool.pool_created:
-        raise exceptions.PoolNotCreated()
+    if update and not server_pool.pool_created:
+        raise exceptions.PoolNotCreated(server_pool.id)
 
     equips = EquipamentoAmbiente.objects.filter(
         equipamento__maintenance=0,
@@ -645,5 +644,5 @@ def validate_pool_to_apply(pool):
     return equips
 
 
-def get_option_pool(option_id):
-    return models.OptionPool.objects.get(id=option_id)
+def get_option_pool(option_id, option_type):
+    return models.OptionPool.objects.get(id=option_id, type=option_type)

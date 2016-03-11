@@ -47,9 +47,9 @@ urlpatterns = patterns(
     ########################
     # Manage Pool V3
     ########################
-    url(r'^v3/pool/real/(?P<pools_ids>\d+)/member/status/$', views.PoolmemberStateView.as_view()),  # GET, PUT
-    url(r'^v3/pool/real/(?P<pools_ids>\d+)/$', views.PoolRealView.as_view()),  # POST, PUT, DELETE
-    url(r'^v3/pool/real/task/$', views.PoolRealTaskView.as_view()),  # POST, PUT, DELETE
-    url(r'^v3/pool/((?P<pool_id>\d+)/)?$', views.PoolOneView.as_view()),  # POST, PUT, GET, DELETE
+    url(r'^v3/pool/deploy/(?P<pools_ids>\d+)/member/status/$', views.PoolMemberStateView.as_view()),  # GET, PUT
+    url(r'^v3/pool/deploy/(?P<pools_ids>\d+)/$', views.PoolDeployView.as_view()),  # POST, PUT, DELETE
+    url(r'^v3/pool/task/deploy/$', views.PoolDeployTaskView.as_view()),  # POST, PUT, DELETE
+    url(r'^v3/pool/((?P<pools_ids>\d+)/)?$', views.PoolDBView.as_view()),  # POST, PUT, GET, DELETE
 
 )

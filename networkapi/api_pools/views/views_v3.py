@@ -22,7 +22,7 @@ from rest_framework.views import APIView
 log = logging.getLogger(__name__)
 
 
-class PoolmemberStateView(APIView):
+class PoolMemberStateView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -31,8 +31,7 @@ class PoolmemberStateView(APIView):
         """Enable/Disable pool member by list"""
 
         try:
-            pools = dict()
-            pools['server_pools'] = request.DATA.get("server_pools", [])
+            pools = request.DATA
             json_validate('networkapi/api_pools/fixtures/pool_member_status.json').validate(pools)
             response = facade.set_poolmember_state(pools)
 
@@ -55,17 +54,17 @@ class PoolmemberStateView(APIView):
 
             data = dict()
 
-            servers_pools = models_vips.ServerPool.objects.filter(id__in=pools_ids)
+            server_pools = models_vips.ServerPool.objects.filter(id__in=pools_ids)
 
             if checkstatus == '1':
                 serializer_server_pool = serializers.PoolV3SimpleSerializer(
-                    servers_pools,
+                    server_pools,
                     many=True
                 )
 
                 status = facade.get_poolmember_state(serializer_server_pool.data)
 
-                for server_pool in servers_pools:
+                for server_pool in server_pools:
 
                     if status.get(server_pool.id):
                         query_pools = models_vips.ServerPoolMember.objects.filter(server_pool=server_pool)
@@ -78,7 +77,7 @@ class PoolmemberStateView(APIView):
                             pm.save(self.request.user)
 
             serializer_server_pool = serializers.PoolV3SimpleSerializer(
-                servers_pools,
+                server_pools,
                 many=True
             )
 
@@ -90,50 +89,69 @@ class PoolmemberStateView(APIView):
             raise rest_exceptions.NetworkAPIException(exception)
 
 
-class PoolRealView(APIView):
+class PoolDeployView(APIView):
 
-    @commit_on_success
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @raise_json_validate
     def post(self, request, *args, **kwargs):
         """Create real pool by list"""
 
-        locks_list = facade.create_lock(self.request.DATA.get("pools", []))
+        pool_ids = kwargs['pools_ids'].split(';')
+        pools = facade.get_pool_by_ids(pool_ids)
+        pool_serializer = serializers.PoolV3Serializer(pools, many=True)
+        locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade.create_real_pool(self.request)
+            response = facade.create_real_pool(pool_serializer.data)
+        except Exception, exception:
+            log.error(exception)
+            raise rest_exceptions.NetworkAPIException(exception)
         finally:
             facade.destroy_lock(locks_list)
+
         return Response(response)
 
-    @commit_on_success
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @raise_json_validate
     def put(self, request, *args, **kwargs):
         """Update real pool by list """
 
-        locks_list = facade.create_lock(self.request.DATA.get("pools", []))
+        server_pools = request.DATA
+        json_validate('networkapi/api_pools/fixtures/pool_put.json').validate(server_pools)
+        verify_ports(server_pools)
+        locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
-            response = facade.update_real_pool(self.request)
+            response = facade.update_real_pool(server_pools)
+        except Exception, exception:
+            log.error(exception)
+            raise rest_exceptions.NetworkAPIException(exception)
         finally:
             facade.destroy_lock(locks_list)
         return Response(response)
 
-    @commit_on_success
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @raise_json_validate
     def delete(self, request, *args, **kwargs):
         """Delete real pool by list"""
 
-        locks_list = facade.create_lock(self.request.DATA.get("pools", []))
+        pool_ids = kwargs['pools_ids'].split(';')
+        pools = facade.get_pool_by_ids(pool_ids)
+        pool_serializer = serializers.PoolV3Serializer(pools, many=True)
+        locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade.delete_real_pool(self.request)
+            response = facade.delete_real_pool(pool_serializer.data)
+        except Exception, exception:
+            log.error(exception)
+            raise rest_exceptions.NetworkAPIException(exception)
         finally:
             facade.destroy_lock(locks_list)
         return Response(response)
 
 
 @permission_classes((IsAuthenticated, Write))
-class PoolRealTaskView(APIView):
+class PoolDeployTaskView(APIView):
 
     @logs_method_apiview
     def post(self, request, *args, **kwargs):
@@ -180,7 +198,7 @@ class PoolRealTaskView(APIView):
             raise rest_exceptions.NetworkAPIException(exception)
 
 
-class PoolOneView(APIView):
+class PoolDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -193,9 +211,9 @@ class PoolOneView(APIView):
 
         try:
 
-            pool_id = int(kwargs['pool_id'])
+            pool_ids = kwargs['pools_ids'].split(';')
 
-            pools = facade.get_pool_by_ids([pool_id])
+            pools = facade.get_pool_by_ids(pool_ids)
 
             pool_serializer = serializers.PoolV3Serializer(pools, many=True)
             data = {
@@ -216,10 +234,7 @@ class PoolOneView(APIView):
         """
         Method to save
         """
-
-        pools = dict()
-
-        pools['server_pools'] = request.DATA.get("server_pools", [])
+        pools = request.DATA
         json_validate('networkapi/api_pools/fixtures/pool_post.json').validate(pools)
         verify_ports(pools)
         response = {}
@@ -240,7 +255,7 @@ class PoolOneView(APIView):
 
         pools = dict()
 
-        pools['server_pools'] = request.DATA.get("server_pools", [])
+        pools = request.DATA
         json_validate('networkapi/api_pools/fixtures/pool_put.json').validate(pools)
         verify_ports(pools)
         response = {}

@@ -20,8 +20,6 @@ import logging
 import os
 import sys
 
-import djcelery
-
 reload(sys)
 
 sys.setdefaultencoding('utf-8')
@@ -142,10 +140,6 @@ LOGGING = {
             'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
-        'celery': {
-            'format': '[%(levelname)s] %(asctime)s - P:%(processName)s, N:%(name)s, MSG:%(message)s',
-            'datefmt': '%d/%b/%Y:%H:%M:%S %z',
-        },
         'simple': {
             'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
         },
@@ -161,14 +155,6 @@ LOGGING = {
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
             'formatter': 'verbose',
-            'mode': 'a',
-            'filters': ['user_filter'],
-        },
-        'log_celery': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.WatchedFileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'celery',
             'mode': 'a',
             'filters': ['user_filter'],
         },
@@ -199,11 +185,6 @@ LOGGING = {
             'level': LOG_DB_LEVEL,
             'propagate': False,
             'handlers': ['log_file'],
-        },
-        'celery': {
-            'level': LOG_LEVEL,
-            'propagate': True,
-            'handlers': ['log_celery'],
         },
     },
     'root': {
@@ -324,7 +305,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
-    'djcelery',
     'networkapi.ambiente',
     'networkapi.api_pools',
     'networkapi.api_rack',
@@ -367,12 +347,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
-CELERYD_HIJACK_ROOT_LOGGER = False
-CELERY_REDIRECT_STDOUTS = True
-
-djcelery.setup_loader()
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
 
