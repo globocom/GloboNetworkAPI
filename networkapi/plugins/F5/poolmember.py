@@ -1,8 +1,8 @@
-from networkapi.plugins.F5 import lb
+import logging
 
 from networkapi.plugins import exceptions as base_exceptions
+from networkapi.plugins.F5 import lb
 
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class PoolMember(object):
 
         self._lb = _lb
 
-    def setStates(self, **kwargs):
+    def set_states(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -29,7 +29,7 @@ class PoolMember(object):
             kwargs['members'],
             kwargs['monitor_state'])
 
-    def getStates(self, **kwargs):
+    def get_states(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -71,7 +71,7 @@ class PoolMember(object):
             status_pools.append(status)
         return status_pools
 
-    def setConnectionLimit(self, **kwargs):
+    def set_connection_limit(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -81,7 +81,7 @@ class PoolMember(object):
             kwargs['members'],
             kwargs['connection_limit'])
 
-    def setPriority(self, **kwargs):
+    def set_priority(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
                 return

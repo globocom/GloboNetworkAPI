@@ -1,11 +1,12 @@
-import bigsuds
 import itertools
 import logging
 
-from ..base import BasePlugin
-from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import pool, poolmember, util, monitor
+import bigsuds
 
+from networkapi.plugins import exceptions as base_exceptions
+from networkapi.plugins.F5 import monitor, pool, poolmember, util
+
+from ..base import BasePlugin
 
 log = logging.getLogger(__name__)
 
@@ -16,22 +17,22 @@ class Generic(BasePlugin):
     # POOLMEMBER
     #######################################
     @util.transation
-    def setStateMember(self, pools):
+    def set_state_member(self, pools):
 
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         plm = poolmember.PoolMember(self._lb)
 
-        plm.setStates(
+        plm.set_states(
             names=pls['pools_names'],
             members=pls['pools_members']['members'],
             monitor_state=pls['pools_members']['monitor'],
             session_state=pls['pools_members']['session'])
 
     @util.transation
-    def setConnectionLimitMember(self, pools):
+    def set_connection_limit_member(self, pools):
 
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         plm = poolmember.PoolMember(self._lb)
         plm.setConnectionLimit(
@@ -40,9 +41,9 @@ class Generic(BasePlugin):
             connection_limit=pls['pools_members']['limit'])
 
     @util.transation
-    def setPriorityMember(self, pools):
+    def set_priority_member(self, pools):
 
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         plm = poolmember.PoolMember(self._lb)
         plm.setPriority(
@@ -51,18 +52,18 @@ class Generic(BasePlugin):
             priority=pls['pools_members']['priority'])
 
     @util.transation
-    def getStateMember(self, pools):
-        pls = util._trataParam(pools)
+    def get_state_member(self, pools):
+        pls = util._trata_param(pools)
 
         plm = poolmember.PoolMember(self._lb)
-        return plm.getStates(
+        return plm.get_states(
             names=pls['pools_names'],
             members=pls['pools_members']['members'])
 
     @util.transation
-    def createMember(self, pools):
+    def create_member(self, pools):
 
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         plm = poolmember.PoolMember(self._lb)
         return plm.create(
@@ -70,9 +71,9 @@ class Generic(BasePlugin):
             members=pls['pools_members']['members'])
 
     @util.transation
-    def removeMember(self, pools):
+    def remove_member(self, pools):
 
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         plm = poolmember.PoolMember(self._lb)
         return plm.remove(
@@ -83,14 +84,14 @@ class Generic(BasePlugin):
     # POOL
     #######################################
     @util.connection
-    def createPool(self, pools):
+    def create_pool(self, pools):
 
         monitor_associations = []
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         mon = monitor.Monitor(self._lb)
 
-        monitor_associations = mon.createTemplate(
+        monitor_associations = mon.create_template(
             names=pls['pools_names'],
             healthcheck=pls['pools_healthcheck']
         )
@@ -105,25 +106,25 @@ class Generic(BasePlugin):
                 lbmethod=pls['pools_lbmethod'],
                 members=pls['pools_members']['members'])
 
-            pl.setMonitorAssociation(monitor_associations=monitor_associations)
+            pl.set_monitor_association(monitor_associations=monitor_associations)
 
-            pl.setServiceDownAction(
+            pl.set_service_down_action(
                 names=pls['pools_names'],
                 actions=pls['pools_actions'])
 
             plm = poolmember.PoolMember(self._lb)
 
-            plm.setConnectionLimit(
+            plm.set_connection_limit(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 connection_limit=pls['pools_members']['limit'])
 
-            plm.setPriority(
+            plm.set_priority(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
-            plm.setStates(
+            plm.set_states(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 monitor_state=pls['pools_members']['monitor'],
@@ -133,7 +134,7 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.rollback_transaction()
             if monitor_associations != []:
                 template_names = [m['monitor_rule']['monitor_templates'] for m in monitor_associations]
-                mon.deleteTemplate(
+                mon.delete_template(
                     template_names=template_names
                 )
             raise base_exceptions.CommandErrorException(e)
@@ -141,19 +142,19 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.submit_transaction()
 
     @util.connection
-    def updatePool(self, pools):
-        log.info('updatePool')
+    def update_pool(self, pools):
+        log.info('update_pool')
         monitor_associations = []
-        pls = util._trataParam(pools)
+        pls = util._trata_param(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
 
         # get template currents
-        monitor_associations_old = pl.getMonitorAssociation(names=pls['pools_names'])
+        monitor_associations_old = pl.get_monitor_association(names=pls['pools_names'])
 
         # creates templates
-        monitor_associations = mon.createTemplate(
+        monitor_associations = mon.create_template(
             names=pls['pools_names'],
             healthcheck=pls['pools_healthcheck']
         )
@@ -161,15 +162,15 @@ class Generic(BasePlugin):
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            pl.removeMonitorAssociation(names=pls['pools_names'])
+            pl.remove_monitor_association(names=pls['pools_names'])
 
-            pl.setMonitorAssociation(monitor_associations=monitor_associations)
+            pl.set_monitor_association(monitor_associations=monitor_associations)
 
-            pl.setLbMethod(
+            pl.set_lb_method(
                 names=pls['pools_names'],
                 lbmethod=pls['pools_lbmethod'])
 
-            pl.setServiceDownAction(
+            pl.set_service_down_action(
                 names=pls['pools_names'],
                 actions=pls['pools_actions'])
 
@@ -185,17 +186,17 @@ class Generic(BasePlugin):
                     names=pls['pools_names'],
                     members=pls['pools_members']['members_new'])
 
-            plm.setConnectionLimit(
+            plm.set_connection_limit(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 connection_limit=pls['pools_members']['limit'])
 
-            plm.setPriority(
+            plm.set_priority(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
-            plm.setStates(
+            plm.set_states(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 monitor_state=pls['pools_members']['monitor'],
@@ -205,27 +206,34 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.rollback_transaction()
 
             # delete templates created
-            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names:
-                mon.deleteTemplate(
+                mon.delete_template(
                     template_names=template_names
                 )
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
 
-    @util.connection
-    def deletePool(self, pools):
-        log.info('deletePool')
+            # delete templates old
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
+            if template_names:
+                mon.delete_template(
+                    template_names=template_names
+                )
 
-        pls = util._trataParam(pools)
+    @util.connection
+    def delete_pool(self, pools):
+        log.info('delete_pool')
+
+        pls = util._trata_param(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
         self._lb._channel.System.Session.start_transaction()
         try:
-            monitor_associations = pl.getMonitorAssociation(names=pls['pools_names'])
-            pl.removeMonitorAssociation(names=pls['pools_names'])
+            monitor_associations = pl.get_monitor_association(names=pls['pools_names'])
+            pl.remove_monitor_association(names=pls['pools_names'])
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
             raise base_exceptions.CommandErrorException(e)
@@ -234,7 +242,7 @@ class Generic(BasePlugin):
             try:
                 template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
                 if template_names:
-                    mon.deleteTemplate(template_names=template_names)
+                    mon.delete_template(template_names=template_names)
             except bigsuds.OperationFailed:
                 pass
             finally:

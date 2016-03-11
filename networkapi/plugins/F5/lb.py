@@ -1,5 +1,7 @@
-import bigsuds
 import logging
+
+import bigsuds
+
 from networkapi.plugins import exceptions as base_exceptions
 
 log = logging.getLogger(__name__)

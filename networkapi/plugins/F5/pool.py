@@ -1,9 +1,8 @@
-from networkapi.plugins import F5
-from networkapi.plugins.F5 import lb
+import logging
 
 from networkapi.plugins import exceptions as base_exceptions
+from networkapi.plugins.F5 import lb
 
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -36,8 +35,8 @@ class Pool(object):
         self._lb._channel.LocalLB.Pool.delete_pool(
             kwargs['names'])
 
-    def setServiceDownAction(self, **kwargs):
-        log.info('pool:setServiceDownAction:%s' % kwargs)
+    def set_service_down_action(self, **kwargs):
+        log.info('pool:set_service_down_action:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -47,8 +46,8 @@ class Pool(object):
             kwargs['actions']
         )
 
-    def setLbMethod(self, **kwargs):
-        log.info('pool:setLbMethod:%s' % kwargs)
+    def set_lb_method(self, **kwargs):
+        log.info('pool:set_lb_method:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -57,8 +56,8 @@ class Pool(object):
             kwargs['names'],
             kwargs['lbmethod'])
 
-    def setMonitorAssociation(self, **kwargs):
-        log.info('pool:setMonitorAssociation:%s' % kwargs)
+    def set_monitor_association(self, **kwargs):
+        log.info('pool:set_monitor_association:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -66,16 +65,16 @@ class Pool(object):
         self._lb._channel.LocalLB.Pool.set_monitor_association(
             monitor_associations=kwargs['monitor_associations'])
 
-    def removeMonitorAssociation(self, **kwargs):
-        log.info('pool:removeMonitorAssociation:%s' % kwargs)
+    def remove_monitor_association(self, **kwargs):
+        log.info('pool:remove_monitor_association:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
 
         self._lb._channel.LocalLB.Pool.remove_monitor_association(pool_names=kwargs['names'])
 
-    def getMonitorAssociation(self, **kwargs):
-        log.info('pool:getMonitorAssociation:%s' % kwargs)
+    def get_monitor_association(self, **kwargs):
+        log.info('pool:get_monitor_association:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return

@@ -29,6 +29,7 @@ syspath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 if not syspath in sys.path:
     sys.path.insert(0, syspath)
 
+
 def LOCAL_FILES(path):
     new_path = os.path.abspath(os.path.join(__file__, path))
     return new_path
@@ -37,10 +38,10 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
-DEBUG = 1
+DEBUG = 0
 CI = os.getenv('CI', '0') == '1'
 
-NETWORKAPI_LOG_FILE=os.getenv('NETWORKAPI_LOG_FILE','/tmp/networkapi.log')
+NETWORKAPI_LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = NETWORKAPI_LOG_FILE
@@ -99,7 +100,7 @@ if 'test' in sys.argv:
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
-NETWORKAPI_MEMCACHE_HOSTS = os.getenv("NETWORKAPI_MEMCACHE_HOSTS",'127.0.0.1:11211')
+NETWORKAPI_MEMCACHE_HOSTS = os.getenv("NETWORKAPI_MEMCACHE_HOSTS", '127.0.0.1:11211')
 
 CACHES = {
     'default': {
@@ -125,8 +126,8 @@ API_VERSION = '15.96'
 ASSOCIATE_PERMISSION_AUTOMATICALLY = True
 ID_AUTHENTICATE_PERMISSION = 5
 
-NETWORKAPI_SUPPORT_TIME =os.getenv('NETWORKAPI_SUPPORT_TIME',"Suporte Telecom")
-NETWORKAPI_SUPPORT_EMAIL=os.getenv('NETWORKAPI_SUPPORT_EMAIL', 'suptel@corp.globo.com')
+NETWORKAPI_SUPPORT_TIME = os.getenv('NETWORKAPI_SUPPORT_TIME', "Suporte Telecom")
+NETWORKAPI_SUPPORT_EMAIL = os.getenv('NETWORKAPI_SUPPORT_EMAIL', 'suptel@corp.globo.com')
 ADMINS = (
     (NETWORKAPI_SUPPORT_TIME, NETWORKAPI_SUPPORT_EMAIL),
 )
@@ -157,9 +158,9 @@ LOGGING = {
             'mode': 'a',
             'filters': ['user_filter'],
         },
-        'console':{
-            'level':'INFO',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
             'formatter': 'simple',
             'filters': ['user_filter'],
         },
@@ -205,7 +206,7 @@ DEFAULT_CHARSET = 'utf-8'  # Set the encoding to database data
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 
-NETWORKAPI_TIMEZONE = os.getenv('NETWORKAPI_TIMEZONE','America/Sao_Paulo')
+NETWORKAPI_TIMEZONE = os.getenv('NETWORKAPI_TIMEZONE', 'America/Sao_Paulo')
 TIME_ZONE = NETWORKAPI_TIMEZONE
 
 # Language code for this installation. All choices can be found here:
@@ -346,7 +347,7 @@ REST_FRAMEWORK = {
 }
 
 
-#DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
+# DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
 
 NETWORKAPI_VERSION = "1.0"
 
@@ -429,9 +430,9 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 #       QUEUE SETTINGS
 ##################################
 
-BROKER_CONNECT_TIMEOUT=os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
-BROKER_DESTINATION=os.getenv('NETWORKAPI_BROKER_DESTINATION', "/topic/networkapi_queue")
-BROKER_URI=os.getenv('NETWORKAPI_BROKER_URI',u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e")
+BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
+BROKER_DESTINATION = os.getenv('NETWORKAPI_BROKER_DESTINATION', "/topic/networkapi_queue")
+BROKER_URI = os.getenv('NETWORKAPI_BROKER_URI', u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e")
 
 
 ###################################
@@ -443,80 +444,80 @@ PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
 ###################################
 # PATH RACKS
 ###################################
-#### HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
-KICKSTART_SO_LF="n6000-uk9-kickstart.7.1.0.N1.1b.bin"
-IMAGE_SO_LF="n6000-uk9.7.1.0.N1.1b.bin"
-#### <<<<<
+# HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
+KICKSTART_SO_LF = "n6000-uk9-kickstart.7.1.0.N1.1b.bin"
+IMAGE_SO_LF = "n6000-uk9.7.1.0.N1.1b.bin"
+# <<<<<
 
-PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE','/vagrant/networkapi/rack/roteiros/')
-PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_PATH_TO_ADD_GUIDE','/vagrant/networkapi/rack/configuracao/')
-PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG','/vagrant/networkapi/rack/roteiros/')
-REL_PATH_TO_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_CONFIG','networkapi/rack/roteiros/')
-REL_PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_ADD_CONFIG','networkapi/rack/configuracao/')
-PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV','/vagrant/networkapi/rack/roteiros/')
+PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE', '/vagrant/networkapi/rack/roteiros/')
+PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_PATH_TO_ADD_GUIDE', '/vagrant/networkapi/rack/configuracao/')
+PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG', '/vagrant/networkapi/rack/roteiros/')
+REL_PATH_TO_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_CONFIG', 'networkapi/rack/roteiros/')
+REL_PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_ADD_CONFIG', 'networkapi/rack/configuracao/')
+PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV', '/vagrant/networkapi/rack/roteiros/')
 
 LEAF = "LF-CM"
 OOB = "OOB-CM"
 SPN = "SPN-CM"
 FORMATO = ".cfg"
 
-DIVISAODC_MGMT="OOB-CM"
-AMBLOG_MGMT="GERENCIA"
-GRPL3_MGMT="CORE/DENSIDADE"
+DIVISAODC_MGMT = "OOB-CM"
+AMBLOG_MGMT = "GERENCIA"
+GRPL3_MGMT = "CORE/DENSIDADE"
 
-NETWORKAPI_USE_FOREMAN=os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
-NETWORKAPI_FOREMAN_URL=os.getenv('NETWORKAPI_FOREMAN_URL','http://foreman_server')
+NETWORKAPI_USE_FOREMAN = os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
+NETWORKAPI_FOREMAN_URL = os.getenv('NETWORKAPI_FOREMAN_URL', 'http://foreman_server')
 
-NETWORKAPI_FOREMAN_USERNAME=os.getenv('NETWORKAPI_FOREMAN_USERNAME','admin')
-NETWORKAPI_FOREMAN_PASSWORD=os.getenv('NETWORKAPI_FOREMAN_PASSWORD', 'password')
+NETWORKAPI_FOREMAN_USERNAME = os.getenv('NETWORKAPI_FOREMAN_USERNAME', 'admin')
+NETWORKAPI_FOREMAN_PASSWORD = os.getenv('NETWORKAPI_FOREMAN_PASSWORD', 'password')
 
-### FOREMAN
-USE_FOREMAN=NETWORKAPI_USE_FOREMAN
-FOREMAN_URL=NETWORKAPI_FOREMAN_URL
-FOREMAN_USERNAME=NETWORKAPI_FOREMAN_USERNAME
-FOREMAN_PASSWORD=NETWORKAPI_FOREMAN_PASSWORD
-FOREMAN_HOSTS_ENVIRONMENT_ID=1
+# FOREMAN
+USE_FOREMAN = NETWORKAPI_USE_FOREMAN
+FOREMAN_URL = NETWORKAPI_FOREMAN_URL
+FOREMAN_USERNAME = NETWORKAPI_FOREMAN_USERNAME
+FOREMAN_PASSWORD = NETWORKAPI_FOREMAN_PASSWORD
+FOREMAN_HOSTS_ENVIRONMENT_ID = 1
 
 
 ###################
 # TEMPLATE CONFIG #
 ###################
-NETWORKAPI_TFTP_SERVER_ADDR=os.getenv('NETWORKAPI_TFTP_SERVER_ADDR','')
+NETWORKAPI_TFTP_SERVER_ADDR = os.getenv('NETWORKAPI_TFTP_SERVER_ADDR', '')
 
 TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
 
-NETWORKAPI_TFTPBOOT_FILES_PATH=os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH','/mnt/tftpboot/')
+NETWORKAPI_TFTPBOOT_FILES_PATH = os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH', '/mnt/tftpboot/')
 TFTPBOOT_FILES_PATH = NETWORKAPI_TFTPBOOT_FILES_PATH
 
 
-NETWORKAPI_CONFIG_TEMPLATE_PATH=os.getenv('NETWORKAPI_CONFIG_TEMPLATE_PATH','/mnt/config_templates/')
+NETWORKAPI_CONFIG_TEMPLATE_PATH = os.getenv('NETWORKAPI_CONFIG_TEMPLATE_PATH', '/mnt/config_templates/')
 CONFIG_TEMPLATE_PATH = NETWORKAPI_CONFIG_TEMPLATE_PATH
 
 CONFIG_FILES_REL_PATH = "networkapi/generated_config/"
-CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH
+CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
 APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
 
 INTERFACE_CONFIG_REL_PATH = "interface/"
 #/mnt/config_templates/interface/
-INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+INTERFACE_CONFIG_REL_PATH
+INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + INTERFACE_CONFIG_REL_PATH
 #/mnt/tftpboot/networkapi/generated_config/interface/
-INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+INTERFACE_CONFIG_REL_PATH
-#networkapi/generated_config/interface/
-INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+INTERFACE_CONFIG_REL_PATH
+INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
+# networkapi/generated_config/interface/
+INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
 
 USER_SCRIPTS_REL_PATH = "user_scripts/"
 #/mnt/tftpboot/networkapi/generated_config/user_scripts/
-USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
-#networkapi/generated_config/interface/
-USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+USER_SCRIPTS_REL_PATH
+USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
+# networkapi/generated_config/interface/
+USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
 
 NETWORK_CONFIG_REL_PATH = "network/"
 #/mnt/config_templates/interface/
-NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH+NETWORK_CONFIG_REL_PATH
+NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + NETWORK_CONFIG_REL_PATH
 #/mnt/tftpboot/networkapi/generated_config/interface/
-NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH+CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
-#networkapi/generated_config/interface/
-NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH+NETWORK_CONFIG_REL_PATH
+NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
+# networkapi/generated_config/interface/
+NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
 ###################
 
 
@@ -542,17 +543,17 @@ if CI:
             },
         },
         'handlers': {
-            'console':{
-                'level':'INFO',
-                'class':'logging.StreamHandler',
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
                 'formatter': 'simple'
             },
         },
         'loggers': {
             'django': {
-                'handlers':['console'],
+                'handlers': ['console'],
                 'propagate': False,
-                'level':'INFO',
+                'level': 'INFO',
             },
             'django.request': {
                 'handlers': ['console'],
@@ -580,4 +581,3 @@ if CI:
 #     TEST_DISCOVER_ROOT = None
 #     NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--where-dir=./integration/',
 #                   '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
-
