@@ -16,8 +16,10 @@
 # limitations under the License.
 
 from django.conf.urls import patterns, url
+from networkapi.api_interface.views import DisconnectView
 
 urlpatterns = patterns('networkapi.api_interface.views',
     url(r'^interface/(?P<id_interface>\d+)/deploy_config_sync/$', 'deploy_interface_configuration_sync'),
     url(r'^interface/channel/(?P<id_channel>\d+)/deploy_config_sync/$', 'deploy_channel_configuration_sync'),
+    url(r'^interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/$', DisconnectView.as_view()),
 )

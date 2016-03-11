@@ -385,7 +385,7 @@ def ambiente_cloud(user, rack, environment_list):
     for amb in amb_cloud: 
         numero = "VLAN_MNGT_"+amb
         variables['VLAN_NUM'] = hosts.get(numero)
-        variables['VLAN_NAME'] = "MNGT_"+amb+"_"+rack.nome
+        variables['VLAN_NAME'] = "DOM0_"+amb+"_"+rack.nome
         
         vlan = criar_vlan(user, variables, ambientes, 0)
         #criar rede

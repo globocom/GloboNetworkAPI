@@ -16,20 +16,18 @@
 # limitations under the License.
 
 from django.db.transaction import commit_on_success
-from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from rest_framework.response import Response
-
-import logging
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.interface.models import InterfaceNotFoundError
+from networkapi.interface.models import InterfaceNotFoundError, Interface
 from networkapi.api_interface.permissions import Read, Write, DeployConfig
 from networkapi.api_interface import exceptions
 from networkapi.api_interface import facade
-
+from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
+from networkapi.api_rest import exceptions as api_exceptions
+from rest_framework.views import APIView
+from rest_framework import status
+import logging
 
 
 log = logging.getLogger(__name__)
@@ -83,5 +81,54 @@ def deploy_channel_configuration_sync(request, id_channel):
         log.error(exception)
         raise exception
 
+class DisconnectView(APIView):
 
+    @permission_classes((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """URL: api/interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/"""
 
+        try:
+            log.info("API_Disconnect")
+
+            data = dict()
+
+            id_interface_1 = kwargs.get('id_interface_1')
+            id_interface_2 = kwargs.get('id_interface_2')
+
+            interface_1 = Interface.get_by_pk(int(id_interface_1))
+            interface_2 = Interface.get_by_pk(int(id_interface_2))
+
+            with distributedlock(LOCK_INTERFACE % id_interface_1):
+
+                if interface_1.channel or interface_2.channel:
+                    raise exceptions.InterfaceException("Interface está em um Port Channel")
+
+                if interface_1.ligacao_front_id == interface_2.id:
+                    interface_1.ligacao_front = None
+                    if interface_2.ligacao_front_id == interface_1.id:
+                        interface_2.ligacao_front = None
+                    else:
+                        interface_2.ligacao_back = None
+                elif interface_1.ligacao_back_id == interface_2.id:
+                    interface_1.ligacao_back = None
+                    if interface_2.ligacao_back_id == interface_1.id:
+                        interface_2.ligacao_back = None
+                    else:
+                        interface_2.ligacao_front = None
+                elif not interface_1.ligacao_front_id and not interface_1.ligacao_back_id:
+                    raise exceptions.InterfaceException("Interface id %s não connectada" % interface_1)
+
+                interface_1.save()
+                interface_2.save()
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except exceptions.InterfaceException, exception:
+            raise exception
+        except InterfaceNotFoundError, exception:
+            log.error(exception)
+            raise api_exceptions.ObjectDoesNotExistException('Interface Does Not Exist. %s' % exception)
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)

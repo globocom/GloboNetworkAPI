@@ -74,10 +74,6 @@ class InterfaceDisconnectResource(RestResource):
 
                 if interface_1.channel:
                     raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
-                else:
-                    sw = interface_1.get_switch_and_router_interface_from_host_interface(interface_1.protegida)
-                    if sw.channel:
-                        raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
 
                 # Is valid back or front connection
                 if back_or_front:
@@ -97,10 +93,6 @@ class InterfaceDisconnectResource(RestResource):
 
                 if interface_2.channel:
                     raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
-                else:
-                    sw = interface_2.get_switch_and_router_interface_from_host_interface(interface_2.protegida)
-                    if sw.channel:
-                        raise api_interface_exceptions.InterfaceException("Interface está em um Port Channel")
 
                 if interface_2.ligacao_front_id == interface_1.id:
                     back_or_front_2 = 1
