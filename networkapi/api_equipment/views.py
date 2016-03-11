@@ -47,7 +47,6 @@ class EquipmentView(APIView):
                 for r in rot_do_ambiente:
                     router_id = r.equipamento.id
                     router = Equipamento().get_by_pk(router_id)
-                    log.info("id "+str(router))
                     routers_list.append(facade.get_equipment_map(router))
 
                 data["routers"] = routers_list
