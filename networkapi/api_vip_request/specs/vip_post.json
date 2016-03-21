@@ -1,0 +1,148 @@
+{
+  "title": "Vip Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vips"
+  ],
+  "definitions": {
+    "ipv4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ip_formated"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_formated": {
+          "type": "string",
+          "oneOf": [
+            {
+              "format": "ipv4"
+            }
+          ]
+        }
+      }
+    },
+    "ipv6": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ip_formated"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_formated": {
+          "type": "string",
+          "oneOf": [
+            {
+              "format": "ipv6"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "vips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "null"
+          },
+          "name": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "business": {
+            "type": "string"
+          },
+          "environmentvip": {
+            "type": "integer"
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "pools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "server_pool": {
+                "type": "integer"
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "optionvip": {
+                "type": "integer"
+              },
+              "val_optionvip": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "server_pool",
+              "port",
+              "optionvip",
+              "val_optionvip"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ipv6": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/ipv6"
+            }
+          ]
+        },
+        "ip": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/ipv4"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

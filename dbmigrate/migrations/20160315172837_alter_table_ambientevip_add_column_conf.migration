@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE ambientevip
+ADD COLUMN `conf` LONGTEXT NULL COMMENT '';
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE ambientevip
+DROP COLUMN `conf`;
+
+"""

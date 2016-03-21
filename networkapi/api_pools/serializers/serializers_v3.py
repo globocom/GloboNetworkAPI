@@ -16,9 +16,36 @@
 # limitations under the License.
 from networkapi.api_equipment import serializers as eqpt_serializers
 from networkapi.healthcheckexpect.models import Healthcheck
+from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 
 from rest_framework import serializers
+
+
+class Ipv4BasicSerializer(serializers.ModelSerializer):
+
+    id = serializers.Field()
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ip
+        fields = (
+            'id',
+            'ip_formated'
+        )
+
+
+class Ipv6BasicSerializer(serializers.ModelSerializer):
+
+    id = serializers.Field()
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ipv6
+        fields = (
+            'id',
+            'ip_formated'
+        )
 
 
 class HealthcheckV3Serializer(serializers.ModelSerializer):
@@ -60,26 +87,8 @@ class PoolV3SimpleSerializer(serializers.ModelSerializer):
 class PoolMemberBasicSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
-    ipv6 = serializers.SerializerMethodField('get_ipv6')
-    ip = serializers.SerializerMethodField('get_ip')
-
-    def get_ipv6(self, obj):
-        obj_ipv6 = None
-        if obj.ipv6:
-            obj_ipv6 = {
-                'id': obj.ipv6_id,
-                'ip_formated': obj.ipv6.ip_formated
-            }
-        return obj_ipv6
-
-    def get_ip(self, obj):
-        obj_ip = None
-        if obj.ip:
-            obj_ip = {
-                'id': obj.ip_id,
-                'ip_formated': obj.ip.ip_formated
-            }
-        return obj_ip
+    ipv6 = Ipv6BasicSerializer()
+    ip = Ipv4BasicSerializer()
 
     class Meta:
         depth = 1
