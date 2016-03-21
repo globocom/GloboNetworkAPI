@@ -32,7 +32,7 @@ class PoolMemberStateView(APIView):
 
         try:
             pools = request.DATA
-            json_validate('networkapi/api_pools/fixtures/pool_member_status.json').validate(pools)
+            json_validate('networkapi/api_pools/specs/pool_member_status.json').validate(pools)
             response = facade.set_poolmember_state(pools)
 
             return Response(response)
@@ -118,7 +118,7 @@ class PoolDeployView(APIView):
         """Update real pool by list """
 
         server_pools = request.DATA
-        json_validate('networkapi/api_pools/fixtures/pool_put.json').validate(server_pools)
+        json_validate('networkapi/api_pools/specs/pool_put.json').validate(server_pools)
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
@@ -235,7 +235,7 @@ class PoolDBView(APIView):
         Method to save
         """
         pools = request.DATA
-        json_validate('networkapi/api_pools/fixtures/pool_post.json').validate(pools)
+        json_validate('networkapi/api_pools/specs/pool_post.json').validate(pools)
         verify_ports(pools)
         response = {}
         for pool in pools['server_pools']:
@@ -256,7 +256,7 @@ class PoolDBView(APIView):
         pools = dict()
 
         pools = request.DATA
-        json_validate('networkapi/api_pools/fixtures/pool_put.json').validate(pools)
+        json_validate('networkapi/api_pools/specs/pool_put.json').validate(pools)
         verify_ports(pools)
         response = {}
         for pool in pools['server_pools']:
@@ -267,14 +267,13 @@ class PoolDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
         Method to delete
         """
-        pool_id = kwargs['pool_id']
+        pool_ids = kwargs['pool_ids'].split(';')
         response = {}
-        facade.delete_pool(pool_id)
+        facade.delete_pool(pool_ids)
 
         return Response(response)

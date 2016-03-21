@@ -10,7 +10,6 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions, models
-from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import distributedlock, LOCK_POOL
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
 from networkapi.healthcheckexpect.models import Healthcheck
@@ -36,7 +35,6 @@ def create_real_pool(pools):
     load_balance = dict()
     keys_cache = list()
 
-    log.info(pools)
     for pool in pools:
 
         equips = validate_pool_members_to_apply(pool)
@@ -161,7 +159,6 @@ def update_real_pool(pools):
     keys_cache = list()
 
     for pool in pools['server_pools']:
-        log.info(pool)
         validate_save(pool, permit_created=True)
 
         member_ids = [spm['id'] for spm in pool['server_pool_members'] if spm['id']]
@@ -320,6 +317,11 @@ def set_poolmember_state(pools):
 
     for lb in load_balance:
         load_balance[lb]['plugin'].set_state_member(load_balance[lb])
+
+    for pool in pools['server_pools']:
+        for pool_member in pool['server_pool_members']:
+            ServerPoolMember.objects.filter(id=pool_member['id']).update(member_status=pool_member['member_status'])
+
     return {}
 
 
@@ -438,7 +440,8 @@ def update_pool(pool):
 
     members_create = [member for member in pool['server_pool_members'] if not member['id']]
     members_update = [member for member in pool['server_pool_members'] if member['id']]
-    members_remove = [member.id for member in sp.serverpoolmember_set.all()]
+    members_ids = [member['id'] for member in pool['server_pool_members'] if member['id']]
+    members_remove = [member.id for member in sp.serverpoolmember_set.all() if member.id not in members_ids]
 
     sp.save()
 
@@ -477,10 +480,8 @@ def create_pool_member(members, pool_id):
     for member in members:
         pool_member = ServerPoolMember()
         pool_member.server_pool_id = pool_id
-        if member['ip']:
-            pool_member.ip = Ip.get_by_pk(member['ip']['id'])
-        if member['ipv6']:
-            pool_member.ipv6 = Ipv6.get_by_pk(member['ipv6']['id'])
+        pool_member.ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
+        pool_member.ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
         pool_member.identifier = member['identifier']
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
@@ -494,10 +495,8 @@ def update_pool_member(members):
 
     for member in members:
         pool_member = ServerPoolMember.objects.get(id=member['id'])
-        if member['ip']:
-            pool_member.ip = Ip.get_by_pk(member['ip']['id'])
-        if member['ipv6']:
-            pool_member.ipv6 = Ipv6.get_by_pk(member['ipv6']['id'])
+        pool_member.ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
+        pool_member.ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
         pool_member.identifier = member['identifier']
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
@@ -545,14 +544,14 @@ def validate_save(pool, permit_created=False):
                 environmentenvironmentvip__environment__vlan__networkipv4__ip=member['ip']['id']
             ).filter(environmentenvironmentvip__environment__id=pool['environment'])
             if not vips:
-                raise api_exceptions.IpNotFoundByEnvironment()
+                raise exceptions.IpNotFoundByEnvironment()
 
         if member['ipv6']:
             vips = EnvironmentVip.objects.filter(
                 environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ip']['id']
             ).filter(environmentenvironmentvip__environment__id=pool['environment'])
             if not vips:
-                raise api_exceptions.IpNotFoundByEnvironment()
+                raise exceptions.IpNotFoundByEnvironment()
 
         if member['id']:
             if member['id'] not in members_db:

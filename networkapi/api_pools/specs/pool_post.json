@@ -1,5 +1,5 @@
 {
-  "title": "Pool Member State",
+  "title": "Pool Post",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "additionalProperties": false,
@@ -83,7 +83,10 @@
                 "type": "null"
               },
               "identifier": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "null"
+                ]
               },
               "healthcheck_type": {
                 "type": "string",
@@ -108,7 +111,7 @@
           },
           "default_limit": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 0
           },
           "server_pool_members": {
             "type": "array",
@@ -161,7 +164,8 @@
                   "type": "integer"
                 },
                 "limit": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 0
                 },
                 "port_real": {
                   "type": "integer",
