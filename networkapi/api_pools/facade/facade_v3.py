@@ -13,11 +13,10 @@ from networkapi.api_pools import exceptions, models
 from networkapi.distributedlock import distributedlock, LOCK_POOL
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
 from networkapi.healthcheckexpect.models import Healthcheck
+from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.plugins.factory import PluginFactory
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-
-__all__ = ["create_real_pool", "delete_real_pool", "update_real_pool", "set_poolmember_state", "get_poolmember_state", "create_pool", "delete_pool", "update_pool", "get_pool_by_ids", "validate_save", "create_lock", "destroy_lock"]
 
 log = logging.getLogger(__name__)
 protocolo_access = 'https'
@@ -37,7 +36,7 @@ def create_real_pool(pools):
 
     for pool in pools:
 
-        equips = validate_pool_members_to_apply(pool)
+        equips = _validate_pool_members_to_apply(pool)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -66,7 +65,7 @@ def create_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
+                'action': _get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
                 'pools_members': [{
                     'id': pool_member['id'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
@@ -100,7 +99,7 @@ def delete_real_pool(pools):
 
     for pool in pools:
 
-        equips = validate_pool_members_to_apply(pool)
+        equips = _validate_pool_members_to_apply(pool)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -127,7 +126,7 @@ def delete_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
+                'action': _get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
                 'pools_members': [{
                     'id': pool_member['id'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
@@ -229,7 +228,7 @@ def update_real_pool(pools):
             })
 
         # get eqpts associate with pool
-        equips = validate_pool_to_apply(pool, update=True)
+        equips = _validate_pool_to_apply(pool, update=True)
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -258,7 +257,7 @@ def update_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
+                'action': _get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
                 'pools_members': pools_members
             })
 
@@ -282,7 +281,7 @@ def set_poolmember_state(pools):
 
     for pool in pools['server_pools']:
         if pool['server_pool_members']:
-            equips = validate_pool_members_to_apply(pool)
+            equips = _validate_pool_members_to_apply(pool)
 
             for e in equips:
                 eqpt_id = str(e.equipamento.id)
@@ -336,7 +335,7 @@ def get_poolmember_state(pools):
 
         if pool['server_pool_members']:
 
-            equips = validate_pool_members_to_apply(pool)
+            equips = _validate_pool_members_to_apply(pool)
 
             for e in equips:
                 eqpt_id = str(e.equipamento.id)
@@ -415,12 +414,12 @@ def create_pool(pool):
     sp.servicedownaction_id = pool['servicedownaction']
     sp.lb_method = pool['lb_method']
     sp.default_limit = pool['default_limit']
-    healthcheck = get_healthcheck(pool['healthcheck'])
+    healthcheck = _get_healthcheck(pool['healthcheck'])
     sp.healthcheck = healthcheck
 
     sp.save()
 
-    create_pool_member(pool['server_pool_members'], sp.id)
+    _create_pool_member(pool['server_pool_members'], sp.id)
 
     return sp
 
@@ -435,7 +434,7 @@ def update_pool(pool):
     sp.servicedownaction_id = pool['servicedownaction']
     sp.lb_method = pool['lb_method']
     sp.default_limit = pool['default_limit']
-    healthcheck = get_healthcheck(pool['healthcheck'])
+    healthcheck = _get_healthcheck(pool['healthcheck'])
     sp.healthcheck = healthcheck
 
     members_create = [member for member in pool['server_pool_members'] if not member['id']]
@@ -445,9 +444,9 @@ def update_pool(pool):
 
     sp.save()
 
-    create_pool_member(members_create, sp.id)
-    update_pool_member(members_update)
-    delete_pool_member(members_remove)
+    _create_pool_member(members_create, sp.id)
+    _update_pool_member(members_update)
+    _delete_pool_member(members_remove)
 
     return sp
 
@@ -469,12 +468,43 @@ def get_pool_by_ids(pools_ids):
 
     return server_pools
 
+
+def get_pool_by_search(search=dict()):
+
+    pools = ServerPool.objects.filter()
+
+    if not search:
+        search = {
+            'asorting_cols': None,
+            'custom_search': None,
+            'searchable_columns': None,
+            'start_record': 0,
+            'end_record': 25
+        }
+    if search.get('asorting_cols'):
+        search['asorting_cols'] = search.get('asorting_cols').split(';')
+
+    vip_requests, total = build_query_to_datatable(
+        pools,
+        search.get('asorting_cols') or None,
+        search.get('custom_search') or None,
+        search.get('searchable_columns') or None,
+        search.get('start_record') or 0,
+        search.get('end_record') or 25
+    )
+
+    pool_map = dict()
+    pool_map["pools"] = pools
+    pool_map["total"] = total
+
+    return pool_map
+
 ########################
 # Members
 ########################
 
 
-def create_pool_member(members, pool_id):
+def _create_pool_member(members, pool_id):
     """Creates pool members"""
 
     for member in members:
@@ -490,7 +520,7 @@ def create_pool_member(members, pool_id):
         pool_member.save()
 
 
-def update_pool_member(members):
+def _update_pool_member(members):
     """Updates pool members"""
 
     for member in members:
@@ -505,7 +535,7 @@ def update_pool_member(members):
         pool_member.save()
 
 
-def delete_pool_member(members):
+def _delete_pool_member(members):
     """Deletes pool members"""
     ServerPoolMember.objects.filter(id__in=members).delete()
 
@@ -558,7 +588,7 @@ def validate_save(pool, permit_created=False):
                 raise exceptions.InvalidRealPoolException()
 
 
-def get_healthcheck(healthcheck_obj):
+def _get_healthcheck(healthcheck_obj):
     """Get or creates a healthcheck"""
 
     healthcheck = {
@@ -599,7 +629,7 @@ def destroy_lock(locks_list):
         lock.__exit__('', '', '')
 
 
-def validate_pool_members_to_apply(pool):
+def _validate_pool_members_to_apply(pool):
 
     if pool['server_pool_members']:
         q_filters = [{
@@ -616,12 +646,12 @@ def validate_pool_members_to_apply(pool):
         if len(server_pool_members) != len(q_filters):
             raise exceptions.PoolmemberNotExist()
 
-    equips = validate_pool_to_apply(pool)
+    equips = _validate_pool_to_apply(pool)
 
     return equips
 
 
-def validate_pool_to_apply(pool, update=False):
+def _validate_pool_to_apply(pool, update=False):
     server_pool = ServerPool.objects.get(
         identifier=pool['identifier'],
         environment=pool['environment'],
@@ -643,5 +673,5 @@ def validate_pool_to_apply(pool, update=False):
     return equips
 
 
-def get_option_pool(option_id, option_type):
+def _get_option_pool(option_id, option_type):
     return models.OptionPool.objects.get(id=option_id, type=option_type)
