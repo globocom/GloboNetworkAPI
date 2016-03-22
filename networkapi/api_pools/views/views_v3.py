@@ -4,16 +4,16 @@ import logging
 
 from django.db.transaction import commit_on_success
 
-from networkapi.api_pools import facade, serializers, tasks
+from networkapi.api_pools import exceptions, facade, serializers
 from networkapi.api_pools.permissions import Read, Write
 from networkapi.api_rest import exceptions as rest_exceptions
-from networkapi.api_task import facade as task_facade
+# from networkapi.api_task import facade as task_facade
 from networkapi.requisicaovips import models as models_vips
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate, verify_ports
 
 from rest_framework import status
-from rest_framework.decorators import permission_classes
+# from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -32,7 +32,8 @@ class PoolMemberStateView(APIView):
 
         try:
             pools = request.DATA
-            json_validate('networkapi/api_pools/specs/pool_member_status.json').validate(pools)
+            json_validate(
+                'networkapi/api_pools/specs/pool_member_status.json').validate(pools)
             response = facade.set_poolmember_state(pools)
 
             return Response(response)
@@ -54,7 +55,8 @@ class PoolMemberStateView(APIView):
 
             data = dict()
 
-            server_pools = models_vips.ServerPool.objects.filter(id__in=pool_ids)
+            server_pools = models_vips.ServerPool.objects.filter(
+                id__in=pool_ids)
 
             if checkstatus == '1':
                 serializer_server_pool = serializers.PoolV3SimpleSerializer(
@@ -62,16 +64,19 @@ class PoolMemberStateView(APIView):
                     many=True
                 )
 
-                status = facade.get_poolmember_state(serializer_server_pool.data)
+                status = facade.get_poolmember_state(
+                    serializer_server_pool.data)
 
                 for server_pool in server_pools:
 
                     if status.get(server_pool.id):
-                        query_pools = models_vips.ServerPoolMember.objects.filter(server_pool=server_pool)
+                        query_pools = models_vips.ServerPoolMember.objects.filter(
+                            server_pool=server_pool)
 
                         for pm in query_pools:
 
-                            member_checked_status = status[server_pool.id][pm.id]
+                            member_checked_status = status[
+                                server_pool.id][pm.id]
                             pm.member_status = member_checked_status
                             pm.last_status_update = datetime.now()
                             pm.save(self.request.user)
@@ -118,7 +123,8 @@ class PoolDeployView(APIView):
         """Update real pool by list """
 
         server_pools = request.DATA
-        json_validate('networkapi/api_pools/specs/pool_put.json').validate(server_pools)
+        json_validate(
+            'networkapi/api_pools/specs/pool_put.json').validate(server_pools)
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
@@ -150,52 +156,52 @@ class PoolDeployView(APIView):
         return Response(response)
 
 
-@permission_classes((IsAuthenticated, Write))
-class PoolDeployTaskView(APIView):
+# @permission_classes((IsAuthenticated, Write))
+# class PoolDeployTaskView(APIView):
 
-    @logs_method_apiview
-    def post(self, request, *args, **kwargs):
-        try:
-            pools = request.DATA.get("pools", [])
-            task = tasks.create_real_pool.apply_async([pools])
-            key = '%s:%s' % ('tasks', request.user.id)
-            value = task_facade.set_task_cache(task, key)
+#     @logs_method_apiview
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             pools = request.DATA.get("pools", [])
+#             task = tasks.create_real_pool.apply_async([pools])
+#             key = '%s:%s' % ('tasks', request.user.id)
+#             value = task_facade.set_task_cache(task, key)
 
-            return Response(value, status.HTTP_200_OK)
+#             return Response(value, status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.error(exception)
-            raise rest_exceptions.NetworkAPIException(exception)
+#         except Exception, exception:
+#             log.error(exception)
+#             raise rest_exceptions.NetworkAPIException(exception)
 
-    @logs_method_apiview
-    def put(self, request, *args, **kwargs):
+#     @logs_method_apiview
+#     def put(self, request, *args, **kwargs):
 
-        try:
-            pools = request.DATA.get("pools", [])
-            task = tasks.update_real_pool.apply_async([pools])
-            key = '%s:%s' % ('tasks', request.user.id)
-            value = task_facade.set_task_cache(task, key)
+#         try:
+#             pools = request.DATA.get("pools", [])
+#             task = tasks.update_real_pool.apply_async([pools])
+#             key = '%s:%s' % ('tasks', request.user.id)
+#             value = task_facade.set_task_cache(task, key)
 
-            return Response(value, status.HTTP_200_OK)
+#             return Response(value, status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.error(exception)
-            raise rest_exceptions.NetworkAPIException(exception)
+#         except Exception, exception:
+#             log.error(exception)
+#             raise rest_exceptions.NetworkAPIException(exception)
 
-    @logs_method_apiview
-    def delete(self, request, *args, **kwargs):
+#     @logs_method_apiview
+#     def delete(self, request, *args, **kwargs):
 
-        try:
-            pools = request.DATA.get("pools", [])
-            task = tasks.delete_real_pool.apply_async([pools])
-            key = '%s:%s' % ('tasks', request.user.id)
-            value = task_facade.set_task_cache(task, key)
+#         try:
+#             pools = request.DATA.get("pools", [])
+#             task = tasks.delete_real_pool.apply_async([pools])
+#             key = '%s:%s' % ('tasks', request.user.id)
+#             value = task_facade.set_task_cache(task, key)
 
-            return Response(value, status.HTTP_200_OK)
+#             return Response(value, status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.error(exception)
-            raise rest_exceptions.NetworkAPIException(exception)
+#         except Exception, exception:
+#             log.error(exception)
+#             raise rest_exceptions.NetworkAPIException(exception)
 
 
 class PoolDBView(APIView):
@@ -211,14 +217,32 @@ class PoolDBView(APIView):
 
         try:
 
-            pool_ids = kwargs['pool_ids'].split(';')
+            if not kwargs.get('pool_ids'):
+                search = request.GET or None
+                pools = facade.get_pool_by_search(search)
+                pool_serializer = serializers.PoolV3Serializer(
+                    pools['pools'],
+                    many=True
+                )
+                data = {
+                    'vips': pool_serializer.data,
+                    'total': pools['total'],
+                }
+            else:
+                pool_ids = kwargs['pool_ids'].split(';')
 
-            pools = facade.get_pool_by_ids(pool_ids)
+                pools = facade.get_pool_by_ids(pool_ids)
 
-            pool_serializer = serializers.PoolV3Serializer(pools, many=True)
-            data = {
-                'server_pools': pool_serializer.data
-            }
+                if pools:
+                    pool_serializer = serializers.PoolV3Serializer(
+                        pools,
+                        many=True
+                    )
+                    data = {
+                        'server_pools': pool_serializer.data
+                    }
+                else:
+                    raise exceptions.PoolDoesNotExistException()
 
             return Response(data, status.HTTP_200_OK)
 
