@@ -54,22 +54,21 @@ class EnvironmentVipStepOneView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Method to return finality, client or environment vip list.
-        Param request.DATA["finality"]: finality of environment(optional)
-        Param request.DATA["client"]: client of environment(optional)
-        Param request.DATA["environmentp44"]: environmentp44(optional)
+        Param request.GET["finality"]: finality of environment(optional)
+        Param request.GET["client"]: client of environment(optional)
+        Param request.GET["environmentp44"]: environmentp44(optional)
         Return finality list: when request has no finality and client.
         Return client list: when request has only finality.
         Return environment vip list: when request has finality and client.
         Return object environment vip: when request has finality and client and environmentp44.
         """
 
-        log.info("View:EnvironmentStepOneView, method:post")
         try:
-            data = self.request.DATA
+            data = request.GET
 
-            finality = data['info']['finality']
-            client = data['info']['client']
-            environmentp44 = data['info']['environmentp44']
+            finality = data.get('finality')
+            client = data.get('client')
+            environmentp44 = data.get('environmentp44')
 
             if client != '' and finality != '' and environmentp44 != '':
                 obj = EnvironmentVip().get_by_values(finality, client, environmentp44)

@@ -49,12 +49,12 @@ class PoolMemberStateView(APIView):
         Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}"""
 
         try:
-            pools_ids = kwargs.get("pools_ids").split(';')
+            pool_ids = kwargs.get("pool_ids").split(';')
             checkstatus = request.GET.get('checkstatus') or '0'
 
             data = dict()
 
-            server_pools = models_vips.ServerPool.objects.filter(id__in=pools_ids)
+            server_pools = models_vips.ServerPool.objects.filter(id__in=pool_ids)
 
             if checkstatus == '1':
                 serializer_server_pool = serializers.PoolV3SimpleSerializer(
@@ -97,7 +97,7 @@ class PoolDeployView(APIView):
     def post(self, request, *args, **kwargs):
         """Create real pool by list"""
 
-        pool_ids = kwargs['pools_ids'].split(';')
+        pool_ids = kwargs['pool_ids'].split(';')
         pools = facade.get_pool_by_ids(pool_ids)
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
@@ -136,7 +136,7 @@ class PoolDeployView(APIView):
     def delete(self, request, *args, **kwargs):
         """Delete real pool by list"""
 
-        pool_ids = kwargs['pools_ids'].split(';')
+        pool_ids = kwargs['pool_ids'].split(';')
         pools = facade.get_pool_by_ids(pool_ids)
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
@@ -211,7 +211,7 @@ class PoolDBView(APIView):
 
         try:
 
-            pool_ids = kwargs['pools_ids'].split(';')
+            pool_ids = kwargs['pool_ids'].split(';')
 
             pools = facade.get_pool_by_ids(pool_ids)
 
