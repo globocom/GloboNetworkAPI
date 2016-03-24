@@ -47,7 +47,7 @@ class PoolMemberStateView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Return pool member list by POST request method
-        Param: {"id_pools":[<id_pool>], "checkstatus":"<1 or 0>"}"""
+        """
 
         try:
             pool_ids = kwargs.get("pool_ids").split(';')
@@ -58,11 +58,12 @@ class PoolMemberStateView(APIView):
             server_pools = models_vips.ServerPool.objects.filter(
                 id__in=pool_ids)
 
+            serializer_server_pool = serializers.PoolV3SimpleSerializer(
+                server_pools,
+                many=True
+            )
+
             if checkstatus == '1':
-                serializer_server_pool = serializers.PoolV3SimpleSerializer(
-                    server_pools,
-                    many=True
-                )
 
                 status = facade.get_poolmember_state(
                     serializer_server_pool.data)
@@ -79,12 +80,7 @@ class PoolMemberStateView(APIView):
                                 server_pool.id][pm.id]
                             pm.member_status = member_checked_status
                             pm.last_status_update = datetime.now()
-                            pm.save(self.request.user)
-
-            serializer_server_pool = serializers.PoolV3SimpleSerializer(
-                server_pools,
-                many=True
-            )
+                            pm.save(request.user)
 
             data["server_pools"] = serializer_server_pool.data
 

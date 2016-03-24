@@ -104,6 +104,12 @@
                   "minimum": 1,
                   "maximum": 65535
                 },
+                "last_status_update_formated": {
+                   "type": [
+                     "string",
+                     "null"
+                   ]
+                },
                 "member_status": {
                   "type": "integer",
                   "minimum": 0,

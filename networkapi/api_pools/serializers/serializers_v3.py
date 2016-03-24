@@ -85,10 +85,11 @@ class PoolV3SimpleSerializer(serializers.ModelSerializer):
 
 
 class PoolMemberBasicSerializer(serializers.ModelSerializer):
-    id = serializers.Field()
 
+    id = serializers.Field()
     ipv6 = Ipv6BasicSerializer()
     ip = Ipv4BasicSerializer()
+    last_status_update_formated = serializers.Field(source='last_status_update_formated')
 
     class Meta:
         depth = 1
@@ -99,6 +100,7 @@ class PoolMemberBasicSerializer(serializers.ModelSerializer):
             'ipv6',
             'ip',
             'port_real',
+            'last_status_update_formated',
             'member_status'
         )
 
