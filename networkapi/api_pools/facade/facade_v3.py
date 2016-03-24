@@ -65,7 +65,7 @@ def create_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': _get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
+                'action': pool['servicedownaction']['name'],
                 'pools_members': [{
                     'id': pool_member['id'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
@@ -126,7 +126,7 @@ def delete_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': _get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
+                'action': pool['servicedownaction']['name'],
                 'pools_members': [{
                     'id': pool_member['id'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
@@ -257,7 +257,7 @@ def update_real_pool(pools):
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
                 'healthcheck': pool['healthcheck'],
-                'action': _get_option_pool(pool['servicedownaction'], 'ServiceDownAction').name,
+                'action': pool['servicedownaction']['name'],
                 'pools_members': pools_members
             })
 
@@ -411,7 +411,7 @@ def create_pool(pool):
     sp.identifier = pool['identifier']
     sp.default_port = pool['default_port']
     sp.environment_id = pool['environment']
-    sp.servicedownaction_id = pool['servicedownaction']
+    sp.servicedownaction_id = pool['servicedownaction']['id']
     sp.lb_method = pool['lb_method']
     sp.default_limit = pool['default_limit']
     healthcheck = _get_healthcheck(pool['healthcheck'])
@@ -431,7 +431,7 @@ def update_pool(pool):
     sp.identifier = pool['identifier']
     sp.default_port = pool['default_port']
     sp.environment_id = pool['environment']
-    sp.servicedownaction_id = pool['servicedownaction']
+    sp.servicedownaction_id = pool['servicedownaction']['id']
     sp.lb_method = pool['lb_method']
     sp.default_limit = pool['default_limit']
     healthcheck = _get_healthcheck(pool['healthcheck'])
@@ -549,6 +549,11 @@ def validate_save(pool, permit_created=False):
         identifier=pool['identifier'],
         environment=pool['environment']
     )
+
+    _is_get_option_pool(
+        pool['servicedownaction']['id'],
+        pool['servicedownaction']['name'],
+        'ServiceDownAction')
 
     if pool['id']:
         server_pool = ServerPool.objects.get(id=pool['id'])
@@ -673,5 +678,8 @@ def _validate_pool_to_apply(pool, update=False):
     return equips
 
 
-def _get_option_pool(option_id, option_type):
-    return models.OptionPool.objects.get(id=option_id, type=option_type)
+def _is_get_option_pool(option_id, option_name, option_type):
+    try:
+        return models.OptionPool.objects.get(id=option_id, name=option_name, type=option_type)
+    except:
+        raise exceptions.InvalidServiceDownActionException()

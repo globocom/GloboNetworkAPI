@@ -71,7 +71,15 @@
             "type": "integer"
           },
           "servicedownaction": {
-            "type": "integer"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
           },
           "lb_method": {
             "type": "string"

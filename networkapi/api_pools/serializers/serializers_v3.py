@@ -17,7 +17,7 @@
 from networkapi.api_equipment import serializers as eqpt_serializers
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
+from networkapi.requisicaovips.models import OptionPool, ServerPool, ServerPoolMember
 
 from rest_framework import serializers
 
@@ -46,6 +46,16 @@ class Ipv6BasicSerializer(serializers.ModelSerializer):
             'id',
             'ip_formated'
         )
+
+
+class OptionPoolV3Serializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = OptionPool
+        depth = 1
+        fields = ('id',
+                  'name'
+                  )
 
 
 class HealthcheckV3Serializer(serializers.ModelSerializer):
@@ -152,6 +162,7 @@ class PoolV3Serializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
     healthcheck = HealthcheckV3Serializer()
+    servicedownaction = OptionPoolV3Serializer()
 
     def get_server_pool_members(self, obj):
         members = obj.serverpoolmember_set.all()
