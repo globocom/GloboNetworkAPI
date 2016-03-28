@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
@@ -36,7 +35,6 @@ from string import split
 from networkapi.filterequiptype.models import FilterEquipType
 from django.forms.models import model_to_dict
 from networkapi.ip.models import Ip, Ipv6, IpEquipamento, Ipv6Equipament
-
 
 class NetworkAddResource(RestResource):
 
@@ -335,9 +333,11 @@ class NetworkAddResource(RestResource):
             envs = list()
             envs_aux = list()
 
+            #equips = all equipments from the environment which this network is about to be allocated on
             for env in ambiente.equipamentoambiente_set.all():
                 equips.append(env.equipamento)
 
+            #envs = all environments from all equips above
             for equip in equips:
                 for env in equip.equipamentoambiente_set.all():
                     if not env.ambiente_id in envs_aux:
@@ -345,39 +345,44 @@ class NetworkAddResource(RestResource):
                         envs_aux.append(env.ambiente_id)
 
             # Check subnet's
-            if version == IP_VERSION.IPv4[0]:
-                expl = split(net.network.exploded, ".")
-            else:
-                expl = split(net.network.exploded, ":")
+            # if version == IP_VERSION.IPv4[0]:
+            #     expl = split(net.network.exploded, ".")
+            # else:
+            #     expl = split(net.network.exploded, ":")
 
-            expl.append(str(net.prefixlen))
+            # expl.append(str(net.prefixlen))
 
-            ids_exclude = []
-            ids_all = []
+            # ids_exclude = []
+            #ids_all = []
 
+            #ids_all <- ids from all vlans from each environment in envs
             network_ip_verify = IPNetwork(network)
+            #For all vlans in all common environments,
+            # check if any network is a subnetwork or supernetwork
+            # of the desired network network_ip_verify
             for env in envs:
                 for vlan_obj in env.vlan_set.all():
-                    ids_all.append(vlan_obj.id)
+                    #ids_all.append(vlan_obj.id)
                     is_subnet = verify_subnet(
                         vlan_obj, network_ip_verify, version)
 
-                    if not is_subnet:
-                        ids_exclude.append(vlan_obj.id)
-                    else:
-                        if ambiente.filter_id == None or vlan_obj.ambiente.filter_id == None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
-                            pass
-                        else:
-                            ids_exclude.append(vlan_obj.id)
+                    # if not is_subnet:
+                    #     ids_exclude.append(vlan_obj.id)
+                    # else:
+                    if is_subnet:
+                        if ambiente.filter_id is None or vlan_obj.ambiente.filter_id is None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
+                            raise NetworkIPRangeEnvError(None)
+                        # else:
+                        #     ids_exclude.append(vlan_obj.id)
 
-            # Ignore actual vlan
-            if envs != [] and long(id_vlan) not in ids_exclude:
-                ids_exclude.append(id_vlan)
+            # # Ignore actual vlan
+            # if envs != [] and long(id_vlan) not in ids_exclude:
+            #     ids_exclude.append(id_vlan)
 
-            # Check if have duplicated vlan's with same net range in an
-            # environment with shared equipment
-            if len(ids_all) != len(ids_exclude):
-                raise NetworkIPRangeEnvError(None)
+            # # Check if have duplicated vlan's with same net range in an
+            # # environment with shared equipment
+            # if len(ids_all) != len(ids_exclude):
+            #     raise NetworkIPRangeEnvError(None)
 
             # Set Vlan
             network_ip.vlan = vlan
