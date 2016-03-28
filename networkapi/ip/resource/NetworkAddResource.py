@@ -151,9 +151,11 @@ class NetworkAddResource(RestResource):
                     '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block)) for net_ip in nets])
 
                 # If network selected not in use
-                if net in networks:
-                    raise NetworkIPv4AddressNotAvailableError(
-                        None, u'Unavailable address to create a NetworkIPv4.')
+                for network in networks:
+                    if net in network or network in net:
+                        self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
+                        raise NetworkIPv4AddressNotAvailableError(
+                            None, u'Network cannot be allocated. %s already in use in this environment.' % network)
 
                 if env_vip is not None:
 
@@ -167,9 +169,11 @@ class NetworkAddResource(RestResource):
 
                     # If there is already a network with the same  range ip as
                     # related the environment  vip
-                    if net in networks:
-                        raise NetworkIpAddressNotAvailableError(
-                            None, u'Unavailable address to create a NetworkIPv4.')
+                    for network in networks:
+                        if net in network or network in net:
+                            self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
+                            raise NetworkIPv4AddressNotAvailableError(
+                                None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network)
 
                 # # Filter case 1 - Adding new network with same ip range to another network on other environment ##
                 # Get environments with networks with the same ip range
@@ -244,9 +248,11 @@ class NetworkAddResource(RestResource):
                                                                             net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block)) for net_ip in nets])
 
                 # If network selected not in use
-                if net in networks:
-                    raise NetworkIPv6AddressNotAvailableError(
-                        None, u'Unavailable address to create a NetworkIPv6.')
+                for network in networks:
+                    if net in network or network in net:
+                        self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
+                        raise NetworkIPv4AddressNotAvailableError(
+                            None, u'Network cannot be allocated. %s already in use in this environment.' % network)
 
                 if env_vip is not None:
 
@@ -260,9 +266,11 @@ class NetworkAddResource(RestResource):
 
                     # If there is already a network with the same  range ip as
                     # related the environment  vip
-                    if net in networks:
-                        raise NetworkIpAddressNotAvailableError(
-                            None, u'Unavailable address to create a NetworkIPv6.')
+                    for network in networks:
+                        if net in network or network in net:
+                            self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
+                            raise NetworkIPv4AddressNotAvailableError(
+                                None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network)
 
                 # # Filter case 1 - Adding new network with same ip range to another network on other environment ##
                 # Get environments with networks with the same ip range
@@ -344,45 +352,20 @@ class NetworkAddResource(RestResource):
                         envs.append(env.ambiente)
                         envs_aux.append(env.ambiente_id)
 
-            # Check subnet's
-            # if version == IP_VERSION.IPv4[0]:
-            #     expl = split(net.network.exploded, ".")
-            # else:
-            #     expl = split(net.network.exploded, ":")
-
-            # expl.append(str(net.prefixlen))
-
-            # ids_exclude = []
-            #ids_all = []
-
-            #ids_all <- ids from all vlans from each environment in envs
             network_ip_verify = IPNetwork(network)
             #For all vlans in all common environments,
             # check if any network is a subnetwork or supernetwork
             # of the desired network network_ip_verify
             for env in envs:
                 for vlan_obj in env.vlan_set.all():
-                    #ids_all.append(vlan_obj.id)
                     is_subnet = verify_subnet(
                         vlan_obj, network_ip_verify, version)
 
-                    # if not is_subnet:
-                    #     ids_exclude.append(vlan_obj.id)
-                    # else:
+                    if vlan_obj.ambiente == ambiente:
+                        raise NetworkIPRangeEnvError(None)
                     if is_subnet:
                         if ambiente.filter_id is None or vlan_obj.ambiente.filter_id is None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
                             raise NetworkIPRangeEnvError(None)
-                        # else:
-                        #     ids_exclude.append(vlan_obj.id)
-
-            # # Ignore actual vlan
-            # if envs != [] and long(id_vlan) not in ids_exclude:
-            #     ids_exclude.append(id_vlan)
-
-            # # Check if have duplicated vlan's with same net range in an
-            # # environment with shared equipment
-            # if len(ids_all) != len(ids_exclude):
-            #     raise NetworkIPRangeEnvError(None)
 
             # Set Vlan
             network_ip.vlan = vlan
