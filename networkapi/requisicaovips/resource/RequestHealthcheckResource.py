@@ -39,12 +39,14 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, clone
 from string import upper
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.util.decorators import deprecated
 
 
 class RequestHealthcheckResource(RestResource):
 
     log = logging.getLogger('RequestHealthcheckResource')
 
+    @deprecated(new_uri='use pool healthcheck features')
     def handle_put(self, request, user, *args, **kwargs):
         """
         Handles PUT requests to change the VIP's healthcheck.

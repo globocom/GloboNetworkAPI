@@ -47,12 +47,14 @@ from networkapi.util import is_valid_int_greater_zero_param, clone, \
 from networkapi.ambiente.models import EnvironmentVip, IP_VERSION
 from django.db.utils import IntegrityError
 from django.db import transaction
+from networkapi.util.decorators import deprecated
 
 
 class RequestVipRealEditResource(RestResource):
 
     log = logging.getLogger('RequestVipRealEditResource')
 
+    @deprecated(new_uri='check uri to edit pool')
     def handle_put(self, request, user, *args, **kwargs):
         """
         Handles PUT requests to change the VIP's real server.
