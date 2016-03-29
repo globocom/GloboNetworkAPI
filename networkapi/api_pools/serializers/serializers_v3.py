@@ -108,6 +108,7 @@ class PoolMemberBasicSerializer(serializers.ModelSerializer):
             'id',
             'identifier',
             'ipv6',
+            'priority',
             'ip',
             'port_real',
             'last_status_update_formated',

@@ -89,6 +89,12 @@
                     }
                   ]
                 },
+                "priority": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
                 "ip": {
                   "oneOf": [
                     {
