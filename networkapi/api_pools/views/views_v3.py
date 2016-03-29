@@ -32,8 +32,7 @@ class PoolMemberStateView(APIView):
 
         try:
             pools = request.DATA
-            json_validate(
-                'networkapi/api_pools/specs/pool_member_status.json').validate(pools)
+            json_validate('networkapi/api_pools/specs/pool_member_status.json').validate(pools)
             response = facade.set_poolmember_state(pools)
 
             return Response(response)
