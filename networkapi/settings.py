@@ -309,7 +309,7 @@ INSTALLED_APPS = (
     'networkapi.api_pools',
     'networkapi.api_environment_vip',
     'networkapi.api_rack',
-    'networkapi.api_task',
+    #'networkapi.api_task',
     'networkapi.api_vip_request',
     'networkapi.blockrules',
     'networkapi.config',
