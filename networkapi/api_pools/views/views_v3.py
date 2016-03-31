@@ -118,8 +118,7 @@ class PoolDeployView(APIView):
         """Update real pool by list """
 
         server_pools = request.DATA
-        json_validate(
-            'networkapi/api_pools/specs/pool_put.json').validate(server_pools)
+        json_validate('networkapi/api_pools/specs/pool_put.json').validate(server_pools)
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:

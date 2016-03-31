@@ -10,7 +10,7 @@ def address_type(value):
     values = {
         # 'ATYPE_UNSET'
         "*:*": 'ATYPE_STAR_ADDRESS_STAR_PORT',
-        "*": 'ATYPE_STAR_ADDRESS_EXPLICIT_PORT',
+        "*:$": 'ATYPE_STAR_ADDRESS_EXPLICIT_PORT',
         # 'ATYPE_EXPLICIT_ADDRESS_EXPLICIT_PORT',
         # 'ATYPE_STAR_ADDRESS',
         # 'ATYPE_EXPLICIT_ADDRESS',
@@ -18,7 +18,7 @@ def address_type(value):
 
     try:
         ipport = value.split(':')
-        key = [i for i in ipport if i == '*']
+        key = '*:$' if ipport[1] != '*' else '*:*'
 
         return {
             'address_type': values[key],
