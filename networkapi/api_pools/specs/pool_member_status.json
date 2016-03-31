@@ -71,10 +71,16 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "integer"
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
                 },
                 "identifier": {
-                  "type": "string"
+                   "type": [
+                     "string",
+                     "null"
+                   ]
                 },
                 "ipv6": {
                   "oneOf": [
@@ -84,6 +90,12 @@
                     {
                       "$ref": "#/definitions/ipv6"
                     }
+                  ]
+                },
+                "priority": {
+                  "type": [
+                    "integer",
+                    "null"
                   ]
                 },
                 "ip": {
@@ -100,6 +112,12 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 65535
+                },
+                "last_status_update_formated": {
+                   "type": [
+                     "string",
+                     "null"
+                   ]
                 },
                 "member_status": {
                   "type": "integer",

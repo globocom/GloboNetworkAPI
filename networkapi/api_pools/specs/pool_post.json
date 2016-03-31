@@ -130,7 +130,10 @@
                   "type": "null"
                 },
                 "identifier": {
-                  "type": "string"
+                   "type": [
+                     "string",
+                     "null"
+                   ]
                 },
                 "ipv6": {
                   "oneOf": [
