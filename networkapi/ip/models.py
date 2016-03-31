@@ -1426,7 +1426,7 @@ class NetworkIPv6(BaseModel):
 
     def _get_formated_ip(self):
         "Returns formated ip."
-        return '%s.%s.%s.%s.%s.%s.%s.%s/%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8,  self.block)
+        return '%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8,  self.block)
 
     networkv6 = property(_get_formated_ip)
 
@@ -1711,7 +1711,7 @@ class Ipv6(BaseModel):
 
     def _get_formated_ip(self):
         "Returns formated ip."
-        return '%s.%s.%s.%s.%s.%s.%s.%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8)
+        return '%s:%s:%s:%s:%s:%s:%s:%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8)
 
     ip_formated = property(_get_formated_ip)
 
