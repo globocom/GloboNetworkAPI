@@ -207,7 +207,6 @@
         },
         "additionalProperties": false,
         "required": [
-          "id",
           "identifier",
           "default_port",
           "environment",

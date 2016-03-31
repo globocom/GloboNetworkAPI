@@ -128,7 +128,6 @@ class VipRequestSerializer(serializers.ModelSerializer):
             'service',
             'business',
             'environmentvip',
-            'port',
             'ipv4',
             'ipv6',
             'pools',

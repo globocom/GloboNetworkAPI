@@ -1,0 +1,20 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `vip_request_dscp` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_vip_request` INT(11) UNSIGNED NOT NULL COMMENT '',
+  `dscp` INT(2) UNSIGNED NOT NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '',
+  INDEX `fk_vip_request_dscp_id_vip_request_idx` (`id_vip_request` ASC)  COMMENT '',
+  INDEX `vip_request_dscp_idx` (`dscp` ASC)  COMMENT '',
+  CONSTRAINT `fk_ vip_request_dscp_id_vip_request`
+    FOREIGN KEY (`id_vip_request`)
+    REFERENCES `networkapi`.`vip_request` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE);
+
+"""
+
+SQL_DOWN = u"""
+DROP TABLE `vip_request_dscp`;
+"""

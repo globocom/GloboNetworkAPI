@@ -1,0 +1,24 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `vip_request` 
+DROP COLUMN `port`;
+
+ALTER TABLE `redeipv4` 
+ADD COLUMN `cluster_unit` VARCHAR(45) NULL COMMENT '';
+
+ALTER TABLE `redeipv6` 
+ADD COLUMN `cluster_unit` VARCHAR(45) NULL COMMENT '';
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `vip_request` 
+ADD COLUMN `port` INT(5) UNSIGNED NOT NULL COMMENT '';
+
+ALTER TABLE `redeipv4` 
+DROP COLUMN `cluster_unit`;ED NOT NULL COMMENT '';
+
+ALTER TABLE `redeipv6` 
+DROP COLUMN `cluster_unit`;
+
+"""

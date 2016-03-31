@@ -19,7 +19,7 @@ class Generic(BasePlugin):
     @util.transation
     def set_state_member(self, pools):
 
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         plm = poolmember.PoolMember(self._lb)
 
@@ -32,7 +32,7 @@ class Generic(BasePlugin):
     @util.transation
     def set_connection_limit_member(self, pools):
 
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         plm = poolmember.PoolMember(self._lb)
         plm.setConnectionLimit(
@@ -43,7 +43,7 @@ class Generic(BasePlugin):
     @util.transation
     def set_priority_member(self, pools):
 
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         plm = poolmember.PoolMember(self._lb)
         plm.setPriority(
@@ -53,7 +53,7 @@ class Generic(BasePlugin):
 
     @util.transation
     def get_state_member(self, pools):
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         plm = poolmember.PoolMember(self._lb)
         return plm.get_states(
@@ -63,7 +63,7 @@ class Generic(BasePlugin):
     @util.transation
     def create_member(self, pools):
 
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         plm = poolmember.PoolMember(self._lb)
         return plm.create(
@@ -73,7 +73,7 @@ class Generic(BasePlugin):
     @util.transation
     def remove_member(self, pools):
 
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         plm = poolmember.PoolMember(self._lb)
         return plm.remove(
@@ -87,7 +87,7 @@ class Generic(BasePlugin):
     def create_pool(self, pools):
 
         monitor_associations = []
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         mon = monitor.Monitor(self._lb)
 
@@ -145,7 +145,7 @@ class Generic(BasePlugin):
     def update_pool(self, pools):
         log.info('update_pool')
         monitor_associations = []
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
@@ -226,7 +226,7 @@ class Generic(BasePlugin):
     def delete_pool(self, pools):
         log.info('delete_pool')
 
-        pls = util._trata_param(pools)
+        pls = util.trata_param_pool(pools)
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)

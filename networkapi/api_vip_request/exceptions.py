@@ -43,3 +43,19 @@ class ServerPoolMemberDiffEnvironmentVipException(APIException):
 class IpNotFoundByEnvironment(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'IP environment is different of environment vip request'
+
+
+class VipRequestAlreadyCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Vip Request already created.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Vip Request <<%s>> already created.' % msg
+
+
+class VipRequestNotCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Vip Request not created.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Vip Request <<%s>> not created.' % msg

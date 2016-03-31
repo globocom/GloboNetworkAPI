@@ -36,10 +36,6 @@ class VipRequest(BaseModel):
         null=True
     )
 
-    port = models.IntegerField(
-        max_length=5,
-        db_column='port')
-
     business = models.CharField(
         max_length=255,
         db_column='business',
@@ -116,4 +112,26 @@ class VipRequestPool(BaseModel):
 
     class Meta(BaseModel.Meta):
         db_table = u'vip_request_pool'
+        managed = True
+
+
+class VipRequestDSCP(BaseModel):
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+
+    vip_request = models.ForeignKey(
+        VipRequest,
+        db_column='id_vip_request',
+    )
+
+    dscp = models.IntegerField(
+        max_length=2,
+        db_column='dscp')
+
+    class Meta(BaseModel.Meta):
+
+        db_table = u'vip_request_dscp'
         managed = True

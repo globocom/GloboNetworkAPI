@@ -384,6 +384,11 @@ class EnvironmentVip(BaseModel):
         db_column='description'
     )
 
+    conf = models.TextField(
+        blank=False,
+        db_column='conf'
+    )
+
     log = logging.getLogger('EnvironmentVip')
 
     class Meta(BaseModel.Meta):

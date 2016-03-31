@@ -84,3 +84,28 @@ def template_type(value):
         msg = 'Template type not is invalid: %s' % (value)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
+
+
+def procotol_type(value):
+
+    values = {
+        # 'any': 'PROTOCOL_ANY',
+        # 'ipv6': 'PROTOCOL_IPV6',
+        # 'routing': 'PROTOCOL_ROUTING',
+        # 'none': 'PROTOCOL_NONE',
+        # 'fragment': 'PROTOCOL_FRAGMENT',
+        # 'dstopts': 'PROTOCOL_DSTOPTS',
+        'tcp': 'PROTOCOL_TCP',
+        'udp': 'PROTOCOL_UDP',
+        # 'icmp': 'PROTOCOL_ICMP',
+        # 'icmpv6': 'PROTOCOL_ICMPV6',
+        # 'ospf': 'PROTOCOL_OSPF',
+        # 'sctp': 'PROTOCOL_SCTP'
+    }
+
+    try:
+        return values[value.lower()]
+    except Exception:
+        msg = 'Protocol type not is invalid: %s' % (value)
+        log.error(msg)
+        raise base_exceptions.NamePropertyInvalid(msg)

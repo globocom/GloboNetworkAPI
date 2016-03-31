@@ -2,13 +2,17 @@
 import logging
 
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
+from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
+from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_vip_request import exceptions
-from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPool
+from networkapi.api_vip_request.models import VipRequest, VipRequestDSCP, VipRequestOptionVip, VipRequestPool
+from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.plugins.factory import PluginFactory
+from networkapi.requisicaovips.models import OptionVip, ServerPoolMember
 
-
+protocolo_access = 'https'
 log = logging.getLogger(__name__)
 
 
@@ -82,6 +86,11 @@ def update_vip_request(vip_request):
     _create_option(option_create, vip.id)
     _delete_option(option_remove)
 
+    dsrl3 = OptionVip.objects.filter(nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
+    if dsrl3:
+        if dsrl3[0]['id'] in option_remove:
+            VipRequestDSCP.objects.filter(vip_request=vip.id).delete()
+
 
 def delete_vip_request(vip_request_ids):
     """delete vip request"""
@@ -130,6 +139,14 @@ def _create_option(options, vip_request_id):
         opt.optionvip_id = option
         opt.save()
 
+    dsrl3 = OptionVip.objects.filter(nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
+    if dsrl3:
+        if dsrl3[0]['id'] in options:
+            dscp = _dscp(vip_request_id)
+            vip_dscp = VipRequestDSCP()
+            vip_dscp.vip_request = vip_request_id
+            vip_dscp.dscp = dscp
+
 
 def _delete_option(options):
     """Deletes options"""
@@ -154,11 +171,70 @@ def get_vip_request_by_search(search=dict()):
 
     return vip_map
 
+
+def create_real_vip_request(vip_requests):
+
+    load_balance = dict()
+    keys_cache = list()
+
+    for vip_request in vip_requests:
+
+        equips = _validate_vip_to_apply(vip_request)
+
+        EnvironmentVip.objects.get(id=vip_request['id'])
+
+        for e in equips:
+            eqpt_id = str(e.equipamento.id)
+            equipment_access = EquipamentoAcesso.search(
+                equipamento=e.equipamento.id,
+                protocolo=protocolo_access
+            ).uniqueResult()
+            equipment = Equipamento.get_by_pk(e.equipamento.id)
+
+            plugin = PluginFactory.factory(equipment)
+
+            if not load_balance.get(eqpt_id):
+
+                load_balance[eqpt_id] = {
+                    'plugin': plugin,
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'pools': [],
+                }
+
+            keys_cache.append('pool:monitor:%s' % pool['identifier'])
+
+            load_balance[eqpt_id]['pools'].append({
+                'id': pool['id'],
+                'nome': pool['identifier'],
+                'lb_method': pool['lb_method'],
+                'healthcheck': pool['healthcheck'],
+                'action': pool['servicedownaction']['name'],
+                'pools_members': [{
+                    'id': pool_member['id'],
+                    'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
+                    'port': pool_member['port_real'],
+                    'member_status': pool_member['member_status'],
+                    'limit': pool_member['limit'],
+                    'priority': pool_member['priority'],
+                    'weight': pool_member['weight']
+                } for pool_member in pool['server_pool_members']]
+            })
+
+    for lb in load_balance:
+        load_balance[lb]['plugin'].create_pool(load_balance[lb])
+
+    for key_cache in keys_cache:
+        cache.delete(key_cache)
+
+    ids = [pool['id'] for pool in pools]
+    ServerPool.objects.filter(id__in=ids).update(pool_created=True)
+
+
 #############
 # helpers
 #############
-
-
 def validate_save(vip_request, permit_created=False):
 
     has_identifier = VipRequest.objects.filter(
@@ -224,3 +300,40 @@ def validate_save(vip_request, permit_created=False):
                 )
                 if not vips:
                     raise exceptions.ServerPoolMemberDiffEnvironmentVipException(spm.identifier)
+
+
+def _dscp(vip_request_id):
+    members = VipRequestDSCP.objects.filter(
+        vip_request__viprequestpool__server_pool__serverpoolmember__in=ServerPoolMember.objects.filter(
+            server_pool__viprequestpool__vip_request__id=vip_request_id)).distinct().values('dscp')
+    mb = [i.get('dscp') for i in members]
+    perm = range(3, 64)
+    perm_new = list(set(perm) - set(mb))
+    if perm_new:
+        return perm_new[0]
+    else:
+        raise Exception('não pode usar esses pools')
+
+
+def _validate_vip_to_apply(vip_request, update=False):
+    vip = VipRequest.objects.get(
+        name=vip_request['name'],
+        environmentvip=vip_request['environmentvip'],
+        id=vip_request['id'])
+    if not vip:
+        raise exceptions.VipRequestDoesNotExistException()
+
+    if update and not vip.created:
+        raise exceptions.VipRequestNotCreated(vip.id)
+
+    equips = EquipamentoAmbiente.objects.filter(
+        equipamento__maintenance=0,
+        ambiente__environmentenvironmentvip__environment_vip__id=vip_request['environmentvip'],
+        equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+
+    conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
+
+    if all_equipments_are_in_maintenance([e.equipamento for e in equips]):
+        raise AllEquipmentsAreInMaintenanceException()
+
+    return equips, conf
