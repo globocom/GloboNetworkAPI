@@ -57,7 +57,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "null"
+            "type": "integer"
           },
           "identifier": {
             "type": "string"

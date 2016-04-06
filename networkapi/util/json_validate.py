@@ -16,7 +16,8 @@ def verify_ports(pools):
     for idx, pool in enumerate(pools['server_pools']):
         ips = list()
         for member in pool['server_pool_members']:
-            ips.append((resolve(member, '#/ip/id'), resolve(member, '#/port_real')))
+            if member['ip']:
+                ips.append((resolve(member, '#/ip/id'), resolve(member, '#/port_real')))
 
         if len(ips) != len(list(set(ips))):
             raise ValidationError(
