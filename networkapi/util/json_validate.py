@@ -15,15 +15,21 @@ log = logging.getLogger(__name__)
 def verify_ports(pools):
     for idx, pool in enumerate(pools['server_pools']):
         ips = list()
+        v6 = list()
         for member in pool['server_pool_members']:
             if member['ip']:
                 ips.append((resolve(member, '#/ip/id'), resolve(member, '#/port_real')))
+            if member['ipv6']:
+                v6.append((resolve(member, '#/ipv6/id'), resolve(member, '#/port_real')))
 
         if len(ips) != len(list(set(ips))):
             raise ValidationError(
                 'Ips have same ports',
                 ['#server_pools/%s/server_pool_members/*/ip/id - #server_pools/%s/server_pool_members/*/port_real' % (idx, idx)])
-
+        if len(v6) != len(list(set(v6))):
+            raise ValidationError(
+                'Ipv6 have same ports',
+                ['#server_pools/%s/server_pool_members/*/ipv6/id - #server_pools/%s/server_pool_members/*/port_real' % (idx, idx)])
 
 def json_validate(json_file):
 
