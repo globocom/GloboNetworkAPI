@@ -574,7 +574,7 @@ def validate_save(pool, permit_created=False):
 
         if member['ipv6']:
             vips = EnvironmentVip.objects.filter(
-                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ip']['id']
+                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ipv6']['id']
             ).filter(environmentenvironmentvip__environment__id=pool['environment'])
             if not vips:
                 raise exceptions.IpNotFoundByEnvironment()

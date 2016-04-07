@@ -1,19 +1,15 @@
 # -*- coding:utf-8 -*-
+
 from datetime import datetime
 import logging
-
 from django.db.transaction import commit_on_success
-
 from networkapi.api_pools import exceptions, facade, serializers
 from networkapi.api_pools.permissions import Read, Write
 from networkapi.api_rest import exceptions as rest_exceptions
-# from networkapi.api_task import facade as task_facade
 from networkapi.requisicaovips import models as models_vips
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate, verify_ports
-
 from rest_framework import status
-# from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -270,9 +266,6 @@ class PoolDBView(APIView):
         """
         Method to save
         """
-
-        pools = dict()
-
         pools = request.DATA
         json_validate('networkapi/api_pools/specs/pool_put.json').validate(pools)
         verify_ports(pools)
