@@ -35,6 +35,11 @@ class VirtualServer(F5Base):
             'profiles': list()
         }
 
+        translate_port_state = {
+            'virtual_servers': list(),
+            'states': list()
+        }
+
         vip_snat_auto = {
             'virtual_servers': list()
         }
@@ -111,7 +116,7 @@ class VirtualServer(F5Base):
                                             'profile_name': profile_name
                                         })
 
-                                    if item.get('type') == 'snat':
+                                    elif item.get('type') == 'snat':
                                         if item.get('value') == 'automap':
                                             vip_snat_auto['virtual_servers'].append(vip_request['name'])
                                         elif item.get('type') == '':
@@ -120,7 +125,7 @@ class VirtualServer(F5Base):
                                             vip_snat_pool['virtual_servers'].append(vip_request['name'])
                                             vip_snat_pool['pools'].append(item.get('value'))
 
-                                    if item.get('type') == 'persistence':
+                                    elif item.get('type') == 'persistence':
                                         if item.get('value'):
                                             profile = {
                                                 'profile_name': item.get('value'),
@@ -128,6 +133,11 @@ class VirtualServer(F5Base):
                                             }
                                             profiles_persistence['virtual_servers'].append(vip_request['name'])
                                             profiles_persistence['profiles'].append(profile)
+
+                                    elif item.get('type') == 'translate_port_state':
+                                        translate_port_state['virtual_servers'].append(vip_request['name'])
+                                        translate_port_state['states'].append(item.get('value'))
+
                                 break
 
             vip_definitions.append({
@@ -157,6 +167,8 @@ class VirtualServer(F5Base):
             profiles_timeout_fastl4=profiles_timeout_fastl4)
 
         self.__add_profiles_persistence(profiles_persistence=profiles_persistence)
+
+        self.__translate_port_state(translate_port_state=translate_port_state)
 
         self._lb._channel.VirtualServer.create(
             definitions=vip_definitions,
@@ -197,7 +209,7 @@ class VirtualServer(F5Base):
                     kwargs.get('vip_snat_none')
                 )
 
-    def add_persistence_profile(self, **kwargs):
+    def __add_persistence_profile(self, **kwargs):
         self._lb._channel.VirtualServer.add_persistence_profile(
             virtual_servers=kwargs['virtual_servers'],
             profiles=kwargs['profiles']
@@ -206,14 +218,14 @@ class VirtualServer(F5Base):
     def set_traffic_group(self, **kwargs):
 
         self._lb._channel.VirtualAddressV2.set_traffic_group(
-            virtual_addresses=[],
-            traffic_groups=[]
+            virtual_addresses=kwargs['virtual_addresses'],
+            traffic_groups=kwargs['traffic_groups']
         )
 
-    def set_translate_port_state(self, **kwargs):
+    def __translate_port_state(self, **kwargs):
         self._lb._channel.VirtualAddressV2.set_translate_port_state(
-            virtual_servers=[],
-            states=['STATE_DISABLED']
+            virtual_servers=kwargs['translate_port_state'],
+            states=kwargs['translate_port_state']
         )
 
     def __profiles_timeout_create(self, **kwargs):

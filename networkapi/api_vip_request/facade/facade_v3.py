@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 import logging
 
 from django.db.models import Q
@@ -187,60 +188,63 @@ def create_real_vip_request(vip_requests):
 
         equips, conf, cluster_unit = _validate_vip_to_apply(vip_request)
 
-        for layer in conf['layers']:
-            requiments = layer.get('requiments')
-            if requiments:
-                for requiment in requiments:
-                    condicionals = requiment.get('condicionals')
-                    for condicional in condicionals:
+        pass
+        if conf:
+            conf = json.loads(conf)
+            for layer in conf['conf']['layers']:
+                requiments = layer.get('requiments')
+                if requiments:
+                    for requiment in requiments:
+                        condicionals = requiment.get('condicionals')
+                        for condicional in condicionals:
 
-                        validated = True
+                            validated = True
 
-                        validations = condicional.get('validations')
-                        for validation in validations:
-                            if validation.get('type') == 'optionvip':
-                                vip_request['optionsvip'][validation.get('variable')]
-                                validated &= valid_expression(
-                                    validation.get('operator'),
-                                    vip_request['optionsvip'][validation.get('variable')],
-                                    validation.get('value')
-                                )
+                            validations = condicional.get('validations')
+                            for validation in validations:
+                                if validation.get('type') == 'optionvip':
+                                    vip_request['optionsvip'][validation.get('variable')]
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        vip_request['optionsvip'][validation.get('variable')],
+                                        validation.get('value')
+                                    )
 
-                            if validation.get('type') == 'field' and validation.get('variable') == 'cluster_unit':
-                                validated &= valid_expression(
-                                    validation.get('operator'),
-                                    cluster_unit,
-                                    validation.get('value')
-                                )
+                                if validation.get('type') == 'field' and validation.get('variable') == 'cluster_unit':
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        cluster_unit,
+                                        validation.get('value')
+                                    )
 
-                        if validated:
-                            use = condicional.get('use')
-                            for item in use:
-                                definitions = item.get('definitions')
-                                eqpts = item.get('eqpts')
-                                for eqpt in eqpts:
-                                    eqpt_id = str(eqpt)
+                            if validated:
+                                use = condicional.get('use')
+                                for item in use:
+                                    definitions = item.get('definitions')
+                                    eqpts = item.get('eqpts')
+                                    for eqpt in eqpts:
+                                        eqpt_id = str(eqpt)
 
-                                    if not load_balance.get(eqpt_id):
-                                        equipment_access = EquipamentoAcesso.search(
-                                            equipamento=eqpt,
-                                            protocolo=protocolo_access
-                                        ).uniqueResult()
-                                        equipment = Equipamento.get_by_pk(eqpt)
+                                        if not load_balance.get(eqpt_id):
+                                            equipment_access = EquipamentoAcesso.search(
+                                                equipamento=eqpt,
+                                                protocolo=protocolo_access
+                                            ).uniqueResult()
+                                            equipment = Equipamento.get_by_pk(eqpt)
 
-                                        plugin = PluginFactory.factory(equipment)
+                                            plugin = PluginFactory.factory(equipment)
 
-                                        load_balance[eqpt_id] = {
-                                            'plugin': plugin,
-                                            'fqdn': equipment_access.fqdn,
-                                            'user': equipment_access.user,
-                                            'password': equipment_access.password,
-                                            'vips': [],
-                                        }
+                                            load_balance[eqpt_id] = {
+                                                'plugin': plugin,
+                                                'fqdn': equipment_access.fqdn,
+                                                'user': equipment_access.user,
+                                                'password': equipment_access.password,
+                                                'vips': [],
+                                            }
 
-                                    load_balance[eqpt_id]['vips'].append({
-                                        'definitions': definitions
-                                    })
+                                        load_balance[eqpt_id]['vips'].append({
+                                            'definitions': definitions
+                                        })
 
         for e in equips:
             eqpt_id = str(e.equipamento.id)
@@ -262,7 +266,7 @@ def create_real_vip_request(vip_requests):
                     'vips': [],
                 }
 
-            load_balance[eqpt_id]['vips'].append(vip_request)
+            load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
         load_balance[lb]['plugin'].create_vip(load_balance[lb])

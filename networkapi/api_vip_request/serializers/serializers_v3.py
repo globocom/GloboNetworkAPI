@@ -99,11 +99,6 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     ipv6 = Ipv6BasicSerializer()
 
-    options = VipRequestOptionVipSerializer(
-        source='get_options',
-        read_only=True
-    )
-
     options = serializers.SerializerMethodField('get_options')
 
     def get_options(self, obj):
@@ -118,17 +113,17 @@ class VipRequestSerializer(serializers.ModelSerializer):
         }
         for option in options:
             if option.optionvip.tipo_opcao == 'cache':
-                opt['cache_group'] = option.optionvip_id
-            if option.optionvip.tipo_opcao == 'Persistencia':
-                opt['persistence'] = option.optionvip_id
-            if option.optionvip.tipo_opcao == 'Retorno de trafego':
-                opt['traffic_return'] = option.optionvip_id
-            if option.optionvip.tipo_opcao == 'timeout':
-                opt['timeout'] = option.optionvip_id
-            if option.optionvip.tipo_opcao == 'protocol_l7':
-                opt['protocol_l7'] = option.optionvip_id
-            if option.optionvip.tipo_opcao == 'protocol_l4':
-                opt['protocol_l4'] = option.optionvip_id
+                opt['cache_group'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'Persistencia':
+                opt['persistence'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'Retorno de trafego':
+                opt['traffic_return'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'timeout':
+                opt['timeout'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'protocol_l7':
+                opt['protocol_l7'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'protocol_l4':
+                opt['protocol_l4'] = option.optionvip.id
 
         return opt
 
@@ -152,4 +147,5 @@ class VipRequestSerializer(serializers.ModelSerializer):
             'ipv6',
             'pools',
             'options',
+            'created'
         )

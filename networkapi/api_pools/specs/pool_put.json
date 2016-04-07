@@ -79,7 +79,11 @@
               "name": {
                 "type": "string"
               }
-            }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
           },
           "lb_method": {
             "type": "string"
@@ -118,7 +122,14 @@
                 "type": "string",
                 "pattern": "^(\\*):([0-9]+|\\*)$"
               }
-            }
+            },
+            "required": [
+              "identifier",
+              "healthcheck_type",
+              "healthcheck_request",
+              "healthcheck_expect",
+              "destination"
+            ]
           },
           "default_limit": {
             "type": "integer",
