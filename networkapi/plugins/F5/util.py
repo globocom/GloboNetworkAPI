@@ -77,11 +77,6 @@ def get_service_down_action_name(action):
         raise base_exceptions.NamePropertyInvalid(msg)
 
 
-def valid_expression(operator, value1, value2):
-    if operator == 'eq':
-        return value1 == value2
-
-
 def trata_param_pool(pools):
     pls = {
         'pools_names': [],
@@ -165,6 +160,14 @@ def trata_param_pool(pools):
 
     return pls
 
+
+# def trata_param_vip(vips):
+#     vtr = {
+#         'vips':list()
+#     }
+
+
+#     return vtr
 
 def search_dict(mylist, lookup):
     for val in mylist:
@@ -256,19 +259,4 @@ LB_METHOD = {
     # '': 'LB_METHOD_RATIO_SESSION',
     # '': 'LB_METHOD_RATIO_LEAST_CONNECTION_MEMBER',
     # '': 'LB_METHOD_RATIO_LEAST_CONNECTION_NODE_ADDRESS'
-}
-
-PERSISTENCE_TYPE = {
-    '(nenhum)': '',
-    'source-ip': 'source_addr',
-    'source-ip com persist. entre portas': 'source_addr_across_services',
-    'cookie': 'Cookie_Padrao',
-    'Priority_Failover': 'Priority_Failover',
-    'Priority_Failover_Redis': 'Priority_Failover_Redis',
-    'PriorityFailoverSegmenter': 'PriorityFailoverSegmenter'
-}
-
-TRAFFIC_GROUP = {
-    'cluster-unit-1': 'traffic-group-1',
-    'cluster-unit-2': 'traffic-group-2'
 }

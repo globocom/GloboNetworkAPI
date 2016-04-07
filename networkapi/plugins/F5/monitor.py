@@ -5,18 +5,13 @@ import time
 from django.core.cache import cache
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import lb, types
+from networkapi.plugins.F5 import types
+from networkapi.plugins.F5.f5base import F5Base
 
 log = logging.getLogger(__name__)
 
 
-class Monitor(object):
-
-    def __init__(self, _lb=None):
-        if _lb is not None and not isinstance(_lb, lb.Lb):
-            raise base_exceptions.PluginUninstanced('lb must be of type F5.Lb')
-
-        self._lb = _lb
+class Monitor(F5Base):
 
     def create_template(self, **kwargs):
         log.info('monitor:create_template:%s' % kwargs)

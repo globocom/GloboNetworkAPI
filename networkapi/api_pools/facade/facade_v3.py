@@ -473,18 +473,10 @@ def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
 
-    if not search:
-        search = {
-            'asorting_cols': None,
-            'custom_search': None,
-            'searchable_columns': None,
-            'start_record': 0,
-            'end_record': 25
-        }
     if search.get('asorting_cols'):
         search['asorting_cols'] = search.get('asorting_cols').split(';')
 
-    vip_requests, total = build_query_to_datatable(
+    pools, total = build_query_to_datatable(
         pools,
         search.get('asorting_cols') or None,
         search.get('custom_search') or None,
@@ -492,7 +484,6 @@ def get_pool_by_search(search=dict()):
         search.get('start_record') or 0,
         search.get('end_record') or 25
     )
-
     pool_map = dict()
     pool_map["pools"] = pools
     pool_map["total"] = total

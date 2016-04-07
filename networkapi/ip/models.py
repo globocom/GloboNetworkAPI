@@ -255,6 +255,7 @@ class NetworkIPv4(BaseModel):
         TipoRede, null=True, db_column='id_tipo_rede')
     ambient_vip = models.ForeignKey(
         EnvironmentVip, null=True, db_column='id_ambientevip')
+    cluster_unit = models.CharField(max_length=45, db_column='cluster_unit')
     active = models.BooleanField()
 
     log = logging.getLogger('NetworkIPv4')
@@ -1416,6 +1417,7 @@ class NetworkIPv6(BaseModel):
     mask6 = models.CharField(max_length=4, db_column='mask_bloco6')
     mask7 = models.CharField(max_length=4, db_column='mask_bloco7')
     mask8 = models.CharField(max_length=4, db_column='mask_bloco8')
+    cluster_unit = models.CharField(max_length=45, db_column='cluster_unit')
     active = models.BooleanField()
 
     log = logging.getLogger('NetworkIPv6')

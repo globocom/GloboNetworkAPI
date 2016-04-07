@@ -11,7 +11,6 @@ from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate
 
 from rest_framework import status
-from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,34 +19,27 @@ from rest_framework.views import APIView
 log = logging.getLogger(__name__)
 
 
-@permission_classes((IsAuthenticated, Read))
-class VipRequestListView(APIView):
+class VipRequestDeployView(APIView):
 
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate
     def post(self, request, *args, **kwargs):
-        """Method to return a vip request list
-        Param vip_request: vip request
-        """
+        """Create vip request by list"""
+
+        vip_request_ids = kwargs['vip_request_ids'].split(';')
+        vips = facade.get_vip_request(vip_request_ids)
+        vip_serializer = VipRequestSerializer(vips, many=True)
+        locks_list = facade.create_lock(vip_serializer.data)
         try:
-            search = request.DATA
-
-            vip_map = facade.get_vip_request_by_search(search)
-
-            log.info(vip_map)
-
-            # serializer_vips = VipRequestListSerializer(
-            #     vip_map.get('vips_requests'),
-            #     many=True
-            # )
-
-            # data = dict()
-            # data['vips_requests'] = serializer_vips.data
-            # data['total'] = vip_map.get('total')
-
-            # return Response(data, status.HTTP_200_OK)
-
+            response = facade.create_real_vip_request(vip_serializer.data)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
+        finally:
+            facade.destroy_lock(locks_list)
+
+        return Response(response)
 
 
 class VipRequestDBView(APIView):
@@ -60,7 +52,7 @@ class VipRequestDBView(APIView):
         """
         try:
             if not kwargs.get('vip_request_ids'):
-                search = request.GET or None
+                search = request.GET or {}
                 vips_requests = facade.get_vip_request_by_search(search)
                 serializer_vips = VipRequestSerializer(
                     vips_requests['vips'],
@@ -100,7 +92,7 @@ class VipRequestDBView(APIView):
     def post(self, request, *args, **kwargs):
         """
         Method to save a vip request
-        Param request.DATA['info']: info of vip request in dict
+        Param request.DATA: info of vip request in dict
         """
 
         data = request.DATA
@@ -120,7 +112,7 @@ class VipRequestDBView(APIView):
     def put(self, request, *args, **kwargs):
         """
         Method to save a vip request
-        Param request.DATA['info']: info of vip request in dict
+        Param request.DATA: info of vip request in dict
         """
         data = request.DATA
 

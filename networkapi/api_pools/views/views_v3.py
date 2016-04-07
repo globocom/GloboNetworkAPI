@@ -210,16 +210,16 @@ class PoolDBView(APIView):
         """
 
         try:
-
             if not kwargs.get('pool_ids'):
-                search = request.GET or None
+                search = request.GET or {}
                 pools = facade.get_pool_by_search(search)
                 pool_serializer = serializers.PoolV3Serializer(
                     pools['pools'],
                     many=True
                 )
+                log.info(pool_serializer.data)
                 data = {
-                    'vips': pool_serializer.data,
+                    'server_pools': pool_serializer.data,
                     'total': pools['total'],
                 }
             else:

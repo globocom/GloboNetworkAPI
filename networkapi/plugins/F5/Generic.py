@@ -4,7 +4,7 @@ import logging
 import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import monitor, pool, poolmember, util
+from networkapi.plugins.F5 import monitor, pool, poolmember, util, virtualserver
 
 from ..base import BasePlugin
 
@@ -12,6 +12,18 @@ log = logging.getLogger(__name__)
 
 
 class Generic(BasePlugin):
+
+    #######################################
+    # VIP
+    #######################################
+    @util.transation
+    def create_vip(self, vips):
+
+        try:
+            vts = virtualserver.VirtualServer(self._lb)
+            vts.create(vips)
+        except Exception:
+            raise Exception('Erro')
 
     #######################################
     # POOLMEMBER

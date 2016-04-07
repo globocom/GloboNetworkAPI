@@ -40,6 +40,11 @@ LOCK = 'LOCK'
 PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
 
 
+def valid_expression(operator, value1, value2):
+    if operator == 'eq':
+        return value1 == value2
+
+
 def search_hide_password(msg):
     """
     Search and hide password

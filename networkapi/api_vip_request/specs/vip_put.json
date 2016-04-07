@@ -84,63 +84,98 @@
             ]
           },
           "options": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          }
-        },
-        "pools": {
-          "type": "array",
-          "items": {
             "type": "object",
             "properties": {
-              "server_pool": {
-                "type": "integer"
-              },
-              "port": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 65535
-              },
-              "optionvip": {
-                "type": "integer"
-              },
-              "val_optionvip": {
+              "protocol_l4": {
                 "type": [
-                  "string",
+                  "integer",
+                  "null"
+                ]
+              },
+              "protocol_l7": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "timeout": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "cache_group": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "traffic_return": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "persistence": {
+                "type": [
+                  "integer",
                   "null"
                 ]
               }
-            },
-            "required": [
-              "server_pool",
-              "port",
-              "optionvip",
-              "val_optionvip"
-            ],
-            "additionalProperties": false
+            }
+          },
+          "pools": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "server_pool": {
+                  "type": "integer"
+                },
+                "port": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "optionvip": {
+                  "type": "integer"
+                },
+                "val_optionvip": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "server_pool",
+                "port",
+                "optionvip",
+                "val_optionvip"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "ipv6": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/definitions/ipv6"
+              }
+            ]
+          },
+          "ipv4": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/definitions/ipv4"
+              }
+            ]
           }
-        },
-        "ipv6": {
-          "oneOf": [
-            {
-              "type": "null"
-            },
-            {
-              "$ref": "#/definitions/ipv6"
-            }
-          ]
-        },
-        "ip": {
-          "oneOf": [
-            {
-              "type": "null"
-            },
-            {
-              "$ref": "#/definitions/ipv4"
-            }
-          ]
         }
       }
     }

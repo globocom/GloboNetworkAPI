@@ -108,9 +108,29 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     def get_options(self, obj):
         options = obj.viprequestoptionvip_set.all()
-        options = [option.optionvip_id for option in options]
+        opt = {
+            'traffic_return': None,
+            'protocol_l7': None,
+            'protocol_l4': None,
+            'cache_group': None,
+            'persistence': None,
+            'timeout': None,
+        }
+        for option in options:
+            if option.optionvip.tipo_opcao == 'cache':
+                opt['cache_group'] = option.optionvip_id
+            if option.optionvip.tipo_opcao == 'Persistencia':
+                opt['persistence'] = option.optionvip_id
+            if option.optionvip.tipo_opcao == 'Retorno de trafego':
+                opt['traffic_return'] = option.optionvip_id
+            if option.optionvip.tipo_opcao == 'timeout':
+                opt['timeout'] = option.optionvip_id
+            if option.optionvip.tipo_opcao == 'protocol_l7':
+                opt['protocol_l7'] = option.optionvip_id
+            if option.optionvip.tipo_opcao == 'protocol_l4':
+                opt['protocol_l4'] = option.optionvip_id
 
-        return options
+        return opt
 
     pools = serializers.SerializerMethodField('get_server_pools')
 

@@ -1,19 +1,12 @@
 import logging
 
-from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import lb
+from networkapi.plugins.F5.f5base import F5Base
 
 
 log = logging.getLogger(__name__)
 
 
-class PoolMember(object):
-
-    def __init__(self, _lb=None):
-        if _lb is not None and not isinstance(_lb, lb.Lb):
-            raise base_exceptions.PluginUninstanced('lb must be of type F5.Lb')
-
-        self._lb = _lb
+class PoolMember(F5Base):
 
     def set_states(self, **kwargs):
         for k, v in kwargs.items():

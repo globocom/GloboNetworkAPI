@@ -19,9 +19,11 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
 class EquipmentBasicSerializer(serializers.ModelSerializer):
 
+    name = serializers.Field(source='nome')
+
     class Meta:
         model = Equipamento
         fields = (
             'id',
-            'nome'
+            'name'
         )
