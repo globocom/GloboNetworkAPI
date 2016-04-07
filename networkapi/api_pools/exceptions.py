@@ -34,7 +34,7 @@ class InvalidIdVipException(APIException):
 
 class InvalidIdentifierAlreadyPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Identifier already exists.'
+    default_detail = 'Identifier pool already exists.'
 
 
 class InvalidIdentifierPoolException(APIException):

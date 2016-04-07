@@ -407,14 +407,13 @@ def create_pool(pool):
     """Creates pool"""
 
     sp = ServerPool()
-    sp.id = pool['id']
-    sp.identifier = pool['identifier']
-    sp.default_port = pool['default_port']
-    sp.environment_id = pool['environment']
-    sp.servicedownaction_id = pool['servicedownaction']['id']
-    sp.lb_method = pool['lb_method']
-    sp.default_limit = pool['default_limit']
-    healthcheck = _get_healthcheck(pool['healthcheck'])
+    sp.identifier = pool.get('identifier')
+    sp.default_port = pool.get('default_port')
+    sp.environment_id = pool.get('environment')
+    sp.servicedownaction_id = pool.get('servicedownaction').get('id')
+    sp.lb_method = pool.get('lb_method')
+    sp.default_limit = pool.get('default_limit')
+    healthcheck = _get_healthcheck(pool.get('healthcheck'))
     sp.healthcheck = healthcheck
 
     sp.save()
@@ -427,14 +426,14 @@ def create_pool(pool):
 def update_pool(pool):
     """Updates pool"""
 
-    sp = ServerPool.objects.get(id=pool['id'])
-    sp.identifier = pool['identifier']
-    sp.default_port = pool['default_port']
-    sp.environment_id = pool['environment']
-    sp.servicedownaction_id = pool['servicedownaction']['id']
-    sp.lb_method = pool['lb_method']
-    sp.default_limit = pool['default_limit']
-    healthcheck = _get_healthcheck(pool['healthcheck'])
+    sp = ServerPool.objects.get(id=pool.get('id'))
+    sp.identifier = pool.get('identifier')
+    sp.default_port = pool.get('default_port')
+    sp.environment_id = pool.get('environment')
+    sp.servicedownaction_id = pool.get('servicedownaction').get('id')
+    sp.lb_method = pool.get('lb_method')
+    sp.default_limit = pool.get('default_limit')
+    healthcheck = _get_healthcheck(pool.get('healthcheck'))
     sp.healthcheck = healthcheck
 
     members_create = [member for member in pool['server_pool_members'] if not member['id']]
@@ -542,11 +541,11 @@ def validate_save(pool, permit_created=False):
     )
 
     _is_get_option_pool(
-        pool['servicedownaction']['id'],
-        pool['servicedownaction']['name'],
+        pool.get('servicedownaction').get('id'),
+        pool.get('servicedownaction').get('name'),
         'ServiceDownAction')
 
-    if pool['id']:
+    if pool.get('id'):
         server_pool = ServerPool.objects.get(id=pool['id'])
         if server_pool.pool_created:
             if not permit_created:
