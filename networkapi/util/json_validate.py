@@ -56,13 +56,13 @@ def raise_json_validate(info=None):
                         msg.append({
                             'pointer_error': pointer,
                             'received_value': valor,
-                            'reasons_error': list(reasons)
+                            'error_reasons': list(reasons)
                         })
                 else:
                     msg.append({
                         'pointer_error': error[0],
                         'received_value': None,
-                        'reasons_error': list(error[1])
+                        'error_reasons': list(error[1])
                     })
                 res = {
                     'errors': msg
