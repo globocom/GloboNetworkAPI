@@ -54,13 +54,13 @@ def raise_json_validate(info=None):
                     for pointer, reasons in error.flatten().items():
                         valor = resolve(error[1], pointer) if pointer != '#/' else ''
                         msg.append({
-                            'pointer_error': pointer,
+                            'error_pointer': pointer,
                             'received_value': valor,
                             'error_reasons': list(reasons)
                         })
                 else:
                     msg.append({
-                        'pointer_error': error[0],
+                        'error_pointer': error[0],
                         'received_value': None,
                         'error_reasons': list(error[1])
                     })
