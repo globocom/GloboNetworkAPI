@@ -7,6 +7,8 @@ from django.db.models import Q
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
+from networkapi.api_pools.facade import get_pool_by_ids
+from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request.models import VipRequest, VipRequestDSCP, VipRequestOptionVip, VipRequestPool
 from networkapi.distributedlock import distributedlock, LOCK_VIP
@@ -188,7 +190,12 @@ def create_real_vip_request(vip_requests):
 
         equips, conf, cluster_unit = _validate_vip_to_apply(vip_request)
 
-        pass
+        for idx, pool in enumerate(vip_request['pools']):
+            pool = get_pool_by_ids([pool['server_pool']])
+            pool_serializer = PoolV3Serializer(pool[0])
+            vip_request['pools'][idx]['server_pool'] = pool_serializer.data
+        vip_request['conf'] = conf
+
         if conf:
             conf = json.loads(conf)
             for layer in conf['conf']['layers']:

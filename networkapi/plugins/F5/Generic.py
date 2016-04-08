@@ -21,9 +21,9 @@ class Generic(BasePlugin):
 
         try:
             vts = virtualserver.VirtualServer(self._lb)
-            vts.create(vips)
-        except Exception:
-            raise Exception('Erro')
+            vts.create(vips=vips)
+        except Exception, e:
+            raise Exception(e)
 
     #######################################
     # POOLMEMBER

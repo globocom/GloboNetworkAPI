@@ -410,11 +410,14 @@ def create_pool(pool):
     sp.identifier = pool.get('identifier')
     sp.default_port = pool.get('default_port')
     sp.environment_id = pool.get('environment')
-    sp.servicedownaction_id = pool.get('servicedownaction').get('id')
+    sp.servicedownaction_id = _get_option_pool(
+        pool.get('servicedownaction').get('name'),
+        'ServiceDownAction')
     sp.lb_method = pool.get('lb_method')
     sp.default_limit = pool.get('default_limit')
     healthcheck = _get_healthcheck(pool.get('healthcheck'))
     sp.healthcheck = healthcheck
+    sp.pool_created = False
 
     sp.save()
 
@@ -430,7 +433,9 @@ def update_pool(pool):
     sp.identifier = pool.get('identifier')
     sp.default_port = pool.get('default_port')
     sp.environment_id = pool.get('environment')
-    sp.servicedownaction_id = pool.get('servicedownaction').get('id')
+    sp.servicedownaction_id = _get_option_pool(
+        pool.get('servicedownaction').get('name'),
+        'ServiceDownAction')
     sp.lb_method = pool.get('lb_method')
     sp.default_limit = pool.get('default_limit')
     healthcheck = _get_healthcheck(pool.get('healthcheck'))
@@ -539,11 +544,6 @@ def validate_save(pool, permit_created=False):
         identifier=pool['identifier'],
         environment=pool['environment']
     )
-
-    _is_get_option_pool(
-        pool.get('servicedownaction').get('id'),
-        pool.get('servicedownaction').get('name'),
-        'ServiceDownAction')
 
     if pool.get('id'):
         server_pool = ServerPool.objects.get(id=pool['id'])
@@ -668,8 +668,8 @@ def _validate_pool_to_apply(pool, update=False):
     return equips
 
 
-def _is_get_option_pool(option_id, option_name, option_type):
+def _get_option_pool(option_name, option_type):
     try:
-        return models.OptionPool.objects.get(id=option_id, name=option_name, type=option_type)
+        return models.OptionPool.objects.get(name=option_name, type=option_type).id
     except:
         raise exceptions.InvalidServiceDownActionException()

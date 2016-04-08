@@ -214,7 +214,6 @@ class PoolDBView(APIView):
                     pools['pools'],
                     many=True
                 )
-                log.info(pool_serializer.data)
                 data = {
                     'server_pools': pool_serializer.data,
                     'total': pools['total'],
@@ -252,10 +251,11 @@ class PoolDBView(APIView):
         pools = request.DATA
         json_validate(SPECS.get('pool_post')).validate(pools)
         verify_ports(pools)
-        response = {}
+        response = list()
         for pool in pools['server_pools']:
             facade.validate_save(pool)
-            facade.create_pool(pool)
+            pl = facade.create_pool(pool)
+            response.append({'id': pl.id})
 
         return Response(response)
 

@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import logging
 
 from networkapi.plugins.F5.f5base import F5Base
@@ -109,7 +110,7 @@ class VirtualServer(F5Base):
                                                     })
                                         except:
                                             if '/Common/' + profile_name not in profiles_list:
-                                                raise Exception('Profile %s não existe')
+                                                raise Exception(u'Profile %s nao existe')
                                             pass
                                         profiles.append({
                                             'profile_context': 'PROFILE_CONTEXT_TYPE_ALL',
@@ -156,19 +157,19 @@ class VirtualServer(F5Base):
 
             vip_profiles.append(profiles)
 
-        self.__snat(
-            vip_snat_pool=vip_snat_pool,
-            vip_snat_auto=vip_snat_auto,
-            vip_snat_none=vip_snat_none)
+        # self.__snat(
+        #     vip_snat_pool=vip_snat_pool,
+        #     vip_snat_auto=vip_snat_auto,
+        #     vip_snat_none=vip_snat_none)
 
-        self.__profiles_timeout_create(
-            profiles_timeout_tcp=profiles_timeout_tcp,
-            profiles_timeout_udp=profiles_timeout_udp,
-            profiles_timeout_fastl4=profiles_timeout_fastl4)
+        # self.__profiles_timeout_create(
+        #     profiles_timeout_tcp=profiles_timeout_tcp,
+        #     profiles_timeout_udp=profiles_timeout_udp,
+        #     profiles_timeout_fastl4=profiles_timeout_fastl4)
 
-        self.__add_profiles_persistence(profiles_persistence=profiles_persistence)
+        # self.__add_profiles_persistence(profiles_persistence=profiles_persistence)
 
-        self.__translate_port_state(translate_port_state=translate_port_state)
+        # self.__translate_port_state(translate_port_state=translate_port_state)
 
         self._lb._channel.VirtualServer.create(
             definitions=vip_definitions,
