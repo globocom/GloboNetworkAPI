@@ -1,0 +1,20 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `event_log` 
+CHANGE COLUMN `evento` `evento` MEDIUMTEXT NOT NULL COMMENT '' ,
+CHANGE COLUMN `acao` `acao` MEDIUMTEXT NULL DEFAULT NULL COMMENT '' ,
+CHANGE COLUMN `funcionalidade` `funcionalidade` MEDIUMTEXT NULL DEFAULT NULL COMMENT '' ,
+CHANGE COLUMN `parametro_anterior` `parametro_anterior` MEDIUMTEXT NULL DEFAULT NULL COMMENT '' ,
+CHANGE COLUMN `parametro_atual` `parametro_atual` MEDIUMTEXT NULL DEFAULT NULL COMMENT '' ;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `event_log` 
+CHANGE COLUMN `evento` `evento` TEXT NOT NULL COMMENT '' ,
+CHANGE COLUMN `acao` `acao` TEXT NULL DEFAULT NULL COMMENT '' ,
+CHANGE COLUMN `funcionalidade` `funcionalidade` TEXT NULL DEFAULT NULL COMMENT '' ,
+CHANGE COLUMN `parametro_anterior` `parametro_anterior` TEXT NULL DEFAULT NULL COMMENT '' ,
+CHANGE COLUMN `parametro_atual` `parametro_atual` TEXT NULL DEFAULT NULL COMMENT '' ;
+"""

@@ -17,6 +17,7 @@
 
 from rest_framework import serializers
 from networkapi.vlan.models import Vlan
+from networkapi.api_network.serializers import NetworkIPv4Serializer, NetworkIPv6Serializer
 
 
 class VlanSerializer(serializers.ModelSerializer):
@@ -27,8 +28,8 @@ class VlanSerializer(serializers.ModelSerializer):
         source='ambiente.id'
     )
 
-    networks_ipv4 = serializers.RelatedField(many=True, source="networkipv4_set.select_related")
-    networks_ipv6 = serializers.RelatedField(many=True, source="networkipv6_set.select_related")
+    networks_ipv4 = NetworkIPv4Serializer(many=True, source="networkipv4_set.select_related")
+    networks_ipv6 = NetworkIPv6Serializer(many=True, source="networkipv6_set.select_related")
 
     class Meta:
         model = Vlan
