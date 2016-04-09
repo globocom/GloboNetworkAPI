@@ -1,5 +1,8 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
+
+DROP TABLE `vip_request_pool`;
+
 CREATE TABLE `vip_request_port` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `id_vip_request` INT(11) UNSIGNED NULL COMMENT '',
@@ -40,14 +43,14 @@ CREATE TABLE `vip_request_port_pool` (
 
 CREATE TABLE `vip_request_port_optionsvip` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
-  `id_vip_request` INT(11) UNSIGNED NULL COMMENT '',
+  `id_vip_request_port` INT(11) UNSIGNED NULL COMMENT '',
   `id_opcoesvip` INT(10) UNSIGNED NULL COMMENT '',
   PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `vip_request_port_optionsvip_id_vip_request_idx` (`id_vip_request` ASC)  COMMENT '',
+  INDEX `vip_request_port_optionsvip_id_vip_request_idx` (`id_vip_request_port` ASC)  COMMENT '',
   INDEX `vip_request_port_optionsvip_id_opcoesvip_idx` (`id_opcoesvip` ASC)  COMMENT '',
   CONSTRAINT `vip_request_port_optionsvip_id_vip_request`
-    FOREIGN KEY (`id_vip_request`)
-    REFERENCES `vip_request` (`id`)
+    FOREIGN KEY (`id_vip_request_port`)
+    REFERENCES `vip_request_port` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `vip_request_port_optionsvip_id_opcoesvip`
@@ -56,7 +59,6 @@ CREATE TABLE `vip_request_port_optionsvip` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
-DROP TABLE `vip_request_pool`;
 """
 
 SQL_DOWN = u"""

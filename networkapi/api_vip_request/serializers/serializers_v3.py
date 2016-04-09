@@ -2,9 +2,10 @@
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
-from networkapi.api_pools.serializers import Ipv4Serializer, Ipv6Serializer, Ipv4BasicSerializer,\
-    Ipv6BasicSerializer, PoolV3SimpleSerializer
-from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPool
+from networkapi.api_pools.serializers import Ipv4BasicSerializer, Ipv4Serializer, Ipv6BasicSerializer,\
+    Ipv6Serializer
+from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPort,\
+    VipRequestPortPool
 
 from rest_framework import serializers
 
@@ -21,16 +22,49 @@ class VipRequestOptionVipSerializer(serializers.ModelSerializer):
         )
 
 
-class VipRequestPoolSerializer(serializers.ModelSerializer):
+class VipRequestPortPoolSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
     class Meta:
-        model = VipRequestPool
+        model = VipRequestPortPool
         fields = (
             'server_pool',
-            'port',
             'optionvip',
             'val_optionvip',
+        )
+
+
+class VipRequestPortSerializer(serializers.ModelSerializer):
+    id = serializers.Field()
+
+    options = serializers.SerializerMethodField('get_options')
+
+    def get_options(self, obj):
+        options = obj.viprequestportoptionvip_set.all()
+        opt = {
+            'protocol_l7': None,
+            'protocol_l4': None
+        }
+        for option in options:
+            if option.optionvip.tipo_opcao == 'protocol_l7':
+                opt['protocol_l7'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'protocol_l4':
+                opt['protocol_l4'] = option.optionvip.id
+
+    pools = serializers.SerializerMethodField('get_server_pools')
+
+    def get_server_pools(self, obj):
+        pools = obj.viprequestportpool_set.all()
+        pools_serializer = VipRequestPortPoolSerializer(pools, many=True)
+
+        return pools_serializer.data
+
+    class Meta:
+        model = VipRequestPort
+        fields = (
+            'port',
+            'options',
+            'pools',
         )
 
 
@@ -105,8 +139,6 @@ class VipRequestSerializer(serializers.ModelSerializer):
         options = obj.viprequestoptionvip_set.all()
         opt = {
             'traffic_return': None,
-            'protocol_l7': None,
-            'protocol_l4': None,
             'cache_group': None,
             'persistence': None,
             'timeout': None,
@@ -120,10 +152,6 @@ class VipRequestSerializer(serializers.ModelSerializer):
                 opt['traffic_return'] = option.optionvip.id
             elif option.optionvip.tipo_opcao == 'timeout':
                 opt['timeout'] = option.optionvip.id
-            elif option.optionvip.tipo_opcao == 'protocol_l7':
-                opt['protocol_l7'] = option.optionvip.id
-            elif option.optionvip.tipo_opcao == 'protocol_l4':
-                opt['protocol_l4'] = option.optionvip.id
 
         return opt
 
@@ -131,7 +159,7 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     def get_server_pools(self, obj):
         pools = obj.viprequestpool_set.all()
-        pools_serializer = VipRequestPoolSerializer(pools, many=True)
+        pools_serializer = VipRequestPortPoolSerializer(pools, many=True)
 
         return pools_serializer.data
 

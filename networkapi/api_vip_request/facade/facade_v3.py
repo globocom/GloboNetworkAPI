@@ -10,7 +10,7 @@ from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools.facade import get_pool_by_ids
 from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_vip_request import exceptions
-from networkapi.api_vip_request.models import VipRequest, VipRequestDSCP, VipRequestOptionVip, VipRequestPool
+from networkapi.api_vip_request.models import VipRequest, VipRequestDSCP, VipRequestOptionVip, VipRequestPort
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -107,32 +107,33 @@ def delete_vip_request(vip_request_ids):
 
 def _create_pool(pools, vip_request_id):
     """Create pools"""
-    for pool in pools:
-        pl = VipRequestPool()
-        pl.vip_request_id = vip_request_id
-        pl.server_pool_id = pool['server_pool']
-        pl.port = pool['port']
-        pl.optionvip_id = pool['optionvip']
-        pl.val_optionvip = pool['val_optionvip']
-        pl.save()
+    pass
+    # for pool in pools:
+    #     pl = VipRequestPool()
+    #     pl.vip_request_id = vip_request_id
+    #     pl.server_pool_id = pool['server_pool']
+    #     pl.port = pool['port']
+    #     pl.optionvip_id = pool['optionvip']
+    #     pl.val_optionvip = pool['val_optionvip']
+    #     pl.save()
 
 
 def _update_pool(pools, vip_request_id):
     """Update pools"""
-
-    for pool in pools:
-        pl = VipRequestPool.objects.get(
-            vip_request=vip_request_id,
-            server_pool=pool['server_pool'])
-        pl.port = pool['port']
-        pl.optionvip_id = pool['optionvip']
-        pl.val_optionvip = pool['val_optionvip']
-        pl.save()
+    pass
+    # for pool in pools:
+    #     pl = VipRequestPool.objects.get(
+    #         vip_request=vip_request_id,
+    #         server_pool=pool['server_pool'])
+    #     pl.port = pool['port']
+    #     pl.optionvip_id = pool['optionvip']
+    #     pl.val_optionvip = pool['val_optionvip']
+    #     pl.save()
 
 
 def _delete_pool(pools, vip_request_id):
     """Deletes pools"""
-    VipRequestPool.objects.filter(
+    VipRequestPort.objects.filter(
         vip_request=vip_request_id,
         server_pool__in=pools).delete()
 
@@ -367,12 +368,6 @@ def validate_save(vip_request, permit_created=False):
         elif option == 'timeout' and vip_request['options'].get(option) is not None:
             opt['id'] = vip_request['options'].get(option)
             opt['tipo_opcao'] = 'timeout'
-        elif option == 'protocol_l7' and vip_request['options'].get(option) is not None:
-            opt['id'] = vip_request['options'].get(option)
-            opt['tipo_opcao'] = 'protocol_l7'
-        elif option == 'protocol_l4' and vip_request['options'].get(option) is not None:
-            opt['id'] = vip_request['options'].get(option)
-            opt['tipo_opcao'] = 'protocol_l4'
         if opt:
             opts.append(opt)
 
