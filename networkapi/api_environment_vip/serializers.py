@@ -38,6 +38,5 @@ class OptionVipEnvironmentVipSerializer(serializers.ModelSerializer):
     class Meta:
         model = OptionVipEnvironmentVip
         fields = (
-            'id',
             'option',
         )

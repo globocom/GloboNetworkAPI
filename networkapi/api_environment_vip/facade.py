@@ -1,8 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
 
-from networkapi.api_environment_vip.models import OptionVipCombinate, OptionVipCombinateItem, \
-    OptionVipCombinateItemPermitted
 from networkapi.requisicaovips.models import OptionVip, OptionVipEnvironmentVip
 
 log = logging.getLogger(__name__)
@@ -43,3 +41,19 @@ def get_option_vip_by_environment_vip_type(search_list):
     return options_vip
 
 
+def get_type_option_vip_by_environment_vip_ids(environment_vip_ids):
+    """
+    Return option vip list by ids of environment vip and option vip type
+    param environment_vip_ids: ids list of environment vip
+    """
+    type_option_vip = list()
+    for environment_vip_id in environment_vip_ids:
+
+        type_options = OptionVip.objects.filter(
+            optionvipenvironmentvip__environment__id=int(environment_vip_id)
+        ).values('tipo_opcao').distinct()
+
+        type_options = [type_option['tipo_opcao'] for type_option in type_options]
+
+        type_option_vip.append(type_options)
+    return type_option_vip

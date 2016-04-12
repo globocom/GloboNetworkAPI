@@ -458,7 +458,12 @@ def update_pool(pool):
 def delete_pool(pools_id):
     """Updates pool"""
 
-    ServerPool.objects.filter(id__in=pools_id).delete()
+    sp = ServerPool.objects.filter(id__in=pools_id)
+    created = sp.filter(pool_created=True)
+    if created:
+        raise exceptions.PoolConstraintCreatedException()
+
+    sp.delete()
 
 
 def get_pool_by_ids(pools_ids):

@@ -371,7 +371,9 @@ MAX_OCT4 = 250
 SPECS = {
     'pool_post': 'networkapi/api_pools/specs/pool_post.json',
     'pool_put': 'networkapi/api_pools/specs/pool_put.json',
-    'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json'
+    'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json',
+    'vip_post': 'networkapi/api_vip_request/specs/vip_post.json',
+    'vip_put': 'networkapi/api_vip_request/specs/vip_put.json',
 }
 
 

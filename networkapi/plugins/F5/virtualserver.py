@@ -62,8 +62,8 @@ class VirtualServer(F5Base):
 
             profiles = list()
 
-            if kwargs['conf']['optionsvip_extended']:
-                requiments = kwargs['conf']['optionsvip_extended'].get('requiments')
+            if vip_request['conf']['optionsvip_extended']:
+                requiments = vip_request['conf']['optionsvip_extended'].get('requiments')
                 if requiments:
                     for requiment in requiments:
                         condicionals = requiment.get('condicionals')
@@ -145,7 +145,7 @@ class VirtualServer(F5Base):
                 'name': vip_request['name'],
                 'address': vip_request['address'],
                 'port': vip_request['port'],
-                'protocol': vip_request['optionsvip']['protocol_l4']
+                'protocol': vip_request['optionsvip']['l4_protocol']
             })
 
             vip_wildmasks.append('255.255.255.255')

@@ -86,13 +86,13 @@
           "options": {
             "type": "object",
             "properties": {
-              "protocol_l4": {
+              "l4_protocol": {
                 "type": [
                   "integer",
                   "null"
                 ]
               },
-              "protocol_l7": {
+              "l7_protocol": {
                 "type": [
                   "integer",
                   "null"
@@ -137,10 +137,10 @@
                   "minimum": 1,
                   "maximum": 65535
                 },
-                "optionvip": {
+                "l7_rule": {
                   "type": "integer"
                 },
-                "val_optionvip": {
+                "l7_value": {
                   "type": [
                     "string",
                     "null"
@@ -150,8 +150,8 @@
               "required": [
                 "server_pool",
                 "port",
-                "optionvip",
-                "val_optionvip"
+                "l7_rule",
+                "l7_value"
               ],
               "additionalProperties": false
             }
