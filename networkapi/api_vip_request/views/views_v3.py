@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 import logging
 
 from django.db.transaction import commit_on_success
@@ -52,8 +53,14 @@ class VipRequestDBView(APIView):
         """
         try:
             if not kwargs.get('vip_request_ids'):
-                search = request.GET or {}
+
+                try:
+                    search = json.loads(request.GET.get('search'))
+                except:
+                    search = dict()
+
                 vips_requests = facade.get_vip_request_by_search(search)
+
                 serializer_vips = VipRequestSerializer(
                     vips_requests['vips'],
                     many=True

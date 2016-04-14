@@ -481,9 +481,8 @@ def get_pool_by_ids(pools_ids):
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
-
-    if search.get('asorting_cols'):
-        search['asorting_cols'] = search.get('asorting_cols').split(';')
+    if search.get('extends_search'):
+        pools.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     pools, total = build_query_to_datatable(
         pools,

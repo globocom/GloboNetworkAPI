@@ -69,14 +69,11 @@ def state_change(func):
 
 
 def permission_classes_apiview(permission_classes):
-    """This is a decorator which can be used to mark functions
-        as deprecated. It will result in a warning being emitted
-        when the function is used.
-    """
     def outer(func):
         @functools.wraps(func)
         def inner(self, request, *args, **kwargs):
             self.permission_classes = permission_classes
+            self.initial(request, *args, **kwargs)
             return func(self, request, *args, **kwargs)
         return inner
     return outer
