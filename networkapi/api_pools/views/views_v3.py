@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
+import ast
 from datetime import datetime
-import json
 import logging
 
 from django.db.transaction import commit_on_success
@@ -208,9 +208,9 @@ class PoolDBView(APIView):
         try:
             if not kwargs.get('pool_ids'):
                 try:
-                    search = json.loads(request.GET.get('search'))
+                    search = ast.literal_eval(request.GET.get('search'))
                 except:
-                    search = dict()
+                    search = {}
 
                 pools = facade.get_pool_by_search(search)
                 pool_serializer = serializers.PoolV3Serializer(

@@ -223,8 +223,8 @@ def get_vip_request_by_search(search=dict()):
 
     vip_requests = models.VipRequest.objects.filter()
 
-    if search.get('asorting_cols'):
-        search['asorting_cols'] = search.get('asorting_cols').split(';')
+    if search.get('extends_search'):
+        vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     vip_requests, total = build_query_to_datatable(
         vip_requests,
@@ -249,10 +249,11 @@ def create_real_vip_request(vip_requests):
 
         equips, conf, cluster_unit = _validate_vip_to_apply(vip_request)
 
-        for idx, pool in enumerate(vip_request['pools']):
-            pool = get_pool_by_ids([pool['server_pool']])
-            pool_serializer = PoolV3Serializer(pool[0])
-            vip_request['pools'][idx]['server_pool'] = pool_serializer.data
+        for idx, port in enumerate(vip_request['ports']):
+            for i, pl in enumerate(port['pools']):
+                pool = get_pool_by_ids([pl['server_pool']])
+                pool_serializer = PoolV3Serializer(pool[0])
+                vip_request['ports'][idx][i]['server_pool'] = pool_serializer.data
         vip_request['conf'] = conf
 
         if conf:

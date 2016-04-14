@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import json
+import ast
 import logging
 
 from django.db.transaction import commit_on_success
@@ -55,9 +55,9 @@ class VipRequestDBView(APIView):
             if not kwargs.get('vip_request_ids'):
 
                 try:
-                    search = json.loads(request.GET.get('search'))
+                    search = ast.literal_eval(request.GET.get('search'))
                 except:
-                    search = dict()
+                    search = {}
 
                 vips_requests = facade.get_vip_request_by_search(search)
 
