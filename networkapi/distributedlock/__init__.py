@@ -66,7 +66,7 @@ from django.core.cache import cache
 from networkapi.distributedlock.memcachedlock import MemcachedLock
 
 DEBUG = False
-DEFAULT_TIMEOUT = 600
+DEFAULT_TIMEOUT = 1200
 DEFAULT_BLOCKING = True
 DEFAULT_MEMCACHED_CLIENT = cache
 DEFAULT_LOCK_FACTORY = lambda key: MemcachedLock(

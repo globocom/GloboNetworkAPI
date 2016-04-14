@@ -387,8 +387,8 @@ class OptionVip(BaseModel):
 
             #log.info(str(ovips))
 
-            #ovips = ovips.filter(
-            #    optionvipenvironmentvip__environment__id=int(id_environment_vip))
+            ovips = ovips.filter(
+                optionvipenvironmentvip__environment__id=int(id_environment_vip))
 
             return ovips
 
@@ -2356,18 +2356,16 @@ class DsrL3_to_Vip(BaseModel):
 
     def get_dsrl3(self, id_vip, user):
 
+        dscp=4
+        dscp_exists = 1
+        while dscp_exists:
+            dscp_exists = DsrL3_to_Vip.objects.filter(id_dsrl3=dscp)
+            if dscp_exists:
+                dscp=dscp+4
 
-        id=4
-        while 1:
-            try:
-                DsrL3_to_Vip.objects.get(id_dsrl3=id)
-            except ObjectDoesNotExist, e:
-                break
-            id=id+4
+        self.prepare_and_save(dscp,id_vip, user)
 
-        self.prepare_and_save(id,id_vip, user)
-
-        return id
+        return dscp
 
 
     @classmethod

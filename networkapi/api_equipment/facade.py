@@ -40,6 +40,7 @@ def get_equipment_map(equipment):
 	equipment_map['nome'] = equipment.nome
 	equipment_map['tipo_equipamento'] = equipment.tipo_equipamento.tipo_equipamento
 	equipment_map['modelo'] = equipment.modelo.nome
+	equipment_map['marca'] = equipment.modelo.marca.nome
 	equipment_map['maintenance'] = equipment.maintenance
 
 	return equipment_map

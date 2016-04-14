@@ -82,7 +82,6 @@
               }
             },
             "required": [
-              "id",
               "name"
             ]
           },
@@ -92,9 +91,6 @@
           "healthcheck": {
             "type": "object",
             "properties": {
-              "id": {
-                "type": "null"
-              },
               "identifier": {
                 "type": [
                   "string",

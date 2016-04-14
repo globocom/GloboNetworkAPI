@@ -78,7 +78,7 @@ class VipRequestOptionVip(BaseModel):
         managed = True
 
 
-class VipRequestPool(BaseModel):
+class VipRequestPort(BaseModel):
 
     id = models.AutoField(
         primary_key=True,
@@ -88,6 +88,49 @@ class VipRequestPool(BaseModel):
     vip_request = models.ForeignKey(
         VipRequest,
         db_column='id_vip_request',
+    )
+
+    port = models.IntegerField(
+        max_length=5,
+        db_column='port')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'vip_request_port'
+        managed = True
+
+
+class VipRequestPortOptionVip(BaseModel):
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+
+    vip_request_port = models.ForeignKey(
+        VipRequestPort,
+        db_column='id_vip_request_port',
+    )
+
+    optionvip = models.ForeignKey(
+        OptionVip,
+        db_column='id_opcoesvip',
+    )
+
+    class Meta(BaseModel.Meta):
+        db_table = u'vip_request_port_optionsvip'
+        managed = True
+
+
+class VipRequestPortPool(BaseModel):
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+
+    vip_request_port = models.ForeignKey(
+        VipRequestPort,
+        db_column='id_vip_request_port',
     )
 
     optionvip = models.ForeignKey(
@@ -106,12 +149,8 @@ class VipRequestPool(BaseModel):
         blank=True,
         null=True)
 
-    port = models.IntegerField(
-        max_length=5,
-        db_column='port')
-
     class Meta(BaseModel.Meta):
-        db_table = u'vip_request_pool'
+        db_table = u'vip_request_port_pool'
         managed = True
 
 

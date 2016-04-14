@@ -115,8 +115,9 @@ class FTOS(BasePlugin):
 		'''
 		Delete SVI from switch
 		'''
+		return ''
 		self.ensure_privilege_level()
-		self.channel.send("terminal length 0")
+		self.channel.send("terminal length 0\n")
 
 		self.channel.send('show run interface Vlan %s\n' % (svi_number))
 		recv = self.waitString("#")

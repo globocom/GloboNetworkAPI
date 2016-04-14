@@ -63,7 +63,6 @@ class HealthcheckV3Serializer(serializers.ModelSerializer):
     class Meta:
         model = Healthcheck
         fields = (
-            'id',
             'identifier',
             'healthcheck_type',
             'healthcheck_request',

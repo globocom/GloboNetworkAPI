@@ -23,7 +23,6 @@ class VipRequestDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
     def post(self, request, *args, **kwargs):
         """Create vip request by list"""
 

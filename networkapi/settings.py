@@ -309,7 +309,8 @@ INSTALLED_APPS = (
     'networkapi.api_pools',
     'networkapi.api_environment_vip',
     'networkapi.api_rack',
-    #'networkapi.api_task',
+    'networkapi.api_rest',
+    # 'networkapi.api_task',
     'networkapi.api_vip_request',
     'networkapi.blockrules',
     'networkapi.config',
@@ -363,6 +364,16 @@ MAX_VLAN_NUMBER_02 = 4094
 # Intervals to calculate the oct4 of the IP in POST request /ip/.
 MIN_OCT4 = 5
 MAX_OCT4 = 250
+
+
+###########
+# SPECS
+SPECS = {
+    'pool_post': 'networkapi/api_pools/specs/pool_post.json',
+    'pool_put': 'networkapi/api_pools/specs/pool_put.json',
+    'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json'
+}
+
 
 ##########
 # Scripts

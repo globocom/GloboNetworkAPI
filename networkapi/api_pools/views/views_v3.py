@@ -2,11 +2,13 @@
 
 from datetime import datetime
 import logging
+
 from django.db.transaction import commit_on_success
 from networkapi.api_pools import exceptions, facade, serializers
 from networkapi.api_pools.permissions import Read, Write
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.requisicaovips import models as models_vips
+from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate, verify_ports
 from rest_framework import status
@@ -22,13 +24,14 @@ class PoolMemberStateView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @raise_json_validate('pool_member_status')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Enable/Disable pool member by list"""
 
         try:
             pools = request.DATA
-            json_validate('networkapi/api_pools/specs/pool_member_status.json').validate(pools)
+            json_validate(SPECS.get('pool_member_status')).validate(pools)
             response = facade.set_poolmember_state(pools)
 
             return Response(response)
@@ -89,7 +92,6 @@ class PoolDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
     def post(self, request, *args, **kwargs):
         """Create real pool by list"""
 
@@ -109,12 +111,12 @@ class PoolDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
+    @raise_json_validate('pool_put')
     def put(self, request, *args, **kwargs):
         """Update real pool by list """
 
         server_pools = request.DATA
-        json_validate('networkapi/api_pools/specs/pool_put.json').validate(server_pools)
+        json_validate(SPECS.get('pool_put')).validate(server_pools)
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
@@ -128,7 +130,6 @@ class PoolDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
     def delete(self, request, *args, **kwargs):
         """Delete real pool by list"""
 
@@ -213,7 +214,6 @@ class PoolDBView(APIView):
                     pools['pools'],
                     many=True
                 )
-                log.info(pool_serializer.data)
                 data = {
                     'server_pools': pool_serializer.data,
                     'total': pools['total'],
@@ -242,32 +242,33 @@ class PoolDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
+    @raise_json_validate('pool_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
         Method to save
         """
         pools = request.DATA
-        json_validate('networkapi/api_pools/specs/pool_post.json').validate(pools)
+        json_validate(SPECS.get('pool_post')).validate(pools)
         verify_ports(pools)
-        response = {}
+        response = list()
         for pool in pools['server_pools']:
             facade.validate_save(pool)
-            facade.create_pool(pool)
+            pl = facade.create_pool(pool)
+            response.append({'id': pl.id})
 
         return Response(response)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
+    @raise_json_validate('pool_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
         Method to save
         """
         pools = request.DATA
-        json_validate('networkapi/api_pools/specs/pool_put.json').validate(pools)
+        json_validate(SPECS.get('pool_put')).validate(pools)
         verify_ports(pools)
         response = {}
         for pool in pools['server_pools']:
