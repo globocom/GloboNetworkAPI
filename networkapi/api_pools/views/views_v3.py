@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+import ast
 from datetime import datetime
 import logging
 
@@ -205,10 +205,13 @@ class PoolDBView(APIView):
         Param pool_id: pool id
         Return pool object
         """
-
         try:
             if not kwargs.get('pool_ids'):
-                search = request.GET or {}
+                try:
+                    search = ast.literal_eval(request.GET.get('search'))
+                except:
+                    search = {}
+
                 pools = facade.get_pool_by_search(search)
                 pool_serializer = serializers.PoolV3Serializer(
                     pools['pools'],

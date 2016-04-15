@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+import urllib
 
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_environment_vip import facade
@@ -7,11 +8,10 @@ from networkapi.api_environment_vip.permissions import Read
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipEnvironmentVipSerializer, \
     OptionVipSerializer
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.util import logs_method_apiview
+from networkapi.util import logs_method_apiview, permission_classes_apiview
 
 
 from rest_framework import status
-from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,9 +19,9 @@ from rest_framework.views import APIView
 log = logging.getLogger(__name__)
 
 
-@permission_classes((IsAuthenticated, Read))
 class OptionVipEnvironmentVipOneView(APIView):
 
+    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
     def get(self, request, *args, **kwargs):
         """
@@ -47,9 +47,9 @@ class OptionVipEnvironmentVipOneView(APIView):
             raise api_exceptions.NetworkAPIException()
 
 
-@permission_classes((IsAuthenticated, Read))
 class EnvironmentVipStepOneView(APIView):
 
+    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
     def get(self, request, *args, **kwargs):
         """
@@ -93,9 +93,10 @@ class EnvironmentVipStepOneView(APIView):
             raise api_exceptions.NetworkAPIException()
 
 
-class OptionVipEnvironmentTypeVipOneView(APIView):
+class OptionVipEnvironmentTypeVipView(APIView):
 
-    @permission_classes((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
     def get(self, request, *args, **kwargs):
         """
         Method to return option vip list by environment id and option vip type
@@ -103,25 +104,53 @@ class OptionVipEnvironmentTypeVipOneView(APIView):
         Param type_option: environment id
         Return option vip object list
         """
-        log.info("View:OptionVipEnvironmentTypeVipOneView, method:get")
         try:
-            environment_vip_id = kwargs["environment_vip_id"]
-            type_option = kwargs["type_option"]
-            search_list = {
-                'environment_vip_id': environment_vip_id,
-                'type_option': type_option
-            }
+            environment_vip_ids = kwargs["environment_vip_id"].split(';')
+            type_option = urllib.unquote(kwargs["type_option"]).decode('utf8')
+            log.info(type_option)
+            search_list = list()
 
-            options_vip = facade.get_option_vip_by_environment_vip_type([search_list])
+            for environment_vip_id in environment_vip_ids:
+                search_list.append({
+                    'environment_vip_id': environment_vip_id,
+                    'type_option': type_option
+                })
 
-            if options_vip:
-                options_vip = options_vip[0]
+            options_vips = facade.get_option_vip_by_environment_vip_type(search_list)
 
-            serializer_options = OptionVipSerializer(
-                options_vip,
-                many=True
-            )
-            return Response(serializer_options.data, status.HTTP_200_OK)
+            data = dict()
+            data['optionsvip'] = list()
+            for options_vip in options_vips:
+                serializer_options = OptionVipSerializer(
+                    options_vip,
+                    many=True
+                )
+                data['optionsvip'].append(serializer_options.data)
+
+            return Response(data, status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException()
+
+
+class TypeOptionEnvironmentVipView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Method to return option vip list by environment id and option vip type
+        Param environment_vip_id: environment id
+        Param type_option: environment id
+        Return option vip object list
+        """
+        try:
+            environment_vip_ids = kwargs["environment_vip_id"].split(';')
+            type_option_vip = facade.get_type_option_vip_by_environment_vip_ids(environment_vip_ids)
+
+            return Response(type_option_vip, status.HTTP_200_OK)
+
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException()

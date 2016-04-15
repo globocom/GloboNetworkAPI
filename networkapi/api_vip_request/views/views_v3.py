@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import ast
 import logging
 
 from django.db.transaction import commit_on_success
@@ -7,6 +8,7 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions, facade
 from networkapi.api_vip_request.permissions import Read, Write
 from networkapi.api_vip_request.serializers import VipRequestSerializer
+from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate
 
@@ -51,8 +53,14 @@ class VipRequestDBView(APIView):
         """
         try:
             if not kwargs.get('vip_request_ids'):
-                search = request.GET or {}
+
+                try:
+                    search = ast.literal_eval(request.GET.get('search'))
+                except:
+                    search = {}
+
                 vips_requests = facade.get_vip_request_by_search(search)
+
                 serializer_vips = VipRequestSerializer(
                     vips_requests['vips'],
                     many=True
@@ -87,7 +95,7 @@ class VipRequestDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
+    @raise_json_validate('vip_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -97,17 +105,18 @@ class VipRequestDBView(APIView):
 
         data = request.DATA
 
-        json_validate('networkapi/api_vip_request/specs/vip_post.json').validate(data)
+        json_validate(SPECS.get('vip_post')).validate(data)
 
-        response = {}
+        response = list()
         for vip in data['vips']:
-            facade.create_vip_request(vip)
+            vp = facade.create_vip_request(vip)
+            response.append({'id': vp.id})
 
         return Response(response, status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
+    @raise_json_validate('vip_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -116,7 +125,7 @@ class VipRequestDBView(APIView):
         """
         data = request.DATA
 
-        json_validate('networkapi/api_vip_request/specs/vip_put.json').validate(data)
+        json_validate(SPECS.get('vip_put')).validate(data)
 
         response = {}
         for vip in data['vips']:

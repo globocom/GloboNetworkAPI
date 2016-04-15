@@ -25,12 +25,15 @@ class VipRequestOptionVipSerializer(serializers.ModelSerializer):
 class VipRequestPortPoolSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
+    l7_rule = serializers.Field(source='optionvip')
+    l7_value = serializers.Field(source='val_optionvip')
+
     class Meta:
         model = VipRequestPortPool
         fields = (
             'server_pool',
-            'optionvip',
-            'val_optionvip',
+            'l7_rule',
+            'l7_value'
         )
 
 
@@ -42,14 +45,16 @@ class VipRequestPortSerializer(serializers.ModelSerializer):
     def get_options(self, obj):
         options = obj.viprequestportoptionvip_set.all()
         opt = {
-            'protocol_l7': None,
-            'protocol_l4': None
+            'l7_protocol': None,
+            'l4_protocol': None
         }
         for option in options:
-            if option.optionvip.tipo_opcao == 'protocol_l7':
-                opt['protocol_l7'] = option.optionvip.id
-            elif option.optionvip.tipo_opcao == 'protocol_l4':
-                opt['protocol_l4'] = option.optionvip.id
+            if option.optionvip.tipo_opcao == 'l7_protocol':
+                opt['l7_protocol'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'l4_protocol':
+                opt['l4_protocol'] = option.optionvip.id
+
+        return opt
 
     pools = serializers.SerializerMethodField('get_server_pools')
 
@@ -155,13 +160,13 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
         return opt
 
-    pools = serializers.SerializerMethodField('get_server_pools')
+    ports = serializers.SerializerMethodField('get_server_pools')
 
     def get_server_pools(self, obj):
-        pools = obj.viprequestpool_set.all()
-        pools_serializer = VipRequestPortPoolSerializer(pools, many=True)
+        ports = obj.viprequestport_set.all()
+        ports_serializer = VipRequestPortSerializer(ports, many=True)
 
-        return pools_serializer.data
+        return ports_serializer.data
 
     class Meta:
         model = VipRequest
@@ -173,7 +178,7 @@ class VipRequestSerializer(serializers.ModelSerializer):
             'environmentvip',
             'ipv4',
             'ipv6',
-            'pools',
+            'ports',
             'options',
             'created'
         )

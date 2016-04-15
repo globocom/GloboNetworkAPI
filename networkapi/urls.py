@@ -34,6 +34,8 @@ urlpatterns = patterns(
     '',
     # new API URL patterns are all prefixed with '/api/'
     url(api_prefix, include('networkapi.api_deploy.urls')),
+    url(api_prefix, include('networkapi.api_environment_vip.urls')),
+    url(api_prefix, include('networkapi.api_equipment.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),
     url(api_prefix, include('networkapi.api_interface.urls')),
     url(api_prefix, include('networkapi.api_network.urls')),
@@ -45,7 +47,6 @@ urlpatterns = patterns(
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.system.urls')),
-    url(api_prefix, include('networkapi.api_equipment.urls')),
 
     # app healthchecks
     url(r'^check$', CheckAction().check, name='check'),

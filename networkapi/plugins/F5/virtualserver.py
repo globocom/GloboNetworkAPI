@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 
+from networkapi.plugins.F5 import types
 from networkapi.plugins.F5.f5base import F5Base
 from networkapi.plugins.F5.profile import ProfileFastL4, ProfileHttp, ProfileTCP, ProfileUDP
 from networkapi.util import valid_expression
@@ -62,8 +63,8 @@ class VirtualServer(F5Base):
 
             profiles = list()
 
-            if kwargs['conf']['optionsvip_extended']:
-                requiments = kwargs['conf']['optionsvip_extended'].get('requiments')
+            if vip_request['optionsvip_extended']:
+                requiments = vip_request['optionsvip_extended'].get('requiments')
                 if requiments:
                     for requiment in requiments:
                         condicionals = requiment.get('condicionals')
@@ -74,10 +75,9 @@ class VirtualServer(F5Base):
                             validations = condicional.get('validations')
                             for validation in validations:
                                 if validation.get('type') == 'optionvip':
-                                    vip_request['optionsvip'][validation.get('variable')]
                                     validated &= valid_expression(
                                         validation.get('operator'),
-                                        vip_request['optionsvip'][validation.get('variable')],
+                                        vip_request['optionsvip'][validation.get('variable')]['id'],
                                         validation.get('value')
                                     )
 
@@ -88,24 +88,24 @@ class VirtualServer(F5Base):
                                         profile_name = item.get('value')
                                         try:
                                             pn = profile_name.split('$')
-                                            profile_name = pn[0] + vip_request['optionsvip']['timeout']
+                                            profile_name = pn[0] + vip_request['optionsvip']['timeout']['nome_opcao_txt']
                                             if '/Common/' + profile_name not in profiles_list:
                                                 if 'tcp' in profile_name:
                                                     profiles_timeout_tcp['profile_names'].append(profile_name)
                                                     profiles_timeout_tcp['timeouts'].append({
-                                                        'value': vip_request['optionsvip']['timeout'],
+                                                        'value': vip_request['optionsvip']['timeout']['nome_opcao_txt'],
                                                         'default_flag': 1
                                                     })
                                                 elif 'udp' in profile_name:
                                                     profiles_timeout_udp['profile_names'].append(profile_name)
                                                     profiles_timeout_udp['timeouts'].append({
-                                                        'value': vip_request['optionsvip']['timeout'],
+                                                        'value': vip_request['optionsvip']['timeout']['nome_opcao_txt'],
                                                         'default_flag': 1
                                                     })
                                                 elif 'fastL4' in profile_name:
                                                     profiles_timeout_fastl4['profile_names'].append(profile_name)
                                                     profiles_timeout_fastl4['timeouts'].append({
-                                                        'value': vip_request['optionsvip']['timeout'],
+                                                        'value': vip_request['optionsvip']['timeout']['nome_opcao_txt'],
                                                         'default_flag': 1
                                                     })
                                         except:
@@ -145,7 +145,7 @@ class VirtualServer(F5Base):
                 'name': vip_request['name'],
                 'address': vip_request['address'],
                 'port': vip_request['port'],
-                'protocol': vip_request['optionsvip']['protocol_l4']
+                'protocol': types.procotol_type(vip_request['optionsvip']['l4_protocol']['nome_opcao_txt'].lower())
             })
 
             vip_wildmasks.append('255.255.255.255')
@@ -171,7 +171,7 @@ class VirtualServer(F5Base):
 
         # self.__translate_port_state(translate_port_state=translate_port_state)
 
-        self._lb._channel.VirtualServer.create(
+        self._lb._channel.LocalLB.VirtualServer.create(
             definitions=vip_definitions,
             wildmasks=vip_wildmasks,
             resources=vip_resources,
@@ -185,46 +185,46 @@ class VirtualServer(F5Base):
         if version_split[0] == '11' and int(version_split[1]) <= 2:
 
             if kwargs.get('vip_snat_auto').get('virtual_servers'):
-                self._lb._channel.VirtualServer.set_snat_automap(
+                self._lb._channel.LocalLB.VirtualServer.set_snat_automap(
                     kwargs.get('vip_snat_auto')
                 )
             if kwargs.get('vip_snat_pool').get('virtual_servers'):
-                self._lb._channel.VirtualServer.set_snat_pool(
+                self._lb._channel.LocalLB.VirtualServer.set_snat_pool(
                     kwargs.get('vip_snat_pool')
                 )
             if kwargs.get('vip_snat_none').get('virtual_servers'):
-                self._lb._channel.VirtualServer.set_snat_none(
+                self._lb._channel.LocalLB.VirtualServer.set_snat_none(
                     kwargs.get('vip_snat_none')
                 )
         else:
             if kwargs.get('vip_snat_auto').get('virtual_servers'):
-                self._lb._channel.VirtualServer.set_source_address_translation_automap(
+                self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_automap(
                     kwargs.get('vip_snat_auto')
                 )
             if kwargs.get('vip_snat_pool').get('virtual_servers'):
-                self._lb._channel.VirtualServer.set_source_address_translation_lsn_pool(
+                self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_lsn_pool(
                     kwargs.get('vip_snat_pool')
                 )
             if kwargs.get('vip_snat_none').get('virtual_servers'):
-                self._lb._channel.VirtualServer.set_source_address_translation_none(
+                self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_none(
                     kwargs.get('vip_snat_none')
                 )
 
     def __add_persistence_profile(self, **kwargs):
-        self._lb._channel.VirtualServer.add_persistence_profile(
+        self._lb._channel.LocalLB.VirtualServer.add_persistence_profile(
             virtual_servers=kwargs['virtual_servers'],
             profiles=kwargs['profiles']
         )
 
     def set_traffic_group(self, **kwargs):
 
-        self._lb._channel.VirtualAddressV2.set_traffic_group(
+        self._lb._channel.LocalLB.VirtualAddressV2.set_traffic_group(
             virtual_addresses=kwargs['virtual_addresses'],
             traffic_groups=kwargs['traffic_groups']
         )
 
     def __translate_port_state(self, **kwargs):
-        self._lb._channel.VirtualAddressV2.set_translate_port_state(
+        self._lb._channel.LocalLB.VirtualAddressV2.set_translate_port_state(
             virtual_servers=kwargs['translate_port_state'],
             states=kwargs['translate_port_state']
         )

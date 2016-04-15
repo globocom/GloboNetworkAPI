@@ -16,14 +16,21 @@ class Generic(BasePlugin):
     #######################################
     # VIP
     #######################################
-    @util.transation
+    @util.connection
     def create_vip(self, vips):
+        vps, pls = util.trata_param_vip(vips)
 
+        if pls:
+            self.__create_pool({'pools': pls})
         try:
+            self._lb._channel.System.Session.start_transaction()
             vts = virtualserver.VirtualServer(self._lb)
-            vts.create(vips=vips)
+            vts.create(vips=vps)
         except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
             raise Exception(e)
+        else:
+            self._lb._channel.System.Session.submit_transaction()
 
     #######################################
     # POOLMEMBER
@@ -97,6 +104,9 @@ class Generic(BasePlugin):
     #######################################
     @util.connection
     def create_pool(self, pools):
+        self.__create_pool(pools)
+
+    def __create_pool(self, pools):
 
         monitor_associations = []
         pls = util.trata_param_pool(pools)
@@ -155,6 +165,9 @@ class Generic(BasePlugin):
 
     @util.connection
     def update_pool(self, pools):
+        self.__update_pool(pools)
+
+    def __update_pool(self, pools):
         log.info('update_pool')
         monitor_associations = []
         pls = util.trata_param_pool(pools)
@@ -236,6 +249,9 @@ class Generic(BasePlugin):
 
     @util.connection
     def delete_pool(self, pools):
+        self.delete_pool(pools)
+
+    def __delete_pool(self, pools):
         log.info('delete_pool')
 
         pls = util.trata_param_pool(pools)
