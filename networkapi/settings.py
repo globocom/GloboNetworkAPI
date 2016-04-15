@@ -137,7 +137,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, T:%(request_id)-6s, MSG:%(message)s',
+            'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, N:%(name)s, T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
         'simple': {
@@ -178,6 +178,16 @@ LOGGING = {
         },
         'django.request': {
             'level': LOG_LEVEL,
+            'propagate': False,
+            'handlers': ['log_file'],
+        },
+        'bigsuds': {
+            'level': logging.DEBUG,
+            'propagate': False,
+            'handlers': ['log_file'],
+        },
+        'suds': {
+            'level': logging.INFO,
             'propagate': False,
             'handlers': ['log_file'],
         },

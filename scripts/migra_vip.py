@@ -37,121 +37,133 @@ def run2():
                 vp.save()
 
                 if mp.get('persistencia'):
+                    persistencia = mp['persistencia']
+                else:
+                    persistencia = '(nenhum)'
 
+                try:
+                    op = OptionVip.objects.filter(tipo_opcao=u'Persistencia', nome_opcao_txt=persistencia)[0]
                     try:
-                        op = OptionVip.objects.filter(tipo_opcao=u'Persistencia', nome_opcao_txt=mp['persistencia'])[0]
-                        try:
-                            opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
-                        except:
-                            opv = OptionVipEnvironmentVip()
-                            opv.option = op
-                            opv.environment = ev
-                            opv.save()
+                        opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
                     except:
-                        op = OptionVip()
-                        op.tipo_opcao = u'Persistencia'
-                        op.nome_opcao_txt = mp['persistencia']
-                        op.save()
                         opv = OptionVipEnvironmentVip()
                         opv.option = op
                         opv.environment = ev
                         opv.save()
-                    finally:
-                        try:
-                            vro = VipRequestOptionVip.objects.filter(optionvip=op, vip_request=vp)[0]
-                        except:
-                            vro = VipRequestOptionVip()
-                            vro.optionvip = op
-                            vro.vip_request = vp
-                            vro.save()
+                except:
+                    op = OptionVip()
+                    op.tipo_opcao = u'Persistencia'
+                    op.nome_opcao_txt = persistencia
+                    op.save()
+                    opv = OptionVipEnvironmentVip()
+                    opv.option = op
+                    opv.environment = ev
+                    opv.save()
+                finally:
+                    try:
+                        vro = VipRequestOptionVip.objects.filter(optionvip=op, vip_request=vp)[0]
+                    except:
+                        vro = VipRequestOptionVip()
+                        vro.optionvip = op
+                        vro.vip_request = vp
+                        vro.save()
 
                 if mp.get('timeout'):
+                    timeout = mp['timeout']
+                else:
+                    timeout = '5'
 
+                try:
+                    op = OptionVip.objects.filter(tipo_opcao=u'timeout', nome_opcao_txt=timeout)[0]
                     try:
-                        op = OptionVip.objects.filter(tipo_opcao=u'timeout', nome_opcao_txt=mp['timeout'])[0]
-                        try:
-                            opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
-                        except:
-                            opv = OptionVipEnvironmentVip()
-                            opv.option = op
-                            opv.environment = ev
-                            opv.save()
+                        opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
                     except:
-                        op = OptionVip()
-                        op.tipo_opcao = u'timeout'
-                        op.nome_opcao_txt = mp['timeout']
-                        op.save()
                         opv = OptionVipEnvironmentVip()
                         opv.option = op
                         opv.environment = ev
                         opv.save()
-                    finally:
-                        try:
-                            vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
-                        except:
-                            vro = VipRequestOptionVip()
-                            vro.optionvip = op
-                            vro.vip_request = vp
-                            vro.save()
+                except:
+                    op = OptionVip()
+                    op.tipo_opcao = u'timeout'
+                    op.nome_opcao_txt = timeout
+                    op.save()
+                    opv = OptionVipEnvironmentVip()
+                    opv.option = op
+                    opv.environment = ev
+                    opv.save()
+                finally:
+                    try:
+                        vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
+                    except:
+                        vro = VipRequestOptionVip()
+                        vro.optionvip = op
+                        vro.vip_request = vp
+                        vro.save()
 
                 if mp.get('trafficreturn'):
+                    trafficreturn = mp['trafficreturn']
+                else:
+                    trafficreturn = 'Normal'
 
+                try:
+                    op = OptionVip.objects.filter(tipo_opcao=u'Retorno de trafego', id=trafficreturn)[0]
                     try:
-                        op = OptionVip.objects.filter(tipo_opcao=u'Retorno de trafego', id=mp['trafficreturn'])[0]
-                        try:
-                            opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
-                        except:
-                            opv = OptionVipEnvironmentVip()
-                            opv.option = op
-                            opv.environment = ev
-                            opv.save()
+                        opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
                     except:
-                        op = OptionVip()
-                        op.tipo_opcao = u'Retorno de trafego'
-                        op.nome_opcao_txt = mp['trafficreturn']
-                        op.save()
                         opv = OptionVipEnvironmentVip()
                         opv.option = op
                         opv.environment = ev
                         opv.save()
-                    finally:
-                        try:
-                            vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
-                        except:
-                            vro = VipRequestOptionVip()
-                            vro.optionvip = op
-                            vro.vip_request = vp
-                            vro.save()
+                except:
+                    op = OptionVip()
+                    op.tipo_opcao = u'Retorno de trafego'
+                    op.nome_opcao_txt = trafficreturn
+                    op.save()
+                    opv = OptionVipEnvironmentVip()
+                    opv.option = op
+                    opv.environment = ev
+                    opv.save()
+                finally:
+                    try:
+                        vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
+                    except:
+                        vro = VipRequestOptionVip()
+                        vro.optionvip = op
+                        vro.vip_request = vp
+                        vro.save()
 
                 if mp.get('cache'):
+                    cache = mp['cache']
+                else:
+                    cache = '(nenhum)'
 
+                try:
+                    op = OptionVip.objects.filter(tipo_opcao=u'cache', nome_opcao_txt=cache)[0]
                     try:
-                        op = OptionVip.objects.filter(tipo_opcao=u'cache', nome_opcao_txt=mp['cache'])[0]
-                        try:
-                            opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
-                        except:
-                            opv = OptionVipEnvironmentVip()
-                            opv.option = op
-                            opv.environment = ev
-                            opv.save()
+                        opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
                     except:
-                        op = OptionVip()
-                        op.tipo_opcao = u'cache'
-                        op.nome_opcao_txt = mp['cache']
-                        op.save()
                         opv = OptionVipEnvironmentVip()
                         opv.option = op
                         opv.environment = ev
                         opv.save()
-                    finally:
+                except:
+                    op = OptionVip()
+                    op.tipo_opcao = u'cache'
+                    op.nome_opcao_txt = cache
+                    op.save()
+                    opv = OptionVipEnvironmentVip()
+                    opv.option = op
+                    opv.environment = ev
+                    opv.save()
+                finally:
 
-                        try:
-                            vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
-                        except:
-                            vro = VipRequestOptionVip()
-                            vro.optionvip = op
-                            vro.vip_request = vp
-                            vro.save()
+                    try:
+                        vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
+                    except:
+                        vro = VipRequestOptionVip()
+                        vro.optionvip = op
+                        vro.vip_request = vp
+                        vro.save()
 
                 pools = VipPortToPool.get_by_vip_id(vip_request.id)
                 for pool in pools:

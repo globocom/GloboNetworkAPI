@@ -43,6 +43,10 @@ PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enabl
 def valid_expression(operator, value1, value2):
     if operator == 'eq':
         return value1 == value2
+    elif operator == 'ne':
+        return value1 != value2
+    else:
+        return False
 
 
 def search_hide_password(msg):

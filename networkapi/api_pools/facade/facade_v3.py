@@ -11,7 +11,7 @@ from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceExc
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions, models
 from networkapi.distributedlock import distributedlock, LOCK_POOL
-from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
+from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
@@ -39,14 +39,13 @@ def create_real_pool(pools):
         equips = _validate_pool_members_to_apply(pool)
 
         for e in equips:
-            eqpt_id = str(e.equipamento.id)
+            eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
+                equipamento=e.id,
                 protocolo=protocolo_access
             ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-            plugin = PluginFactory.factory(equipment)
+            plugin = PluginFactory.factory(e)
 
             if not load_balance.get(eqpt_id):
 
@@ -102,14 +101,13 @@ def delete_real_pool(pools):
         equips = _validate_pool_members_to_apply(pool)
 
         for e in equips:
-            eqpt_id = str(e.equipamento.id)
+            eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
+                equipamento=e.id,
                 protocolo=protocolo_access
             ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-            plugin = PluginFactory.factory(equipment)
+            plugin = PluginFactory.factory(e)
 
             if not load_balance.get(eqpt_id):
 
@@ -231,14 +229,13 @@ def update_real_pool(pools):
         equips = _validate_pool_to_apply(pool, update=True)
 
         for e in equips:
-            eqpt_id = str(e.equipamento.id)
+            eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
-                equipamento=e.equipamento.id,
+                equipamento=e.id,
                 protocolo=protocolo_access
             ).uniqueResult()
-            equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-            plugin = PluginFactory.factory(equipment)
+            plugin = PluginFactory.factory(e)
 
             if not load_balance.get(eqpt_id):
 
@@ -284,14 +281,13 @@ def set_poolmember_state(pools):
             equips = _validate_pool_members_to_apply(pool)
 
             for e in equips:
-                eqpt_id = str(e.equipamento.id)
+                eqpt_id = str(e.id)
                 equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.equipamento.id,
+                    equipamento=e.id,
                     protocolo=protocolo_access
                 ).uniqueResult()
-                equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-                plugin = PluginFactory.factory(equipment)
+                plugin = PluginFactory.factory(e)
 
                 if not load_balance.get(eqpt_id):
 
@@ -338,14 +334,13 @@ def get_poolmember_state(pools):
             equips = _validate_pool_members_to_apply(pool)
 
             for e in equips:
-                eqpt_id = str(e.equipamento.id)
+                eqpt_id = str(e.id)
                 equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.equipamento.id,
+                    equipamento=e.id,
                     protocolo=protocolo_access
                 ).uniqueResult()
-                equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-                plugin = PluginFactory.factory(equipment)
+                plugin = PluginFactory.factory(e)
 
                 if not load_balance.get(eqpt_id):
 
@@ -478,11 +473,22 @@ def get_pool_by_ids(pools_ids):
     return server_pools
 
 
+def get_pool_by_id(pool_id):
+    """
+    Return pool by id
+    param pools_id: id
+    """
+
+    server_pool = ServerPool.objects.get(id=pool_id)
+
+    return server_pool
+
+
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
     if search.get('extends_search'):
-        pools.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
+        pools = pools.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     pools, total = build_query_to_datatable(
         pools,
@@ -661,12 +667,12 @@ def _validate_pool_to_apply(pool, update=False):
     if update and not server_pool.pool_created:
         raise exceptions.PoolNotCreated(server_pool.id)
 
-    equips = EquipamentoAmbiente.objects.filter(
-        equipamento__maintenance=0,
-        ambiente__id=pool['environment'],
-        equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+    equips = Equipamento.objects.filter(
+        maintenance=0,
+        equipamentoambiente__ambiente__id=pool['environment'],
+        tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
-    if all_equipments_are_in_maintenance([e.equipamento for e in equips]):
+    if all_equipments_are_in_maintenance(equips):
         raise AllEquipmentsAreInMaintenanceException()
 
     return equips

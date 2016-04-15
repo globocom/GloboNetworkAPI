@@ -7,11 +7,11 @@ from django.db.models import Q
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
-from networkapi.api_pools.facade import get_pool_by_ids
+from networkapi.api_pools.facade import get_pool_by_id
 from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_vip_request import exceptions, models
 from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
+from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.plugins.factory import PluginFactory
@@ -224,7 +224,7 @@ def get_vip_request_by_search(search=dict()):
     vip_requests = models.VipRequest.objects.filter()
 
     if search.get('extends_search'):
-        vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
+        vip_requests = vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     vip_requests, total = build_query_to_datatable(
         vip_requests,
@@ -245,19 +245,63 @@ def create_real_vip_request(vip_requests):
 
     load_balance = dict()
 
-    for vip_request in vip_requests:
+    for vip in vip_requests:
+        vip_request = vip.copy()
 
-        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request)
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip)
 
-        for idx, port in enumerate(vip_request['ports']):
+        conf = json.loads(conf)
+
+        cache_group = OptionVip.objects.get(id=vip['options']['cache_group'])
+        traffic_return = OptionVip.objects.get(id=vip['options']['traffic_return'])
+        timeout = OptionVip.objects.get(id=vip['options']['timeout'])
+        persistence = OptionVip.objects.get(id=vip['options']['persistence'])
+
+        vip_request['options'] = dict()
+        vip_request['options']['cache_group'] = {
+            'id': cache_group.id,
+            'nome_opcao_txt': cache_group.nome_opcao_txt
+        }
+        vip_request['options']['traffic_return'] = {
+            'id': traffic_return.id,
+            'nome_opcao_txt': traffic_return.nome_opcao_txt
+        }
+        vip_request['options']['timeout'] = {
+            'id': timeout.id,
+            'nome_opcao_txt': timeout.nome_opcao_txt
+        }
+        vip_request['options']['persistence'] = {
+            'id': persistence.id,
+            'nome_opcao_txt': persistence.nome_opcao_txt
+        }
+
+        for idx, port in enumerate(vip['ports']):
             for i, pl in enumerate(port['pools']):
-                pool = get_pool_by_ids([pl['server_pool']])
-                pool_serializer = PoolV3Serializer(pool[0])
-                vip_request['ports'][idx][i]['server_pool'] = pool_serializer.data
+
+                pool = get_pool_by_id(pl['server_pool'])
+                pool_serializer = PoolV3Serializer(pool)
+
+                l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
+
+                vip_request['ports'][idx]['pools'][i]['server_pool'] = pool_serializer.data
+                vip_request['ports'][idx]['pools'][i]['l7_rule'] = l7_rule
+
+            l7_protocol = OptionVip.objects.get(id=port['options']['l7_protocol'])
+            l4_protocol = OptionVip.objects.get(id=port['options']['l4_protocol'])
+
+            vip_request['ports'][idx]['options'] = dict()
+            vip_request['ports'][idx]['options']['l7_protocol'] = {
+                'id': l7_protocol.id,
+                'nome_opcao_txt': l7_protocol.nome_opcao_txt
+            }
+            vip_request['ports'][idx]['options']['l4_protocol'] = {
+                'id': l4_protocol.id,
+                'nome_opcao_txt': l4_protocol.nome_opcao_txt
+            }
+
         vip_request['conf'] = conf
 
         if conf:
-            conf = json.loads(conf)
             for layer in conf['conf']['layers']:
                 requiments = layer.get('requiments')
                 if requiments:
@@ -270,7 +314,6 @@ def create_real_vip_request(vip_requests):
                             validations = condicional.get('validations')
                             for validation in validations:
                                 if validation.get('type') == 'optionvip':
-                                    vip_request['optionsvip'][validation.get('variable')]
                                     validated &= valid_expression(
                                         validation.get('operator'),
                                         vip_request['optionsvip'][validation.get('variable')],
@@ -314,16 +357,15 @@ def create_real_vip_request(vip_requests):
                                         })
 
         for e in equips:
-            eqpt_id = str(e.equipamento.id)
+            eqpt_id = str(e.id)
 
             if not load_balance.get(eqpt_id):
                 equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.equipamento.id,
+                    equipamento=e.id,
                     protocolo=protocolo_access
                 ).uniqueResult()
-                equipment = Equipamento.get_by_pk(e.equipamento.id)
 
-                plugin = PluginFactory.factory(equipment)
+                plugin = PluginFactory.factory(e)
 
                 load_balance[eqpt_id] = {
                     'plugin': plugin,
@@ -336,9 +378,10 @@ def create_real_vip_request(vip_requests):
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
+        log.info(load_balance[lb])
         load_balance[lb]['plugin'].create_vip(load_balance[lb])
 
-    ids = [vip_request.get('id') for vip_request in vip_requests]
+    ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=True)
 
 
@@ -463,6 +506,17 @@ def validate_save(vip_request, permit_created=False):
 
         for pool in port['pools']:
 
+            option = OptionVip.objects.get(
+                id=pool['l7_rule'],
+                tipo_opcao='l7_rule',
+                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+            )
+
+            if not option:
+                raise Exception(
+                    'Invalid Option to pool %s of port %s of VipRequest %s' %
+                    (pool['server_pool'], port['port'], vip_request['name']))
+
             spms = ServerPoolMember.objects.filter(server_pool=pool['server_pool'])
             for spm in spms:
                 if spm.ip:
@@ -509,14 +563,14 @@ def _validate_vip_to_apply(vip_request, update=False):
     if update and not vip.created:
         raise exceptions.VipRequestNotCreated(vip.id)
 
-    equips = EquipamentoAmbiente.objects.filter(
-        equipamento__maintenance=0,
-        ambiente__environmentenvironmentvip__environment_vip__id=vip_request['environmentvip'],
-        equipamento__tipo_equipamento__tipo_equipamento=u'Balanceador')
+    equips = Equipamento.objects.filter(
+        maintenance=0,
+        equipamentoambiente__ambiente__environmentenvironmentvip__environment_vip__id=vip_request['environmentvip'],
+        tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 
-    if all_equipments_are_in_maintenance([e.equipamento for e in equips]):
+    if all_equipments_are_in_maintenance(equips):
         raise AllEquipmentsAreInMaintenanceException()
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
