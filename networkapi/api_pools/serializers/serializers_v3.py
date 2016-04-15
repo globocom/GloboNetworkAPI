@@ -184,3 +184,32 @@ class PoolV3Serializer(serializers.ModelSerializer):
             'server_pool_members',
             'pool_created'
         )
+
+class PoolV3DatatableSerializer(serializers.ModelSerializer):
+    id = serializers.Field()
+    server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    healthcheck = HealthcheckV3Serializer()
+    servicedownaction = OptionPoolV3Serializer()
+    environment = serializers.RelatedField(source='environment.name')
+
+
+    def get_server_pool_members(self, obj):
+        members = obj.serverpoolmember_set.all()
+        members_serializer = PoolMemberV3Serializer(members, many=True)
+
+        return members_serializer.data
+
+    class Meta:
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'environment',
+            'servicedownaction',
+            'lb_method',
+            'healthcheck',
+            'default_limit',
+            'server_pool_members',
+            'pool_created'
+        )
