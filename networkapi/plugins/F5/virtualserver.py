@@ -12,6 +12,13 @@ log = logging.getLogger(__name__)
 
 class VirtualServer(F5Base):
 
+    def delete(self, **kwargs):
+        log.info('vip:delete:%s' % kwargs)
+
+        self._lb._channel.LocalLB.VirtualServer.delete_virtual_server(
+            kwargs['names']
+        )
+
     def create(self, **kwargs):
 
         vip_definitions = list()
@@ -157,20 +164,6 @@ class VirtualServer(F5Base):
 
             vip_profiles.append(profiles)
 
-        # self.__snat(
-        #     vip_snat_pool=vip_snat_pool,
-        #     vip_snat_auto=vip_snat_auto,
-        #     vip_snat_none=vip_snat_none)
-
-        # self.__profiles_timeout_create(
-        #     profiles_timeout_tcp=profiles_timeout_tcp,
-        #     profiles_timeout_udp=profiles_timeout_udp,
-        #     profiles_timeout_fastl4=profiles_timeout_fastl4)
-
-        # self.__add_profiles_persistence(profiles_persistence=profiles_persistence)
-
-        # self.__translate_port_state(translate_port_state=translate_port_state)
-
         self._lb._channel.LocalLB.VirtualServer.create(
             definitions=vip_definitions,
             wildmasks=vip_wildmasks,
@@ -178,36 +171,52 @@ class VirtualServer(F5Base):
             profiles=vip_profiles
         )
 
+        self.__snat(
+            vip_snat_pool=vip_snat_pool,
+            vip_snat_auto=vip_snat_auto,
+            vip_snat_none=vip_snat_none)
+
+        self.__profiles_timeout_create(
+            profiles_timeout_tcp=profiles_timeout_tcp,
+            profiles_timeout_udp=profiles_timeout_udp,
+            profiles_timeout_fastl4=profiles_timeout_fastl4)
+
+        self.__add_profiles_persistence(profiles_persistence=profiles_persistence)
+
+        self.__translate_port_state(translate_port_state=translate_port_state)
+
     def __snat(self, **kwargs):
 
-        version_split = self._version[8:len(self._version)].split('.')
+        version_split = self._lb._version[8:len(self._lb._version)].split('.')
         # old version
         if version_split[0] == '11' and int(version_split[1]) <= 2:
 
             if kwargs.get('vip_snat_auto').get('virtual_servers'):
                 self._lb._channel.LocalLB.VirtualServer.set_snat_automap(
-                    kwargs.get('vip_snat_auto')
+                    virtual_servers=kwargs.get('vip_snat_auto').get('virtual_servers')
                 )
             if kwargs.get('vip_snat_pool').get('virtual_servers'):
                 self._lb._channel.LocalLB.VirtualServer.set_snat_pool(
-                    kwargs.get('vip_snat_pool')
+                    virtual_servers=kwargs.get('vip_snat_pool').get('virtual_servers'),
+                    pools=kwargs.get('vip_snat_pool').get('pools')
                 )
             if kwargs.get('vip_snat_none').get('virtual_servers'):
                 self._lb._channel.LocalLB.VirtualServer.set_snat_none(
-                    kwargs.get('vip_snat_none')
+                    virtual_servers=kwargs.get('vip_snat_none').get('virtual_servers')
                 )
         else:
             if kwargs.get('vip_snat_auto').get('virtual_servers'):
                 self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_automap(
-                    kwargs.get('vip_snat_auto')
+                    virtual_servers=kwargs.get('vip_snat_auto').get('virtual_servers')
                 )
             if kwargs.get('vip_snat_pool').get('virtual_servers'):
                 self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_lsn_pool(
-                    kwargs.get('vip_snat_pool')
+                    virtual_servers=kwargs.get('vip_snat_pool').get('virtual_servers'),
+                    pools=kwargs.get('vip_snat_pool').get('pools')
                 )
             if kwargs.get('vip_snat_none').get('virtual_servers'):
                 self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_none(
-                    kwargs.get('vip_snat_none')
+                    virtual_servers=kwargs.get('vip_snat_none').get('virtual_servers')
                 )
 
     def __add_persistence_profile(self, **kwargs):

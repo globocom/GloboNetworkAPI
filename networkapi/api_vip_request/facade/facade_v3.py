@@ -385,6 +385,150 @@ def create_real_vip_request(vip_requests):
     models.VipRequest.objects.filter(id__in=ids).update(created=True)
 
 
+def delete_real_vip_request(vip_requests):
+
+    load_balance = dict()
+
+    for vip in vip_requests:
+        vip_request = vip.copy()
+
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip)
+
+        conf = json.loads(conf)
+
+        cache_group = OptionVip.objects.get(id=vip['options']['cache_group'])
+        traffic_return = OptionVip.objects.get(id=vip['options']['traffic_return'])
+        timeout = OptionVip.objects.get(id=vip['options']['timeout'])
+        persistence = OptionVip.objects.get(id=vip['options']['persistence'])
+
+        vip_request['options'] = dict()
+        vip_request['options']['cache_group'] = {
+            'id': cache_group.id,
+            'nome_opcao_txt': cache_group.nome_opcao_txt
+        }
+        vip_request['options']['traffic_return'] = {
+            'id': traffic_return.id,
+            'nome_opcao_txt': traffic_return.nome_opcao_txt
+        }
+        vip_request['options']['timeout'] = {
+            'id': timeout.id,
+            'nome_opcao_txt': timeout.nome_opcao_txt
+        }
+        vip_request['options']['persistence'] = {
+            'id': persistence.id,
+            'nome_opcao_txt': persistence.nome_opcao_txt
+        }
+
+        for idx, port in enumerate(vip['ports']):
+            for i, pl in enumerate(port['pools']):
+
+                pool = get_pool_by_id(pl['server_pool'])
+                pool_serializer = PoolV3Serializer(pool)
+
+                l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
+
+                vip_request['ports'][idx]['pools'][i]['server_pool'] = pool_serializer.data
+                vip_request['ports'][idx]['pools'][i]['l7_rule'] = l7_rule
+
+            l7_protocol = OptionVip.objects.get(id=port['options']['l7_protocol'])
+            l4_protocol = OptionVip.objects.get(id=port['options']['l4_protocol'])
+
+            vip_request['ports'][idx]['options'] = dict()
+            vip_request['ports'][idx]['options']['l7_protocol'] = {
+                'id': l7_protocol.id,
+                'nome_opcao_txt': l7_protocol.nome_opcao_txt
+            }
+            vip_request['ports'][idx]['options']['l4_protocol'] = {
+                'id': l4_protocol.id,
+                'nome_opcao_txt': l4_protocol.nome_opcao_txt
+            }
+
+        vip_request['conf'] = conf
+
+        if conf:
+            for layer in conf['conf']['layers']:
+                requiments = layer.get('requiments')
+                if requiments:
+                    for requiment in requiments:
+                        condicionals = requiment.get('condicionals')
+                        for condicional in condicionals:
+
+                            validated = True
+
+                            validations = condicional.get('validations')
+                            for validation in validations:
+                                if validation.get('type') == 'optionvip':
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        vip_request['optionsvip'][validation.get('variable')],
+                                        validation.get('value')
+                                    )
+
+                                if validation.get('type') == 'field' and validation.get('variable') == 'cluster_unit':
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        cluster_unit,
+                                        validation.get('value')
+                                    )
+
+                            if validated:
+                                use = condicional.get('use')
+                                for item in use:
+                                    definitions = item.get('definitions')
+                                    eqpts = item.get('eqpts')
+                                    for eqpt in eqpts:
+                                        eqpt_id = str(eqpt)
+
+                                        if not load_balance.get(eqpt_id):
+                                            equipment_access = EquipamentoAcesso.search(
+                                                equipamento=eqpt,
+                                                protocolo=protocolo_access
+                                            ).uniqueResult()
+                                            equipment = Equipamento.get_by_pk(eqpt)
+
+                                            plugin = PluginFactory.factory(equipment)
+
+                                            load_balance[eqpt_id] = {
+                                                'plugin': plugin,
+                                                'fqdn': equipment_access.fqdn,
+                                                'user': equipment_access.user,
+                                                'password': equipment_access.password,
+                                                'vips': [],
+                                            }
+
+                                        load_balance[eqpt_id]['vips'].append({
+                                            'definitions': definitions
+                                        })
+
+        for e in equips:
+            eqpt_id = str(e.id)
+
+            if not load_balance.get(eqpt_id):
+                equipment_access = EquipamentoAcesso.search(
+                    equipamento=e.id,
+                    protocolo=protocolo_access
+                ).uniqueResult()
+
+                plugin = PluginFactory.factory(e)
+
+                load_balance[eqpt_id] = {
+                    'plugin': plugin,
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'vips': [],
+                }
+
+            load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
+
+    for lb in load_balance:
+        log.info(load_balance[lb])
+        load_balance[lb]['plugin'].delete_vip(load_balance[lb])
+
+    ids = [vip_id.get('id') for vip_id in vip_requests]
+    models.VipRequest.objects.filter(id__in=ids).delete()
+
+
 #############
 # helpers
 #############

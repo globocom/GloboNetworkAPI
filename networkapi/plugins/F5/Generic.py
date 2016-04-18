@@ -17,18 +17,32 @@ class Generic(BasePlugin):
     # VIP
     #######################################
     @util.connection
-    def create_vip(self, vips):
-        vps, pls = util.trata_param_vip(vips)
-
-        if pls:
-            self.__create_pool({'pools': pls})
+    def delete_vip(self, vips):
+        tratado = util.trata_param_vip(vips)
         try:
             self._lb._channel.System.Session.start_transaction()
             vts = virtualserver.VirtualServer(self._lb)
-            vts.create(vips=vps)
+            vps_names = [vp['name'] for vp in tratado['vips_filter']]
+            vts.delete(vps_names=vps_names)
         except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
-            raise Exception(e)
+            raise base_exceptions.CommandErrorException(e)
+        else:
+            self._lb._channel.System.Session.submit_transaction()
+
+            self.__delete_pool({'pools': tratado['pool_filter_created']})
+
+    @util.connection
+    def create_vip(self, vips):
+        tratado = util.trata_param_vip(vips)
+
+        if tratado['pool_filter']:
+            self.__create_pool({'pools': tratado['pool_filter']})
+        try:
+            self._lb._channel.System.Session.start_transaction()
+            vts = virtualserver.VirtualServer(self._lb)
+            vts.create(vips=tratado['vips_filter'])
+        except Exception, e:
+            raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
 
@@ -258,26 +272,33 @@ class Generic(BasePlugin):
 
         pl = pool.Pool(self._lb)
         mon = monitor.Monitor(self._lb)
+
         self._lb._channel.System.Session.start_transaction()
         try:
             monitor_associations = pl.get_monitor_association(names=pls['pools_names'])
             pl.remove_monitor_association(names=pls['pools_names'])
+
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
             raise base_exceptions.CommandErrorException(e)
+
         else:
             self._lb._channel.System.Session.submit_transaction()
+
+            self._lb._channel.System.Session.start_transaction()
+
             try:
-                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-                if template_names:
-                    mon.delete_template(template_names=template_names)
-            except bigsuds.OperationFailed:
-                pass
-            finally:
-                self._lb._channel.System.Session.start_transaction()
+                pl.delete(names=pls['pools_names'])
+                self._lb._channel.System.Session.submit_transaction()
+            except Exception, e:
+                self._lb._channel.System.Session.rollback_transaction()
+                pl.set_monitor_association(monitor_associations=monitor_associations)
+                raise base_exceptions.CommandErrorException(e)
+
+            else:
                 try:
-                    pl.delete(names=pls['pools_names'])
-                    self._lb._channel.System.Session.submit_transaction()
-                except Exception, e:
-                    self._lb._channel.System.Session.rollback_transaction()
-                    raise base_exceptions.CommandErrorException(e)
+                    template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                    if template_names:
+                        mon.delete_template(template_names=template_names)
+                except bigsuds.OperationFailed:
+                    pass
