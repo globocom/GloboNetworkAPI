@@ -6,7 +6,7 @@ from django.db.transaction import commit_on_success
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions, facade
-from networkapi.api_vip_request.permissions import Read, Write
+from networkapi.api_vip_request.permissions import DeployCreate, DeployDelete, DeployUpdate, Read, Write
 from networkapi.api_vip_request.serializers import VipRequestSerializer
 from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview, permission_classes_apiview
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 class VipRequestDeployView(APIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
     @logs_method_apiview
     def post(self, request, *args, **kwargs):
         """Create vip request by list"""
@@ -41,6 +41,32 @@ class VipRequestDeployView(APIView):
             facade.destroy_lock(locks_list)
 
         return Response(response)
+
+    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
+    @logs_method_apiview
+    def delete(self, request, *args, **kwargs):
+        """Delete vip request by list"""
+
+        vip_request_ids = kwargs['vip_request_ids'].split(';')
+        vips = facade.get_vip_request(vip_request_ids)
+        vip_serializer = VipRequestSerializer(vips, many=True)
+        locks_list = facade.create_lock(vip_serializer.data)
+        try:
+            response = facade.delete_real_vip_request(vip_serializer.data)
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)
+        finally:
+            facade.destroy_lock(locks_list)
+
+        return Response(response)
+
+    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
+    @logs_method_apiview
+    def put(self, request, *args, **kwargs):
+        """Update vip request by list"""
+
+        return Response({})
 
 
 class VipRequestDBView(APIView):
@@ -133,6 +159,8 @@ class VipRequestDBView(APIView):
 
         return Response(response, status.HTTP_200_OK)
 
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
         Method to delete

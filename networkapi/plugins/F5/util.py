@@ -163,28 +163,28 @@ def trata_param_pool(pools):
 
 def trata_param_vip(vips):
 
-    vips_to_create = list()
-    pool_to_create = list()
+    vips_filter = list()
+    pool_filter = list()
+    pool_filter_created = list()
 
-    log.info(vips['vips'][0]['vip_request'])
     for vip in vips['vips']:
         vip_request = vip.get('vip_request')
-        vip_to_create = dict()
+        vip_filter = dict()
         ports = vip_request.get('ports')
         for port in ports:
 
             address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-            vip_to_create['pool'] = list()
-            vip_to_create['name'] = '%s_%s' % (vip_request['name'], port['port'])
-            vip_to_create['address'] = address
-            vip_to_create['port'] = port['port']
-            vip_to_create['optionsvip'] = vip_request['options']
-            vip_to_create['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
-            vip_to_create['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+            vip_filter['pool'] = list()
+            vip_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
+            vip_filter['address'] = address
+            vip_filter['port'] = port['port']
+            vip_filter['optionsvip'] = vip_request['options']
+            vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
+            vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
 
             conf = vip_request['conf']['conf']
-            vip_to_create['optionsvip_extended'] = conf['optionsvip_extended']
+            vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
             pools = port.get('pools')
             for pool in pools:
                 if not pool.get('l7_rule') in ['', 'default']:
@@ -192,13 +192,21 @@ def trata_param_vip(vips):
 
                 server_pool = pool.get('server_pool')
                 if not server_pool.get('pool_created'):
-                    pool_to_create.append(server_pool)
+                    pool_filter.append(server_pool)
+                else:
+                    pool_filter_created.append(server_pool)
 
-                vip_to_create['pool'].append(server_pool['identifier'])
+                vip_filter['pool'].append(server_pool['identifier'])
 
-        vips_to_create.append(vip_to_create)
+        vips_filter.append(vip_filter)
 
-    return vips_to_create, pool_to_create
+    res_fil = {
+        'vips_filter': vips_filter,
+        'pool_filter': pool_filter,
+        'pool_filter_created': pool_filter_created
+    }
+
+    return res_fil
 
 
 def search_dict(mylist, lookup):

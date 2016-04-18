@@ -103,7 +103,7 @@ def run2():
                 if mp.get('trafficreturn'):
                     trafficreturn = mp['trafficreturn']
                 else:
-                    trafficreturn = 'Normal'
+                    trafficreturn = 12
 
                 try:
                     op = OptionVip.objects.filter(tipo_opcao=u'Retorno de trafego', id=trafficreturn)[0]
