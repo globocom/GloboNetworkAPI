@@ -28,12 +28,14 @@ from networkapi.exception import InvalidValueError
 from networkapi.requisicaovips.models import RequisicaoVips,\
     RequisicaoVipsNotFoundError, ServerPool, InvalidHealthcheckValueError, DsrL3_to_Vip
 from django.core.exceptions import ObjectDoesNotExist
+from networkapi.util.decorators import deprecated
 
 
 class RequestVipGetByIdResource(RestResource):
 
     log = logging.getLogger('RequestVipGetByIdResource')
 
+    @deprecated(new_uri='vip/request/get/<id>/')
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find all Vip Requests by id.
 

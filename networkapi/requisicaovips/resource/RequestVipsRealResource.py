@@ -41,12 +41,14 @@ from networkapi.distributedlock import distributedlock, LOCK_VIP_IP_EQUIP
 from django.db.utils import IntegrityError
 from networkapi.requisicaovips.models import ServerPoolMember
 from django.db import transaction
+from networkapi.util.decorators import deprecated
 
 
 class RequestVipsRealResource(RestResource):
 
     log = logging.getLogger('RequestVipsRealResource')
 
+    @deprecated(new_uri='api/pool/check_status|save/')
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to Add/Del/Enable/Disable/Check  requestIP - Real.
 
@@ -131,6 +133,7 @@ URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             else:
                 return self.response_error(1)
 
+    @deprecated(new_uri='api/pool/check_status|save/')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to Enable/Disable/ request VIP - Real.
 URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
@@ -182,6 +185,7 @@ URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
         except (RequisicaoVipsError, EquipamentoError, IpError, GrupoError):
             return self.response_error(1)
 
+    @deprecated(new_uri='api/pool/check_status|save/')
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests POST to Del request VIP - Real.
 

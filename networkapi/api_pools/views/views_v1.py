@@ -595,6 +595,7 @@ def disable(request):
 @commit_on_success
 def get_opcoes_pool_by_ambiente(request):
     try:
+        log.info("get_opcoes_pool_by_ambiente")
 
         id_ambiente = request.DATA.get('id_environment')
 
