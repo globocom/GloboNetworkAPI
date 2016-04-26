@@ -79,6 +79,8 @@ class RemoveVipResource(RestResource):
                     u'Parameter id_vip is invalid. Value: %s.', vip_id)
                 raise InvalidValueError(None, 'id_vip', vip_id)
 
+            map = dict()
+
             # Vip must exists in database
             vip = RequisicaoVips.get_by_pk(vip_id)
 
@@ -136,7 +138,7 @@ class RemoveVipResource(RestResource):
                             server_pool.pool_created = 0
                             server_pool.save()
 
-                        map = dict()
+
                         map['sucesso'] = success_map
 
                 else:

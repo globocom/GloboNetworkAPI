@@ -6,7 +6,7 @@ from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedExceptio
     UpdateEnvironmentServerPoolMemberException, ScriptAlterLimitPoolException, ScriptAlterLimitPoolDiffMembersException, \
     ScriptCreatePoolException, ScriptAlterServiceDownActionException, InvalidRealPoolException, \
     ScriptAlterPriorityPoolMembersException
-from networkapi.api_pools.facade import *
+from networkapi.api_pools.facade.facade_v1 import *
 from networkapi.api_pools.models import OptionPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ip.models import Ip, Ipv6
