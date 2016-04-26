@@ -245,17 +245,18 @@ def create_real_vip_request(vip_requests):
 
     load_balance = dict()
 
-    for vip in vip_requests:
-        vip_request = vip.copy()
+    for vip_request in vip_requests:
 
-        equips, conf, cluster_unit = _validate_vip_to_apply(vip)
+        id_vip = str(vip_request['id'])
 
-        conf = json.loads(conf)
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request)
 
-        cache_group = OptionVip.objects.get(id=vip['options']['cache_group'])
-        traffic_return = OptionVip.objects.get(id=vip['options']['traffic_return'])
-        timeout = OptionVip.objects.get(id=vip['options']['timeout'])
-        persistence = OptionVip.objects.get(id=vip['options']['persistence'])
+        cache_group = OptionVip.objects.get(id=vip_request['options'].get('cache_group'))
+        traffic_return = OptionVip.objects.get(id=vip_request['options'].get('traffic_return'))
+        timeout = OptionVip.objects.get(id=vip_request['options'].get('timeout'))
+        persistence = OptionVip.objects.get(id=vip_request['options'].get('persistence'))
+        if conf:
+            conf = json.loads(conf)
 
         vip_request['options'] = dict()
         vip_request['options']['cache_group'] = {
@@ -275,7 +276,7 @@ def create_real_vip_request(vip_requests):
             'nome_opcao_txt': persistence.nome_opcao_txt
         }
 
-        for idx, port in enumerate(vip['ports']):
+        for idx, port in enumerate(vip_request['ports']):
             for i, pl in enumerate(port['pools']):
 
                 pool = get_pool_by_id(pl['server_pool'])
@@ -283,7 +284,24 @@ def create_real_vip_request(vip_requests):
 
                 l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
 
-                vip_request['ports'][idx]['pools'][i]['server_pool'] = pool_serializer.data
+                vip_request['ports'][idx]['pools'][i]['server_pool'] = {
+                    'id': pool_serializer.data['id'],
+                    'nome': pool_serializer.data['identifier'],
+                    'lb_method': pool_serializer.data['lb_method'],
+                    'healthcheck': pool_serializer.data['healthcheck'],
+                    'action': pool_serializer.data['servicedownaction']['name'],
+                    'pool_created': pool_serializer.data['pool_created'],
+                    'pools_members': [{
+                        'id': pool_member['id'],
+                        'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
+                        'port': pool_member['port_real'],
+                        'member_status': pool_member['member_status'],
+                        'limit': pool_member['limit'],
+                        'priority': pool_member['priority'],
+                        'weight': pool_member['weight']
+                    } for pool_member in pool_serializer.data['server_pool_members']]
+                }
+
                 vip_request['ports'][idx]['pools'][i]['l7_rule'] = l7_rule
 
             l7_protocol = OptionVip.objects.get(id=port['options']['l7_protocol'])
@@ -302,7 +320,7 @@ def create_real_vip_request(vip_requests):
         vip_request['conf'] = conf
 
         if conf:
-            for layer in conf['conf']['layers']:
+            for idx, layer in enumerate(conf['conf']['layers']):
                 requiments = layer.get('requiments')
                 if requiments:
                     for requiment in requiments:
@@ -350,11 +368,20 @@ def create_real_vip_request(vip_requests):
                                                 'user': equipment_access.user,
                                                 'password': equipment_access.password,
                                                 'vips': [],
+                                                'layers': {},
                                             }
 
-                                        load_balance[eqpt_id]['vips'].append({
-                                            'definitions': definitions
-                                        })
+                                        idx_layer = str(idx)
+                                        if load_balance[eqpt_id]['layers'].get(id_vip):
+                                            if load_balance[eqpt_id]['layers'][id_vip].get(idx_layer):
+                                                    load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'] += definitions
+                                            else:
+                                                load_balance[eqpt_id]['layers'][id_vip][idx_layer] = {
+                                                    'vip_request': vip_request,
+                                                    'definitions': definitions
+                                                }
+                                        else:
+                                            load_balance[eqpt_id]['layers'][id_vip] = dict()
 
         for e in equips:
             eqpt_id = str(e.id)
@@ -373,12 +400,12 @@ def create_real_vip_request(vip_requests):
                     'user': equipment_access.user,
                     'password': equipment_access.password,
                     'vips': [],
+                    'layers': {},
                 }
 
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
-        log.info(load_balance[lb])
         load_balance[lb]['plugin'].create_vip(load_balance[lb])
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
@@ -427,7 +454,24 @@ def delete_real_vip_request(vip_requests):
 
                 l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
 
-                vip_request['ports'][idx]['pools'][i]['server_pool'] = pool_serializer.data
+                vip_request['ports'][idx]['pools'][i]['server_pool'] = {
+                    'id': pool_serializer.data['id'],
+                    'nome': pool_serializer.data['identifier'],
+                    'lb_method': pool_serializer.data['lb_method'],
+                    'healthcheck': pool_serializer.data['healthcheck'],
+                    'action': pool_serializer.data['servicedownaction']['name'],
+                    'pool_created': pool_serializer.data['pool_created'],
+                    'pools_members': [{
+                        'id': pool_member['id'],
+                        'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
+                        'port': pool_member['port_real'],
+                        'member_status': pool_member['member_status'],
+                        'limit': pool_member['limit'],
+                        'priority': pool_member['priority'],
+                        'weight': pool_member['weight']
+                    } for pool_member in pool_serializer.data['server_pool_members']]
+                }
+
                 vip_request['ports'][idx]['pools'][i]['l7_rule'] = l7_rule
 
             l7_protocol = OptionVip.objects.get(id=port['options']['l7_protocol'])
@@ -522,11 +566,10 @@ def delete_real_vip_request(vip_requests):
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
-        log.info(load_balance[lb])
         load_balance[lb]['plugin'].delete_vip(load_balance[lb])
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
-    models.VipRequest.objects.filter(id__in=ids).delete()
+    models.VipRequest.objects.filter(id__in=ids).update(created=False)
 
 
 #############

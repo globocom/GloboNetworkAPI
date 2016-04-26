@@ -99,14 +99,12 @@ def delete_real_pool(pools):
     for pool in pools:
 
         equips = _validate_pool_members_to_apply(pool)
-
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
                 equipamento=e.id,
                 protocolo=protocolo_access
             ).uniqueResult()
-
             plugin = PluginFactory.factory(e)
 
             if not load_balance.get(eqpt_id):
@@ -137,6 +135,7 @@ def delete_real_pool(pools):
 
             })
 
+    log.info(load_balance)
     for lb in load_balance:
         load_balance[lb]['plugin'].delete_pool(load_balance[lb])
 

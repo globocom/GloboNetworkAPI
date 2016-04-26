@@ -20,10 +20,12 @@ class Lb(object):
                 username=username,
                 password=password
             )
+
         except Exception, e:
             logging.critical("Unable to connect to BIG-IP. Details: %s" % (e))
             raise base_exceptions.CommandErrorException(e)
         else:
+            log.info('eqpt connected hostname:%s-username:%s-password:%s' % (hostname, username, password))
             self._version = self._channel.System.SystemInfo.get_version()
             if self._version[8:len(self._version)].split('.')[0] <= 10:
                 raise base_exceptions.UnsupportedVersion(

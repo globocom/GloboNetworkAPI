@@ -38,13 +38,10 @@ class Generic(BasePlugin):
         if tratado['pool_filter']:
             self.__create_pool({'pools': tratado['pool_filter']})
         try:
-            self._lb._channel.System.Session.start_transaction()
             vts = virtualserver.VirtualServer(self._lb)
             vts.create(vips=tratado['vips_filter'])
         except Exception, e:
             raise base_exceptions.CommandErrorException(e)
-        else:
-            self._lb._channel.System.Session.submit_transaction()
 
     #######################################
     # POOLMEMBER
@@ -200,8 +197,6 @@ class Generic(BasePlugin):
 
         try:
             self._lb._channel.System.Session.start_transaction()
-
-            pl.remove_monitor_association(names=pls['pools_names'])
 
             pl.set_monitor_association(monitor_associations=monitor_associations)
 

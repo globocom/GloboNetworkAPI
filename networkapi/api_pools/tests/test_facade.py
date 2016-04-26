@@ -467,7 +467,7 @@ class PoolFacadeTestCase(unittest.TestCase):
         return patch("networkapi.requisicaovips.models.ServerPool.save").start()
 
     def mock_exec_script(self, script_output):
-        exec_script_mock = patch('networkapi.api_pools.facade.exec_script').start()
+        exec_script_mock = patch('networkapi.api_pools.facade.facade_v1.exec_script').start()
         exec_script_mock.return_value = (script_output, None, None)
         return exec_script_mock
 

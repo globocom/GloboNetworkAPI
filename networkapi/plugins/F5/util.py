@@ -7,12 +7,18 @@ from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
 from networkapi.util import is_healthcheck_valid
 
-
 log = logging.getLogger(__name__)
+
 
 ########################################
 # Decorators
 ########################################
+def logger(func):
+    def inner(self, *args, **kwargs):
+        log.info('%s.%s' % (self.__class__.__name__, func.__name__))
+        return func(self, *args, **kwargs)
+
+    return inner
 
 
 def transation(func):
@@ -164,44 +170,87 @@ def trata_param_pool(pools):
 def trata_param_vip(vips):
 
     vips_filter = list()
+    vips_cache_filter = list()
     pool_filter = list()
     pool_filter_created = list()
 
     for vip in vips['vips']:
-        vip_request = vip.get('vip_request')
-        vip_filter = dict()
-        ports = vip_request.get('ports')
-        for port in ports:
 
-            address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+        if vip.get('vip_request'):
+            vip_request = vip.get('vip_request')
+            vip_filter = dict()
+            ports = vip_request.get('ports')
+            for port in ports:
 
-            vip_filter['pool'] = list()
-            vip_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
-            vip_filter['address'] = address
-            vip_filter['port'] = port['port']
-            vip_filter['optionsvip'] = vip_request['options']
-            vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
-            vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+                address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-            conf = vip_request['conf']['conf']
-            vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
-            pools = port.get('pools')
-            for pool in pools:
-                if not pool.get('l7_rule') in ['', 'default']:
-                    raise NotImplementedError()
+                vip_filter['pool'] = list()
+                vip_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
+                vip_filter['address'] = address
+                vip_filter['port'] = port['port']
+                vip_filter['optionsvip'] = vip_request['options']
+                vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
+                vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
+                vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
 
-                server_pool = pool.get('server_pool')
-                if not server_pool.get('pool_created'):
-                    pool_filter.append(server_pool)
-                else:
-                    pool_filter_created.append(server_pool)
+                conf = vip_request['conf']['conf']
+                vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
+                pools = port.get('pools')
+                for pool in pools:
+                    if not pool.get('l7_rule') in ['(nenhum)', 'default']:
+                        raise NotImplementedError()
 
-                vip_filter['pool'].append(server_pool['identifier'])
+                    server_pool = pool.get('server_pool')
+                    if not server_pool.get('pool_created'):
+                        pool_filter.append(server_pool)
+                    else:
+                        pool_filter_created.append(server_pool)
 
-        vips_filter.append(vip_filter)
+                    vip_filter['pool'].append(server_pool['nome'])
+
+            vips_filter.append(vip_filter)
+
+        elif vip.get('layers'):
+            for vip_id in vip.get('layers'):
+                for id_layer in vip.get('layers').get(vip_id):
+                    definitions = vip.get('layers').get(vip_id).get(id_layer).get('definitions')
+                    vip_request = vip.get('layers').get(vip_id).get(id_layer).get('vip_request')
+
+                    vip_cache_filter = dict()
+                    ports = vip_request.get('ports')
+                    for port in ports:
+
+                        address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+
+                        vip_cache_filter['pool'] = list()
+                        vip_cache_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
+                        vip_cache_filter['address'] = address
+                        vip_cache_filter['port'] = port['port']
+                        for definition in definitions:
+                            if definition.get('type') == 'pool':
+                                vip_cache_filter['pool'] = [definition.get('value')]
+                            if definition.get('type') == 'rule':
+                                vip_cache_filter['rule'] = [definition.get('value')]
+                            if definition.get('type') == 'profile':
+                                vip_cache_filter['optionsvip_extended'] = [{
+                                    "requiments": [{
+                                        "condicionals": [{
+                                            "validations": [],
+                                            "use":[
+                                                definition
+                                            ]
+                                        }]
+                                    }]
+                                }]
+                            if definition.get('type') == 'traffic_group':
+                                vip_cache_filter['optionsvip'] = {
+                                    'traffic_group': definition.get('value')
+                                }
+                    vips_cache_filter.append(vip_cache_filter)
 
     res_fil = {
         'vips_filter': vips_filter,
+        'vips_cache_filter': vips_cache_filter,
         'pool_filter': pool_filter,
         'pool_filter_created': pool_filter_created
     }
