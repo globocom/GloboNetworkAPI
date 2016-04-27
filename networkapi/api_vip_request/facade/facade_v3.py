@@ -4,7 +4,7 @@ import logging
 
 from django.db.models import Q
 
-from networkapi.ambiente.models import Ambiente, EnvironmentVip
+from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools.facade import get_pool_by_id
@@ -599,8 +599,7 @@ def destroy_lock(locks_list):
 def validate_save(vip_request, permit_created=False):
 
     has_identifier = models.VipRequest.objects.filter(
-        environmentvip__environmentenvironmentvip__environment__in=Ambiente.objects.filter(
-            environmentenvironmentvip__environment_vip=vip_request['environmentvip'])
+        environment_vip=vip_request['environmentvip']
     )
 
     # validate ipv4
@@ -608,7 +607,7 @@ def validate_save(vip_request, permit_created=False):
         has_identifier = has_identifier.filter(ipv4=vip_request['ipv4']['id'])
 
         vips = EnvironmentVip.objects.filter(
-            environmentenvironmentvip__environment__vlan__networkipv4__ip=vip_request['ipv4']['id']
+            networkipv4__ip=vip_request['ipv4']['id']
         ).filter(
             id=vip_request['environmentvip']
         )
@@ -619,7 +618,7 @@ def validate_save(vip_request, permit_created=False):
     if vip_request['ipv6']:
         has_identifier = has_identifier.filter(ipv6=vip_request['ipv6']['id'])
         vips = EnvironmentVip.objects.filter(
-            environmentenvironmentvip__environment__vlan__networkipv6__ipv6=vip_request['ipv6']['id']
+            networkipv6__ipv6=vip_request['ipv6']['id']
         ).filter(
             id=vip_request['environmentvip']
         )
@@ -751,9 +750,15 @@ def _validate_vip_to_apply(vip_request, update=False):
         raise exceptions.VipRequestNotCreated(vip.id)
 
     equips = Equipamento.objects.filter(
+        equipamentoambiente__ambiente__vlan__networkipv4__ambient_vip__id=vip_request['environmentvip'],
         maintenance=0,
-        equipamentoambiente__ambiente__environmentenvironmentvip__environment_vip__id=vip_request['environmentvip'],
         tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
+
+    # not implemented yet
+    # equips = Equipamento.objects.filter(
+    #     equipamentoambiente__ambiente__vlan__networkipv6__ambient_vip__id=vip_request['environmentvip'],
+    #     maintenance=0,
+    #     tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 
