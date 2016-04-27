@@ -26,12 +26,14 @@ import logging
 from networkapi.util import is_valid_int_greater_zero_param, is_valid_int_greater_equal_zero_param, clone
 from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.util.decorators import deprecated
 
 
 class RequestPriorityResource(RestResource):
 
     log = logging.getLogger('RequestPriorityResource')
 
+    @deprecated(new_uri='use pool features')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to change reals_priority list of VIP.
 

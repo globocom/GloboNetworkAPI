@@ -56,7 +56,7 @@ class PoolMemberStateView(APIView):
             server_pools = models_vips.ServerPool.objects.filter(
                 id__in=pool_ids)
 
-            serializer_server_pool = serializers.PoolV3SimpleSerializer(
+            serializer_server_pool = serializers.PoolV3Serializer(
                 server_pools,
                 many=True
             )
@@ -81,8 +81,8 @@ class PoolMemberStateView(APIView):
                             pm.save(request.user)
 
             data["server_pools"] = serializer_server_pool.data
-
             return Response(data)
+
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -213,7 +213,7 @@ class PoolDBView(APIView):
                     search = {}
 
                 pools = facade.get_pool_by_search(search)
-                pool_serializer = serializers.PoolV3Serializer(
+                pool_serializer = serializers.PoolV3DatatableSerializer(
                     pools['pools'],
                     many=True
                 )

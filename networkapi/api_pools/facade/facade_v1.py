@@ -17,29 +17,16 @@
 import logging
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import Q
-
 from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, EnvironmentVip
-from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
-from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.distributedlock import distributedlock, LOCK_POOL
-from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAmbiente
-from networkapi.error_message_utils import error_messages
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ip, Ipv6
-from networkapi.plugins.factory import PluginFactory
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.util import is_healthcheck_valid, is_valid_int_greater_zero_param, \
-    is_valid_list_int_greater_zero_param
-
-# from networkapi.ambiente.models import IP_VERSION
+from networkapi.util import is_healthcheck_valid, is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_p
 from networkapi.api_pools.models import OpcaoPoolAmbiente, OptionPool, OptionPoolEnvironment
 from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
     ScriptCreatePermission, ScriptAlterPermission
-from networkapi.api_pools.serializers import ServerPoolSerializer, HealthcheckSerializer, \
+from networkapi.api_pools.serializers.serializers_v1 import ServerPoolSerializer, HealthcheckSerializer, \
     ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
     VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, OptionPoolSerializer, OptionPoolEnvironmentSerializer
 from networkapi.api_rest import exceptions as api_exceptions
@@ -595,6 +595,7 @@ def disable(request):
 @commit_on_success
 def get_opcoes_pool_by_ambiente(request):
     try:
+        log.info("get_opcoes_pool_by_ambiente")
 
         id_ambiente = request.DATA.get('id_environment')
 

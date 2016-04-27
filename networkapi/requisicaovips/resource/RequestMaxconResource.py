@@ -46,12 +46,14 @@ from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param, \
     is_valid_int_greater_equal_zero_param, clone
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.util.decorators import deprecated
 
 
 class RequestMaxconResource(RestResource):
 
     log = logging.getLogger('RequestMaxconResource')
 
+    @deprecated(new_uri='use pool maxconn features')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat  requests PUT change limit connections to VIP.
 

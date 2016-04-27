@@ -16,7 +16,6 @@
 # limitations under the License.
 
 
-
 class CustomException(Exception):
 
     """Represents an error occurred validating a value."""
