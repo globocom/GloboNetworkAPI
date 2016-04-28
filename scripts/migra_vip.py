@@ -177,7 +177,7 @@ def run2():
 
                     # descobre protocolo l7 e l4
                     tipo_opcao = 'l7_rule'
-                    nome_opcao_txt = ''
+                    nome_opcao_txt = '(nenhum)'
                     if mp.get('healthcheck_type') == 'HTTP':
                         tipo_opcao = 'l7_rule'
                         nome_opcao_txt = 'default'

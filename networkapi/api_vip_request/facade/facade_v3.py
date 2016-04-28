@@ -275,6 +275,7 @@ def create_real_vip_request(vip_requests):
             'id': persistence.id,
             'nome_opcao_txt': persistence.nome_opcao_txt
         }
+        vip_request['options']['cluster_unit'] = cluster_unit
 
         for idx, port in enumerate(vip_request['ports']):
             for i, pl in enumerate(port['pools']):

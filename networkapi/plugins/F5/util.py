@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 # Decorators
 ########################################
 def logger(func):
+    @wraps(func)
     def inner(self, *args, **kwargs):
         log.info('%s.%s' % (self.__class__.__name__, func.__name__))
         return func(self, *args, **kwargs)
@@ -181,6 +182,7 @@ def trata_param_vip(vips):
             vip_filter = dict()
             ports = vip_request.get('ports')
             for port in ports:
+                conf = vip_request['conf']['conf']
 
                 address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
@@ -190,10 +192,15 @@ def trata_param_vip(vips):
                 vip_filter['port'] = port['port']
                 vip_filter['optionsvip'] = vip_request['options']
                 vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
-                vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
                 vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
 
-                conf = vip_request['conf']['conf']
+                try:
+                    keys = [key.keys()[0] for key in conf['keys']]
+                    pos = keys.index(port['options']['cluster_unit'])
+                    vip_filter['optionsvip']['traffic_group'] = conf['keys'][pos][port['options']['cluster_unit']]
+                except:
+                    vip_filter['optionsvip']['traffic_group'] = None
+                    pass
                 vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
                 pools = port.get('pools')
                 for pool in pools:
@@ -230,7 +237,7 @@ def trata_param_vip(vips):
                             if definition.get('type') == 'pool':
                                 vip_cache_filter['pool'] = [definition.get('value')]
                             if definition.get('type') == 'rule':
-                                vip_cache_filter['rule'] = [definition.get('value')]
+                                vip_cache_filter['rules'] = [definition.get('value')]
                             if definition.get('type') == 'profile':
                                 vip_cache_filter['optionsvip_extended'] = [{
                                     "requiments": [{
@@ -255,6 +262,7 @@ def trata_param_vip(vips):
         'pool_filter_created': pool_filter_created
     }
 
+    log.info(res_fil)
     return res_fil
 
 

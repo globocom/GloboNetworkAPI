@@ -41,6 +41,19 @@ class Generic(BasePlugin):
             vts = virtualserver.VirtualServer(self._lb)
             vts.create(vips=tratado['vips_filter'])
         except Exception, e:
+            self.__delete_pool({'pools': tratado['pool_filter']})
+            raise base_exceptions.CommandErrorException(e)
+
+    @util.connection
+    def update_vip(self, vips):
+        tratado = util.trata_param_vip(vips)
+
+        if tratado['pool_filter']:
+            self.__create_pool({'pools': tratado['pool_filter']})
+        try:
+            vts = virtualserver.VirtualServer(self._lb)
+            vts.update(vips=tratado['vips_filter'])
+        except Exception, e:
             raise base_exceptions.CommandErrorException(e)
 
     #######################################
