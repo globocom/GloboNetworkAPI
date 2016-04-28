@@ -16,7 +16,7 @@ ALTER TABLE `vip_request`
 ADD COLUMN `port` INT(5) UNSIGNED NOT NULL COMMENT '';
 
 ALTER TABLE `redeipv4` 
-DROP COLUMN `cluster_unit`;ED NOT NULL COMMENT '';
+DROP COLUMN `cluster_unit`;
 
 ALTER TABLE `redeipv6` 
 DROP COLUMN `cluster_unit`;
