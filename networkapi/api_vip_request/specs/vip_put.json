@@ -20,11 +20,9 @@
         },
         "ip_formated": {
           "type": "string",
-          "oneOf": [
-            {
-              "format": "ipv4"
-            }
-          ]
+          "oneOf": [{
+            "format": "ipv4"
+          }]
         }
       }
     },
@@ -41,11 +39,9 @@
         },
         "ip_formated": {
           "type": "string",
-          "oneOf": [
-            {
-              "format": "ipv6"
-            }
-          ]
+          "oneOf": [{
+            "format": "ipv6"
+          }]
         }
       }
     }
@@ -71,33 +67,59 @@
           "environmentvip": {
             "type": "integer"
           },
-          "port": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 65535
-              },
-              {
-                "type": "null"
+          "ports": {
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "l4_protocol": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "l7_protocol": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
               }
-            ]
+            },
+            "pools": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "server_pool": {
+                    "type": "integer"
+                  },
+                  "l7_rule": {
+                    "type": "integer"
+                  },
+                  "l7_value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "server_pool",
+                  "l7_rule",
+                  "l7_value"
+                ],
+                "additionalProperties": false
+              }
+            }
           },
           "options": {
             "type": "object",
             "properties": {
-              "l4_protocol": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              },
-              "l7_protocol": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              },
               "timeout": {
                 "type": [
                   "integer",
@@ -124,57 +146,19 @@
               }
             }
           },
-          "pools": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "server_pool": {
-                  "type": "integer"
-                },
-                "port": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 65535
-                },
-                "l7_rule": {
-                  "type": "integer"
-                },
-                "l7_value": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              },
-              "required": [
-                "server_pool",
-                "port",
-                "l7_rule",
-                "l7_value"
-              ],
-              "additionalProperties": false
-            }
-          },
           "ipv6": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/definitions/ipv6"
-              }
-            ]
+            "oneOf": [{
+              "type": "null"
+            }, {
+              "$ref": "#/definitions/ipv6"
+            }]
           },
           "ipv4": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/definitions/ipv4"
-              }
-            ]
+            "oneOf": [{
+              "type": "null"
+            }, {
+              "$ref": "#/definitions/ipv4"
+            }]
           }
         }
       }

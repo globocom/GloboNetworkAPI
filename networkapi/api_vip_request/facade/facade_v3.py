@@ -600,7 +600,7 @@ def destroy_lock(locks_list):
 def validate_save(vip_request, permit_created=False):
 
     has_identifier = models.VipRequest.objects.filter(
-        environment_vip=vip_request['environmentvip']
+        environmentvip=vip_request['environmentvip']
     )
 
     # validate ipv4
