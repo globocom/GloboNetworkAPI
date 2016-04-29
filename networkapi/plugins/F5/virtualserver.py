@@ -99,7 +99,7 @@ class VirtualServer(F5Base):
            # vip_rules['rules'].append(vip_request['rules'])
 
             if vip_request['optionsvip']['traffic_group']:
-                vip_traffic_groups['virtual_addresses'].append(vip_request['name'])
+                vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
 
         self._lb._channel.System.Session.start_transaction()
@@ -133,6 +133,103 @@ class VirtualServer(F5Base):
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
+
+    @logger
+    def update(self, **kwargs):
+        virtual_servers = [vip_request['name'] for vip_request in kwargs['vips']]
+
+        tcp = ProfileTCP(self._lb)
+        http = ProfileHttp(self._lb)
+        fastl4 = ProfileFastL4(self._lb)
+        udp = ProfileUDP(self._lb)
+        profiles_list = tcp.get_list() + http.get_list() + fastl4.get_list() + udp.get_list()
+        current_profiles = self.__get_profile(virtual_servers=virtual_servers)
+
+        profiles_to_delete = {
+            'virtual_servers': list(),
+            'profiles': list()
+        }
+
+        profiles_to_insert = {
+            'virtual_servers': list(),
+            'profiles': list()
+        }
+
+        resources = {
+            'virtual_servers': list(),
+            'pool': list()
+        }
+
+        vip_rules = {
+            'virtual_servers': list(),
+            'rules': list()
+        }
+
+        vip_traffic_groups = {
+            'virtual_addresses': list(),
+            'traffic_groups': list()
+        }
+
+        for idx, vip_request in enumerate(kwargs['vips']):
+
+            self.__prepare_properties(vip_request, profiles_list)
+
+            old_profiles = list()
+
+            current_profiles[idx] = [{
+                'profile_context': profile['profile_context'],
+                'profile_name':profile['profile_name']
+            } for profile in current_profiles[idx]]
+
+            for profile in current_profiles[idx]:
+                if profile not in self.__properties['profiles'][idx] and profile:
+                    old_profiles.append(profile)
+            if old_profiles:
+                profiles_to_delete['virtual_servers'].append(vip_request['name'])
+                profiles_to_delete['profiles'].append(old_profiles)
+
+            new_profiles = list()
+            for profile in self.__properties['profiles'][idx]:
+                if profile not in current_profiles[idx]:
+                    new_profiles.append(profile)
+            if new_profiles:
+                profiles_to_insert['virtual_servers'].append(vip_request['name'])
+                profiles_to_insert['profiles'].append(old_profiles)
+
+            resources['pool'].append(vip_request['pool'])
+
+            # vip_rules['rules'].append(vip_request['rules'])
+
+            if vip_request['optionsvip']['traffic_group']:
+                vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
+                vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
+
+        log.info(profiles_to_delete)
+        self.__remove_profile(profiles_to_delete)
+        self.__remove_all_persistence_profiles(virtual_servers)
+        self.__remove_all_rule(virtual_servers)
+
+        self.__profiles_timeout_create(
+            profiles_timeout_tcp=self.__properties['profiles_timeout_tcp'],
+            profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
+            profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
+
+        self.__add_profile(profiles_to_insert)
+
+        resources['virtual_servers'] = virtual_servers
+        vip_rules['virtual_servers'] = virtual_servers
+        # self.__add_rule(vip_rules)
+        self.__set_default_pool_name(resources)
+        self.__set_traffic_group(vip_traffic_groups)
+
+        self.__set_snat(
+            vip_snat_pool=self.__properties['vip_snat_pool'],
+            vip_snat_auto=self.__properties['vip_snat_auto'],
+            vip_snat_none=self.__properties['vip_snat_none'])
+
+        self.__add_persistence_profile(self.__properties['profiles_persistence'])
+
+        self.__set_translate_port_state(self.__properties['translate_port_state'])
 
     @logger
     def __set_snat(self, **kwargs):
@@ -170,6 +267,7 @@ class VirtualServer(F5Base):
 
     @logger
     def __add_persistence_profile(self, profiles_persistence):
+        log.info(profiles_persistence)
         if profiles_persistence['virtual_servers']:
             self._lb._channel.LocalLB.VirtualServer.add_persistence_profile(
                 virtual_servers=profiles_persistence['virtual_servers'],
@@ -178,10 +276,11 @@ class VirtualServer(F5Base):
 
     @logger
     def __set_traffic_group(self, traffic_groups):
-        self._lb._channel.LocalLB.VirtualAddressV2.set_traffic_group(
-            virtual_addresses=traffic_groups['virtual_addresses'],
-            traffic_groups=traffic_groups['traffic_groups']
-        )
+        if traffic_groups['virtual_addresses']:
+            self._lb._channel.LocalLB.VirtualAddressV2.set_traffic_group(
+                virtual_addresses=traffic_groups['virtual_addresses'],
+                traffic_groups=traffic_groups['traffic_groups']
+            )
 
     @logger
     def __set_translate_port_state(self, translate_port_state):
@@ -257,11 +356,11 @@ class VirtualServer(F5Base):
         version_split = self._lb._version[8:len(self._lb._version)].split('.')
         # old version
         if version_split[0] == '11' and int(version_split[1]) <= 2:
-            self._lb._channel.LocalLB.VirtualServer.remove_all_rule(
+            self._lb._channel.LocalLB.VirtualServer.remove_all_rules(
                 virtual_servers=virtual_servers
             )
         else:
-            self._lb._channel.LocalLB.VirtualServer.remove_all_related_rule(
+            self._lb._channel.LocalLB.VirtualServer.remove_all_related_rules(
                 virtual_servers=virtual_servers
             )
 
@@ -275,10 +374,11 @@ class VirtualServer(F5Base):
 
     @logger
     def __remove_profile(self, profiles):
-        self._lb._channel.LocalLB.VirtualServer.remove_profile(
-            virtual_servers=profiles['virtual_servers'],
-            profiles=profiles['profiles']
-        )
+        if profiles['virtual_servers']:
+            self._lb._channel.LocalLB.VirtualServer.remove_profile(
+                virtual_servers=profiles['virtual_servers'],
+                profiles=profiles['profiles']
+            )
 
     @logger
     def __add_profile(self, kwargs):
@@ -294,96 +394,6 @@ class VirtualServer(F5Base):
         self._lb._channel.LocalLB.VirtualServer.remove_all_persistence_profiles(
             virtual_servers=virtual_servers
         )
-
-    @logger
-    def update(self, kwargs):
-        virtual_servers = [vip_request['name'] for vip_request in kwargs['vips']]
-
-        tcp = ProfileTCP(self._lb)
-        http = ProfileHttp(self._lb)
-        fastl4 = ProfileFastL4(self._lb)
-        udp = ProfileUDP(self._lb)
-        profiles_list = tcp.get_list() + http.get_list() + fastl4.get_list() + udp.get_list()
-        current_profiles = self.__get_profile(virtual_servers=virtual_servers)
-
-        profiles_to_delete = {
-            'virtual_servers': list(),
-            'profiles': list()
-        }
-
-        profiles_to_insert = {
-            'virtual_servers': list(),
-            'profiles': list()
-        }
-
-        resources = {
-            'virtual_servers': list(),
-            'pool': list()
-        }
-
-        vip_rules = {
-            'virtual_servers': list(),
-            'rules': list()
-        }
-
-        vip_traffic_groups = {
-            'virtual_addresses': list(),
-            'traffic_groups': list()
-        }
-
-        for idx, vip_request in enumerate(kwargs['vips']):
-
-            self.__prepare_properties(vip_request, profiles_list)
-
-            old_profiles = list()
-            for profile in current_profiles[idx]:
-                if profile not in self.__properties['profiles'][idx]:
-                    old_profiles.append(profile)
-            if old_profiles:
-                profiles_to_delete['virtual_servers'].append(vip_request['name'])
-                profiles_to_delete['profiles'].append(old_profiles)
-
-            new_profiles = list()
-            for profile in self.__properties['profiles'][idx]:
-                if profile not in current_profiles[idx]:
-                    new_profiles.append(profile)
-            if new_profiles:
-                profiles_to_insert['virtual_servers'].append(vip_request['name'])
-                profiles_to_insert['profiles'].append(old_profiles)
-
-            resources['pool'].append(vip_request['pool'])
-
-            vip_rules['rules'].append(vip_request['rules'])
-
-            if vip_request['optionsvip']['traffic_group']:
-                vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
-                vip_traffic_groups['virtual_addresses'].append(vip_request['name'])
-
-        self.__remove_profile(profiles_to_delete)
-        self.__remove_all_persistence_profiles(virtual_servers)
-        self.__remove_all_rule(virtual_servers)
-
-        self.__profiles_timeout_create(
-            profiles_timeout_tcp=self.__properties['profiles_timeout_tcp'],
-            profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
-            profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
-
-        self.__add_profile(profiles_to_insert)
-
-        resources['virtual_servers'] = virtual_servers
-        vip_rules['virtual_servers'] = virtual_servers
-        self.__add_rule(vip_rules)
-        self.__set_default_pool_name(resources)
-        self.__set_traffic_group(vip_traffic_groups)
-
-        self.__set_snat(
-            vip_snat_pool=self.__properties['vip_snat_pool'],
-            vip_snat_auto=self.__properties['vip_snat_auto'],
-            vip_snat_none=self.__properties['vip_snat_none'])
-
-        self.__add_persistence_profile(self.__properties['profiles_persistence'])
-
-        self.__set_translate_port_state(self.__properties['translate_port_state'])
 
     def __prepare_properties(self, vip_request, profiles_list):
 
@@ -440,8 +450,8 @@ class VirtualServer(F5Base):
                                             raise Exception(u'Profile %s nao existe')
                                         pass
                                     profiles.append({
-                                        'profile_context': 'PROFILE_CONTEXT_TYPE_ALL',
-                                        'profile_name': profile_name
+                                        'profile_name': profile_name,
+                                        'profile_context': 'PROFILE_CONTEXT_TYPE_ALL'
                                     })
 
                                 elif item.get('type') == 'snat':
@@ -455,10 +465,10 @@ class VirtualServer(F5Base):
 
                                 elif item.get('type') == 'persistence':
                                     if item.get('value'):
-                                        profile = {
+                                        profile = [{
                                             'profile_name': item.get('value'),
                                             'default_profile': 1
-                                        }
+                                        }]
                                         self.__properties['profiles_persistence']['virtual_servers'].append(vip_request['name'])
                                         self.__properties['profiles_persistence']['profiles'].append(profile)
 

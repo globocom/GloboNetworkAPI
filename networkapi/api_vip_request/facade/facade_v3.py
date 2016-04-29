@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import copy
 import json
 import logging
 
@@ -15,7 +16,7 @@ from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.plugins.factory import PluginFactory
-from networkapi.requisicaovips.models import OptionVip, ServerPoolMember
+from networkapi.requisicaovips.models import OptionVip, ServerPool, ServerPoolMember
 from networkapi.util import valid_expression
 
 
@@ -36,8 +37,6 @@ def create_vip_request(vip_request):
     """
     Create Vip Request
     """
-    validate_save(vip_request)
-
     vip = models.VipRequest()
     vip.name = vip_request['name']
     vip.service = vip_request['service']
@@ -59,7 +58,6 @@ def update_vip_request(vip_request):
     """
     update Vip Request
     """
-    validate_save(vip_request)
 
     vip = models.VipRequest.objects.get(
         id=vip_request.get('id')
@@ -129,6 +127,7 @@ def _create_port(ports, vip_request_id):
 
 def _update_port(ports, vip_request_id):
     """Update ports"""
+
     for port in ports:
         # save port
         try:
@@ -375,7 +374,7 @@ def create_real_vip_request(vip_requests):
                                         idx_layer = str(idx)
                                         if load_balance[eqpt_id]['layers'].get(id_vip):
                                             if load_balance[eqpt_id]['layers'][id_vip].get(idx_layer):
-                                                    load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'] += definitions
+                                                load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'] += definitions
                                             else:
                                                 load_balance[eqpt_id]['layers'][id_vip][idx_layer] = {
                                                     'vip_request': vip_request,
@@ -411,6 +410,183 @@ def create_real_vip_request(vip_requests):
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=True)
+    ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(created=True)
+
+
+def update_real_vip_request(vip_requests):
+
+    load_balance = dict()
+
+    for vip_request in vip_requests:
+
+        vip_receive = copy.deepcopy(vip_request)
+
+        validate_save(vip_request, True)
+
+        id_vip = str(vip_request['id'])
+
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request, True)
+
+        cache_group = OptionVip.objects.get(id=vip_request['options'].get('cache_group'))
+        traffic_return = OptionVip.objects.get(id=vip_request['options'].get('traffic_return'))
+        timeout = OptionVip.objects.get(id=vip_request['options'].get('timeout'))
+        persistence = OptionVip.objects.get(id=vip_request['options'].get('persistence'))
+        if conf:
+            conf = json.loads(conf)
+
+        vip_request['options'] = dict()
+        vip_request['options']['cache_group'] = {
+            'id': cache_group.id,
+            'nome_opcao_txt': cache_group.nome_opcao_txt
+        }
+        vip_request['options']['traffic_return'] = {
+            'id': traffic_return.id,
+            'nome_opcao_txt': traffic_return.nome_opcao_txt
+        }
+        vip_request['options']['timeout'] = {
+            'id': timeout.id,
+            'nome_opcao_txt': timeout.nome_opcao_txt
+        }
+        vip_request['options']['persistence'] = {
+            'id': persistence.id,
+            'nome_opcao_txt': persistence.nome_opcao_txt
+        }
+        vip_request['options']['cluster_unit'] = cluster_unit
+
+        for idx, port in enumerate(vip_request['ports']):
+            for i, pl in enumerate(port['pools']):
+
+                pool = get_pool_by_id(pl['server_pool'])
+                pool_serializer = PoolV3Serializer(pool)
+
+                l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
+
+                vip_request['ports'][idx]['pools'][i]['server_pool'] = {
+                    'id': pool_serializer.data['id'],
+                    'nome': pool_serializer.data['identifier'],
+                    'lb_method': pool_serializer.data['lb_method'],
+                    'healthcheck': pool_serializer.data['healthcheck'],
+                    'action': pool_serializer.data['servicedownaction']['name'],
+                    'pool_created': pool_serializer.data['pool_created'],
+                    'pools_members': [{
+                        'id': pool_member['id'],
+                        'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
+                        'port': pool_member['port_real'],
+                        'member_status': pool_member['member_status'],
+                        'limit': pool_member['limit'],
+                        'priority': pool_member['priority'],
+                        'weight': pool_member['weight']
+                    } for pool_member in pool_serializer.data['server_pool_members']]
+                }
+
+                vip_request['ports'][idx]['pools'][i]['l7_rule'] = l7_rule
+
+            l7_protocol = OptionVip.objects.get(id=port['options']['l7_protocol'])
+            l4_protocol = OptionVip.objects.get(id=port['options']['l4_protocol'])
+
+            vip_request['ports'][idx]['options'] = dict()
+            vip_request['ports'][idx]['options']['l7_protocol'] = {
+                'id': l7_protocol.id,
+                'nome_opcao_txt': l7_protocol.nome_opcao_txt
+            }
+            vip_request['ports'][idx]['options']['l4_protocol'] = {
+                'id': l4_protocol.id,
+                'nome_opcao_txt': l4_protocol.nome_opcao_txt
+            }
+
+        vip_request['conf'] = conf
+
+        if conf:
+            for idx, layer in enumerate(conf['conf']['layers']):
+                requiments = layer.get('requiments')
+                if requiments:
+                    for requiment in requiments:
+                        condicionals = requiment.get('condicionals')
+                        for condicional in condicionals:
+
+                            validated = True
+
+                            validations = condicional.get('validations')
+                            for validation in validations:
+                                if validation.get('type') == 'optionvip':
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        vip_request['optionsvip'][validation.get('variable')],
+                                        validation.get('value')
+                                    )
+
+                                if validation.get('type') == 'field' and validation.get('variable') == 'cluster_unit':
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        cluster_unit,
+                                        validation.get('value')
+                                    )
+
+                            if validated:
+                                use = condicional.get('use')
+                                for item in use:
+                                    definitions = item.get('definitions')
+                                    eqpts = item.get('eqpts')
+                                    for eqpt in eqpts:
+                                        eqpt_id = str(eqpt)
+
+                                        if not load_balance.get(eqpt_id):
+                                            equipment_access = EquipamentoAcesso.search(
+                                                equipamento=eqpt,
+                                                protocolo=protocolo_access
+                                            ).uniqueResult()
+                                            equipment = Equipamento.get_by_pk(eqpt)
+
+                                            plugin = PluginFactory.factory(equipment)
+
+                                            load_balance[eqpt_id] = {
+                                                'plugin': plugin,
+                                                'fqdn': equipment_access.fqdn,
+                                                'user': equipment_access.user,
+                                                'password': equipment_access.password,
+                                                'vips': list(),
+                                                'layers': {},
+                                            }
+
+                                        idx_layer = str(idx)
+                                        if load_balance[eqpt_id]['layers'].get(id_vip):
+                                            if load_balance[eqpt_id]['layers'][id_vip].get(idx_layer):
+                                                load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'] += definitions
+                                            else:
+                                                load_balance[eqpt_id]['layers'][id_vip][idx_layer] = {
+                                                    'vip_request': vip_request,
+                                                    'definitions': definitions
+                                                }
+                                        else:
+                                            load_balance[eqpt_id]['layers'][id_vip] = dict()
+
+        for e in equips:
+            eqpt_id = str(e.id)
+
+            if not load_balance.get(eqpt_id):
+                equipment_access = EquipamentoAcesso.search(
+                    equipamento=e.id,
+                    protocolo=protocolo_access
+                ).uniqueResult()
+
+                plugin = PluginFactory.factory(e)
+
+                load_balance[eqpt_id] = {
+                    'plugin': plugin,
+                    'fqdn': equipment_access.fqdn,
+                    'user': equipment_access.user,
+                    'password': equipment_access.password,
+                    'vips': list(),
+                    'layers': {}
+                }
+            log.info({'vip_request': vip_request})
+
+            load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
+
+        update_vip_request(vip_receive)
+
+    for lb in load_balance:
+        load_balance[lb]['plugin'].update_vip(load_balance[lb])
 
 
 def delete_real_vip_request(vip_requests):
@@ -755,7 +931,7 @@ def _validate_vip_to_apply(vip_request, update=False):
         maintenance=0,
         tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
-    # not implemented yet
+    # does not implemented yet
     # equips = Equipamento.objects.filter(
     #     equipamentoambiente__ambiente__vlan__networkipv6__ambient_vip__id=vip_request['environmentvip'],
     #     maintenance=0,

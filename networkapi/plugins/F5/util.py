@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 def logger(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
-        log.info('%s.%s' % (self.__class__.__name__, func.__name__))
+        log.info('%s.%s: %s' % (self.__class__.__name__, func.__name__, kwargs))
         return func(self, *args, **kwargs)
 
     return inner

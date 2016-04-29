@@ -66,7 +66,18 @@ class VipRequestDeployView(APIView):
     def put(self, request, *args, **kwargs):
         """Update vip request by list"""
 
-        return Response({})
+        vips = request.DATA
+        json_validate(SPECS.get('vip_put')).validate(vips)
+        locks_list = facade.create_lock(vips.get('vips'))
+        try:
+            response = facade.update_real_vip_request(vips['vips'])
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)
+        finally:
+            facade.destroy_lock(locks_list)
+
+        return Response(response)
 
 
 class VipRequestDBView(APIView):
@@ -135,6 +146,7 @@ class VipRequestDBView(APIView):
 
         response = list()
         for vip in data['vips']:
+            facade.validate_save(vip)
             vp = facade.create_vip_request(vip)
             response.append({'id': vp.id})
 
@@ -155,6 +167,7 @@ class VipRequestDBView(APIView):
 
         response = {}
         for vip in data['vips']:
+            facade.validate_save(vip)
             facade.update_vip_request(vip)
 
         return Response(response, status.HTTP_200_OK)
