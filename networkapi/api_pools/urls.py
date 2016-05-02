@@ -51,5 +51,6 @@ urlpatterns = patterns(
     url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/$', views.PoolDeployView.as_view()),  # POST, PUT, DELETE
     # url(r'^v3/pool/task/deploy/$', views.PoolDeployTaskView.as_view()),  # POST, PUT, DELETE
     url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views.PoolDBView.as_view()),  # POST, PUT, GET, DELETE
+    url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$', views.PoolEnvironmentVip.as_view()),  # GET
 
 )

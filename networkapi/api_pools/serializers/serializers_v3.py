@@ -185,13 +185,13 @@ class PoolV3Serializer(serializers.ModelSerializer):
             'pool_created'
         )
 
+
 class PoolV3DatatableSerializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
     environment = serializers.RelatedField(source='environment.name')
-
 
     def get_server_pool_members(self, obj):
         members = obj.serverpoolmember_set.all()

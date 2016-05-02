@@ -292,3 +292,30 @@ class PoolDBView(APIView):
         facade.delete_pool(pool_ids)
 
         return Response(response)
+
+
+class PoolEnvironmentVip(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Method to return pool list by environment vip
+        Param environment_vip_id: environment vip id
+        Return pool object list
+        """
+        try:
+            environment_vip_id = kwargs['environment_vip_id']
+            pools = facade.get_pool_list_by_environmentvip(environment_vip_id)
+            pool_serializer = serializers.PoolV3SimpleSerializer(
+                pools['pools'],
+                many=True
+            )
+            data = {
+                'server_pools': pool_serializer.data,
+                'total': pools['total'],
+            }
+            return Response(data, status.HTTP_200_OK)
+        except Exception, exception:
+            log.exception(exception)
+            raise rest_exceptions.NetworkAPIException(exception)
