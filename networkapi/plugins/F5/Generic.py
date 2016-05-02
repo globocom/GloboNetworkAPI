@@ -201,7 +201,7 @@ class Generic(BasePlugin):
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            pl.remove_monitor_association(names=pls['pools_names'])
+            # pl.remove_monitor_association(names=pls['pools_names'])
 
             pl.set_monitor_association(monitor_associations=monitor_associations)
 
