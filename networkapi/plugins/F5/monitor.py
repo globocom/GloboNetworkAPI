@@ -13,8 +13,8 @@ log = logging.getLogger(__name__)
 
 class Monitor(F5Base):
 
-    def create_template(self, **kwargs):
-        log.info('monitor:create_template:%s' % kwargs)
+    def prepare_template(self, **kwargs):
+        log.info('monitor:prepare_template:%s' % kwargs)
 
         templates = []
         template_attributes = []
@@ -81,36 +81,54 @@ class Monitor(F5Base):
                 monitor_association['monitor_rule']['quorum'] = 0
                 monitor_associations.append(monitor_association)
 
-            if len(templates) > 0:
+        except Exception, e:
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
+
+        templates_extra = {
+            'templates': templates,
+            'template_attributes': template_attributes,
+            'template_names': template_names,
+            'values': values
+        }
+
+        return monitor_associations, templates_extra
+
+    def create_template(self, **kwargs):
+        log.info('monitor:create_template:%s' % kwargs)
+
+        templates = kwargs['templates_extra']['templates']
+        template_attributes = kwargs['templates_extra']['template_attributes']
+        template_names = kwargs['templates_extra']['template_names']
+        values = kwargs['templates_extra']['values']
+
+        if len(templates) > 0:
+            try:
+                self._lb._channel.System.Session.start_transaction()
+
+                self._lb._channel.LocalLB.Monitor.create_template(
+                    templates=templates,
+                    template_attributes=template_attributes
+                )
+            except Exception, e:
+                self._lb._channel.System.Session.rollback_transaction()
+                raise base_exceptions.CommandErrorException(e)
+            else:
+                self._lb._channel.System.Session.submit_transaction()
+
                 try:
                     self._lb._channel.System.Session.start_transaction()
 
-                    self._lb._channel.LocalLB.Monitor.create_template(
-                        templates=templates,
-                        template_attributes=template_attributes
+                    self._lb._channel.LocalLB.Monitor.set_template_string_property(
+                        template_names=template_names,
+                        values=values
                     )
                 except Exception, e:
                     self._lb._channel.System.Session.rollback_transaction()
                     raise base_exceptions.CommandErrorException(e)
+
                 else:
                     self._lb._channel.System.Session.submit_transaction()
-
-                    try:
-                        self._lb._channel.System.Session.start_transaction()
-
-                        self._lb._channel.LocalLB.Monitor.set_template_string_property(
-                            template_names=template_names,
-                            values=values
-                        )
-                    except Exception, e:
-                        self._lb._channel.System.Session.rollback_transaction()
-                        raise base_exceptions.CommandErrorException(e)
-
-                    else:
-                        self._lb._channel.System.Session.submit_transaction()
-        except Exception, e:
-            log.error(e)
-        return monitor_associations
 
     # def delete_templateAssoc(self, **kwargs):
     #     log.info('monitor:delete_templateAssoc:%s' % kwargs)
@@ -137,6 +155,14 @@ class Monitor(F5Base):
     #                 self.delete_template(template_names=template_names)
     #         except bigsuds.OperationFailed:
     #             pass
+
+    def get_template_string_property(self, **kwargs):
+        log.info('monitor:get_template_string_property:%s' % kwargs)
+        strings = self._lb._channel.LocalLB.Monitor.get_template_string_property(
+            template_names=kwargs['template_names'],
+            property_types=kwargs['property_types']
+        )
+        return strings
 
     def delete_template(self, **kwargs):
         log.info('monitor:delete_template:%s' % kwargs)
