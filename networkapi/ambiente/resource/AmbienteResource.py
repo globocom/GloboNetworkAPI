@@ -115,7 +115,7 @@ class AmbienteResource(RestResource):
                     loc_env = AmbienteLogico.get_by_pk(environment_logical_id)
 
             environments = Ambiente().search(
-                division_id, environment_logical_id)
+                division_id, environment_logical_id).select_related("grupo_l3", "ambiente_logico", "divisao_dc", "filter")
             for environment in environments:
                 environment_list.append(get_environment_map(environment))
 
