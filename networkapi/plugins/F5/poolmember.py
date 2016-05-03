@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 class PoolMember(F5Base):
 
     def set_states(self, **kwargs):
+        log.info('PoolMember:set_states:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return

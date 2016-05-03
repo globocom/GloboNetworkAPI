@@ -119,9 +119,9 @@ def trata_param_pool(pools):
         member_new = []
         member_remove = []
         for pool_member in p['pools_members']:
-            if pool_member.get('member_status'):
-                status = get_status_name(
-                    str(pool_member['member_status']))
+            if pool_member.get('member_status') is not None:
+                state = str(pool_member.get('member_status'))
+                status = get_status_name(state)
                 member_status_monitor.append(status['monitor'])
                 member_status_session.append(status['session'])
 

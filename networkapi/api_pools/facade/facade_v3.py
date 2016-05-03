@@ -184,6 +184,7 @@ def update_real_pool(pools):
                         'port': pool_member['port_real'],
                         'limit': pool_member['limit'],
                         'priority': pool_member['priority'],
+                        'member_status': pool_member['member_status'],
                         'weight': pool_member['weight'],
                     })
                 else:
@@ -202,6 +203,7 @@ def update_real_pool(pools):
                         'limit': pool_member['limit'],
                         'priority': pool_member['priority'],
                         'weight': pool_member['weight'],
+                        'member_status': pool_member['member_status'],
                         'new': 1
                     })
             else:
@@ -213,6 +215,7 @@ def update_real_pool(pools):
                     'limit': pool_member['limit'],
                     'priority': pool_member['priority'],
                     'weight': pool_member['weight'],
+                    'member_status': pool_member['member_status'],
                     'new': 1
                 })
 
