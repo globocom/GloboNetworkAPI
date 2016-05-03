@@ -524,6 +524,7 @@ def _create_pool_member(members, pool_id):
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
+        pool_member.member_status = member['member_status']
         pool_member.limit = member['limit']
         pool_member.save()
 
@@ -539,6 +540,7 @@ def _update_pool_member(members):
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
+        pool_member.member_status = member['member_status']
         pool_member.limit = member['limit']
         pool_member.save()
 
