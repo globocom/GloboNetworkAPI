@@ -44,19 +44,9 @@ def get_envs(self, user, no_blocks=False):
                                                        "grupo_l3__nome").select_related("grupo_l3", "ambiente_logico", "divisao_dc", "filter")
 
         lists = []
-        if not no_blocks:
-            use_env = 1
-        else:
-            use_env = 0
 
         for env in environments:
-            #if env.blockrules_set.count() == 0 or not no_blocks:
-            #Avoid testing env.blockrules_set.count() because it is very expensive in
-            # thousands of iterations
-            if no_blocks:
-                if env.blockrules_set.count() != 0:
-                use_env = 0
-            if use_env:
+            if env.blockrules_set.count() == 0 or not no_blocks:
                 env_map = model_to_dict(env)
                 env_map["grupo_l3_name"] = env.grupo_l3.nome
                 env_map["ambiente_logico_name"] = env.ambiente_logico.nome
