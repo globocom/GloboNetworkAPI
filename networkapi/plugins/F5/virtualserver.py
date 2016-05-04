@@ -96,7 +96,7 @@ class VirtualServer(F5Base):
 
             vip_profiles = self.__properties['profiles']
 
-           # vip_rules['rules'].append(vip_request['rules'])
+            # vip_rules['rules'].append(vip_request['rules'])
 
             if vip_request['optionsvip']['traffic_group']:
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
@@ -173,6 +173,7 @@ class VirtualServer(F5Base):
         for idx, vip_request in enumerate(kwargs['vips']):
 
             self.__prepare_properties(vip_request, profiles_list)
+            log.info('__properties:%s' % self.__properties)
 
             old_profiles = list()
 
@@ -383,7 +384,7 @@ class VirtualServer(F5Base):
     @logger
     def __add_profile(self, kwargs):
 
-        self._lb._channel.LocalLB.VirtualServer.remove_profile(
+        self._lb._channel.LocalLB.VirtualServer.add_profile(
             virtual_servers=kwargs['virtual_servers'],
             profiles=kwargs['profiles']
         )
@@ -422,35 +423,36 @@ class VirtualServer(F5Base):
                             for item in use:
                                 if item.get('type') == 'profile':
                                     profile_name = item.get('value')
-                                    try:
-                                        pn = profile_name.split('$')
-                                        time_profie = int(vip_request['optionsvip']['timeout']['nome_opcao_txt']) * 60
-                                        profile_name = pn[0] + str(time_profie)
-                                        if '/Common/' + profile_name not in profiles_list:
-                                            if 'tcp' in profile_name and profile_name not in self.__properties['profiles_timeout_tcp']['profile_names']:
-                                                self.__properties['profiles_timeout_tcp']['profile_names'].append(profile_name)
-                                                self.__properties['profiles_timeout_tcp']['timeouts'].append({
-                                                    'value': time_profie,
-                                                    'default_flag': 0
-                                                })
-                                            elif 'udp' in profile_name and profile_name not in self.__properties['profiles_timeout_udp']['profile_names']:
-                                                self.__properties['profiles_timeout_udp']['profile_names'].append(profile_name)
-                                                self.__properties['profiles_timeout_udp']['timeouts'].append({
-                                                    'value': time_profie,
-                                                    'default_flag': 0
-                                                })
-                                            elif 'fastL4' in profile_name and profile_name not in self.__properties['profiles_timeout_fastl4']['profile_names']:
-                                                self.__properties['profiles_timeout_fastl4']['profile_names'].append(profile_name)
-                                                self.__properties['profiles_timeout_fastl4']['timeouts'].append({
-                                                    'value': time_profie,
-                                                    'default_flag': 0
-                                                })
-                                    except:
-                                        if '/Common/' + profile_name not in profiles_list:
-                                            raise Exception(u'Profile %s nao existe')
-                                        pass
+                                    if '$' in profile_name:
+                                        try:
+                                            pn = profile_name.split('$')
+                                            time_profie = int(vip_request['optionsvip']['timeout']['nome_opcao_txt']) * 60
+                                            profile_name = pn[0] + str(time_profie)
+                                            if '/Common/' + profile_name not in profiles_list:
+                                                if 'tcp' in profile_name and profile_name not in self.__properties['profiles_timeout_tcp']['profile_names']:
+                                                    self.__properties['profiles_timeout_tcp']['profile_names'].append(profile_name)
+                                                    self.__properties['profiles_timeout_tcp']['timeouts'].append({
+                                                        'value': time_profie,
+                                                        'default_flag': 0
+                                                    })
+                                                elif 'udp' in profile_name and profile_name not in self.__properties['profiles_timeout_udp']['profile_names']:
+                                                    self.__properties['profiles_timeout_udp']['profile_names'].append(profile_name)
+                                                    self.__properties['profiles_timeout_udp']['timeouts'].append({
+                                                        'value': time_profie,
+                                                        'default_flag': 0
+                                                    })
+                                                elif 'fastL4' in profile_name and profile_name not in self.__properties['profiles_timeout_fastl4']['profile_names']:
+                                                    self.__properties['profiles_timeout_fastl4']['profile_names'].append(profile_name)
+                                                    self.__properties['profiles_timeout_fastl4']['timeouts'].append({
+                                                        'value': time_profie,
+                                                        'default_flag': 0
+                                                    })
+                                        except:
+                                            if '/Common/' + profile_name not in profiles_list:
+                                                raise Exception(u'Profile %s nao existe')
+                                            pass
                                     profiles.append({
-                                        'profile_name': profile_name,
+                                        'profile_name': '/Common/' + profile_name,
                                         'profile_context': 'PROFILE_CONTEXT_TYPE_ALL'
                                     })
 

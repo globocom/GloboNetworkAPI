@@ -142,8 +142,8 @@ class Generic(BasePlugin):
             healthcheck=pls['pools_healthcheck']
         )
 
+        self._lb._channel.System.Session.start_transaction()
         try:
-            self._lb._channel.System.Session.start_transaction()
 
             pl = pool.Pool(self._lb)
 
