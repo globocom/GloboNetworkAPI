@@ -90,7 +90,6 @@ class FTOS(BasePlugin):
 
 		self.channel.send("%s\n" % command)
 		recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
-
 		return recv
 
 	def ensure_privilege_level(self, privilege_level=None):
@@ -164,4 +163,4 @@ class FTOS(BasePlugin):
 				elif re.search(wait_str_ok_regex, output_line):
 					string_ok = 1
 
-			return recv_string
+		return recv_string
