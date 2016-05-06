@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
-from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import Ambiente
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions, models
@@ -580,16 +580,16 @@ def validate_save(pool, permit_created=False):
 
     for member in pool['server_pool_members']:
         if member['ip']:
-            vips = EnvironmentVip.objects.filter(
-                environmentenvironmentvip__environment__vlan__networkipv4__ip=member['ip']['id']
-            ).filter(environmentenvironmentvip__environment__id=pool['environment'])
+            vips = Ambiente.objects.filter(
+                vlan__networkipv4__ip=member['ip']['id']
+            ).filter(id=pool['environment'])
             if not vips:
                 raise exceptions.IpNotFoundByEnvironment()
 
         if member['ipv6']:
-            vips = EnvironmentVip.objects.filter(
-                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ipv6']['id']
-            ).filter(environmentenvironmentvip__environment__id=pool['environment'])
+            vips = Ambiente.objects.filter(
+                vlan__networkipv6__ipv6=member['ipv6']['id']
+            ).filter(id=pool['environment'])
             if not vips:
                 raise exceptions.IpNotFoundByEnvironment()
 
