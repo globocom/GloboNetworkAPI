@@ -747,6 +747,7 @@ def delete_real_vip_request(vip_requests):
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=False)
+    ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=False)
 
 
 #############

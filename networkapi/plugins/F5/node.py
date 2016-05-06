@@ -15,5 +15,5 @@ class Node(F5Base):
                 return
 
         self._lb._channel.LocalLB.NodeAddressV2.set_monitor_rule(
-            nodes=kwargs['monitor_associations']['nodes'],
-            monitor_rules=kwargs['monitor_associations']['monitor_rules'])
+            nodes=kwargs['nodes'],
+            monitor_rules=kwargs['monitor_rules'])

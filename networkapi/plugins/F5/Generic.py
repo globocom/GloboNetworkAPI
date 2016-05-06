@@ -41,7 +41,8 @@ class Generic(BasePlugin):
             vts = virtualserver.VirtualServer(self._lb)
             vts.create(vips=tratado['vips_filter'])
         except Exception, e:
-            self.__delete_pool({'pools': tratado['pool_filter']})
+            if tratado['pool_filter']:
+                self.__delete_pool({'pools': tratado['pool_filter']})
             raise base_exceptions.CommandErrorException(e)
 
     @util.connection
@@ -54,6 +55,8 @@ class Generic(BasePlugin):
             vts = virtualserver.VirtualServer(self._lb)
             vts.update(vips=tratado['vips_filter'])
         except Exception, e:
+            if tratado['pool_filter']:
+                self.__delete_pool({'pools': tratado['pool_filter']})
             raise base_exceptions.CommandErrorException(e)
 
     #######################################
@@ -180,12 +183,15 @@ class Generic(BasePlugin):
                 session_state=pls['pools_members']['session'])
 
             nd = node.Node(self._lb)
-            nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+            nd.set_monitor_rule(
+                nodes=monitor_associations_nodes['nodes'],
+                monitor_rules=monitor_associations_nodes['monitor_rules'])
 
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
-            if monitor_associations != []:
-                template_names = [m['monitor_rule']['monitor_templates'] for m in monitor_associations]
+
+            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+            if template_names != []:
                 mon.delete_template(
                     template_names=template_names
                 )
@@ -326,7 +332,9 @@ class Generic(BasePlugin):
                 session_state=pls['pools_members']['session'])
 
             nd = node.Node(self._lb)
-            nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+            nd.set_monitor_rule(
+                nodes=monitor_associations_nodes['nodes'],
+                monitor_rules=monitor_associations_nodes['monitor_rules'])
 
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()

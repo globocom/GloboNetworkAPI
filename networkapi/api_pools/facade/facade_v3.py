@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
-from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions, models
@@ -99,12 +99,14 @@ def delete_real_pool(pools):
     for pool in pools:
 
         equips = _validate_pool_members_to_apply(pool)
+
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
                 equipamento=e.id,
                 protocolo=protocolo_access
             ).uniqueResult()
+
             plugin = PluginFactory.factory(e)
 
             if not load_balance.get(eqpt_id):
@@ -135,7 +137,6 @@ def delete_real_pool(pools):
 
             })
 
-    log.info(load_balance)
     for lb in load_balance:
         load_balance[lb]['plugin'].delete_pool(load_balance[lb])
 
@@ -486,23 +487,6 @@ def get_pool_by_id(pool_id):
     return server_pool
 
 
-def get_pool_list_by_environmentvip(environment_vip_id):
-    """
-    Return pool list by environment_vip_id
-    param environment_vip_id: environment_vip_id
-    """
-
-    pools = ServerPool.objects.filter(
-        Q(environment__vlan__networkipv4__ambient_vip__id=environment_vip_id) |
-        Q(environment__vlan__networkipv6__ambient_vip__id=environment_vip_id)
-    ).distinct().order_by('identifier')
-
-    pool_map = dict()
-    pool_map["pools"] = pools
-    pool_map["total"] = pools.count()
-    return pool_map
-
-
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
@@ -596,17 +580,23 @@ def validate_save(pool, permit_created=False):
 
     for member in pool['server_pool_members']:
         if member['ip']:
-            vips = Ambiente.objects.filter(
-                vlan__networkipv4__ip=member['ip']['id']
-            ).filter(environment__id=pool['environment'])
-            if not vips:
+            amb = Ambiente.objects.filter(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
+                    networkipv4__vlan__ambiente=pool['environment'])
+            ).filter(
+                environmentenvironmentvip__environment__vlan__networkipv4__ip=member['ip']['id']
+            )
+            if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
 
         if member['ipv6']:
-            vips = Ambiente.objects.filter(
-                vlan__networkipv6__ipv6=member['ipv6']['id']
-            ).filter(environment__id=pool['environment'])
-            if not vips:
+            amb = Ambiente.objects.filter(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
+                    networkipv6__vlan__ambiente=pool['environment'])
+            ).filter(
+                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ipv6']['id']
+            )
+            if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
 
         if member['id']:
