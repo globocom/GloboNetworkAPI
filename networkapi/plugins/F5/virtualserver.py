@@ -13,39 +13,7 @@ log = logging.getLogger(__name__)
 
 class VirtualServer(F5Base):
 
-    __properties = {
-        'profiles': list(),
-        'profiles_timeout_tcp': {
-            'profile_names': list(),
-            'timeouts': list()
-        },
-        'profiles_timeout_udp': {
-            'profile_names': list(),
-            'timeouts': list()
-        },
-        'profiles_timeout_fastl4': {
-            'profile_names': list(),
-            'timeouts': list()
-        },
-        'profiles_persistence': {
-            'virtual_servers': list(),
-            'profiles': list()
-        },
-        'translate_port_state': {
-            'virtual_servers': list(),
-            'states': list()
-        },
-        'vip_snat_auto': {
-            'virtual_servers': list()
-        },
-        'vip_snat_none': {
-            'virtual_servers': list()
-        },
-        'vip_snat_pool': {
-            'virtual_servers': list(),
-            'pools': list()
-        }
-    }
+    __properties = None
 
     @logger
     def delete(self, **kwargs):
@@ -173,29 +141,31 @@ class VirtualServer(F5Base):
         for idx, vip_request in enumerate(kwargs['vips']):
 
             self.__prepare_properties(vip_request, profiles_list)
-            log.info('__properties:%s' % self.__properties)
-
-            old_profiles = list()
 
             current_profiles[idx] = [{
                 'profile_context': profile['profile_context'],
                 'profile_name':profile['profile_name']
             } for profile in current_profiles[idx]]
 
+            old_profiles = list()
             for profile in current_profiles[idx]:
-                if profile not in self.__properties['profiles'][idx] and profile:
-                    old_profiles.append(profile)
+                if not [prot for prot in ['tcp', 'udp', 'fastL4'] if prot in profile['profile_name']]:
+                    if profile not in self.__properties['profiles'][idx] and profile:
+                        old_profiles.append(profile)
+
             if old_profiles:
                 profiles_to_delete['virtual_servers'].append(vip_request['name'])
                 profiles_to_delete['profiles'].append(old_profiles)
 
             new_profiles = list()
             for profile in self.__properties['profiles'][idx]:
-                if profile not in current_profiles[idx]:
-                    new_profiles.append(profile)
+                if not [prot for prot in ['tcp', 'udp', 'fastL4'] if prot in profile['profile_name']]:
+                    if profile not in current_profiles[idx]:
+                        new_profiles.append(profile)
+
             if new_profiles:
                 profiles_to_insert['virtual_servers'].append(vip_request['name'])
-                profiles_to_insert['profiles'].append(old_profiles)
+                profiles_to_insert['profiles'].append(new_profiles)
 
             resources['pool'].append(vip_request['pool'])
 
@@ -205,7 +175,6 @@ class VirtualServer(F5Base):
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
 
-        log.info(profiles_to_delete)
         self.__remove_profile(profiles_to_delete)
         self.__remove_all_persistence_profiles(virtual_servers)
         self.__remove_all_rule(virtual_servers)
@@ -382,12 +351,12 @@ class VirtualServer(F5Base):
             )
 
     @logger
-    def __add_profile(self, kwargs):
-
-        self._lb._channel.LocalLB.VirtualServer.add_profile(
-            virtual_servers=kwargs['virtual_servers'],
-            profiles=kwargs['profiles']
-        )
+    def __add_profile(self, profiles):
+        if profiles['virtual_servers']:
+            self._lb._channel.LocalLB.VirtualServer.add_profile(
+                virtual_servers=profiles['virtual_servers'],
+                profiles=profiles['profiles']
+            )
 
     @logger
     def __remove_all_persistence_profiles(self, virtual_servers):
@@ -396,7 +365,42 @@ class VirtualServer(F5Base):
             virtual_servers=virtual_servers
         )
 
-    def __prepare_properties(self, vip_request, profiles_list):
+    def __prepare_properties(self, vip_request, profiles_list, update=False):
+
+        self.__properties = {
+
+            'profiles': list(),
+            'profiles_timeout_tcp': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_timeout_udp': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_timeout_fastl4': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_persistence': {
+                'virtual_servers': list(),
+                'profiles': list()
+            },
+            'translate_port_state': {
+                'virtual_servers': list(),
+                'states': list()
+            },
+            'vip_snat_auto': {
+                'virtual_servers': list()
+            },
+            'vip_snat_none': {
+                'virtual_servers': list()
+            },
+            'vip_snat_pool': {
+                'virtual_servers': list(),
+                'pools': list()
+            }
+        }
 
         profiles = list()
 
