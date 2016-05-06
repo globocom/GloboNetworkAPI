@@ -21,6 +21,10 @@ class Monitor(F5Base):
         template_names = []
         values = []
         monitor_associations = []
+        monitor_associations_nodes = {
+            'nodes': list(),
+            'monitor_rules': list()
+        }
 
         try:
 
@@ -72,6 +76,7 @@ class Monitor(F5Base):
                         'type': 'STYPE_RECEIVE',
                         'value': healthcheck_expect
                     })
+
                 else:
                     name = kwargs['healthcheck'][i]['healthcheck_type'].lower()
 
@@ -80,6 +85,18 @@ class Monitor(F5Base):
                 monitor_association['monitor_rule']['type'] = 'MONITOR_RULE_TYPE_SINGLE'
                 monitor_association['monitor_rule']['quorum'] = 0
                 monitor_associations.append(monitor_association)
+
+                for node in kwargs['members'][i]:
+                    monitor_association_node = {
+                        'monitor_templates': [],
+                        'type': None,
+                        'quorum': None
+                    }
+                    monitor_association_node['monitor_templates'].append('icmp')
+                    monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                    monitor_association_node['quorum'] = 0
+                    monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
+                    monitor_associations_nodes['nodes'].append(node['address'])
 
         except Exception, e:
             log.error(e)
@@ -92,7 +109,7 @@ class Monitor(F5Base):
             'values': values
         }
 
-        return monitor_associations, templates_extra
+        return monitor_associations, monitor_associations_nodes, templates_extra
 
     def create_template(self, **kwargs):
         log.info('monitor:create_template:%s' % kwargs)
@@ -123,6 +140,7 @@ class Monitor(F5Base):
                         template_names=template_names,
                         values=values
                     )
+
                 except Exception, e:
                     self._lb._channel.System.Session.rollback_transaction()
                     raise base_exceptions.CommandErrorException(e)

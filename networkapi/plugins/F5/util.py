@@ -83,6 +83,11 @@ def trata_param_pool(pools):
         'pools_lbmethod': [],
         'pools_healthcheck': [],
         'pools_actions': [],
+        'pools_confirm': {
+            'pools_names': [],
+            'members': [],
+            'monitor': []
+        },
         'pools_members': {
             'members_new': [],
             'members_remove': [],
@@ -119,8 +124,27 @@ def trata_param_pool(pools):
         member_new = []
         member_remove = []
         for pool_member in p['pools_members']:
+
+            state = str(pool_member.get('member_status'))
+
+            if pool_member.get('new'):
+                node_port = {
+                    'address': pool_member['ip'],
+                    'port': pool_member['port']}
+                member_new.append(node_port)
+                if state == '7':
+                    if p['nome'] not in pls['pools_confirm']['pools_names']:
+                        pls['pools_confirm']['pools_names'].append(p['nome'])
+                        pls['pools_confirm']['members'].append(list())
+                        pls['pools_confirm']['monitor'].append(list())
+                    status_confirm = get_status_name(state)
+                    state = '2'
+
+                    idx = pls['pools_confirm']['pools_names'].index(p['nome'])
+                    pls['pools_confirm']['members'][idx].append(node_port)
+                    pls['pools_confirm']['monitor'][idx].append(status_confirm['monitor'])
+
             if pool_member.get('member_status') is not None:
-                state = str(pool_member.get('member_status'))
                 status = get_status_name(state)
                 member_status_monitor.append(status['monitor'])
                 member_status_session.append(status['session'])
@@ -136,11 +160,6 @@ def trata_param_pool(pools):
 
             if not pool_member.get('remove'):
                 member.append({
-                    'address': pool_member['ip'],
-                    'port': pool_member['port']})
-
-            if pool_member.get('new'):
-                member_new.append({
                     'address': pool_member['ip'],
                     'port': pool_member['port']})
 

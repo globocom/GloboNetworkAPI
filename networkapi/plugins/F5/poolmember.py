@@ -23,6 +23,17 @@ class PoolMember(F5Base):
             kwargs['members'],
             kwargs['monitor_state'])
 
+    def set_member_monitor_state(self, **kwargs):
+        log.info('PoolMember:set_member_monitor_state:%s' % kwargs)
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.Pool.set_member_monitor_state(
+            kwargs['names'],
+            kwargs['members'],
+            kwargs['monitor_state'])
+
     def get_states(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
@@ -90,7 +101,6 @@ class PoolMember(F5Base):
             if v == []:
                 return
 
-        log.info(kwargs)
         names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
         members = [kwargs['members'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
 

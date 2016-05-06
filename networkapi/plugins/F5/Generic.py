@@ -4,7 +4,7 @@ import logging
 import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import monitor, pool, poolmember, util, virtualserver
+from networkapi.plugins.F5 import monitor, node, pool, poolmember, util, virtualserver
 
 from ..base import BasePlugin
 
@@ -127,8 +127,9 @@ class Generic(BasePlugin):
 
         mon = monitor.Monitor(self._lb)
 
-        monitor_associations, templates_extra = mon.prepare_template(
+        monitor_associations, monitor_associations_nodes, templates_extra = mon.prepare_template(
             names=pls['pools_names'],
+            members=pls['pools_members']['members'],
             healthcheck=pls['pools_healthcheck']
         )
 
@@ -168,6 +169,9 @@ class Generic(BasePlugin):
                 monitor_state=pls['pools_members']['monitor'],
                 session_state=pls['pools_members']['session'])
 
+            nd = node.Node(self._lb)
+            nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
             if monitor_associations != []:
@@ -195,8 +199,9 @@ class Generic(BasePlugin):
         monitor_associations_old = pl.get_monitor_association(names=pls['pools_names'])
 
         # creates templates
-        monitor_associations, templates_extra = mon.prepare_template(
+        monitor_associations, monitor_associations_nodes, templates_extra = mon.prepare_template(
             names=pls['pools_names'],
+            members=pls['pools_members']['members'],
             healthcheck=pls['pools_healthcheck']
         )
 
@@ -247,9 +252,6 @@ class Generic(BasePlugin):
                     template_name_found.append(monitors_new[key]['monitor_rule']['monitor_templates'][0])
             except:
                 pass
-        # log.info(get_strings_old)
-        # log.info(strings_new)
-        # raise Exception('teste')
 
         values_new = list()
         template_names_new = list()
@@ -313,6 +315,9 @@ class Generic(BasePlugin):
                 monitor_state=pls['pools_members']['monitor'],
                 session_state=pls['pools_members']['session'])
 
+            nd = node.Node(self._lb)
+            nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
 
@@ -325,6 +330,15 @@ class Generic(BasePlugin):
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
+
+            try:
+                if pls['pools_confirm']['pools_names']:
+                    plm.set_member_monitor_state(
+                        names=pls['pools_confirm']['pools_names'],
+                        members=pls['pools_confirm']['members'],
+                        monitor_state=pls['pools_confirm']['monitor'])
+            except bigsuds.OperationFailed:
+                pass
 
             # delete templates old
             try:
