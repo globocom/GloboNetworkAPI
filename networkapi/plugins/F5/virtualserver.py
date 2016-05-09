@@ -134,11 +134,20 @@ class VirtualServer(F5Base):
         }
 
         vip_traffic_groups = {
-            'virtual_addresses': list(),
-            'traffic_groups': list()
+            'traffic_groups': list(),
+            'virtual_addresses': list()
+        }
+
+        vip_protocols = {
+            'virtual_servers': list(),
+            'protocols': list()
         }
 
         for idx, vip_request in enumerate(kwargs['vips']):
+
+            protocol = types.procotol_type(vip_request['optionsvip']['l4_protocol']['nome_opcao_txt'].lower())
+            vip_protocols['virtual_servers'].append(vip_request['name'])
+            vip_protocols['protocols'].append(protocol)
 
             self.__prepare_properties(vip_request, profiles_list)
 
@@ -174,6 +183,8 @@ class VirtualServer(F5Base):
             if vip_request['optionsvip']['traffic_group']:
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
+
+        self.__set_protocol(vip_protocols)
 
         self.__remove_profile(profiles_to_delete)
         self.__remove_all_persistence_profiles(virtual_servers)
@@ -359,6 +370,13 @@ class VirtualServer(F5Base):
             )
 
     @logger
+    def __set_protocol(self, protocols):
+        self._lb._channel.LocalLB.VirtualServer.set_protocol(
+            virtual_servers=protocols['virtual_servers'],
+            protocols=protocols['protocols']
+        )
+
+    @logger
     def __remove_all_persistence_profiles(self, virtual_servers):
 
         self._lb._channel.LocalLB.VirtualServer.remove_all_persistence_profiles(
@@ -463,7 +481,7 @@ class VirtualServer(F5Base):
                                 elif item.get('type') == 'snat':
                                     if item.get('value') == 'automap':
                                         self.__properties['vip_snat_auto']['virtual_servers'].append(vip_request['name'])
-                                    elif item.get('type') == '':
+                                    elif item.get('value') == '':
                                         self.__properties['vip_snat_none']['virtual_servers'].append(vip_request['name'])
                                     else:
                                         self.__properties['vip_snat_pool']['virtual_servers'].append(vip_request['name'])

@@ -234,6 +234,11 @@ def trata_param_vip(vips):
 
                     vip_filter['pool'].append(server_pool['nome'])
 
+                    vip_filter['optionsvip']['dscp'] = {
+                        'value': port['options']['dscp'] * 4 if port['options']['dscp'] else 65535,
+                        'pool_name': server_pool['nome']
+                    }
+
             vips_filter.append(vip_filter)
 
         elif vip.get('layers'):

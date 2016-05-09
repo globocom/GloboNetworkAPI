@@ -77,6 +77,11 @@ class Pool(F5Base):
 
         return monitor_associations
 
+    def set_server_ip_tos(self, **kwargs):
+        self._lb._channel.LocalLB.Pool.set_server_ip_tos(
+            pool_names=kwargs['names'],
+            values=kwargs['values'])
+
     def get_list(self):
         list_pool = self._lb._channel.LocalLB.Pool.get_list()
         return list_pool

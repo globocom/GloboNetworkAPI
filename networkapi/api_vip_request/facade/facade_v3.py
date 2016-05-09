@@ -4,6 +4,7 @@ import json
 import logging
 
 from django.db.models import Q
+from django.db.transaction import commit_on_success
 
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
@@ -209,7 +210,7 @@ def _create_option(options, vip_request_id):
         if dsrl3[0]['id'] in options:
             dscp = _dscp(vip_request_id)
             vip_dscp = models.VipRequestDSCP()
-            vip_dscp.vip_request = vip_request_id
+            vip_dscp.vip_request_id = vip_request_id
             vip_dscp.dscp = dscp
 
 
@@ -240,6 +241,7 @@ def get_vip_request_by_search(search=dict()):
     return vip_map
 
 
+@commit_on_success
 def create_real_vip_request(vip_requests):
 
     load_balance = dict()
@@ -275,6 +277,12 @@ def create_real_vip_request(vip_requests):
             'nome_opcao_txt': persistence.nome_opcao_txt
         }
         vip_request['options']['cluster_unit'] = cluster_unit
+
+        try:
+            vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(id=vip_request['id']).values('id')[0]['dscp']
+        except:
+            vip_request['options']['dscp'] = None
+            pass
 
         for idx, port in enumerate(vip_request['ports']):
             for i, pl in enumerate(port['pools']):
@@ -413,6 +421,7 @@ def create_real_vip_request(vip_requests):
     ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=True)
 
 
+@commit_on_success
 def update_real_vip_request(vip_requests):
 
     load_balance = dict()
@@ -452,6 +461,12 @@ def update_real_vip_request(vip_requests):
             'nome_opcao_txt': persistence.nome_opcao_txt
         }
         vip_request['options']['cluster_unit'] = cluster_unit
+
+        try:
+            vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(id=vip_request['id']).values('id')[0]['dscp']
+        except:
+            vip_request['options']['dscp'] = None
+            pass
 
         for idx, port in enumerate(vip_request['ports']):
             for i, pl in enumerate(port['pools']):
@@ -589,6 +604,7 @@ def update_real_vip_request(vip_requests):
         load_balance[lb]['plugin'].update_vip(load_balance[lb])
 
 
+@commit_on_success
 def delete_real_vip_request(vip_requests):
 
     load_balance = dict()
@@ -906,7 +922,7 @@ def validate_save(vip_request, permit_created=False):
 def _dscp(vip_request_id):
     members = models.VipRequestDSCP.objects.filter(
         vip_request__viprequestport__viprequestportpool__server_pool__serverpoolmember__in=ServerPoolMember.objects.filter(
-            server_pool__viprequestport__viprequestportpool__vip_request__id=vip_request_id)).distinct().values('dscp')
+            server_pool__viprequestportpool__vip_request_port__vip_request__id=vip_request_id)).distinct().values('dscp')
     mb = [i.get('dscp') for i in members]
     perm = range(3, 64)
     perm_new = list(set(perm) - set(mb))
