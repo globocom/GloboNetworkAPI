@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
-from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions, models
@@ -184,6 +184,7 @@ def update_real_pool(pools):
                         'port': pool_member['port_real'],
                         'limit': pool_member['limit'],
                         'priority': pool_member['priority'],
+                        'member_status': pool_member['member_status'],
                         'weight': pool_member['weight'],
                     })
                 else:
@@ -202,6 +203,7 @@ def update_real_pool(pools):
                         'limit': pool_member['limit'],
                         'priority': pool_member['priority'],
                         'weight': pool_member['weight'],
+                        'member_status': pool_member['member_status'],
                         'new': 1
                     })
             else:
@@ -213,6 +215,7 @@ def update_real_pool(pools):
                     'limit': pool_member['limit'],
                     'priority': pool_member['priority'],
                     'weight': pool_member['weight'],
+                    'member_status': pool_member['member_status'],
                     'new': 1
                 })
 
@@ -521,6 +524,7 @@ def _create_pool_member(members, pool_id):
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
+        pool_member.member_status = member['member_status']
         pool_member.limit = member['limit']
         pool_member.save()
 
@@ -536,6 +540,7 @@ def _update_pool_member(members):
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
+        pool_member.member_status = member['member_status']
         pool_member.limit = member['limit']
         pool_member.save()
 
@@ -575,17 +580,23 @@ def validate_save(pool, permit_created=False):
 
     for member in pool['server_pool_members']:
         if member['ip']:
-            vips = EnvironmentVip.objects.filter(
+            amb = Ambiente.objects.filter(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
+                    networkipv4__vlan__ambiente=pool['environment'])
+            ).filter(
                 environmentenvironmentvip__environment__vlan__networkipv4__ip=member['ip']['id']
-            ).filter(environmentenvironmentvip__environment__id=pool['environment'])
-            if not vips:
+            )
+            if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
 
         if member['ipv6']:
-            vips = EnvironmentVip.objects.filter(
+            amb = Ambiente.objects.filter(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
+                    networkipv6__vlan__ambiente=pool['environment'])
+            ).filter(
                 environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ipv6']['id']
-            ).filter(environmentenvironmentvip__environment__id=pool['environment'])
-            if not vips:
+            )
+            if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
 
         if member['id']:
