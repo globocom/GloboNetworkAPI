@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 class FTOS(BasePlugin):
 
 	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
-	WARNING_REGEX = 'config ignored'
+	WARNING_REGEX = 'config ignored|Warning'
 	ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 
 	admin_privileges = 15
