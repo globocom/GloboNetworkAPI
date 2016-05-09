@@ -121,6 +121,7 @@ class Generic(BasePlugin):
         self.__create_pool(pools)
 
     def __create_pool(self, pools):
+        log.info('__create_pool')
 
         monitor_associations = []
         pls = util.trata_param_pool(pools)
@@ -169,9 +170,6 @@ class Generic(BasePlugin):
                 monitor_state=pls['pools_members']['monitor'],
                 session_state=pls['pools_members']['session'])
 
-            nd = node.Node(self._lb)
-            nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
-
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
             if monitor_associations != []:
@@ -183,12 +181,19 @@ class Generic(BasePlugin):
         else:
             self._lb._channel.System.Session.submit_transaction()
 
+            try:
+                if monitor_associations_nodes.get('nodes'):
+                    nd = node.Node(self._lb)
+                    nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+            except bigsuds.OperationFailed:
+                pass
+
     @util.connection
     def update_pool(self, pools):
         self.__update_pool(pools)
 
     def __update_pool(self, pools):
-        log.info('update_pool')
+        log.info('__update_pool')
         monitor_associations = []
         pls = util.trata_param_pool(pools)
 
@@ -315,9 +320,6 @@ class Generic(BasePlugin):
                 monitor_state=pls['pools_members']['monitor'],
                 session_state=pls['pools_members']['session'])
 
-            nd = node.Node(self._lb)
-            nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
-
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
 
@@ -332,6 +334,11 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.submit_transaction()
 
             try:
+
+                if monitor_associations_nodes.get('nodes'):
+                    nd = node.Node(self._lb)
+                    nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+
                 if pls['pools_confirm']['pools_names']:
                     plm.set_member_monitor_state(
                         names=pls['pools_confirm']['pools_names'],
@@ -350,10 +357,10 @@ class Generic(BasePlugin):
 
     @util.connection
     def delete_pool(self, pools):
-        self.delete_pool(pools)
+        self.__delete_pool(pools)
 
     def __delete_pool(self, pools):
-        log.info('delete_pool')
+        log.info('__delete_pool')
 
         pls = util.trata_param_pool(pools)
 

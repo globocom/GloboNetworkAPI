@@ -24,9 +24,14 @@ class Lb(object):
             logging.critical("Unable to connect to BIG-IP. Details: %s" % (e))
             raise base_exceptions.CommandErrorException(e)
         else:
-            self._version = self._channel.System.SystemInfo.get_version()
-            if self._version[8:len(self._version)].split('.')[0] <= 10:
-                raise base_exceptions.UnsupportedVersion(
-                    'This plugin only supports BIG-IP v11 or above')
-            else:
-                self._channel = self._channel.with_session_id()
+            log.info('connected in hostname:%s' % hostname)
+            try:
+                self._version = self._channel.System.SystemInfo.get_version()
+                log.info('self._version %s' % self._version)
+                if self._version[8:len(self._version)].split('.')[0] <= 10:
+                    raise base_exceptions.UnsupportedVersion(
+                        'This plugin only supports BIG-IP v11 or above')
+                else:
+                    self._channel = self._channel.with_session_id()
+            except:
+                raise base_exceptions.CommandErrorException('There are too many existing user sessions. Please try later')
