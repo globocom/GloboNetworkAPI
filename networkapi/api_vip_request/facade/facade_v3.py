@@ -279,7 +279,9 @@ def create_real_vip_request(vip_requests):
         vip_request['options']['cluster_unit'] = cluster_unit
 
         try:
-            vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(id=vip_request['id']).values('id')[0]['dscp']
+            vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(
+                id=vip_request['id']
+            ).values('id')[0]['dscp']
         except:
             vip_request['options']['dscp'] = None
             pass
@@ -463,7 +465,9 @@ def update_real_vip_request(vip_requests):
         vip_request['options']['cluster_unit'] = cluster_unit
 
         try:
-            vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(id=vip_request['id']).values('id')[0]['dscp']
+            vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(
+                id=vip_request['id']
+            ).values('id')[0]['dscp']
         except:
             vip_request['options']['dscp'] = None
             pass

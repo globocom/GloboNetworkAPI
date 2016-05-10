@@ -204,7 +204,7 @@ class OptionVipResource(RestResource):
 
                 try:
                     # Delete Option Vip
-                    option_vip.delete()
+                    option_vip.delete(user)
                 except Exception, e:
                     self.log.error(u'Failed to delete the option vip.')
                     raise OptionVipError(e, u'Failed to delete the option vip')

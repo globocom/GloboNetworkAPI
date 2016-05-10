@@ -86,17 +86,18 @@ class Monitor(F5Base):
                 monitor_association['monitor_rule']['quorum'] = 0
                 monitor_associations.append(monitor_association)
 
-                for node in kwargs['members'][i]:
-                    monitor_association_node = {
-                        'monitor_templates': [],
-                        'type': None,
-                        'quorum': None
-                    }
-                    monitor_association_node['monitor_templates'].append('icmp')
-                    monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
-                    monitor_association_node['quorum'] = 0
-                    monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
-                    monitor_associations_nodes['nodes'].append(node['address'])
+                if name == 'udp':
+                    for node in kwargs['members'][i]:
+                        monitor_association_node = {
+                            'monitor_templates': [],
+                            'type': None,
+                            'quorum': None
+                        }
+                        monitor_association_node['monitor_templates'].append('icmp')
+                        monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                        monitor_association_node['quorum'] = 0
+                        monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
+                        monitor_associations_nodes['nodes'].append(node['address'])
 
         except Exception, e:
             log.error(e)

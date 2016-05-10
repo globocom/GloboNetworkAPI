@@ -79,7 +79,7 @@ class Pool(F5Base):
 
     def set_server_ip_tos(self, **kwargs):
         self._lb._channel.LocalLB.Pool.set_server_ip_tos(
-            pool_names=kwargs['names'],
+            pool_names=kwargs['pool_names'],
             values=kwargs['values'])
 
     def get_list(self):

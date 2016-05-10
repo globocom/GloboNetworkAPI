@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 
-from networkapi.plugins.F5 import types
+from networkapi.plugins.F5 import pool, types
 from networkapi.plugins.F5.f5base import F5Base
 from networkapi.plugins.F5.profile import ProfileFastL4, ProfileHttp, ProfileTCP, ProfileUDP
 from networkapi.plugins.F5.util import logger
@@ -382,6 +382,12 @@ class VirtualServer(F5Base):
         self._lb._channel.LocalLB.VirtualServer.remove_all_persistence_profiles(
             virtual_servers=virtual_servers
         )
+
+    def __set_dscp(self, dscp):
+
+        if dscp.get('dscp'):
+            pl = pool.Pool(self._lb)
+            pl.set_server_ip_tos(dscp)
 
     def __prepare_properties(self, vip_request, profiles_list, update=False):
 
