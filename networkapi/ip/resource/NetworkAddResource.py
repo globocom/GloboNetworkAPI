@@ -339,18 +339,17 @@ class NetworkAddResource(RestResource):
 
             equips = list()
             envs = list()
-            envs_aux = list()
 
             #equips = all equipments from the environment which this network is about to be allocated on
             for env in ambiente.equipamentoambiente_set.all():
                 equips.append(env.equipamento)
 
             #envs = all environments from all equips above
+            #This will be used to test all networks from the environments. 
             for equip in equips:
                 for env in equip.equipamentoambiente_set.all():
-                    if not env.ambiente_id in envs_aux:
+                    if not env.ambiente in envs:
                         envs.append(env.ambiente)
-                        envs_aux.append(env.ambiente_id)
 
             network_ip_verify = IPNetwork(network)
             #For all vlans in all common environments,
@@ -361,9 +360,10 @@ class NetworkAddResource(RestResource):
                     is_subnet = verify_subnet(
                         vlan_obj, network_ip_verify, version)
 
-                    if vlan_obj.ambiente == ambiente:
-                        raise NetworkIPRangeEnvError(None)
                     if is_subnet:
+                        if vlan_obj.ambiente == ambiente:
+                            raise NetworkIPRangeEnvError(None)
+
                         if ambiente.filter_id is None or vlan_obj.ambiente.filter_id is None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
                             raise NetworkIPRangeEnvError(None)
 
