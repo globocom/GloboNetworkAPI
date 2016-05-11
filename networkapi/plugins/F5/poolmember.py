@@ -1,15 +1,15 @@
 import logging
 
 from networkapi.plugins.F5.f5base import F5Base
-
+from networkapi.plugins.F5.util import logger
 
 log = logging.getLogger(__name__)
 
 
 class PoolMember(F5Base):
 
+    @logger
     def set_states(self, **kwargs):
-        log.info('PoolMember:set_states:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -23,8 +23,8 @@ class PoolMember(F5Base):
             kwargs['members'],
             kwargs['monitor_state'])
 
+    @logger
     def set_member_monitor_state(self, **kwargs):
-        log.info('PoolMember:set_member_monitor_state:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -34,6 +34,7 @@ class PoolMember(F5Base):
             kwargs['members'],
             kwargs['monitor_state'])
 
+    @logger
     def get_states(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
@@ -76,6 +77,7 @@ class PoolMember(F5Base):
             status_pools.append(status)
         return status_pools
 
+    @logger
     def set_connection_limit(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
@@ -86,6 +88,7 @@ class PoolMember(F5Base):
             kwargs['members'],
             kwargs['connection_limit'])
 
+    @logger
     def set_priority(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
@@ -96,6 +99,7 @@ class PoolMember(F5Base):
             kwargs['members'],
             kwargs['priority'],)
 
+    @logger
     def create(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:
@@ -109,6 +113,7 @@ class PoolMember(F5Base):
                 pool_names=names,
                 members=members)
 
+    @logger
     def remove(self, **kwargs):
         for k, v in kwargs.items():
             if v == []:

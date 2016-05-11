@@ -70,11 +70,13 @@ def update_vip_request(vip_request):
     vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']['id']) if vip_request['ipv4'] else None
     vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']['id']) if vip_request['ipv6'] else None
 
-    option_ids = [option.id for option in vip.viprequestoptionvip_set.all()]
-    options = [vip_request['options'][key] for key in vip_request['options']]
+    option_ids = [int(option.optionvip.id) for option in vip.viprequestoptionvip_set.all()]
+    options = [int(vip_request['options'][key]) for key in vip_request['options']]
     option_remove = list(set(option_ids) - set(options))
     option_create = list(set(options) - set(option_ids))
 
+    log.info(option_ids)
+    log.info(options)
     vip.save()
 
     _update_port(vip_request['ports'], vip.id)
@@ -212,11 +214,12 @@ def _create_option(options, vip_request_id):
             vip_dscp = models.VipRequestDSCP()
             vip_dscp.vip_request_id = vip_request_id
             vip_dscp.dscp = dscp
+            vip_dscp.save()
 
 
 def _delete_option(options):
     """Deletes options"""
-    models.VipRequestOptionVip.objects.filter(id__in=options).delete()
+    models.VipRequestOptionVip.objects.filter(optionvip__in=options).delete()
 
 
 def get_vip_request_by_search(search=dict()):
@@ -280,8 +283,8 @@ def create_real_vip_request(vip_requests):
 
         try:
             vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(
-                id=vip_request['id']
-            ).values('id')[0]['dscp']
+                vip_request=vip_request['id']
+            ).dscp
         except:
             vip_request['options']['dscp'] = None
             pass
@@ -431,6 +434,7 @@ def update_real_vip_request(vip_requests):
     for vip_request in vip_requests:
 
         vip_receive = copy.deepcopy(vip_request)
+        update_vip_request(vip_receive)
 
         validate_save(vip_request, True)
 
@@ -466,8 +470,8 @@ def update_real_vip_request(vip_requests):
 
         try:
             vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(
-                id=vip_request['id']
-            ).values('id')[0]['dscp']
+                vip_request=vip_request['id']
+            ).dscp
         except:
             vip_request['options']['dscp'] = None
             pass
@@ -598,11 +602,8 @@ def update_real_vip_request(vip_requests):
                     'vips': list(),
                     'layers': {}
                 }
-            log.info({'vip_request': vip_request})
 
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
-
-        update_vip_request(vip_receive)
 
     for lb in load_balance:
         load_balance[lb]['plugin'].update_vip(load_balance[lb])
@@ -900,6 +901,21 @@ def validate_save(vip_request, permit_created=False):
                 raise Exception(
                     'Invalid Option to pool %s of port %s of VipRequest %s' %
                     (pool['server_pool'], port['port'], vip_request['name']))
+
+            dsrl3 = OptionVip.objects.filter(
+                nome_opcao_txt='DSRL3',
+                tipo_opcao='Retorno de trafego',
+                id=vip_request['options']['traffic_return'],
+            )
+            if dsrl3:
+                pool_assoc = models.VipRequest.objects.filter(
+                    viprequestport__viprequestportpool__server_pool=pool['server_pool']
+                )
+                if vip_request.get('id'):
+                    pool_assoc = pool_assoc.exclude(id=vip_request.get('id'))
+
+                if pool_assoc:
+                    raise Exception('Pool %s must be associated to a only vip request, when vip request has dslr3 option' % pool['server_pool'])
 
             spms = ServerPoolMember.objects.filter(server_pool=pool['server_pool'])
             for spm in spms:

@@ -5,6 +5,7 @@ import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import monitor, node, pool, poolmember, util, virtualserver
+from networkapi.plugins.F5.util import logger
 
 from ..base import BasePlugin
 
@@ -16,6 +17,7 @@ class Generic(BasePlugin):
     #######################################
     # VIP
     #######################################
+    @logger
     @util.connection
     def delete_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -31,6 +33,7 @@ class Generic(BasePlugin):
 
             self.__delete_pool({'pools': tratado['pool_filter_created']})
 
+    @logger
     @util.connection
     def create_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -45,6 +48,7 @@ class Generic(BasePlugin):
                 self.__delete_pool({'pools': tratado['pool_filter']})
             raise base_exceptions.CommandErrorException(e)
 
+    @logger
     @util.connection
     def update_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -62,6 +66,7 @@ class Generic(BasePlugin):
     #######################################
     # POOLMEMBER
     #######################################
+    @logger
     @util.transation
     def set_state_member(self, pools):
 
@@ -75,6 +80,7 @@ class Generic(BasePlugin):
             monitor_state=pls['pools_members']['monitor'],
             session_state=pls['pools_members']['session'])
 
+    @logger
     @util.transation
     def set_connection_limit_member(self, pools):
 
@@ -86,6 +92,7 @@ class Generic(BasePlugin):
             members=pls['pools_members']['members'],
             connection_limit=pls['pools_members']['limit'])
 
+    @logger
     @util.transation
     def set_priority_member(self, pools):
 
@@ -97,6 +104,7 @@ class Generic(BasePlugin):
             members=pls['pools_members']['members'],
             priority=pls['pools_members']['priority'])
 
+    @logger
     @util.transation
     def get_state_member(self, pools):
         pls = util.trata_param_pool(pools)
@@ -106,6 +114,7 @@ class Generic(BasePlugin):
             names=pls['pools_names'],
             members=pls['pools_members']['members'])
 
+    @logger
     @util.transation
     def create_member(self, pools):
 
@@ -116,6 +125,7 @@ class Generic(BasePlugin):
             names=pls['pools_names'],
             members=pls['pools_members']['members'])
 
+    @logger
     @util.transation
     def remove_member(self, pools):
 
@@ -129,12 +139,13 @@ class Generic(BasePlugin):
     #######################################
     # POOL
     #######################################
+    @logger
     @util.connection
     def create_pool(self, pools):
         self.__create_pool(pools)
 
+    @logger
     def __create_pool(self, pools):
-        log.info('__create_pool')
 
         monitor_associations = []
         pls = util.trata_param_pool(pools)
@@ -202,12 +213,13 @@ class Generic(BasePlugin):
             except bigsuds.OperationFailed:
                 pass
 
+    @logger
     @util.connection
     def update_pool(self, pools):
         self.__update_pool(pools)
 
+    @logger
     def __update_pool(self, pools):
-        log.info('__update_pool')
         monitor_associations = []
         pls = util.trata_param_pool(pools)
 
@@ -369,12 +381,13 @@ class Generic(BasePlugin):
             except bigsuds.OperationFailed:
                 pass
 
+    @logger
     @util.connection
     def delete_pool(self, pools):
         self.__delete_pool(pools)
 
+    @logger
     def __delete_pool(self, pools):
-        log.info('__delete_pool')
 
         pls = util.trata_param_pool(pools)
 

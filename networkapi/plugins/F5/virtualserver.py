@@ -38,6 +38,11 @@ class VirtualServer(F5Base):
             'traffic_groups': list()
         }
 
+        vip_dscp = {
+            'pool_names': list(),
+            'values': list()
+        }
+
         tcp = ProfileTCP(self._lb)
         http = ProfileHttp(self._lb)
         fastl4 = ProfileFastL4(self._lb)
@@ -65,6 +70,9 @@ class VirtualServer(F5Base):
             vip_profiles = self.__properties['profiles']
 
             # vip_rules['rules'].append(vip_request['rules'])
+
+            vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
+            vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
 
             if vip_request['optionsvip']['traffic_group']:
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
@@ -95,7 +103,10 @@ class VirtualServer(F5Base):
 
             self.__add_persistence_profile(self.__properties['profiles_persistence'])
 
+            self.__set_dscp(dscp=vip_dscp)
+
             self.__set_translate_port_state(self.__properties['translate_port_state'])
+
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
             raise e
@@ -143,6 +154,11 @@ class VirtualServer(F5Base):
             'protocols': list()
         }
 
+        vip_dscp = {
+            'pool_names': list(),
+            'values': list()
+        }
+
         for idx, vip_request in enumerate(kwargs['vips']):
 
             protocol = types.procotol_type(vip_request['optionsvip']['l4_protocol']['nome_opcao_txt'].lower())
@@ -180,6 +196,9 @@ class VirtualServer(F5Base):
 
             # vip_rules['rules'].append(vip_request['rules'])
 
+            vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
+            vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
+
             if vip_request['optionsvip']['traffic_group']:
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
@@ -209,6 +228,8 @@ class VirtualServer(F5Base):
             vip_snat_none=self.__properties['vip_snat_none'])
 
         self.__add_persistence_profile(self.__properties['profiles_persistence'])
+
+        self.__set_dscp(dscp=vip_dscp)
 
         self.__set_translate_port_state(self.__properties['translate_port_state'])
 
@@ -248,7 +269,6 @@ class VirtualServer(F5Base):
 
     @logger
     def __add_persistence_profile(self, profiles_persistence):
-        log.info(profiles_persistence)
         if profiles_persistence['virtual_servers']:
             self._lb._channel.LocalLB.VirtualServer.add_persistence_profile(
                 virtual_servers=profiles_persistence['virtual_servers'],
@@ -266,7 +286,7 @@ class VirtualServer(F5Base):
     @logger
     def __set_translate_port_state(self, translate_port_state):
         if translate_port_state['virtual_servers']:
-            self._lb._channel.LocalLB.VirtualAddressV2.set_translate_port_state(
+            self._lb._channel.LocalLB.VirtualServer.set_translate_port_state(
                 virtual_servers=translate_port_state['virtual_servers'],
                 states=translate_port_state['states']
             )
@@ -383,11 +403,14 @@ class VirtualServer(F5Base):
             virtual_servers=virtual_servers
         )
 
+    @logger
     def __set_dscp(self, dscp):
 
-        if dscp.get('dscp'):
-            pl = pool.Pool(self._lb)
-            pl.set_server_ip_tos(dscp)
+        pl = pool.Pool(self._lb)
+        pl.set_server_ip_tos(
+            values=dscp['values'],
+            pool_names=dscp['pool_names']
+        )
 
     def __prepare_properties(self, vip_request, profiles_list, update=False):
 

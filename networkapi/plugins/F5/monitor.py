@@ -7,14 +7,15 @@ from django.core.cache import cache
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import types
 from networkapi.plugins.F5.f5base import F5Base
+from networkapi.plugins.F5.util import logger
 
 log = logging.getLogger(__name__)
 
 
 class Monitor(F5Base):
 
+    @logger
     def prepare_template(self, **kwargs):
-        log.info('monitor:prepare_template:%s' % kwargs)
 
         templates = []
         template_attributes = []
@@ -112,8 +113,8 @@ class Monitor(F5Base):
 
         return monitor_associations, monitor_associations_nodes, templates_extra
 
+    @logger
     def create_template(self, **kwargs):
-        log.info('monitor:create_template:%s' % kwargs)
 
         templates = kwargs['templates_extra']['templates']
         template_attributes = kwargs['templates_extra']['template_attributes']
@@ -175,16 +176,16 @@ class Monitor(F5Base):
     #         except bigsuds.OperationFailed:
     #             pass
 
+    @logger
     def get_template_string_property(self, **kwargs):
-        log.info('monitor:get_template_string_property:%s' % kwargs)
         strings = self._lb._channel.LocalLB.Monitor.get_template_string_property(
             template_names=kwargs['template_names'],
             property_types=kwargs['property_types']
         )
         return strings
 
+    @logger
     def delete_template(self, **kwargs):
-        log.info('monitor:delete_template:%s' % kwargs)
         for k, v in kwargs.items():
             if v == []:
                 return
@@ -196,5 +197,6 @@ class Monitor(F5Base):
         else:
             self._lb._channel.System.Session.submit_transaction()
 
+    @logger
     def generate_name(self, identifier, number=0):
         return '/Common/MONITOR_POOL_%s_%s_%s' % (identifier, str(number), str(time.time()))

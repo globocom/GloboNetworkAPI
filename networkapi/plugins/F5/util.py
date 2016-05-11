@@ -235,7 +235,7 @@ def trata_param_vip(vips):
                     vip_filter['pool'].append(server_pool['nome'])
 
                     vip_filter['optionsvip']['dscp'] = {
-                        'value': port['options']['dscp'] * 4 if port['options']['dscp'] else 65535,
+                        'value': vip_request['options']['dscp'] * 4 if vip_request['options']['dscp'] else 65535,
                         'pool_name': server_pool['nome']
                     }
 
@@ -286,7 +286,6 @@ def trata_param_vip(vips):
         'pool_filter_created': pool_filter_created
     }
 
-    log.info(res_fil)
     return res_fil
 
 
