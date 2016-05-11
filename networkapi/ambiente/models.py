@@ -1170,17 +1170,24 @@ class EnvironmentEnvironmentVip(BaseModel):
             raise EnvironmentEnvironmentVipDuplicatedError(None, u'Environment already registered for the environment vip.')
 
     @classmethod
-    def get_server_pool_member_by_environment_environment_vip(cls, environment_environment_vip):
+    def get_server_pool_by_environment_environment_vip(cls, environment_environment_vip):
 
-        from networkapi.requisicaovips.models import ServerPoolMember
+        from networkapi.requisicaovips.models import VipPortToPool
 
         environment = environment_environment_vip.environment
+        environment_vip = environment_environment_vip.environment_vip
 
-        server_pool_member_list = ServerPoolMember.objects.filter(
-            Q(ip__networkipv4__vlan__ambiente=environment) |
-            Q(ipv6__networkipv6__vlan__ambiente=environment))
+        vipporttopool_list = VipPortToPool.objects.filter(
+            Q(requisicao_vip__ip__networkipv4__ambient_vip=environment_vip) | 
+            Q(requisicao_vip__ipv6__networkipv6__ambient_vip=environment_vip), 
+            server_pool__environment=environment
+            )
 
-        return server_pool_member_list
+        server_pool_list = []
+        for vipporttopool in vipporttopool_list:
+            server_pool_list.append(vipporttopool.server_pool)
+
+        return server_pool_list
 
     @classmethod
     def get_environment_list_by_environment_vip_list(cls, environment_vip_list):
