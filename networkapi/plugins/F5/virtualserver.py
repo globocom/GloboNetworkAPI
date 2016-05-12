@@ -69,7 +69,9 @@ class VirtualServer(F5Base):
 
             vip_profiles = self.__properties['profiles']
 
-            # vip_rules['rules'].append(vip_request['rules'])
+            if vip_request.get('rules'):
+                vip_rules['rules'].append(vip_request['rules'])
+                vip_rules['virtual_servers'].append(vip_request['name'])
 
             vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
             vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
@@ -93,8 +95,8 @@ class VirtualServer(F5Base):
                 profiles=vip_profiles
             )
 
-            # self.__add_rule(vip_rules)
-            # self.__set_traffic_group(vip_traffic_groups)
+            self.__add_rule(vip_rules)
+            self.__set_traffic_group(vip_traffic_groups)
 
             self.__set_snat(
                 vip_snat_pool=self.__properties['vip_snat_pool'],
@@ -194,7 +196,9 @@ class VirtualServer(F5Base):
 
             resources['pool'].append(vip_request['pool'])
 
-            # vip_rules['rules'].append(vip_request['rules'])
+            if vip_request.get('rules'):
+                vip_rules['rules'].append(vip_request['rules'])
+                vip_rules['virtual_servers'].append(vip_request['name'])
 
             vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
             vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
@@ -217,8 +221,8 @@ class VirtualServer(F5Base):
         self.__add_profile(profiles_to_insert)
 
         resources['virtual_servers'] = virtual_servers
-        vip_rules['virtual_servers'] = virtual_servers
-        # self.__add_rule(vip_rules)
+
+        self.__add_rule(vip_rules)
         self.__set_default_pool_name(resources)
         self.__set_traffic_group(vip_traffic_groups)
 

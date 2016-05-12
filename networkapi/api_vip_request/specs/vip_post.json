@@ -71,53 +71,62 @@
           "environmentvip": {
             "type": "integer"
           },
-          "ports":{
-            "port": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 65535
-            },
-            "options": {
+          "ports": {
+            "type": "array",
+            "items": {
               "type": "object",
               "properties": {
-                "l4_protocol": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
+                "id": {
+                  "type": "null"
                 },
-                "l7_protocol": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
-                }
-              }
-            },
-            "pools": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "server_pool": {
-                    "type": "integer"
-                  },
-                  "l7_rule": {
-                    "type": "integer"
-                  },
-                  "l7_value": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                "port": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "options": {
+                  "type": "object",
+                  "properties": {
+                    "l4_protocol": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "l7_protocol": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
                   }
                 },
-                "required": [
-                  "server_pool",
-                  "l7_rule",
-                  "l7_value"
-                ],
-                "additionalProperties": false
+                "pools": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "server_pool": {
+                        "type": "integer"
+                      },
+                      "l7_rule": {
+                        "type": "integer"
+                      },
+                      "l7_value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "server_pool",
+                      "l7_rule",
+                      "l7_value"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
               }
             }
           },

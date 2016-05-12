@@ -487,6 +487,20 @@ def get_pool_by_id(pool_id):
     return server_pool
 
 
+def get_pool_list_by_environmentvip(environment_vip_id):
+    """
+    Return pool list by environment_vip_id
+    param environment_vip_id: environment_vip_id
+    """
+
+    server_pool = ServerPool.objects.filter(
+        Q(environment__vlan__networkipv4__ambient_vip__id=environment_vip_id) |
+        Q(environment__vlan__networkipv6__ambient_vip__id=environment_vip_id)
+    ).distinct().order_by('identifier')
+
+    return server_pool
+
+
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()

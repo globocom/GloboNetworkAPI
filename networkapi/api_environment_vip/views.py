@@ -3,10 +3,8 @@ import logging
 import urllib
 
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.api_environment_vip import facade
+from networkapi.api_environment_vip import exceptions, facade, serializers
 from networkapi.api_environment_vip.permissions import Read
-from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipEnvironmentVipSerializer, \
-    OptionVipSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 
@@ -37,7 +35,7 @@ class OptionVipEnvironmentVipOneView(APIView):
             if options_vip:
                 options_vip = options_vip[0]
 
-            serializer_options = OptionVipEnvironmentVipSerializer(
+            serializer_options = serializers.OptionVipEnvironmentVipSerializer(
                 options_vip,
                 many=True
             )
@@ -72,13 +70,13 @@ class EnvironmentVipStepOneView(APIView):
 
             if client != '' and finality != '' and environmentp44 != '':
                 obj = EnvironmentVip().get_by_values(finality, client, environmentp44)
-                evip_values = EnvironmentVipSerializer(
+                evip_values = serializers.EnvironmentVipSerializer(
                     obj,
                     many=False
                 ).data
             elif client != '' and finality != '':
                 obj = EnvironmentVip().list_all_ambientep44_by_finality_and_cliente(finality, client)
-                evip_values = EnvironmentVipSerializer(
+                evip_values = serializers.EnvironmentVipSerializer(
                     obj,
                     many=True
                 ).data
@@ -91,6 +89,41 @@ class EnvironmentVipStepOneView(APIView):
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException()
+
+
+class EnvironmentVipView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Method to return environment vip list.
+        Param environment_vip_ids: environment_vip_ids
+        """
+        try:
+            if not kwargs.get('environment_vip_ids'):
+                raise NotImplemented()
+            else:
+                environment_vip_ids = kwargs['environment_vip_ids'].split(';')
+
+                environments_vip = facade.get_environmentvip_by_ids(environment_vip_ids)
+
+                if environments_vip:
+                    environmentvip_serializer = serializers.EnvironmentVipSerializer(
+                        environments_vip,
+                        many=True
+                    )
+                    data = {
+                        'environments_vip': environmentvip_serializer.data
+                    }
+                else:
+                    raise exceptions.EnvironmentVipDoesNotExistException()
+
+            return Response(data, status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException(exception)
 
 
 class OptionVipEnvironmentTypeVipView(APIView):
@@ -121,7 +154,7 @@ class OptionVipEnvironmentTypeVipView(APIView):
             data = dict()
             data['optionsvip'] = list()
             for options_vip in options_vips:
-                serializer_options = OptionVipSerializer(
+                serializer_options = serializers.OptionVipSerializer(
                     options_vip,
                     many=True
                 )

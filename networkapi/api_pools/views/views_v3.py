@@ -308,12 +308,11 @@ class PoolEnvironmentVip(APIView):
             environment_vip_id = kwargs['environment_vip_id']
             pools = facade.get_pool_list_by_environmentvip(environment_vip_id)
             pool_serializer = serializers.PoolV3SimpleSerializer(
-                pools['pools'],
+                pools,
                 many=True
             )
             data = {
-                'server_pools': pool_serializer.data,
-                'total': pools['total'],
+                'server_pools': pool_serializer.data
             }
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:

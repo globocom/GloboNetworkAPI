@@ -18,5 +18,6 @@ urlpatterns = patterns(
     ########################
 
     url(r'^v3/vip-request/((?P<vip_request_ids>[;\w]+)/)?$', views.VipRequestDBView.as_view()),
+    url(r'^v3/vip-request/details/((?P<vip_request_ids>[;\w]+)/)?$', views.VipRequestDBDetailsView.as_view()),
     url(r'^v3/vip-request/deploy/((?P<vip_request_ids>[;\w]+)/)?$', views.VipRequestDeployView.as_view()),
 )

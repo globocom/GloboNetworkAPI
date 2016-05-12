@@ -7,7 +7,7 @@ from django.db.transaction import commit_on_success
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions, facade
 from networkapi.api_vip_request.permissions import DeployCreate, DeployDelete, DeployUpdate, Read, Write
-from networkapi.api_vip_request.serializers import VipRequestSerializer
+from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer, VipRequestSerializer
 from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate
@@ -183,3 +183,54 @@ class VipRequestDBView(APIView):
         facade.delete_vip_request(vip_request_ids)
 
         return Response(response)
+
+
+class VipRequestDBDetailsView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """Method to return a vip request by id
+        Param vip_request_id: vip request id
+        """
+        try:
+            if not kwargs.get('vip_request_ids'):
+
+                try:
+                    search = ast.literal_eval(request.GET.get('search'))
+                except:
+                    search = {}
+
+                vips_requests = facade.get_vip_request_by_search(search)
+
+                serializer_vips = VipRequestDetailsSerializer(
+                    vips_requests['vips'],
+                    many=True
+                )
+                data = {
+                    'vips': serializer_vips.data,
+                    'total': vips_requests['total'],
+                }
+
+            else:
+                vip_request_ids = kwargs['vip_request_ids'].split(';')
+
+                vips_requests = facade.get_vip_request(vip_request_ids)
+
+                if vips_requests:
+                    serializer_vips = VipRequestDetailsSerializer(
+                        vips_requests,
+                        many=True
+                    )
+                    data = {
+                        'vips': serializer_vips.data
+                    }
+                    log.info(serializer_vips.data)
+                else:
+                    raise exceptions.VipRequestDoesNotExistException()
+
+            return Response(data, status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)
