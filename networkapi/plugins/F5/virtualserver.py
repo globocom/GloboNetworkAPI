@@ -88,12 +88,11 @@ class VirtualServer(F5Base):
                 profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
                 profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
 
-            self._lb._channel.LocalLB.VirtualServer.create(
-                definitions=vip_definitions,
-                wildmasks=vip_wildmasks,
-                resources=vip_resources,
-                profiles=vip_profiles
-            )
+            self.__create_vip(
+                vip_definitions=vip_definitions,
+                vip_wildmasks=vip_wildmasks,
+                vip_resources=vip_resources,
+                vip_profiles=vip_profiles)
 
             self.__add_rule(vip_rules)
             self.__set_traffic_group(vip_traffic_groups)
@@ -207,35 +206,53 @@ class VirtualServer(F5Base):
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
 
-        self.__set_protocol(vip_protocols)
+        self._lb._channel.System.Session.start_transaction()
 
-        self.__remove_profile(profiles_to_delete)
-        self.__remove_all_persistence_profiles(virtual_servers)
-        self.__remove_all_rule(virtual_servers)
+        try:
+            self.__set_protocol(vip_protocols)
 
-        self.__profiles_timeout_create(
-            profiles_timeout_tcp=self.__properties['profiles_timeout_tcp'],
-            profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
-            profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
+            self.__remove_profile(profiles_to_delete)
+            self.__remove_all_persistence_profiles(virtual_servers)
+            self.__remove_all_rule(virtual_servers)
 
-        self.__add_profile(profiles_to_insert)
+            self.__profiles_timeout_create(
+                profiles_timeout_tcp=self.__properties['profiles_timeout_tcp'],
+                profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
+                profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
 
-        resources['virtual_servers'] = virtual_servers
+            self.__add_profile(profiles_to_insert)
 
-        self.__add_rule(vip_rules)
-        self.__set_default_pool_name(resources)
-        self.__set_traffic_group(vip_traffic_groups)
+            resources['virtual_servers'] = virtual_servers
 
-        self.__set_snat(
-            vip_snat_pool=self.__properties['vip_snat_pool'],
-            vip_snat_auto=self.__properties['vip_snat_auto'],
-            vip_snat_none=self.__properties['vip_snat_none'])
+            self.__add_rule(vip_rules)
+            self.__set_default_pool_name(resources)
+            self.__set_traffic_group(vip_traffic_groups)
 
-        self.__add_persistence_profile(self.__properties['profiles_persistence'])
+            self.__set_snat(
+                vip_snat_pool=self.__properties['vip_snat_pool'],
+                vip_snat_auto=self.__properties['vip_snat_auto'],
+                vip_snat_none=self.__properties['vip_snat_none'])
 
-        self.__set_dscp(dscp=vip_dscp)
+            self.__add_persistence_profile(self.__properties['profiles_persistence'])
 
-        self.__set_translate_port_state(self.__properties['translate_port_state'])
+            self.__set_dscp(dscp=vip_dscp)
+
+            self.__set_translate_port_state(self.__properties['translate_port_state'])
+
+        except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
+            raise e
+        else:
+            self._lb._channel.System.Session.submit_transaction()
+
+    @logger
+    def __create_vip(self, **kwargs):
+        self._lb._channel.LocalLB.VirtualServer.create(
+            definitions=kwargs['vip_definitions'],
+            wildmasks=kwargs['vip_wildmasks'],
+            resources=kwargs['vip_resources'],
+            profiles=kwargs['vip_profiles']
+        )
 
     @logger
     def __set_snat(self, **kwargs):

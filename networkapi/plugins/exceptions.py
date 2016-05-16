@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rest_framework.exceptions import APIException
 from rest_framework import status
+from rest_framework.exceptions import APIException
 
 
 class CommandErrorException(APIException):
@@ -92,6 +92,7 @@ class PluginUninstanced(APIException):
     def __init__(self, msg=None):
         self.detail = u'Plugin uninstanced: <<%s>>' % (msg)
 
+
 class PluginNotConnected(APIException):
 
     """Return message error: Plugin uninstanced"""
@@ -100,6 +101,7 @@ class PluginNotConnected(APIException):
 
     def __init__(self):
         self.detail = u'Plugin not connected'
+
 
 class NamePropertyInvalid(APIException):
 

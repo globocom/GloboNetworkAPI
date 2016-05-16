@@ -75,8 +75,6 @@ def update_vip_request(vip_request):
     option_remove = list(set(option_ids) - set(options))
     option_create = list(set(options) - set(option_ids))
 
-    log.info(option_ids)
-    log.info(options)
     vip.save()
 
     _update_port(vip_request['ports'], vip.id)
@@ -165,6 +163,13 @@ def _update_port(ports, vip_request_id):
             opt.optionvip_id = port['options']['l7_protocol']
             opt.save()
 
+        # delete option by port
+        models.VipRequestPortOptionVip.objects.filter(
+            vip_request_port_id=pt.id
+        ).exclude(
+            optionvip_id__in=[port['options']['l4_protocol'], port['options']['l7_protocol']]
+        ).delete()
+
         # save pool by port
         for pool in port.get('pools'):
             try:
@@ -249,7 +254,8 @@ def create_real_vip_request(vip_requests):
 
     load_balance = dict()
 
-    for vip_request in vip_requests:
+    for vip in vip_requests:
+        vip_request = copy.deepcopy(vip)
 
         id_vip = str(vip_request['id'])
 
@@ -347,7 +353,7 @@ def create_real_vip_request(vip_requests):
                                 if validation.get('type') == 'optionvip':
                                     validated &= valid_expression(
                                         validation.get('operator'),
-                                        vip_request['optionsvip'][validation.get('variable')],
+                                        vip_request['options'][validation.get('variable')],
                                         validation.get('value')
                                     )
 
@@ -419,7 +425,8 @@ def create_real_vip_request(vip_requests):
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
-        load_balance[lb]['plugin'].create_vip(load_balance[lb])
+        inst = copy.deepcopy(load_balance.get(lb))
+        inst.get('plugin').create_vip(inst)
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=True)
@@ -534,7 +541,7 @@ def update_real_vip_request(vip_requests):
                                 if validation.get('type') == 'optionvip':
                                     validated &= valid_expression(
                                         validation.get('operator'),
-                                        vip_request['optionsvip'][validation.get('variable')],
+                                        vip_request['options'][validation.get('variable')],
                                         validation.get('value')
                                     )
 
@@ -606,7 +613,8 @@ def update_real_vip_request(vip_requests):
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
-        load_balance[lb]['plugin'].update_vip(load_balance[lb])
+        inst = copy.deepcopy(load_balance.get(lb))
+        inst.get('plugin').update_vip(inst)
 
 
 @commit_on_success
@@ -643,6 +651,8 @@ def delete_real_vip_request(vip_requests):
             'id': persistence.id,
             'nome_opcao_txt': persistence.nome_opcao_txt
         }
+
+        vip_request['options']['dscp'] = None
 
         for idx, port in enumerate(vip['ports']):
             for i, pl in enumerate(port['pools']):
@@ -702,7 +712,7 @@ def delete_real_vip_request(vip_requests):
                                 if validation.get('type') == 'optionvip':
                                     validated &= valid_expression(
                                         validation.get('operator'),
-                                        vip_request['optionsvip'][validation.get('variable')],
+                                        vip_request['options'][validation.get('variable')],
                                         validation.get('value')
                                     )
 
@@ -764,7 +774,8 @@ def delete_real_vip_request(vip_requests):
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
 
     for lb in load_balance:
-        load_balance[lb]['plugin'].delete_vip(load_balance[lb])
+        inst = copy.deepcopy(load_balance.get(lb))
+        inst.get('plugin').delete_vip(inst)
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=False)
@@ -864,7 +875,7 @@ def validate_save(vip_request, permit_created=False):
     )
 
     if len(opts) != options.count():
-        raise Exception('Invalid Options to VipRequest %s' % vip_request['name'])
+        raise Exception('Invalid Options to VipRequest %s, because environmentvip is not associated to options' % vip_request['name'])
 
     # validate pools associates
     for port in vip_request.get('ports'):

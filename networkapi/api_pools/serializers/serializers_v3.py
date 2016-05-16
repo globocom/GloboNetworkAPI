@@ -48,6 +48,36 @@ class Ipv6BasicSerializer(serializers.ModelSerializer):
         )
 
 
+class Ipv4DetailsSerializer(serializers.ModelSerializer):
+
+    id = serializers.Field()
+    ip_formated = serializers.Field(source='ip_formated')
+    description = serializers.Field(source='descricao')
+
+    class Meta:
+        model = Ip
+        fields = (
+            'id',
+            'ip_formated',
+            'description'
+        )
+
+
+class Ipv6DetailsSerializer(serializers.ModelSerializer):
+
+    id = serializers.Field()
+    ip_formated = serializers.Field(source='ip_formated')
+    description = serializers.Field(source='descricao')
+
+    class Meta:
+        model = Ipv6
+        fields = (
+            'id',
+            'ip_formated',
+            'description'
+        )
+
+
 class OptionPoolV3Serializer(serializers.ModelSerializer):
 
     class Meta:
@@ -120,6 +150,7 @@ class PoolMemberV3Serializer(serializers.ModelSerializer):
 
     ipv6 = serializers.SerializerMethodField('get_ipv6')
     ip = serializers.SerializerMethodField('get_ip')
+    last_status_update_formated = serializers.Field(source='last_status_update_formated')
 
     equipment = eqpt_serializers.EquipmentBasicSerializer()
 
@@ -154,6 +185,7 @@ class PoolMemberV3Serializer(serializers.ModelSerializer):
             'weight',
             'limit',
             'port_real',
+            'last_status_update_formated',
             'member_status'
         )
 

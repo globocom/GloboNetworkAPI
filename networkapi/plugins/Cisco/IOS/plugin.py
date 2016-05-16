@@ -15,74 +15,77 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import re
+
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.plugins import exceptions as base_exceptions
-import logging
+
 from ...base import BasePlugin
-import re
 
 log = logging.getLogger(__name__)
 
+
 class IOS(BasePlugin):
 
-	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
+    INVALID_REGEX = '([Ii]nvalid)|overlaps with'
 
-	admin_privileges = 15
-	VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
+    admin_privileges = 15
+    VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
 
-	def create_svi(self, svi_number, svi_description='no description'):
-		'''
-		Create SVI in switch
-		'''
-		self.ensure_privilege_level(self)
-		self.channel.send("terminal length 0\nconfigure terminal\n \
-			interface Vlan%s \n description %s \n end \n" % (svi_number, svi_description))
-		recv = self.waitString("#")
+    def create_svi(self, svi_number, svi_description='no description'):
+        '''
+        Create SVI in switch
+        '''
+        self.ensure_privilege_level(self)
+        self.channel.send("terminal length 0\nconfigure terminal\n \
+            interface Vlan%s \n description %s \n end \n" % (svi_number, svi_description))
+        recv = self.waitString("#")
 
-		return recv
+        return recv
 
-	def copyScriptFileToConfig (self, filename, use_vrf=None, destination="running-config"):
-		'''
-		Copy file from TFTP server to destination
-		By default, plugin should apply file in running configuration (active)
-		'''
-		if use_vrf == None:
-			use_vrf = self.management_vrf
+    def copyScriptFileToConfig(self, filename, use_vrf=None, destination="running-config"):
+        '''
+        Copy file from TFTP server to destination
+        By default, plugin should apply file in running configuration (active)
+        '''
+        if use_vrf is None:
+            use_vrf = self.management_vrf
 
-		command = "copy tftp://%s/%s %s %s\n\n" %(self.tftpserver, filename, destination, use_vrf)
+        command = "copy tftp://%s/%s %s %s\n\n" % (self.tftpserver, filename, destination, use_vrf)
 
-		log.info("sending command: %s" % command)
+        log.info("sending command: %s" % command)
 
-		self.channel.send("%s\n" % command)
-		recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+        self.channel.send("%s\n" % command)
+        recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
 
-		return recv
+        return recv
 
-	def ensure_privilege_level(self, privilege_level=None):
+    def ensure_privilege_level(self, privilege_level=None):
 
-		if privilege_level == None:
-			privilege_level = self.admin_privileges
+        if privilege_level is None:
+            privilege_level = self.admin_privileges
 
-		self.channel.send("\n")
-		recv = self.waitString(">|#")
-		self.channel.send("show privilege\n")
-		recv = self.waitString("Current privilege level is")
-		level = re.search('Current privilege level is ([0-9]+?).*', recv, re.DOTALL ).group(1)
+        self.channel.send("\n")
+        recv = self.waitString(">|#")
+        self.channel.send("show privilege\n")
+        recv = self.waitString("Current privilege level is")
+        level = re.search('Current privilege level is ([0-9]+?).*', recv, re.DOTALL).group(1)
 
-		level = (level.split(' '))[-1]
-		if int(level) < privilege_level:
-			self.channel.send("enable\n")
-			recv = self.waitString("Password:")
-			self.channel.send("%s\n" % self.equipment_access.enable_pass)
-			recv = self.waitString("#")
+        level = (level.split(' '))[-1]
+        if int(level) < privilege_level:
+            self.channel.send("enable\n")
+            recv = self.waitString("Password:")
+            self.channel.send("%s\n" % self.equipment_access.enable_pass)
+            recv = self.waitString("#")
 
-	def remove_svi(self, svi_number):
-		'''
-		Delete SVI from switch
-		'''
-		self.ensure_privilege_level()
-		self.channel.send("terminal length 0\nconfigure terminal\n \
-			no interface Vlan%s \n end \n" % (svi_number))
-		recv = self.waitString("#")
+    def remove_svi(self, svi_number):
+        '''
+        Delete SVI from switch
+        '''
+        self.ensure_privilege_level()
+        self.channel.send("terminal length 0\nconfigure terminal\n \
+            no interface Vlan%s \n end \n" % (svi_number))
+        recv = self.waitString("#")
 
-		return recv
+        return recv

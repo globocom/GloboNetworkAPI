@@ -2,8 +2,8 @@
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
-from networkapi.api_pools.serializers import Ipv4BasicSerializer, Ipv4Serializer, Ipv6BasicSerializer,\
-    Ipv6Serializer, PoolV3Serializer
+from networkapi.api_pools.serializers import Ipv4BasicSerializer, Ipv4DetailsSerializer, Ipv4Serializer,\
+    Ipv6BasicSerializer, Ipv6DetailsSerializer, Ipv6Serializer, PoolV3Serializer
 from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPort,\
     VipRequestPortPool
 
@@ -202,11 +202,27 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
 
     environmentvip = EnvironmentVipSerializer()
 
-    ipv4 = Ipv4BasicSerializer()
+    ipv4 = Ipv4DetailsSerializer()
 
-    ipv6 = Ipv6BasicSerializer()
+    ipv6 = Ipv6DetailsSerializer()
 
     options = serializers.SerializerMethodField('get_options')
+
+    equipments = serializers.SerializerMethodField('get_eqpt')
+
+    def get_eqpt(self, obj):
+        eqpts = list()
+        equipments = list()
+        if obj.ipv4:
+            eqpts = obj.ipv4.ipequipamento_set.all()
+        if obj.ipv6:
+            eqpts |= obj.ipv6.ipv6equipament_set.all()
+
+        for eqpt in eqpts:
+            equipments.append(eqpt.equipamento)
+        eqpt_serializer = EquipmentSerializer(equipments, many=True)
+
+        return eqpt_serializer.data
 
     def get_options(self, obj):
         options = obj.viprequestoptionvip_set.all()
@@ -246,6 +262,7 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
             'environmentvip',
             'ipv4',
             'ipv6',
+            'equipments',
             'ports',
             'options',
             'created'

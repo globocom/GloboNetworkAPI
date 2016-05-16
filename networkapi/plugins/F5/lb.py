@@ -26,6 +26,8 @@ class Lb(object):
             raise base_exceptions.CommandErrorException(e)
         else:
             log.info('connected in hostname:%s' % hostname)
+            log.info('connected in username:%s' % username)
+            log.info('connected in password:%s' % password)
             try:
                 self._version = self._channel.System.SystemInfo.get_version()
 
@@ -34,5 +36,6 @@ class Lb(object):
                         'This plugin only supports BIG-IP v11 or above')
                 else:
                     self._channel = self._channel.with_session_id()
-            except:
-                raise base_exceptions.CommandErrorException('There are too many existing user sessions. Please try later')
+            except Exception, e:
+                log.error(e)
+                raise base_exceptions.CommandErrorException(e)
