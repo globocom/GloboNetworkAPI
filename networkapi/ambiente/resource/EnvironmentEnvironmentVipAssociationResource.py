@@ -144,10 +144,9 @@ class EnvironmentEnvironmentVipAssociationResource(RestResource):
             environment_vip = EnvironmentVip.get_by_pk(environment_vip_id)
             # Business Rules
             environment_environment_vip = EnvironmentEnvironmentVip().get_by_environment_environment_vip(environment.id, environment_vip.id)
-            server_pool_list = EnvironmentEnvironmentVip.get_server_pool_member_by_environment_environment_vip(environment_environment_vip)
+            server_pool_list = EnvironmentEnvironmentVip.get_server_pool_by_environment_environment_vip(environment_environment_vip)
 
-            # Valid integraty between environment/environmentvip related with reals
-            # if exists reals fot this environment then raise a exception
+            # Check if there are any pool from this environment used in any vip of this environment vip
             if server_pool_list:
                 raise EnvironmentEnvironmentServerPoolLinked({'environment': environment.name})
 
