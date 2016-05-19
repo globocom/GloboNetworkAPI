@@ -1,0 +1,13 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `vlans` 
+CHANGE COLUMN `acl_draft` `acl_draft` MEDIUMTEXT DEFAULT NULL COMMENT '' ;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `event_log` 
+CHANGE COLUMN `acl_draft` `acl_draft` TEXT  '' ;
+
+"""
