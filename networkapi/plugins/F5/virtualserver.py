@@ -23,8 +23,8 @@ class VirtualServer(F5Base):
                 virtual_servers=kwargs['vps_names']
             )
         except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
             log.error(e)
+            self._lb._channel.System.Session.rollback_transaction()
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -103,7 +103,6 @@ class VirtualServer(F5Base):
                 vip_profiles=vip_profiles)
 
             self.__add_rule(vip_rules)
-            self.__set_traffic_group(vip_traffic_groups)
 
             self.__set_snat(
                 vip_snat_pool=self.__properties['vip_snat_pool'],
@@ -117,11 +116,22 @@ class VirtualServer(F5Base):
             self.__set_translate_port_state(self.__properties['translate_port_state'])
 
         except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
             log.error(e)
+            self._lb._channel.System.Session.rollback_transaction()
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
+
+            if vip_traffic_groups['virtual_addresses']:
+                try:
+                    self._lb._channel.System.Session.start_transaction()
+                    self.__set_traffic_group(vip_traffic_groups)
+                except Exception, e:
+                    log.error(e)
+                    self._lb._channel.System.Session.rollback_transaction()
+                    raise e
+                else:
+                    self._lb._channel.System.Session.submit_transaction()
 
     @logger
     def update(self, **kwargs):
@@ -234,7 +244,6 @@ class VirtualServer(F5Base):
 
             self.__add_rule(vip_rules)
             self.__set_default_pool_name(resources)
-            self.__set_traffic_group(vip_traffic_groups)
 
             self.__set_snat(
                 vip_snat_pool=self.__properties['vip_snat_pool'],
@@ -248,8 +257,8 @@ class VirtualServer(F5Base):
             self.__set_translate_port_state(self.__properties['translate_port_state'])
 
         except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
             log.error(e)
+            self._lb._channel.System.Session.rollback_transaction()
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()

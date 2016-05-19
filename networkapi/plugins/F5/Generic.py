@@ -195,13 +195,13 @@ class Generic(BasePlugin):
                 session_state=pls['pools_members']['session'])
 
         except Exception, e:
+            log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
             template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names != []:
                 mon.delete_template(
                     template_names=template_names
                 )
-            log.error(e)
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -347,6 +347,7 @@ class Generic(BasePlugin):
                 session_state=pls['pools_members']['session'])
 
         except Exception, e:
+            log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
 
             # delete templates created
@@ -355,7 +356,6 @@ class Generic(BasePlugin):
                 mon.delete_template(
                     template_names=template_names
                 )
-            log.error(e)
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -400,8 +400,8 @@ class Generic(BasePlugin):
             monitor_associations = pl.get_monitor_association(names=pls['pools_names'])
             pl.remove_monitor_association(names=pls['pools_names'])
         except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
             log.error(e)
+            self._lb._channel.System.Session.rollback_transaction()
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -410,9 +410,9 @@ class Generic(BasePlugin):
                 self._lb._channel.System.Session.start_transaction()
                 pl.delete(names=pls['pools_names'])
             except Exception, e:
+                log.error(e)
                 self._lb._channel.System.Session.rollback_transaction()
                 pl.set_monitor_association(monitor_associations=monitor_associations)
-                log.error(e)
                 raise base_exceptions.CommandErrorException(e)
             else:
                 self._lb._channel.System.Session.submit_transaction()

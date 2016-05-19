@@ -215,9 +215,18 @@ def trata_param_vip(vips):
                 vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
 
                 try:
-                    keys = [key.keys()[0] for key in conf['keys']]
-                    pos = keys.index(port['options']['cluster_unit'])
-                    vip_filter['optionsvip']['traffic_group'] = conf['keys'][pos][port['options']['cluster_unit']]
+                    cluster_unit = None
+                    for keys in conf['keys']:
+                        cluster_unit = keys.get(vip_request['options']['cluster_unit'])
+
+                        # traffic-group-1 is default, so must be ignored
+                        if cluster_unit == 'traffic-group-1':
+                            cluster_unit = None
+                            break
+
+                        if cluster_unit:
+                            break
+                    vip_filter['optionsvip']['traffic_group'] = cluster_unit
                 except:
                     vip_filter['optionsvip']['traffic_group'] = None
                     pass

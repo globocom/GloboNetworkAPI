@@ -183,12 +183,12 @@ LOGGING = {
         },
         'bigsuds': {
             'level': logging.DEBUG,
-            'propagate': True,
+            'propagate': False,
             'handlers': ['log_file'],
         },
         'suds': {
             'level': logging.INFO,
-            'propagate': True,
+            'propagate': False,
             'handlers': ['log_file'],
         },
         'django.db.backends': {
