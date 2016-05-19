@@ -151,11 +151,11 @@ class NetworkAddResource(RestResource):
                     '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block)) for net_ip in nets])
 
                 # If network selected not in use
-                for network in networks:
-                    if net in network or network in net:
+                for network_aux in networks:
+                    if net in network_aux or network_aux in net:
                         self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
                         raise NetworkIPv4AddressNotAvailableError(
-                            None, u'Network cannot be allocated. %s already in use in this environment.' % network)
+                            None, u'Network cannot be allocated. %s already in use in this environment.' % network_aux)
 
                 if env_vip is not None:
 
@@ -169,11 +169,11 @@ class NetworkAddResource(RestResource):
 
                     # If there is already a network with the same  range ip as
                     # related the environment  vip
-                    for network in networks:
-                        if net in network or network in net:
+                    for network_aux in networks:
+                        if net in network_aux or network_aux in net:
                             self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
                             raise NetworkIPv4AddressNotAvailableError(
-                                None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network)
+                                None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network_aux)
 
                 # # Filter case 1 - Adding new network with same ip range to another network on other environment ##
                 # Get environments with networks with the same ip range
@@ -248,11 +248,11 @@ class NetworkAddResource(RestResource):
                                                                             net_ip.block4, net_ip.block5, net_ip.block6, net_ip.block7, net_ip.block8, net_ip.block)) for net_ip in nets])
 
                 # If network selected not in use
-                for network in networks:
-                    if net in network or network in net:
+                for network_aux in networks:
+                    if net in network_aux or network_aux in net:
                         self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
                         raise NetworkIPv4AddressNotAvailableError(
-                            None, u'Network cannot be allocated. %s already in use in this environment.' % network)
+                            None, u'Network cannot be allocated. %s already in use in this environment.' % network_aux)
 
                 if env_vip is not None:
 
@@ -266,11 +266,11 @@ class NetworkAddResource(RestResource):
 
                     # If there is already a network with the same  range ip as
                     # related the environment  vip
-                    for network in networks:
-                        if net in network or network in net:
+                    for network_aux in networks:
+                        if net in network_aux or network_aux in net:
                             self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
                             raise NetworkIPv4AddressNotAvailableError(
-                                None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network)
+                                None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network_aux)
 
                 # # Filter case 1 - Adding new network with same ip range to another network on other environment ##
                 # Get environments with networks with the same ip range
