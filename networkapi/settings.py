@@ -38,7 +38,6 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
-#DEBUG = 0
 
 CI = os.getenv('CI', '0') == '1'
 
@@ -184,12 +183,12 @@ LOGGING = {
         },
         'bigsuds': {
             'level': logging.DEBUG,
-            'propagate': False,
+            'propagate': True,
             'handlers': ['log_file'],
         },
         'suds': {
             'level': logging.INFO,
-            'propagate': False,
+            'propagate': True,
             'handlers': ['log_file'],
         },
         'django.db.backends': {

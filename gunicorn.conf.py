@@ -50,3 +50,5 @@ bind = "0.0.0.0:8000"
 backlog = 2048
 preload_app = True
 pidfile = PIDFILE
+
+timeout = 300

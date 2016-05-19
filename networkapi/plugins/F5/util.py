@@ -50,6 +50,7 @@ def connection(func):
     def inner(self, *args, **kwargs):
         try:
             self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+            self._lb._channel.System.Session.set_transaction_timeout(60)
             return func(self, *args, **kwargs)
         except bigsuds.OperationFailed, e:
             log.error(e)
@@ -206,7 +207,7 @@ def trata_param_vip(vips):
                 address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
                 vip_filter['pool'] = list()
-                vip_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
+                vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
                 vip_filter['address'] = address
                 vip_filter['port'] = port['port']
                 vip_filter['optionsvip'] = vip_request['options']
@@ -254,7 +255,7 @@ def trata_param_vip(vips):
                         address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
                         vip_cache_filter['pool'] = list()
-                        vip_cache_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
+                        vip_cache_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
                         vip_cache_filter['address'] = address
                         vip_cache_filter['port'] = port['port']
                         for definition in definitions:

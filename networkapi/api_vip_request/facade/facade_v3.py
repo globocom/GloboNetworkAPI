@@ -91,7 +91,12 @@ def update_vip_request(vip_request):
 def delete_vip_request(vip_request_ids):
     """delete vip request"""
 
-    models.VipRequest.objects.filter(id__in=vip_request_ids).delete()
+    vp = models.VipRequest.objects.filter(id__in=vip_request_ids)
+    created = vp.filter(created=True)
+    if created:
+        raise exceptions.VipConstraintCreatedException()
+
+    vp.delete()
 
 
 def _create_port(ports, vip_request_id):
@@ -625,7 +630,7 @@ def delete_real_vip_request(vip_requests):
     for vip in vip_requests:
         vip_request = vip.copy()
 
-        equips, conf, cluster_unit = _validate_vip_to_apply(vip)
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip, True)
 
         conf = json.loads(conf)
 
@@ -951,9 +956,16 @@ def validate_save(vip_request, permit_created=False):
 
 
 def _dscp(vip_request_id):
+    members = ServerPoolMember.objects.filter(
+        server_pool__viprequestportpool__vip_request_port__vip_request__id=vip_request_id)
+    eqpts = [member.equipment.id for member in members]
+
     members = models.VipRequestDSCP.objects.filter(
         vip_request__viprequestport__viprequestportpool__server_pool__serverpoolmember__in=ServerPoolMember.objects.filter(
-            server_pool__viprequestportpool__vip_request_port__vip_request__id=vip_request_id)).distinct().values('dscp')
+            ip__ipequipamento__equipamento__in=eqpts
+        )
+    ).distinct().values('dscp')
+
     mb = [i.get('dscp') for i in members]
     perm = range(3, 64)
     perm_new = list(set(perm) - set(mb))
@@ -973,6 +985,9 @@ def _validate_vip_to_apply(vip_request, update=False):
 
     if update and not vip.created:
         raise exceptions.VipRequestNotCreated(vip.id)
+
+    if not update and vip.created:
+        raise exceptions.VipRequestAlreadyCreated(vip.id)
 
     equips = Equipamento.objects.filter(
         equipamentoambiente__ambiente__vlan__networkipv4__ambient_vip__id=vip_request['environmentvip'],

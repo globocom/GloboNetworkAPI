@@ -17,9 +17,17 @@ class VirtualServer(F5Base):
 
     @logger
     def delete(self, **kwargs):
-        self._lb._channel.LocalLB.VirtualServer.delete_virtual_server(
-            virtual_servers=kwargs['vps_names']
-        )
+        try:
+            self._lb._channel.System.Session.start_transaction()
+            self._lb._channel.LocalLB.VirtualServer.delete_virtual_server(
+                virtual_servers=kwargs['vps_names']
+            )
+        except Exception, e:
+            self._lb._channel.System.Session.rollback_transaction()
+            log.error(e)
+            raise e
+        else:
+            self._lb._channel.System.Session.submit_transaction()
 
     @logger
     def create(self, **kwargs):
@@ -43,9 +51,9 @@ class VirtualServer(F5Base):
             'values': list()
         }
 
+        fastl4 = ProfileFastL4(self._lb)
         tcp = ProfileTCP(self._lb)
         http = ProfileHttp(self._lb)
-        fastl4 = ProfileFastL4(self._lb)
         udp = ProfileUDP(self._lb)
         profiles_list = tcp.get_list() + http.get_list() + fastl4.get_list() + udp.get_list()
 
@@ -80,8 +88,8 @@ class VirtualServer(F5Base):
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
 
-        self._lb._channel.System.Session.start_transaction()
         try:
+            self._lb._channel.System.Session.start_transaction()
 
             self.__profiles_timeout_create(
                 profiles_timeout_tcp=self.__properties['profiles_timeout_tcp'],
@@ -110,6 +118,7 @@ class VirtualServer(F5Base):
 
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
+            log.error(e)
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -206,9 +215,8 @@ class VirtualServer(F5Base):
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
 
-        self._lb._channel.System.Session.start_transaction()
-
         try:
+            self._lb._channel.System.Session.start_transaction()
             self.__set_protocol(vip_protocols)
 
             self.__remove_profile(profiles_to_delete)
@@ -241,6 +249,7 @@ class VirtualServer(F5Base):
 
         except Exception, e:
             self._lb._channel.System.Session.rollback_transaction()
+            log.error(e)
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -521,6 +530,7 @@ class VirtualServer(F5Base):
                                                     })
                                         except:
                                             if '/Common/' + profile_name not in profiles_list:
+                                                log.error(u'Profile %s nao existe')
                                                 raise Exception(u'Profile %s nao existe')
                                             pass
                                     profiles.append({
