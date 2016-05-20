@@ -15,11 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import re
-
 from networkapi.api_rest import exceptions as api_exceptions
+import logging
 from networkapi.plugins import exceptions
+import re
 
 log = logging.getLogger(__name__)
 
@@ -27,16 +26,16 @@ log = logging.getLogger(__name__)
 class PluginFactory(object):
 
     @classmethod
-    def plugin_exists(cls, **kwargs):
+    def plugin_exists(self, **kwargs):
 
         try:
-            cls.get_plugin(kwargs)
+            self.get_plugin(kwargs)
             return True
         except NotImplementedError:
             return False
 
     @classmethod
-    def get_plugin(cls, **kwargs):
+    def get_plugin(self, **kwargs):
         if 'modelo' in kwargs:
             modelo = kwargs.get('modelo')
 
@@ -48,9 +47,6 @@ class PluginFactory(object):
             if re.search('WS-|C65', modelo.upper(), re.DOTALL):
                 from .Cisco.IOS.plugin import IOS
                 return IOS
-            if re.search('ACE30', modelo.upper(), re.DOTALL):
-                from .Cisco.ACE.plugin import ACE
-                return ACE
 
         if 'marca' in kwargs:
             marca = kwargs.get('marca')
@@ -60,6 +56,9 @@ class PluginFactory(object):
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic
+            if re.search('BROCADE', marca.upper(), re.DOTALL) or re.search('FOUNDRY', marca.upper(), re.DOTALL):
+                from .Brocade.Generic import Generic
+                return Generic
             if re.search('DELL', marca.upper(), re.DOTALL):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
@@ -67,10 +66,10 @@ class PluginFactory(object):
         raise NotImplementedError()
 
     @classmethod
-    def factory(cls, equipment):
+    def factory(self, equipment):
 
         marca = equipment.modelo.marca.nome
         modelo = equipment.modelo.nome
-        plugin_name = cls.get_plugin(modelo=modelo, marca=marca)
+        plugin_name = self.get_plugin(modelo=modelo, marca=marca)
 
         return plugin_name(equipment=equipment)
