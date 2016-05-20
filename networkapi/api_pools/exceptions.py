@@ -6,6 +6,13 @@ class PoolDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Pool Does Not Exist.'
 
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = u'Pools <<%s>> do not exists.' % (
+                msg)
+        else:
+            self.detail = self.default_detail
+
 
 class PoolMemberDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND

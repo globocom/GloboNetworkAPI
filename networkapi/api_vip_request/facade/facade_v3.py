@@ -1006,5 +1006,5 @@ def _validate_vip_to_apply(vip_request, update=False):
         raise AllEquipmentsAreInMaintenanceException()
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
-
+    log.info(equips)
     return equips, conf, cluster_unit

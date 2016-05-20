@@ -75,7 +75,7 @@ class VirtualServer(F5Base):
                 'default_pool_name': vip_request['pool']
             })
 
-            vip_profiles = self.__properties['profiles']
+            vip_profiles.append(self.__properties['profiles'])
 
             if vip_request.get('rules'):
                 vip_rules['rules'].append(vip_request['rules'])
@@ -570,4 +570,4 @@ class VirtualServer(F5Base):
                                     self.__properties['translate_port_state']['states'].append(item.get('value'))
 
                             break
-        self.__properties['profiles'].append(profiles)
+        self.__properties['profiles'] = profiles

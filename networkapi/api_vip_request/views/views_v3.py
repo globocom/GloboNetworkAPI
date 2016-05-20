@@ -30,7 +30,12 @@ class VipRequestDeployView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         vips = facade.get_vip_request(vip_request_ids)
-        vip_serializer = VipRequestSerializer(vips, many=True)
+
+        if vips:
+            vip_serializer = VipRequestSerializer(vips, many=True)
+        else:
+            raise exceptions.VipRequestDoesNotExistException()
+
         locks_list = facade.create_lock(vip_serializer.data)
         try:
             response = facade.create_real_vip_request(vip_serializer.data)
@@ -49,7 +54,11 @@ class VipRequestDeployView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         vips = facade.get_vip_request(vip_request_ids)
-        vip_serializer = VipRequestSerializer(vips, many=True)
+        if vips:
+            vip_serializer = VipRequestSerializer(vips, many=True)
+        else:
+            raise exceptions.VipRequestDoesNotExistException()
+
         locks_list = facade.create_lock(vip_serializer.data)
         try:
             response = facade.delete_real_vip_request(vip_serializer.data)

@@ -6,6 +6,13 @@ class VipRequestDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Vip Request Does Not Exist.'
 
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = u'Vips Request %s do not exist.' % (
+                msg)
+        else:
+            self.detail = self.default_detail
+
 
 class EnvironmentVipDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND

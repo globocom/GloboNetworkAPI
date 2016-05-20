@@ -188,7 +188,7 @@ LOGGING = {
         },
         'suds': {
             'level': logging.INFO,
-            'propagate': False,
+            'propagate': True,
             'handlers': ['log_file'],
         },
         'django.db.backends': {
