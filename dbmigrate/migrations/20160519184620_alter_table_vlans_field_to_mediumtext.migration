@@ -1,13 +1,13 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
 ALTER TABLE `vlans` 
-CHANGE COLUMN `acl_draft` `acl_draft` MEDIUMTEXT DEFAULT NULL COMMENT '' ;
+CHANGE COLUMN `acl_draft` `acl_draft` MEDIUMTEXT DEFAULT NULL ;
 
 """
 
 SQL_DOWN = u"""
 
-ALTER TABLE `event_log` 
-CHANGE COLUMN `acl_draft` `acl_draft` TEXT  '' ;
+ALTER TABLE `vlans` 
+CHANGE COLUMN `acl_draft` `acl_draft` TEXT;
 
 """
