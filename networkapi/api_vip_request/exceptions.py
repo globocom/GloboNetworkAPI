@@ -51,6 +51,12 @@ class IpNotFoundByEnvironment(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'IP environment is different of environment vip request'
 
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = u'%s %s' % (self.default_detail, msg)
+        else:
+            self.detail = self.default_detail
+
 
 class VipRequestAlreadyCreated(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

@@ -21,47 +21,100 @@ class Generic(BasePlugin):
     @util.connection
     def delete_vip(self, vips):
         tratado = util.trata_param_vip(vips)
+        vts = virtualserver.VirtualServer(self._lb)
         try:
-            vts = virtualserver.VirtualServer(self._lb)
-            vps_names = [vp['name'] for vp in tratado['vips_filter']]
-            vts.delete(vps_names=vps_names)
+            self._lb._channel.System.Session.start_transaction()
+            if tratado.get('vips_filter'):
+                vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
+                vts.delete(vps_names=vps_names)
+
+            if tratado.get('vips_cache_filter'):
+                vps_names = [vp['name'] for vp in tratado.get('vips_cache_filter')]
+                vts.delete(vps_names=vps_names)
         except Exception, e:
             log.error(e)
+            self._lb._channel.System.Session.rollback_transaction()
             raise base_exceptions.CommandErrorException(e)
         else:
-            self.__delete_pool({'pools': tratado['pool_filter_created']})
+            self._lb._channel.System.Session.submit_transaction()
+            if tratado.get('pool_filter_created'):
+                self.__delete_pool({'pools': tratado.get('pool_filter_created')})
 
     @logger
     @util.connection
     def create_vip(self, vips):
         tratado = util.trata_param_vip(vips)
+        vts = virtualserver.VirtualServer(self._lb)
 
-        if tratado['pool_filter']:
-            self.__create_pool({'pools': tratado['pool_filter']})
+        # vip create
+        if tratado.get('pool_filter'):
+            self.__create_pool({'pools': tratado.get('pool_filter')})
         try:
-            vts = virtualserver.VirtualServer(self._lb)
-            vts.create(vips=tratado['vips_filter'])
+            if tratado.get('vips_filter'):
+                vts.create(vips=tratado.get('vips_filter'))
         except Exception, e:
-            if tratado['pool_filter']:
-                self.__delete_pool({'pools': tratado['pool_filter']})
             log.error(e)
+
+            if tratado.get('pool_filter'):
+                self.__delete_pool({'pools': tratado.get('pool_filter')})
             raise base_exceptions.CommandErrorException(e)
+
+        else:
+
+            # cache layer
+            try:
+                if tratado.get('vips_cache_filter'):
+                    vts.create(vips=tratado.get('vips_cache_filter'))
+            except Exception, e:
+                log.error(e)
+
+                # rollback vip create
+                try:
+                    if tratado.get('vips_filter'):
+                        vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
+                        vts.delete(vps_names=vps_names)
+                except Exception, e:
+                    log.error(e)
+                    raise base_exceptions.CommandErrorException(e)
+                else:
+                    if tratado.get('pool_filter'):
+                        self.__delete_pool({'pools': tratado.get('pool_filter')})
+
+                raise base_exceptions.CommandErrorException(e)
 
     @logger
     @util.connection
     def update_vip(self, vips):
         tratado = util.trata_param_vip(vips)
 
-        if tratado['pool_filter']:
-            self.__create_pool({'pools': tratado['pool_filter']})
+        if tratado.get('pool_filter'):
+            self.__create_pool({'pools': tratado.get('pool_filter')})
         try:
             vts = virtualserver.VirtualServer(self._lb)
-            vts.update(vips=tratado['vips_filter'])
+            vts.update(vips=tratado.get('vips_filter'))
         except Exception, e:
-            if tratado['pool_filter']:
-                self.__delete_pool({'pools': tratado['pool_filter']})
+            if tratado.get('pool_filter'):
+                self.__delete_pool({'pools': tratado.get('pool_filter')})
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
+        else:
+            try:
+                vts.create(vips=tratado.get('vips_cache_filter'))
+            except Exception, e:
+                log.error(e)
+
+                # cache layer
+                try:
+                    if tratado.get('vips_filter'):
+                        vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
+                        vts.delete(vps_names=vps_names)
+                except Exception, e:
+                    log.error(e)
+                    raise base_exceptions.CommandErrorException(e)
+                else:
+                    self.__delete_pool({'pools': tratado.get('pool_filter')})
+
+                raise base_exceptions.CommandErrorException(e)
 
     #######################################
     # POOLMEMBER
