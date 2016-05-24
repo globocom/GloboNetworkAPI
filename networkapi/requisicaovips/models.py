@@ -42,6 +42,7 @@ import logging
 
 
 class RequisicaoVipsError(Exception):
+
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com requisicao_vips."""
 
     def __init__(self, cause, message=None):
@@ -54,6 +55,7 @@ class RequisicaoVipsError(Exception):
 
 
 class VipRequestBlockAlreadyInRule(RequisicaoVipsError):
+
     """Retorna exceção ao tentar inserir um bloco que já existe na regra do Vip."""
 
     def __init__(self, cause, message=None):
@@ -61,6 +63,7 @@ class VipRequestBlockAlreadyInRule(RequisicaoVipsError):
 
 
 class VipRequestNoBlockInRule(RequisicaoVipsError):
+
     """Retorna exceção ao buscar a regra associada a requisição vip."""
 
     def __init__(self, cause, message=None):
@@ -68,12 +71,15 @@ class VipRequestNoBlockInRule(RequisicaoVipsError):
 
 
 class RequisicaoVipsNotFoundError(RequisicaoVipsError):
+
     """Retorna exceção ao pesquisar a requisição de vip por chave primária."""
 
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+
 class RequisicaoVipsMissingDSRL3idError(RequisicaoVipsError):
+
     """Retorna exceção ao pesquisar a requisição de vip por chave primária."""
 
     def __init__(self, cause, message=None):
@@ -81,6 +87,7 @@ class RequisicaoVipsMissingDSRL3idError(RequisicaoVipsError):
 
 
 class RequisicaoVipsAlreadyCreatedError(RequisicaoVipsError):
+
     """Retorna exceção ao tentar alterar uma requisição de vip já criada."""
 
     def __init__(self, cause, message=None):
@@ -88,6 +95,7 @@ class RequisicaoVipsAlreadyCreatedError(RequisicaoVipsError):
 
 
 class InvalidFinalidadeValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável finalidade é inválido."""
 
     def __init__(self, cause, message=None):
@@ -95,6 +103,7 @@ class InvalidFinalidadeValueError(RequisicaoVipsError):
 
 
 class InvalidClienteValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável cliente é inválido."""
 
     def __init__(self, cause, message=None):
@@ -102,6 +111,7 @@ class InvalidClienteValueError(RequisicaoVipsError):
 
 
 class InvalidAmbienteValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável ambiente é inválido."""
 
     def __init__(self, cause, message=None):
@@ -109,6 +119,7 @@ class InvalidAmbienteValueError(RequisicaoVipsError):
 
 
 class InvalidTimeoutValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável timeout é inválido."""
 
     def __init__(self, cause, message=None):
@@ -116,6 +127,7 @@ class InvalidTimeoutValueError(RequisicaoVipsError):
 
 
 class InvalidCacheValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável cache é inválido."""
 
     def __init__(self, cause, message=None):
@@ -123,6 +135,7 @@ class InvalidCacheValueError(RequisicaoVipsError):
 
 
 class InvalidMetodoBalValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável metodo_bal é inválido."""
 
     def __init__(self, cause, message=None):
@@ -130,18 +143,23 @@ class InvalidMetodoBalValueError(RequisicaoVipsError):
 
 
 class InvalidPersistenciaValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável persistencia é inválido."""
 
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+
 class InvalidTrafficReturnValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável traffic return é inválido."""
 
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
 
+
 class InvalidHealthcheckTypeValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável healthcheck_type é inválido."""
 
     def __init__(self, cause, message=None):
@@ -149,6 +167,7 @@ class InvalidHealthcheckTypeValueError(RequisicaoVipsError):
 
 
 class InvalidMaxConValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável maxcon é inválido."""
 
     def __init__(self, cause, message=None):
@@ -156,6 +175,7 @@ class InvalidMaxConValueError(RequisicaoVipsError):
 
 
 class InvalidBalAtivoValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável bal_ativo é inválido."""
 
     def __init__(self, cause, message=None):
@@ -163,6 +183,7 @@ class InvalidBalAtivoValueError(RequisicaoVipsError):
 
 
 class InvalidTransbordoValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável transbordo é inválido."""
 
     def __init__(self, cause, message=None):
@@ -170,6 +191,7 @@ class InvalidTransbordoValueError(RequisicaoVipsError):
 
 
 class InvalidServicePortValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável porta do serviço é inválido."""
 
     def __init__(self, cause, message=None):
@@ -177,6 +199,7 @@ class InvalidServicePortValueError(RequisicaoVipsError):
 
 
 class InvalidRealValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável real é inválido."""
 
     def __init__(self, cause, message=None):
@@ -184,6 +207,7 @@ class InvalidRealValueError(RequisicaoVipsError):
 
 
 class InvalidHealthcheckValueError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável healthcheck é inválido."""
 
     def __init__(self, cause, message=None):
@@ -191,6 +215,7 @@ class InvalidHealthcheckValueError(RequisicaoVipsError):
 
 
 class InvalidHostNameError(RequisicaoVipsError):
+
     """Retorna exceção quando o valor da variável host é inválido."""
 
     def __init__(self, cause, message=None):
@@ -198,6 +223,7 @@ class InvalidHostNameError(RequisicaoVipsError):
 
 
 class InvalidPriorityValueError(RequisicaoVipsError):
+
     """Returns exception when the value of the priority variable is invalid."""
 
     def __init__(self, cause, message=None):
@@ -205,6 +231,7 @@ class InvalidPriorityValueError(RequisicaoVipsError):
 
 
 class RequestVipWithoutServerPoolError(RequisicaoVipsError):
+
     """Return exception when no one exisitir server pool to request VIP."""
 
     def __init__(self, cause, message=None):
@@ -212,6 +239,7 @@ class RequestVipWithoutServerPoolError(RequisicaoVipsError):
 
 
 class InvalidWeightValueError(RequisicaoVipsError):
+
     """Returns exception when the value of the weight variable is invalid."""
 
     def __init__(self, cause, message=None):
@@ -219,11 +247,11 @@ class InvalidWeightValueError(RequisicaoVipsError):
 
 
 class RequestVipServerPoolConstraintError(RequisicaoVipsError):
+
     """Return exception when delete server pool related with other request VIP."""
 
     def __init__(self, cause, message=None):
         RequisicaoVipsError.__init__(self, cause, message)
-
 
 
 class OptionVip(BaseModel):
@@ -368,7 +396,6 @@ class OptionVip(BaseModel):
             raise OptionVipError(
                 e, u'Failure to list all Option Vip Healthcheck.')
 
-
     @classmethod
     def get_all_trafficreturn(cls, id_environment_vip):
         """Get All Option Vip Traffic Return by environmentvip_id.
@@ -385,7 +412,7 @@ class OptionVip(BaseModel):
 
             ovips = ovips.filter(tipo_opcao__icontains='trafego')
 
-            #log.info(str(ovips))
+            # log.info(str(ovips))
 
             ovips = ovips.filter(
                 optionvipenvironmentvip__environment__id=int(id_environment_vip))
@@ -396,7 +423,6 @@ class OptionVip(BaseModel):
             cls.log.error(u'Failure to list all Option Vip Traffic Return.')
             raise OptionVipError(
                 e, u'Failure to list all Option Vip Traffic Return.')
-
 
     @classmethod
     def get_all_persistencia(cls, id_environment_vip):
@@ -452,6 +478,7 @@ class OptionVip(BaseModel):
 
         super(OptionVip, self).delete(authenticated_user)
 
+
 class RequisicaoVips(BaseModel):
     id = models.AutoField(
         primary_key=True,
@@ -472,7 +499,6 @@ class RequisicaoVips(BaseModel):
         blank=True,
         null=True
     )
-
 
     ipv6 = models.ForeignKey(
         Ipv6,
@@ -555,12 +581,10 @@ class RequisicaoVips(BaseModel):
         db_table = u'requisicao_vips'
         managed = True
 
-
     @cached_property
     def dsrl3id(self):
 
         return DsrL3_to_Vip.objects.filter(requisicao_vip=self)
-
 
     @classmethod
     def get_by_pk(cls, id):
@@ -819,7 +843,7 @@ class RequisicaoVips(BaseModel):
         if traffic is None:
             traffic = '12'
 
-        trafficint=int(traffic)
+        trafficint = int(traffic)
 
         grupos_cache = [(gc.nome_opcao_txt)
                         for gc in OptionVip.get_all_grupo_cache(evip.id)]
@@ -828,7 +852,7 @@ class RequisicaoVips(BaseModel):
         persistencias = [(p.nome_opcao_txt)
                          for p in OptionVip.get_all_persistencia(evip.id)]
         traffics = [(tr.id)
-                         for tr in OptionVip.get_all_trafficreturn(evip.id)]
+                    for tr in OptionVip.get_all_trafficreturn(evip.id)]
 
         if timeout not in timeouts:
             log.error(
@@ -1024,7 +1048,6 @@ class RequisicaoVips(BaseModel):
                 None, 'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
 
-
         environment_vip = EnvironmentVip.get_by_values(
             finalidade, cliente, ambiente)
         healthcheck_is_valid = RequisicaoVips.heathcheck_exist(
@@ -1089,7 +1112,7 @@ class RequisicaoVips(BaseModel):
             values = ''
             for transbordo in transbordos:
                 if (finalidade == "Homologacao" and ambiente == "Homologacao FE-CITTA") or (
-                                finalidade == 'Producao' and ambiente in ('Portal FE', 'Aplicativos FE', 'Streaming FE')):
+                        finalidade == 'Producao' and ambiente in ('Portal FE', 'Aplicativos FE', 'Streaming FE')):
                     if not is_valid_ip(transbordo):
                         raise InvalidTransbordoValueError(None, transbordo)
                 values = values + transbordo + '|'
@@ -1618,7 +1641,6 @@ class RequisicaoVips(BaseModel):
                 # Set id_healthcheck_expect to None
                 vip.healthcheck_expect = None
 
-
         # If healthcheck_type is 'HTTP' id_healthcheck_expect and healthcheck
         # must NOT be None
         elif healthcheck_type == 'HTTP':
@@ -1721,8 +1743,8 @@ class RequisicaoVips(BaseModel):
                     for dict_div_amb in lista_amb_div_4:
                         if ipequip.ip.networkipv4.ambient_vip is not None and ipequip.ip.networkipv4.ambient_vip.id == evip.id:
                             if (ipequip.ip.networkipv4.vlan.ambiente.divisao_dc_id == dict_div_amb.get(
-                                    'divisao_dc') and ipequip.ip.networkipv4.vlan.ambiente.ambiente_logico_id == dict_div_amb.get(
-                                'ambiente_logico')):
+                                'divisao_dc') and ipequip.ip.networkipv4.vlan.ambiente.ambiente_logico_id == dict_div_amb.get(
+                                    'ambiente_logico')):
                                 lista_ips_equip.append(ipequip.ip)
 
             if valid == True:
@@ -1756,8 +1778,8 @@ class RequisicaoVips(BaseModel):
                     for dict_div_amb in lista_amb_div_6:
                         if ipequip.ip.networkipv6.ambient_vip is not None and ipequip.ip.networkipv6.ambient_vip.id == evip.id:
                             if (ipequip.ip.networkipv6.vlan.ambiente.divisao_dc == dict_div_amb.get(
-                                    'divisao_dc') and ipequip.ip.networkipv6.vlan.ambiente.ambiente_logico == dict_div_amb.get(
-                                'ambiente_logico')):
+                                'divisao_dc') and ipequip.ip.networkipv6.vlan.ambiente.ambiente_logico == dict_div_amb.get(
+                                    'ambiente_logico')):
                                 lista_ipsv6_equip.append(ipequip.ip)
 
             if valid == True:
@@ -1822,16 +1844,16 @@ class RequisicaoVips(BaseModel):
 
             if id_healthcheck_expect and id_healthcheck_expect != '':
                 healthcheck_expect = HealthcheckExpect.get_by_pk(
-                                id_healthcheck_expect).match_list
+                    id_healthcheck_expect).match_list
 
             if healthcheck_request == None:
                 healthcheck_request = ''
             healthcheck_request = healthcheck_request.replace(chr(10), '\\n').replace(chr(13), '\\r')
             if healthcheck_expect == None:
                 healthcheck_expect = ''
-            healthcheck_expect  = healthcheck_expect.replace(chr(10), '\\n').replace(chr(13), '\\r')
+            healthcheck_expect = healthcheck_expect.replace(chr(10), '\\n').replace(chr(13), '\\r')
 
-            #look for a HT with the given values
+            # look for a HT with the given values
             healthcheck_query = Healthcheck.objects.filter(
                 healthcheck_type=healthcheck_type_upper,
                 healthcheck_request=healthcheck_request,
@@ -1842,17 +1864,17 @@ class RequisicaoVips(BaseModel):
             healthcheck_obj = healthcheck_query.uniqueResult()
 
         except ObjectDoesNotExist, e:
-            #O codigo acima procura um HT ja existente, mas nao acha.
-            #Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
+            # O codigo acima procura um HT ja existente, mas nao acha.
+            # Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
             self.log.debug("Criando um novo Healthcheck, pois o desejado ainda não existe")
             healthcheck_obj = Healthcheck()
-            healthcheck_obj.healthcheck_type=healthcheck_type_upper
-            healthcheck_obj.healthcheck_request=healthcheck_request
-            healthcheck_obj.healthcheck_expect=healthcheck_expect
-            healthcheck_obj.destination='*:*'
+            healthcheck_obj.healthcheck_type = healthcheck_type_upper
+            healthcheck_obj.healthcheck_request = healthcheck_request
+            healthcheck_obj.healthcheck_expect = healthcheck_expect
+            healthcheck_obj.destination = '*:*'
 
             healthcheck_obj.save()
-    
+
         # Reals
         reals_map = vip_map.get('reals')
         if reals_map:
@@ -1868,7 +1890,6 @@ class RequisicaoVips(BaseModel):
 
             if reals_weights != None:
                 weights = reals_weights.get('reals_weight')
-
 
         # save ServerPool and VipPortToPool
         for port_vip in ports_vip:
@@ -2155,7 +2176,7 @@ class ServerPool(BaseModel):
         Healthcheck,
         db_column='healthcheck_id_healthcheck',
         default=1,
-        null=True #This attribute is here to not raise a exception
+        null=True  # This attribute is here to not raise a exception
     )
 
     servicedownaction = models.ForeignKey(
@@ -2201,6 +2222,7 @@ class ServerPool(BaseModel):
     def vip_ports(self):
         return self.vipporttopool_set.all()
 
+
 class ServerPoolMember(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_server_pool_member')
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
@@ -2212,7 +2234,7 @@ class ServerPoolMember(BaseModel):
     limit = models.IntegerField()
     port_real = models.IntegerField(db_column='port')
     healthcheck = models.ForeignKey(Healthcheck, db_column='healthcheck_id_healthcheck', null=True)
-    member_status = models.IntegerField(db_column='status', default=0)
+    member_status = models.IntegerField(db_column='status', default=3)
     last_status_update = models.DateTimeField(null=True)
 
     class Meta(BaseModel.Meta):
@@ -2342,7 +2364,6 @@ class DsrL3_to_Vip(BaseModel):
 
     log = logging.getLogger('DsrL3_to_Vip')
 
-
     class Meta(BaseModel.Meta):
         db_table = u'dsrl3_to_vip'
         managed = True
@@ -2356,17 +2377,16 @@ class DsrL3_to_Vip(BaseModel):
 
     def get_dsrl3(self, id_vip, user):
 
-        dscp=4
+        dscp = 4
         dscp_exists = 1
         while dscp_exists:
             dscp_exists = DsrL3_to_Vip.objects.filter(id_dsrl3=dscp)
             if dscp_exists:
-                dscp=dscp+4
+                dscp = dscp + 4
 
-        self.prepare_and_save(dscp,id_vip, user)
+        self.prepare_and_save(dscp, id_vip, user)
 
         return dscp
-
 
     @classmethod
     def get_by_vip_id(self, id_vip):
@@ -2399,4 +2419,3 @@ class DsrL3_to_Vip(BaseModel):
         except Exception, e:
             self.log.error(u'Failure to list all DsrL3_to_Vip .')
             raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
-
