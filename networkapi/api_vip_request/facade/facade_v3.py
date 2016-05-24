@@ -329,7 +329,6 @@ def prepare_apply(vip_requests, update=False, created=True):
                 }
 
                 vip_request['ports'][idx]['pools'][i]['l7_rule'] = l7_rule
-
             l7_protocol = OptionVip.objects.get(id=port['options']['l7_protocol'])
             l4_protocol = OptionVip.objects.get(id=port['options']['l4_protocol'])
 
@@ -349,69 +348,84 @@ def prepare_apply(vip_requests, update=False, created=True):
             for idx, layer in enumerate(conf['conf']['layers']):
                 requiments = layer.get('requiments')
                 if requiments:
-                    for requiment in requiments:
-                        condicionals = requiment.get('condicionals')
-                        for condicional in condicionals:
+                    # validate for port
+                    for idx_port, port in enumerate(vip['ports']):
+                        for requiment in requiments:
+                            condicionals = requiment.get('condicionals')
+                            for condicional in condicionals:
 
-                            validated = True
+                                validated = True
 
-                            validations = condicional.get('validations')
-                            for validation in validations:
-                                if validation.get('type') == 'optionvip':
-                                    validated &= valid_expression(
-                                        validation.get('operator'),
-                                        vip['options'][validation.get('variable')],
-                                        validation.get('value')
-                                    )
+                                validations = condicional.get('validations')
+                                for validation in validations:
+                                    if validation.get('type') == 'optionvip':
+                                        validated &= valid_expression(
+                                            validation.get('operator'),
+                                            int(vip['options'][validation.get('variable')]),
+                                            int(validation.get('value'))
+                                        )
 
-                                if validation.get('type') == 'field' and validation.get('variable') == 'cluster_unit':
-                                    validated &= valid_expression(
-                                        validation.get('operator'),
-                                        cluster_unit,
-                                        validation.get('value')
-                                    )
-                            if validated:
-                                use = condicional.get('use')
-                                for item in use:
-                                    definitions = item.get('definitions')
-                                    eqpts = item.get('eqpts')
-                                    if eqpts:
+                                    if validation.get('type') == 'portoptionvip':
+                                        validated &= valid_expression(
+                                            validation.get('operator'),
+                                            int(port['options'][validation.get('variable')]),
+                                            int(validation.get('value'))
+                                        )
 
-                                        eqpts = Equipamento.objects.filter(
-                                            id__in=eqpts,
-                                            maintenance=0,
-                                            tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
-                                        for eqpt in eqpts:
-                                            eqpt_id = str(eqpt.id)
+                                    if validation.get('type') == 'field' and validation.get('variable') == 'cluster_unit':
+                                        validated &= valid_expression(
+                                            validation.get('operator'),
+                                            cluster_unit,
+                                            validation.get('value')
+                                        )
+                                if validated:
+                                    use = condicional.get('use')
+                                    for item in use:
+                                        definitions = item.get('definitions')
+                                        eqpts = item.get('eqpts')
+                                        if eqpts:
 
-                                            if not load_balance.get(eqpt_id):
-                                                equipment_access = EquipamentoAcesso.search(
-                                                    equipamento=eqpt.id,
-                                                    protocolo=protocolo_access
-                                                ).uniqueResult()
+                                            eqpts = Equipamento.objects.filter(
+                                                id__in=eqpts,
+                                                maintenance=0,
+                                                tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
+                                            for eqpt in eqpts:
+                                                eqpt_id = str(eqpt.id)
 
-                                                plugin = PluginFactory.factory(eqpt)
+                                                if not load_balance.get(eqpt_id):
+                                                    equipment_access = EquipamentoAcesso.search(
+                                                        equipamento=eqpt.id,
+                                                        protocolo=protocolo_access
+                                                    ).uniqueResult()
 
-                                                load_balance[eqpt_id] = {
-                                                    'plugin': plugin,
-                                                    'fqdn': equipment_access.fqdn,
-                                                    'user': equipment_access.user,
-                                                    'password': equipment_access.password,
-                                                    'vips': [],
-                                                    'layers': {},
-                                                }
+                                                    plugin = PluginFactory.factory(eqpt)
 
-                                            idx_layer = str(idx)
-                                            if not load_balance[eqpt_id]['layers'].get(id_vip):
-                                                load_balance[eqpt_id]['layers'][id_vip] = dict()
+                                                    load_balance[eqpt_id] = {
+                                                        'plugin': plugin,
+                                                        'fqdn': equipment_access.fqdn,
+                                                        'user': equipment_access.user,
+                                                        'password': equipment_access.password,
+                                                        'vips': [],
+                                                        'layers': {},
+                                                    }
 
-                                            if load_balance[eqpt_id]['layers'][id_vip].get(idx_layer):
-                                                load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'] += definitions
-                                            else:
-                                                load_balance[eqpt_id]['layers'][id_vip][idx_layer] = {
-                                                    'vip_request': vip_request,
-                                                    'definitions': definitions
-                                                }
+                                                idx_layer = str(idx)
+                                                idx_port_str = str(port['port'])
+                                                if not load_balance[eqpt_id]['layers'].get(id_vip):
+                                                    load_balance[eqpt_id]['layers'][id_vip] = dict()
+
+                                                if load_balance[eqpt_id]['layers'][id_vip].get(idx_layer):
+                                                    if load_balance[eqpt_id]['layers'][id_vip].get(idx_layer).get('definitions').get(idx_port_str):
+                                                        load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'][idx_port_str] += definitions
+                                                    else:
+                                                        load_balance[eqpt_id]['layers'][id_vip][idx_layer]['definitions'][idx_port_str] = definitions
+                                                else:
+                                                    load_balance[eqpt_id]['layers'][id_vip][idx_layer] = {
+                                                        'vip_request': vip_request,
+                                                        'definitions': {
+                                                            idx_port_str: definitions
+                                                        }
+                                                    }
 
         for e in equips:
             eqpt_id = str(e.id)
@@ -563,13 +577,16 @@ def validate_save(vip_request, permit_created=False):
         if opt:
             opts.append(opt)
 
-    options = OptionVip.objects.filter(
-        reduce(lambda x, y: x | y, [Q(**op) for op in opts]),
-        optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-    )
-
-    if len(opts) != options.count():
-        raise Exception('Invalid Options to VipRequest %s, because environmentvip is not associated to options' % vip_request['name'])
+    for opt in opts:
+        options = OptionVip.objects.filter(
+            Q(**opt),
+            optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+        )
+        if not options:
+            raise Exception(
+                'Invalid Option %s:%s to VipRequest %s, because environmentvip is not associated to options' % (
+                    opt['tipo_opcao'], opt['id'], vip_request['name'])
+            )
 
     # validate pools associates
     for port in vip_request.get('ports'):
@@ -586,13 +603,16 @@ def validate_save(vip_request, permit_created=False):
             if opt:
                 opts.append(opt)
 
-        options = OptionVip.objects.filter(
-            reduce(lambda x, y: x | y, [Q(**op) for op in opts]),
-            optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-        )
-
-        if len(opts) != options.count():
-            raise Exception('Invalid Options to port %s of VipRequest %s' % (port['port'], vip_request['name']))
+        for opt in opts:
+            options = OptionVip.objects.filter(
+                Q(**opt),
+                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+            )
+            if not options:
+                raise Exception(
+                    'Invalid Option %s:%s to port %s of VipRequest %s, because environmentvip is not associated to options' % (
+                        opt['tipo_opcao'], opt['id'], port['port'], vip_request['name'])
+                )
 
         for pool in port['pools']:
 

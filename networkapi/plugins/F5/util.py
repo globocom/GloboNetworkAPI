@@ -190,8 +190,6 @@ def trata_param_pool(pools):
 
 def trata_param_vip(vips):
 
-    log.info(vips)
-
     vips_filter = list()
     vips_cache_filter = list()
     pool_filter = list()
@@ -203,9 +201,12 @@ def trata_param_vip(vips):
     for vip in vips['vips']:
 
         vip_request = vip.get('vip_request')
-        vip_filter = dict()
         ports = vip_request.get('ports')
+
+        dscp = vip_request['options']['dscp'] * 4 if vip_request['options']['dscp'] else 65535
+
         for port in ports:
+            vip_filter = dict()
             conf = vip_request['conf']['conf']
 
             address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
@@ -235,6 +236,7 @@ def trata_param_vip(vips):
                 vip_filter['optionsvip']['traffic_group'] = None
                 pass
             vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
+
             pools = port.get('pools')
             for pool in pools:
                 if not pool.get('l7_rule') in ['(nenhum)', 'default']:
@@ -253,20 +255,19 @@ def trata_param_vip(vips):
                 vip_filter['pool'].append(server_pool['nome'])
 
                 vip_filter['optionsvip']['dscp'] = {
-                    'value': vip_request['options']['dscp'] * 4 if vip_request['options']['dscp'] else 65535,
+                    'value': dscp,
                     'pool_name': server_pool['nome']
                 }
-
-        vips_filter.append(vip_filter)
+            vips_filter.append(vip_filter)
 
     if vips.get('layers'):
         for vip_id in vips.get('layers'):
             for id_layer in vips.get('layers').get(vip_id):
                 definitions = vips.get('layers').get(vip_id).get(id_layer).get('definitions')
                 vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
-                vip_cache_filter = dict()
                 ports = vip_request.get('ports')
                 for port in ports:
+                    vip_cache_filter = dict()
 
                     address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
@@ -279,7 +280,7 @@ def trata_param_vip(vips):
                     vip_cache_filter['optionsvip_extended'] = dict()
 
                     vip_cache_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
-                    for definition in definitions:
+                    for definition in definitions.get(str(port['port'])):
                         if definition.get('type') == 'pool':
                             vip_cache_filter['pool'] = [definition.get('value')]
                         if definition.get('type') == 'rule':
@@ -297,8 +298,12 @@ def trata_param_vip(vips):
                                 }]
                             }
                         if definition.get('type') == 'traffic_group':
-                            vip_cache_filter['optionsvip']['traffic_group'] = definition.get('value')
-                vips_cache_filter.append(vip_cache_filter)
+                            if definition.get('value') == 'traffic-group-1':
+                                vip_cache_filter['optionsvip']['traffic_group'] = None
+                            else:
+                                vip_cache_filter['optionsvip']['traffic_group'] = definition.get('value')
+
+                    vips_cache_filter.append(vip_cache_filter)
 
     res_fil = {
         'vips_filter': vips_filter,
@@ -306,7 +311,6 @@ def trata_param_vip(vips):
         'pool_filter': pool_filter,
         'pool_filter_created': pool_filter_created
     }
-
     return res_fil
 
 

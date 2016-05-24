@@ -88,16 +88,10 @@
                   "type": "object",
                   "properties": {
                     "l4_protocol": {
-                      "type": [
-                        "integer",
-                        "null"
-                      ]
+                      "type": "integer"
                     },
                     "l7_protocol": {
-                      "type": [
-                        "integer",
-                        "null"
-                      ]
+                      "type": "integer"
                     }
                   }
                 },
@@ -134,28 +128,16 @@
             "type": "object",
             "properties": {
               "timeout": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
+                "type": "integer"
               },
               "cache_group": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
+                "type": "integer"
               },
               "traffic_return": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
+                "type": "integer"
               },
               "persistence": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
+                "type": "integer"
               }
             }
           },

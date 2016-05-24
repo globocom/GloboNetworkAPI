@@ -25,9 +25,6 @@ class Lb(object):
             logging.critical("Unable to connect to BIG-IP. Details: %s" % (e))
             raise base_exceptions.CommandErrorException(e)
         else:
-            log.info('connected in hostname:%s' % hostname)
-            log.info('connected in username:%s' % username)
-            log.info('connected in password:%s' % password)
             try:
                 self._version = self._channel.System.SystemInfo.get_version()
 

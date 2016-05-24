@@ -64,7 +64,7 @@ class VirtualServer(F5Base):
 
             vip_resources.append({
                 'type': 'RESOURCE_TYPE_POOL',
-                'default_pool_name': vip_request['pool']
+                'default_pool_name': vip_request['pool'][0]
             })
 
             vip_profiles.append(self.__properties['profiles'])
@@ -93,10 +93,10 @@ class VirtualServer(F5Base):
                 profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
 
             self.__create_vip(
-                vip_definitions=vip_definitions,
-                vip_wildmasks=vip_wildmasks,
-                vip_resources=vip_resources,
-                vip_profiles=vip_profiles)
+                definitions=vip_definitions,
+                wildmasks=vip_wildmasks,
+                resources=vip_resources,
+                profiles=vip_profiles)
 
             self.__add_rule(vip_rules)
 
@@ -262,10 +262,10 @@ class VirtualServer(F5Base):
     @logger
     def __create_vip(self, **kwargs):
         self._lb._channel.LocalLB.VirtualServer.create(
-            definitions=kwargs['vip_definitions'],
-            wildmasks=kwargs['vip_wildmasks'],
-            resources=kwargs['vip_resources'],
-            profiles=kwargs['vip_profiles']
+            definitions=kwargs['definitions'],
+            wildmasks=kwargs['wildmasks'],
+            resources=kwargs['resources'],
+            profiles=kwargs['profiles']
         )
 
     @logger

@@ -17,7 +17,6 @@ class Generic(BasePlugin):
     #######################################
     # VIP
     #######################################
-    @logger
     @util.connection
     def delete_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -34,13 +33,12 @@ class Generic(BasePlugin):
         except Exception, e:
             log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
-            raise base_exceptions.CommandErrorException(e)
+            pass
         else:
             self._lb._channel.System.Session.submit_transaction()
             if tratado.get('pool_filter_created'):
                 self.__delete_pool({'pools': tratado.get('pool_filter_created')})
 
-    @logger
     @util.connection
     def create_vip(self, vips):
         tratado = util.trata_param_vip(vips)
