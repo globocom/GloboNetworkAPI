@@ -21,7 +21,6 @@ from networkapi.requisicaovips.models import OptionVip, ServerPool, ServerPoolMe
 from networkapi.util import valid_expression
 
 
-protocolo_access = 'https'
 log = logging.getLogger(__name__)
 
 
