@@ -195,6 +195,55 @@ class PoolDeployView(APIView):
 #             raise rest_exceptions.NetworkAPIException(exception)
 
 
+class PoolDBDetailsView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Method to return pool by id
+        Param pool_id: pool id
+        Return pool object
+        """
+        try:
+            if not kwargs.get('pool_ids'):
+                try:
+                    search = ast.literal_eval(request.GET.get('search'))
+                except:
+                    search = {}
+
+                pools = facade.get_pool_by_search(search)
+                pool_serializer = serializers.PoolV3DatatableSerializer(
+                    pools['pools'],
+                    many=True
+                )
+                data = {
+                    'server_pools': pool_serializer.data,
+                    'total': pools['total'],
+                }
+            else:
+                pool_ids = kwargs['pool_ids'].split(';')
+
+                pools = facade.get_pool_by_ids(pool_ids)
+
+                if pools:
+                    pool_serializer = serializers.PoolV3Serializer(
+                        pools,
+                        many=True
+                    )
+                    data = {
+                        'server_pools': pool_serializer.data
+                    }
+                else:
+                    raise exceptions.PoolDoesNotExistException()
+
+            return Response(data, status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.exception(exception)
+            raise rest_exceptions.NetworkAPIException(exception)
+
+
 class PoolDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))

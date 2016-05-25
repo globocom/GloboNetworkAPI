@@ -113,7 +113,8 @@ class VipRequestDBView(APIView):
                 )
                 data = {
                     'vips': serializer_vips.data,
-                    'total': vips_requests['total'],
+                    'total': vips_requests['total']
+                    # 'search': vips_requests['search']
                 }
 
             else:
@@ -218,7 +219,8 @@ class VipRequestDBDetailsView(APIView):
                 )
                 data = {
                     'vips': serializer_vips.data,
-                    'total': vips_requests['total'],
+                    'total': vips_requests['total']
+                    # 'search': vips_requests['search']
                 }
 
             else:

@@ -43,8 +43,8 @@ def create_vip_request(vip_request):
     vip.service = vip_request['service']
     vip.business = vip_request['business']
     vip.environmentvip_id = vip_request['environmentvip']
-    vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']['id']) if vip_request['ipv4'] else None
-    vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']['id']) if vip_request['ipv6'] else None
+    vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']) if vip_request['ipv4'] else None
+    vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']) if vip_request['ipv6'] else None
 
     option_create = [vip_request['options'][key] for key in vip_request['options']]
     vip.save()
@@ -67,8 +67,8 @@ def update_vip_request(vip_request):
     vip.service = vip_request['service']
     vip.business = vip_request['business']
     vip.environmentvip_id = vip_request['environmentvip']
-    vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']['id']) if vip_request['ipv4'] else None
-    vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']['id']) if vip_request['ipv6'] else None
+    vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']) if vip_request['ipv4'] else None
+    vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']) if vip_request['ipv6'] else None
 
     option_ids = [int(option.optionvip.id) for option in vip.viprequestoptionvip_set.all()]
     options = [int(vip_request['options'][key]) for key in vip_request['options']]
@@ -239,17 +239,28 @@ def get_vip_request_by_search(search=dict()):
     if search.get('extends_search'):
         vip_requests = vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
+    search_query = dict()
+    search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
+    search_query['custom_search'] = search.get('custom_search') or None
+    search_query['searchable_columns'] = search.get('searchable_columns') or None
+    search_query['start_record'] = search.get('start_record') or 0
+    search_query['end_record'] = search.get('end_record') or 25
+
     vip_requests, total = build_query_to_datatable(
         vip_requests,
-        search.get('asorting_cols') or None,
-        search.get('custom_search') or None,
-        search.get('searchable_columns') or None,
-        search.get('start_record') or 0,
-        search.get('end_record') or 25)
+        search_query['asorting_cols'],
+        search_query['custom_search'],
+        search_query['searchable_columns'],
+        search_query['start_record'],
+        search_query['end_record'])
 
     vip_map = dict()
     vip_map["vips"] = vip_requests
     vip_map["total"] = total
+    # not implemented yet
+    # vip_map["next_search"] = search_query
+    # vip_map["next_search"]['start_record'] += 25
+    # vip_map["next_search"]['end_record'] += 25
 
     return vip_map
 
@@ -272,6 +283,21 @@ def prepare_apply(vip_requests, update=False, created=True):
         traffic_return = OptionVip.objects.get(id=vip_request['options'].get('traffic_return'))
         timeout = OptionVip.objects.get(id=vip_request['options'].get('timeout'))
         persistence = OptionVip.objects.get(id=vip_request['options'].get('persistence'))
+
+        if vip_request['ipv4']:
+            ipv4 = Ip.get_by_pk(vip_request['ipv4']) if vip_request['ipv4'] else None
+            vip_request['ipv4'] = {
+                'id': ipv4.id,
+                'ip_formated': ipv4.ip_formated
+            }
+
+        if vip_request['ipv6']:
+            ipv6 = Ipv6.get_by_pk(vip_request['ipv6']) if vip_request['ipv6'] else None
+            vip_request['ipv6'] = {
+                'id': ipv6.id,
+                'ip_formated': ipv6.ip_formated
+            }
+
         if conf:
             conf = json.loads(conf)
 
@@ -394,17 +420,14 @@ def prepare_apply(vip_requests, update=False, created=True):
 
                                                 if not load_balance.get(eqpt_id):
                                                     equipment_access = EquipamentoAcesso.search(
-                                                        equipamento=eqpt.id,
-                                                        protocolo=protocolo_access
-                                                    ).uniqueResult()
+                                                        equipamento=eqpt.id
+                                                    )
 
                                                     plugin = PluginFactory.factory(eqpt)
 
                                                     load_balance[eqpt_id] = {
                                                         'plugin': plugin,
-                                                        'fqdn': equipment_access.fqdn,
-                                                        'user': equipment_access.user,
-                                                        'password': equipment_access.password,
+                                                        'access': equipment_access,
                                                         'vips': [],
                                                         'layers': {},
                                                     }
@@ -432,17 +455,14 @@ def prepare_apply(vip_requests, update=False, created=True):
 
             if not load_balance.get(eqpt_id):
                 equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.id,
-                    protocolo=protocolo_access
-                ).uniqueResult()
+                    equipamento=e.id
+                )
 
                 plugin = PluginFactory.factory(e)
 
                 load_balance[eqpt_id] = {
                     'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
+                    'access': equipment_access,
                     'vips': [],
                     'layers': {},
                 }
@@ -522,10 +542,10 @@ def validate_save(vip_request, permit_created=False):
 
     # validate ipv4
     if vip_request['ipv4']:
-        has_identifier = has_identifier.filter(ipv4=vip_request['ipv4']['id'])
+        has_identifier = has_identifier.filter(ipv4=vip_request['ipv4'])
 
         vips = EnvironmentVip.objects.filter(
-            networkipv4__ip=vip_request['ipv4']['id']
+            networkipv4__ip=vip_request['ipv4']
         ).filter(
             id=vip_request['environmentvip']
         )
@@ -534,9 +554,9 @@ def validate_save(vip_request, permit_created=False):
 
     # validate ipv6
     if vip_request['ipv6']:
-        has_identifier = has_identifier.filter(ipv6=vip_request['ipv6']['id'])
+        has_identifier = has_identifier.filter(ipv6=vip_request['ipv6'])
         vips = EnvironmentVip.objects.filter(
-            networkipv6__ipv6=vip_request['ipv6']['id']
+            networkipv6__ipv6=vip_request['ipv6']
         ).filter(
             id=vip_request['environmentvip']
         )
@@ -711,8 +731,8 @@ def _validate_vip_to_apply(vip_request, update=False):
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 
-    # if all_equipments_are_in_maintenance(equips):
-    #     raise AllEquipmentsAreInMaintenanceException()
+    if all_equipments_are_in_maintenance(equips):
+        raise AllEquipmentsAreInMaintenanceException()
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
     return equips, conf, cluster_unit

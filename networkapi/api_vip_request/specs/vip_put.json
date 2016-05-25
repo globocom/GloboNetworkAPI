@@ -6,50 +6,6 @@
   "required": [
     "vips"
   ],
-  "definitions": {
-    "ipv4": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "ip_formated"
-      ],
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "ip_formated": {
-          "type": "string",
-          "oneOf": [
-            {
-              "format": "ipv4"
-            }
-          ]
-        }
-      }
-    },
-    "ipv6": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "ip_formated"
-      ],
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "ip_formated": {
-          "type": "string",
-          "oneOf": [
-            {
-              "format": "ipv6"
-            }
-          ]
-        }
-      }
-    }
-  },
   "properties": {
     "vips": {
       "type": "array",
@@ -145,23 +101,15 @@
             }
           },
           "ipv6": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/definitions/ipv6"
-              }
+            "type": [
+              "integer",
+              "null"
             ]
           },
           "ipv4": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/definitions/ipv4"
-              }
+            "type": [
+              "integer",
+              "null"
             ]
           }
         }

@@ -140,7 +140,6 @@ class OptionVipEnvironmentTypeVipView(APIView):
         try:
             environment_vip_ids = kwargs["environment_vip_id"].split(';')
             type_option = urllib.unquote(kwargs["type_option"]).decode('utf8')
-            log.info(type_option)
             search_list = list()
 
             for environment_vip_id in environment_vip_ids:

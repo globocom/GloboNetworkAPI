@@ -27,7 +27,8 @@ def transation(func):
     def inner(self, *args, **kwargs):
         if not kwargs.__contains__('connection') or kwargs['connection']:
             try:
-                self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+                access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+                self._lb = lb.Lb(access.fqdn, access.user, access.password)
                 if not kwargs.__contains__('transation') or kwargs['transation']:
                     log.info('Transaction Started')
                     with bigsuds.Transaction(self._lb._channel):
@@ -49,7 +50,8 @@ def connection(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
         try:
-            self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+            access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+            self._lb = lb.Lb(access.fqdn, access.user, access.password)
             self._lb._channel.System.Session.set_transaction_timeout(60)
             return func(self, *args, **kwargs)
         except bigsuds.OperationFailed, e:
