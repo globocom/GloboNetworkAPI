@@ -9,6 +9,7 @@ from django.db.transaction import commit_on_success
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
+from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade import get_pool_by_id
 from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_vip_request import exceptions, models
@@ -600,13 +601,15 @@ def validate_save(vip_request, permit_created=False):
             opts.append(opt)
 
     for opt in opts:
-        options = OptionVip.objects.filter(
-            Q(**opt),
-            optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-        )
-        if not options:
+        try:
+            option = OptionVip.objects.get(
+                Q(**opt),
+                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+            )
+        except:
             raise Exception(
-                'Invalid Option %s:%s to VipRequest %s, because environmentvip is not associated to options' % (
+                'Invalid option %s:%s,viprequest:%s, \
+                because environmentvip is not associated to options or not exists' % (
                     opt['tipo_opcao'], opt['id'], vip_request['name'])
             )
 
@@ -626,28 +629,32 @@ def validate_save(vip_request, permit_created=False):
                 opts.append(opt)
 
         for opt in opts:
-            options = OptionVip.objects.filter(
-                Q(**opt),
-                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-            )
-            if not options:
+            try:
+                option = OptionVip.objects.get(
+                    Q(**opt),
+                    optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+                )
+            except:
                 raise Exception(
-                    'Invalid Option %s:%s to port %s of VipRequest %s, because environmentvip is not associated to options' % (
+                    'Invalid option %s:%s,port:%s,viprequest:%s, \
+                    because environmentvip is not associated to options or not exists' % (
                         opt['tipo_opcao'], opt['id'], port['port'], vip_request['name'])
                 )
 
         for pool in port['pools']:
 
-            option = OptionVip.objects.get(
-                id=pool['l7_rule'],
-                tipo_opcao='l7_rule',
-                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-            )
-
-            if not option:
+            try:
+                option = OptionVip.objects.get(
+                    id=pool['l7_rule'],
+                    tipo_opcao='l7_rule',
+                    optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+                )
+            except:
                 raise Exception(
-                    'Invalid Option to pool %s of port %s of VipRequest %s' %
-                    (pool['server_pool'], port['port'], vip_request['name']))
+                    'Invalid option %s:%s,pool:%s,port:%s,viprequest:%s, \
+                    because environmentvip is not associated to options or not exists' % (
+                        'l7_rule', pool['l7_rule'], pool['server_pool'], port['port'], vip_request['name'])
+                )
 
             dsrl3 = OptionVip.objects.filter(
                 nome_opcao_txt='DSRL3',
@@ -663,6 +670,11 @@ def validate_save(vip_request, permit_created=False):
 
                 if pool_assoc:
                     raise Exception('Pool %s must be associated to a only vip request, when vip request has dslr3 option' % pool['server_pool'])
+
+            try:
+                spms = ServerPoolMember.objects.get(server_pool=pool['server_pool'])
+            except:
+                raise exceptions_pool.PoolDoesNotExistException(pool['server_pool'])
 
             spms = ServerPoolMember.objects.filter(server_pool=pool['server_pool'])
             for spm in spms:

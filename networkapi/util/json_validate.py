@@ -68,7 +68,8 @@ def raise_json_validate(info=None):
                     'errors': msg
                 }
                 if info:
-                    res['spec'] = '/api/v3/help/%s/' % info
+                    protocol = 'https' if request.is_secure() else 'http'
+                    res['spec'] = '%s://%s/api/v3/help/%s/' % (protocol, request.get_host(), info)
                 log.error(res)
                 raise rest_exceptions.ValidationExceptionJson(res)
             except Exception as error:
