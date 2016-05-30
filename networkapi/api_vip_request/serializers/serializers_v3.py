@@ -135,10 +135,6 @@ class VipRequestSerializer(serializers.ModelSerializer):
         required=True
     )
 
-    ipv4 = Ipv4BasicSerializer()
-
-    ipv6 = Ipv6BasicSerializer()
-
     options = serializers.SerializerMethodField('get_options')
 
     def get_options(self, obj):

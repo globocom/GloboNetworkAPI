@@ -27,7 +27,8 @@ def transation(func):
     def inner(self, *args, **kwargs):
         if not kwargs.__contains__('connection') or kwargs['connection']:
             try:
-                self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+                access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+                self._lb = lb.Lb(access.fqdn, access.user, access.password)
                 if not kwargs.__contains__('transation') or kwargs['transation']:
                     log.info('Transaction Started')
                     with bigsuds.Transaction(self._lb._channel):
@@ -49,7 +50,8 @@ def connection(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
         try:
-            self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+            access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+            self._lb = lb.Lb(access.fqdn, access.user, access.password)
             self._lb._channel.System.Session.set_transaction_timeout(60)
             return func(self, *args, **kwargs)
         except bigsuds.OperationFailed, e:
@@ -195,98 +197,114 @@ def trata_param_vip(vips):
     pool_filter = list()
     pool_filter_created = list()
 
+    ids_pool_filter = list()
+    ids_pool_filter_created = list()
+
     for vip in vips['vips']:
 
-        if vip.get('vip_request'):
-            vip_request = vip.get('vip_request')
+        vip_request = vip.get('vip_request')
+        ports = vip_request.get('ports')
+
+        dscp = vip_request['options']['dscp'] * 4 if vip_request['options']['dscp'] else 65535
+
+        for port in ports:
             vip_filter = dict()
-            ports = vip_request.get('ports')
-            for port in ports:
-                conf = vip_request['conf']['conf']
+            conf = vip_request['conf']['conf']
 
-                address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+            address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-                vip_filter['pool'] = list()
-                vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
-                vip_filter['address'] = address
-                vip_filter['port'] = port['port']
-                vip_filter['optionsvip'] = vip_request['options']
-                vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
-                vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+            vip_filter['pool'] = list()
+            vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
+            vip_filter['address'] = address
+            vip_filter['port'] = port['port']
+            vip_filter['optionsvip'] = vip_request['options']
+            vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
+            vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
 
-                try:
-                    cluster_unit = None
-                    for keys in conf['keys']:
-                        cluster_unit = keys.get(vip_request['options']['cluster_unit'])
+            try:
+                cluster_unit = None
+                for keys in conf['keys']:
+                    cluster_unit = keys.get(vip_request['options']['cluster_unit'])
 
-                        # traffic-group-1 is default, so must be ignored
-                        if cluster_unit == 'traffic-group-1':
-                            cluster_unit = None
-                            break
+                    # traffic-group-1 is default, so must be ignored
+                    if cluster_unit == 'traffic-group-1':
+                        cluster_unit = None
+                        break
 
-                        if cluster_unit:
-                            break
-                    vip_filter['optionsvip']['traffic_group'] = cluster_unit
-                except:
-                    vip_filter['optionsvip']['traffic_group'] = None
-                    pass
-                vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
-                pools = port.get('pools')
-                for pool in pools:
-                    if not pool.get('l7_rule') in ['(nenhum)', 'default']:
-                        raise NotImplementedError()
+                    if cluster_unit:
+                        break
+                vip_filter['optionsvip']['traffic_group'] = cluster_unit
+            except:
+                vip_filter['optionsvip']['traffic_group'] = None
+                pass
+            vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
 
-                    server_pool = pool.get('server_pool')
-                    if not server_pool.get('pool_created'):
+            pools = port.get('pools')
+            for pool in pools:
+                if not pool.get('l7_rule') in ['(nenhum)', 'default']:
+                    raise NotImplementedError()
+
+                server_pool = pool.get('server_pool')
+                if not server_pool.get('pool_created'):
+                    if server_pool.get('id') not in ids_pool_filter:
+                        ids_pool_filter.append(server_pool.get('id'))
                         pool_filter.append(server_pool)
-                    else:
+                else:
+                    if server_pool.get('id') not in ids_pool_filter_created:
+                        ids_pool_filter_created.append(server_pool.get('id'))
                         pool_filter_created.append(server_pool)
 
-                    vip_filter['pool'].append(server_pool['nome'])
+                vip_filter['pool'].append(server_pool['nome'])
 
-                    vip_filter['optionsvip']['dscp'] = {
-                        'value': vip_request['options']['dscp'] * 4 if vip_request['options']['dscp'] else 65535,
-                        'pool_name': server_pool['nome']
-                    }
-
+                vip_filter['optionsvip']['dscp'] = {
+                    'value': dscp,
+                    'pool_name': server_pool['nome']
+                }
             vips_filter.append(vip_filter)
 
-        elif vip.get('layers'):
-            for vip_id in vip.get('layers'):
-                for id_layer in vip.get('layers').get(vip_id):
-                    definitions = vip.get('layers').get(vip_id).get(id_layer).get('definitions')
-                    vip_request = vip.get('layers').get(vip_id).get(id_layer).get('vip_request')
-
+    if vips.get('layers'):
+        for vip_id in vips.get('layers'):
+            for id_layer in vips.get('layers').get(vip_id):
+                definitions = vips.get('layers').get(vip_id).get(id_layer).get('definitions')
+                vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
+                ports = vip_request.get('ports')
+                for port in ports:
                     vip_cache_filter = dict()
-                    ports = vip_request.get('ports')
-                    for port in ports:
 
-                        address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+                    address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-                        vip_cache_filter['pool'] = list()
-                        vip_cache_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
-                        vip_cache_filter['address'] = address
-                        vip_cache_filter['port'] = port['port']
-                        for definition in definitions:
-                            if definition.get('type') == 'pool':
-                                vip_cache_filter['pool'] = [definition.get('value')]
-                            if definition.get('type') == 'rule':
+                    vip_cache_filter['pool'] = list()
+                    vip_cache_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
+                    vip_cache_filter['address'] = address
+                    vip_cache_filter['port'] = port['port']
+
+                    vip_cache_filter['optionsvip'] = dict()
+                    vip_cache_filter['optionsvip_extended'] = dict()
+
+                    vip_cache_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+                    for definition in definitions.get(str(port['port'])):
+                        if definition.get('type') == 'pool':
+                            vip_cache_filter['pool'] = [definition.get('value')]
+                        if definition.get('type') == 'rule':
+                            if definition.get('value'):
                                 vip_cache_filter['rules'] = [definition.get('value')]
-                            if definition.get('type') == 'profile':
-                                vip_cache_filter['optionsvip_extended'] = [{
-                                    "requiments": [{
-                                        "condicionals": [{
-                                            "validations": [],
-                                            "use":[
-                                                definition
-                                            ]
-                                        }]
+                        if definition.get('type') == 'profile':
+                            vip_cache_filter['optionsvip_extended'] = {
+                                "requiments": [{
+                                    "condicionals": [{
+                                        "validations": [],
+                                        "use":[
+                                            definition
+                                        ]
                                     }]
                                 }]
-                            if definition.get('type') == 'traffic_group':
-                                vip_cache_filter['optionsvip'] = {
-                                    'traffic_group': definition.get('value')
-                                }
+                            }
+                        if definition.get('type') == 'traffic_group':
+                            if definition.get('value') == 'traffic-group-1':
+                                vip_cache_filter['optionsvip']['traffic_group'] = None
+                            else:
+                                vip_cache_filter['optionsvip']['traffic_group'] = definition.get('value')
+
                     vips_cache_filter.append(vip_cache_filter)
 
     res_fil = {
@@ -295,7 +313,6 @@ def trata_param_vip(vips):
         'pool_filter': pool_filter,
         'pool_filter_created': pool_filter_created
     }
-
     return res_fil
 
 

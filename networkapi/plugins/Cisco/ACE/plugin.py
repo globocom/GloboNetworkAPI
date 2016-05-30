@@ -16,6 +16,9 @@
 # limitations under the License.
 import logging
 
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.plugins import exceptions as base_exceptions
+
 from ...base import BasePlugin
 
 
@@ -24,14 +27,28 @@ log = logging.getLogger(__name__)
 
 class ACE(BasePlugin):
 
-    def delete_vip(self):
+    def delete_vip(self, vips):
+        try:
+            if vips.get('layers'):
+                for vip_id in vips.get('layers'):
+                    for id_layer in vips.get('layers').get(vip_id):
+                        vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
+                        command = 'gerador_vips -i %s --remove --aceonly' % vip_request['id']
+                        code, stdout, stderr = exec_script(command)
+        except Exception, e:
+            raise base_exceptions.CommandErrorException(e)
+
+    def update_vip(self, vips):
         log.info('bypass')
         pass
 
-    def update_vip(self):
-        log.info('bypass')
-        pass
-
-    def create_vip(self):
-        log.info('bypass')
-        pass
+    def create_vip(self, vips):
+        try:
+            if vips.get('layers'):
+                for vip_id in vips.get('layers'):
+                    for id_layer in vips.get('layers').get(vip_id):
+                        vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
+                        command = 'gerador_vips -i %s --cria --aceonly' % vip_request['id']
+                        code, stdout, stderr = exec_script(command)
+        except Exception, e:
+            raise base_exceptions.CommandErrorException(e)

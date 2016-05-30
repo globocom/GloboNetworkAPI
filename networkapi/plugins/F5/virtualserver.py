@@ -17,17 +17,9 @@ class VirtualServer(F5Base):
 
     @logger
     def delete(self, **kwargs):
-        try:
-            self._lb._channel.System.Session.start_transaction()
-            self._lb._channel.LocalLB.VirtualServer.delete_virtual_server(
-                virtual_servers=kwargs['vps_names']
-            )
-        except Exception, e:
-            log.error(e)
-            self._lb._channel.System.Session.rollback_transaction()
-            raise e
-        else:
-            self._lb._channel.System.Session.submit_transaction()
+        self._lb._channel.LocalLB.VirtualServer.delete_virtual_server(
+            virtual_servers=kwargs['vps_names']
+        )
 
     @logger
     def create(self, **kwargs):
@@ -72,19 +64,23 @@ class VirtualServer(F5Base):
 
             vip_resources.append({
                 'type': 'RESOURCE_TYPE_POOL',
-                'default_pool_name': vip_request['pool']
+                'default_pool_name': vip_request['pool'][0]
             })
 
-            vip_profiles = self.__properties['profiles']
+            vip_profiles.append(self.__properties['profiles'])
 
             if vip_request.get('rules'):
-                vip_rules['rules'].append(vip_request['rules'])
+                rules = list()
+                for rule in vip_request['rules']:
+                    rules.append({'rule_name': rule, 'priority': 1})
+                vip_rules['rules'].append(rules)
                 vip_rules['virtual_servers'].append(vip_request['name'])
 
-            vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
-            vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
+            if vip_request.get('optionsvip').get('dscp'):
+                vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
+                vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
 
-            if vip_request['optionsvip']['traffic_group']:
+            if vip_request.get('optionsvip').get('traffic_group'):
                 vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
                 vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
 
@@ -97,10 +93,10 @@ class VirtualServer(F5Base):
                 profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
 
             self.__create_vip(
-                vip_definitions=vip_definitions,
-                vip_wildmasks=vip_wildmasks,
-                vip_resources=vip_resources,
-                vip_profiles=vip_profiles)
+                definitions=vip_definitions,
+                wildmasks=vip_wildmasks,
+                resources=vip_resources,
+                profiles=vip_profiles)
 
             self.__add_rule(vip_rules)
 
@@ -266,10 +262,10 @@ class VirtualServer(F5Base):
     @logger
     def __create_vip(self, **kwargs):
         self._lb._channel.LocalLB.VirtualServer.create(
-            definitions=kwargs['vip_definitions'],
-            wildmasks=kwargs['vip_wildmasks'],
-            resources=kwargs['vip_resources'],
-            profiles=kwargs['vip_profiles']
+            definitions=kwargs['definitions'],
+            wildmasks=kwargs['wildmasks'],
+            resources=kwargs['resources'],
+            profiles=kwargs['profiles']
         )
 
     @logger
@@ -365,18 +361,18 @@ class VirtualServer(F5Base):
     @logger
     def __add_rule(self, rules):
         if rules['virtual_servers']:
-            version_split = self._lb._version[8:len(self._lb._version)].split('.')
-            # old version
-            if version_split[0] == '11' and int(version_split[1]) <= 2:
-                self._lb._channel.LocalLB.VirtualServer.add_rule(
-                    virtual_servers=rules['virtual_servers'],
-                    rules=rules['rules']
-                )
-            else:
-                self._lb._channel.LocalLB.VirtualServer.add_related_rule(
-                    virtual_servers=rules['virtual_servers'],
-                    rules=rules['rules']
-                )
+            # version_split = self._lb._version[8:len(self._lb._version)].split('.')
+            # # old version
+            # if version_split[0] == '11' and int(version_split[1]) <= 2:
+            self._lb._channel.LocalLB.VirtualServer.add_rule(
+                virtual_servers=rules['virtual_servers'],
+                rules=rules['rules']
+            )
+            # else:
+            #     self._lb._channel.LocalLB.VirtualServer.add_related_rule(
+            #         virtual_servers=rules['virtual_servers'],
+            #         rules=rules['rules']
+            #     )
 
     # @logger
     # def __get_rule(self, **kwargs):
@@ -445,11 +441,12 @@ class VirtualServer(F5Base):
     @logger
     def __set_dscp(self, dscp):
 
-        pl = pool.Pool(self._lb)
-        pl.set_server_ip_tos(
-            values=dscp['values'],
-            pool_names=dscp['pool_names']
-        )
+        if dscp['values']:
+            pl = pool.Pool(self._lb)
+            pl.set_server_ip_tos(
+                values=dscp['values'],
+                pool_names=dscp['pool_names']
+            )
 
     def __prepare_properties(self, vip_request, profiles_list, update=False):
 
@@ -570,4 +567,4 @@ class VirtualServer(F5Base):
                                     self.__properties['translate_port_state']['states'].append(item.get('value'))
 
                             break
-        self.__properties['profiles'].append(profiles)
+        self.__properties['profiles'] = profiles

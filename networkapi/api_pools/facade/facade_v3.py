@@ -19,7 +19,6 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 
 log = logging.getLogger(__name__)
-protocolo_access = 'ssh'
 
 
 ################
@@ -41,9 +40,8 @@ def create_real_pool(pools):
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
-                equipamento=e.id,
-                protocolo=protocolo_access
-            ).uniqueResult()
+                equipamento=e.id
+            )
 
             plugin = PluginFactory.factory(e)
 
@@ -51,9 +49,7 @@ def create_real_pool(pools):
 
                 load_balance[eqpt_id] = {
                     'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
+                    'access': equipment_access,
                     'pools': [],
                 }
 
@@ -103,9 +99,8 @@ def delete_real_pool(pools):
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
-                equipamento=e.id,
-                protocolo=protocolo_access
-            ).uniqueResult()
+                equipamento=e.id
+            )
 
             plugin = PluginFactory.factory(e)
 
@@ -113,9 +108,7 @@ def delete_real_pool(pools):
 
                 load_balance[eqpt_id] = {
                     'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
+                    'access': equipment_access,
                     'pools': [],
                 }
 
@@ -234,9 +227,8 @@ def update_real_pool(pools):
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
-                equipamento=e.id,
-                protocolo=protocolo_access
-            ).uniqueResult()
+                equipamento=e.id
+            )
 
             plugin = PluginFactory.factory(e)
 
@@ -286,9 +278,8 @@ def set_poolmember_state(pools):
             for e in equips:
                 eqpt_id = str(e.id)
                 equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.id,
-                    protocolo=protocolo_access
-                ).uniqueResult()
+                    equipamento=e.id
+                )
 
                 plugin = PluginFactory.factory(e)
 
@@ -296,9 +287,7 @@ def set_poolmember_state(pools):
 
                     load_balance[eqpt_id] = {
                         'plugin': plugin,
-                        'fqdn': equipment_access.fqdn,
-                        'user': equipment_access.user,
-                        'password': equipment_access.password,
+                        'access': equipment_access,
                         'pools': [],
                     }
 
@@ -339,9 +328,8 @@ def get_poolmember_state(pools):
             for e in equips:
                 eqpt_id = str(e.id)
                 equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.id,
-                    protocolo=protocolo_access
-                ).uniqueResult()
+                    equipamento=e.id
+                )
 
                 plugin = PluginFactory.factory(e)
 
@@ -349,9 +337,7 @@ def get_poolmember_state(pools):
 
                     load_balance[eqpt_id] = {
                         'plugin': plugin,
-                        'fqdn': equipment_access.fqdn,
-                        'user': equipment_access.user,
-                        'password': equipment_access.password,
+                        'access': equipment_access,
                         'pools': [],
                     }
 
@@ -507,14 +493,21 @@ def get_pool_by_search(search=dict()):
     if search.get('extends_search'):
         pools = pools.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
+    search_query = dict()
+    search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
+    search_query['custom_search'] = search.get('custom_search') or None
+    search_query['searchable_columns'] = search.get('searchable_columns') or None
+    search_query['start_record'] = search.get('start_record') or 0
+    search_query['end_record'] = search.get('end_record') or 25
+
     pools, total = build_query_to_datatable(
         pools,
-        search.get('asorting_cols') or None,
-        search.get('custom_search') or None,
-        search.get('searchable_columns') or None,
-        search.get('start_record') or 0,
-        search.get('end_record') or 25
-    )
+        search_query['asorting_cols'],
+        search_query['custom_search'],
+        search_query['searchable_columns'],
+        search_query['start_record'],
+        search_query['end_record'])
+
     pool_map = dict()
     pool_map["pools"] = pools
     pool_map["total"] = total

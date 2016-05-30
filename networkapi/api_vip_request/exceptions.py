@@ -6,6 +6,13 @@ class VipRequestDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Vip Request Does Not Exist.'
 
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = u'Vips Request %s do not exist.' % (
+                msg)
+        else:
+            self.detail = self.default_detail
+
 
 class EnvironmentVipDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
@@ -43,6 +50,12 @@ class ServerPoolMemberDiffEnvironmentVipException(APIException):
 class IpNotFoundByEnvironment(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'IP environment is different of environment vip request'
+
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = u'%s %s' % (self.default_detail, msg)
+        else:
+            self.detail = self.default_detail
 
 
 class VipRequestAlreadyCreated(APIException):
