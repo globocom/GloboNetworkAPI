@@ -1,12 +1,12 @@
 import logging
 
-from networkapi.plugins.F5.f5base import F5Base
+from networkapi.plugins.Brocade.base import Base
 
 
 log = logging.getLogger(__name__)
 
 
-class Pool(F5Base):
+class Pool(Base):
 
     def create(self, **kwargs):
         log.info('pool:create:%s' % kwargs)

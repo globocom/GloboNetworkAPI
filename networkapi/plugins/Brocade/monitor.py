@@ -5,7 +5,7 @@ import suds
 from django.core.cache import cache
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import types
+from networkapi.plugins.Brocade import types
 from networkapi.plugins.Brocade.base import Base
 
 log = logging.getLogger(__name__)

@@ -36,13 +36,10 @@ class Generic(BasePlugin):
         if tratado['pool_filter']:
             self.__create_pool({'pools': tratado['pool_filter']})
         try:
-            self._lb._channel.System.Session.start_transaction()
             vts = virtualserver.VirtualServer(self._lb)
             vts.create(vips=tratado['vips_filter'])
         except Exception, e:
             raise base_exceptions.CommandErrorException(e)
-        else:
-            self._lb._channel.System.Session.submit_transaction()
 
     #######################################
     # POOLMEMBER
@@ -125,62 +122,28 @@ class Generic(BasePlugin):
     def create_pool(self, pools):
         self.__create_pool(pools)
 
-    def __create_pool(self, pools):
+    def __create_pool(self, data):
+        log.info("skipping create pool")
+        return
 
-        monitor_associations = []
-        pls = util.trata_param_pool(pools)
+        for pool in data["pools"]:
+            try:
+                pool_name = "P%s_%s" % (pool["id"],pool["nome"])
 
-        mon = monitor.Monitor(self._lb)
+                serverGroupList = (self._lb.slb_factory.create
+                                   ('ArrayOfRealServerGroupSequence'))
+                realServerGroup = (self._lb.slb_factory
+                                   .create('RealServerGroup'))
 
-        monitor_associations = mon.create_template(
-            names=pls['pools_names'],
-            healthcheck=pls['pools_healthcheck']
-        )
+                realServerGroup.groupName = pool_name
+                serverGroupList.RealServerGroupSequence.append(realServerGroup)
 
-        try:
-            self._lb._channel.System.Session.start_transaction()
+                (self._lb.slb_service
+                 .createRealServerGroups(serverGroupList))
+            except suds.WebFault as e:
+                raise base_exceptions.CommandErrorException(e)
 
-            pl = pool.Pool(self._lb)
 
-            pl.create(
-                names=pls['pools_names'],
-                lbmethod=pls['pools_lbmethod'],
-                members=pls['pools_members']['members'])
-
-            pl.set_monitor_association(monitor_associations=monitor_associations)
-
-            pl.set_service_down_action(
-                names=pls['pools_names'],
-                actions=pls['pools_actions'])
-
-            plm = poolmember.PoolMember(self._lb)
-
-            plm.set_connection_limit(
-                names=pls['pools_names'],
-                members=pls['pools_members']['members'],
-                connection_limit=pls['pools_members']['limit'])
-
-            plm.set_priority(
-                names=pls['pools_names'],
-                members=pls['pools_members']['members'],
-                priority=pls['pools_members']['priority'])
-
-            plm.set_states(
-                names=pls['pools_names'],
-                members=pls['pools_members']['members'],
-                monitor_state=pls['pools_members']['monitor'],
-                session_state=pls['pools_members']['session'])
-
-        except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
-            if monitor_associations != []:
-                template_names = [m['monitor_rule']['monitor_templates'] for m in monitor_associations]
-                mon.delete_template(
-                    template_names=template_names
-                )
-            raise base_exceptions.CommandErrorException(e)
-        else:
-            self._lb._channel.System.Session.submit_transaction()
 
     @util.connection
     def update_pool(self, pools):
@@ -267,43 +230,22 @@ class Generic(BasePlugin):
                 )
 
     @util.connection
-    def delete_pool(self, pools):
-        self.delete_pool(pools)
+    def delete_pool(self, data):
+        self.__delete_pool(data)
 
-    def __delete_pool(self, pools):
-        log.info('delete_pool')
+    def __delete_pool(self, data):
 
-        pls = util.trata_param_pool(pools)
-
-        pl = pool.Pool(self._lb)
-        mon = monitor.Monitor(self._lb)
-
-        self._lb._channel.System.Session.start_transaction()
-        try:
-            monitor_associations = pl.get_monitor_association(names=pls['pools_names'])
-            pl.remove_monitor_association(names=pls['pools_names'])
-
-        except Exception, e:
-            self._lb._channel.System.Session.rollback_transaction()
-            raise base_exceptions.CommandErrorException(e)
-
-        else:
-            self._lb._channel.System.Session.submit_transaction()
-
-            self._lb._channel.System.Session.start_transaction()
-
+        for pool in data["pools"]:
             try:
-                pl.delete(names=pls['pools_names'])
-                self._lb._channel.System.Session.submit_transaction()
-            except Exception, e:
-                self._lb._channel.System.Session.rollback_transaction()
-                pl.set_monitor_association(monitor_associations=monitor_associations)
+                pool_name = "P%s_%s" % (pool["id"],pool["nome"])
+                log.info('deleting pool %s'%pool_name)
+                serverGroupList = (self._lb.slb_factory
+                                   .create('ArrayOfStringSequence'))
+                serverGroupList.StringSequence.append(pool_name)
+
+                (self._lb.slb_service
+                 .deleteRealServerGroups(pool_name))
+            except suds.WebFault as e:
                 raise base_exceptions.CommandErrorException(e)
 
-            else:
-                try:
-                    template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-                    if template_names:
-                        mon.delete_template(template_names=template_names)
-                except bigsuds.OperationFailed:
-                    pass
+

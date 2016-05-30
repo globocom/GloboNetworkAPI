@@ -77,20 +77,6 @@ class BrocadeAdxDeviceDriverImpl():
             server.Name = name
         return server
 
-    def _adx_server_port(self, address, protocol_port, name=None):
-        # Create Server
-        server = self._adx_server(address, name)
-
-        # Create L4Port
-        l4_port = self.slb_factory.create('L4Port')
-        l4_port.NameOrNumber = protocol_port
-
-        # Create ServerPort
-        server_port = self.slb_factory.create('ServerPort')
-        server_port.srvr = server
-        server_port.port = l4_port
-        return server_port
-
     def _update_real_server_port_properties(self, new_member, old_member):
         try:
             address = new_member['address']
@@ -119,6 +105,20 @@ class BrocadeAdxDeviceDriverImpl():
              .setRealServersPortConfiguration(rsPortConfSeq))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
+
+    def _adx_server_port(self, address, protocol_port, name=None):
+        # Create Server
+        server = self._adx_server(address, name)
+
+        # Create L4Port
+        l4_port = self.slb_factory.create('L4Port')
+        l4_port.NameOrNumber = protocol_port
+
+        # Create ServerPort
+        server_port = self.slb_factory.create('ServerPort')
+        server_port.srvr = server
+        server_port.port = l4_port
+        return server_port
 
     def _update_real_server_properties(self, new_member, old_member):
         try:

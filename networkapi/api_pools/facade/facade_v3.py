@@ -19,7 +19,7 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 
 log = logging.getLogger(__name__)
-protocolo_access = 'https'
+protocolo_access = 'ssh'
 
 
 ################
@@ -76,8 +76,8 @@ def create_real_pool(pools):
                 } for pool_member in pool['server_pool_members']]
             })
 
-    for lb in load_balance:
-        load_balance[lb]['plugin'].create_pool(load_balance[lb])
+    for lb_id in load_balance:
+        load_balance[lb_id]['plugin'].create_pool(load_balance[lb_id])
 
     for key_cache in keys_cache:
         cache.delete(key_cache)
@@ -137,8 +137,8 @@ def delete_real_pool(pools):
 
             })
 
-    for lb in load_balance:
-        load_balance[lb]['plugin'].delete_pool(load_balance[lb])
+    for lb_id in load_balance:
+        load_balance[lb_id]['plugin'].delete_pool(load_balance[lb_id])
 
     ids = [pool['id'] for pool in pools]
     ServerPool.objects.filter(id__in=ids).update(pool_created=False)

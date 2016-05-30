@@ -1,12 +1,12 @@
 import logging
 
-from networkapi.plugins.F5.f5base import F5Base
+from networkapi.plugins.Brocade.base import Base
 
 
 log = logging.getLogger(__name__)
 
 
-class PoolMember(F5Base):
+class PoolMember(Base):
 
     def _create_real_server(self, member):
         address = member['address']

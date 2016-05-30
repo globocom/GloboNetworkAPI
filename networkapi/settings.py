@@ -182,7 +182,7 @@ LOGGING = {
             'handlers': ['log_file'],
         },
         'bigsuds': {
-            'level': logging.DEBUG,
+            'level': logging.INFO,
             'propagate': False,
             'handlers': ['log_file'],
         },

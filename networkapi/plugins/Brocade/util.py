@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 def connection(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
+        log.debug("decorator")
         try:
             self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
             return func(self, *args, **kwargs)
@@ -139,7 +140,6 @@ def trata_param_pool(pools):
 
 
 def trata_param_vip(vips):
-
     vips_filter = list()
     pool_filter = list()
     pool_filter_created = list()
@@ -149,7 +149,6 @@ def trata_param_vip(vips):
         vip_filter = dict()
         ports = vip_request.get('ports')
         for port in ports:
-
             address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
             vip_filter['pool'] = list()
@@ -165,7 +164,7 @@ def trata_param_vip(vips):
             pools = port.get('pools')
             for pool in pools:
                 if not pool.get('l7_rule') in ['', 'default']:
-                    raise NotImplementedError()
+                    raise NotImplementedError("l7_rule missing")
 
                 server_pool = pool.get('server_pool')
                 if not server_pool.get('pool_created'):
@@ -173,7 +172,7 @@ def trata_param_vip(vips):
                 else:
                     pool_filter_created.append(server_pool)
 
-                vip_filter['pool'].append(server_pool['identifier'])
+                vip_filter['pool'].append(server_pool['nome'])
 
         vips_filter.append(vip_filter)
 
@@ -254,9 +253,9 @@ STATUS_POOL_MEMBER = {
 }
 
 LB_METHOD = {
-    'least-conn': 'LB_METHOD_LEAST_CONNECTION_MEMBER',
-    'round-robin': 'LB_METHOD_ROUND_ROBIN',
-    'weighted': 'LB_METHOD_RATIO_MEMBER',
+    'least-conn': 'LEAST_CONN',
+    'round-robin': 'ROUND_ROBIN',
+    'weighted': 'WEIGHTED',
     # '': 'LB_METHOD_LEAST_CONNECTION_MEMBER',
     # '': 'LB_METHOD_OBSERVED_MEMBER',
     # '': 'LB_METHOD_PREDICTIVE_MEMBER',

@@ -21,7 +21,7 @@ from networkapi.requisicaovips.models import OptionVip, ServerPool, ServerPoolMe
 from networkapi.util import valid_expression
 
 
-protocolo_access = 'https'
+protocolo_access = 'ssh'
 log = logging.getLogger(__name__)
 
 
@@ -308,6 +308,9 @@ def create_real_vip_request(vip_requests):
 
                 l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
 
+                #TODO: L7?
+                l7_rule=''
+
                 vip_request['ports'][idx]['pools'][i]['server_pool'] = {
                     'id': pool_serializer.data['id'],
                     'nome': pool_serializer.data['identifier'],
@@ -411,6 +414,7 @@ def create_real_vip_request(vip_requests):
             eqpt_id = str(e.id)
 
             if not load_balance.get(eqpt_id):
+
                 equipment_access = EquipamentoAcesso.search(
                     equipamento=e.id,
                     protocolo=protocolo_access
@@ -428,7 +432,6 @@ def create_real_vip_request(vip_requests):
                 }
 
             load_balance[eqpt_id]['vips'].append({'vip_request': vip_request})
-
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
         inst.get('plugin').create_vip(inst)

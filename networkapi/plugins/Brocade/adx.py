@@ -205,3 +205,31 @@ class AdxService:
         requestHeader = soapHeader()
         client.set_options(soapheaders=requestHeader)
         return client
+
+
+#Exceptions
+
+class AdxBaseException(Exception):
+    def __init__(self, **kwargs):
+        super(BaseException, self).__init__(self.message % kwargs)
+        self.message = self.message % kwargs
+
+
+class AdxUnsupportedFeature(BaseException):
+    message = "Unsupported feature: %(msg)s"
+
+
+class AdxUnsupportedOption(BaseException):
+    message = "Unsupported Value %(value)s specified for attribute %(name)s"
+
+
+class AdxConfigError(BaseException):
+    message = "Configuration error on the device: %(msg)s"
+
+
+class AdxNoValidDevice(BaseException):
+    message = "No valid device found"
+
+
+class AdxStartupError(BaseException):
+    message = "Device driver configuration error: %(msg)s"

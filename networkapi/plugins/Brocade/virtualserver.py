@@ -1,16 +1,18 @@
 # -*- coding:utf-8 -*-
 import logging
 
-from networkapi.plugins.F5 import types
-from networkapi.plugins.F5.f5base import F5Base
-from networkapi.plugins.F5.profile import ProfileFastL4, ProfileHttp, ProfileTCP, ProfileUDP
+from networkapi.plugins.Brocade import types
+from networkapi.plugins.Brocade.base import Base
+from networkapi.plugins.Brocade.profile import ProfileFastL4, ProfileHttp, ProfileTCP, ProfileUDP
 from networkapi.util import valid_expression
 
+import suds
+from adx import *
 
 log = logging.getLogger(__name__)
 
 
-class VirtualServer(F5Base):
+class VirtualServer(Base):
 
     def delete(self, **kwargs):
         log.info('vip:delete:%s' % kwargs)
@@ -20,6 +22,7 @@ class VirtualServer(F5Base):
         )
 
     def create(self, **kwargs):
+        log.info("vip:create:%s" % kwargs)
 
         vip_definitions = list()
         vip_wildmasks = list()
@@ -60,11 +63,11 @@ class VirtualServer(F5Base):
             'pools': list()
         }
 
-        tcp = ProfileTCP(self._lb)
-        http = ProfileHttp(self._lb)
-        fastl4 = ProfileFastL4(self._lb)
-        udp = ProfileUDP(self._lb)
-        profiles_list = tcp.get_list() + http.get_list() + fastl4.get_list() + udp.get_list()
+        # tcp = ProfileTCP(self._lb)
+        # http = ProfileHttp(self._lb)
+        # fastl4 = ProfileFastL4(self._lb)
+        # udp = ProfileUDP(self._lb)
+        # profiles_list = tcp.get_list() + http.get_list() + fastl4.get_list() + udp.get_list()
 
         for vip_request in kwargs['vips']:
 
@@ -116,8 +119,8 @@ class VirtualServer(F5Base):
                                                         'default_flag': 1
                                                     })
                                         except:
-                                            if '/Common/' + profile_name not in profiles_list:
-                                                raise Exception(u'Profile %s nao existe')
+                                            # if '/Common/' + profile_name not in profiles_list:
+                                            #     raise Exception(u'Profile %s nao existe')
                                             pass
                                         profiles.append({
                                             'profile_context': 'PROFILE_CONTEXT_TYPE_ALL',
@@ -163,6 +166,51 @@ class VirtualServer(F5Base):
             })
 
             vip_profiles.append(profiles)
+
+        ########################################################################################
+        vsName = vip_request['name']
+        vsIpAddress = vip_request['address']
+        vsPort = vip_request['port']
+
+        # Create Server
+        server = self._lb.slb_factory.create("Server")
+        server.IP = vsIpAddress
+        server.Name = vsName
+
+        # Create L4Port
+        l4_port = self._lb.slb_factory.create('L4Port')
+        l4_port.NameOrNumber = vsPort
+
+        # Create ServerPort
+        server_port = self._lb.slb_factory.create('ServerPort')
+        server_port.srvr = server
+        server_port.port = l4_port
+
+        try:
+            vsSeq = (self._lb.slb_factory
+                     .create('ArrayOfVirtualServerConfigurationSequence'))
+            vsConfig = (self._lb.slb_factory
+                        .create('VirtualServerConfiguration'))
+
+            vsConfig.virtualServer = server_port.srvr
+            vsConfig.adminState = True
+
+            # Work Around to define a value for Enumeration Type
+            # vsConfig.predictor = 'LEAST_CONN'
+            vsConfig.trackingMode = 'NONE'
+            vsConfig.haMode = 'NOT_CONFIGURED'
+
+            (vsSeq.VirtualServerConfigurationSequence
+             .append(vsConfig))
+            log.debug("%s" % vsSeq)
+            (self.slb_service.
+             createVirtualServerWithConfiguration(vsSeq))
+        except suds.WebFault as e:
+            log.error(_("Exception in create_virtual_server "
+                        "in device driver : %s"), e.message)
+            raise AdxConfigError(msg=e.message)
+        ########################################################################################
+
 
         self._lb._channel.LocalLB.VirtualServer.create(
             definitions=vip_definitions,
