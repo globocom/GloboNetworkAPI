@@ -19,6 +19,7 @@ class Generic(BasePlugin):
     #######################################
     @util.connection
     def delete_vip(self, vips):
+        pools_del = list()
         tratado = util.trata_param_vip(vips)
         vts = virtualserver.VirtualServer(self._lb)
         try:
@@ -36,8 +37,20 @@ class Generic(BasePlugin):
             pass
         else:
             self._lb._channel.System.Session.submit_transaction()
+            log.info(tratado.get('pool_filter_created'))
             if tratado.get('pool_filter_created'):
-                self.__delete_pool({'pools': tratado.get('pool_filter_created')})
+                try:
+                    self.__delete_pool({'pools': tratado.get('pool_filter_created')})
+                except Exception, e:
+                    if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
+                        log.warning('"Pool cannot be deleted because it is in use by a Virtual Server"')
+                        pass
+                    else:
+                        raise e
+                else:
+                    pools_del = [server_pool.get('id') for server_pool in tratado.get('pool_filter_created')]
+
+        return pools_del
 
     @util.connection
     def create_vip(self, vips):
@@ -83,36 +96,38 @@ class Generic(BasePlugin):
     @logger
     @util.connection
     def update_vip(self, vips):
-        tratado = util.trata_param_vip(vips)
+        pass
+        # not implemented yet
+        # tratado = util.trata_param_vip(vips)
 
-        if tratado.get('pool_filter'):
-            self.__create_pool({'pools': tratado.get('pool_filter')})
-        try:
-            vts = virtualserver.VirtualServer(self._lb)
-            vts.update(vips=tratado.get('vips_filter'))
-        except Exception, e:
-            if tratado.get('pool_filter'):
-                self.__delete_pool({'pools': tratado.get('pool_filter')})
-            log.error(e)
-            raise base_exceptions.CommandErrorException(e)
-        else:
-            try:
-                vts.create(vips=tratado.get('vips_cache_filter'))
-            except Exception, e:
-                log.error(e)
+        # if tratado.get('pool_filter'):
+        #     self.__create_pool({'pools': tratado.get('pool_filter')})
+        # try:
+        #     vts = virtualserver.VirtualServer(self._lb)
+        #     vts.update(vips=tratado.get('vips_filter'))
+        # except Exception, e:
+        #     if tratado.get('pool_filter'):
+        #         self.__delete_pool({'pools': tratado.get('pool_filter')})
+        #     log.error(e)
+        #     raise base_exceptions.CommandErrorException(e)
+        # else:
+        #     try:
+        #         vts.create(vips=tratado.get('vips_cache_filter'))
+        #     except Exception, e:
+        #         log.error(e)
 
-                # cache layer
-                try:
-                    if tratado.get('vips_filter'):
-                        vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
-                        vts.delete(vps_names=vps_names)
-                except Exception, e:
-                    log.error(e)
-                    raise base_exceptions.CommandErrorException(e)
-                else:
-                    self.__delete_pool({'pools': tratado.get('pool_filter')})
+        #         # cache layer
+        #         try:
+        #             if tratado.get('vips_filter'):
+        #                 vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
+        #                 vts.delete(vps_names=vps_names)
+        #         except Exception, e:
+        #             log.error(e)
+        #             raise base_exceptions.CommandErrorException(e)
+        #         else:
+        #             self.__delete_pool({'pools': tratado.get('pool_filter')})
 
-                raise base_exceptions.CommandErrorException(e)
+        #         raise base_exceptions.CommandErrorException(e)
 
     #######################################
     # POOLMEMBER
@@ -467,7 +482,6 @@ class Generic(BasePlugin):
                 raise base_exceptions.CommandErrorException(e)
             else:
                 self._lb._channel.System.Session.submit_transaction()
-
                 try:
                     template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
                     if template_names:

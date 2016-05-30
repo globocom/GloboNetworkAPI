@@ -38,6 +38,8 @@ class ACE(BasePlugin):
         except Exception, e:
             raise base_exceptions.CommandErrorException(e)
 
+        return []
+
     def update_vip(self, vips):
         log.info('bypass')
         pass

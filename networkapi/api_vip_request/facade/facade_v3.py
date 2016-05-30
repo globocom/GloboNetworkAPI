@@ -500,13 +500,16 @@ def delete_real_vip_request(vip_requests):
 
     load_balance = prepare_apply(vip_requests, False, True)
 
+    pools_ids = list()
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        inst.get('plugin').delete_vip(inst)
+        pools_ids += inst.get('plugin').delete_vip(inst)
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=False)
-    ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=False)
+    if pools_ids:
+        pools_ids = list(set(pools_ids))
+        ServerPool.objects.filter(id__in=pools_ids).update(pool_created=False)
 
 
 #############

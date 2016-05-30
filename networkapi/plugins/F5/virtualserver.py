@@ -23,6 +23,40 @@ class VirtualServer(F5Base):
 
     @logger
     def create(self, **kwargs):
+        self.__properties = {
+
+            'profiles': list(),
+            'profiles_timeout_tcp': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_timeout_udp': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_timeout_fastl4': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_persistence': {
+                'virtual_servers': list(),
+                'profiles': list()
+            },
+            'translate_port_state': {
+                'virtual_servers': list(),
+                'states': list()
+            },
+            'vip_snat_auto': {
+                'virtual_servers': list()
+            },
+            'vip_snat_none': {
+                'virtual_servers': list()
+            },
+            'vip_snat_pool': {
+                'virtual_servers': list(),
+                'pools': list()
+            }
+        }
         vip_definitions = list()
         vip_wildmasks = list()
         vip_resources = list()
@@ -67,8 +101,6 @@ class VirtualServer(F5Base):
                 'default_pool_name': vip_request['pool'][0]
             })
 
-            vip_profiles.append(self.__properties['profiles'])
-
             if vip_request.get('rules'):
                 rules = list()
                 for rule in vip_request['rules']:
@@ -92,6 +124,7 @@ class VirtualServer(F5Base):
                 profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
                 profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
 
+            vip_profiles = self.__properties['profiles']
             self.__create_vip(
                 definitions=vip_definitions,
                 wildmasks=vip_wildmasks,
@@ -450,41 +483,6 @@ class VirtualServer(F5Base):
 
     def __prepare_properties(self, vip_request, profiles_list, update=False):
 
-        self.__properties = {
-
-            'profiles': list(),
-            'profiles_timeout_tcp': {
-                'profile_names': list(),
-                'timeouts': list()
-            },
-            'profiles_timeout_udp': {
-                'profile_names': list(),
-                'timeouts': list()
-            },
-            'profiles_timeout_fastl4': {
-                'profile_names': list(),
-                'timeouts': list()
-            },
-            'profiles_persistence': {
-                'virtual_servers': list(),
-                'profiles': list()
-            },
-            'translate_port_state': {
-                'virtual_servers': list(),
-                'states': list()
-            },
-            'vip_snat_auto': {
-                'virtual_servers': list()
-            },
-            'vip_snat_none': {
-                'virtual_servers': list()
-            },
-            'vip_snat_pool': {
-                'virtual_servers': list(),
-                'pools': list()
-            }
-        }
-
         profiles = list()
 
         if vip_request['optionsvip_extended']:
@@ -567,4 +565,4 @@ class VirtualServer(F5Base):
                                     self.__properties['translate_port_state']['states'].append(item.get('value'))
 
                             break
-        self.__properties['profiles'] = profiles
+        self.__properties['profiles'].append(profiles)
