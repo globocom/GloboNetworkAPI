@@ -479,7 +479,9 @@ def create_real_vip_request(vip_requests):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
+        log.info('started call:%s' % lb)
         inst.get('plugin').create_vip(inst)
+        log.info('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=True)
@@ -493,7 +495,9 @@ def update_real_vip_request(vip_requests):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
+        log.info('started call:%s' % lb)
         inst.get('plugin').update_vip(inst)
+        log.info('ended call')
 
 
 @commit_on_success
@@ -504,7 +508,9 @@ def delete_real_vip_request(vip_requests):
     pools_ids = list()
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
+        log.info('started call:%s' % lb)
         pools_ids += inst.get('plugin').delete_vip(inst)
+        log.info('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
     models.VipRequest.objects.filter(id__in=ids).update(created=False)

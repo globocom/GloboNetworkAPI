@@ -34,7 +34,7 @@ class ACE(BasePlugin):
                     for id_layer in vips.get('layers').get(vip_id):
                         vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
                         command = 'gerador_vips -i %s --remove --aceonly' % vip_request['id']
-                        log.info('call script:' % command)
+                        log.info('calling script:' % command)
                         code, stdout, stderr = exec_script(command)
         except Exception, e:
             raise base_exceptions.CommandErrorException(e)
@@ -52,7 +52,7 @@ class ACE(BasePlugin):
                     for id_layer in vips.get('layers').get(vip_id):
                         vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
                         command = 'gerador_vips -i %s --cria --aceonly' % vip_request['id']
-                        log.info('call script:' % command)
+                        log.info('calling script:' % command)
                         code, stdout, stderr = exec_script(command)
         except Exception, e:
             raise base_exceptions.CommandErrorException(e)
