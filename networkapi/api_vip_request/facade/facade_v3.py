@@ -12,7 +12,7 @@ from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
 from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade import get_pool_by_id
 from networkapi.api_pools.serializers import PoolV3Serializer
-from networkapi.api_vip_request import exceptions, models
+from networkapi.api_vip_request import exceptions, models, syncs
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable
@@ -52,6 +52,9 @@ def create_vip_request(vip_request):
     _create_port(vip_request['ports'], vip.id)
     _create_option(option_create, vip.id)
 
+    # sync with old tables
+    syncs.new_to_old(vip)
+
     return vip
 
 
@@ -87,16 +90,23 @@ def update_vip_request(vip_request):
         if dsrl3[0]['id'] in option_remove:
             models.VipRequestDSCP.objects.filter(vip_request=vip.id).delete()
 
+    # sync with old tables
+    syncs.new_to_old(vip)
+
 
 def delete_vip_request(vip_request_ids):
     """delete vip request"""
 
-    vp = models.VipRequest.objects.filter(id__in=vip_request_ids)
-    created = vp.filter(created=True)
+    vps = models.VipRequest.objects.filter(id__in=vip_request_ids)
+    created = vps.filter(created=True)
     if created:
         raise exceptions.VipConstraintCreatedException()
 
-    vp.delete()
+    vps.delete()
+
+    # sync with old tables
+    for vip_request_id in vip_request_ids:
+        syncs.delete_old(vip_request_id)
 
 
 def _create_port(ports, vip_request_id):
@@ -479,12 +489,18 @@ def create_real_vip_request(vip_requests):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.info('started call:%s' % lb)
+        log.debug('started call:%s' % lb)
         inst.get('plugin').create_vip(inst)
-        log.info('ended call')
+        log.debug('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
-    models.VipRequest.objects.filter(id__in=ids).update(created=True)
+
+    vips = models.VipRequest.objects.filter(id__in=ids)
+    vips.update(created=True)
+
+    for vip in vips:
+        syncs.old_to_new(vip)
+
     ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=True)
 
 
@@ -495,9 +511,9 @@ def update_real_vip_request(vip_requests):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.info('started call:%s' % lb)
+        log.debug('started call:%s' % lb)
         inst.get('plugin').update_vip(inst)
-        log.info('ended call')
+        log.debug('ended call')
 
 
 @commit_on_success
@@ -508,12 +524,18 @@ def delete_real_vip_request(vip_requests):
     pools_ids = list()
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.info('started call:%s' % lb)
+        log.debug('started call:%s' % lb)
         pools_ids += inst.get('plugin').delete_vip(inst)
-        log.info('ended call')
+        log.debug('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
-    models.VipRequest.objects.filter(id__in=ids).update(created=False)
+
+    vips = models.VipRequest.objects.filter(id__in=ids)
+    vips.update(created=False)
+
+    for vip in vips:
+        syncs.old_to_new(vip)
+
     if pools_ids:
         pools_ids = list(set(pools_ids))
         ServerPool.objects.filter(id__in=pools_ids).update(pool_created=False)
@@ -678,8 +700,9 @@ def validate_save(vip_request, permit_created=False):
                     raise Exception('Pool %s must be associated to a only vip request, when vip request has dslr3 option' % pool['server_pool'])
 
             try:
-                spms = ServerPoolMember.objects.get(server_pool=pool['server_pool'])
-            except:
+                ServerPool.objects.get(id=pool['server_pool'])
+            except Exception, e:
+                log.error(e)
                 raise exceptions_pool.PoolDoesNotExistException(pool['server_pool'])
 
             spms = ServerPoolMember.objects.filter(server_pool=pool['server_pool'])

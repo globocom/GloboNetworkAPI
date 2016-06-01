@@ -729,7 +729,7 @@ class RequisicaoVips(BaseModel):
         return reals_priority_map
 
     def add_variable(self, key, value):
-        self.variaveis = self.variaveis + key + '=' + value + '\n'
+        self.variaveis = self.variaveis + str(key) + '=' + str(value) + '\n'
 
     def __parse_variables(self):
         map = dict()
@@ -865,21 +865,21 @@ class RequisicaoVips(BaseModel):
             log.error(
                 u'The grupo_cache is not in OptionVip, invalid value: %s.', grupo_cache)
             raise InvalidCacheValueError(
-                None, 'grupo_cache com valor inválido: %s.' % grupo_cache)
+                None, u'grupo_cache com valor inválido: %s.' % grupo_cache)
         self.add_variable('cache', grupo_cache)
 
         if persistencia not in persistencias:
             log.error(
                 u'The persistencia is not in OptionVip, invalid value: %s.', persistencia)
             raise InvalidPersistenciaValueError(
-                None, 'persistencia com valor inválido %s.' % persistencia)
+                None, u'persistencia com valor inválido %s.' % persistencia)
         self.add_variable('persistencia', persistencia)
 
         if trafficint not in traffics:
             log.error(
                 u'The traffic return is not in OptionVip, invalid value: %s.', traffic)
             raise InvalidTrafficReturnValueError(
-                None, 'traffic return com valor inválido %s.' % traffic)
+                None, u'traffic return com valor inválido %s.' % traffic)
         self.add_variable('trafficreturn', traffic)
 
         priority_pools = []

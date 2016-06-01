@@ -2,8 +2,8 @@
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
-from networkapi.api_pools.serializers import Ipv4BasicSerializer, Ipv4DetailsSerializer, Ipv4Serializer,\
-    Ipv6BasicSerializer, Ipv6DetailsSerializer, Ipv6Serializer, PoolV3Serializer
+from networkapi.api_pools.serializers import Ipv4DetailsSerializer, Ipv4Serializer,\
+    Ipv6DetailsSerializer, Ipv6Serializer, PoolV3Serializer
 from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPort,\
     VipRequestPortPool
 
@@ -206,6 +206,16 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
 
     equipments = serializers.SerializerMethodField('get_eqpt')
 
+    default_names = serializers.SerializerMethodField('get_default_names')
+
+    def get_default_names(self, obj):
+        ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
+        names = list()
+        for port in obj.viprequestport_set.all():
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port))
+
+        return names
+
     def get_eqpt(self, obj):
         eqpts = list()
         equipments = list()
@@ -259,6 +269,7 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
             'ipv4',
             'ipv6',
             'equipments',
+            'default_names',
             'ports',
             'options',
             'created'

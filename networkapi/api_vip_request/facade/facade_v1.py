@@ -1,40 +1,22 @@
 # -*- coding:utf-8 -*-
-
-"""
- Licensed to the Apache Software Foundation (ASF) under one or more
- contributor license agreements.  See the NOTICE file distributed with
- this work for additional information regarding copyright ownership.
- The ASF licenses this file to You under the Apache License, Version 2.0
- (the "License"); you may not use this file except in compliance with
- the License.  You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- """
-from django.forms import model_to_dict
-from networkapi.api_pools.views import reals_can_associate_server_pool
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.error_message_utils import error_messages
-from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
-from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, \
-    EnvironmentVip
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms import model_to_dict
+
+from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, \
+    EnvironmentVip
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_vip_request import exceptions, syncs
 from networkapi.api_vip_request.serializers import RequestVipSerializer, \
     VipPortToPoolSerializer
-from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, \
-    ServerPool, OptionVip, DsrL3_to_Vip
-from networkapi.util import is_valid_int_greater_zero_param, \
-    convert_boolean_to_int
-from networkapi.api_vip_request import exceptions
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.requisicaovips.models import RequisicaoVipsMissingDSRL3idError
-from django.core.exceptions import ObjectDoesNotExist
+from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.error_message_utils import error_messages
+
+from networkapi.requisicaovips.models import DsrL3_to_Vip, OptionVip, \
+    RequisicaoVips, ServerPool, VipPortToPool
+from networkapi.util import convert_boolean_to_int, \
+    is_valid_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 
@@ -64,14 +46,13 @@ def get_by_pk(pk):
     data['l7_filter'] = vip_request.l7_filter
     data['rule_id'] = vip_request.rule_id
     data['trafficreturn'] = vip_request.trafficreturn.nome_opcao_txt
-    data['dsrl3']=999
+    data['dsrl3'] = 999
     try:
         dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(vip_request.id)
         data['dsrl3'] = dsrl3_to_vip_obj.id_dsrl3
-    except ObjectDoesNotExist, e:
+    except ObjectDoesNotExist:
         pass
-        #data['dsrl3'] = '0'
-
+        # data['dsrl3'] = '0'
 
     pools = []
 
@@ -142,13 +123,13 @@ def save(request):
     set_l7_filter_for_vip(obj_req_vip)
     obj_req_vip.set_new_variables(data)
 
-    #obj_req_vip.trafficreturn=OptionVip.get_by_pk(int(data['trafficreturn']))
+    # obj_req_vip.trafficreturn=OptionVip.get_by_pk(int(data['trafficreturn']))
     if obj_req_vip.trafficreturn is None:
         obj_req_vip.trafficreturn = OptionVip.get_by_pk(12)
 
     obj_req_vip.save(user)
 
-    if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3": 
+    if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3":
         dsrl3_to_vip_obj = DsrL3_to_Vip()
         dsrl3_to_vip_obj.get_dsrl3(obj_req_vip, user)
 
@@ -156,6 +137,7 @@ def save(request):
         v_port.requisicao_vip = obj_req_vip
         v_port.save()
 
+    syncs.old_to_new(obj_req_vip)
 
     return req_vip_serializer.data
 
@@ -185,13 +167,13 @@ def update(request, pk):
         log.error(req_vip_serializer.errors)
         raise api_exceptions.ValidationException()
 
-    #test if request exists
+    # test if request exists
     RequisicaoVips.objects.get(pk=pk)
 
     with distributedlock(LOCK_VIP % pk):
 
         obj_req_vip = req_vip_serializer.object
-        #compatibility issues
+        # compatibility issues
         if obj_req_vip.trafficreturn is None:
             obj_req_vip.trafficreturn = RequisicaoVips.objects.get(pk=pk).trafficreturn
 
@@ -201,17 +183,16 @@ def update(request, pk):
         set_l7_filter_for_vip(obj_req_vip)
         obj_req_vip.set_new_variables(data)
 
-
         old_trafficreturn = RequisicaoVips.objects.get(pk=pk).trafficreturn
         if old_trafficreturn.id != obj_req_vip.trafficreturn.id:
-            if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3": 
+            if obj_req_vip.trafficreturn.nome_opcao_txt == "DSRL3":
                 dsrl3_to_vip_obj = DsrL3_to_Vip()
                 dsrl3_to_vip_obj.get_dsrl3(obj_req_vip, user)
             else:
                 try:
                     dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(obj_req_vip.id)
                     dsrl3_to_vip_obj.delete(user)
-                except ObjectDoesNotExist, e:
+                except ObjectDoesNotExist:
                     pass
 
         obj_req_vip.save()
@@ -242,6 +223,8 @@ def update(request, pk):
             vip_port_obj.port_vip = vip_port.get('port_vip')
             vip_port_obj.requisicao_vip = obj_req_vip
             vip_port_obj.save()
+
+        syncs.old_to_new(obj_req_vip)
 
         return req_vip_serializer.data
 
