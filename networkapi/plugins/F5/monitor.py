@@ -65,6 +65,8 @@ class Monitor(F5Base):
 
                     healthcheck_request = kwargs['healthcheck'][i]['healthcheck_request']
                     healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
+                    healthcheck_request += '\r\n\r\n' if '\r\n\r\n' not in healthcheck_request else ''
+                    healthcheck_expect += '\r\n\r\n' if '\r\n\r\n' not in healthcheck_expect else ''
 
                     template_names.append(name)
                     values.append({

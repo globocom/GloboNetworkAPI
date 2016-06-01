@@ -1,11 +1,11 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
-ALTER TABLE `networkapi`.`server_pool_member` 
+ALTER TABLE `server_pool_member` 
 CHANGE COLUMN `status` `status` TINYINT(4) NOT NULL DEFAULT '3' COMMENT 'convert to BIN, 0-7 = 000-111, healthcheck|session|monitor' ;
 
 """
 
 SQL_DOWN = u"""
-ALTER TABLE `networkapi`.`server_pool_member` 
+ALTER TABLE `server_pool_member` 
 CHANGE COLUMN `status` `status` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '1-enable/ 0-disable' ;
 """
