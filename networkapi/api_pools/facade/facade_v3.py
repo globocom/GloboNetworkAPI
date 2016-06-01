@@ -236,9 +236,7 @@ def update_real_pool(pools):
 
                 load_balance[eqpt_id] = {
                     'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
+                    'access': equipment_access,
                     'pools': [],
                 }
 

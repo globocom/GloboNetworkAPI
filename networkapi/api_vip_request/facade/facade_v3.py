@@ -105,8 +105,7 @@ def delete_vip_request(vip_request_ids):
     vps.delete()
 
     # sync with old tables
-    for vip_request_id in vip_request_ids:
-        syncs.delete_old(vip_request_id)
+    syncs.delete_old(vip_request_ids)
 
 
 def _create_port(ports, vip_request_id):
@@ -499,7 +498,7 @@ def create_real_vip_request(vip_requests):
     vips.update(created=True)
 
     for vip in vips:
-        syncs.old_to_new(vip)
+        syncs.new_to_old(vip)
 
     ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=True)
 
@@ -534,7 +533,7 @@ def delete_real_vip_request(vip_requests):
     vips.update(created=False)
 
     for vip in vips:
-        syncs.old_to_new(vip)
+        syncs.new_to_old(vip)
 
     if pools_ids:
         pools_ids = list(set(pools_ids))

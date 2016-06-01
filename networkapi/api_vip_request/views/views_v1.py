@@ -14,27 +14,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
-from django.db.transaction import commit_on_success
 from django.db.models import Q
+from django.db.transaction import commit_on_success
+
+from networkapi.ambiente.models import Ambiente, EnvironmentVip
+from networkapi.api_pools import exceptions as pool_exceptions
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_vip_request import exceptions, facade, syncs
+from networkapi.api_vip_request.permissions import Read, Write
+from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
+from networkapi.exception import EnvironmentVipNotFoundError, InvalidValueError
+from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, \
+    ServerPool, VipPortToPool
+
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from rest_framework.response import Response
-
-import logging
-from networkapi.api_vip_request.permissions import Read, Write
-from networkapi.requisicaovips.models import ServerPool, VipPortToPool, \
-    RequisicaoVips, RequisicaoVipsError
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_pools import exceptions as pool_exceptions
-from networkapi.api_vip_request import exceptions
-from networkapi.ambiente.models import EnvironmentVip, Ambiente
-from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.api_vip_request import facade
-from networkapi.requisicaovips.models import DsrL3_to_Vip, RequisicaoVipsMissingDSRL3idError
-
 
 log = logging.getLogger(__name__)
 
@@ -118,8 +116,8 @@ def delete(request):
         vips_request = RequisicaoVips.objects.filter(id__in=ids)
         for vrequest in vips_request:
             """ if vip has DSRl3 """
-            #traffic=OptionVip.objects.filter(nome_opcao_txt='DSRL3')
-            #traffic.id should be equal 48
+            # traffic=OptionVip.objects.filter(nome_opcao_txt='DSRL3')
+            # traffic.id should be equal 48
             # if vrequest.trafficreturn.id == 48:
             #     try:
             #         dsrl3= DsrL3_to_Vip.get_by_vip_id(ids)
@@ -129,6 +127,8 @@ def delete(request):
             #         raise RequisicaoVipsMissingDSRL3idError(
             #                 e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % ids)
             vrequest.remove(request.user, vrequest.id)
+
+        syncs.delete_new(ids)
 
     except Exception, exception:
         log.error(exception)
