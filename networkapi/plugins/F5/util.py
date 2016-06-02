@@ -149,13 +149,13 @@ def trata_param_pool(pools):
                 member_status_monitor.append(status['monitor'])
                 member_status_session.append(status['session'])
 
-            if pool_member.get('limit'):
+            if pool_member.get('limit') is not None:
                 member_limit.append(pool_member['limit'])
 
-            if pool_member.get('priority'):
+            if pool_member.get('priority') is not None:
                 member_priority.append(pool_member['priority'])
 
-            if pool_member.get('weight'):
+            if pool_member.get('weight') is not None:
                 member_weight.append(pool_member['weight'])
 
             if not pool_member.get('remove'):
