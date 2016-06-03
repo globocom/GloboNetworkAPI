@@ -1172,17 +1172,18 @@ class Ip(BaseModel):
                 r_alter = False
                 #Assures VIP request is not being changed - issue #48
                 with distributedlock(LOCK_VIP % r.id):
-                    if r.vip_criado:
+                    vip_request = r._meta.model.objects.get(pk=r.id)
+                    if vip_request.vip_criado:
                         raise IpCantBeRemovedFromVip(
-                            r.id, "Ipv4 não pode ser removido, porque está em uso por Requisição Vip %s" % (r.id))
+                            vip_request.id, "Ipv4 não pode ser removido, porque está em uso por Requisição Vip %s" % (r.id))
                     else:
-                        if r.ipv6 is not None:
-                            r.ip = None
-                            r.validado = 0
-                            r.save(authenticated_user)
+                        if vip_request.ipv6 is not None:
+                            vip_request.ip = None
+                            vip_request.validado = 0
+                            vip_request.save(authenticated_user)
                             r_alter = True
                     if not r_alter:
-                        r.delete()
+                        vip_request.delete()
 
             for ie in self.ipequipamento_set.all():
                 # Codigo removido, pois não devemos remover o ambiente do equipamento mesmo que não tenha IP
