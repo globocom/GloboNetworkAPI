@@ -96,10 +96,10 @@ class CreateVipResource(RestResource):
             self.log.error(u'Parameter id_vip is invalid. Value: %s.', vip_id)
             raise InvalidValueError(None, 'id_vip', vip_id)
 
-        # Vip must exists in database
-        vip = RequisicaoVips.get_by_pk(vip_id)
-
         with distributedlock(LOCK_VIP % vip_id):
+
+            # Vip must exists in database
+            vip = RequisicaoVips.get_by_pk(vip_id)
 
             # Equipment permissions
             if vip.ip is not None:

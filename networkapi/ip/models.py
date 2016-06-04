@@ -32,7 +32,7 @@ from networkapi.util import mount_ipv4_string, mount_ipv6_string
 from networkapi.filterequiptype.models import FilterEquipType
 from networkapi.equipamento.models import TipoEquipamento
 from networkapi.exception import InvalidValueError
-from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
+from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT, LOCK_VIP
 from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.util.decorators import cached_property
@@ -1170,17 +1170,21 @@ class Ip(BaseModel):
         try:
             for r in self.requisicaovips_set.all():
                 r_alter = False
-                if r.vip_criado:
-                    raise IpCantBeRemovedFromVip(
-                        r.id, "Ipv4 não pode ser removido, porque está em uso por Requisição Vip %s" % (r.id))
-                else:
-                    if r.ipv6 is not None:
-                        r.ip = None
-                        r.validado = 0
-                        r.save(authenticated_user)
-                        r_alter = True
-                if not r_alter:
-                    r.delete()
+                #Assures VIP request is not being changed - issue #48
+                with distributedlock(LOCK_VIP % r.id):
+                    #updates query after lock for object
+                    r = self.requisicaovips_set.get(id=r.id)
+                    if r.vip_criado:
+                        raise IpCantBeRemovedFromVip(
+                            r.id, "Ipv4 não pode ser removido, porque está em uso por Requisição Vip %s" % (r.id))
+                    else:
+                        if r.ipv6 is not None:
+                            r.ip = None
+                            r.validado = 0
+                            r.save(authenticated_user)
+                            r_alter = True
+                    if not r_alter:
+                        r.delete()
 
             for ie in self.ipequipamento_set.all():
                 # Codigo removido, pois não devemos remover o ambiente do equipamento mesmo que não tenha IP
