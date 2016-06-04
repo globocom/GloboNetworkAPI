@@ -399,7 +399,11 @@ def new_to_old(vp):
 
 def delete_old(ids):
     try:
-        RequisicaoVips.objects.filter(id__in=ids).delete()
+        if isinstance(ids, list):
+            RequisicaoVips.objects.filter(id__in=ids).delete_no_sync()
+        else:
+            RequisicaoVips.objects.filter(id=ids).delete_no_sync()
+
     except Exception, e:
         log.error(e)
         # raise e
@@ -407,7 +411,10 @@ def delete_old(ids):
 
 def delete_new(ids):
     try:
-        VipRequest.objects.filter(id__in=ids).delete()
+        if isinstance(ids, list):
+            VipRequest.objects.filter(id__in=ids).delete_no_sync()
+        else:
+            VipRequest.objects.filter(id=ids).delete_no_sync()
     except Exception, e:
         log.error(e)
         # raise e

@@ -340,6 +340,9 @@ SERVICE_DOWN_ACTION = {
 ###############
 # POOL MEMBER
 ###############
+# 1/0 monitorar healthcheck /nao monitorar healthcheck
+# 1/0 habilitar/desabilitar membro
+# 1/0 healthcheck ok/nao ok
 STATUS_POOL_MEMBER = {
     '0': {
         'monitor': 'STATE_DISABLED',

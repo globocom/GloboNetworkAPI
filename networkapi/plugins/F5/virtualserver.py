@@ -166,23 +166,6 @@ class VirtualServer(F5Base):
     def update(self, **kwargs):
         virtual_servers = [vip_request['name'] for vip_request in kwargs['vips']]
 
-        tcp = ProfileTCP(self._lb)
-        http = ProfileHttp(self._lb)
-        fastl4 = ProfileFastL4(self._lb)
-        udp = ProfileUDP(self._lb)
-        profiles_list = tcp.get_list() + http.get_list() + fastl4.get_list() + udp.get_list()
-        current_profiles = self.__get_profile(virtual_servers=virtual_servers)
-
-        profiles_to_delete = {
-            'virtual_servers': list(),
-            'profiles': list()
-        }
-
-        profiles_to_insert = {
-            'virtual_servers': list(),
-            'profiles': list()
-        }
-
         resources = {
             'virtual_servers': list(),
             'pool': list()
@@ -193,55 +176,19 @@ class VirtualServer(F5Base):
             'rules': list()
         }
 
-        vip_traffic_groups = {
-            'traffic_groups': list(),
-            'virtual_addresses': list()
-        }
-
-        vip_protocols = {
-            'virtual_servers': list(),
-            'protocols': list()
-        }
-
         vip_dscp = {
             'pool_names': list(),
             'values': list()
         }
 
-        for idx, vip_request in enumerate(kwargs['vips']):
+        profiles_list = list()
 
-            protocol = types.procotol_type(vip_request['optionsvip']['l4_protocol']['nome_opcao_txt'].lower())
-            vip_protocols['virtual_servers'].append(vip_request['name'])
-            vip_protocols['protocols'].append(protocol)
+        for idx, vip_request in enumerate(kwargs['vips']):
 
             self.__prepare_properties(vip_request, profiles_list)
 
-            current_profiles[idx] = [{
-                'profile_context': profile['profile_context'],
-                'profile_name':profile['profile_name']
-            } for profile in current_profiles[idx]]
-
-            old_profiles = list()
-            for profile in current_profiles[idx]:
-                if not [prot for prot in ['tcp', 'udp', 'fastL4'] if prot in profile['profile_name']]:
-                    if profile not in self.__properties['profiles'][idx] and profile:
-                        old_profiles.append(profile)
-
-            if old_profiles:
-                profiles_to_delete['virtual_servers'].append(vip_request['name'])
-                profiles_to_delete['profiles'].append(old_profiles)
-
-            new_profiles = list()
-            for profile in self.__properties['profiles'][idx]:
-                if not [prot for prot in ['tcp', 'udp', 'fastL4'] if prot in profile['profile_name']]:
-                    if profile not in current_profiles[idx]:
-                        new_profiles.append(profile)
-
-            if new_profiles:
-                profiles_to_insert['virtual_servers'].append(vip_request['name'])
-                profiles_to_insert['profiles'].append(new_profiles)
-
             resources['pool'].append(vip_request['pool'])
+            resources['virtual_servers'].append(vip_request['name'])
 
             if vip_request.get('rules'):
                 vip_rules['rules'].append(vip_request['rules'])
@@ -250,28 +197,15 @@ class VirtualServer(F5Base):
             vip_dscp['values'].append(vip_request['optionsvip']['dscp']['value'])
             vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
 
-            if vip_request['optionsvip']['traffic_group']:
-                vip_traffic_groups['traffic_groups'].append(vip_request['optionsvip']['traffic_group'])
-                vip_traffic_groups['virtual_addresses'].append(vip_request['address'])
-
         try:
             self._lb._channel.System.Session.start_transaction()
-            self.__set_protocol(vip_protocols)
 
-            self.__remove_profile(profiles_to_delete)
             self.__remove_all_persistence_profiles(virtual_servers)
+
             self.__remove_all_rule(virtual_servers)
 
-            self.__profiles_timeout_create(
-                profiles_timeout_tcp=self.__properties['profiles_timeout_tcp'],
-                profiles_timeout_udp=self.__properties['profiles_timeout_udp'],
-                profiles_timeout_fastl4=self.__properties['profiles_timeout_fastl4'])
-
-            self.__add_profile(profiles_to_insert)
-
-            resources['virtual_servers'] = virtual_servers
-
             self.__add_rule(vip_rules)
+
             self.__set_default_pool_name(resources)
 
             self.__set_snat(

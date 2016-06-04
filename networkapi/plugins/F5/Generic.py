@@ -96,38 +96,15 @@ class Generic(BasePlugin):
     @logger
     @util.connection
     def update_vip(self, vips):
-        pass
-        # not implemented yet
-        # tratado = util.trata_param_vip(vips)
+        tratado = util.trata_param_vip(vips)
+        vts = virtualserver.VirtualServer(self._lb)
 
-        # if tratado.get('pool_filter'):
-        #     self.__create_pool({'pools': tratado.get('pool_filter')})
-        # try:
-        #     vts = virtualserver.VirtualServer(self._lb)
-        #     vts.update(vips=tratado.get('vips_filter'))
-        # except Exception, e:
-        #     if tratado.get('pool_filter'):
-        #         self.__delete_pool({'pools': tratado.get('pool_filter')})
-        #     log.error(e)
-        #     raise base_exceptions.CommandErrorException(e)
-        # else:
-        #     try:
-        #         vts.create(vips=tratado.get('vips_cache_filter'))
-        #     except Exception, e:
-        #         log.error(e)
-
-        #         # cache layer
-        #         try:
-        #             if tratado.get('vips_filter'):
-        #                 vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
-        #                 vts.delete(vps_names=vps_names)
-        #         except Exception, e:
-        #             log.error(e)
-        #             raise base_exceptions.CommandErrorException(e)
-        #         else:
-        #             self.__delete_pool({'pools': tratado.get('pool_filter')})
-
-        #         raise base_exceptions.CommandErrorException(e)
+        try:
+            if tratado.get('vips_filter'):
+                vts.update(vips=tratado.get('vips_filter'))
+        except Exception, e:
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
 
     #######################################
     # POOLMEMBER

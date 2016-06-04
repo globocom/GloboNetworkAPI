@@ -130,7 +130,6 @@ class VipRequestDBView(APIView):
                     data = {
                         'vips': serializer_vips.data
                     }
-                    log.info(serializer_vips.data)
                 else:
                     raise exceptions.VipRequestDoesNotExistException()
 
@@ -236,7 +235,6 @@ class VipRequestDBDetailsView(APIView):
                     data = {
                         'vips': serializer_vips.data
                     }
-                    log.info(serializer_vips.data)
                 else:
                     raise exceptions.VipRequestDoesNotExistException()
 

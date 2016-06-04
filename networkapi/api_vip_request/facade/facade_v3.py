@@ -281,8 +281,8 @@ def prepare_apply(vip_requests, update=False, created=True):
         vip_request = copy.deepcopy(vip)
 
         if update:
-            update_vip_request(vip)
             validate_save(vip_request, True)
+            update_vip_request(vip)
 
         id_vip = str(vip_request['id'])
 
