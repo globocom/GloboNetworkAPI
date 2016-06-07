@@ -30,7 +30,6 @@ def get_vip_request(vip_request_ids):
     get Vip Request
     """
     vip_requests = models.VipRequest.objects.filter(id__in=vip_request_ids)
-
     return vip_requests
 
 

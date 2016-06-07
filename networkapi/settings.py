@@ -557,7 +557,12 @@ INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
 TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = ['--verbosity=2', '--no-byte-compile', '-d', '-s']
+NOSE_ARGS = [
+    '--verbosity=2',
+    '--no-byte-compile',
+    '-d',
+    '-s'
+]
 if CI:
     LOGGING = {
         'version': 1,
@@ -601,9 +606,16 @@ if CI:
         },
     }
     INSTALLED_APPS += ('django_nose',)
-    NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi',
-                  '--exclude=.*migrations*', '--exclude-dir=./integration/',
-                  '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']
+    NOSE_ARGS += [
+        '--with-coverage',
+        '--cover-package=networkapi',
+        '--exclude=.*migrations*',
+        '--exclude-dir=./integration/',
+        '--with-xunit',
+        '--xunit-file=test-report.xml',
+        '--cover-xml',
+        '--cover-xml-file=coverage.xml'
+    ]
 
 # elif INTEGRATION:
 #     TEST_DISCOVER_ROOT = None

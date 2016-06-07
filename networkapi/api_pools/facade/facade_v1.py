@@ -19,14 +19,14 @@ import logging
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import transaction
-from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, EnvironmentVip
+from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.util import is_healthcheck_valid, is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
+from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 
