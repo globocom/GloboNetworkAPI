@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from networkapi.api_equipment import serializers as eqpt_serializers
+from networkapi.api_environment import serializers as env_serializers
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.requisicaovips.models import OptionPool, ServerPool, ServerPoolMember
@@ -224,6 +225,35 @@ class PoolV3DatatableSerializer(serializers.ModelSerializer):
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
     environment = serializers.RelatedField(source='environment.name')
+
+    def get_server_pool_members(self, obj):
+        members = obj.serverpoolmember_set.all()
+        members_serializer = PoolMemberV3Serializer(members, many=True)
+
+        return members_serializer.data
+
+    class Meta:
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'environment',
+            'servicedownaction',
+            'lb_method',
+            'healthcheck',
+            'default_limit',
+            'server_pool_members',
+            'pool_created'
+        )
+
+
+class PoolV3DetailsSerializer(serializers.ModelSerializer):
+    id = serializers.Field()
+    server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    healthcheck = HealthcheckV3Serializer()
+    servicedownaction = OptionPoolV3Serializer()
+    environment = env_serializers.EnvironmentSerializer()
 
     def get_server_pool_members(self, obj):
         members = obj.serverpoolmember_set.all()

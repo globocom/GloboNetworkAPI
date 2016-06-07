@@ -195,15 +195,8 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 7
-                },
-                "last_status_update_formated":{
-                  "type": [
-                    "string",
-                    "null"
-                  ]
                 }
               },
-              "additionalProperties": false,
               "required": [
                 "id",
                 "identifier",
@@ -217,12 +210,8 @@
                 "member_status"
               ]
             }
-          },
-          "pool_created": {
-            "type": "boolean"
           }
         },
-        "additionalProperties": false,
         "required": [
           "identifier",
           "default_port",

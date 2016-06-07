@@ -213,7 +213,7 @@ class PoolDBDetailsView(APIView):
                     search = {}
 
                 pools = facade.get_pool_by_search(search)
-                pool_serializer = serializers.PoolV3DatatableSerializer(
+                pool_serializer = serializers.PoolV3DetailsSerializer(
                     pools['pools'],
                     many=True
                 )
@@ -227,7 +227,7 @@ class PoolDBDetailsView(APIView):
                 pools = facade.get_pool_by_ids(pool_ids)
 
                 if pools:
-                    pool_serializer = serializers.PoolV3Serializer(
+                    pool_serializer = serializers.PoolV3DetailsSerializer(
                         pools,
                         many=True
                     )
