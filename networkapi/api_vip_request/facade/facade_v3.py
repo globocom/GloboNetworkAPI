@@ -30,6 +30,7 @@ def get_vip_request(vip_request_ids):
     get Vip Request
     """
     vip_requests = models.VipRequest.objects.filter(id__in=vip_request_ids)
+
     return vip_requests
 
 
@@ -548,7 +549,10 @@ def create_lock(vip_requests):
     """
     locks_list = list()
     for vip_request in vip_requests:
-        lock = distributedlock(LOCK_VIP % vip_request['id'])
+        if isinstance(vip_request, dict):
+            lock = distributedlock(LOCK_VIP % vip_request['id'])
+        else:
+            lock = distributedlock(LOCK_VIP % vip_request)
         lock.__enter__()
         locks_list.append(lock)
 

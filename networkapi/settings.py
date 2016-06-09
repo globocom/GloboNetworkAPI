@@ -48,11 +48,6 @@ LOG_FILE = NETWORKAPI_LOG_FILE
 
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
-# if DEBUG:
-#     LOG_LEVEL = logging.DEBUG
-# else:
-#     LOG_LEVEL = logging.INFO
-
 
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
@@ -250,27 +245,21 @@ VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
 
 # List of callables that know how to import templates from various sources.
+MIDDLEWARE_CLASSES = (
+    'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'networkapi.processExceptionMiddleware.LoggingMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
+    'django_pdb.middleware.PdbMiddleware',
+)
 if LOG_SHOW_SQL:
-    MIDDLEWARE_CLASSES = (
-        'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
-        'django.middleware.common.CommonMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
+    MIDDLEWARE_CLASSES += (
         'networkapi.middlewares.SQLLogMiddleware',
-        'networkapi.processExceptionMiddleware.LoggingMiddleware',
-        'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     )
-else:
-    MIDDLEWARE_CLASSES = (
-        'networkapi.extra_logging.middleware.ExtraLoggingMiddleware',
-        'django.middleware.common.CommonMiddleware',
-        'networkapi.processExceptionMiddleware.LoggingMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
-        'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
-    )
+
 
 ROOT_URLCONF = 'networkapi.urls'
 
@@ -315,6 +304,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_pdb',
     'networkapi.ambiente',
     'networkapi.api_pools',
     'networkapi.api_environment_vip',

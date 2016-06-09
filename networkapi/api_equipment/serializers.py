@@ -6,16 +6,19 @@ from rest_framework import serializers
 
 class EquipmentSerializer(serializers.ModelSerializer):
 
+    equipment_type = serializers.Field(source='tipo_equipamento')
+    model = serializers.Field(source='modelo')
     name = serializers.Field(source='nome')
+    groups = serializers.Field(source='grupos')
 
     class Meta:
         model = Equipamento
         fields = (
             'id',
-            'tipo_equipamento',
-            'modelo',
             'name',
-            'grupos'
+            'equipment_type',
+            'model',
+            'groups'
         )
 
 

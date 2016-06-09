@@ -437,15 +437,20 @@ def update_pool(pool):
     return sp
 
 
-def delete_pool(pools_id):
+def delete_pool(pools_ids):
     """Updates pool"""
 
-    sp = ServerPool.objects.filter(id__in=pools_id)
-    created = sp.filter(pool_created=True)
-    if created:
-        raise exceptions.PoolConstraintCreatedException()
+    for pools_id in pools_ids:
+        try:
+            sp = ServerPool.objects.get(id=pools_ids)
+        except ObjectDoesNotExist:
+            raise exceptions.PoolNotExist()
 
-    sp.delete()
+        created = sp.filter(pool_created=True)
+        if created:
+            raise exceptions.PoolConstraintCreatedException()
+
+        sp.delete()
 
 
 def get_pool_by_ids(pools_ids):
@@ -455,7 +460,14 @@ def get_pool_by_ids(pools_ids):
     example: [<pools_id>,...]
     """
 
-    server_pools = ServerPool.objects.filter(id__in=pools_ids)
+    server_pools = list()
+    for pools_id in pools_ids:
+        try:
+            server_pool = ServerPool.objects.get(id=pools_ids)
+        except ObjectDoesNotExist:
+            raise exceptions.PoolNotExist()
+
+        server_pools.append(server_pool)
 
     return server_pools
 
@@ -466,7 +478,10 @@ def get_pool_by_id(pool_id):
     param pools_id: id
     """
 
-    server_pool = ServerPool.objects.get(id=pool_id)
+    try:
+        server_pool = ServerPool.objects.get(id=pool_id)
+    except ObjectDoesNotExist:
+        raise exceptions.PoolNotExist()
 
     return server_pool
 

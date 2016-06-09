@@ -3,7 +3,7 @@ from networkapi.ambiente.models import Ambiente
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
 from networkapi.api_pools.serializers import Ipv4DetailsSerializer, Ipv4Serializer,\
-    Ipv6DetailsSerializer, Ipv6Serializer, PoolV3Serializer
+    Ipv6DetailsSerializer, Ipv6Serializer, PoolV3DetailsSerializer
 from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPort,\
     VipRequestPortPool
 
@@ -316,7 +316,7 @@ class VipRequestPortDetailsSerializer(serializers.ModelSerializer):
 class VipRequestPortPoolDetailsSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
-    server_pool = PoolV3Serializer()
+    server_pool = PoolV3DetailsSerializer()
     l7_rule = OptionVipSerializer(source='optionvip')
     l7_value = serializers.Field(source='val_optionvip')
 
