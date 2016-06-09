@@ -2382,7 +2382,7 @@ class DsrL3_to_Vip(BaseModel):
         while dscp_exists:
             dscp_exists = DsrL3_to_Vip.objects.filter(id_dsrl3=dscp)
             if dscp_exists:
-                dscp = dscp + 4
+                dscp = dscp + 1
 
         self.prepare_and_save(dscp, id_vip, user)
 
