@@ -571,7 +571,7 @@ class VipRequestDBDetailsView(APIView):
 
                 vips_requests = facade.get_vip_request_by_search(search)
 
-                serializer_vips = VipRequestDetailsSerializer(
+                serializer_vips = VipRequestSerializer(
                     vips_requests['vips'],
                     many=True
                 )
@@ -596,6 +596,118 @@ class VipRequestDBDetailsView(APIView):
                     }
                 else:
                     raise exceptions.VipRequestDoesNotExistException()
+
+            return Response(data, status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)
+
+
+class VipRequestPoolView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Returns a list of vip request by pool id and dict(optional)
+        ##############
+        ## With ids ##
+        ##############
+        :url /api/v3/vip-request/pool/<pool_id>
+        :param vip_request_ids=<vip_request_ids>
+        :return
+        {
+            "vips": [{
+                "business": <string>,
+                "created": <boolean>,
+                "environmentvip": <environmentvip_id>,
+                "id": <vip_id>,
+                "ipv4": <ipv4_id>,
+                "ipv6": <ipv6_id>,
+                "name": <string>,
+                "options": {
+                    "cache_group": <optionvip_id>,
+                    "persistence": <optionvip_id>,
+                    "timeout": <optionvip_id>,
+                    "traffic_return": <optionvip_id>
+                },
+                "ports": [{
+                    "id": <vip_port_id>,
+                    "options": {
+                        "l4_protocol": <optionvip_id>,
+                        "l7_protocol": <optionvip_id>
+                    },
+                    "pools": [{
+                            "l7_rule": <optionvip_id>,
+                            "l7_value": <string>,
+                            "server_pool": <server_pool_id>
+                        },..],
+                    "port": <integer>
+                    },..],
+                "service": <string>
+            },..]
+        }
+        :example
+            /api/v3/vip-request/pool/1/
+            Return vips request with pool id 1
+            {"vips": [{"id":2,...},{"id":6,... }]}
+
+
+        ###############
+        ## With dict ##
+        ###############
+        Return list of vip request by dict
+        :url /api/v3/vip-request/pool/<pool_id>/?search=<dict>
+        :param <dict>
+            {'extends_search': [{
+                    'ipv4__oct1': <ipv4__oct1>,
+                    'ipv4__oct2': <ipv4__oct2>,
+                    'ipv4__oct3': <ipv4__oct3>,
+                    'ipv4__oct4': <ipv4__oct4>,
+                    'ipv6__block1__iexact': <ipv6_block1>,
+                    'ipv6__block2__iexact': <ipv6_block2>,
+                    'ipv6__block3__iexact': <ipv6_block3>,
+                    'ipv6__block4__iexact': <ipv6_block4>,
+                    'ipv6__block5__iexact': <ipv6_block5>,
+                    'ipv6__block6__iexact': <ipv6_block6>,
+                    'ipv6__block7__iexact': <ipv6_block7>,
+                    'ipv6__block8__iexact': <ipv6_block8>,
+                    'created': <boolean>,
+                }],
+                'start_record': <interger>,
+                'custom_search': '<string>',
+                'end_record': <interger>,
+                'asorting_cols': [<string>,..],
+                'searchable_columns': [<string>,..]
+        """
+        try:
+
+            try:
+                search = ast.literal_eval(request.GET.get('search'))
+            except:
+                search = {
+                    'extends_search': []
+                }
+
+            pool_id = int(kwargs['pool_id'])
+
+            extends_search = {'viprequestport__viprequestportpool__server_pool': pool_id}
+            search['extends_search'] = [ex.append(extends_search) for ex in search['extends_search']] \
+                if search['extends_search'] else [extends_search]
+
+            log.info(search)
+            vips_requests = facade.get_vip_request_by_search(search)
+
+            serializer_vips = VipRequestSerializer(
+                vips_requests['vips'],
+                many=True
+            )
+            data = {
+                'vips': serializer_vips.data,
+                'total': vips_requests['total']
+                # 'search': vips_requests['search']
+            }
 
             return Response(data, status.HTTP_200_OK)
 
