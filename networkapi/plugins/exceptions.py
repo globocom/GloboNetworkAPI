@@ -32,6 +32,9 @@ class ConnectionException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Failed trying to connect to equipment.'
 
+class CurrentlyBusyErrorException(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = 'Equipment is currenlty busy. Failed trying to configure equipment.'
 
 class InvalidCommandException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
