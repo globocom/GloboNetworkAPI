@@ -1,48 +1,29 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-import unittest
-from mock import patch, call, Mock, MagicMock
-from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedException, UpdateEnvironmentVIPException, \
-    UpdateEnvironmentServerPoolMemberException, ScriptAlterLimitPoolException, ScriptAlterLimitPoolDiffMembersException, \
-    ScriptCreatePoolException, ScriptAlterServiceDownActionException, InvalidRealPoolException, \
-    ScriptAlterPriorityPoolMembersException
-from networkapi.api_pools.facade import *
-from networkapi.api_pools.models import OptionPool
-from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.usuario.models import Usuario
-from networkapi.util import is_valid_healthcheck_destination
+import os
 
-class PoolTest(unittest.TestCase):
+from django.test.client import Client
+
+from networkapi.test import load_json
+from networkapi.test.test_case import NetworkApiTestCase
+
+
+class PoolTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.user = Usuario(id = 1, nome = 'users')
-        self.mock_transaction()
+        self.client = Client()
 
-    def test_ederson(self):
+    def tearDown(self):
+        pass
 
-        health_check = get_or_create_healthcheck(self.user, 'WORKING', 'HTTP', '/healthcheck', '*:*', '1')
+    def test_post_success(self):
+        """ resultado esperado status 201"""
+        response = self.client.post(
+            '/api/v3/pool/',
+            self.load_rack_json('../fixtures/test_pool_post.json'),
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        self.assertEqual(201, response.status_code, "Status code should be 201 and was %s" % response.status_code)
+        self.assertEqual(201, response.msg, '[{"id":1}] {}'.format(response.status_code))
 
-        self.assertEquals('WORKING', health_check.healthcheck_expect)
-        self.assertEquals('HTTP', health_check.healthcheck_type)
-        self.assertEquals('/healthcheck', health_check.healthcheck_request)
-        self.assertEquals('*:*', health_check.destination)
-        self.assertEquals('1', health_check.identifier)
-        self.assertIsNotNone(health_check)
-
-    def mock_transaction(self):
-        patch('networkapi.api_pools.facade.transaction').start()
-
-
-    #MOCKS
-    def mock_find_healthcheck(self, response):
-        mock = patch("networkapi.healthcheckexpect.models.Healthcheck.objects.get").start()
-        if issubclass(response.__class__, Exception):
-            mock.side_effect = response
-        else:
-            mock.return_value = response
-        return mock
-
-    def mock_healthcheck_save(self):
-        return patch("networkapi.healthcheckexpect.models.Healthcheck.save").start()
+    def load_rack_json(self, file_name):
+        path = os.path.dirname(os.path.realpath(__file__)) + '/' + file_name
+        return load_json(path)

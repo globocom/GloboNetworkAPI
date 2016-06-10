@@ -1,0 +1,16 @@
+[
+  {
+  "pk": 1,
+  "model": "serverpool.serverpool",
+  "fields": {
+    "identifier": "vm-teste",
+    "healthcheck": "1",
+    "servicedownaction": "5",
+    "default_port": "80",
+    "default_limit": "100",
+    "pool_created": "False",
+    "environment": "",
+    "lb_method": "least-conn"
+    }
+  }
+]
