@@ -1,0 +1,23 @@
+{
+    "server_pools": [
+        {
+            "default_limit": 0,
+            "default_port": 80,
+            "environment": 1,
+            "healthcheck": {
+                "destination": "*:20",
+                "healthcheck_expect": "teste",
+                "healthcheck_request": "tesst",
+                "healthcheck_type": "HTTP",
+                "identifier": ""
+            },
+            "identifier": "teste_novo123",
+            "lb_method": "least-conn",
+            "server_pool_members": [],
+            "servicedownaction": {
+                "id": 5,
+                "name": "none"
+            }
+        }
+    ]
+}

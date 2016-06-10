@@ -442,7 +442,7 @@ def delete_pool(pools_ids):
 
     for pools_id in pools_ids:
         try:
-            sp = ServerPool.objects.get(id=pools_ids)
+            sp = ServerPool.objects.get(id=pools_id)
         except ObjectDoesNotExist:
             raise exceptions.PoolNotExist()
 
@@ -463,11 +463,11 @@ def get_pool_by_ids(pools_ids):
     server_pools = list()
     for pools_id in pools_ids:
         try:
-            server_pool = ServerPool.objects.get(id=pools_ids)
+            sp = ServerPool.objects.get(id=pools_id)
         except ObjectDoesNotExist:
             raise exceptions.PoolNotExist()
 
-        server_pools.append(server_pool)
+        server_pools.append(sp)
 
     return server_pools
 

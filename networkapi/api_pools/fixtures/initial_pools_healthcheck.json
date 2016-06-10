@@ -1,0 +1,13 @@
+[
+  {
+  "pk": 1,
+  "model": "serverpool.healthcheck",
+  "fields": {
+    "identifier": "",
+    "healthcheck_type": "TCP",
+    "healthcheck_request": "",
+    "healthcheck_expect": "",
+    "destination": "*:*"
+    }
+  }
+]
