@@ -16,6 +16,7 @@
 # limitations under the License.
 
 
+
 import shutil
 import glob
 import commands
@@ -139,6 +140,11 @@ def remover_vlan_so(user, rack):
 class RackDeleteResource(RestResource):
 
     log = logging.getLogger('RackDeleteResource')
+    # Libera os ambientes e vlans relacionados ao Rack
+    # Nao está gerando os roteiros para os spines e os oobs
+    #     criar o metodo para gerar o roteiro
+    #     criar os templates para o DELL
+    # Não está aplicando os roteiros
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests POST to delete Rack.
@@ -150,8 +156,7 @@ class RackDeleteResource(RestResource):
 
             ########################################################                                     User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+                self.log.error(u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             rack_id = kwargs.get('id_rack')
@@ -205,8 +210,8 @@ class RackDeleteResource(RestResource):
             #aplicar(rack)
 
             ########################################################                                         Remove Rack
-            with distributedlock(LOCK_RACK % rack_id):
 
+            with distributedlock(LOCK_RACK % rack_id):
                 try:
                     rack.delete()
                 except RackNumberNotFoundError, e:
@@ -224,7 +229,7 @@ class RackDeleteResource(RestResource):
             return self.not_authorized()
 
         except RackNumberNotFoundError:
-            return self.response_error(379, rack_id)
+            return self.response_error(379)
 
         except RackError:
             return self.response_error(378)
