@@ -1,7 +1,7 @@
 [
   {
   "pk": 1,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "HealthCheck",
     "name": "TCP"
@@ -9,7 +9,7 @@
   },
   {
   "pk": 2,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "HealthCheck",
     "name": "HTTP"
@@ -17,7 +17,7 @@
   },
   {
   "pk": 3,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "HealthCheck",
     "name": "UDP"
@@ -25,7 +25,7 @@
   },
   {
   "pk": 4,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "HealthCheck",
     "name": "HTTPS"
@@ -33,7 +33,7 @@
   },
   {
   "pk": 5,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "ServiceDownAction",
     "name": "none"
@@ -41,7 +41,7 @@
   },
   {
   "pk": 6,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "ServiceDownAction",
     "name": "drop"
@@ -49,7 +49,7 @@
   },
   {
   "pk": 7,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "ServiceDownAction",
     "name": "reset"
@@ -57,7 +57,7 @@
   },
   {
   "pk": 8,
-  "model": "serverpool.optionpool",
+  "model": "api_pools.optionpool",
   "fields": {
     "type": "ServiceDownAction",
     "name": "reselect"

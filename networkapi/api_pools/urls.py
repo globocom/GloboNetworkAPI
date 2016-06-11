@@ -53,4 +53,5 @@ urlpatterns = patterns(
     url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views.PoolDBView.as_view()),  # POST, PUT, GET, DELETE
     url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$', views.PoolEnvironmentVip.as_view()),  # GET
 
+    url(r'^v3/option-pool/environment/(?P<environment_id>\d+)/$', views.OptionPoolEnvironmentView.as_view()),
 )

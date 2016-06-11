@@ -6,6 +6,9 @@ import logging
 
 from django.test import TestCase
 
+from networkapi.settings import local_files
+from networkapi.test import load_json
+
 LOG = logging.getLogger(__name__)
 
 
@@ -28,7 +31,7 @@ class NetworkApiTestCase(TestCase):
         'initial_environment_gl3.json',
         'initial_environment.json',
         'initial_optionspool.json',
-        'initial_pools_healthcheck.json',
+        'initial_healthcheck.json',
         'initial_pools.json',
     ]
 
@@ -40,3 +43,6 @@ class NetworkApiTestCase(TestCase):
 
     def tearDown(self):
         pass
+
+    def load_json_file(self, file_name):
+        return load_json(local_files(file_name))
