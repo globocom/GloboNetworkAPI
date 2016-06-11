@@ -28,6 +28,12 @@ class InvalidIdEnvironmentException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Environment.'
 
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = '{} {}'.format(self.default_detail, msg)
+        else:
+            self.detail = self.default_detail
+
 
 class InvalidServiceDownActionException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

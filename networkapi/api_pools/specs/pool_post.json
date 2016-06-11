@@ -56,10 +56,6 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": ["null",
-              "integer"]
-          },
           "identifier": {
             "type": "string"
           },
@@ -134,9 +130,6 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "null"
-                },
                 "identifier": {
                    "type": [
                      "string",
@@ -198,7 +191,6 @@
                 }
               },
               "required": [
-                "id",
                 "identifier",
                 "ipv6",
                 "ip",

@@ -1,0 +1,24 @@
+{
+  "server_pools": [
+    {
+      "identifier": "vm-teste3",
+      "default_port": 80,
+      "environment": 1,
+      "servicedownaction": {
+        "id": 5,
+        "name": "none"
+      },
+      "lb_method": "least-conn",
+      "healthcheck": {
+        "identifier": "",
+        "healthcheck_type": "TCP",
+        "healthcheck_request": "",
+        "healthcheck_expect": "",
+        "destination": "*:*"
+      },
+      "default_limit": 100,
+      "server_pool_members": [],
+      "pool_created": false
+    }
+  ]
+}

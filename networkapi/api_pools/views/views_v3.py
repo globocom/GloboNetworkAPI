@@ -651,10 +651,11 @@ class PoolDBView(APIView):
         response = list()
         for pool in pools['server_pools']:
             facade.validate_save(pool)
+
             pl = facade.create_pool(pool)
             response.append({'id': pl.id})
 
-        return Response(response)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -720,7 +721,7 @@ class PoolDBView(APIView):
             pl = facade.update_pool(pool)
             response.append({'id': pl.id})
 
-        return Response(response)
+        return Response(response, status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -736,7 +737,7 @@ class PoolDBView(APIView):
         response = {}
         facade.delete_pool(pool_ids)
 
-        return Response(response)
+        return Response(response, status.HTTP_200_OK)
 
 
 class PoolEnvironmentVip(APIView):
@@ -803,6 +804,34 @@ class PoolEnvironmentVip(APIView):
             )
             data = {
                 'server_pools': pool_serializer.data
+            }
+            return Response(data, status.HTTP_200_OK)
+        except Exception, exception:
+            log.exception(exception)
+            raise rest_exceptions.NetworkAPIException(exception)
+
+
+class OptionPoolEnvironmentView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Method to return option vip list by environment id
+        Param environment_id: environment id
+        Return list of option pool
+        """
+        try:
+            environment_id = kwargs["environment_id"]
+
+            options_pool = facade.get_options_pool_list_by_environment(environment_id)
+
+            options_pool_serializer = serializers.OptionPoolV3Serializer(
+                options_pool,
+                many=True
+            )
+            data = {
+                'options_pool': options_pool_serializer.data
             }
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:

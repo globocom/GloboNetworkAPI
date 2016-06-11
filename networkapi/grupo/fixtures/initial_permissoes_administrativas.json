@@ -238,5 +238,15 @@
       "escrita": true, 
       "permission": 24
     }
+  }, 
+  {
+    "pk": 25, 
+    "model": "grupo.permissaoadministrativa", 
+    "fields": {
+      "ugrupo": 1, 
+      "leitura": true, 
+      "escrita": true, 
+      "permission": 29
+    }
   }
 ]

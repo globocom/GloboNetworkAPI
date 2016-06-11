@@ -1,7 +1,7 @@
 [
   {
   "pk": 1,
-  "model": "serverpool.healthcheck",
+  "model": "healthcheckexpect.healthcheck",
   "fields": {
     "identifier": "",
     "healthcheck_type": "TCP",

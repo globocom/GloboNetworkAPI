@@ -30,9 +30,8 @@ if syspath not in sys.path:
     sys.path.insert(0, syspath)
 
 
-def LOCAL_FILES(path):
-    new_path = os.path.abspath(os.path.join(__file__, path))
-    return new_path
+def local_files(path):
+    return '{}/networkapi/{}'.format(sys.path[0], path)
 
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
@@ -91,6 +90,7 @@ DATABASES = {
 
 if 'test' in sys.argv:
     DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
+
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
@@ -154,7 +154,7 @@ LOGGING = {
             'filters': ['user_filter'],
         },
         'console': {
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
             'filters': ['user_filter'],
@@ -541,19 +541,21 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PAT
 # TESTS CONFIGS
 ####################
 # If is running on CI: if CI=1 or running inside jenkins
-INTEGRATION = os.getenv('CI', '0') == '1'
-INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
-
-TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
-
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--verbosity=2',
-    '--no-byte-compile',
-    '-d',
-    '-s'
-]
 if CI:
+    INTEGRATION = os.getenv('CI', '0') == '1'
+    INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
+
+    TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
+
+    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    NOSE_ARGS = [
+        '--verbosity=2',
+        '--no-byte-compile',
+        '-d',
+        '-s',
+        # '--pdb',
+    ]
+    INSTALLED_APPS += ('django_nose',)
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
@@ -567,35 +569,39 @@ if CI:
         },
         'handlers': {
             'console': {
-                'level': 'INFO',
+                'level': logging.INFO,
                 'class': 'logging.StreamHandler',
                 'formatter': 'simple'
             },
         },
         'loggers': {
+            'default': {
+                'handlers': ['console'],
+                'propagate': True,
+                'level': logging.INFO,
+            },
             'django': {
                 'handlers': ['console'],
-                'propagate': False,
-                'level': 'INFO',
+                'propagate': True,
+                'level': logging.INFO,
             },
             'django.request': {
                 'handlers': ['console'],
-                'level': 'INFO',
-                'propagate': False,
+                'level': logging.INFO,
+                'propagate': True,
             },
             'django.db.backends': {
-                'level': 'INFO',
-                'propagate': False,
+                'level': logging.INFO,
+                'propagate': True,
                 'handlers': ['console'],
             },
         },
         'root': {
-            'level': 'INFO',
-            'propagate': False,
+            'level': logging.INFO,
+            'propagate': True,
             'handlers': ['console'],
         },
     }
-    INSTALLED_APPS += ('django_nose',)
     NOSE_ARGS += [
         '--with-coverage',
         '--cover-package=networkapi',

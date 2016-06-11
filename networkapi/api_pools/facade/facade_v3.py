@@ -500,6 +500,17 @@ def get_pool_list_by_environmentvip(environment_vip_id):
     return server_pool
 
 
+def get_options_pool_list_by_environment(environment_id):
+    """
+    Return list of options pool by environment_id
+    param environment_id: environment_id
+    """
+
+    options_pool = models.OptionPool.objects.filter(optionpoolenvironment__environment=environment_id)
+
+    return options_pool
+
+
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
@@ -579,6 +590,11 @@ def validate_save(pool, permit_created=False):
         identifier=pool['identifier'],
         environment=pool['environment']
     )
+
+    try:
+        Ambiente.objects.get(id=pool['environment'])
+    except ObjectDoesNotExist:
+        raise exceptions.InvalidIdEnvironmentException('pool identifier: %s' % pool['identifier'])
 
     if pool.get('id'):
         server_pool = ServerPool.objects.get(id=pool['id'])

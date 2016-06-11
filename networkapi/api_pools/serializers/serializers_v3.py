@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 from networkapi.api_environment import serializers as env_serializers
 from networkapi.api_equipment import serializers as eqpt_serializers
+from networkapi.api_pools.models import OptionPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import OptionPool, ServerPool, ServerPoolMember
+from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
 
 from rest_framework import serializers
 
@@ -70,6 +71,7 @@ class OptionPoolV3Serializer(serializers.ModelSerializer):
         model = OptionPool
         depth = 1
         fields = ('id',
+                  'type',
                   'name'
                   )
 
