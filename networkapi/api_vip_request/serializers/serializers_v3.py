@@ -137,6 +137,12 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     options = serializers.SerializerMethodField('get_options')
 
+    environmentvip = EnvironmentVipSerializer()
+
+    ipv4 = Ipv4DetailsSerializer()
+
+    ipv6 = Ipv6DetailsSerializer()
+
     def get_options(self, obj):
         options = obj.viprequestoptionvip_set.all()
         opt = {
@@ -165,18 +171,27 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
         return ports_serializer.data
 
+    default_names = serializers.SerializerMethodField('get_default_names')
+
+    def get_default_names(self, obj):
+        ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
+        names = list()
+        for port in obj.viprequestport_set.all():
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port))
+
     class Meta:
         model = VipRequest
         fields = (
             'id',
-            'name',
-            'service',
-            'business',
+            #'name',
+            #'service',
+            #'business',
             'environmentvip',
             'ipv4',
             'ipv6',
             'ports',
             'options',
+            'default_names',
             'created'
         )
 
