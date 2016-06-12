@@ -137,33 +137,27 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     options = serializers.SerializerMethodField('get_options')
 
+    equipments = serializers.SerializerMethodField('get_eqpt')
+
     environmentvip = EnvironmentVipSerializer()
 
     ipv4 = Ipv4DetailsSerializer()
 
     ipv6 = Ipv6DetailsSerializer()
 
-    def get_options(self, obj):
-        options = obj.viprequestoptionvip_set.all()
-        opt = {
-            'traffic_return': None,
-            'cache_group': None,
-            'persistence': None,
-            'timeout': None,
-        }
-        for option in options:
-            if option.optionvip.tipo_opcao == 'cache':
-                opt['cache_group'] = option.optionvip.id
-            elif option.optionvip.tipo_opcao == 'Persistencia':
-                opt['persistence'] = option.optionvip.id
-            elif option.optionvip.tipo_opcao == 'Retorno de trafego':
-                opt['traffic_return'] = option.optionvip.id
-            elif option.optionvip.tipo_opcao == 'timeout':
-                opt['timeout'] = option.optionvip.id
+    def get_eqpt(self, obj):
+        eqpts = list()
+        equipments = list()
+        if obj.ipv4:
+            eqpts = obj.ipv4.ipequipamento_set.all()
+        if obj.ipv6:
+            eqpts |= obj.ipv6.ipv6equipament_set.all()
 
-        return opt
+        for eqpt in eqpts:
+            equipments.append(eqpt.equipamento)
+        eqpt_serializer = EquipmentSerializer(equipments, many=True)
 
-    ports = serializers.SerializerMethodField('get_server_pools')
+        return eqpt_serializer.data
 
     def get_server_pools(self, obj):
         ports = obj.viprequestport_set.all()
@@ -177,7 +171,8 @@ class VipRequestSerializer(serializers.ModelSerializer):
         ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
         names = list()
         for port in obj.viprequestport_set.all():
-            names.append('VIP%s_%s_%s' % (obj.id, ip, port))
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port.port))
+        return names
 
     class Meta:
         model = VipRequest
@@ -189,8 +184,9 @@ class VipRequestSerializer(serializers.ModelSerializer):
             'environmentvip',
             'ipv4',
             'ipv6',
-            'ports',
-            'options',
+            #'ports',
+            #'options',
+            'equipments',
             'default_names',
             'created'
         )
@@ -227,8 +223,7 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
         ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
         names = list()
         for port in obj.viprequestport_set.all():
-            names.append('VIP%s_%s_%s' % (obj.id, ip, port))
-
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port.port))
         return names
 
     def get_eqpt(self, obj):
