@@ -137,6 +137,7 @@ def save(request):
         v_port.requisicao_vip = obj_req_vip
         v_port.save()
 
+    # SYNC_VIP
     syncs.old_to_new(obj_req_vip)
 
     return req_vip_serializer.data
@@ -224,6 +225,7 @@ def update(request, pk):
             vip_port_obj.requisicao_vip = obj_req_vip
             vip_port_obj.save()
 
+        # SYNC_VIP
         syncs.old_to_new(obj_req_vip)
 
         return req_vip_serializer.data

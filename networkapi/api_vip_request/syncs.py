@@ -7,6 +7,8 @@ from networkapi.requisicaovips.models import *
 
 log = logging.getLogger(__name__)
 
+# files have "#SYNC_VIP" to find where have migrations
+
 
 def old_to_new(vip_request):
     mp = vip_request.variables_to_map()
@@ -400,9 +402,9 @@ def new_to_old(vp):
 def delete_old(ids):
     try:
         if isinstance(ids, list):
-            RequisicaoVips.objects.filter(id__in=ids).delete_no_sync()
+            RequisicaoVips.objects.filter(id__in=ids).delete()
         else:
-            RequisicaoVips.objects.filter(id=ids).delete_no_sync()
+            RequisicaoVips.objects.filter(id=ids).delete()
 
     except Exception, e:
         log.error(e)
@@ -412,9 +414,9 @@ def delete_old(ids):
 def delete_new(ids):
     try:
         if isinstance(ids, list):
-            VipRequest.objects.filter(id__in=ids).delete_no_sync()
+            VipRequest.objects.filter(id__in=ids).delete()
         else:
-            VipRequest.objects.filter(id=ids).delete_no_sync()
+            VipRequest.objects.filter(id=ids).delete()
     except Exception, e:
         log.error(e)
         # raise e

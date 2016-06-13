@@ -16,21 +16,25 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import IpError
+
 import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.exception import InvalidValueError
-from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
-from networkapi.settings import VIP_REMOVE
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, RequisicaoVips, ServerPool, VipPortToPool
-from networkapi.healthcheckexpect.models import HealthcheckExpectError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.api_vip_request.syncs import old_to_new
+from networkapi.auth import has_perm
 from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.infrastructure.script_utils import exec_script, ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
+from networkapi.ip.models import IpError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, \
+    RequisicaoVips, ServerPool, VipPortToPool
+from networkapi.rest import RestResource
+from networkapi.settings import VIP_REMOVE
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class RemoveVipResource(RestResource):
@@ -121,6 +125,9 @@ class RemoveVipResource(RestResource):
 
                     vip.vip_criado = 0
                     vip.save()
+
+                    # SYNC_VIP
+                    old_to_new(vip)
 
                     #Marks the server pool as not created if the
                     # server pool is not used in another already created vip request
