@@ -137,6 +137,82 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     options = serializers.SerializerMethodField('get_options')
 
+    environmentvip = EnvironmentVipSerializer()
+
+    ipv4 = Ipv4DetailsSerializer()
+
+    ipv6 = Ipv6DetailsSerializer()
+
+    def get_options(self, obj):
+        options = obj.viprequestoptionvip_set.all()
+        opt = {
+            'traffic_return': None,
+            'cache_group': None,
+            'persistence': None,
+            'timeout': None,
+        }
+        for option in options:
+            if option.optionvip.tipo_opcao == 'cache':
+                opt['cache_group'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'Persistencia':
+                opt['persistence'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'Retorno de trafego':
+                opt['traffic_return'] = option.optionvip.id
+            elif option.optionvip.tipo_opcao == 'timeout':
+                opt['timeout'] = option.optionvip.id
+
+        return opt
+
+    ports = serializers.SerializerMethodField('get_server_pools')
+
+    def get_server_pools(self, obj):
+        ports = obj.viprequestport_set.all()
+        ports_serializer = VipRequestPortSerializer(ports, many=True)
+
+        return ports_serializer.data
+
+    default_names = serializers.SerializerMethodField('get_default_names')
+
+    def get_default_names(self, obj):
+        ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
+        names = list()
+        for port in obj.viprequestport_set.all():
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port.port))
+
+    class Meta:
+        model = VipRequest
+        fields = (
+            'id',
+            'name',
+            'service',
+            'business',
+            'environmentvip',
+            'ipv4',
+            'ipv6',
+            'ports',
+            'options',
+            'default_names',
+            'created'
+        )
+
+
+class VipRequestTableSerializer(serializers.ModelSerializer):
+    id = serializers.Field()
+
+    business = serializers.CharField(
+        required=True
+    )
+
+    service = serializers.CharField(
+        required=True
+    )
+
+    name = serializers.CharField(
+        required=True
+    )
+
+    options = serializers.SerializerMethodField('get_options')
+
     equipments = serializers.SerializerMethodField('get_eqpt')
 
     environmentvip = EnvironmentVipSerializer()
