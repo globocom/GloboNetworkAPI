@@ -7,7 +7,7 @@ from django.db.transaction import commit_on_success
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions, facade
 from networkapi.api_vip_request.permissions import DeployCreate, DeployDelete, DeployUpdate, Read, Write
-from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer, VipRequestSerializer
+from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer, VipRequestSerializer, VipRequestTableSerializer
 from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate
@@ -244,7 +244,7 @@ class VipRequestDBView(APIView):
 
                 vips_requests = facade.get_vip_request_by_search(search)
 
-                serializer_vips = VipRequestSerializer(
+                serializer_vips = VipRequestTableSerializer(
                     vips_requests['vips'],
                     many=True
                 )
@@ -260,7 +260,7 @@ class VipRequestDBView(APIView):
                 vips_requests = facade.get_vip_request(vip_request_ids)
 
                 if vips_requests:
-                    serializer_vips = VipRequestSerializer(
+                    serializer_vips = VipRequestDetailsSerializer(
                         vips_requests,
                         many=True
                     )
@@ -699,7 +699,7 @@ class VipRequestPoolView(APIView):
             log.info(search)
             vips_requests = facade.get_vip_request_by_search(search)
 
-            serializer_vips = VipRequestSerializer(
+            serializer_vips = VipRequestTableSerializer(
                 vips_requests['vips'],
                 many=True
             )
