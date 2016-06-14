@@ -9,7 +9,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-class PoolTestCase(NetworkApiTestCase):
+class PoolTestV3Case(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()

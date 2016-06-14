@@ -37,8 +37,8 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
-
 CI = os.getenv('CI', '0') == '1'
+PDB = os.getenv('NETWORKAPI_PDB', '0') == '1'
 
 NETWORKAPI_LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 
@@ -255,11 +255,16 @@ MIDDLEWARE_CLASSES = (
     'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
     'django_pdb.middleware.PdbMiddleware',
 )
+
 if LOG_SHOW_SQL:
     MIDDLEWARE_CLASSES += (
         'networkapi.middlewares.SQLLogMiddleware',
     )
 
+if PDB:
+    MIDDLEWARE_CLASSES += (
+        'django_pdb.middleware.PdbMiddleware',
+    )
 
 ROOT_URLCONF = 'networkapi.urls'
 
@@ -278,7 +283,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.messages.context_processors.messages",
     'django.core.context_processors.request',
 )
-
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -303,8 +307,15 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'django_extensions',
-    'django_pdb',
+    'django_extensions'
+)
+
+if PDB:
+    INSTALLED_APPS += (
+        'django_pdb'
+    )
+
+INSTALLED_APPS += (
     'networkapi.ambiente',
     'networkapi.api_pools',
     'networkapi.api_environment_vip',
@@ -333,8 +344,8 @@ INSTALLED_APPS = (
     'networkapi.usuario',
     'networkapi.vlan',
     'rest_framework',
+    'django_pdb',
 )
-
 
 """Rest Configuration
 """
@@ -350,7 +361,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
 
 NETWORKAPI_VERSION = "1.0"
@@ -365,9 +375,9 @@ MAX_VLAN_NUMBER_02 = 4094
 MIN_OCT4 = 5
 MAX_OCT4 = 250
 
-
-###########
-# SPECS
+#########
+# SPECS #
+#########
 SPECS = {
     'pool_post': 'networkapi/api_pools/specs/pool_post.json',
     'pool_put': 'networkapi/api_pools/specs/pool_put.json',
@@ -375,7 +385,6 @@ SPECS = {
     'vip_post': 'networkapi/api_vip_request/specs/vip_post.json',
     'vip_put': 'networkapi/api_vip_request/specs/vip_put.json',
 }
-
 
 ##########
 # Scripts
@@ -390,12 +399,7 @@ NETWORKIPV6_CREATE = 'navlan -I %d --IPv6 --cria'
 NETWORKIPV4_REMOVE = 'navlan -I %d --IPv4 --remove'
 NETWORKIPV6_REMOVE = 'navlan -I %d --IPv6 --remove'
 
-VIP_CREATE = 'gerador_vips -i %d --cria'
-VIP_REMOVE = 'gerador_vips -i %d --remove'
-
-"""
- Manager Scripts Pool
-"""
+# POOL MANAGE
 POOL_CREATE = 'gerador_vips --pool %s --cria'
 POOL_REMOVE = 'gerador_vips --pool %s --remove'
 POOL_HEALTHCHECK = 'gerador_vips --pool %s --healthcheck'
@@ -416,6 +420,9 @@ POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
 POOL_MANAGEMENT_LB_METHOD = "gerador_vips --pool %s --lb_method"
 POOL_MANAGEMENT_LIMITS = "gerador_vips --pool %s --maxconn"
 
+# VIP
+VIP_CREATE = 'gerador_vips -i %d --cria'
+VIP_REMOVE = 'gerador_vips -i %d --remove'
 
 # VIP REAL
 VIP_REAL_v4_CREATE = 'gerador_vips -i %s --real %s --ip %s --add'
@@ -457,6 +464,7 @@ BROKER_URI = os.getenv('NETWORKAPI_BROKER_URI', u"failover:(tcp://localhost:6161
 
 PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
 
+
 ###################################
 # PATH RACKS
 ###################################
@@ -481,13 +489,15 @@ DIVISAODC_MGMT = "OOB-CM"
 AMBLOG_MGMT = "GERENCIA"
 GRPL3_MGMT = "CORE/DENSIDADE"
 
+##################################
+#       FOREMAN SETTINGS
+##################################
+
 NETWORKAPI_USE_FOREMAN = os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
 NETWORKAPI_FOREMAN_URL = os.getenv('NETWORKAPI_FOREMAN_URL', 'http://foreman_server')
-
 NETWORKAPI_FOREMAN_USERNAME = os.getenv('NETWORKAPI_FOREMAN_USERNAME', 'admin')
 NETWORKAPI_FOREMAN_PASSWORD = os.getenv('NETWORKAPI_FOREMAN_PASSWORD', 'password')
 
-# FOREMAN
 USE_FOREMAN = NETWORKAPI_USE_FOREMAN
 FOREMAN_URL = NETWORKAPI_FOREMAN_URL
 FOREMAN_USERNAME = NETWORKAPI_FOREMAN_USERNAME
@@ -542,20 +552,13 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PAT
 ####################
 # If is running on CI: if CI=1 or running inside jenkins
 if CI:
-    INTEGRATION = os.getenv('CI', '0') == '1'
-    INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
 
     TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-    NOSE_ARGS = [
-        '--verbosity=2',
-        '--no-byte-compile',
-        '-d',
-        '-s',
-        # '--pdb',
-    ]
+
     INSTALLED_APPS += ('django_nose',)
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
@@ -602,7 +605,12 @@ if CI:
             'handlers': ['console'],
         },
     }
-    NOSE_ARGS += [
+
+    NOSE_ARGS = [
+        '--verbosity=2',
+        '--no-byte-compile',
+        '-d',
+        '-s',
         '--with-coverage',
         '--cover-package=networkapi',
         '--exclude=.*migrations*',
@@ -612,8 +620,3 @@ if CI:
         '--cover-xml',
         '--cover-xml-file=coverage.xml'
     ]
-
-# elif INTEGRATION:
-#     TEST_DISCOVER_ROOT = None
-#     NOSE_ARGS += ['--with-coverage', '--cover-package=networkapi', '--where-dir=./integration/',
-#                   '--with-xunit', '--xunit-file=test-report.xml', '--cover-xml', '--cover-xml-file=coverage.xml']

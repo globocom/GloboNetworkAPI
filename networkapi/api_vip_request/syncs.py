@@ -1,16 +1,19 @@
 # -*- coding:utf-8 -*-
 import logging
 
-from networkapi.ambiente.models import EnvironmentVip
-from networkapi.api_vip_request.models import *
-from networkapi.requisicaovips.models import *
-
 log = logging.getLogger(__name__)
 
 # files have "#SYNC_VIP" to find where have migrations
 
 
 def old_to_new(vip_request):
+
+    from networkapi.ambiente.models import EnvironmentVip
+    from networkapi.api_vip_request.models import VipRequest, VipRequestDSCP, VipRequestOptionVip, \
+        VipRequestPort, VipRequestPortOptionVip, VipRequestPortPool
+    from networkapi.requisicaovips.models import DsrL3_to_Vip, OptionVip, OptionVipEnvironmentVip, \
+        VipPortToPool
+
     mp = vip_request.variables_to_map()
     try:
 
@@ -305,7 +308,8 @@ def old_to_new(vip_request):
                     opv.save()
                 finally:
                     try:
-                        vrpp = VipRequestPortPool.objects.filter(server_pool=pool.server_pool, vip_request_port=vrp)[0]
+                        vrpp = VipRequestPortPool.objects.filter(
+                            server_pool=pool.server_pool, vip_request_port=vrp)[0]
                     except:
                         vrpp = VipRequestPortPool()
                         vrpp.server_pool = pool.server_pool
@@ -319,6 +323,11 @@ def old_to_new(vip_request):
 
 
 def new_to_old(vp):
+
+    from networkapi.api_vip_request.models import VipRequestDSCP
+    from networkapi.requisicaovips.models import DsrL3_to_Vip, \
+        RequisicaoVips, VipPortToPool
+
     try:
         vip_map = dict()
         vip = RequisicaoVips()
@@ -400,6 +409,8 @@ def new_to_old(vp):
 
 
 def delete_old(ids):
+
+    from networkapi.requisicaovips.models import RequisicaoVips
     try:
         if isinstance(ids, list):
             RequisicaoVips.objects.filter(id__in=ids).delete()
@@ -412,6 +423,7 @@ def delete_old(ids):
 
 
 def delete_new(ids):
+    from networkapi.api_vip_request.models import VipRequest
     try:
         if isinstance(ids, list):
             VipRequest.objects.filter(id__in=ids).delete()

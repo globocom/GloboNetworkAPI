@@ -13,6 +13,7 @@ class VipRequest(BaseModel):
     )
 
     created = models.BooleanField(
+        default=False,
         db_column='created')
 
     ipv4 = models.ForeignKey(

@@ -33,6 +33,9 @@ class NetworkApiTestCase(TestCase):
         'initial_optionspool.json',
         'initial_healthcheck.json',
         'initial_pools.json',
+        'initial_optionsvip.json',
+        'initial_tipo_rede.json',
+        'initial_vlan.json',
     ]
 
     def setUp(self):

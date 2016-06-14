@@ -29,3 +29,5 @@ coverage==3.6
 HTTPretty==0.8.3
 sure==1.2.7
 nose-exclude==0.3.0
+ipdb==0.10.0
+django-pdb==0.5.1

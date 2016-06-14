@@ -1,0 +1,90 @@
+[
+  {
+  "pk": 1,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "2",
+    "oct4": "1",
+    "networkipv4": 1
+    }
+  },
+  {
+  "pk": 2,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "2",
+    "oct4": "2",
+    "networkipv4": 1
+    }
+  },
+  {
+  "pk": 3,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "2",
+    "oct4": "3",
+    "networkipv4": 1
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "3",
+    "oct4": "1",
+    "networkipv4": 2
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "3",
+    "oct4": "2",
+    "networkipv4": 2
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "3",
+    "oct4": "3",
+    "networkipv4": 2
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "10",
+    "oct3": "2",
+    "oct4": "3",
+    "networkipv4": 3
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ip.ip",
+  "fields": {
+    "oct1": "192",
+    "oct2": "10",
+    "oct3": "2",
+    "oct4": "4",
+    "networkipv4": 3
+    }
+  }
+]

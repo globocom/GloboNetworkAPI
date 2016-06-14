@@ -1187,12 +1187,12 @@ class Ip(BaseModel):
                             r.validado = 0
                             r.save(authenticated_user)
                             r_alter = True
-                        
+
                             # SYNC_VIP
                             old_to_new(r)
                     if not r_alter:
                         r.delete()
-                        
+
                         # SYNC_VIP
                         delete_new(id_vip)
 

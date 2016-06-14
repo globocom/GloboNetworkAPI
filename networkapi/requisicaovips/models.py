@@ -2195,6 +2195,7 @@ class ServerPool(BaseModel):
 
     pool_created = models.NullBooleanField(
         db_column='pool_criado',
+        default=False,
         null=True
     )
 

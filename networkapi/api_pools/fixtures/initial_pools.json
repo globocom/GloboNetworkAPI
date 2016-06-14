@@ -1,0 +1,16 @@
+[
+  {
+  "pk": 1,
+  "model": "requisicaovips.serverpool",
+  "fields": {
+    "identifier": "business",
+    "default_port": 80,
+    "environment": 1,
+    "servicedownaction": 5,
+    "lb_method": "least-conn",
+    "healthcheck": 1,
+    "default_limit": 100,
+    "pool_created": false,
+    }
+  }
+]

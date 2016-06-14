@@ -16,18 +16,21 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
+
 import logging
-from networkapi.semaforo.model import Semaforo
-from networkapi.models.BaseModel import BaseModel
+
 from _mysql_exceptions import OperationalError
-from networkapi.infrastructure.ipaddr import IPNetwork
-from networkapi.util import clone
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
 from networkapi.filter.models import verify_subnet_and_equip
+from networkapi.infrastructure.ipaddr import IPNetwork
+from networkapi.models.BaseModel import BaseModel
 from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
-
+from networkapi.semaforo.model import Semaforo
+from networkapi.util import clone
 
 
 class VlanError(Exception):
@@ -290,7 +293,7 @@ class Vlan(BaseModel):
             self.log.error(u'Failure to search the Vlan.')
             raise VlanError(e, u'Failure to search the Vlan.')
 
-    def existVlanNameInEnvironment(self):
+    def exist_vlan_name_in_environment(self):
         try:
             Vlan.objects.get(
                 nome__iexact=self.nome, ambiente__id=self.ambiente.id)
@@ -378,7 +381,7 @@ class Vlan(BaseModel):
             serializer = VlanSerializer(self)
             data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.VLAN_ACTIVATE})
-            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
+            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE, 'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
             queue_manager.send()
 
         except Exception, e:
@@ -405,7 +408,7 @@ class Vlan(BaseModel):
             serializer = VlanSerializer(self)
             data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.VLAN_DEACTIVATE})
-            queue_manager.append({'action': queue_keys.VLAN_DEACTIVATE,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
+            queue_manager.append({'action': queue_keys.VLAN_DEACTIVATE, 'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
             queue_manager.send()
 
         except Exception, e:
@@ -425,7 +428,7 @@ class Vlan(BaseModel):
             self.nome = self.nome.upper()
 
         # Name VLAN can not be duplicated in the environment
-        if self.existVlanNameInEnvironment():
+        if self.exist_vlan_name_in_environment():
             raise VlanNameDuplicatedError(
                 None, 'Name VLAN can not be duplicated in the environment.')
 
@@ -487,7 +490,7 @@ class Vlan(BaseModel):
             self.tipo_rede = TipoRede().get_by_pk(self.tipo_rede.id)
 
         # Verificar duplicidade do Nome da VLAN
-        if self.existVlanNameInEnvironment():
+        if self.exist_vlan_name_in_environment():
             raise VlanNameDuplicatedError(
                 None, 'VLAN com nome duplicado dentro do ambiente.')
 
@@ -625,22 +628,22 @@ class Vlan(BaseModel):
         envs = list()
         envs_aux = list()
 
-        #Get all equipments from the environment being tested
-        #that are not supposed to be filtered
-        #(not the same type of the equipment type of a filter of the environment)
+        # Get all equipments from the environment being tested
+        # that are not supposed to be filtered
+        # (not the same type of the equipment type of a filter of the environment)
         for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types):
             equips.append(env.equipamento)
 
-        #Get all environment that the equipments above are included
+        # Get all environment that the equipments above are included
         for equip in equips:
             for env in equip.equipamentoambiente_set.all():
-                if not env.ambiente_id in envs_aux:
+                if env.ambiente_id not in envs_aux:
                     envs.append(env.ambiente)
                     envs_aux.append(env.ambiente_id)
 
-        #Check in all vlans from all environments above
-        #if there is a vlan with the same vlan number of the
-        #vlan being tested
+        # Check in all vlans from all environments above
+        # if there is a vlan with the same vlan number of the
+        # vlan being tested
         for env in envs:
             for vlan in env.vlan_set.all():
                 if int(vlan.num_vlan) == int(self.num_vlan):
@@ -648,7 +651,7 @@ class Vlan(BaseModel):
                         None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
 
         # Name VLAN can not be duplicated in the environment
-        if self.existVlanNameInEnvironment():
+        if self.exist_vlan_name_in_environment():
             raise VlanNameDuplicatedError(
                 None, 'Name VLAN can not be duplicated in the environment.')
 
@@ -694,13 +697,13 @@ class Vlan(BaseModel):
 
             for equip in equips:
                 for env in equip.equipamentoambiente_set.all():
-                    if not env in envs:
+                    if env not in envs:
                         envs.append(env.ambiente)
 
             for env in envs:
                 for vlan in env.vlan_set.all():
                     if int(vlan.num_vlan) == int(self.num_vlan) and int(vlan.id) != int(self.id):
-                        if self.ambiente.filter_id == None or vlan.ambiente.filter_id == None or int(vlan.ambiente.filter_id) != int(self.ambiente.filter_id):
+                        if self.ambiente.filter_id is None or vlan.ambiente.filter_id is None or int(vlan.ambiente.filter_id) != int(self.ambiente.filter_id):
                             raise VlanNumberEnvironmentNotAvailableError(
                                 None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
 
@@ -708,7 +711,7 @@ class Vlan(BaseModel):
             old_env = old_vlan.ambiente
 
             # Old env
-            if old_env.filter != None:
+            if old_env.filter is not None:
                 if self.check_env_shared_equipment(old_env):
                     if self.ambiente.filter_id != old_env.filter_id:
                         raise VlanNumberEnvironmentNotAvailableError(
@@ -716,7 +719,7 @@ class Vlan(BaseModel):
 
         if change_name:
             # Name VLAN can not be duplicated in the environment
-            if self.existVlanNameInEnvironment():
+            if self.exist_vlan_name_in_environment():
                 raise VlanNameDuplicatedError(
                     None, 'Name VLAN can not be duplicated in the environment.')
 
