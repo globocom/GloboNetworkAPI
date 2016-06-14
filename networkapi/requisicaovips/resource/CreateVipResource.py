@@ -16,21 +16,25 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import IpError
+
 import logging
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.api_vip_request.syncs import old_to_new
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.infrastructure.script_utils import exec_script, ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
+from networkapi.ip.models import IpError
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.exception import InvalidValueError
-from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, \
+    RequisicaoVips, ServerPool
 from networkapi.settings import VIP_CREATE
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, RequisicaoVips, ServerPool
-from networkapi.healthcheckexpect.models import HealthcheckExpectError
-from networkapi.distributedlock import distributedlock, LOCK_VIP
 
 
 class CreateVipResource(RestResource):
@@ -142,6 +146,9 @@ class CreateVipResource(RestResource):
 
                 vip.vip_criado = 1
                 vip.save()
+
+                # SYNC_VIP
+                old_to_new(vip)
 
                 server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip.id)
 

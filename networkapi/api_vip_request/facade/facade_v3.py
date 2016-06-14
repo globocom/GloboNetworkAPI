@@ -3,6 +3,7 @@ import copy
 import json
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
@@ -18,7 +19,8 @@ from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.plugins.factory import PluginFactory
-from networkapi.requisicaovips.models import OptionVip, ServerPool, ServerPoolMember
+from networkapi.requisicaovips.models import OptionVip, RequisicaoVips, \
+    ServerPool, ServerPoolMember
 from networkapi.util import valid_expression
 
 
@@ -38,7 +40,12 @@ def create_vip_request(vip_request):
     """
     Create Vip Request
     """
+    # Remove when RequisicaoVips is die
+    req = RequisicaoVips()
+    req.save()
+
     vip = models.VipRequest()
+    vip.id = req.id
     vip.name = vip_request['name']
     vip.service = vip_request['service']
     vip.business = vip_request['business']
@@ -97,12 +104,17 @@ def update_vip_request(vip_request):
 def delete_vip_request(vip_request_ids):
     """delete vip request"""
 
-    vps = models.VipRequest.objects.filter(id__in=vip_request_ids)
-    created = vps.filter(created=True)
-    if created:
-        raise exceptions.VipConstraintCreatedException()
+    for vip_request_id in vip_request_ids:
+        try:
+            vp = models.VipRequest.objects.get(id=vip_request_id)
+        except ObjectDoesNotExist:
+            raise exceptions.VipRequestDoesNotExistException(vip_request_id)
 
-    vps.delete()
+        created = vp.filter(created=True)
+        if created:
+            raise exceptions.VipConstraintCreatedException(vip_request_id)
+
+        vp.delete()
 
     # sync with old tables
     syncs.delete_old(vip_request_ids)

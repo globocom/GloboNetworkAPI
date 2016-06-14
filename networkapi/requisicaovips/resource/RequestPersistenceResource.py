@@ -16,18 +16,21 @@
 # limitations under the License.
 
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.auth import has_perm
 from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
-from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.exception import EquipmentGroupsNotAuthorizedError, InvalidValueError, RequestVipsNotBeenCreatedError
 from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpect, HealthcheckExpectNotFoundError, HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
 from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-from networkapi.ip.models import IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError
-import logging
-from networkapi.requisicaovips.models import RequisicaoVips, OptionVip, \
+from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
+from networkapi.ip.models import IpError, IpNotFoundByEquipAndVipError
+from networkapi.requisicaovips.models import RequisicaoVips, \
     RequisicaoVipsNotFoundError, RequisicaoVipsError, \
     InvalidFinalidadeValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
     InvalidClienteValueError, InvalidAmbienteValueError, InvalidCacheValueError, \
@@ -36,8 +39,7 @@ from networkapi.requisicaovips.models import RequisicaoVips, OptionVip, \
     InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
     InvalidTransbordoValueError, InvalidPriorityValueError
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, clone
-from string import upper
+from networkapi.util import clone, is_valid_int_greater_zero_param
 
 
 class RequestPersistenceResource(RestResource):
@@ -123,6 +125,9 @@ class RequestPersistenceResource(RestResource):
 
                 # Save VIP
                 vip.save(user, commit=True)
+
+                # SYNC_VIP
+                old_to_new(vip)
 
                 # Executar script
 
