@@ -296,14 +296,14 @@ def dic_pods(rack):
 
     PODSBEipv4[rack]=splitnetworkbyrack(subnetteste,20,0)
     PODSBEipv6[rack]=splitnetworkbyrack(subnetteste_ipv6,57,0)
-         # => 128 redes /27     # Vlan 2 a 129
-    redesPODSBEipv4[rack] = list(PODSBEipv4[rack].subnet(27))
+         # => 256 redes /28     # Vlan 2 a 129
+    redesPODSBEipv4[rack] = list(PODSBEipv4[rack].subnet(28))
     redesPODSBEipv6[rack] = list(PODSBEipv6[rack].subnet(64))
     #PODS BEFE => 10.128.16.0/21
     PODSBEFEipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,0)
     PODSBEFEipv6[rack]=splitnetworkbyrack(subnetteste_ipv6,57,1)
-         # => 64 redes /27    # Vlan 130 a 193
-    redesPODSBEFEipv4[rack] = list(PODSBEFEipv4[rack].subnet(27))
+         # => 128 redes /28    # Vlan 130 a 193
+    redesPODSBEFEipv4[rack] = list(PODSBEFEipv4[rack].subnet(28))
     redesPODSBEFEipv6[rack] = list(PODSBEFEipv6[rack].subnet(64))
     #PODS BEBO => 10.128.24.0/22
     PODSBEBOipv4[rack]=splitnetworkbyrack(splitnetworkbyrack(splitnetworkbyrack(subnetteste,20,1),21,1),22,0)
@@ -531,7 +531,7 @@ def dic_fe_prod(rack):
     subnetsRackFEipv4[rack]=splitnetworkbyrack(CIDRFEipv4[0],21,rack)
     subnetsRackFEipv6[rack]=splitnetworkbyrack(CIDRFEipv6[0],57,rack)
 
-    podsFEipv4[rack]= splitnetworkbyrack(subnetsRackFEipv4[rack],27,0)
+    podsFEipv4[rack]= splitnetworkbyrack(subnetsRackFEipv4[rack],28,0)
     podsFEipv6[rack]= splitnetworkbyrack(subnetsRackFEipv6[rack],64,3)
 
     ranges['MAX']=int(get_variable("fe_vlan_min"))
@@ -866,8 +866,8 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     subnetsRackFEipv6[rack]=splitnetworkbyrack(CIDRFEipv6[0],57,rack)
 
     #          ::::::: SUBNETING EACH RACK NETWORK:::::::
-    # PODS FE => 128 redes /27 ; 128 redes /64
-    redesPODSBEipv4[rack] = list(subnetsRackFEipv4[rack].subnet(27))
+    # PODS FE => 128 redes /28 ; 128 redes /64
+    redesPODSBEipv4[rack] = list(subnetsRackFEipv4[rack].subnet(28))
     redesPODSBEipv6[rack] = list(subnetsRackFEipv6[rack].subnet(64))
 
     try:
