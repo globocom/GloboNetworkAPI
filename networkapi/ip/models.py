@@ -243,15 +243,15 @@ class IpCantRemoveFromServerPool(IpError):
 class NetworkIPv4(BaseModel):
 
     id = models.AutoField(primary_key=True)
-    oct1 = models.IntegerField(unique=True, db_column='rede_oct1')
-    oct2 = models.IntegerField(unique=True, db_column='rede_oct2')
-    oct3 = models.IntegerField(unique=True, db_column='rede_oct3')
-    oct4 = models.IntegerField(unique=True, db_column='rede_oct4')
-    block = models.IntegerField(unique=True, db_column='bloco')
-    mask_oct1 = models.IntegerField(unique=True, db_column='masc_oct1')
-    mask_oct2 = models.IntegerField(unique=True, db_column='masc_oct2')
-    mask_oct3 = models.IntegerField(unique=True, db_column='masc_oct3')
-    mask_oct4 = models.IntegerField(unique=True, db_column='masc_oct4')
+    oct1 = models.IntegerField(db_column='rede_oct1')
+    oct2 = models.IntegerField(db_column='rede_oct2')
+    oct3 = models.IntegerField(db_column='rede_oct3')
+    oct4 = models.IntegerField(db_column='rede_oct4')
+    block = models.IntegerField(db_column='bloco')
+    mask_oct1 = models.IntegerField(db_column='masc_oct1')
+    mask_oct2 = models.IntegerField(db_column='masc_oct2')
+    mask_oct3 = models.IntegerField(db_column='masc_oct3')
+    mask_oct4 = models.IntegerField(db_column='masc_oct4')
     broadcast = models.CharField(max_length=15, blank=False)
     vlan = models.ForeignKey(Vlan, db_column='id_vlan')
     network_type = models.ForeignKey(
@@ -528,10 +528,10 @@ class NetworkIPv4(BaseModel):
 class Ip(BaseModel):
 
     id = models.AutoField(primary_key=True, db_column='id_ip')
-    oct4 = models.IntegerField(unique=True)
-    oct3 = models.IntegerField(unique=True)
-    oct2 = models.IntegerField(unique=True)
-    oct1 = models.IntegerField(unique=True)
+    oct4 = models.IntegerField()
+    oct3 = models.IntegerField()
+    oct2 = models.IntegerField()
+    oct1 = models.IntegerField()
     descricao = models.CharField(max_length=100, blank=True)
     networkipv4 = models.ForeignKey(NetworkIPv4, db_column='id_redeipv4')
 

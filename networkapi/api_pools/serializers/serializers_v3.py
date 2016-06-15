@@ -65,13 +65,23 @@ class Ipv6DetailsSerializer(serializers.ModelSerializer):
         )
 
 
-class OptionPoolV3Serializer(serializers.ModelSerializer):
+class OptionPoolV3DetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OptionPool
         depth = 1
         fields = ('id',
                   'type',
+                  'name'
+                  )
+
+
+class OptionPoolV3Serializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = OptionPool
+        depth = 1
+        fields = ('id',
                   'name'
                   )
 
@@ -239,7 +249,7 @@ class PoolV3DetailsSerializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
     healthcheck = HealthcheckV3Serializer()
-    servicedownaction = OptionPoolV3Serializer()
+    servicedownaction = OptionPoolV3DetailsSerializer()
     environment = env_serializers.EnvironmentSerializer()
 
     def get_server_pool_members(self, obj):

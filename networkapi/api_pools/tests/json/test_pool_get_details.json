@@ -10,6 +10,7 @@
       },
       "servicedownaction": {
         "id": 5,
+        "type": "ServiceDownAction",
         "name": "none"
       },
       "lb_method": "least-conn",

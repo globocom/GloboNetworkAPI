@@ -19,15 +19,19 @@ class VipRequestTestV3Case(NetworkApiTestCase):
 
     # def test_get_success(self):
     #     """ test_get_success"""
-    #     response = self.client.get(
-    #         '/api/v3/vip-request/1/',
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #     self.assertEqual(
-    #         self.load_json_file('api_pools/tests/json/test_pool_get.json'),
-    #         response.data
-    #     )
-    #     self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
+
+        # import time
+
+        # time.sleep(20)
+        # response = self.client.get(
+        #     '/api/v3/vip-request/1/',
+        #     content_type="application/json",
+        #     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        # self.assertEqual(
+        #     self.load_json_file('api_vip_request/tests/json/test_vip_request_get.json'),
+        #     response.data
+        # )
+        # self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
 
     # def test_get_details_success(self):
     #     """ test_get_details_success"""

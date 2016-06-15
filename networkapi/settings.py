@@ -553,12 +553,20 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PAT
 # If is running on CI: if CI=1 or running inside jenkins
 if CI:
 
+    INTEGRATION = os.getenv('CI', '0') == '1'
+    INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
+
     TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    NOSE_ARGS = [
+        '--verbosity=2',
+        '--no-byte-compile',
+        '-d',
+        '-s',
+    ]
 
     INSTALLED_APPS += ('django_nose',)
-
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
@@ -606,17 +614,12 @@ if CI:
         },
     }
 
-    NOSE_ARGS = [
-        '--verbosity=2',
-        '--no-byte-compile',
-        '-d',
-        '-s',
-        '--with-coverage',
-        '--cover-package=networkapi',
-        '--exclude=.*migrations*',
-        '--exclude-dir=./integration/',
-        '--with-xunit',
-        '--xunit-file=test-report.xml',
-        '--cover-xml',
-        '--cover-xml-file=coverage.xml'
-    ]
+    # NOSE_ARGS += [
+    #     '--with-coverage',
+    #     '--cover-package=networkapi',
+    #     '--exclude=.*migrations*',
+    #     '--with-xunit',
+    #     '--xunit-file=test-report.xml',
+    #     '--cover-xml',
+    #     '--cover-xml-file=coverage.xml'
+    # ]

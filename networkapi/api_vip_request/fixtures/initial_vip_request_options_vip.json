@@ -1,0 +1,66 @@
+[
+  {
+  "pk": 1,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 1,
+    "vip_request": 1
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 6,
+    "vip_request": 1
+    }
+  },
+  {
+  "pk": 3,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 10,
+    "vip_request": 1
+    }
+  },
+  {
+  "pk": 4,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 14,
+    "vip_request": 1
+    }
+  },
+  {
+  "pk": 5,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 1,
+    "vip_request": 2
+    }
+  },
+  {
+  "pk": 6,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 6,
+    "vip_request": 2
+    }
+  },
+  {
+  "pk": 7,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 10,
+    "vip_request": 2
+    }
+  },
+  {
+  "pk": 8,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 14,
+    "vip_request": 2
+    }
+  }
+]

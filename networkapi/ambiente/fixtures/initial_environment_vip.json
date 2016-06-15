@@ -3,22 +3,22 @@
   "pk": 1,
   "model": "ambiente.environmentvip",
   "fields": {
-    "finalidade_txt": "teste",
-    "cliente_txt": "teste",
     "ambiente_p44_txt": "teste",
+    "cliente_txt": "teste",
+    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
     "description": "teste",
-    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}"
+    "finalidade_txt": "teste"
     }
   },
   {
   "pk": 2,
   "model": "ambiente.environmentvip",
   "fields": {
-    "finalidade_txt": "teste2",
-    "cliente_txt": "teste2",
     "ambiente_p44_txt": "teste2",
+    "cliente_txt": "teste2",
+    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
     "description": "teste2",
-    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}"
+    "finalidade_txt": "teste2"
     }
   }
 ]
