@@ -60,6 +60,19 @@ def connection(func):
     return inner
 
 
+def connection_simple(func):
+    @wraps(func)
+    def inner(self, *args, **kwargs):
+        try:
+            access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+            self._lb = lb.Lb(access.fqdn, access.user, access.password, False)
+            return func(self, *args, **kwargs)
+        except bigsuds.OperationFailed, e:
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
+    return inner
+
+
 def get_status_name(status):
     try:
         return STATUS_POOL_MEMBER[status]

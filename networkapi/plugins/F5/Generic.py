@@ -148,7 +148,7 @@ class Generic(BasePlugin):
             priority=pls['pools_members']['priority'])
 
     @logger
-    @util.transation
+    @util.connection_simple
     def get_state_member(self, pools):
         pls = util.trata_param_pool(pools)
 
