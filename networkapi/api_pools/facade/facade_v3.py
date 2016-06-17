@@ -446,8 +446,7 @@ def delete_pool(pools_ids):
         except ObjectDoesNotExist:
             raise exceptions.PoolNotExist()
 
-        created = sp.filter(pool_created=True)
-        if created:
+        if sp.pool_created:
             raise exceptions.PoolConstraintCreatedException()
 
         sp.delete()

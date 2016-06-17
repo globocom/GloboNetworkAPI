@@ -110,8 +110,7 @@ def delete_vip_request(vip_request_ids):
         except ObjectDoesNotExist:
             raise exceptions.VipRequestDoesNotExistException(vip_request_id)
 
-        created = vp.filter(created=True)
-        if created:
+        if vp.created:
             raise exceptions.VipConstraintCreatedException(vip_request_id)
 
         vp.delete()
