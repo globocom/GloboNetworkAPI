@@ -174,6 +174,15 @@ class PoolMemberStateView(APIView):
                             pm.last_status_update = datetime.now()
                             pm.save(request.user)
 
+                # get pools updated
+                server_pools = models_vips.ServerPool.objects.filter(
+                    id__in=pool_ids)
+
+            serializer_server_pool = serializers.PoolV3Serializer(
+                server_pools,
+                many=True
+            )
+
             data["server_pools"] = serializer_server_pool.data
             return Response(data)
 
