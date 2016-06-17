@@ -5,7 +5,8 @@ import logging
 
 from django.db.transaction import commit_on_success
 from networkapi.api_pools import exceptions, facade, serializers
-from networkapi.api_pools.permissions import Read, Write
+from networkapi.api_pools.permissions import Read, ScriptAlterPermission, \
+    ScriptCreatePermission, ScriptRemovePermission, Write
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.requisicaovips import models as models_vips
 from networkapi.settings import SPECS
@@ -22,7 +23,7 @@ log = logging.getLogger(__name__)
 
 class PoolMemberStateView(APIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
     @logs_method_apiview
     @raise_json_validate('pool_member_status')
     @commit_on_success
@@ -183,7 +184,7 @@ class PoolMemberStateView(APIView):
 
 class PoolDeployView(APIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
     @logs_method_apiview
     def post(self, request, *args, **kwargs):
         """
@@ -206,7 +207,7 @@ class PoolDeployView(APIView):
 
         return Response(response)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
     @logs_method_apiview
     @raise_json_validate('pool_put')
     def put(self, request, *args, **kwargs):
@@ -273,7 +274,7 @@ class PoolDeployView(APIView):
             facade.destroy_lock(locks_list)
         return Response(response)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
         """
