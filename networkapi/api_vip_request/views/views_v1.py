@@ -28,6 +28,7 @@ from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
 from networkapi.exception import EnvironmentVipNotFoundError, InvalidValueError
 from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, \
     ServerPool, VipPortToPool
+from networkapi.util.decorators import deprecated
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -40,6 +41,7 @@ log = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
+@deprecated(new_uri='api/v3/vip-request/')
 def add_pools(request):
     """
     Add Pools For Vip Request.
@@ -62,6 +64,8 @@ def add_pools(request):
 
             vip_port_pool_obj.save(request.user)
 
+            syncs.old_to_new(vip_request_obj)
+
         return Response(status=status.HTTP_201_CREATED)
 
     except RequisicaoVips.DoesNotExist, exception:
@@ -80,6 +84,7 @@ def add_pools(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
+@deprecated(new_uri='api/v3/vip-request/')
 def delete(request):
     """
     Delete Vip Request And Optional Related Pools.
@@ -168,6 +173,7 @@ def list_environment_by_environment_vip(request, environment_vip_id):
 @api_view(['POST', 'PUT'])
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
+@deprecated(new_uri='api/v3/vip-request/(<pk>)/')
 def save(request, pk=None):
 
     try:

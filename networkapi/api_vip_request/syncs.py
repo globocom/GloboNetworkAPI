@@ -364,6 +364,7 @@ def new_to_old(vp):
         pools_current.filter(id__in=ids_to_del).delete()
 
         vip.vip_criado = vp.created
+        vip.validado = True
         vip.save()
 
         for port in ports:

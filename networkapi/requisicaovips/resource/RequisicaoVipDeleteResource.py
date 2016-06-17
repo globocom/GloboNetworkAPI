@@ -19,11 +19,14 @@
 """
 
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.api_vip_request.syncs import delete_new
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import IpCantRemoveFromServerPool, IpCantBeRemovedFromVip
-import logging
 from networkapi.rest import RestResource
 from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsNotFoundError, RequisicaoVipsError, \
     ServerPoolMember
@@ -73,6 +76,9 @@ class RequisicaoVipDeleteResource(RestResource):
                     vip.delete_vips_and_reals(user)
 
                     vip.remove(user, vip_id)
+
+                    # SYNC_VIP
+                    delete_new(vip_id)
 
                     if ipv4 and not keep_ip:
                         if not self.is_ipv4_in_use(ipv4, vip_id):

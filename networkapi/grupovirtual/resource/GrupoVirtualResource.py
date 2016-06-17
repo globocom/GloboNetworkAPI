@@ -156,7 +156,8 @@ class GroupVirtualResource(RestResource):
             return self.not_authorized()
         except ScriptError, s:
             return self.response_error(2, s)
-        except (IpError, EquipamentoError, GrupoError, RequisicaoVipsError):
+        except (IpError, EquipamentoError, GrupoError, RequisicaoVipsError) as e:
+            self.log.error(e)
             return self.response_error(1)
 
     def __treat_response_error(self, response):
