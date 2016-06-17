@@ -260,7 +260,7 @@ class VipRequestDBView(APIView):
                 vips_requests = facade.get_vip_request(vip_request_ids)
 
                 if vips_requests:
-                    serializer_vips = VipRequestDetailsSerializer(
+                    serializer_vips = VipRequestSerializer(
                         vips_requests,
                         many=True
                     )
