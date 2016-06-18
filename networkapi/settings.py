@@ -614,12 +614,12 @@ if CI:
         },
     }
 
-    # NOSE_ARGS += [
-    #     '--with-coverage',
-    #     '--cover-package=networkapi',
-    #     '--exclude=.*migrations*',
-    #     '--with-xunit',
-    #     '--xunit-file=test-report.xml',
-    #     '--cover-xml',
-    #     '--cover-xml-file=coverage.xml'
-    # ]
+    NOSE_ARGS += [
+        '--with-coverage',
+        '--cover-package=networkapi',
+        '--exclude=.*migrations*',
+        '--with-xunit',
+        '--xunit-file=test-report.xml',
+        '--cover-xml',
+        '--cover-xml-file=coverage.xml'
+    ]
