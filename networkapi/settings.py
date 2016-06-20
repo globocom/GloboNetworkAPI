@@ -253,7 +253,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'networkapi.middlewares.TrackingRequestOnThreadLocalMiddleware',
-    'django_pdb.middleware.PdbMiddleware',
 )
 
 if LOG_SHOW_SQL:
@@ -344,7 +343,6 @@ INSTALLED_APPS += (
     'networkapi.usuario',
     'networkapi.vlan',
     'rest_framework',
-    'django_pdb',
 )
 
 """Rest Configuration
