@@ -5,7 +5,6 @@ import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
-from networkapi.util import is_healthcheck_valid
 
 log = logging.getLogger(__name__)
 
@@ -131,8 +130,7 @@ def trata_param_pool(pools):
             pls['pools_lbmethod'].append(
                 get_method_name(p['lb_method']))
 
-        if p.get('healthcheck'):
-            is_healthcheck_valid(p['healthcheck'])
+        if p.get('healthcheck') is not None:
             pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):

@@ -6,10 +6,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
+import json_delta
+
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
-from networkapi.api_pools import exceptions, models
+from networkapi.api_pools import exceptions, models, serializers
 from networkapi.distributedlock import distributedlock, LOCK_POOL
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.healthcheckexpect.models import Healthcheck
@@ -242,11 +244,19 @@ def update_real_pool(pools):
 
             keys_cache.append('pool:monitor:%s' % pool['identifier'])
 
+            sp = ServerPool.objects.get(id=pool['id'])
+            healthcheck_old = serializers.HealthcheckV3Serializer(sp.healthcheck).data
+
+            if json_delta.diff(healthcheck_old, pool['healthcheck']):
+                healthcheck = pool['healthcheck']
+            else:
+                healthcheck = {}
+
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
-                'healthcheck': pool['healthcheck'],
+                'healthcheck': healthcheck,
                 'action': pool['servicedownaction']['name'],
                 'pools_members': pools_members
             })

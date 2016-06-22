@@ -22,3 +22,4 @@ suds==0.4
 bigsuds==1.0.2
 json-spec[ip]==0.10.0
 ipaddress==1.0.16
+json-delta==2.0

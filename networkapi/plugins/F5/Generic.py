@@ -1,3 +1,4 @@
+
 import itertools
 import logging
 
@@ -279,79 +280,12 @@ class Generic(BasePlugin):
             healthcheck=pls['pools_healthcheck']
         )
 
-        strings_old = {
-            'template_names': list(),
-            'property_types': list()
-        }
-
-        strings_new = list()
-        monitors_new = list()
-        monitors_old = list()
-
-        for monitor_old in monitor_associations_old:
-            for monitor_new in monitor_associations:
-                if monitor_old['pool_name'] == monitor_new['pool_name']:
-                    if monitor_old != monitor_new:
-                        template_name = monitor_old['monitor_rule']['monitor_templates'][0]
-                        property_type_s = 'STYPE_SEND'
-                        property_type_r = 'STYPE_RECEIVE'
-
-                        strings_old['template_names'].append(template_name)
-                        strings_old['property_types'].append(property_type_s)
-                        strings_old['template_names'].append(template_name)
-                        strings_old['property_types'].append(property_type_r)
-
-                        template_name = monitor_new['monitor_rule']['monitor_templates'][0]
-                        strings_new += [templates_extra['values'][k] for k, v in enumerate(templates_extra['template_names']) if v == template_name] or [{}, {}]
-
-                        monitors_new.append(monitor_new)
-                        monitors_new.append(monitor_new)
-                        monitors_old.append(monitor_old)
-                        monitors_old.append(monitor_old)
-                    break
-
-        get_strings_old = mon.get_template_string_property(
-            template_names=strings_old.get('template_names'),
-            property_types=strings_old.get('property_types')
-        )
-        monitors_assoc = list()
-        monitors_assoc_old = list()
-        template_name_found = list()
-
-        for key, string in enumerate(get_strings_old):
-            try:
-                if strings_new[key] != string:
-                    monitors_assoc.append(monitors_new[key])
-                    monitors_assoc_old.append(monitors_old[key])
-                    template_name_found.append(monitors_new[key]['monitor_rule']['monitor_templates'][0])
-            except:
-                pass
-
-        values_new = list()
-        template_names_new = list()
-        template_attributes_new = list()
-        templates_new = list()
-        template_name_found = list(set(template_name_found))
-        for template_name in template_name_found:
-            values_new += [templates_extra['values'][k] for k, v in enumerate(templates_extra['template_names']) if v == template_name]
-            template_names_new += [templates_extra['template_names'][k] for k, v in enumerate(templates_extra['template_names']) if v == template_name]
-            template_attributes_new += [templates_extra['template_attributes'][k] for k, v in enumerate(templates_extra['templates']) if v['template_name'] == template_name]
-            templates_new += [templates_extra['templates'][k] for k, v in enumerate(templates_extra['templates']) if v['template_name'] == template_name]
-
-        monitors_assoc = {v['pool_name']: v for v in monitors_assoc}.values()
-        monitors_assoc_old = {v['pool_name']: v for v in monitors_assoc_old}.values()
-        templates_extra = {
-            'values': values_new,
-            'template_names': template_names_new,
-            'template_attributes': template_attributes_new,
-            'templates': templates_new
-        }
         mon.create_template(templates_extra=templates_extra)
 
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            pl.set_monitor_association(monitor_associations=monitors_assoc)
+            pl.set_monitor_association(monitor_associations=monitor_associations)
 
             pl.set_lb_method(
                 names=pls['pools_names'],
@@ -394,7 +328,9 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.rollback_transaction()
 
             # delete templates created
-            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitors_assoc])) if 'MONITOR' in m]
+            template_names = [m for m in list(
+                itertools.chain(
+                    *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names:
                 mon.delete_template(
                     template_names=template_names
@@ -419,7 +355,8 @@ class Generic(BasePlugin):
 
             # delete templates old
             try:
-                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitors_assoc_old])) if 'MONITOR' in m]
+                template_names = [m for m in list(
+                    itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
                 if template_names:
                     mon.delete_template(template_names=template_names)
             except bigsuds.OperationFailed:
@@ -460,7 +397,9 @@ class Generic(BasePlugin):
             else:
                 self._lb._channel.System.Session.submit_transaction()
                 try:
-                    template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                    template_names = [m for m in list(
+                        itertools.chain(
+                            *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
                     if template_names:
                         mon.delete_template(template_names=template_names)
                 except bigsuds.OperationFailed:
