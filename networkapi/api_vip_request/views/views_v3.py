@@ -42,7 +42,7 @@ class VipRequestDeployView(APIView):
 
         locks_list = facade.create_lock(vip_serializer.data)
         try:
-            response = facade.create_real_vip_request(vip_serializer.data)
+            response = facade.create_real_vip_request(vip_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
@@ -69,7 +69,7 @@ class VipRequestDeployView(APIView):
 
         locks_list = facade.create_lock(vip_serializer.data)
         try:
-            response = facade.delete_real_vip_request(vip_serializer.data)
+            response = facade.delete_real_vip_request(vip_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
@@ -123,7 +123,7 @@ class VipRequestDeployView(APIView):
         json_validate(SPECS.get('vip_put')).validate(vips)
         locks_list = facade.create_lock(vips.get('vips'))
         try:
-            response = facade.update_real_vip_request(vips['vips'])
+            response = facade.update_real_vip_request(vips['vips'], request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)

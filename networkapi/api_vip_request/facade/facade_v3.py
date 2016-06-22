@@ -8,8 +8,8 @@ from django.db.models import Q
 from django.db.transaction import commit_on_success
 
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
-from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
+from networkapi.api_equipment import exceptions as exceptions_eqpt
+from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade import get_pool_by_id
 from networkapi.api_pools.serializers import PoolV3Serializer
@@ -285,7 +285,7 @@ def get_vip_request_by_search(search=dict()):
     return vip_map
 
 
-def prepare_apply(vip_requests, update=False, created=True):
+def prepare_apply(vip_requests, update=False, created=True, user=None):
     load_balance = dict()
 
     for vip in vip_requests:
@@ -297,7 +297,7 @@ def prepare_apply(vip_requests, update=False, created=True):
 
         id_vip = str(vip_request['id'])
 
-        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request, created)
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request, created, user)
 
         cache_group = OptionVip.objects.get(id=vip_request['options'].get('cache_group'))
         traffic_return = OptionVip.objects.get(id=vip_request['options'].get('traffic_return'))
@@ -435,6 +435,17 @@ def prepare_apply(vip_requests, update=False, created=True):
                                                 id__in=eqpts,
                                                 maintenance=0,
                                                 tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
+
+                                            if facade_eqpt.all_equipments_are_in_maintenance(equips):
+                                                raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+                                            if user:
+                                                if not facade_eqpt.all_equipments_can_update_config(equips, user):
+                                                    raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                                                        'User does not have permission to update conf in eqpt. \
+                                                        Verify the permissions of user group with equipment group. Vip:{}'.format(
+                                                            vip_request['id']))
+
                                             for eqpt in eqpts:
                                                 eqpt_id = str(eqpt.id)
 
@@ -493,9 +504,9 @@ def prepare_apply(vip_requests, update=False, created=True):
 
 
 @commit_on_success
-def create_real_vip_request(vip_requests):
+def create_real_vip_request(vip_requests, user):
 
-    load_balance = prepare_apply(vip_requests, False, False)
+    load_balance = prepare_apply(vip_requests, update=False, created=False, user=user)
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
@@ -515,9 +526,9 @@ def create_real_vip_request(vip_requests):
 
 
 @commit_on_success
-def update_real_vip_request(vip_requests):
+def update_real_vip_request(vip_requests, user):
 
-    load_balance = prepare_apply(vip_requests, True, True)
+    load_balance = prepare_apply(vip_requests, update=True, created=True, user=user)
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
@@ -527,9 +538,9 @@ def update_real_vip_request(vip_requests):
 
 
 @commit_on_success
-def delete_real_vip_request(vip_requests):
+def delete_real_vip_request(vip_requests, user):
 
-    load_balance = prepare_apply(vip_requests, False, True)
+    load_balance = prepare_apply(vip_requests, update=False, created=True, user=user)
 
     pools_ids = list()
     for lb in load_balance:
@@ -760,7 +771,7 @@ def _dscp(vip_request_id):
         raise Exception('Can\'t use pool because pool members have dscp is sold out')
 
 
-def _validate_vip_to_apply(vip_request, update=False):
+def _validate_vip_to_apply(vip_request, update=False, user=None):
     vip = models.VipRequest.objects.get(
         name=vip_request['name'],
         environmentvip=vip_request['environmentvip'],
@@ -787,8 +798,15 @@ def _validate_vip_to_apply(vip_request, update=False):
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 
-    if all_equipments_are_in_maintenance(equips):
-        raise AllEquipmentsAreInMaintenanceException()
+    if facade_eqpt.all_equipments_are_in_maintenance(equips):
+        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+    if user:
+        if not facade_eqpt.all_equipments_can_update_config(equips, user):
+            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                'User does not have permission to update conf in eqpt. \
+                Verify the permissions of user group with equipment group. Vip:{}'.format(
+                    vip_request['id']))
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
     return equips, conf, cluster_unit

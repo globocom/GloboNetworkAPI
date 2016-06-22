@@ -306,12 +306,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'django_extensions'
+    'django_extensions',
 )
 
 if PDB:
     INSTALLED_APPS += (
-        'django_pdb'
+        'django_pdb',
     )
 
 INSTALLED_APPS += (

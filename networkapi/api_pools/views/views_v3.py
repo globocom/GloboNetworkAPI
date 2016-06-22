@@ -79,7 +79,7 @@ class PoolMemberStateView(APIView):
         try:
             pools = request.DATA
             json_validate(SPECS.get('pool_member_status')).validate(pools)
-            response = facade.set_poolmember_state(pools)
+            response = facade.set_poolmember_state(pools, request.user)
 
             return Response(response)
         except Exception, exception:
@@ -207,7 +207,7 @@ class PoolDeployView(APIView):
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade.create_real_pool(pool_serializer.data)
+            response = facade.create_real_pool(pool_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -275,7 +275,7 @@ class PoolDeployView(APIView):
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
-            response = facade.update_real_pool(server_pools)
+            response = facade.update_real_pool(server_pools, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -297,7 +297,7 @@ class PoolDeployView(APIView):
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade.delete_real_pool(pool_serializer.data)
+            response = facade.delete_real_pool(pool_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
