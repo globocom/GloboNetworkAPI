@@ -449,6 +449,7 @@ class VipRequestDBDetailsView(APIView):
                     "groups": [<group_id>,..]
                 }],
                 "default_names": [<string>,..],
+                "dscp": <vip_dscp_id>,
                 "ports": [{
                     "id": <vip_port_id>,
                     "port": <interger>,
@@ -632,6 +633,8 @@ class VipRequestPoolView(APIView):
                     "timeout": <optionvip_id>,
                     "traffic_return": <optionvip_id>
                 },
+                "default_names": [<string>,..],
+                "dscp": <vip_dscp_id>,
                 "ports": [{
                     "id": <vip_port_id>,
                     "options": {

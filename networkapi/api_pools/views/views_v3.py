@@ -836,7 +836,7 @@ class OptionPoolEnvironmentView(APIView):
 
             options_pool = facade.get_options_pool_list_by_environment(environment_id)
 
-            options_pool_serializer = serializers.OptionPoolV3Serializer(
+            options_pool_serializer = serializers.OptionPoolV3DetailsSerializer(
                 options_pool,
                 many=True
             )

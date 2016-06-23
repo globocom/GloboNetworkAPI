@@ -214,6 +214,15 @@ class VipRequestTableSerializer(serializers.ModelSerializer):
 
         return ports_serializer.data
 
+    dscp = serializers.SerializerMethodField('get_dscp')
+
+    def get_dscp(self, obj):
+        try:
+            dscp = obj.viprequestdscp_set.get().dscp
+        except:
+            dscp = None
+        return dscp
+
     default_names = serializers.SerializerMethodField('get_default_names')
 
     def get_default_names(self, obj):
@@ -237,6 +246,7 @@ class VipRequestTableSerializer(serializers.ModelSerializer):
             # 'options',
             'equipments',
             'default_names',
+            'dscp',
             'created'
         )
 
@@ -267,6 +277,15 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
     equipments = serializers.SerializerMethodField('get_eqpt')
 
     default_names = serializers.SerializerMethodField('get_default_names')
+
+    dscp = serializers.SerializerMethodField('get_dscp')
+
+    def get_dscp(self, obj):
+        try:
+            dscp = obj.viprequestdscp_set.get().dscp
+        except:
+            dscp = None
+        return dscp
 
     def get_default_names(self, obj):
         ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
@@ -329,6 +348,7 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
             'ipv6',
             'equipments',
             'default_names',
+            'dscp',
             'ports',
             'options',
             'created'

@@ -348,6 +348,7 @@ def new_to_old(vp):
                 vip_map['cache'] = vp_optionvip.optionvip.nome_opcao_txt
             if vp_optionvip.optionvip.tipo_opcao == u'Retorno de trafego':
                 vip_map['trafficreturn'] = vp_optionvip.optionvip.id
+                vip.trafficreturn = vp_optionvip.optionvip
 
         vip_map['host'] = vp.name
         vip_map['areanegocio'] = vp.business
@@ -392,7 +393,7 @@ def new_to_old(vp):
                 vp_dsrl3 = DsrL3_to_Vip()
                 vp_dsrl3.requisicao_vip_id = vip.id
 
-            vp_dsrl3.id_dsrl3 = dsrl3.dscp * 4
+            vp_dsrl3.id_dsrl3 = dsrl3.dscp
             vp_dsrl3.save()
         else:
             try:

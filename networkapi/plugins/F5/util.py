@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from functools import wraps
 import logging
 
@@ -351,9 +353,17 @@ SERVICE_DOWN_ACTION = {
 ###############
 # POOL MEMBER
 ###############
-# 1/0 monitorar healthcheck /nao monitorar healthcheck
-# 1/0 habilitar/desabilitar membro
-# 1/0 healthcheck ok/nao ok
+# healthcheck+session enable/disable+user up/down(000 - 111 = 0 - 7)
+
+# 0 0 0
+# | | \-- user up/user down (forcado a nao receber nem sessoes de persistencia)
+# | |     1/0 forcar disable do membro no pool (user up/down)
+# | \---- habilitar/desabilitar membro (session enable/session disable -
+# |       nao recebe novas sessoes mas honra persistencia)
+# |       1/0 habilitar/desabilitar membro no pool para novas sessoes (session disable)
+# \------ status do healthcheck no LB, somente GET, nao e alterado
+#         por usuario flag ignorada no PUT.
+#         1/0 status do healthcheck no LB member up/down
 STATUS_POOL_MEMBER = {
     '0': {
         'monitor': 'STATE_DISABLED',

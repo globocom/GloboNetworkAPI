@@ -66,9 +66,10 @@ class Monitor(F5Base):
                             'is_directly_usable': 1
                         })
 
-                        healthcheck_request = kwargs['healthcheck'][i]['healthcheck_request']
-                        if healthcheck_request and '\r\n\r\n' not in healthcheck_request:
-                            healthcheck_request += '\r\n\r\n'
+                        hr = kwargs['healthcheck'][i]['healthcheck_request']
+                        healthcheck_request = hr[0:-4] + \
+                            hr[-4:].replace('\r', '').replace('\n', '') + '\r\n\r\n'
+
                         healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
 
                         template_names.append(name)
