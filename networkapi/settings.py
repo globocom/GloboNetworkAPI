@@ -556,19 +556,19 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PAT
 # If is running on CI: if CI=1 or running inside jenkins
 if CI:
 
-    JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
-
     INTEGRATION = os.getenv('CI', '0') == '1'
     INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
 
     TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
     NOSE_ARGS = [
-        '--verbosity=2',
-        '--no-byte-compile',
-        '-d',
-        '-s',
+        #     '--verbosity=2',
+        #     '--no-byte-compile',
+        #     '-d',
+        #     '-s',
+        '--with-fixture-bundling',
     ]
 
     INSTALLED_APPS += (
@@ -580,9 +580,8 @@ if CI:
         'django_jenkins.tasks.with_coverage',
         'django_jenkins.tasks.django_tests',
         'django_jenkins.tasks.run_pep8',
-        'django_jenkins.tasks.run_pylint',
-        'django_jenkins.tasks.run_pyflakes',
-        'django_jenkins.tasks.run_sloccount',
+        # 'django_jenkins.tasks.run_pylint',
+        # 'django_jenkins.tasks.run_pyflakes',
     )
 
     LOGGING = {
@@ -633,11 +632,11 @@ if CI:
     }
 
     NOSE_ARGS += [
-        '--with-coverage',
-        '--cover-package=networkapi',
-        '--exclude=.*migrations*',
-        # '--with-xunit',
-        # '--xunit-file=test-report.xml',
-        '--cover-xml',
-        '--cover-xml-file=coverage.xml'
+        # '--with-coverage',
+        # '--cover-package=networkapi',
+        # '--exclude=.*migrations*',
+        '--with-xunit',
+        '--xunit-file=reports/junit.xml',
+        # '--cover-xml',
+        # '--cover-xml-file=coverage.xml'
     ]

@@ -18,6 +18,7 @@ docutils==0.12
 sphinx-rtd-theme==0.1.6
 
 django-jenkins==0.14.1
+coverage==3.6
 factory-boy==2.2.1
 PyHamcrest==1.9.0
 mock==1.0.1
