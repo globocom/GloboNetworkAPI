@@ -88,7 +88,7 @@ DATABASES = {
     }
 }
 
-if 'test' in sys.argv:
+if 'test' in sys.argv or 'jenkins' in sys.argv:
     DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
 
 
@@ -577,12 +577,12 @@ if CI:
     )
 
     JENKINS_TASKS = (
-        'django_jenkins.tasks.run_pylint',
         'django_jenkins.tasks.with_coverage',
         'django_jenkins.tasks.django_tests',
-
         'django_jenkins.tasks.run_pep8',
+        'django_jenkins.tasks.run_pylint',
         'django_jenkins.tasks.run_pyflakes',
+        'django_jenkins.tasks.run_sloccount',
     )
 
     LOGGING = {
@@ -636,8 +636,8 @@ if CI:
         '--with-coverage',
         '--cover-package=networkapi',
         '--exclude=.*migrations*',
-        '--with-xunit',
-        '--xunit-file=test-report.xml',
+        # '--with-xunit',
+        # '--xunit-file=test-report.xml',
         '--cover-xml',
         '--cover-xml-file=coverage.xml'
     ]
