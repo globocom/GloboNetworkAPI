@@ -297,24 +297,7 @@ TEMPLATE_DIRS = (
     os.path.join(SITE_ROOT, 'networkapi', 'templates')
 )
 
-INSTALLED_APPS = (
-    # 'bootstrap_admin',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.staticfiles',
-    'django_extensions',
-)
-
-if PDB:
-    INSTALLED_APPS += (
-        'django_pdb',
-    )
-
-INSTALLED_APPS += (
+PROJECT_APPS = (
     'networkapi.ambiente',
     'networkapi.api_pools',
     'networkapi.api_environment_vip',
@@ -342,6 +325,28 @@ INSTALLED_APPS += (
     'networkapi.tipoacesso',
     'networkapi.usuario',
     'networkapi.vlan',
+)
+
+INSTALLED_APPS = (
+    # 'bootstrap_admin',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
+    'django_extensions',
+)
+
+if PDB:
+    INSTALLED_APPS += (
+        'django_pdb',
+    )
+
+INSTALLED_APPS += PROJECT_APPS
+
+INSTALLED_APPS += (
     'rest_framework',
 )
 
@@ -551,6 +556,8 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PAT
 # If is running on CI: if CI=1 or running inside jenkins
 if CI:
 
+    JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
+
     INTEGRATION = os.getenv('CI', '0') == '1'
     INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
 
@@ -564,7 +571,20 @@ if CI:
         '-s',
     ]
 
-    INSTALLED_APPS += ('django_nose',)
+    INSTALLED_APPS += (
+        'django_nose',
+        'django_jenkins',
+    )
+
+    JENKINS_TASKS = (
+        'django_jenkins.tasks.run_pylint',
+        'django_jenkins.tasks.with_coverage',
+        'django_jenkins.tasks.django_tests',
+
+        'django_jenkins.tasks.run_pep8',
+        'django_jenkins.tasks.run_pyflakes',
+    )
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
