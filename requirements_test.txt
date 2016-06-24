@@ -32,5 +32,5 @@ nose-exclude==0.3.0
 ipdb==0.10.0
 django-pdb==0.5.1
 
-pyflakes==1.2.1
+pyflakes==1.2.3
 pycodestyle==2.0.0
