@@ -564,7 +564,7 @@ if CI:
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
     NOSE_ARGS = [
-        #     '--verbosity=2',
+        '--verbosity=2',
         #     '--no-byte-compile',
         #     '-d',
         #     '-s',
@@ -580,8 +580,8 @@ if CI:
         'django_jenkins.tasks.with_coverage',
         'django_jenkins.tasks.django_tests',
         'django_jenkins.tasks.run_pep8',
-        # 'django_jenkins.tasks.run_pylint',
-        # 'django_jenkins.tasks.run_pyflakes',
+        'django_jenkins.tasks.run_pylint',
+        'django_jenkins.tasks.run_pyflakes',
     )
 
     LOGGING = {
