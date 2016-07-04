@@ -5,7 +5,8 @@ import logging
 import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import monitor, node, pool, poolmember, util, virtualserver
+from networkapi.plugins.F5 import monitor, node, pool, poolmember,\
+    rule, util, virtualserver
 from networkapi.plugins.F5.util import logger
 
 from ..base import BasePlugin
@@ -18,6 +19,7 @@ class Generic(BasePlugin):
     #######################################
     # VIP
     #######################################
+    @logger
     @util.connection
     def delete_vip(self, vips):
         pools_del = list()
@@ -29,16 +31,23 @@ class Generic(BasePlugin):
                 vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
                 vts.delete(vps_names=vps_names)
 
+                rule_l7 = ['{}_RULE_L7'.format(vp['name'])
+                           for vp in tratado.get('vips_filter')]
+                if rule_l7:
+                    rl = rule.Rule(self._lb)
+                    rl.delete(rule_names=rule_l7)
+
+            # CACHE
             if tratado.get('vips_cache_filter'):
                 vps_names = [vp['name'] for vp in tratado.get('vips_cache_filter')]
                 vts.delete(vps_names=vps_names)
         except Exception, e:
             log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
-            pass
+            raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
-            log.info(tratado.get('pool_filter_created'))
+
             if tratado.get('pool_filter_created'):
                 try:
                     self.__delete_pool({'pools': tratado.get('pool_filter_created')})
@@ -53,6 +62,7 @@ class Generic(BasePlugin):
 
         return pools_del
 
+    @logger
     @util.connection
     def create_vip(self, vips):
         tratado = util.trata_param_vip(vips)
