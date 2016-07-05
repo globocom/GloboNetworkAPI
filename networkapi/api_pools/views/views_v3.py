@@ -725,11 +725,13 @@ class PoolDBView(APIView):
         pools = request.DATA
         json_validate(SPECS.get('pool_put')).validate(pools)
         verify_ports(pools)
-        response = list()
+        response = dict()
+        # response = list()
         for pool in pools['server_pools']:
             facade.validate_save(pool)
-            pl = facade.update_pool(pool)
-            response.append({'id': pl.id})
+            facade.update_pool(pool)
+            # pl = facade.update_pool(pool)
+            # response.append({'id': pl.id})
 
         return Response(response, status.HTTP_200_OK)
 
