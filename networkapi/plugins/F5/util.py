@@ -226,7 +226,6 @@ def trata_param_vip(vips):
 
             address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-            vip_filter['pool'] = list()
             vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
@@ -253,11 +252,14 @@ def trata_param_vip(vips):
             vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
 
             pools = port.get('pools')
+            rules = dict()
+            default_l7 = ''
+
             for pool in pools:
-                if not pool.get('l7_rule') in ['(nenhum)', 'default']:
-                    raise NotImplementedError()
 
                 server_pool = pool.get('server_pool')
+                name_pool = server_pool['nome']
+
                 if not server_pool.get('pool_created'):
                     if server_pool.get('id') not in ids_pool_filter:
                         ids_pool_filter.append(server_pool.get('id'))
@@ -267,12 +269,46 @@ def trata_param_vip(vips):
                         ids_pool_filter_created.append(server_pool.get('id'))
                         pool_filter_created.append(server_pool)
 
-                vip_filter['pool'].append(server_pool['nome'])
+                if pool.get('l7_rule') == 'default_vip':
 
-                vip_filter['optionsvip']['dscp'] = {
-                    'value': dscp,
-                    'pool_name': server_pool['nome']
-                }
+                    vip_filter['pool'] = name_pool
+
+                    vip_filter['optionsvip']['dscp'] = {
+                        'value': dscp,
+                        'pool_name': name_pool
+                    }
+                elif pool.get('l7_rule') == 'default_glob':
+                    default_l7 = "            default {{ pool {0} }}\n".format(
+                        name_pool)
+                elif pool.get('l7_rule') == 'glob':
+
+                    rule = '"{0}"'.format(pool.get('l7_value'))
+                    order = pool.get('order', 'Z')
+                    key_rule = '{}_{}'.format(order, name_pool)
+                    if not rules.get(key_rule):
+                        rules[key_rule] = dict()
+                        rules[key_rule]['pool'] = name_pool
+                        rules[key_rule]['rule'] = list()
+                    rules[key_rule]['rule'].append(rule)
+
+            if rules:
+                rule_l7_ln = "\n            ".join([
+                    "{0} {{\n                pool {1}\n            }}".format(
+                        " -\n            ".join(rules[idx]['rule']),
+                        rules[idx]['pool']
+                    ) for idx in sorted(rules)
+                ])
+
+                rule_l7 = \
+                    "when HTTP_REQUEST {{\n" + \
+                    "        switch -glob [HTTP::uri] {{\n" + \
+                    "            {0}\n{1}" + \
+                    "        }}\n" + \
+                    "    }}"
+                rule_l7 = rule_l7.format(rule_l7_ln, default_l7)
+
+                vip_filter['pool_l7'] = rule_l7
+
             vips_filter.append(vip_filter)
 
     if vips.get('layers'):

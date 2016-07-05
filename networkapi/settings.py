@@ -88,7 +88,7 @@ DATABASES = {
     }
 }
 
-if 'test' in sys.argv:
+if 'test' in sys.argv or 'jenkins' in sys.argv:
     DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
 
 
@@ -297,24 +297,7 @@ TEMPLATE_DIRS = (
     os.path.join(SITE_ROOT, 'networkapi', 'templates')
 )
 
-INSTALLED_APPS = (
-    # 'bootstrap_admin',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.staticfiles',
-    'django_extensions',
-)
-
-if PDB:
-    INSTALLED_APPS += (
-        'django_pdb',
-    )
-
-INSTALLED_APPS += (
+PROJECT_APPS = (
     'networkapi.ambiente',
     'networkapi.api_pools',
     'networkapi.api_environment_vip',
@@ -342,6 +325,28 @@ INSTALLED_APPS += (
     'networkapi.tipoacesso',
     'networkapi.usuario',
     'networkapi.vlan',
+)
+
+INSTALLED_APPS = (
+    # 'bootstrap_admin',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
+    'django_extensions',
+)
+
+if PDB:
+    INSTALLED_APPS += (
+        'django_pdb',
+    )
+
+INSTALLED_APPS += PROJECT_APPS
+
+INSTALLED_APPS += (
     'rest_framework',
 )
 
@@ -557,14 +562,28 @@ if CI:
     TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
     NOSE_ARGS = [
         '--verbosity=2',
-        '--no-byte-compile',
-        '-d',
-        '-s',
+        #     '--no-byte-compile',
+        #     '-d',
+        #     '-s',
+        '--with-fixture-bundling',
     ]
 
-    INSTALLED_APPS += ('django_nose',)
+    INSTALLED_APPS += (
+        'django_nose',
+        'django_jenkins',
+    )
+
+    JENKINS_TASKS = (
+        'django_jenkins.tasks.with_coverage',
+        'django_jenkins.tasks.django_tests',
+        'django_jenkins.tasks.run_pep8',
+        'django_jenkins.tasks.run_pylint',
+        'django_jenkins.tasks.run_pyflakes',
+    )
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
@@ -613,11 +632,11 @@ if CI:
     }
 
     NOSE_ARGS += [
-        '--with-coverage',
-        '--cover-package=networkapi',
-        '--exclude=.*migrations*',
+        # '--with-coverage',
+        # '--cover-package=networkapi',
+        # '--exclude=.*migrations*',
         '--with-xunit',
-        '--xunit-file=test-report.xml',
-        '--cover-xml',
-        '--cover-xml-file=coverage.xml'
+        '--xunit-file=reports/junit.xml',
+        # '--cover-xml',
+        # '--cover-xml-file=coverage.xml'
     ]

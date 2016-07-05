@@ -148,6 +148,7 @@ def _create_port(ports, vip_request_id):
             pl.server_pool_id = pool['server_pool']
             pl.optionvip_id = pool['l7_rule']
             pl.val_optionvip = pool['l7_value']
+            pl.order = pool['order']
             pl.save()
 
 
@@ -200,15 +201,19 @@ def _update_port(ports, vip_request_id):
             try:
                 pl = models.VipRequestPortPool.objects.get(
                     vip_request_port=pt.id,
-                    server_pool_id=pool['server_pool'])
+                    id=pool['id'])
             except:
                 pl = models.VipRequestPortPool()
                 pl.vip_request_port_id = pt.id
                 pl.server_pool_id = pool['server_pool']
             finally:
-                if pl.optionvip_id != pool['l7_rule'] or pl.val_optionvip != pool['l7_value']:
+                if pl.optionvip_id != pool['l7_rule'] or \
+                        pl.val_optionvip != pool['l7_value'] or \
+                        pl.order != pool['order'] or \
+                        pl.server_pool_id != pool['server_pool']:
                     pl.optionvip_id = pool['l7_rule']
                     pl.val_optionvip = pool['l7_value']
+                    pl.order = pool['order']
                     pl.save()
 
         # delete pool by port
@@ -260,27 +265,37 @@ def get_vip_request_by_search(search=dict()):
         vip_requests = vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     search_query = dict()
-    search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
-    search_query['custom_search'] = search.get('custom_search') or None
-    search_query['searchable_columns'] = search.get('searchable_columns') or None
-    search_query['start_record'] = search.get('start_record') or 0
-    search_query['end_record'] = search.get('end_record') or 25
+    search_query["extends_search"] = search.get('extends_search') or []
+    search_query["asorting_cols"] = search.get("asorting_cols") or ["-id"]
+    search_query["custom_search"] = search.get("custom_search") or None
+    search_query["searchable_columns"] = search.get("searchable_columns") or []
+    search_query["start_record"] = search.get("start_record") or 0
+    search_query["end_record"] = search.get("end_record") or 25
 
     vip_requests, total = build_query_to_datatable(
         vip_requests,
-        search_query['asorting_cols'],
-        search_query['custom_search'],
-        search_query['searchable_columns'],
-        search_query['start_record'],
-        search_query['end_record'])
+        search_query["asorting_cols"],
+        search_query["custom_search"],
+        search_query["searchable_columns"],
+        search_query["start_record"],
+        search_query["end_record"])
 
     vip_map = dict()
     vip_map["vips"] = vip_requests
     vip_map["total"] = total
-    # not implemented yet
-    # vip_map["next_search"] = search_query
-    # vip_map["next_search"]['start_record'] += 25
-    # vip_map["next_search"]['end_record'] += 25
+
+    vip_map["next_search"] = search_query.copy()
+    vip_map["next_search"]["start_record"] += 25
+    vip_map["next_search"]["end_record"] += 25
+
+    vip_map["prev_search"] = None
+    if search_query["start_record"] > 0:
+        t = search_query["end_record"] - search_query["start_record"]
+        i = t - 25
+        f = search_query["start_record"]
+        vip_map["prev_search"] = search_query.copy()
+        vip_map["prev_search"]["start_record"] = i if i >= 0 else 0
+        vip_map["prev_search"]["end_record"] = f if f >= 0 else 25
 
     return vip_map
 

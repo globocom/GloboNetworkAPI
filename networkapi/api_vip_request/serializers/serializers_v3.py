@@ -31,9 +31,11 @@ class VipRequestPortPoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = VipRequestPortPool
         fields = (
+            'id',
             'server_pool',
             'l7_rule',
-            'l7_value'
+            'l7_value',
+            'order'
         )
 
 
@@ -402,7 +404,9 @@ class VipRequestPortPoolDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = VipRequestPortPool
         fields = (
+            'id',
             'server_pool',
             'l7_rule',
-            'l7_value'
+            'l7_value',
+            'order'
         )

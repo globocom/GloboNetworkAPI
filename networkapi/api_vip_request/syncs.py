@@ -45,29 +45,35 @@ def old_to_new(vip_request):
                 persistencia = '(nenhum)'
 
             try:
-                op = OptionVip.objects.filter(tipo_opcao=u'Persistencia', nome_opcao_txt=persistencia)[0]
+                op_per = OptionVip.objects.filter(
+                    tipo_opcao=u'Persistencia',
+                    nome_opcao_txt=persistencia)[0]
                 try:
-                    opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
+                    opv = OptionVipEnvironmentVip.objects.get(
+                        option=op_per,
+                        environment=ev)
                 except:
                     opv = OptionVipEnvironmentVip()
-                    opv.option = op
+                    opv.option = op_per
                     opv.environment = ev
                     opv.save()
             except:
-                op = OptionVip()
-                op.tipo_opcao = u'Persistencia'
-                op.nome_opcao_txt = persistencia
-                op.save()
+                op_per = OptionVip()
+                op_per.tipo_opcao = u'Persistencia'
+                op_per.nome_opcao_txt = persistencia
+                op_per.save()
                 opv = OptionVipEnvironmentVip()
-                opv.option = op
+                opv.option = op_per
                 opv.environment = ev
                 opv.save()
             finally:
                 try:
-                    vro = VipRequestOptionVip.objects.filter(optionvip=op, vip_request=vp)[0]
+                    vro = VipRequestOptionVip.objects.get(
+                        optionvip=op_per,
+                        vip_request=vp)
                 except:
                     vro = VipRequestOptionVip()
-                    vro.optionvip = op
+                    vro.optionvip = op_per
                     vro.vip_request = vp
                     vro.save()
 
@@ -77,29 +83,35 @@ def old_to_new(vip_request):
                 timeout = '5'
 
             try:
-                op = OptionVip.objects.filter(tipo_opcao=u'timeout', nome_opcao_txt=timeout)[0]
+                op_time = OptionVip.objects.filter(
+                    tipo_opcao=u'timeout',
+                    nome_opcao_txt=timeout)[0]
                 try:
-                    opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
+                    opv = OptionVipEnvironmentVip.objects.get(
+                        option=op_time,
+                        environment=ev)
                 except:
                     opv = OptionVipEnvironmentVip()
-                    opv.option = op
+                    opv.option = op_time
                     opv.environment = ev
                     opv.save()
             except:
-                op = OptionVip()
-                op.tipo_opcao = u'timeout'
-                op.nome_opcao_txt = timeout
-                op.save()
+                op_time = OptionVip()
+                op_time.tipo_opcao = u'timeout'
+                op_time.nome_opcao_txt = timeout
+                op_time.save()
                 opv = OptionVipEnvironmentVip()
-                opv.option = op
+                opv.option = op_time
                 opv.environment = ev
                 opv.save()
             finally:
                 try:
-                    vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
+                    vro = VipRequestOptionVip.objects.get(
+                        optionvip=op_time,
+                        vip_request=vp)
                 except:
                     vro = VipRequestOptionVip()
-                    vro.optionvip = op
+                    vro.optionvip = op_time
                     vro.vip_request = vp
                     vro.save()
 
@@ -109,29 +121,35 @@ def old_to_new(vip_request):
                 trafficreturn = 12
 
             try:
-                op = OptionVip.objects.filter(tipo_opcao=u'Retorno de trafego', id=trafficreturn)[0]
+                op_traffic = OptionVip.objects.filter(
+                    tipo_opcao=u'Retorno de trafego',
+                    id=trafficreturn)[0]
                 try:
-                    opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
+                    opv = OptionVipEnvironmentVip.objects.get(
+                        option=op_traffic,
+                        environment=ev)
                 except:
                     opv = OptionVipEnvironmentVip()
-                    opv.option = op
+                    opv.option = op_traffic
                     opv.environment = ev
                     opv.save()
             except:
-                op = OptionVip()
-                op.tipo_opcao = u'Retorno de trafego'
-                op.nome_opcao_txt = trafficreturn
-                op.save()
+                op_traffic = OptionVip()
+                op_traffic.tipo_opcao = u'Retorno de trafego'
+                op_traffic.nome_opcao_txt = trafficreturn
+                op_traffic.save()
                 opv = OptionVipEnvironmentVip()
-                opv.option = op
+                opv.option = op_traffic
                 opv.environment = ev
                 opv.save()
             finally:
                 try:
-                    vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
+                    vro = VipRequestOptionVip.objects.get(
+                        optionvip=op_traffic,
+                        vip_request=vp)
                 except:
                     vro = VipRequestOptionVip()
-                    vro.optionvip = op
+                    vro.optionvip = op_traffic
                     vro.vip_request = vp
                     vro.save()
 
@@ -144,7 +162,7 @@ def old_to_new(vip_request):
                     vp_dsrl3 = VipRequestDSCP()
                     vp_dsrl3.vip_request = vp
 
-                vp_dsrl3.dscp = dsrl3.id_dsrl3 / 4
+                vp_dsrl3.dscp = dsrl3.id_dsrl3
                 vp_dsrl3.save()
             else:
                 try:
@@ -159,32 +177,47 @@ def old_to_new(vip_request):
                 cache = '(nenhum)'
 
             try:
-                op = OptionVip.objects.filter(tipo_opcao=u'cache', nome_opcao_txt=cache)[0]
+                op_cache = OptionVip.objects.filter(
+                    tipo_opcao=u'cache',
+                    nome_opcao_txt=cache)[0]
                 try:
-                    opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
+                    opv = OptionVipEnvironmentVip.objects.get(
+                        option=op_cache,
+                        environment=ev)
                 except:
                     opv = OptionVipEnvironmentVip()
-                    opv.option = op
+                    opv.option = op_cache
                     opv.environment = ev
                     opv.save()
             except:
-                op = OptionVip()
-                op.tipo_opcao = u'cache'
-                op.nome_opcao_txt = cache
-                op.save()
+                op_cache = OptionVip()
+                op_cache.tipo_opcao = u'cache'
+                op_cache.nome_opcao_txt = cache
+                op_cache.save()
                 opv = OptionVipEnvironmentVip()
-                opv.option = op
+                opv.option = op_cache
                 opv.environment = ev
                 opv.save()
             finally:
 
                 try:
-                    vro = VipRequestOptionVip.objects.get(optionvip=op, vip_request=vp)[0]
+                    vro = VipRequestOptionVip.objects.get(
+                        optionvip=op_cache,
+                        vip_request=vp)
                 except:
                     vro = VipRequestOptionVip()
-                    vro.optionvip = op
+                    vro.optionvip = op_cache
                     vro.vip_request = vp
                     vro.save()
+
+            # delete optionvip(op_cache, op_traffic, op_time, op_per)
+            # in port removed in old table
+            VipRequestOptionVip.objects.filter(
+                vip_request=vp
+            ).exclude(
+                optionvip__id__in=[op_cache.id, op_traffic.id,
+                                   op_time.id, op_per.id]
+            ).delete()
 
             pools = VipPortToPool.get_by_vip_id(vip_request.id)
             # delete old ports
@@ -193,6 +226,14 @@ def old_to_new(vip_request):
             pools_ids = [pl.id for pl in pools]
             ids_to_del = list(set(ports_ids) - set(pools_ids))
             ports_current.filter(id__in=ids_to_del).delete()
+
+            # delete pools removed in old table
+            # ptid = [ptid.server_pool.id for ptid in pools]
+            # VipRequestPortPool.objects.filter(
+            #     vip_request_port=vrp
+            # ).exclude(
+            #     server_pool__id__in=ptid
+            # ).delete()
 
             for pool in pools:
 
@@ -287,23 +328,34 @@ def old_to_new(vip_request):
                         vro.vip_request_port = vrp
                         vro.save()
 
+                # delete optionvip(l7 and l4) in port removed in old table
+                VipRequestPortOptionVip.objects.filter(
+                    vip_request_port=vrp
+                ).exclude(
+                    optionvip__id__in=[op_l7.id, op_l4.id]
+                ).delete()
+
                 # saving pools of port
                 try:
-                    op = OptionVip.objects.filter(tipo_opcao=tipo_opcao, nome_opcao_txt=nome_opcao_txt)[0]
+                    op_pt = OptionVip.objects.filter(
+                        tipo_opcao=tipo_opcao,
+                        nome_opcao_txt=nome_opcao_txt)[0]
                     try:
-                        opv = OptionVipEnvironmentVip.objects.get(option=op, environment=ev)
+                        opv = OptionVipEnvironmentVip.objects.get(
+                            option=op_pt,
+                            environment=ev)
                     except:
                         opv = OptionVipEnvironmentVip()
-                        opv.option = op
+                        opv.option = op_pt
                         opv.environment = ev
                         opv.save()
                 except:
-                    op = OptionVip()
-                    op.tipo_opcao = tipo_opcao
-                    op.nome_opcao_txt = nome_opcao_txt
-                    op.save()
+                    op_pt = OptionVip()
+                    op_pt.tipo_opcao = tipo_opcao
+                    op_pt.nome_opcao_txt = nome_opcao_txt
+                    op_pt.save()
                     opv = OptionVipEnvironmentVip()
-                    opv.option = op
+                    opv.option = op_pt
                     opv.environment = ev
                     opv.save()
                 finally:
@@ -314,7 +366,7 @@ def old_to_new(vip_request):
                         vrpp = VipRequestPortPool()
                         vrpp.server_pool = pool.server_pool
                         vrpp.vip_request_port = vrp
-                        vrpp.optionvip = op
+                        vrpp.optionvip = op_pt
                         vrpp.save()
 
     except Exception, e:

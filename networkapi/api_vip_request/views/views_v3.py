@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import ast
 import logging
+import urllib
 
 from django.db.transaction import commit_on_success
 
@@ -248,10 +249,26 @@ class VipRequestDBView(APIView):
                     vips_requests['vips'],
                     many=True
                 )
+                protocol = 'https' if request.is_secure() else 'http'
+
+                next_search = urllib.urlencode({"search": vips_requests['next_search']})
+                url_next_search = '%s://%s%s?%s' % (
+                    protocol, request.get_host(), request.path, next_search)
+
+                if vips_requests['prev_search']:
+                    prev_search = urllib.urlencode({"search": vips_requests['prev_search']})
+                    url_prev_search = '%s://%s%s?%s' % (
+                        protocol, request.get_host(), request.path, prev_search)
+                else:
+                    url_prev_search = None
+
                 data = {
                     'vips': serializer_vips.data,
-                    'total': vips_requests['total']
-                    # 'search': vips_requests['search']
+                    'total': vips_requests['total'],
+                    'url_next_search': url_next_search,
+                    'next_search': vips_requests['next_search'],
+                    'url_prev_search': url_prev_search,
+                    'prev_search': vips_requests['prev_search']
                 }
 
             else:
@@ -576,10 +593,27 @@ class VipRequestDBDetailsView(APIView):
                     vips_requests['vips'],
                     many=True
                 )
+
+                protocol = 'https' if request.is_secure() else 'http'
+
+                next_search = urllib.urlencode({"search": vips_requests['next_search']})
+                url_next_search = '%s://%s%s?%s' % (
+                    protocol, request.get_host(), request.path, next_search)
+
+                if vips_requests['prev_search']:
+                    prev_search = urllib.urlencode({"search": vips_requests['prev_search']})
+                    url_prev_search = '%s://%s%s?%s' % (
+                        protocol, request.get_host(), request.path, prev_search)
+                else:
+                    url_prev_search = None
+
                 data = {
                     'vips': serializer_vips.data,
-                    'total': vips_requests['total']
-                    # 'search': vips_requests['search']
+                    'total': vips_requests['total'],
+                    'url_next_search': url_next_search,
+                    'next_search': vips_requests['next_search'],
+                    'url_prev_search': url_prev_search,
+                    'prev_search': vips_requests['prev_search']
                 }
 
             else:
@@ -699,17 +733,33 @@ class VipRequestPoolView(APIView):
             search['extends_search'] = [ex.append(extends_search) for ex in search['extends_search']] \
                 if search['extends_search'] else [extends_search]
 
-            log.info(search)
             vips_requests = facade.get_vip_request_by_search(search)
 
             serializer_vips = VipRequestTableSerializer(
                 vips_requests['vips'],
                 many=True
             )
+
+            protocol = 'https' if request.is_secure() else 'http'
+
+            next_search = urllib.urlencode({"search": vips_requests['next_search']})
+            url_next_search = '%s://%s%s?%s' % (
+                protocol, request.get_host(), request.path, next_search)
+
+            if vips_requests['prev_search']:
+                prev_search = urllib.urlencode({"search": vips_requests['prev_search']})
+                url_prev_search = '%s://%s%s?%s' % (
+                    protocol, request.get_host(), request.path, prev_search)
+            else:
+                url_prev_search = None
+
             data = {
                 'vips': serializer_vips.data,
-                'total': vips_requests['total']
-                # 'search': vips_requests['search']
+                'total': vips_requests['total'],
+                'url_next_search': url_next_search,
+                'next_search': vips_requests['next_search'],
+                'url_prev_search': url_prev_search,
+                'prev_search': vips_requests['prev_search']
             }
 
             return Response(data, status.HTTP_200_OK)
