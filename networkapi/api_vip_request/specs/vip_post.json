@@ -67,6 +67,12 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "order": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
                       }
                     },
                     "required": [
