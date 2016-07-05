@@ -171,6 +171,7 @@ class VipRequestDBView(APIView):
                     "pools": [{
                             "l7_rule": <optionvip_id>,
                             "l7_value": <string>,
+                            "order": <interger>,
                             "server_pool": <server_pool_id>
                         },..],
                     "port": <integer>
@@ -326,6 +327,7 @@ class VipRequestDBView(APIView):
                     "pools": [{
                             "l7_rule": <optionvip_id>,
                             "l7_value": <string>,
+                            "order": <interger>,
                             "server_pool": <server_pool_id>
                         },..],
                     "port": <integer>
@@ -380,6 +382,7 @@ class VipRequestDBView(APIView):
                     "pools": [{
                             "l7_rule": <optionvip_id>,
                             "l7_value": <string>,
+                            "order": <interger>,
                             "server_pool": <server_pool_id>
                         },..],
                     "port": <integer>
@@ -494,6 +497,7 @@ class VipRequestDBDetailsView(APIView):
                             "tipo_opcao": <string>,
                             "nome_opcao_txt": <string>
                         },
+                        "order": <interger>,
                         "l7_value": <string>
                     },..]
                 },..],
@@ -678,6 +682,7 @@ class VipRequestPoolView(APIView):
                     "pools": [{
                             "l7_rule": <optionvip_id>,
                             "l7_value": <string>,
+                            "order": <interger>,
                             "server_pool": <server_pool_id>
                         },..],
                     "port": <integer>

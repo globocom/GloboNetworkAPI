@@ -182,18 +182,20 @@ def _update_port(ports, vip_request_id):
         try:
             opt = models.VipRequestPortOptionVip.objects.get(
                 vip_request_port_id=pt.id,
-                optionvip_id=port['options']['l7_protocol'])
+                optionvip_id=port.get('options').get('l7_protocol'))
         except:
             opt = models.VipRequestPortOptionVip()
             opt.vip_request_port_id = pt.id
-            opt.optionvip_id = port['options']['l7_protocol']
+            opt.optionvip_id = port.get('options').get('l7_protocol')
             opt.save()
 
         # delete option by port
         models.VipRequestPortOptionVip.objects.filter(
             vip_request_port_id=pt.id
         ).exclude(
-            optionvip_id__in=[port['options']['l4_protocol'], port['options']['l7_protocol']]
+            optionvip_id__in=[
+                port.get('options').get('l4_protocol'),
+                port.get('options').get('l7_protocol')]
         ).delete()
 
         # save pool by port
@@ -205,15 +207,15 @@ def _update_port(ports, vip_request_id):
             except:
                 pl = models.VipRequestPortPool()
                 pl.vip_request_port_id = pt.id
-                pl.server_pool_id = pool['server_pool']
+                pl.server_pool_id = pool.get('server_pool')
             finally:
-                if pl.optionvip_id != pool['l7_rule'] or \
-                        pl.val_optionvip != pool['l7_value'] or \
-                        pl.order != pool['order'] or \
-                        pl.server_pool_id != pool['server_pool']:
-                    pl.optionvip_id = pool['l7_rule']
-                    pl.val_optionvip = pool['l7_value']
-                    pl.order = pool['order']
+                if pl.optionvip_id != pool.get('l7_rule') or \
+                        pl.val_optionvip != pool.get('l7_value') or \
+                        pl.order != pool.get('order') or \
+                        pl.server_pool_id != pool.get('server_pool'):
+                    pl.optionvip_id = pool.get('l7_rule')
+                    pl.val_optionvip = pool.get('l7_value')
+                    pl.order = pool.get('order')
                     pl.save()
 
         # delete pool by port
@@ -242,7 +244,10 @@ def _create_option(options, vip_request_id):
         opt.optionvip_id = option
         opt.save()
 
-    dsrl3 = OptionVip.objects.filter(nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
+    dsrl3 = OptionVip.objects.filter(
+        nome_opcao_txt='DSRL3',
+        tipo_opcao='Retorno de trafego'
+    ).values('id')
     if dsrl3:
         if dsrl3[0]['id'] in options:
             dscp = _dscp(vip_request_id)
@@ -254,7 +259,9 @@ def _create_option(options, vip_request_id):
 
 def _delete_option(options):
     """Deletes options"""
-    models.VipRequestOptionVip.objects.filter(optionvip__in=options).delete()
+    models.VipRequestOptionVip.objects.filter(
+        optionvip__in=options
+    ).delete()
 
 
 def get_vip_request_by_search(search=dict()):
@@ -262,7 +269,8 @@ def get_vip_request_by_search(search=dict()):
     vip_requests = models.VipRequest.objects.filter()
 
     if search.get('extends_search'):
-        vip_requests = vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
+        vip_requests = vip_requests.filter(reduce(
+            lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     search_query = dict()
     search_query["extends_search"] = search.get('extends_search') or []
