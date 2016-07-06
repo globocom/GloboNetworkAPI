@@ -16,30 +16,33 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
+
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.api_vip_request.syncs import old_to_new
+from networkapi.distributedlock import distributedlock, LOCK_GROUP_VIRTUAL
 from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError, InvalidGroupToEquipmentTypeError, \
     ModeloNotFoundError, EquipamentoNameDuplicatedError, TipoEquipamentoNotFoundError
 from networkapi.equipamento.resource.EquipamentoResource import insert_equipment, remove_equipment
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import EGrupoNotFoundError, GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
+from networkapi.infrastructure.script_utils import exec_script, ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
 from networkapi.ip.models import IpError, IpEquipmentNotFoundError, IpNotAvailableError, IpNotFoundError, IpEquipamentoDuplicatedError, \
     IpNotFoundByEquipAndVipError
 from networkapi.ip.resource.IpResource import insert_ip, insert_ip_equipment, remove_ip_equipment
-from networkapi.vlan.models import VlanNotFoundError, VlanError
-from networkapi.grupo.models import GrupoError, EGrupoNotFoundError
 from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError, InvalidFinalidadeValueError, \
     InvalidClienteValueError, InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, \
     InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, InvalidTimeoutValueError, \
     InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, InvalidTransbordoValueError, \
     InvalidServicePortValueError, InvalidRealValueError, EnvironmentVipNotFoundError
 from networkapi.requisicaovips.resource.RequisicaoVipsResource import insert_vip_request, update_vip_request
-from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError, HealthcheckExpectError
-from networkapi.distributedlock import distributedlock, LOCK_GROUP_VIRTUAL
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
+from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.settings import VIP_REMOVE
-from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.ambiente.models import EnvironmentVip
+from networkapi.vlan.models import VlanError, VlanNotFoundError
 
 
 class GroupVirtualResource(RestResource):
@@ -102,6 +105,9 @@ class GroupVirtualResource(RestResource):
                                 if code == 0:
                                     vip.vip_criado = 0
                                     vip.save()
+
+                                    # SYNC_VIP
+                                    old_to_new(vip)
                                 else:
                                     return self.response_error(2, stdout + stderr)
 
@@ -150,13 +156,14 @@ class GroupVirtualResource(RestResource):
             return self.not_authorized()
         except ScriptError, s:
             return self.response_error(2, s)
-        except (IpError, EquipamentoError, GrupoError, RequisicaoVipsError):
+        except (IpError, EquipamentoError, GrupoError, RequisicaoVipsError) as e:
+            self.log.error(e)
             return self.response_error(1)
 
     def __treat_response_error(self, response):
         '''Trata as repostas de erro no formato de uma tupla.
 
-        Formato da tupla: 
+        Formato da tupla:
              (<codigo da mensagem de erro>, <argumento 01 da mensagem>, <argumento 02 da mensagem>, ...)
 
         @return: HttpResponse com a mensagem de erro.
@@ -391,8 +398,8 @@ class GroupVirtualResource(RestResource):
                         return self.response_error(response_vip)
 
                 else:
-                    """This condition is used to attend a requisite from 'Orquestra', 
-                       because in some points the VIP doesn't have cache option and 
+                    """This condition is used to attend a requisite from 'Orquestra',
+                       because in some points the VIP doesn't have cache option and
                        the value can be 'None'"""
                     if vip_map['cache'] is None:
                         vip_map['cache'] = "(nenhum)"

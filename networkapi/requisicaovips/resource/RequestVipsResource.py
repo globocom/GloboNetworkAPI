@@ -14,11 +14,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
+
+import logging
+
+from django.db.utils import IntegrityError
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, InvalidFinalidadeValueError, InvalidClienteValueError, \
     InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
     InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, \
@@ -32,13 +35,12 @@ from networkapi.healthcheckexpect.models import HealthcheckExpectError, Healthch
 from networkapi.grupo.models import GrupoError
 from networkapi.auth import has_perm
 from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-import logging
 from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
     is_valid_string_minsize, is_valid_string_maxsize
 from networkapi.util.decorators import deprecated
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
+from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.distributedlock import distributedlock, LOCK_VIP
-from django.db.utils import IntegrityError
 from networkapi.blockrules.models import Rule
 
 
@@ -46,7 +48,7 @@ class RequestVipsResource(RestResource):
 
     log = logging.getLogger('RequestVipsResource')
 
-    @deprecated(new_uri='api/vip/request/save/')
+    @deprecated(new_uri='api/v3/vip-request/')
     def handle_post(self, request, user, *args, **kwargs):
         """Treat requests POST to insert request VIP.
 
@@ -214,6 +216,9 @@ class RequestVipsResource(RestResource):
                 # save VipPortToPool, ServerPool and ServerPoolMember
                 vip.save_vips_and_ports(vip_map, user)
 
+                # SYNC_VIP
+                old_to_new(vip)
+
             except Exception, e:
                 if isinstance(e, IntegrityError):
                     # Duplicate value for Port Vip, Port Real and IP
@@ -289,7 +294,7 @@ class RequestVipsResource(RestResource):
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
             return self.response_error(1)
 
-    @deprecated(new_uri='api/vip/request/save/<pk>/')
+    @deprecated(new_uri='api/v3/vip-request/<pk>/')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT change request VIP.
 
@@ -472,6 +477,9 @@ class RequestVipsResource(RestResource):
                     vip.save()
                     # update ServerPool, VipPortToPool, ServerPoolMembers
                     vip.save_vips_and_ports(vip_map, user)
+
+                    # SYNC_VIP
+                    old_to_new(vip)
 
                 except RequestVipServerPoolConstraintError, e:
                     self.log.error(e.message)

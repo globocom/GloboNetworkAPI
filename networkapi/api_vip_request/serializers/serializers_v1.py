@@ -1,7 +1,8 @@
-from rest_framework import serializers
-from networkapi.requisicaovips.models import VipPortToPool, RequisicaoVips, DsrL3_to_Vip
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
 from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.requisicaovips.models import DsrL3_to_Vip, RequisicaoVips, VipPortToPool
+
+from rest_framework import serializers
 
 
 class DsrL3toVipSerializer(serializers.ModelSerializer):
@@ -14,7 +15,8 @@ class DsrL3toVipSerializer(serializers.ModelSerializer):
         model = DsrL3_to_Vip
         fields = (
             'id_dsrl3',
-            )
+        )
+
 
 class VipPortToPoolSerializer(serializers.ModelSerializer):
 

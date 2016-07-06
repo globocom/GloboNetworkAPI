@@ -56,10 +56,6 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": ["null",
-              "integer"]
-          },
           "identifier": {
             "type": "string"
           },
@@ -134,9 +130,6 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "null"
-                },
                 "identifier": {
                    "type": [
                      "string",
@@ -195,17 +188,9 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 7
-                },
-                "last_status_update_formated":{
-                  "type": [
-                    "string",
-                    "null"
-                  ]
                 }
               },
-              "additionalProperties": false,
               "required": [
-                "id",
                 "identifier",
                 "ipv6",
                 "ip",
@@ -217,12 +202,8 @@
                 "member_status"
               ]
             }
-          },
-          "pool_created": {
-            "type": "boolean"
           }
         },
-        "additionalProperties": false,
         "required": [
           "identifier",
           "default_port",

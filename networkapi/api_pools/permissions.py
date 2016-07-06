@@ -4,9 +4,10 @@
 @organization: S2it
 @copyright: 2014 globo.com todos os direitos reservados.
 '''
-from rest_framework.permissions import BasePermission
-from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+
+from rest_framework.permissions import BasePermission
 
 
 class Read(BasePermission):

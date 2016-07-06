@@ -77,3 +77,9 @@ class VipRequestNotCreated(APIException):
 class VipConstraintCreatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Vip request can not be deleted because it is created in equipment.'
+
+    def __init__(self, msg=None):
+        if msg:
+            self.detail = u'Vip request %s can not be deleted because it is created in equipment' % msg
+        else:
+            self.detail = self.default_detail

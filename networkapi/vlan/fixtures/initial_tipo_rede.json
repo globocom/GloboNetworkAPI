@@ -1,0 +1,9 @@
+[
+  {
+  "pk": 1,
+  "model": "vlan.tiporede",
+  "fields": {
+    "tipo_rede": "rede tipo 1"
+    }
+  }
+]

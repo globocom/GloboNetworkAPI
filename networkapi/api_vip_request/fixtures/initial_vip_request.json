@@ -1,0 +1,28 @@
+[
+  {
+  "pk": 1,
+  "model": "api_vip_request.viprequest",
+  "fields": {
+    "business": "business",
+    "created": false,
+    "environmentvip": 1,
+    "ipv4": 1,
+    "ipv6": null,
+    "name": "name",
+    "service": "service"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_vip_request.viprequest",
+  "fields": {
+    "business": "business",
+    "created": false,
+    "environmentvip": 2,
+    "ipv4": 2,
+    "ipv6": null,
+    "name": "name",
+    "service": "service"
+    }
+  }
+]

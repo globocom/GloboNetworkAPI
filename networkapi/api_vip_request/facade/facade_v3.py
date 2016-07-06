@@ -3,21 +3,24 @@ import copy
 import json
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
-from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
+from networkapi.api_equipment import exceptions as exceptions_eqpt
+from networkapi.api_equipment import facade as facade_eqpt
+from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade import get_pool_by_id
 from networkapi.api_pools.serializers import PoolV3Serializer
-from networkapi.api_vip_request import exceptions, models
+from networkapi.api_vip_request import exceptions, models, syncs
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip, Ipv6
 from networkapi.plugins.factory import PluginFactory
-from networkapi.requisicaovips.models import OptionVip, ServerPool, ServerPoolMember
+from networkapi.requisicaovips.models import OptionVip, RequisicaoVips, \
+    ServerPool, ServerPoolMember
 from networkapi.util import valid_expression
 
 
@@ -37,7 +40,12 @@ def create_vip_request(vip_request):
     """
     Create Vip Request
     """
+    # Remove when RequisicaoVips is die
+    req = RequisicaoVips()
+    req.save()
+
     vip = models.VipRequest()
+    vip.id = req.id
     vip.name = vip_request['name']
     vip.service = vip_request['service']
     vip.business = vip_request['business']
@@ -50,6 +58,9 @@ def create_vip_request(vip_request):
 
     _create_port(vip_request['ports'], vip.id)
     _create_option(option_create, vip.id)
+
+    # sync with old tables
+    syncs.new_to_old(vip)
 
     return vip
 
@@ -86,16 +97,26 @@ def update_vip_request(vip_request):
         if dsrl3[0]['id'] in option_remove:
             models.VipRequestDSCP.objects.filter(vip_request=vip.id).delete()
 
+    # sync with old tables
+    syncs.new_to_old(vip)
+
 
 def delete_vip_request(vip_request_ids):
     """delete vip request"""
 
-    vp = models.VipRequest.objects.filter(id__in=vip_request_ids)
-    created = vp.filter(created=True)
-    if created:
-        raise exceptions.VipConstraintCreatedException()
+    for vip_request_id in vip_request_ids:
+        try:
+            vp = models.VipRequest.objects.get(id=vip_request_id)
+        except ObjectDoesNotExist:
+            raise exceptions.VipRequestDoesNotExistException(vip_request_id)
 
-    vp.delete()
+        if vp.created:
+            raise exceptions.VipConstraintCreatedException(vip_request_id)
+
+        vp.delete()
+
+    # sync with old tables
+    syncs.delete_old(vip_request_ids)
 
 
 def _create_port(ports, vip_request_id):
@@ -127,6 +148,7 @@ def _create_port(ports, vip_request_id):
             pl.server_pool_id = pool['server_pool']
             pl.optionvip_id = pool['l7_rule']
             pl.val_optionvip = pool['l7_value']
+            pl.order = pool['order']
             pl.save()
 
 
@@ -160,18 +182,20 @@ def _update_port(ports, vip_request_id):
         try:
             opt = models.VipRequestPortOptionVip.objects.get(
                 vip_request_port_id=pt.id,
-                optionvip_id=port['options']['l7_protocol'])
+                optionvip_id=port.get('options').get('l7_protocol'))
         except:
             opt = models.VipRequestPortOptionVip()
             opt.vip_request_port_id = pt.id
-            opt.optionvip_id = port['options']['l7_protocol']
+            opt.optionvip_id = port.get('options').get('l7_protocol')
             opt.save()
 
         # delete option by port
         models.VipRequestPortOptionVip.objects.filter(
             vip_request_port_id=pt.id
         ).exclude(
-            optionvip_id__in=[port['options']['l4_protocol'], port['options']['l7_protocol']]
+            optionvip_id__in=[
+                port.get('options').get('l4_protocol'),
+                port.get('options').get('l7_protocol')]
         ).delete()
 
         # save pool by port
@@ -179,15 +203,19 @@ def _update_port(ports, vip_request_id):
             try:
                 pl = models.VipRequestPortPool.objects.get(
                     vip_request_port=pt.id,
-                    server_pool_id=pool['server_pool'])
+                    id=pool['id'])
             except:
                 pl = models.VipRequestPortPool()
                 pl.vip_request_port_id = pt.id
-                pl.server_pool_id = pool['server_pool']
+                pl.server_pool_id = pool.get('server_pool')
             finally:
-                if pl.optionvip_id != pool['l7_rule'] or pl.val_optionvip != pool['l7_value']:
-                    pl.optionvip_id = pool['l7_rule']
-                    pl.val_optionvip = pool['l7_value']
+                if pl.optionvip_id != pool.get('l7_rule') or \
+                        pl.val_optionvip != pool.get('l7_value') or \
+                        pl.order != pool.get('order') or \
+                        pl.server_pool_id != pool.get('server_pool'):
+                    pl.optionvip_id = pool.get('l7_rule')
+                    pl.val_optionvip = pool.get('l7_value')
+                    pl.order = pool.get('order')
                     pl.save()
 
         # delete pool by port
@@ -216,7 +244,10 @@ def _create_option(options, vip_request_id):
         opt.optionvip_id = option
         opt.save()
 
-    dsrl3 = OptionVip.objects.filter(nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
+    dsrl3 = OptionVip.objects.filter(
+        nome_opcao_txt='DSRL3',
+        tipo_opcao='Retorno de trafego'
+    ).values('id')
     if dsrl3:
         if dsrl3[0]['id'] in options:
             dscp = _dscp(vip_request_id)
@@ -228,7 +259,9 @@ def _create_option(options, vip_request_id):
 
 def _delete_option(options):
     """Deletes options"""
-    models.VipRequestOptionVip.objects.filter(optionvip__in=options).delete()
+    models.VipRequestOptionVip.objects.filter(
+        optionvip__in=options
+    ).delete()
 
 
 def get_vip_request_by_search(search=dict()):
@@ -236,47 +269,58 @@ def get_vip_request_by_search(search=dict()):
     vip_requests = models.VipRequest.objects.filter()
 
     if search.get('extends_search'):
-        vip_requests = vip_requests.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
+        vip_requests = vip_requests.filter(reduce(
+            lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     search_query = dict()
-    search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
-    search_query['custom_search'] = search.get('custom_search') or None
-    search_query['searchable_columns'] = search.get('searchable_columns') or None
-    search_query['start_record'] = search.get('start_record') or 0
-    search_query['end_record'] = search.get('end_record') or 25
+    search_query["extends_search"] = search.get('extends_search') or []
+    search_query["asorting_cols"] = search.get("asorting_cols") or ["-id"]
+    search_query["custom_search"] = search.get("custom_search") or None
+    search_query["searchable_columns"] = search.get("searchable_columns") or []
+    search_query["start_record"] = search.get("start_record") or 0
+    search_query["end_record"] = search.get("end_record") or 25
 
     vip_requests, total = build_query_to_datatable(
         vip_requests,
-        search_query['asorting_cols'],
-        search_query['custom_search'],
-        search_query['searchable_columns'],
-        search_query['start_record'],
-        search_query['end_record'])
+        search_query["asorting_cols"],
+        search_query["custom_search"],
+        search_query["searchable_columns"],
+        search_query["start_record"],
+        search_query["end_record"])
 
     vip_map = dict()
     vip_map["vips"] = vip_requests
     vip_map["total"] = total
-    # not implemented yet
-    # vip_map["next_search"] = search_query
-    # vip_map["next_search"]['start_record'] += 25
-    # vip_map["next_search"]['end_record'] += 25
+
+    vip_map["next_search"] = search_query.copy()
+    vip_map["next_search"]["start_record"] += 25
+    vip_map["next_search"]["end_record"] += 25
+
+    vip_map["prev_search"] = None
+    if search_query["start_record"] > 0:
+        t = search_query["end_record"] - search_query["start_record"]
+        i = t - 25
+        f = search_query["start_record"]
+        vip_map["prev_search"] = search_query.copy()
+        vip_map["prev_search"]["start_record"] = i if i >= 0 else 0
+        vip_map["prev_search"]["end_record"] = f if f >= 0 else 25
 
     return vip_map
 
 
-def prepare_apply(vip_requests, update=False, created=True):
+def prepare_apply(vip_requests, update=False, created=True, user=None):
     load_balance = dict()
 
     for vip in vip_requests:
         vip_request = copy.deepcopy(vip)
 
         if update:
-            update_vip_request(vip)
             validate_save(vip_request, True)
+            update_vip_request(vip)
 
         id_vip = str(vip_request['id'])
 
-        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request, created)
+        equips, conf, cluster_unit = _validate_vip_to_apply(vip_request, created, user)
 
         cache_group = OptionVip.objects.get(id=vip_request['options'].get('cache_group'))
         traffic_return = OptionVip.objects.get(id=vip_request['options'].get('traffic_return'))
@@ -417,6 +461,17 @@ def prepare_apply(vip_requests, update=False, created=True):
                                                 id__in=eqpts,
                                                 maintenance=0,
                                                 tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
+
+                                            if facade_eqpt.all_equipments_are_in_maintenance(equips):
+                                                raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+                                            if user:
+                                                if not facade_eqpt.all_equipments_can_update_config(equips, user):
+                                                    raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                                                        'User does not have permission to update conf in eqpt. \
+                                                        Verify the permissions of user group with equipment group. Vip:{}'.format(
+                                                            vip_request['id']))
+
                                             for eqpt in eqpts:
                                                 eqpt_id = str(eqpt.id)
 
@@ -476,41 +531,62 @@ def prepare_apply(vip_requests, update=False, created=True):
 
 
 @commit_on_success
-def create_real_vip_request(vip_requests):
+def create_real_vip_request(vip_requests, user):
 
-    load_balance = prepare_apply(vip_requests, False, False)
+    load_balance = prepare_apply(vip_requests, update=False, created=False, user=user)
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
+        log.debug('started call:%s' % lb)
         inst.get('plugin').create_vip(inst)
+        log.debug('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
-    models.VipRequest.objects.filter(id__in=ids).update(created=True)
+
+    vips = models.VipRequest.objects.filter(id__in=ids)
+    vips.update(created=True)
+
+    for vip in vips:
+        syncs.new_to_old(vip)
+
     ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=True)
 
 
 @commit_on_success
-def update_real_vip_request(vip_requests):
+def update_real_vip_request(vip_requests, user):
 
-    load_balance = prepare_apply(vip_requests, True, True)
+    load_balance = prepare_apply(vip_requests, update=True, created=True, user=user)
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
+        log.debug('started call:%s' % lb)
         inst.get('plugin').update_vip(inst)
+        log.debug('ended call')
 
 
 @commit_on_success
-def delete_real_vip_request(vip_requests):
+def delete_real_vip_request(vip_requests, user):
 
-    load_balance = prepare_apply(vip_requests, False, True)
+    load_balance = prepare_apply(vip_requests, update=False, created=True, user=user)
 
+    pools_ids = list()
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        inst.get('plugin').delete_vip(inst)
+        log.debug('started call:%s' % lb)
+        pools_ids += inst.get('plugin').delete_vip(inst)
+        log.debug('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
-    models.VipRequest.objects.filter(id__in=ids).update(created=False)
-    ServerPool.objects.filter(viprequestportpool__vip_request_port__vip_request__id__in=ids).update(pool_created=False)
+
+    vips = models.VipRequest.objects.filter(id__in=ids)
+    vips.update(created=False)
+
+    for vip in vips:
+        syncs.new_to_old(vip)
+
+    if pools_ids:
+        pools_ids = list(set(pools_ids))
+        ServerPool.objects.filter(id__in=pools_ids).update(pool_created=False)
 
 
 #############
@@ -522,7 +598,10 @@ def create_lock(vip_requests):
     """
     locks_list = list()
     for vip_request in vip_requests:
-        lock = distributedlock(LOCK_VIP % vip_request['id'])
+        if isinstance(vip_request, dict):
+            lock = distributedlock(LOCK_VIP % vip_request['id'])
+        else:
+            lock = distributedlock(LOCK_VIP % vip_request)
         lock.__enter__()
         locks_list.append(lock)
 
@@ -601,13 +680,15 @@ def validate_save(vip_request, permit_created=False):
             opts.append(opt)
 
     for opt in opts:
-        options = OptionVip.objects.filter(
-            Q(**opt),
-            optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-        )
-        if not options:
+        try:
+            option = OptionVip.objects.get(
+                Q(**opt),
+                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+            )
+        except:
             raise Exception(
-                'Invalid Option %s:%s to VipRequest %s, because environmentvip is not associated to options' % (
+                'Invalid option %s:%s,viprequest:%s, \
+                because environmentvip is not associated to options or not exists' % (
                     opt['tipo_opcao'], opt['id'], vip_request['name'])
             )
 
@@ -627,28 +708,32 @@ def validate_save(vip_request, permit_created=False):
                 opts.append(opt)
 
         for opt in opts:
-            options = OptionVip.objects.filter(
-                Q(**opt),
-                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-            )
-            if not options:
+            try:
+                option = OptionVip.objects.get(
+                    Q(**opt),
+                    optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+                )
+            except:
                 raise Exception(
-                    'Invalid Option %s:%s to port %s of VipRequest %s, because environmentvip is not associated to options' % (
+                    'Invalid option %s:%s,port:%s,viprequest:%s, \
+                    because environmentvip is not associated to options or not exists' % (
                         opt['tipo_opcao'], opt['id'], port['port'], vip_request['name'])
                 )
 
         for pool in port['pools']:
 
-            option = OptionVip.objects.get(
-                id=pool['l7_rule'],
-                tipo_opcao='l7_rule',
-                optionvipenvironmentvip__environment__id=vip_request['environmentvip']
-            )
-
-            if not option:
+            try:
+                option = OptionVip.objects.get(
+                    id=pool['l7_rule'],
+                    tipo_opcao='l7_rule',
+                    optionvipenvironmentvip__environment__id=vip_request['environmentvip']
+                )
+            except:
                 raise Exception(
-                    'Invalid Option to pool %s of port %s of VipRequest %s' %
-                    (pool['server_pool'], port['port'], vip_request['name']))
+                    'Invalid option %s:%s,pool:%s,port:%s,viprequest:%s, \
+                    because environmentvip is not associated to options or not exists' % (
+                        'l7_rule', pool['l7_rule'], pool['server_pool'], port['port'], vip_request['name'])
+                )
 
             dsrl3 = OptionVip.objects.filter(
                 nome_opcao_txt='DSRL3',
@@ -664,6 +749,12 @@ def validate_save(vip_request, permit_created=False):
 
                 if pool_assoc:
                     raise Exception('Pool %s must be associated to a only vip request, when vip request has dslr3 option' % pool['server_pool'])
+
+            try:
+                ServerPool.objects.get(id=pool['server_pool'])
+            except Exception, e:
+                log.error(e)
+                raise exceptions_pool.PoolDoesNotExistException(pool['server_pool'])
 
             spms = ServerPoolMember.objects.filter(server_pool=pool['server_pool'])
             for spm in spms:
@@ -707,7 +798,7 @@ def _dscp(vip_request_id):
         raise Exception('Can\'t use pool because pool members have dscp is sold out')
 
 
-def _validate_vip_to_apply(vip_request, update=False):
+def _validate_vip_to_apply(vip_request, update=False, user=None):
     vip = models.VipRequest.objects.get(
         name=vip_request['name'],
         environmentvip=vip_request['environmentvip'],
@@ -734,8 +825,15 @@ def _validate_vip_to_apply(vip_request, update=False):
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 
-    if all_equipments_are_in_maintenance(equips):
-        raise AllEquipmentsAreInMaintenanceException()
+    if facade_eqpt.all_equipments_are_in_maintenance(equips):
+        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+    if user:
+        if not facade_eqpt.all_equipments_can_update_config(equips, user):
+            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                'User does not have permission to update conf in eqpt. \
+                Verify the permissions of user group with equipment group. Vip:{}'.format(
+                    vip_request['id']))
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
     return equips, conf, cluster_unit

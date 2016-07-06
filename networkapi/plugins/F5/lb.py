@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 class Lb(object):
 
-    def __init__(self, hostname, username, password):
+    def __init__(self, hostname, username, password, session=True):
 
         self._hostname = hostname
         self._username = username
@@ -33,7 +33,8 @@ class Lb(object):
                     raise base_exceptions.UnsupportedVersion(
                         'This plugin only supports BIG-IP v11 or above')
                 else:
-                    self._channel = self._channel.with_session_id()
+                    if session:
+                        self._channel = self._channel.with_session_id()
             except Exception, e:
                 log.error(e)
                 raise base_exceptions.CommandErrorException(e)

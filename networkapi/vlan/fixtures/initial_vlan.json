@@ -1,0 +1,20 @@
+[
+  {
+  "pk": 1,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 1,
+    "nome": "vlan teste",
+    "num_vlan": "1"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 1,
+    "nome": "vlan teste 2",
+    "num_vlan": "2"
+    }
+  }
+]

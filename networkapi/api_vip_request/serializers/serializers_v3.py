@@ -2,8 +2,8 @@
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
-from networkapi.api_pools.serializers import Ipv4BasicSerializer, Ipv4DetailsSerializer, Ipv4Serializer,\
-    Ipv6BasicSerializer, Ipv6DetailsSerializer, Ipv6Serializer, PoolV3Serializer
+from networkapi.api_pools.serializers import Ipv4DetailsSerializer, Ipv4Serializer,\
+    Ipv6DetailsSerializer, Ipv6Serializer, PoolV3DetailsSerializer
 from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPort,\
     VipRequestPortPool
 
@@ -31,9 +31,11 @@ class VipRequestPortPoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = VipRequestPortPool
         fields = (
+            'id',
             'server_pool',
             'l7_rule',
-            'l7_value'
+            'l7_value',
+            'order'
         )
 
 
@@ -123,18 +125,6 @@ class VipRequestListSerializer(serializers.ModelSerializer):
 class VipRequestSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
-    business = serializers.CharField(
-        required=True
-    )
-
-    service = serializers.CharField(
-        required=True
-    )
-
-    name = serializers.CharField(
-        required=True
-    )
-
     options = serializers.SerializerMethodField('get_options')
 
     def get_options(self, obj):
@@ -181,6 +171,88 @@ class VipRequestSerializer(serializers.ModelSerializer):
         )
 
 
+class VipRequestTableSerializer(serializers.ModelSerializer):
+    id = serializers.Field()
+
+    business = serializers.CharField(
+        required=True
+    )
+
+    service = serializers.CharField(
+        required=True
+    )
+
+    name = serializers.CharField(
+        required=True
+    )
+
+    options = serializers.SerializerMethodField('get_options')
+
+    equipments = serializers.SerializerMethodField('get_eqpt')
+
+    environmentvip = EnvironmentVipSerializer()
+
+    ipv4 = Ipv4DetailsSerializer()
+
+    ipv6 = Ipv6DetailsSerializer()
+
+    def get_eqpt(self, obj):
+        eqpts = list()
+        equipments = list()
+        if obj.ipv4:
+            eqpts = obj.ipv4.ipequipamento_set.all()
+        if obj.ipv6:
+            eqpts |= obj.ipv6.ipv6equipament_set.all()
+
+        for eqpt in eqpts:
+            equipments.append(eqpt.equipamento)
+        eqpt_serializer = EquipmentSerializer(equipments, many=True)
+
+        return eqpt_serializer.data
+
+    def get_server_pools(self, obj):
+        ports = obj.viprequestport_set.all()
+        ports_serializer = VipRequestPortSerializer(ports, many=True)
+
+        return ports_serializer.data
+
+    dscp = serializers.SerializerMethodField('get_dscp')
+
+    def get_dscp(self, obj):
+        try:
+            dscp = obj.viprequestdscp_set.get().dscp
+        except:
+            dscp = None
+        return dscp
+
+    default_names = serializers.SerializerMethodField('get_default_names')
+
+    def get_default_names(self, obj):
+        ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
+        names = list()
+        for port in obj.viprequestport_set.all():
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port.port))
+        return names
+
+    class Meta:
+        model = VipRequest
+        fields = (
+            'id',
+            # 'name',
+            # 'service',
+            # 'business',
+            'environmentvip',
+            'ipv4',
+            'ipv6',
+            # 'ports',
+            # 'options',
+            'equipments',
+            'default_names',
+            'dscp',
+            'created'
+        )
+
+
 class VipRequestDetailsSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
@@ -205,6 +277,24 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField('get_options')
 
     equipments = serializers.SerializerMethodField('get_eqpt')
+
+    default_names = serializers.SerializerMethodField('get_default_names')
+
+    dscp = serializers.SerializerMethodField('get_dscp')
+
+    def get_dscp(self, obj):
+        try:
+            dscp = obj.viprequestdscp_set.get().dscp
+        except:
+            dscp = None
+        return dscp
+
+    def get_default_names(self, obj):
+        ip = obj.ipv4.ip_formated if obj.ipv4 else obj.ipv6.ip_formated
+        names = list()
+        for port in obj.viprequestport_set.all():
+            names.append('VIP%s_%s_%s' % (obj.id, ip, port.port))
+        return names
 
     def get_eqpt(self, obj):
         eqpts = list()
@@ -259,6 +349,8 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
             'ipv4',
             'ipv6',
             'equipments',
+            'default_names',
+            'dscp',
             'ports',
             'options',
             'created'
@@ -305,14 +397,16 @@ class VipRequestPortDetailsSerializer(serializers.ModelSerializer):
 class VipRequestPortPoolDetailsSerializer(serializers.ModelSerializer):
     id = serializers.Field()
 
-    server_pool = PoolV3Serializer()
+    server_pool = PoolV3DetailsSerializer()
     l7_rule = OptionVipSerializer(source='optionvip')
     l7_value = serializers.Field(source='val_optionvip')
 
     class Meta:
         model = VipRequestPortPool
         fields = (
+            'id',
             'server_pool',
             'l7_rule',
-            'l7_value'
+            'l7_value',
+            'order'
         )

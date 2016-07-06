@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `vip_request_port_pool` 
+ADD COLUMN `order` INT(2) NULL COMMENT '' AFTER `val_optionvip`;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `vip_request_port_pool` 
+DROP COLUMN  `order`;
+
+"""

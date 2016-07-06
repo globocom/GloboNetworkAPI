@@ -1,0 +1,22 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `vip_port_to_pool` 
+DROP FOREIGN KEY `fk_vip_port_to_pool_requisicao_vips1`;
+ALTER TABLE `vip_port_to_pool` 
+ADD CONSTRAINT `fk_vip_port_to_pool_requisicao_vips1`
+  FOREIGN KEY (`id_requisicao_vips`)
+  REFERENCES `requisicao_vips` (`id_requisicao_vips`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `vip_port_to_pool` 
+DROP FOREIGN KEY `fk_vip_port_to_pool_requisicao_vips1`;
+ALTER TABLE `vip_port_to_pool` 
+ADD CONSTRAINT `fk_vip_port_to_pool_requisicao_vips1`
+  FOREIGN KEY (`id_requisicao_vips`)
+  REFERENCES `requisicao_vips` (`id_requisicao_vips`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+"""

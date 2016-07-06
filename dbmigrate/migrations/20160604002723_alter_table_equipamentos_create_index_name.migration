@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `equipamentos` 
+ADD INDEX `idx_equipamentos_name` (`nome` ASC)  COMMENT '';
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `equipamentos` 
+DROP INDEX `idx_equipamentos_name` ;
+"""

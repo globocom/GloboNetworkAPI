@@ -6,10 +6,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
+import json_delta
+
 from networkapi.ambiente.models import Ambiente, EnvironmentVip
-from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
-from networkapi.api_equipment.facade import all_equipments_are_in_maintenance
-from networkapi.api_pools import exceptions, models
+from networkapi.api_equipment import exceptions as exceptions_eqpt
+from networkapi.api_equipment import facade as facade_eqpt
+from networkapi.api_pools import exceptions, models, serializers
 from networkapi.distributedlock import distributedlock, LOCK_POOL
 from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.healthcheckexpect.models import Healthcheck
@@ -25,7 +27,7 @@ log = logging.getLogger(__name__)
 # Apply in eqpt
 ################
 @commit_on_success
-def create_real_pool(pools):
+def create_real_pool(pools, user):
     """
         Create real pool in eqpt
     """
@@ -35,7 +37,7 @@ def create_real_pool(pools):
 
     for pool in pools:
 
-        equips = _validate_pool_members_to_apply(pool)
+        equips = _validate_pool_members_to_apply(pool, user)
 
         for e in equips:
             eqpt_id = str(e.id)
@@ -85,7 +87,7 @@ def create_real_pool(pools):
 
 
 @commit_on_success
-def delete_real_pool(pools):
+def delete_real_pool(pools, user):
     """
     delete real pool in eqpt
     """
@@ -94,7 +96,7 @@ def delete_real_pool(pools):
 
     for pool in pools:
 
-        equips = _validate_pool_members_to_apply(pool)
+        equips = _validate_pool_members_to_apply(pool, user)
 
         for e in equips:
             eqpt_id = str(e.id)
@@ -140,7 +142,7 @@ def delete_real_pool(pools):
 
 
 @commit_on_success
-def update_real_pool(pools):
+def update_real_pool(pools, user):
     """
     - update real pool in eqpt
     - update data pool in db
@@ -222,7 +224,7 @@ def update_real_pool(pools):
             })
 
         # get eqpts associate with pool
-        equips = _validate_pool_to_apply(pool, update=True)
+        equips = _validate_pool_to_apply(pool, update=True, user=user)
 
         for e in equips:
             eqpt_id = str(e.id)
@@ -236,19 +238,25 @@ def update_real_pool(pools):
 
                 load_balance[eqpt_id] = {
                     'plugin': plugin,
-                    'fqdn': equipment_access.fqdn,
-                    'user': equipment_access.user,
-                    'password': equipment_access.password,
+                    'access': equipment_access,
                     'pools': [],
                 }
 
             keys_cache.append('pool:monitor:%s' % pool['identifier'])
 
+            sp = ServerPool.objects.get(id=pool['id'])
+            healthcheck_old = serializers.HealthcheckV3Serializer(sp.healthcheck).data
+
+            if json_delta.diff(healthcheck_old, pool['healthcheck']):
+                healthcheck = pool['healthcheck']
+            else:
+                healthcheck = {}
+
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
-                'healthcheck': pool['healthcheck'],
+                'healthcheck': healthcheck,
                 'action': pool['servicedownaction']['name'],
                 'pools_members': pools_members
             })
@@ -264,7 +272,7 @@ def update_real_pool(pools):
     return {}
 
 
-def set_poolmember_state(pools):
+def set_poolmember_state(pools, user):
     """
     Set Pool Members state
 
@@ -273,7 +281,7 @@ def set_poolmember_state(pools):
 
     for pool in pools['server_pools']:
         if pool['server_pool_members']:
-            equips = _validate_pool_members_to_apply(pool)
+            equips = _validate_pool_members_to_apply(pool, user)
 
             for e in equips:
                 eqpt_id = str(e.id)
@@ -439,15 +447,19 @@ def update_pool(pool):
     return sp
 
 
-def delete_pool(pools_id):
+def delete_pool(pools_ids):
     """Updates pool"""
 
-    sp = ServerPool.objects.filter(id__in=pools_id)
-    created = sp.filter(pool_created=True)
-    if created:
-        raise exceptions.PoolConstraintCreatedException()
+    for pools_id in pools_ids:
+        try:
+            sp = ServerPool.objects.get(id=pools_id)
+        except ObjectDoesNotExist:
+            raise exceptions.PoolNotExist()
 
-    sp.delete()
+        if sp.pool_created:
+            raise exceptions.PoolConstraintCreatedException()
+
+        sp.delete()
 
 
 def get_pool_by_ids(pools_ids):
@@ -457,7 +469,14 @@ def get_pool_by_ids(pools_ids):
     example: [<pools_id>,...]
     """
 
-    server_pools = ServerPool.objects.filter(id__in=pools_ids)
+    server_pools = list()
+    for pools_id in pools_ids:
+        try:
+            sp = ServerPool.objects.get(id=pools_id)
+        except ObjectDoesNotExist:
+            raise exceptions.PoolNotExist()
+
+        server_pools.append(sp)
 
     return server_pools
 
@@ -468,7 +487,10 @@ def get_pool_by_id(pool_id):
     param pools_id: id
     """
 
-    server_pool = ServerPool.objects.get(id=pool_id)
+    try:
+        server_pool = ServerPool.objects.get(id=pool_id)
+    except ObjectDoesNotExist:
+        raise exceptions.PoolNotExist()
 
     return server_pool
 
@@ -485,6 +507,17 @@ def get_pool_list_by_environmentvip(environment_vip_id):
     ).distinct().order_by('identifier')
 
     return server_pool
+
+
+def get_options_pool_list_by_environment(environment_id):
+    """
+    Return list of options pool by environment_id
+    param environment_id: environment_id
+    """
+
+    options_pool = models.OptionPool.objects.filter(optionpoolenvironment__environment=environment_id)
+
+    return options_pool
 
 
 def get_pool_by_search(search=dict()):
@@ -566,6 +599,11 @@ def validate_save(pool, permit_created=False):
         identifier=pool['identifier'],
         environment=pool['environment']
     )
+
+    try:
+        Ambiente.objects.get(id=pool['environment'])
+    except ObjectDoesNotExist:
+        raise exceptions.InvalidIdEnvironmentException('pool identifier: %s' % pool['identifier'])
 
     if pool.get('id'):
         server_pool = ServerPool.objects.get(id=pool['id'])
@@ -652,7 +690,7 @@ def destroy_lock(locks_list):
         lock.__exit__('', '', '')
 
 
-def _validate_pool_members_to_apply(pool):
+def _validate_pool_members_to_apply(pool, user=None):
 
     if pool['server_pool_members']:
         q_filters = [{
@@ -669,12 +707,12 @@ def _validate_pool_members_to_apply(pool):
         if len(server_pool_members) != len(q_filters):
             raise exceptions.PoolmemberNotExist()
 
-    equips = _validate_pool_to_apply(pool)
+    equips = _validate_pool_to_apply(pool, user=user)
 
     return equips
 
 
-def _validate_pool_to_apply(pool, update=False):
+def _validate_pool_to_apply(pool, update=False, user=None):
     server_pool = ServerPool.objects.get(
         identifier=pool['identifier'],
         environment=pool['environment'],
@@ -690,8 +728,15 @@ def _validate_pool_to_apply(pool, update=False):
         equipamentoambiente__ambiente__id=pool['environment'],
         tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
-    if all_equipments_are_in_maintenance(equips):
-        raise AllEquipmentsAreInMaintenanceException()
+    if facade_eqpt.all_equipments_are_in_maintenance(equips):
+        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+    if user:
+        if not facade_eqpt.all_equipments_can_update_config(equips, user):
+            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                'User does not have permission to update conf in eqpt. \
+                Verify the permissions of user group with equipment group. Pool:{}'.format(
+                    pool['id']))
 
     return equips
 

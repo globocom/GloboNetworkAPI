@@ -196,7 +196,6 @@
                   "maximum": 7
                 }
               },
-              "additionalProperties": false,
               "required": [
                 "id",
                 "identifier",
@@ -207,12 +206,8 @@
                 "member_status"
               ]
             }
-          },
-          "pool_created": {
-            "type": "boolean"
           }
         },
-        "additionalProperties": false,
         "required": [
           "id",
           "identifier",

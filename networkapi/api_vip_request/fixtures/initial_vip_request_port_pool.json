@@ -1,0 +1,22 @@
+[
+  {
+  "pk": 1,
+  "model": "api_vip_request.viprequestportpool",
+  "fields": {
+    "optionvip": 64,
+    "server_pool": 2,
+    "val_optionvip": null,
+    "vip_request_port": 1
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_vip_request.viprequestportpool",
+  "fields": {
+    "optionvip": 64,
+    "server_pool": 2,
+    "val_optionvip": null,
+    "vip_request_port": 2
+    }
+  }
+]

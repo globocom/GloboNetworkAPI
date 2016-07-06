@@ -1,0 +1,18 @@
+[
+    {
+        "fields": {
+            "port": 80,
+            "vip_request": 1
+        },
+        "model": "api_vip_request.viprequestport",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "port": 80,
+            "vip_request": 2
+        },
+        "model": "api_vip_request.viprequestport",
+        "pk": 2
+    }
+]

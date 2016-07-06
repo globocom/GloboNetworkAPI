@@ -8,7 +8,6 @@ from networkapi.api_environment_vip.permissions import Read
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 
-
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

@@ -27,6 +27,10 @@ log = logging.getLogger(__name__)
 
 class FTOS(BasePlugin):
 
+	MAX_TRIES = 10
+	RETRY_WAIT_TIME = 5
+	WAIT_FOR_CLI_RETURN = 1
+	CURRENTLY_BUSY_WAIT = 'Currently busy with copying a file'
 	INVALID_REGEX = '([Ii]nvalid)|overlaps with'
 	WARNING_REGEX = 'config ignored|Warning'
 	ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
@@ -86,10 +90,25 @@ class FTOS(BasePlugin):
 
 		command = "copy tftp://%s/%s %s %s\n\n" %(self.tftpserver, filename, destination, use_vrf)
 
-		log.info("sending command: %s" % command)
 
-		self.channel.send("%s\n" % command)
-		recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+		file_copied = 0
+		retries = 0
+		while(not file_copied and retries < self.MAX_TRIES):
+			if retries is not 0:
+				sleep(self.RETRY_WAIT_TIME)
+				
+			try:
+				log.info("try: %s - sending command: %s" % (retries, command) )
+				self.channel.send("%s\n" % command)
+				recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+				file_copied = 1
+			except exceptions.CurrentlyBusyErrorException, e:
+				retries+=1
+
+		#not capable of configuring after max retries
+		if retries is self.MAX_TRIES:
+			raise exceptions.CurrentlyBusyErrorException(file_name_string)
+		
 		return recv
 
 	def ensure_privilege_level(self, privilege_level=None):
@@ -148,19 +167,25 @@ class FTOS(BasePlugin):
 		recv_string = ''
 		while not string_ok:
 			while not self.channel.recv_ready():
-				sleep(1)
+				sleep(self.WAIT_FOR_CLI_RETURN)
 
 			recv_string = self.channel.recv(9999)
 			file_name_string = self.removeDisallowedChars(recv_string)
 
 			for output_line in recv_string.splitlines():
-				if re.search(self.WARNING_REGEX, output_line):
-					log.warning("This is threated as a warning: %s" % output_line)
+				if re.search(self.CURRENTLY_BUSY_WAIT, output_line):
+					log.warning("Need to wait - Switch busy: %s" % output_line)
+					raise exceptions.CurrentlyBusyErrorException(file_name_string)
+				elif re.search(self.WARNING_REGEX, output_line):
+					log.warning("Equipment warning: %s" % output_line)
 				elif re.search(wait_str_invalid_regex, output_line):
+					log.error("Equipment raised INVALID error: %s" % output_line)
 					raise exceptions.CommandErrorException(file_name_string)
 				elif re.search(wait_str_failed_regex, output_line):
+					log.error("Equipment raised FAILED error: %s" % output_line)
 					raise exceptions.InvalidCommandException(file_name_string)
 				elif re.search(wait_str_ok_regex, output_line):
+					log.debug("Equipment output: %s" % output_line)
 					string_ok = 1
 
 		return recv_string

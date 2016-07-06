@@ -13,6 +13,7 @@ class VipRequest(BaseModel):
     )
 
     created = models.BooleanField(
+        default=False,
         db_column='created')
 
     ipv4 = models.ForeignKey(
@@ -147,7 +148,12 @@ class VipRequestPortPool(BaseModel):
         max_length=255,
         db_column='val_optionvip',
         blank=True,
-        null=True)
+        null=True
+    )
+
+    order = models.IntegerField(
+        default=0
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'vip_request_port_pool'

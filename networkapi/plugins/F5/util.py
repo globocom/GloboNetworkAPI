@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from functools import wraps
 import logging
 
@@ -5,7 +7,6 @@ import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
-from networkapi.util import is_healthcheck_valid
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,19 @@ def connection(func):
             access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
             self._lb = lb.Lb(access.fqdn, access.user, access.password)
             self._lb._channel.System.Session.set_transaction_timeout(60)
+            return func(self, *args, **kwargs)
+        except bigsuds.OperationFailed, e:
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
+    return inner
+
+
+def connection_simple(func):
+    @wraps(func)
+    def inner(self, *args, **kwargs):
+        try:
+            access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+            self._lb = lb.Lb(access.fqdn, access.user, access.password, False)
             return func(self, *args, **kwargs)
         except bigsuds.OperationFailed, e:
             log.error(e)
@@ -118,8 +132,7 @@ def trata_param_pool(pools):
             pls['pools_lbmethod'].append(
                 get_method_name(p['lb_method']))
 
-        if p.get('healthcheck'):
-            is_healthcheck_valid(p['healthcheck'])
+        if p.get('healthcheck') is not None:
             pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):
@@ -159,13 +172,13 @@ def trata_param_pool(pools):
                 member_status_monitor.append(status['monitor'])
                 member_status_session.append(status['session'])
 
-            if pool_member.get('limit'):
+            if pool_member.get('limit') is not None:
                 member_limit.append(pool_member['limit'])
 
-            if pool_member.get('priority'):
+            if pool_member.get('priority') is not None:
                 member_priority.append(pool_member['priority'])
 
-            if pool_member.get('weight'):
+            if pool_member.get('weight') is not None:
                 member_weight.append(pool_member['weight'])
 
             if not pool_member.get('remove'):
@@ -213,7 +226,6 @@ def trata_param_vip(vips):
 
             address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-            vip_filter['pool'] = list()
             vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
@@ -240,11 +252,14 @@ def trata_param_vip(vips):
             vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
 
             pools = port.get('pools')
+            rules = dict()
+            default_l7 = ''
+
             for pool in pools:
-                if not pool.get('l7_rule') in ['(nenhum)', 'default']:
-                    raise NotImplementedError()
 
                 server_pool = pool.get('server_pool')
+                name_pool = server_pool['nome']
+
                 if not server_pool.get('pool_created'):
                     if server_pool.get('id') not in ids_pool_filter:
                         ids_pool_filter.append(server_pool.get('id'))
@@ -254,12 +269,46 @@ def trata_param_vip(vips):
                         ids_pool_filter_created.append(server_pool.get('id'))
                         pool_filter_created.append(server_pool)
 
-                vip_filter['pool'].append(server_pool['nome'])
+                if pool.get('l7_rule') == 'default_vip':
 
-                vip_filter['optionsvip']['dscp'] = {
-                    'value': dscp,
-                    'pool_name': server_pool['nome']
-                }
+                    vip_filter['pool'] = name_pool
+
+                    vip_filter['optionsvip']['dscp'] = {
+                        'value': dscp,
+                        'pool_name': name_pool
+                    }
+                elif pool.get('l7_rule') == 'default_glob':
+                    default_l7 = "            default {{ pool {0} }}\n".format(
+                        name_pool)
+                elif pool.get('l7_rule') == 'glob':
+
+                    rule = '"{0}"'.format(pool.get('l7_value'))
+                    order = pool.get('order', 'Z')
+                    key_rule = '{}_{}'.format(order, name_pool)
+                    if not rules.get(key_rule):
+                        rules[key_rule] = dict()
+                        rules[key_rule]['pool'] = name_pool
+                        rules[key_rule]['rule'] = list()
+                    rules[key_rule]['rule'].append(rule)
+
+            if rules:
+                rule_l7_ln = "\n            ".join([
+                    "{0} {{\n                pool {1}\n            }}".format(
+                        " -\n            ".join(rules[idx]['rule']),
+                        rules[idx]['pool']
+                    ) for idx in sorted(rules)
+                ])
+
+                rule_l7 = \
+                    "when HTTP_REQUEST {{\n" + \
+                    "        switch -glob [HTTP::uri] {{\n" + \
+                    "            {0}\n{1}" + \
+                    "        }}\n" + \
+                    "    }}"
+                rule_l7 = rule_l7.format(rule_l7_ln, default_l7)
+
+                vip_filter['pool_l7'] = rule_l7
+
             vips_filter.append(vip_filter)
 
     if vips.get('layers'):
@@ -340,6 +389,17 @@ SERVICE_DOWN_ACTION = {
 ###############
 # POOL MEMBER
 ###############
+# healthcheck+session enable/disable+user up/down(000 - 111 = 0 - 7)
+
+# 0 0 0
+# | | \-- user up/user down (forcado a nao receber nem sessoes de persistencia)
+# | |     1/0 forcar disable do membro no pool (user up/down)
+# | \---- habilitar/desabilitar membro (session enable/session disable -
+# |       nao recebe novas sessoes mas honra persistencia)
+# |       1/0 habilitar/desabilitar membro no pool para novas sessoes (session disable)
+# \------ status do healthcheck no LB, somente GET, nao e alterado
+#         por usuario flag ignorada no PUT.
+#         1/0 status do healthcheck no LB member up/down
 STATUS_POOL_MEMBER = {
     '0': {
         'monitor': 'STATE_DISABLED',

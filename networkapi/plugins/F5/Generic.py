@@ -1,10 +1,12 @@
+
 import itertools
 import logging
 
 import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
-from networkapi.plugins.F5 import monitor, node, pool, poolmember, util, virtualserver
+from networkapi.plugins.F5 import monitor, node, pool, poolmember,\
+    rule, util, virtualserver
 from networkapi.plugins.F5.util import logger
 
 from ..base import BasePlugin
@@ -17,8 +19,10 @@ class Generic(BasePlugin):
     #######################################
     # VIP
     #######################################
+    @logger
     @util.connection
     def delete_vip(self, vips):
+        pools_del = list()
         tratado = util.trata_param_vip(vips)
         vts = virtualserver.VirtualServer(self._lb)
         try:
@@ -27,18 +31,38 @@ class Generic(BasePlugin):
                 vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
                 vts.delete(vps_names=vps_names)
 
+                rule_l7 = ['{}_RULE_L7'.format(vp['name'])
+                           for vp in tratado.get('vips_filter')]
+                if rule_l7:
+                    rl = rule.Rule(self._lb)
+                    rl.delete(rule_names=rule_l7)
+
+            # CACHE
             if tratado.get('vips_cache_filter'):
                 vps_names = [vp['name'] for vp in tratado.get('vips_cache_filter')]
                 vts.delete(vps_names=vps_names)
         except Exception, e:
             log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
-            pass
+            raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
-            if tratado.get('pool_filter_created'):
-                self.__delete_pool({'pools': tratado.get('pool_filter_created')})
 
+            if tratado.get('pool_filter_created'):
+                try:
+                    self.__delete_pool({'pools': tratado.get('pool_filter_created')})
+                except Exception, e:
+                    if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
+                        log.warning('"Pool cannot be deleted because it is in use by a Virtual Server"')
+                        pass
+                    else:
+                        raise e
+                else:
+                    pools_del = [server_pool.get('id') for server_pool in tratado.get('pool_filter_created')]
+
+        return pools_del
+
+    @logger
     @util.connection
     def create_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -84,35 +108,14 @@ class Generic(BasePlugin):
     @util.connection
     def update_vip(self, vips):
         tratado = util.trata_param_vip(vips)
+        vts = virtualserver.VirtualServer(self._lb)
 
-        if tratado.get('pool_filter'):
-            self.__create_pool({'pools': tratado.get('pool_filter')})
         try:
-            vts = virtualserver.VirtualServer(self._lb)
-            vts.update(vips=tratado.get('vips_filter'))
+            if tratado.get('vips_filter'):
+                vts.update(vips=tratado.get('vips_filter'))
         except Exception, e:
-            if tratado.get('pool_filter'):
-                self.__delete_pool({'pools': tratado.get('pool_filter')})
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
-        else:
-            try:
-                vts.create(vips=tratado.get('vips_cache_filter'))
-            except Exception, e:
-                log.error(e)
-
-                # cache layer
-                try:
-                    if tratado.get('vips_filter'):
-                        vps_names = [vp['name'] for vp in tratado.get('vips_filter')]
-                        vts.delete(vps_names=vps_names)
-                except Exception, e:
-                    log.error(e)
-                    raise base_exceptions.CommandErrorException(e)
-                else:
-                    self.__delete_pool({'pools': tratado.get('pool_filter')})
-
-                raise base_exceptions.CommandErrorException(e)
 
     #######################################
     # POOLMEMBER
@@ -156,7 +159,7 @@ class Generic(BasePlugin):
             priority=pls['pools_members']['priority'])
 
     @logger
-    @util.transation
+    @util.connection_simple
     def get_state_member(self, pools):
         pls = util.trata_param_pool(pools)
 
@@ -287,79 +290,12 @@ class Generic(BasePlugin):
             healthcheck=pls['pools_healthcheck']
         )
 
-        strings_old = {
-            'template_names': list(),
-            'property_types': list()
-        }
-
-        strings_new = list()
-        monitors_new = list()
-        monitors_old = list()
-
-        for monitor_old in monitor_associations_old:
-            for monitor_new in monitor_associations:
-                if monitor_old['pool_name'] == monitor_new['pool_name']:
-                    if monitor_old != monitor_new:
-                        template_name = monitor_old['monitor_rule']['monitor_templates'][0]
-                        property_type_s = 'STYPE_SEND'
-                        property_type_r = 'STYPE_RECEIVE'
-
-                        strings_old['template_names'].append(template_name)
-                        strings_old['property_types'].append(property_type_s)
-                        strings_old['template_names'].append(template_name)
-                        strings_old['property_types'].append(property_type_r)
-
-                        template_name = monitor_new['monitor_rule']['monitor_templates'][0]
-                        strings_new += [templates_extra['values'][k] for k, v in enumerate(templates_extra['template_names']) if v == template_name] or [{}, {}]
-
-                        monitors_new.append(monitor_new)
-                        monitors_new.append(monitor_new)
-                        monitors_old.append(monitor_old)
-                        monitors_old.append(monitor_old)
-                    break
-
-        get_strings_old = mon.get_template_string_property(
-            template_names=strings_old.get('template_names'),
-            property_types=strings_old.get('property_types')
-        )
-        monitors_assoc = list()
-        monitors_assoc_old = list()
-        template_name_found = list()
-
-        for key, string in enumerate(get_strings_old):
-            try:
-                if strings_new[key] != string:
-                    monitors_assoc.append(monitors_new[key])
-                    monitors_assoc_old.append(monitors_old[key])
-                    template_name_found.append(monitors_new[key]['monitor_rule']['monitor_templates'][0])
-            except:
-                pass
-
-        values_new = list()
-        template_names_new = list()
-        template_attributes_new = list()
-        templates_new = list()
-        template_name_found = list(set(template_name_found))
-        for template_name in template_name_found:
-            values_new += [templates_extra['values'][k] for k, v in enumerate(templates_extra['template_names']) if v == template_name]
-            template_names_new += [templates_extra['template_names'][k] for k, v in enumerate(templates_extra['template_names']) if v == template_name]
-            template_attributes_new += [templates_extra['template_attributes'][k] for k, v in enumerate(templates_extra['templates']) if v['template_name'] == template_name]
-            templates_new += [templates_extra['templates'][k] for k, v in enumerate(templates_extra['templates']) if v['template_name'] == template_name]
-
-        monitors_assoc = {v['pool_name']: v for v in monitors_assoc}.values()
-        monitors_assoc_old = {v['pool_name']: v for v in monitors_assoc_old}.values()
-        templates_extra = {
-            'values': values_new,
-            'template_names': template_names_new,
-            'template_attributes': template_attributes_new,
-            'templates': templates_new
-        }
         mon.create_template(templates_extra=templates_extra)
 
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            pl.set_monitor_association(monitor_associations=monitors_assoc)
+            pl.set_monitor_association(monitor_associations=monitor_associations)
 
             pl.set_lb_method(
                 names=pls['pools_names'],
@@ -402,7 +338,9 @@ class Generic(BasePlugin):
             self._lb._channel.System.Session.rollback_transaction()
 
             # delete templates created
-            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitors_assoc])) if 'MONITOR' in m]
+            template_names = [m for m in list(
+                itertools.chain(
+                    *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names:
                 mon.delete_template(
                     template_names=template_names
@@ -427,7 +365,8 @@ class Generic(BasePlugin):
 
             # delete templates old
             try:
-                template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitors_assoc_old])) if 'MONITOR' in m]
+                template_names = [m for m in list(
+                    itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
                 if template_names:
                     mon.delete_template(template_names=template_names)
             except bigsuds.OperationFailed:
@@ -467,9 +406,10 @@ class Generic(BasePlugin):
                 raise base_exceptions.CommandErrorException(e)
             else:
                 self._lb._channel.System.Session.submit_transaction()
-
                 try:
-                    template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                    template_names = [m for m in list(
+                        itertools.chain(
+                            *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
                     if template_names:
                         mon.delete_template(template_names=template_names)
                 except bigsuds.OperationFailed:

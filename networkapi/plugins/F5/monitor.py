@@ -30,75 +30,84 @@ class Monitor(F5Base):
         try:
 
             for i, pool in enumerate(kwargs['names']):
+                if kwargs['healthcheck'][i]:
 
-                monitor_association = {
-                    'pool_name': None,
-                    'monitor_rule': {
-                        'monitor_templates': [],
-                        'type': None,
-                        'quorum': None
-                    }
-                }
-
-                if kwargs['healthcheck'][i]['healthcheck_request'] != '' or kwargs['healthcheck'][i]['healthcheck_expect'] != '':
-
-                    key = 'pool:monitor:%s' % kwargs['names'][i]
-                    name = cache.get(key)
-                    if not name:
-                        name = self.generate_name(kwargs['names'][i])
-                        cache.set(key, name)
-
-                    template = {
-                        'template_name': name,
-                        'template_type': types.template_type(kwargs['healthcheck'][i]['healthcheck_type'])
-                    }
-
-                    templates.append(template)
-                    template_attributes.append({
-                        'parent_template': kwargs['healthcheck'][i]['healthcheck_type'].lower(),
-                        'interval': 5,
-                        'timeout': 16,
-                        'dest_ipport': types.address_type(kwargs['healthcheck'][i]['destination']),
-                        'is_read_only': 0,
-                        'is_directly_usable': 1
-                    })
-
-                    healthcheck_request = kwargs['healthcheck'][i]['healthcheck_request']
-                    healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
-
-                    template_names.append(name)
-                    values.append({
-                        'type': 'STYPE_SEND',
-                        'value': healthcheck_request
-                    })
-
-                    template_names.append(name)
-                    values.append({
-                        'type': 'STYPE_RECEIVE',
-                        'value': healthcheck_expect
-                    })
-
-                else:
-                    name = kwargs['healthcheck'][i]['healthcheck_type'].lower()
-
-                monitor_association['pool_name'] = kwargs['names'][i]
-                monitor_association['monitor_rule']['monitor_templates'].append(name)
-                monitor_association['monitor_rule']['type'] = 'MONITOR_RULE_TYPE_SINGLE'
-                monitor_association['monitor_rule']['quorum'] = 0
-                monitor_associations.append(monitor_association)
-
-                if name == 'udp':
-                    for node in kwargs['members'][i]:
-                        monitor_association_node = {
+                    monitor_association = {
+                        'pool_name': None,
+                        'monitor_rule': {
                             'monitor_templates': [],
                             'type': None,
                             'quorum': None
                         }
-                        monitor_association_node['monitor_templates'].append('icmp')
-                        monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
-                        monitor_association_node['quorum'] = 0
-                        monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
-                        monitor_associations_nodes['nodes'].append(node['address'])
+                    }
+
+                    if kwargs['healthcheck'][i]['healthcheck_request'] != '' or \
+                        kwargs['healthcheck'][i]['healthcheck_expect'] != '' or \
+                            kwargs['healthcheck'][i]['destination'] != '*:*':
+
+                        key = 'pool:monitor:%s' % kwargs['names'][i]
+                        name = cache.get(key)
+                        if not name:
+                            name = self.generate_name(kwargs['names'][i])
+                            cache.set(key, name)
+
+                        template = {
+                            'template_name': name,
+                            'template_type': types.template_type(kwargs['healthcheck'][i]['healthcheck_type'])
+                        }
+
+                        templates.append(template)
+                        template_attributes.append({
+                            'parent_template': kwargs['healthcheck'][i]['healthcheck_type'].lower(),
+                            'interval': 5,
+                            'timeout': 16,
+                            'dest_ipport': types.address_type(kwargs['healthcheck'][i]['destination']),
+                            'is_read_only': 0,
+                            'is_directly_usable': 1
+                        })
+
+                        hr = kwargs['healthcheck'][i]['healthcheck_request']
+                        if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
+                            healthcheck_request = hr[0:-8] + \
+                                hr[-8:].replace("\\r", '').replace("\\n", '') + "\\r\\n\\r\\n"
+                        else:
+                            healthcheck_request = hr
+
+                        healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
+
+                        template_names.append(name)
+                        values.append({
+                            'type': 'STYPE_SEND',
+                            'value': healthcheck_request.encode('unicode-escape')
+                        })
+
+                        template_names.append(name)
+                        values.append({
+                            'type': 'STYPE_RECEIVE',
+                            'value': healthcheck_expect.encode('unicode-escape')
+                        })
+
+                    else:
+                        name = kwargs['healthcheck'][i]['healthcheck_type'].lower()
+
+                    monitor_association['pool_name'] = kwargs['names'][i]
+                    monitor_association['monitor_rule']['monitor_templates'].append(name)
+                    monitor_association['monitor_rule']['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                    monitor_association['monitor_rule']['quorum'] = 0
+                    monitor_associations.append(monitor_association)
+
+                    if name == 'udp':
+                        for node in kwargs['members'][i]:
+                            monitor_association_node = {
+                                'monitor_templates': [],
+                                'type': None,
+                                'quorum': None
+                            }
+                            monitor_association_node['monitor_templates'].append('icmp')
+                            monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                            monitor_association_node['quorum'] = 0
+                            monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
+                            monitor_associations_nodes['nodes'].append(node['address'])
 
         except Exception, e:
             log.error(e)
@@ -150,32 +159,6 @@ class Monitor(F5Base):
                 else:
                     self._lb._channel.System.Session.submit_transaction()
 
-    # def delete_templateAssoc(self, **kwargs):
-    #     log.info('monitor:delete_templateAssoc:%s' % kwargs)
-    #     for k, v in kwargs.items():
-    #         if v == []:
-    #             return
-
-    #     self._lb._channel.System.Session.start_transaction()
-    #     try:
-    #         pl = pool.Pool(self._lb)
-    #         monitor_associations = pl.get_monitor_association(names=kwargs['names'])
-
-    #         pl.remove_monitor_association(names=kwargs['names'])
-
-    #     except Exception, e:
-    #         self._lb._channel.System.Session.rollback_transaction()
-    #         raise base_exceptions.CommandErrorException(e)
-    #     else:
-    #         self._lb._channel.System.Session.submit_transaction()
-
-    #         try:
-    #             template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-    #             if template_names:
-    #                 self.delete_template(template_names=template_names)
-    #         except bigsuds.OperationFailed:
-    #             pass
-
     @logger
     def get_template_string_property(self, **kwargs):
         strings = self._lb._channel.LocalLB.Monitor.get_template_string_property(
@@ -183,6 +166,13 @@ class Monitor(F5Base):
             property_types=kwargs['property_types']
         )
         return strings
+
+    @logger
+    def get_template_destination(self, **kwargs):
+        destinations = self._lb._channel.LocalLB.Monitor.get_template_destination(
+            template_names=kwargs['template_names']
+        )
+        return destinations
 
     @logger
     def delete_template(self, **kwargs):

@@ -1,0 +1,130 @@
+[
+  {
+  "pk": 1,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "(nenhum)",
+    "tipo_opcao": "cache"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "(nenhum)",
+    "tipo_opcao": "Persistencia"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "source-ip",
+    "tipo_opcao": "Persistencia"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "source-ip com persist. entre portas",
+    "tipo_opcao": "Persistencia"
+    }
+  },
+  {
+  "pk": 9,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "cookie",
+    "tipo_opcao": "Persistencia"
+    }
+  },
+  {
+  "pk": 10,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "Normal",
+    "tipo_opcao": "Retorno de trafego"
+    }
+  },
+  {
+  "pk": 14,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "5",
+    "tipo_opcao": "timeout"
+    }
+  },
+  {
+  "pk": 48,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "DSRL3",
+    "tipo_opcao": "Retorno de trafego"    
+    }
+  },
+  {
+  "pk": 54,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "HTTP",
+    "tipo_opcao": "l7_protocol"    
+    }
+  },
+  {
+  "pk": 55,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "FTP",
+    "tipo_opcao": "l7_protocol"
+    }
+  },
+  {
+  "pk": 56,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "Outros",
+    "tipo_opcao": "l7_protocol"
+    }
+  },
+  {
+  "pk": 57,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "TCP",
+    "tipo_opcao": "l4_protocol"
+    }
+  },
+  {
+  "pk": 58,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "UDP",
+    "tipo_opcao": "l4_protocol"
+    }
+  },
+  {
+  "pk": 59,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "HTTPS",
+    "tipo_opcao": "l4_protocol"
+    }
+  },
+  {
+  "pk": 64,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "(nenhum)",
+    "tipo_opcao": "l7_rule"
+    }
+  },
+  {
+  "pk": 65,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "default",
+    "tipo_opcao": "l7_rule"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+  "pk": 2,
+  "model": "api_vip_request.viprequestdscp",
+  "fields": {
+    "dscp": 3,
+    "vip_request": 2
+    }
+  }
+]

@@ -15,29 +15,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# from _ast import For
 
-from _ast import For
+import logging
+
+# from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoError, Equipamento
+from networkapi.equipamento.models import Equipamento, EquipamentoError
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
 from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-from networkapi.ip.models import Ip, IpError, IpNotFoundError, \
-    IpNotFoundByEquipAndVipError
-import logging
+from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
+from networkapi.ip.models import Ip, IpError, IpNotFoundByEquipAndVipError, IpNotFoundError
 from networkapi.requisicaovips.models import OptionVip, RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
     InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
     InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError, \
-    ServerPool, VipPortToPool
+    InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError
 from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, convert_boolean_to_int
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize
-from django.forms.models import model_to_dict
+from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
+    convert_boolean_to_int, is_valid_string_minsize, is_valid_string_maxsize
 
 
 def insert_vip_request(vip_map, user):
@@ -141,23 +141,21 @@ def insert_vip_request(vip_map, user):
         raise EnvironmentVipNotFoundError(
             e, 'The fields finality or client or ambiente is None')
 
-
     # Valid HealthcheckExpect
     vip_map, vip, code = vip.valid_values_healthcheck(
         vip_map, vip, environment_vip)
     if code is not None:
         return code, vip
 
-
-    #get traffic return
-    #traffic_return=OptionVip.objects.filter(nome_opcao_txt=traffic)
-    traffic_id=vip_map.get('trafficreturn')
+    # get traffic return
+    # traffic_return=OptionVip.objects.filter(nome_opcao_txt=traffic)
+    traffic_id = vip_map.get('trafficreturn')
     if traffic_id is None:
-        traffic=OptionVip.get_all_trafficreturn(environment_vip.id)
-        traffic=traffic.filter(nome_opcao_txt='Normal')
-        traffic_id=traffic.id
-    vip.trafficreturn=OptionVip()
-    vip.trafficreturn.id=traffic_id
+        traffic = OptionVip.get_all_trafficreturn(environment_vip.id)
+        traffic = traffic.filter(nome_opcao_txt='Normal')
+        traffic_id = traffic.id
+    vip.trafficreturn = OptionVip()
+    vip.trafficreturn.id = traffic_id
 
     # Valid maxcon
     if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
@@ -180,6 +178,10 @@ def insert_vip_request(vip_map, user):
                 ip_aux_error, equip, environment_vip)
 
     vip.create(user, vip_map)
+
+    # SYNC_VIP
+    old_to_new(vip)
+
     return 0, vip
 
 
@@ -217,7 +219,6 @@ def update_vip_request(vip_id, vip_map, user):
     else:
         traffic_id = int(traffic_id)
 
-
     validated = vip_map.get('validado')
     if validated is None:
         return 246
@@ -238,7 +239,6 @@ def update_vip_request(vip_id, vip_map, user):
     else:
         return 245
 
-
     # Valid maxcon
     if not is_valid_int_greater_equal_zero_param(vip_map.get('maxcon')):
         log.error(
@@ -256,6 +256,10 @@ def update_vip_request(vip_id, vip_map, user):
 
     if code is not None:
         return code
+
+    # SYNC_VIP
+    vip = RequisicaoVips.get_by_pk(vip_id)
+    old_to_new(vip)
 
     return 0
 

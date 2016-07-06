@@ -17,7 +17,6 @@ urlpatterns = patterns(
     url(r'^pools/pool_list_by_reqvip/$', 'pool_list_by_reqvip'),
     url(r'^pools/list_healthchecks/$', 'healthcheck_list'),
     url(r'^pools/getbypk/(?P<id_server_pool>[^/]+)/$', 'get_by_pk'),
-    url(r'^pools/poolmember_state/$', 'poolmember_state'),
     url(r'^pools/get_all_members/(?P<id_server_pool>[^/]+)/$', 'list_all_members_by_pool'),
     url(r'^pools/get_equip_by_ip/(?P<id_ip>[^/]+)/$', 'get_equipamento_by_ip'),
     url(r'^pools/get_opcoes_pool_by_ambiente/$', 'get_opcoes_pool_by_ambiente'),
@@ -54,4 +53,5 @@ urlpatterns = patterns(
     url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views.PoolDBView.as_view()),  # POST, PUT, GET, DELETE
     url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$', views.PoolEnvironmentVip.as_view()),  # GET
 
+    url(r'^v3/option-pool/environment/(?P<environment_id>\d+)/$', views.OptionPoolEnvironmentView.as_view()),
 )

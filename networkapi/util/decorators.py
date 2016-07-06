@@ -53,9 +53,9 @@ def logs_method_apiview(func):
 
         log = logging.getLogger(type(self).__name__)
 
-        log.info("View:%s, method:%s" % (type(self).__name__, request.method))
-        log.info('Data send: %s' % request.DATA)
-        log.info('Url params: %s' % kwargs)
+        log.info(
+            "View:%s, method:%s - Data send: %s -  Url params: %s" % (
+                type(self).__name__, request.method, request.DATA, kwargs))
         return func(self, request, *args, **kwargs)
     return inner
 

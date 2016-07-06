@@ -59,6 +59,12 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "id": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "server_pool": {
                         "type": "integer"
                       },
@@ -68,6 +74,12 @@
                       "l7_value": {
                         "type": [
                           "string",
+                          "null"
+                        ]
+                      },
+                      "order": {
+                        "type": [
+                          "integer",
                           "null"
                         ]
                       }
