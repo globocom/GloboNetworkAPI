@@ -218,6 +218,7 @@ def _update_port(ports, vip_request_id):
                     pl.val_optionvip = pool.get('l7_value')
                     pl.order = pool.get('order')
                     pl.save()
+            pools.append(pl.id)
 
             pools.append(pl.id)
 
