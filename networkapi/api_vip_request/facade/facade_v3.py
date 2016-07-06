@@ -199,6 +199,7 @@ def _update_port(ports, vip_request_id):
         ).delete()
 
         # save pool by port
+        pools = list()
         for pool in port.get('pools'):
             try:
                 pl = models.VipRequestPortPool.objects.get(
@@ -217,13 +218,13 @@ def _update_port(ports, vip_request_id):
                     pl.val_optionvip = pool.get('l7_value')
                     pl.order = pool.get('order')
                     pl.save()
+            pools.append(pl.id)
 
         # delete pool by port
-        pools = [pool['server_pool'] for pool in port.get('pools')]
         models.VipRequestPortPool.objects.filter(
             vip_request_port=pt
         ).exclude(
-            server_pool__in=pools
+            id__in=pools
         ).delete()
 
     # delete port
