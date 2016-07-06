@@ -1,26 +1,23 @@
 from functools import wraps
 import logging
 
-import bigsuds
-
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.Brocade import lb
 from networkapi.util import is_healthcheck_valid
 
-
 log = logging.getLogger(__name__)
+
 
 ########################################
 # Decorators
 ########################################
-
-
 def connection(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
         log.debug("decorator")
         try:
-            self._lb = lb.Lb(args[0].get('fqdn'), args[0].get('user'), args[0].get('password'))
+            access = args[0].get('access').filter(tipo_acesso__protocolo='ssh').uniqueResult()
+            self._lb = lb.Lb(access.fqdn, access.user, access.password)
             return func(self, *args, **kwargs)
         except Exception, e:
             log.error(e)

@@ -1,19 +1,21 @@
 import itertools
 import logging
 
-import suds
-
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.Brocade import monitor, pool, poolmember, util, virtualserver
+
+import suds
 
 from ..base import BasePlugin
 
 log = logging.getLogger(__name__)
 
+
 class Generic(BasePlugin):
     ######################################
     # VIP
     ######################################
+
     @util.connection
     def delete_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -44,7 +46,7 @@ class Generic(BasePlugin):
     #######################################
     # POOLMEMBER
     #######################################
-    #TODO:transaction
+    # TODO:transaction
     @util.connection
     def set_state_member(self, pools):
 
@@ -58,7 +60,7 @@ class Generic(BasePlugin):
             monitor_state=pls['pools_members']['monitor'],
             session_state=pls['pools_members']['session'])
 
-    #TODO:transaction
+    # TODO:transaction
     @util.connection
     def set_connection_limit_member(self, pools):
 
@@ -70,7 +72,7 @@ class Generic(BasePlugin):
             members=pls['pools_members']['members'],
             connection_limit=pls['pools_members']['limit'])
 
-    #TODO:transaction
+    # TODO:transaction
     @util.connection
     def set_priority_member(self, pools):
 
@@ -82,7 +84,7 @@ class Generic(BasePlugin):
             members=pls['pools_members']['members'],
             priority=pls['pools_members']['priority'])
 
-    #TODO:transaction
+    # TODO:transaction
     @util.connection
     def get_state_member(self, pools):
         pls = util.trata_param_pool(pools)
@@ -92,7 +94,7 @@ class Generic(BasePlugin):
             names=pls['pools_names'],
             members=pls['pools_members']['members'])
 
-    #TODO:transaction
+    # TODO:transaction
     @util.connection
     def create_member(self, pools):
 
@@ -103,8 +105,7 @@ class Generic(BasePlugin):
             names=pls['pools_names'],
             members=pls['pools_members']['members'])
 
-
-    #TODO:transaction
+    # TODO:transaction
     @util.connection
     def remove_member(self, pools):
 
@@ -124,26 +125,24 @@ class Generic(BasePlugin):
 
     def __create_pool(self, data):
         log.info("skipping create pool")
-        return
+        # return
 
-        for pool in data["pools"]:
-            try:
-                pool_name = "P%s_%s" % (pool["id"],pool["nome"])
+        try:
+            for pool in data["pools"]:
+                pool_name = "P%s_%s" % (pool["id"], pool["nome"])
 
-                serverGroupList = (self._lb.slb_factory.create
+                servergrouplist = (self._lb.slb_factory.create
                                    ('ArrayOfRealServerGroupSequence'))
-                realServerGroup = (self._lb.slb_factory
+                realservergroup = (self._lb.slb_factory
                                    .create('RealServerGroup'))
 
-                realServerGroup.groupName = pool_name
-                serverGroupList.RealServerGroupSequence.append(realServerGroup)
+                realservergroup.groupName = pool_name
+                servergrouplist.RealServerGroupSequence.append(realservergroup)
 
                 (self._lb.slb_service
-                 .createRealServerGroups(serverGroupList))
-            except suds.WebFault as e:
-                raise base_exceptions.CommandErrorException(e)
-
-
+                 .createRealServerGroups(servergrouplist))
+        except suds.WebFault as e:
+            raise base_exceptions.CommandErrorException(e)
 
     @util.connection
     def update_pool(self, pools):
@@ -237,15 +236,13 @@ class Generic(BasePlugin):
 
         for pool in data["pools"]:
             try:
-                pool_name = "P%s_%s" % (pool["id"],pool["nome"])
-                log.info('deleting pool %s'%pool_name)
-                serverGroupList = (self._lb.slb_factory
+                pool_name = "P%s_%s" % (pool["id"], pool["nome"])
+                log.info('deleting pool %s' % pool_name)
+                servergrouplist = (self._lb.slb_factory
                                    .create('ArrayOfStringSequence'))
-                serverGroupList.StringSequence.append(pool_name)
+                servergrouplist.StringSequence.append(pool_name)
 
                 (self._lb.slb_service
                  .deleteRealServerGroups(pool_name))
             except suds.WebFault as e:
                 raise base_exceptions.CommandErrorException(e)
-
-
