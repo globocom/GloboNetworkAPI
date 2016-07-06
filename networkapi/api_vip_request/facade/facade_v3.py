@@ -199,6 +199,7 @@ def _update_port(ports, vip_request_id):
         ).delete()
 
         # save pool by port
+        pools = list()
         for pool in port.get('pools'):
             try:
                 pl = models.VipRequestPortPool.objects.get(
@@ -218,12 +219,13 @@ def _update_port(ports, vip_request_id):
                     pl.order = pool.get('order')
                     pl.save()
 
+            pools.append(pl.id)
+
         # delete pool by port
-        pools = [pool['server_pool'] for pool in port.get('pools')]
         models.VipRequestPortPool.objects.filter(
             vip_request_port=pt
         ).exclude(
-            server_pool__in=pools
+            id__in=pools
         ).delete()
 
     # delete port
@@ -378,9 +380,6 @@ def prepare_apply(vip_requests, update=False, created=True, user=None):
                 pool_serializer = PoolV3Serializer(pool)
 
                 l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
-
-                #TODO: L7?
-                l7_rule=''
 
                 vip_request['ports'][idx]['pools'][i]['server_pool'] = {
                     'id': pool_serializer.data['id'],
