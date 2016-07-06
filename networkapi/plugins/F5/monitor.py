@@ -68,8 +68,8 @@ class Monitor(F5Base):
 
                         hr = kwargs['healthcheck'][i]['healthcheck_request']
                         if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
-                            healthcheck_request = hr[0:-4] + \
-                                hr[-4:].replace('\r', '').replace('\n', '') + '\r\n\r\n'
+                            healthcheck_request = hr[0:-8] + \
+                                hr[-8:].replace("\\r", '').replace("\\n", '') + "\\r\\n\\r\\n"
                         else:
                             healthcheck_request = hr
 
