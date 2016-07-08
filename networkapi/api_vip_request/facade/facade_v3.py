@@ -11,7 +11,7 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions as exceptions_pool
-from networkapi.api_pools.facade import get_pool_by_id
+from networkapi.api_pools.facade import get_pool_by_id, reserve_name_healthcheck
 from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_vip_request import exceptions, models, syncs
 from networkapi.distributedlock import distributedlock, LOCK_VIP
@@ -379,11 +379,14 @@ def prepare_apply(vip_requests, update=False, created=True, user=None):
 
                 l7_rule = OptionVip.objects.get(id=pl['l7_rule']).nome_opcao_txt
 
+                healthcheck = pool_serializer.data['healthcheck']
+                healthcheck['identifier'] = reserve_name_healthcheck(
+                    pool_serializer.data['identifier'])
                 vip_request['ports'][idx]['pools'][i]['server_pool'] = {
                     'id': pool_serializer.data['id'],
                     'nome': pool_serializer.data['identifier'],
                     'lb_method': pool_serializer.data['lb_method'],
-                    'healthcheck': pool_serializer.data['healthcheck'],
+                    'healthcheck': healthcheck,
                     'action': pool_serializer.data['servicedownaction']['name'],
                     'pool_created': pool_serializer.data['pool_created'],
                     'pools_members': [{

@@ -32,7 +32,7 @@ class Generic(BasePlugin):
                 vts.delete(vps_names=vps_names)
 
                 rule_l7 = ['{}_RULE_L7'.format(vp['name'])
-                           for vp in tratado.get('vips_filter')]
+                           for vp in tratado.get('vips_filter') if vp.get('pool_l7')]
                 if rule_l7:
                     rl = rule.Rule(self._lb)
                     rl.delete(rule_names=rule_l7)
