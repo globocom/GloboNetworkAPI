@@ -124,8 +124,42 @@ class Generic(BasePlugin):
         self.__create_pool(pools)
 
     def __create_pool(self, data):
+        import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint bc0dc317 //
+
         log.info("skipping create pool")
-        # return
+        return
+
+pool_names = ['P123_teste2','P123_teste3']
+servergrouplist = (_lb.slb_factory.create('ArrayOfRealServerGroupSequence'))
+for pool_name in pool_names:
+    realservergroup = (_lb.slb_factory.create('RealServerGroup'))
+    realservergroup.groupName = pool_name
+    servergrouplist.RealServerGroupSequence.append(realservergroup)
+
+(_lb.slb_service.createRealServerGroups(servergrouplist))
+
+
+servergrouplist = (_lb.slb_factory.create('ArrayOfStringSequence'))
+for pool_name in pool_names:
+    servergrouplist.StringSequence.append(pool_name)
+
+(_lb.slb_service.deleteRealServerGroups(servergrouplist))
+
+addRealServersToGroup
+
+servergrouplist = (_lb.slb_factory.create('ArrayOfRealServerGroupSequence'))
+for pool in pools:
+    realservergroup = (_lb.slb_factory.create('RealServerGroup'))
+    realservergroup.groupName = pool['identifier']
+    realservers = (_lb.slb_factory.create('ArrayOfStringSequence'))
+    for member in pool['server_pool_members']:
+        member_name = member.get('ip').get('ip_formated') if member.get('ip') \
+            else member.get('ipv6').get('ip_formated')
+        realservergroup.realservers.StringSequence.append(member_name)
+
+    servergrouplist.RealServerGroupSequence.append(realservergroup)
+
+(_lb.slb_service.createRealServerGroups(servergrouplist))
 
         try:
             for pool in data["pools"]:

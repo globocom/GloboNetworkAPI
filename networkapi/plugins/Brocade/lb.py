@@ -15,9 +15,10 @@ class Lb(object):
         self._username = username
 
         try:
-            device = {'management_ip':hostname,
-                      'user':username,
-                      'password':password
+            device = {
+                'management_ip': hostname,
+                'user': username,
+                'password': password
             }
 
             service_clients = (ClientCache
@@ -34,11 +35,3 @@ class Lb(object):
         except Exception, e:
             logging.critical("Unable to connect to BROCADE. Details: %s" % (e))
             raise base_exceptions.CommandErrorException(e)
-        # else:
-        #     return
-        #     self._version = self._channel.System.SystemInfo.get_version()
-        #     if self._version[8:len(self._version)].split('.')[0] <= 10:
-        #         raise base_exceptions.UnsupportedVersion(
-        #             'This plugin only supports BROCADE')
-        #     else:
-        #         self._channel = self._channel.with_session_id()
