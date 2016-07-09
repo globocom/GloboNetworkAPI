@@ -69,24 +69,28 @@ class Monitor(F5Base):
 
                             rg = 'HTTP\/1'
                             if not valid_regex(hr, rg):
-                                hr = hr + ' HTTP/1.0\r\n\r\n'
+                                hr = hr + ' HTTP/1.0\r\n\r\n'.encode('unicode-escape')
+
+                            rg = '(?:((\\r\\n)){1,2}?)$'
+                            if valid_regex(hr, rg):
+                                hr = hr.encode('unicode-escape')
 
                             rg = '(?:((\\r\\n)|(\\\\r\\\\n)){1,2}?)$'
                             if not valid_regex(hr, rg):
-                                hr = hr + '\r\n\r\n'
+                                hr = hr + '\r\n\r\n'.encode('unicode-escape')
 
                         healthcheck_request = hr
 
                         template_names.append(name)
                         values.append({
                             'type': 'STYPE_SEND',
-                            'value': healthcheck_request.encode('unicode-escape')
+                            'value': healthcheck_request
                         })
 
                         template_names.append(name)
                         values.append({
                             'type': 'STYPE_RECEIVE',
-                            'value': healthcheck_expect.encode('unicode-escape')
+                            'value': healthcheck_expect
                         })
 
                     else:
