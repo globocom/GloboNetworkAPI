@@ -67,6 +67,12 @@ class Monitor(F5Base):
                             if not valid_regex(hr, rg):
                                 hr = 'GET ' + hr
 
+                            # do escape when healthcheck has simple \r\n
+                            rg = '((\\r\\n))'
+                            if valid_regex(hr, rg):
+                                log.debug('adding unicode-escape')
+                                hr = hr.encode('unicode-escape')
+
                             # add HTTP/1.\\r\\n\\r\\n when plugin no receive in
                             # healthcheck
                             rg = 'HTTP\/1'
@@ -80,12 +86,6 @@ class Monitor(F5Base):
                             if not valid_regex(hr, rg):
                                 log.debug('adding \\r\\n\\r\\n')
                                 hr = hr + '\\r\\n\\r\\n'
-
-                            # do escape when healthcheck has simple \r\n\r\n
-                            rg = '(?:((\\r\\n)){1,2}?)$'
-                            if valid_regex(hr, rg):
-                                log.debug('adding unicode-escape')
-                                hr = hr.encode('unicode-escape')
 
                         healthcheck_request = hr
 
