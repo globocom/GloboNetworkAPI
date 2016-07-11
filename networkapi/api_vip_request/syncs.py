@@ -247,7 +247,7 @@ def old_to_new(vip_request):
 
                 # descobre protocolo l7 e l4
                 tipo_opcao = 'l7_rule'
-                nome_opcao_txt = '(nenhum)'
+                nome_opcao_txt = 'default_vip'
                 l4_protocol = 'TCP'
                 l7_protocol = 'Outros'
                 if mp.get('healthcheck_type') == 'HTTP':
@@ -424,7 +424,7 @@ def new_to_old(vp):
             pools = port.viprequestportpool_set.all()
 
             for pool in pools:
-                if pool.optionvip.nome_opcao_txt in (u'(nenhum)', u'default'):
+                if pool.optionvip.nome_opcao_txt in (u'default_vip'):
                     vip_port = {
                         'id': port.id,
                         'requisicao_vip': vip,

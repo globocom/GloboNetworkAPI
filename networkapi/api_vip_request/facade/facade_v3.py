@@ -145,10 +145,10 @@ def _create_port(ports, vip_request_id):
         for pool in port.get('pools'):
             pl = models.VipRequestPortPool()
             pl.vip_request_port_id = pt.id
-            pl.server_pool_id = pool['server_pool']
-            pl.optionvip_id = pool['l7_rule']
-            pl.val_optionvip = pool['l7_value']
-            pl.order = pool['order']
+            pl.server_pool_id = pool.get('server_pool')
+            pl.optionvip_id = pool.get('l7_rule')
+            pl.val_optionvip = pool.get('l7_value')
+            pl.order = pool.get('order')
             pl.save()
 
 
@@ -203,7 +203,7 @@ def _update_port(ports, vip_request_id):
             try:
                 pl = models.VipRequestPortPool.objects.get(
                     vip_request_port=pt.id,
-                    id=pool['id'])
+                    id=pool.get('id'))
             except:
                 pl = models.VipRequestPortPool()
                 pl.vip_request_port_id = pt.id
@@ -227,7 +227,7 @@ def _update_port(ports, vip_request_id):
         ).delete()
 
     # delete port
-    ports_ids = [port['port'] for port in ports]
+    ports_ids = [port.get('port') for port in ports]
     models.VipRequestPort.objects.filter(
         vip_request_id=vip_request_id
     ).exclude(
@@ -318,14 +318,14 @@ def prepare_apply(vip_requests, update=False, created=True, user=None):
             validate_save(vip_request, True)
             update_vip_request(vip)
 
-        id_vip = str(vip_request['id'])
+        id_vip = str(vip_request.get('id'))
 
         equips, conf, cluster_unit = _validate_vip_to_apply(vip_request, created, user)
 
-        cache_group = OptionVip.objects.get(id=vip_request['options'].get('cache_group'))
-        traffic_return = OptionVip.objects.get(id=vip_request['options'].get('traffic_return'))
-        timeout = OptionVip.objects.get(id=vip_request['options'].get('timeout'))
-        persistence = OptionVip.objects.get(id=vip_request['options'].get('persistence'))
+        cache_group = OptionVip.objects.get(id=vip_request.get('options').get('cache_group'))
+        traffic_return = OptionVip.objects.get(id=vip_request.get('options').get('traffic_return'))
+        timeout = OptionVip.objects.get(id=vip_request.get('options').get('timeout'))
+        persistence = OptionVip.objects.get(id=vip_request.get('options').get('persistence'))
 
         if vip_request['ipv4']:
             ipv4 = Ip.get_by_pk(vip_request['ipv4']) if vip_request['ipv4'] else None

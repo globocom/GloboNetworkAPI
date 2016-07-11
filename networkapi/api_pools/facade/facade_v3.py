@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+import copy
 import logging
 import time
+
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -210,7 +212,7 @@ def update_real_pool(pools, user):
             healthcheck_old = serializers.HealthcheckV3Serializer(sp.healthcheck).data
 
             if json_delta.diff(healthcheck_old, pool['healthcheck']):
-                healthcheck = pool['healthcheck']
+                healthcheck = copy.deepcopy(pool['healthcheck'])
                 healthcheck['identifier'] = reserve_name_healthcheck(
                     pool['identifier'])
 
