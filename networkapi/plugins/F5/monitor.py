@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-import time
-
-from django.core.cache import cache
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import types
 from networkapi.plugins.F5.f5base import F5Base
 from networkapi.plugins.F5.util import logger
+from networkapi.util import valid_regex
 
 log = logging.getLogger(__name__)
 
@@ -45,11 +43,7 @@ class Monitor(F5Base):
                         kwargs['healthcheck'][i]['healthcheck_expect'] != '' or \
                             kwargs['healthcheck'][i]['destination'] != '*:*':
 
-                        key = 'pool:monitor:%s' % kwargs['names'][i]
-                        name = cache.get(key)
-                        if not name:
-                            name = self.generate_name(kwargs['names'][i])
-                            cache.set(key, name)
+                        name = kwargs['healthcheck'][i]['identifier']
 
                         template = {
                             'template_name': name,
@@ -67,24 +61,44 @@ class Monitor(F5Base):
                         })
 
                         hr = kwargs['healthcheck'][i]['healthcheck_request']
-                        if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
-                            healthcheck_request = hr[0:-8] + \
-                                hr[-8:].replace("\\r", '').replace("\\n", '') + "\\r\\n\\r\\n"
-                        else:
-                            healthcheck_request = hr
-
                         healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
+                        if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
+                            rg = '^([\" ]?)+(GET|HEAD|POST|PUT|CONNECT|DELETE|OPTIONS|TRACE|PATCH)'
+                            if not valid_regex(hr, rg):
+                                hr = 'GET ' + hr
+
+                            # do escape when healthcheck has simple \r\n
+                            rg = '((\\r\\n))'
+                            if valid_regex(hr, rg):
+                                log.debug('adding unicode-escape')
+                                hr = hr.encode('unicode-escape')
+
+                            # add HTTP/1.\\r\\n\\r\\n when plugin no receive in
+                            # healthcheck
+                            rg = 'HTTP\/1'
+                            if not valid_regex(hr, rg):
+                                log.debug('adding HTTP/1.\\r\\n\\r\\n')
+                                hr = hr + ' HTTP/1.0\\r\\n\\r\\n'
+
+                            # add \\r\\n\\r\\n when plugin no receive in
+                            # healthcheck
+                            rg = '(?:((\\r\\n)|(\\\\r\\\\n)){1,2}?)$'
+                            if not valid_regex(hr, rg):
+                                log.debug('adding \\r\\n\\r\\n')
+                                hr = hr + '\\r\\n\\r\\n'
+
+                        healthcheck_request = hr
 
                         template_names.append(name)
                         values.append({
                             'type': 'STYPE_SEND',
-                            'value': healthcheck_request.encode('unicode-escape')
+                            'value': healthcheck_request
                         })
 
                         template_names.append(name)
                         values.append({
                             'type': 'STYPE_RECEIVE',
-                            'value': healthcheck_expect.encode('unicode-escape')
+                            'value': healthcheck_expect
                         })
 
                     else:
@@ -186,7 +200,3 @@ class Monitor(F5Base):
             self._lb._channel.System.Session.rollback_transaction()
         else:
             self._lb._channel.System.Session.submit_transaction()
-
-    @logger
-    def generate_name(self, identifier, number=0):
-        return '/Common/MONITOR_POOL_%s_%s_%s' % (identifier, str(number), str(time.time()))

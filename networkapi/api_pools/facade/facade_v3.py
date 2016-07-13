@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
+import copy
 import logging
+import time
 
-from django.core.cache import cache
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
@@ -26,14 +28,9 @@ log = logging.getLogger(__name__)
 ################
 # Apply in eqpt
 ################
-@commit_on_success
-def create_real_pool(pools, user):
-    """
-        Create real pool in eqpt
-    """
+def prepare_apply(pools, user):
 
     load_balance = dict()
-    keys_cache = list()
 
     for pool in pools:
 
@@ -55,13 +52,13 @@ def create_real_pool(pools, user):
                     'pools': [],
                 }
 
-            keys_cache.append('pool:monitor:%s' % pool['identifier'])
-
+            healthcheck = pool['healthcheck']
+            healthcheck['identifier'] = reserve_name_healthcheck(pool['identifier'])
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
                 'nome': pool['identifier'],
                 'lb_method': pool['lb_method'],
-                'healthcheck': pool['healthcheck'],
+                'healthcheck': healthcheck,
                 'action': pool['servicedownaction']['name'],
                 'pools_members': [{
                     'id': pool_member['id'],
@@ -74,11 +71,19 @@ def create_real_pool(pools, user):
                 } for pool_member in pool['server_pool_members']]
             })
 
+    return load_balance
+
+
+@commit_on_success
+def create_real_pool(pools, user):
+    """
+        Create real pool in eqpt
+    """
+
+    load_balance = prepare_apply(pools, user)
+
     for lb in load_balance:
         load_balance[lb]['plugin'].create_pool(load_balance[lb])
-
-    for key_cache in keys_cache:
-        cache.delete(key_cache)
 
     ids = [pool['id'] for pool in pools]
     ServerPool.objects.filter(id__in=ids).update(pool_created=True)
@@ -92,45 +97,7 @@ def delete_real_pool(pools, user):
     delete real pool in eqpt
     """
 
-    load_balance = {}
-
-    for pool in pools:
-
-        equips = _validate_pool_members_to_apply(pool, user)
-
-        for e in equips:
-            eqpt_id = str(e.id)
-            equipment_access = EquipamentoAcesso.search(
-                equipamento=e.id
-            )
-
-            plugin = PluginFactory.factory(e)
-
-            if not load_balance.get(eqpt_id):
-
-                load_balance[eqpt_id] = {
-                    'plugin': plugin,
-                    'access': equipment_access,
-                    'pools': [],
-                }
-
-            load_balance[eqpt_id]['pools'].append({
-                'id': pool['id'],
-                'nome': pool['identifier'],
-                'lb_method': pool['lb_method'],
-                'healthcheck': pool['healthcheck'],
-                'action': pool['servicedownaction']['name'],
-                'pools_members': [{
-                    'id': pool_member['id'],
-                    'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
-                    'port': pool_member['port_real'],
-                    'member_status': pool_member['member_status'],
-                    'limit': pool_member['limit'],
-                    'priority': pool_member['priority'],
-                    'weight': pool_member['weight']
-                } for pool_member in pool['server_pool_members']]
-
-            })
+    load_balance = prepare_apply(pools, user)
 
     for lb in load_balance:
         load_balance[lb]['plugin'].delete_pool(load_balance[lb])
@@ -148,7 +115,6 @@ def update_real_pool(pools, user):
     - update data pool in db
     """
     load_balance = dict()
-    keys_cache = list()
 
     for pool in pools['server_pools']:
         validate_save(pool, permit_created=True)
@@ -242,13 +208,14 @@ def update_real_pool(pools, user):
                     'pools': [],
                 }
 
-            keys_cache.append('pool:monitor:%s' % pool['identifier'])
-
             sp = ServerPool.objects.get(id=pool['id'])
             healthcheck_old = serializers.HealthcheckV3Serializer(sp.healthcheck).data
 
             if json_delta.diff(healthcheck_old, pool['healthcheck']):
-                healthcheck = pool['healthcheck']
+                healthcheck = copy.deepcopy(pool['healthcheck'])
+                healthcheck['identifier'] = reserve_name_healthcheck(
+                    pool['identifier'])
+
             else:
                 healthcheck = {}
 
@@ -266,20 +233,13 @@ def update_real_pool(pools, user):
     for lb in load_balance:
         load_balance[lb]['plugin'].update_pool(load_balance[lb])
 
-    for key_cache in keys_cache:
-        cache.delete(key_cache)
-
     return {}
 
 
-def set_poolmember_state(pools, user):
-    """
-    Set Pool Members state
-
-    """
+def prepare_apply_state(pools, user=None):
     load_balance = {}
 
-    for pool in pools['server_pools']:
+    for pool in pools:
         if pool['server_pool_members']:
             equips = _validate_pool_members_to_apply(pool, user)
 
@@ -310,6 +270,17 @@ def set_poolmember_state(pools, user):
                     } for pool_member in pool['server_pool_members']]
                 })
 
+    return load_balance
+
+
+def set_poolmember_state(pools, user):
+    """
+    Set Pool Members state
+
+    """
+
+    load_balance = prepare_apply_state(pools['server_pools'], user)
+
     for lb in load_balance:
         load_balance[lb]['plugin'].set_state_member(load_balance[lb])
 
@@ -325,40 +296,7 @@ def get_poolmember_state(pools):
     Return Pool Members State
     """
 
-    load_balance = {}
-
-    for pool in pools:
-
-        if pool['server_pool_members']:
-
-            equips = _validate_pool_members_to_apply(pool)
-
-            for e in equips:
-                eqpt_id = str(e.id)
-                equipment_access = EquipamentoAcesso.search(
-                    equipamento=e.id
-                )
-
-                plugin = PluginFactory.factory(e)
-
-                if not load_balance.get(eqpt_id):
-
-                    load_balance[eqpt_id] = {
-                        'plugin': plugin,
-                        'access': equipment_access,
-                        'pools': [],
-                    }
-
-                load_balance[eqpt_id]['pools'].append({
-                    'id': pool['id'],
-                    'nome': pool['identifier'],
-                    'pools_members': [{
-                        'id': pool_member['id'],
-                        'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
-                        'port': pool_member['port_real'],
-                        'member_status': pool_member['member_status']
-                    } for pool_member in pool['server_pool_members']]
-                })
+    load_balance = prepare_apply_state(pools)
 
     ps = dict()
     status = dict()
@@ -515,7 +453,8 @@ def get_options_pool_list_by_environment(environment_id):
     param environment_id: environment_id
     """
 
-    options_pool = models.OptionPool.objects.filter(optionpoolenvironment__environment=environment_id)
+    options_pool = models.OptionPool.objects.filter(
+        optionpoolenvironment__environment=environment_id)
 
     return options_pool
 
@@ -524,7 +463,8 @@ def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
     if search.get('extends_search'):
-        pools = pools.filter(reduce(lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
+        pools = pools.filter(reduce(
+            lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
     search_query = dict()
     search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
@@ -688,6 +628,12 @@ def destroy_lock(locks_list):
     """
     for lock in locks_list:
         lock.__exit__('', '', '')
+
+
+def reserve_name_healthcheck(pool_name):
+    name = '/Common/MONITOR_POOL_%s_%s' % (pool_name, str(time.time()))
+
+    return name
 
 
 def _validate_pool_members_to_apply(pool, user=None):
