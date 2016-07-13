@@ -92,8 +92,9 @@ class PoolMemberStateView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Returns a list of pools with updated states of members
-        :url /api/v3/pool/deploy/<pool_ids>/member/status/
+        :url /api/v3/pool/deploy/<pool_ids>/member/status/?checkstatus=<checkstatus>
         :param pool_ids=<pool_ids>
+        :param checkstatus=(0|1)
         :return list of server pool
         {
             "server_pools": [{

@@ -64,6 +64,11 @@ def search_hide_password(msg):
     return msg
 
 
+def valid_regex(string, regex):
+    pattern = re.compile(regex)
+    return re.search(pattern, string) is not None
+
+
 def is_valid_regex(string, regex):
     '''Checks if the parameter is a valid value by regex.
 
