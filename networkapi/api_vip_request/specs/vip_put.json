@@ -86,8 +86,7 @@
                     },
                     "required": [
                       "server_pool",
-                      "l7_rule",
-                      "l7_value"
+                      "l7_rule"
                     ],
                     "additionalProperties": false
                   }
