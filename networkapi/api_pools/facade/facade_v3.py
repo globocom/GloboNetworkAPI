@@ -501,9 +501,11 @@ def get_pool_list_by_environmentvip(environment_vip_id):
     param environment_vip_id: environment_vip_id
     """
 
+    env_vip = EnvironmentVip.objects.get(id=environment_vip_id)
+
     server_pool = ServerPool.objects.filter(
-        Q(environment__vlan__networkipv4__ambient_vip__id=environment_vip_id) |
-        Q(environment__vlan__networkipv6__ambient_vip__id=environment_vip_id)
+        Q(environment__vlan__networkipv4__ambient_vip=env_vip) |
+        Q(environment__vlan__networkipv6__ambient_vip=env_vip)
     ).distinct().order_by('identifier')
 
     return server_pool

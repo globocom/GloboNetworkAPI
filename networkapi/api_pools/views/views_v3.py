@@ -810,7 +810,7 @@ class PoolEnvironmentVip(APIView):
         try:
             environment_vip_id = kwargs['environment_vip_id']
             pools = facade.get_pool_list_by_environmentvip(environment_vip_id)
-            pool_serializer = serializers.PoolV3SimpleSerializer(
+            pool_serializer = serializers.PoolV3MinimumSerializer(
                 pools,
                 many=True
             )

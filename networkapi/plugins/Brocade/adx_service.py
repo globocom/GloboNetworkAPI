@@ -6,7 +6,7 @@
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+#         https://www.apache.org/licenses/LICENSE-2.0
 #
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -22,15 +22,16 @@ import time
 
 import httplib2
 from suds import client as suds_client
-from suds.sax import element as suds_element
 from suds import transport as suds_transport
 from suds.plugin import MessagePlugin
+from suds.sax import element as suds_element
 
 
 LOG = logging.getLogger(__name__)
 
 
 class RemoveEmptyTags(MessagePlugin):
+
     def marshalled(self, context):
         context.envelope[1].prune()
 
@@ -41,7 +42,7 @@ class ClientCache:
 
     @classmethod
     def add_adx_service_client(cls, device):
-        LOG.debug(('add_adx_service_client to dictionary'))
+        LOG.debug('add_adx_service_client to dictionary')
         ip = device['management_ip']
         user = device['user']
         password = device['password']
@@ -62,18 +63,18 @@ class ClientCache:
 
     @classmethod
     def delete_adx_service_client(cls, device):
-        LOG.debug(('delete_adx_service_client from dictionary'))
+        LOG.debug('delete_adx_service_client from dictionary')
         ip = device['management_ip']
         if ip in cls._ADX_SERVICE_CLIENTS:
             del cls._ADX_SERVICE_CLIENTS[ip]
 
     @classmethod
     def get_adx_service_client(cls, device):
-        LOG.debug(('get_adx_service_client'))
+        LOG.debug('get_adx_service_client')
         ip = device['management_ip']
 
         if ip not in cls._ADX_SERVICE_CLIENTS:
-            LOG.debug(('Adx Service Client not yet initialized ...'))
+            LOG.debug('Adx Service Client not yet initialized ...')
             cls.add_adx_service_client(device)
 
         return cls._ADX_SERVICE_CLIENTS[ip]
@@ -84,6 +85,7 @@ class Httplib2Response:
 
 
 class Httplib2Transport(suds_transport.Transport):
+
     def __init__(self, **kwargs):
         self.username = kwargs["username"]
         self.password = kwargs["password"]
@@ -124,50 +126,52 @@ class Httplib2Transport(suds_transport.Transport):
 
 
 class AdxService:
-    "ADX Service Initialization Class"
-    ns0 = ('ns0', 'http://schemas.xmlsoap.org/soap/envelope123/')
 
-    def __init__(self, adxIpAddress, userName, password):
-        self.adxIpAddress = adxIpAddress
-        self.userName = userName
+    "ADX Service Initialization Class"
+    ns0 = ('ns0', 'https://schemas.xmlsoap.org/soap/envelope123/')
+
+    def __init__(self, adx_ip_address, user_name, password):
+        self.adxIpAddress = adx_ip_address
+        self.userName = user_name
         self.password = password
-        self.wsdl_base = "https://" + adxIpAddress + "/wsdl/"
+        self.wsdl_base = "https://" + adx_ip_address + "/wsdl/"
         self.sys_service_wsdl = "sys_service.wsdl"
         self.slb_service_wsdl = "slb_service.wsdl"
         self.net_service_wsdl = "network_service.wsdl"
-        self.location = "https://" + adxIpAddress + "/WS/SYS"
+        self.location = "https://" + adx_ip_address + "/WS/SYS"
         self.transport = Httplib2Transport(username=self.userName,
                                            password=self.password)
 
     def createSlbServiceClient(self):
-        def soapHeader():
-            requestHeader = suds_element.Element('RequestHeader',
-                                                 ns=AdxService.ns0)
+        def soap_header():
+            request_header = suds_element.Element('RequestHeader',
+                                                  ns=AdxService.ns0)
             context = suds_element.Element('context').setText('default')
-            requestHeader.append(context)
-            return requestHeader
+            request_header.append(context)
+            return request_header
 
         url = self.wsdl_base + self.slb_service_wsdl
         location = "https://" + self.adxIpAddress + "/WS/SLB"
         start = time.time()
+
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSlb',
                                     location=location, timeout=300,
                                     plugins=[RemoveEmptyTags()])
         elapsed = (time.time() - start)
-        LOG.debug(('Time to initialize SLB Service Client: %s'), elapsed)
+        LOG.debug('Time to initialize SLB Service Client: %s', elapsed)
 
-        requestHeader = soapHeader()
-        client.set_options(soapheaders=requestHeader)
+        request_header = soap_header()
+        client.set_options(soapheaders=request_header)
         return client
 
     def createSysServiceClient(self):
-        def soapHeader():
-            requestHeader = suds_element.Element('RequestHeader',
-                                                 ns=AdxService.ns0)
+        def soap_header():
+            request_header = suds_element.Element('RequestHeader',
+                                                  ns=AdxService.ns0)
             context = suds_element.Element('context').setText('default')
-            requestHeader.append(context)
-            return requestHeader
+            request_header.append(context)
+            return request_header
 
         url = self.wsdl_base + self.sys_service_wsdl
         location = "https://" + self.adxIpAddress + "/WS/SYS"
@@ -177,19 +181,19 @@ class AdxService:
                                     location=location, timeout=300,
                                     plugins=[RemoveEmptyTags()])
         elapsed = (time.time() - start)
-        LOG.debug(('Time to initialize SYS Service Client: %s'), elapsed)
+        LOG.debug('Time to initialize SYS Service Client: %s', elapsed)
 
-        requestHeader = soapHeader()
-        client.set_options(soapheaders=requestHeader)
+        request_header = soap_header()
+        client.set_options(soapheaders=request_header)
         return client
 
     def createNetServiceClient(self):
-        def soapHeader():
-            requestHeader = suds_element.Element('RequestHeader',
-                                                 ns=AdxService.ns0)
+        def soap_header():
+            request_header = suds_element.Element('RequestHeader',
+                                                  ns=AdxService.ns0)
             context = suds_element.Element('context').setText('default')
-            requestHeader.append(context)
-            return requestHeader
+            request_header.append(context)
+            return request_header
 
         url = self.wsdl_base + self.net_service_wsdl
         location = "https://" + self.adxIpAddress + "/WS/NET"
@@ -200,36 +204,8 @@ class AdxService:
                                     timeout=300,
                                     plugins=[RemoveEmptyTags()])
         elapsed = (time.time() - start)
-        LOG.debug(('Time to initialize NET Service Client: %s'), elapsed)
+        LOG.debug('Time to initialize NET Service Client: %s', elapsed)
 
-        requestHeader = soapHeader()
-        client.set_options(soapheaders=requestHeader)
+        request_header = soap_header()
+        client.set_options(soapheaders=request_header)
         return client
-
-
-#Exceptions
-
-class AdxBaseException(Exception):
-    def __init__(self, **kwargs):
-        super(BaseException, self).__init__(self.message % kwargs)
-        self.message = self.message % kwargs
-
-
-class AdxUnsupportedFeature(BaseException):
-    message = "Unsupported feature: %(msg)s"
-
-
-class AdxUnsupportedOption(BaseException):
-    message = "Unsupported Value %(value)s specified for attribute %(name)s"
-
-
-class AdxConfigError(BaseException):
-    message = "Configuration error on the device: %(msg)s"
-
-
-class AdxNoValidDevice(BaseException):
-    message = "No valid device found"
-
-
-class AdxStartupError(BaseException):
-    message = "Device driver configuration error: %(msg)s"

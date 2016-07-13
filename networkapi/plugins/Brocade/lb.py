@@ -1,8 +1,7 @@
 import logging
 
-from adx import ClientCache
-
 from networkapi.plugins import exceptions as base_exceptions
+from networkapi.plugins.Brocade.adx_service import ClientCache
 
 log = logging.getLogger(__name__)
 
@@ -13,6 +12,7 @@ class Lb(object):
 
         self._hostname = hostname
         self._username = username
+        self.service_clients = None
 
         try:
             device = {
@@ -21,16 +21,8 @@ class Lb(object):
                 'password': password
             }
 
-            service_clients = (ClientCache
-                               .get_adx_service_client(device))
-            self.slb_factory = service_clients[0].factory
-            self.slb_service = service_clients[0].service
-
-            self.sys_factory = service_clients[1].factory
-            self.sys_service = service_clients[1].service
-
-            self.net_factory = service_clients[2].factory
-            self.net_service = service_clients[2].service
+            self.service_clients = (ClientCache
+                                    .get_adx_service_client(device))
 
         except Exception, e:
             logging.critical("Unable to connect to BROCADE. Details: %s" % (e))

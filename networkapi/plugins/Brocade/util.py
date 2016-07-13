@@ -94,11 +94,11 @@ def trata_param_pool(pools):
         member_new = []
         member_remove = []
         for pool_member in p['pools_members']:
+
             if pool_member.get('member_status'):
                 status = get_status_name(
                     str(pool_member['member_status']))
                 member_status_monitor.append(status['monitor'])
-                member_status_session.append(status['session'])
 
             if pool_member.get('limit'):
                 member_limit.append(pool_member['limit'])
@@ -112,17 +112,17 @@ def trata_param_pool(pools):
             if not pool_member.get('remove'):
                 member.append({
                     'address': pool_member['ip'],
-                    'port': pool_member['port']})
+                    'protocol_port': pool_member['port']})
 
             if pool_member.get('new'):
                 member_new.append({
                     'address': pool_member['ip'],
-                    'port': pool_member['port']})
+                    'protocol_port': pool_member['port']})
 
             if pool_member.get('remove'):
                 member_remove.append({
                     'address': pool_member['ip'],
-                    'port': pool_member['port']})
+                    'protocol_port': pool_member['port']})
 
         pls['pools_members']['monitor'].append(member_status_monitor)
         pls['pools_members']['session'].append(member_status_session)
@@ -208,44 +208,44 @@ SERVICE_DOWN_ACTION = {
 ###############
 STATUS_POOL_MEMBER = {
     '0': {
-        'monitor': 'STATE_DISABLED',
-        'session': 'STATE_DISABLED',
-        'healthcheck': 'STATE_DISABLED'
+        'monitor': 'DISABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '1': {
-        'monitor': 'STATE_ENABLED',
-        'session': 'STATE_DISABLED',
-        'healthcheck': 'STATE_DISABLED'
+        'monitor': 'ENABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '2': {
-        'monitor': 'STATE_DISABLED',
-        'session': 'STATE_ENABLED',
-        'healthcheck': 'STATE_DISABLED'
+        'monitor': 'DISABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '3': {
-        'monitor': 'STATE_ENABLED',
-        'session': 'STATE_ENABLED',
-        'healthcheck': 'STATE_DISABLED'
+        'monitor': 'ENABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '4': {
-        'monitor': 'STATE_DISABLED',
-        'session': 'STATE_DISABLED',
-        'healthcheck': 'STATE_ENABLED'
+        'monitor': 'DISABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '5': {
-        'monitor': 'STATE_ENABLED',
-        'session': 'STATE_DISABLED',
-        'healthcheck': 'STATE_ENABLED'
+        'monitor': 'ENABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '6': {
-        'monitor': 'STATE_DISABLED',
-        'session': 'STATE_ENABLED',
-        'healthcheck': 'STATE_ENABLED'
+        'monitor': 'DISABLED',
+        'session': '',
+        'healthcheck': ''
     },
     '7': {
-        'monitor': 'STATE_ENABLED',
-        'session': 'STATE_ENABLED',
-        'healthcheck': 'STATE_ENABLED'
+        'monitor': 'ENABLED',
+        'session': '',
+        'healthcheck': ''
     }
 }
 

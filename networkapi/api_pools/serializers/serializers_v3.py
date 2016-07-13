@@ -121,6 +121,19 @@ class PoolV3SimpleSerializer(serializers.ModelSerializer):
         )
 
 
+class PoolV3MinimumSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'environment',
+            'pool_created'
+        )
+
+
 class PoolMemberBasicSerializer(serializers.ModelSerializer):
 
     id = serializers.Field()
