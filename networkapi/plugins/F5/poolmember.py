@@ -127,6 +127,17 @@ class PoolMember(F5Base):
                 pool_names=names,
                 members=members)
 
+    @logger
+    def set_member_description(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.Pool.set_member_description(
+            kwargs['names'],
+            kwargs['members'],
+            kwargs['description'])
+
     def __repr__(self):
         log.info('%s' % (self._lb))
         return self._lb

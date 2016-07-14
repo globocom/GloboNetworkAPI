@@ -242,6 +242,11 @@ class Generic(BasePlugin):
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
+            plm.set_member_description(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                description=pls['pools_members']['description'])
+
             plm.set_states(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
@@ -326,6 +331,11 @@ class Generic(BasePlugin):
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
+
+            plm.set_member_description(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                description=pls['pools_members']['description'])
 
             plm.set_states(
                 names=pls['pools_names'],
