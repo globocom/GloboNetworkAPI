@@ -340,7 +340,8 @@ class Generic(BasePlugin):
             # delete templates created
             template_names = [m for m in list(
                 itertools.chain(
-                    *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                    *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])
+            ) if 'MONITOR' in m]
             if template_names:
                 mon.delete_template(
                     template_names=template_names

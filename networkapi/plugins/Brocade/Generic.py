@@ -30,7 +30,7 @@ class Generic(BasePlugin):
                 member_status = util.get_status_name(
                     str(mbc['member_status']))
                 mb['admin_state_up'] = member_status['monitor']
-                mb['name'] = 'teste123'
+                mb['name'] = member_status['identifier']
                 mb['is_remote'] = True
                 mb['max_connections'] = int(mbc['limit'])
                 mb['weight'] = int(mbc['weight']) or 1

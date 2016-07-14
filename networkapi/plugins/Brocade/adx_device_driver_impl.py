@@ -774,7 +774,7 @@ class BrocadeAdxDeviceDriverImpl():
     @log
     def create_member(self, member):
         self._create_real_server(member)
-        #self._create_real_server_port(member)
+        self._create_real_server_port(member)
 
     @log
     def delete_member(self, member):
