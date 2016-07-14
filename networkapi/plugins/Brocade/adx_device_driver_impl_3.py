@@ -19,8 +19,9 @@ import functools
 import logging
 import time
 
-import adx_exception
 
+import adx_exception
+import adx_service
 import suds as suds
 
 LOG = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ ADX_PROTOCOL_MAP = {
 class BrocadeAdxDeviceDriverImpl():
 
     def __init__(self, service_clients):
+        # self.plugin = plugin
         self.slb_factory = service_clients[0].factory
         self.slb_service = service_clients[0].service
 
@@ -98,22 +100,22 @@ class BrocadeAdxDeviceDriverImpl():
             if new_admin_state_up == old_admin_state_up:
                 return
 
-            rs_server_port = self._adx_server_port(address, protocol_port)
+            rsServerPort = self._adx_server_port(address, protocol_port)
             reply = (self.slb_service
-                     .getRealServerPortConfiguration(rs_server_port))
-            rs_port_conf_seq = (self.slb_factory.create
-                                ('ArrayOfRealServerPortConfigurationSequence'))
-            reply.rsPortConfig.serverPort = rs_server_port
-            rs_port_admin_state = 'ENABLED'
+                     .getRealServerPortConfiguration(rsServerPort))
+            rsPortConfSeq = (self.slb_factory.create
+                             ('ArrayOfRealServerPortConfigurationSequence'))
+            reply.rsPortConfig.serverPort = rsServerPort
+            rsPortAdminState = 'ENABLED'
             if not new_admin_state_up:
-                rs_port_admin_state = 'DISABLED'
-            reply.rsPortConfig.adminState = rs_port_admin_state
+                rsPortAdminState = 'DISABLED'
+            reply.rsPortConfig.adminState = rsPortAdminState
 
-            rs_port_conf_list = [reply.rsPortConfig]
-            rs_port_conf_seq.RealServerPortConfigurationSequence = rs_port_conf_list
+            rsPortConfList = [reply.rsPortConfig]
+            rsPortConfSeq.RealServerPortConfigurationSequence = rsPortConfList
 
             (self.slb_service
-             .setRealServersPortConfiguration(rs_port_conf_seq))
+             .setRealServersPortConfiguration(rsPortConfSeq))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
@@ -126,72 +128,74 @@ class BrocadeAdxDeviceDriverImpl():
             if new_weight == old_weight:
                 return
 
-            rs_server = self._adx_server(address)
+            rsServer = self._adx_server(address)
             reply = (self.slb_service
-                     .getRealServerConfiguration(rs_server))
+                     .getRealServerConfiguration(rsServer))
 
-            rs_conf_seq = (self.slb_factory.create
-                           ("ArrayOfRealServerConfigurationSequence"))
+            rsConfSeq = (self.slb_factory.create
+                         ("ArrayOfRealServerConfigurationSequence"))
             if new_weight:
                 reply.rsConfig.leastConnectionWeight = new_weight
 
-            rs_conf_list = list()
-            rs_conf_list.append(reply.rsConfig)
-            rs_conf_seq.RealServerConfigurationSequence = rs_conf_list
+            rsConfList = []
+            rsConfList.append(reply.rsConfig)
+            rsConfSeq.RealServerConfigurationSequence = rsConfList
 
             (self.slb_service
-             .setRealServersConfiguration(rs_conf_seq))
+             .setRealServersConfiguration(rsConfSeq))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     def _get_server_port_count(self, ip_address, is_virtual):
         server = self._adx_server(ip_address)
-        start_index = 1
-        num_retrieved = 5
+        startIndex = 1
+        numRetrieved = 5
         api_call = (self.slb_service
                     .getAllVirtualServerPortsSummary if is_virtual
                     else self.slb_service.getAllRealServerPortsSummary)
         try:
-            reply = api_call(server, start_index, num_retrieved)
+            reply = api_call(server, startIndex, numRetrieved)
             return reply.genericInfo.totalEntriesAvailable
         except suds.WebFault:
             return 0
 
     def bind_member_to_vip(self, member, vip):
-        rs_ip_address = member['address']
-        rs_port = member['protocol_port']
-        rs_name = member.get('name', rs_ip_address)
+        rsIpAddress = member['address']
+        rsName = rsIpAddress
+        if member.get('name'):
+            rsName = member['name']
+        rsPort = member['protocol_port']
 
-        vs_ip_address = vip['address']
-        vs_port = vip['protocol_port']
-        vs_name = vip['name']
+        vsIpAddress = vip['address']
+        vsPort = vip['protocol_port']
+        vsName = vip['name']
 
         try:
-            vs_server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            vsServerPort = self._adx_server_port(vsIpAddress, vsPort, vsName)
+            rsServerPort = self._adx_server_port(rsIpAddress, rsPort, rsName)
 
             (self.slb_service
-             .bindRealServerPortToVipPort(vs_server_port, rs_server_port))
+             .bindRealServerPortToVipPort(vsServerPort, rsServerPort))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     def unbind_member_from_vip(self, member, vip):
-        rs_ip_address = member['address']
-        rs_name = rs_ip_address
+        rsIpAddress = member['address']
+        rsName = rsIpAddress
         if member.get('name'):
-            rs_name = member['name']
-        rs_port = member['protocol_port']
+            rsName = member['name']
+        rsPort = member['protocol_port']
 
-        vs_ip_address = vip['address']
-        vs_port = vip['protocol_port']
-        vs_name = vip['name']
+        vsIpAddress = vip['address']
+        vsPort = vip['protocol_port']
+        vsName = vip['name']
 
         try:
-            vs_server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            vsServerPort = self._adx_server_port(vsIpAddress, vsPort, vsName)
+            rsServerPort = self._adx_server_port(rsIpAddress, rsPort, rsName)
 
             (self.slb_service
-             .unbindRealServerPortFromVipPort(vs_server_port, rs_server_port))
+             .unbindRealServerPortFromVipPort(vsServerPort, rsServerPort))
             # Need to check alternate solutions rather than sleep
             # Is 5 seconds good enough ?
             time.sleep(5)
@@ -200,56 +204,60 @@ class BrocadeAdxDeviceDriverImpl():
 
     def bind_monitor_to_member(self, healthmonitor, member):
         healthmonitor_name = healthmonitor['id']
-        rs_ip_address = member['address']
-        rs_port = member['protocol_port']
-        rs_name = member.get('name', rs_ip_address)
-        rs_admin_state = member.get('admin_state_up', 'DISABLED')
-        rs_run_time_status = 'UNDEFINED'
+        rsIpAddress = member['address']
+        rsName = rsIpAddress
+        if member.get('name'):
+            rsName = member['name']
+        rsPort = member['protocol_port']
+        rsAdminState = 'ENABLED' if member['admin_state_up'] else 'DISABLED'
+        rsRunTimeStatus = 'UNDEFINED'
 
         try:
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            rsServerPort = self._adx_server_port(rsIpAddress, rsPort, rsName)
 
-            real_server_port_config = (self.slb_factory
-                                       .create('RealServerPortConfiguration'))
-            real_server_port_config.serverPort = rs_server_port
-            real_server_port_config.adminState = rs_admin_state
-            real_server_port_config.runTimeStatus = rs_run_time_status
-            real_server_port_config.portPolicyName = healthmonitor_name
-            real_server_port_config.enablePeriodicHealthCheck = True
+            realServerPortConfig = (self.slb_factory
+                                    .create('RealServerPortConfiguration'))
+            realServerPortConfig.serverPort = rsServerPort
+            realServerPortConfig.adminState = rsAdminState
+            realServerPortConfig.runTimeStatus = rsRunTimeStatus
+            realServerPortConfig.portPolicyName = healthmonitor_name
+            realServerPortConfig.enablePeriodicHealthCheck = True
 
-            rs_port_seq = (self.slb_factory
-                           .create('ArrayOfRealServerPortConfigurationSequence'))
-            (rs_port_seq.RealServerPortConfigurationSequence
-             .append(real_server_port_config))
-            self.slb_service.setRealServersPortConfiguration(rs_port_seq)
+            rsPortSeq = (self.slb_factory
+                         .create('ArrayOfRealServerPortConfigurationSequence'))
+            (rsPortSeq.RealServerPortConfigurationSequence
+             .append(realServerPortConfig))
+            self.slb_service.setRealServersPortConfiguration(rsPortSeq)
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
     def unbind_monitor_from_member(self, healthmonitor, member):
 
-        rs_ip_address = member['address']
-        rs_port = member['protocol_port']
-        rs_name = member.get('name', rs_ip_address)
-        rs_admin_state = member.get('admin_state_up', 'DISABLED')
-        rs_run_time_status = 'UNDEFINED'
+        rsIpAddress = member['address']
+        rsName = rsIpAddress
+        if member.get('name'):
+            rsName = member['name']
+        rsPort = member['protocol_port']
+        rsAdminState = 'ENABLED' if member['admin_state_up'] else 'DISABLED'
+        rsRunTimeStatus = 'UNDEFINED'
 
         try:
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            rsServerPort = self._adx_server_port(rsIpAddress, rsPort, rsName)
 
-            real_server_port_config = (self.slb_factory
-                                       .create('RealServerPortConfiguration'))
-            real_server_port_config.serverPort = rs_server_port
-            real_server_port_config.adminState = rs_admin_state
-            real_server_port_config.runTimeStatus = rs_run_time_status
-            real_server_port_config.portPolicyName = ''
-            real_server_port_config.enablePeriodicHealthCheck = False
+            realServerPortConfig = (self.slb_factory
+                                    .create('RealServerPortConfiguration'))
+            realServerPortConfig.serverPort = rsServerPort
+            realServerPortConfig.adminState = rsAdminState
+            realServerPortConfig.runTimeStatus = rsRunTimeStatus
+            realServerPortConfig.portPolicyName = ''
+            realServerPortConfig.enablePeriodicHealthCheck = False
 
-            rs_port_seq = (self.slb_factory
-                           .create('ArrayOfRealServerPortConfigurationSequence'))
-            (rs_port_seq.RealServerPortConfigurationSequence
-             .append(real_server_port_config))
-            self.slb_service.setRealServersPortConfiguration(rs_port_seq)
+            rsPortSeq = (self.slb_factory
+                         .create('ArrayOfRealServerPortConfigurationSequence'))
+            (rsPortSeq.RealServerPortConfigurationSequence
+             .append(realServerPortConfig))
+            self.slb_service.setRealServersPortConfiguration(rsPortSeq)
         except suds.WebFault:
             # raise adx_exception.ConfigError(msg=e.message)
             # ignore the exception until the bug on the XMl API is fixed
@@ -260,11 +268,11 @@ class BrocadeAdxDeviceDriverImpl():
         try:
             server = self._adx_server(vip['address'], vip['name'])
 
-            predictor_method_configuration = (self.slb_factory.create
-                                              ('PredictorMethodConfiguration'))
+            predictorMethodConfiguration = (self.slb_factory.create
+                                            ('PredictorMethodConfiguration'))
             predictor = ADX_PREDICTOR_MAP.get(lb_method)
             if predictor:
-                predictor_method_configuration.predictor = predictor
+                predictorMethodConfiguration.predictor = predictor
             else:
                 error_message = ('Load Balancing Method/Predictor %s '
                                  'not supported') % (lb_method)
@@ -273,7 +281,7 @@ class BrocadeAdxDeviceDriverImpl():
 
             (self.slb_service
              .setPredictorOnVirtualServer(server,
-                                          predictor_method_configuration))
+                                          predictorMethodConfiguration))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
@@ -287,12 +295,12 @@ class BrocadeAdxDeviceDriverImpl():
             if new_description == old_description:
                 return
 
-            vs_server = self._adx_server(address)
+            vsServer = self._adx_server(address)
             reply = (self.slb_service
-                     .getVirtualServerConfiguration(vs_server))
+                     .getVirtualServerConfiguration(vsServer))
 
-            vs_conf_seq = (self.slb_factory.create
-                           ("ArrayOfVirtualServerConfigurationSequence"))
+            vsConfSeq = (self.slb_factory.create
+                         ("ArrayOfVirtualServerConfigurationSequence"))
             if new_description:
                 reply.vipConfig.description = new_description
 
@@ -304,42 +312,42 @@ class BrocadeAdxDeviceDriverImpl():
             if reply.vipConfig.udpAge == 0:
                 reply.vipConfig.udpAge = None
 
-            vs_conf_list = []
-            vs_conf_list.append(reply.vipConfig)
-            vs_conf_seq.VirtualServerConfigurationSequence = vs_conf_list
+            vsConfList = []
+            vsConfList.append(reply.vipConfig)
+            vsConfSeq.VirtualServerConfigurationSequence = vsConfList
 
             (self.slb_service
-             .setVirtualServersConfiguration(vs_conf_seq))
+             .setVirtualServersConfiguration(vsConfSeq))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     def create_virtual_server(self, vip):
-        vs_name = vip['name']
-        vs_ip_address = vip['address']
-        vs_port = vip['protocol_port']
+        vsName = vip['name']
+        vsIpAddress = vip['address']
+        vsPort = vip['protocol_port']
         description = vip['description']
 
-        server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
+        serverPort = self._adx_server_port(vsIpAddress, vsPort, vsName)
 
         try:
-            vs_seq = (self.slb_factory
-                      .create('ArrayOfVirtualServerConfigurationSequence'))
-            vs_config = (self.slb_factory
-                         .create('VirtualServerConfiguration'))
+            vsSeq = (self.slb_factory
+                     .create('ArrayOfVirtualServerConfigurationSequence'))
+            vsConfig = (self.slb_factory
+                        .create('VirtualServerConfiguration'))
 
-            vs_config.virtualServer = server_port.srvr
-            vs_config.adminState = True
-            vs_config.description = description
+            vsConfig.virtualServer = serverPort.srvr
+            vsConfig.adminState = True
+            vsConfig.description = description
 
             # Work Around to define a value for Enumeration Type
-            vs_config.predictor = 'ROUND_ROBIN'
-            vs_config.trackingMode = 'NONE'
-            vs_config.haMode = 'NOT_CONFIGURED'
+            vsConfig.predictor = 'ROUND_ROBIN'
+            vsConfig.trackingMode = 'NONE'
+            vsConfig.haMode = 'NOT_CONFIGURED'
 
-            (vs_seq.VirtualServerConfigurationSequence
-             .append(vs_config))
+            (vsSeq.VirtualServerConfigurationSequence
+             .append(vsConfig))
             (self.slb_service.
-             createVirtualServerWithConfiguration(vs_seq))
+             createVirtualServerWithConfiguration(vsSeq))
         except suds.WebFault as e:
             LOG.error("Exception in create_virtual_server "
                       "in device driver : %s", e.message)
@@ -347,37 +355,38 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def create_virtual_server_port(self, vip):
-        vs_name = vip['name']
-        vs_ip_address = vip['address']
-        vs_port = vip['protocol_port']
-        admin_state_up = vip.get('admin_state_up', 'DISABLED')
+        vsName = vip['name']
+        vsIpAddress = vip['address']
+        vsPort = vip['protocol_port']
+        admin_state_up = vip.get('admin_state_up', True)
 
         try:
-            server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
-            vs_port_seq = (self.slb_factory.create
-                           ('ArrayOfVirtualServerPortConfigurationSequence'))
-            vs_port_config = (self.slb_factory
-                              .create('VirtualServerPortConfiguration'))
+            serverPort = self._adx_server_port(vsIpAddress, vsPort, vsName)
+            vsPortSeq = (self.slb_factory.create
+                         ('ArrayOfVirtualServerPortConfigurationSequence'))
+            vsPortConfig = (self.slb_factory
+                            .create('VirtualServerPortConfiguration'))
 
-            vs_port_config.virtualServer = server_port.srvr
-            vs_port_config.port = server_port.port
-            vs_port_config.adminState = admin_state_up
+            vsPortConfig.virtualServer = serverPort.srvr
+            vsPortConfig.port = serverPort.port
+            vsPortAdminState = 'ENABLED' if admin_state_up else 'DISABLED'
+            vsPortConfig.adminState = vsPortAdminState
 
             session_persistence = vip.get('session_persistence')
             if session_persistence:
                 sp_type = session_persistence['type']
                 if sp_type == "SOURCE_IP":
-                    vs_port_config.enableSticky = True
+                    vsPortConfig.enableSticky = True
                 else:
                     error_message = ('Session Persistence of type %s '
                                      'not supported') % (sp_type)
                     LOG.error(error_message)
                     raise adx_exception.UnsupportedFeature(msg=error_message)
 
-            (vs_port_seq.VirtualServerPortConfigurationSequence
-             .append(vs_port_config))
+            (vsPortSeq.VirtualServerPortConfigurationSequence
+             .append(vsPortConfig))
             (self.slb_service
-             .createVirtualServerPortWithConfiguration(vs_port_seq))
+             .createVirtualServerPortWithConfiguration(vsPortSeq))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
@@ -391,26 +400,26 @@ class BrocadeAdxDeviceDriverImpl():
         address = vip['address']
         port = vip['protocol_port']
 
-        vs_server_port = self._adx_server_port(address, port)
-        vip_port_count = self._get_server_port_count(address, True)
+        vsServerPort = self._adx_server_port(address, port)
+        vipPortCount = self._get_server_port_count(address, True)
 
         try:
-            self.slb_service.deleteVirtualServerPort(vs_server_port)
+            self.slb_service.deleteVirtualServerPort(vsServerPort)
         except suds.WebFault:
             pass
 
         try:
-            if vip_port_count <= 2:
-                self.slb_service.deleteVirtualServer(vs_server_port.srvr)
+            if vipPortCount <= 2:
+                self.slb_service.deleteVirtualServer(vsServerPort.srvr)
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
     def update_vip(self, new_vip, old_vip):
-        vs_ipaddress = new_vip['address']
-        vs_port = new_vip['protocol_port']
-        vs_name = new_vip['name']
-        vs_server_port = self._adx_server_port(vs_ipaddress, vs_port, vs_name)
+        vsIpAddress = new_vip['address']
+        vsPort = new_vip['protocol_port']
+        vsName = new_vip['name']
+        vsServerPort = self._adx_server_port(vsIpAddress, vsPort, vsName)
 
         self._update_virtual_server_properties(new_vip, old_vip)
 
@@ -420,10 +429,10 @@ class BrocadeAdxDeviceDriverImpl():
             try:
                 if new_admin_state_up:
                     (self.slb_service
-                     .enableVirtualServerPort(vs_server_port))
+                     .enableVirtualServerPort(vsServerPort))
                 else:
                     (self.slb_service
-                     .disableVirtualServerPort(vs_server_port))
+                     .disableVirtualServerPort(vsServerPort))
             except suds.WebFault as e:
                 raise adx_exception.ConfigError(msg=e.message)
 
@@ -434,7 +443,7 @@ class BrocadeAdxDeviceDriverImpl():
             if new_session_persistence is None:
                 try:
                     (self.slb_service
-                     .disableStickyOnVirtualServerPort(vs_server_port))
+                     .disableStickyOnVirtualServerPort(vsServerPort))
                 except suds.WebFault as e:
                     raise adx_exception.ConfigError(msg=e.message)
             else:
@@ -442,7 +451,7 @@ class BrocadeAdxDeviceDriverImpl():
                 if type == "SOURCE_IP":
                     try:
                         (self.slb_service
-                         .enableStickyOnVirtualServerPort(vs_server_port))
+                         .enableStickyOnVirtualServerPort(vsServerPort))
                     except suds.WebFault as e:
                         raise adx_exception.ConfigError(msg=e.message)
                 else:
@@ -453,26 +462,26 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def _is_port_policy_in_use(self, healthmonitor_name):
-        start_index = 1
-        num_retrieved = 15
-        port_policy_summary_filter = (self.slb_factory
-                                      .create('PortPolicySummaryFilter'))
-        simple_filter = (self.slb_factory
-                         .create('PortPolicySummarySimpleFilter'))
-        simple_filter.field = 'POLICY_NAME'
-        simple_filter.operator = 'EQUAL_TO'
-        simple_filter.value = healthmonitor_name
+        startIndex = 1
+        numRetrieved = 15
+        portPolicySummaryFilter = (self.slb_factory
+                                   .create('PortPolicySummaryFilter'))
+        simpleFilter = (self.slb_factory
+                        .create('PortPolicySummarySimpleFilter'))
+        simpleFilter.field = 'POLICY_NAME'
+        simpleFilter.operator = 'EQUAL_TO'
+        simpleFilter.value = healthmonitor_name
 
-        port_policy_summary_filter.simpleFilter = simple_filter
+        portPolicySummaryFilter.simpleFilter = simpleFilter
 
         try:
             reply = (self.slb_service
-                     .getAllPortPolicies(start_index,
-                                         num_retrieved,
-                                         port_policy_summary_filter))
+                     .getAllPortPolicies(startIndex,
+                                         numRetrieved,
+                                         portPolicySummaryFilter))
             if reply and reply.policyList:
-                policy_list = reply.policyList.PortPoliciesSummarySequence
-                return any(policy.inUse for policy in policy_list)
+                policyList = reply.policyList.PortPoliciesSummarySequence
+                return any(policy.inUse for policy in policyList)
             else:
                 # Check if Port Policy is bound to a Real Server Port
                 # inUse = reply.policy.inUse
@@ -529,27 +538,27 @@ class BrocadeAdxDeviceDriverImpl():
         if monitor_type in ["HTTP",
                             "HTTPS",
                             "TCP"]:
-            port_policy = self.slb_factory.create('PortPolicy')
+            portPolicy = self.slb_factory.create('PortPolicy')
 
             if monitor_type == "HTTP":
-                port_policy.name = name
-                port_policy.protocol = (ADX_PROTOCOL_MAP.get("HTTP"))
-                port_policy.l4Check = False
+                portPolicy.name = name
+                portPolicy.protocol = (ADX_PROTOCOL_MAP.get("HTTP"))
+                portPolicy.l4Check = False
             elif monitor_type == "HTTPS":
-                port_policy.name = name
-                port_policy.protocol = (ADX_PROTOCOL_MAP.get("HTTPS"))
-                port_policy.l4Check = False
+                portPolicy.name = name
+                portPolicy.protocol = (ADX_PROTOCOL_MAP.get("HTTPS"))
+                portPolicy.l4Check = False
             elif monitor_type == "TCP":
                 # TCP Monitor
-                port_policy.name = name
-                port_policy.l4Check = True
+                portPolicy.name = name
+                portPolicy.l4Check = True
 
                 # Setting Protocol and Port to HTTP
                 # so that this can be bound to a Real Server Port
-                port_policy.protocol = (ADX_PROTOCOL_MAP.get("HTTP"))
+                portPolicy.protocol = (ADX_PROTOCOL_MAP.get("HTTP"))
 
-            port_policy.keepAliveInterval = delay
-            port_policy.numRetries = max_retries
+            portPolicy.keepAliveInterval = delay
+            portPolicy.numRetries = max_retries
 
             http_method = 'GET'
             url_path = '/'
@@ -568,69 +577,69 @@ class BrocadeAdxDeviceDriverImpl():
                 for code in map(lambda x: x.strip(' '),
                                 expected_codes.split(',')):
                     if '-' in code:
-                        code_range = map(lambda x: x.strip(' '),
-                                         code.split('-'))
-                        start_status_codes.append(int(code_range[0]))
-                        end_status_codes.append(int(code_range[1]))
+                        codeRange = map(lambda x: x.strip(' '),
+                                        code.split('-'))
+                        start_status_codes.append(int(codeRange[0]))
+                        end_status_codes.append(int(codeRange[1]))
                     else:
                         start_status_codes.append(int(code))
                         end_status_codes.append(int(code))
 
             if monitor_type == "HTTP":
-                http_port_policy = (self.slb_factory
-                                    .create('HttpPortPolicy'))
-                url_health_check = (self.slb_factory
-                                    .create('URLHealthCheck'))
-                start_codes = (self.slb_factory
-                               .create('ArrayOfunsignedIntSequence'))
-                end_codes = (self.slb_factory
-                             .create('ArrayOfunsignedIntSequence'))
+                httpPortPolicy = (self.slb_factory
+                                  .create('HttpPortPolicy'))
+                urlHealthCheck = (self.slb_factory
+                                  .create('URLHealthCheck'))
+                startCodes = (self.slb_factory
+                              .create('ArrayOfunsignedIntSequence'))
+                endCodes = (self.slb_factory
+                            .create('ArrayOfunsignedIntSequence'))
 
-                start_codes.unsignedIntSequence = start_status_codes
-                end_codes.unsignedIntSequence = end_status_codes
-                url_health_check.url = http_method + ' ' + url_path
-                url_health_check.statusCodeRangeStart = start_codes
-                url_health_check.statusCodeRangeEnd = end_codes
-                http_port_policy.urlStatusCodeInfo = url_health_check
-                http_port_policy.healthCheckType = 'SIMPLE'
+                startCodes.unsignedIntSequence = start_status_codes
+                endCodes.unsignedIntSequence = end_status_codes
+                urlHealthCheck.url = http_method + ' ' + url_path
+                urlHealthCheck.statusCodeRangeStart = startCodes
+                urlHealthCheck.statusCodeRangeEnd = endCodes
+                httpPortPolicy.urlStatusCodeInfo = urlHealthCheck
+                httpPortPolicy.healthCheckType = 'SIMPLE'
 
-                port_policy.httpPolInfo = http_port_policy
+                portPolicy.httpPolInfo = httpPortPolicy
 
             elif monitor_type == "TCP":
-                http_port_policy = (self.slb_factory
-                                    .create('HttpPortPolicy'))
-                url_health_check = (self.slb_factory
-                                    .create('URLHealthCheck'))
-                url_health_check.url = 'HEAD /'
-                http_port_policy.urlStatusCodeInfo = url_health_check
-                http_port_policy.healthCheckType = 'SIMPLE'
+                httpPortPolicy = (self.slb_factory
+                                  .create('HttpPortPolicy'))
+                urlHealthCheck = (self.slb_factory
+                                  .create('URLHealthCheck'))
+                urlHealthCheck.url = 'HEAD /'
+                httpPortPolicy.urlStatusCodeInfo = urlHealthCheck
+                httpPortPolicy.healthCheckType = 'SIMPLE'
 
-                port_policy.httpPolInfo = http_port_policy
+                portPolicy.httpPolInfo = httpPortPolicy
 
             elif monitor_type == "HTTPS":
-                ssl_port_policy = (self.slb_factory
-                                   .create('HttpPortPolicy'))
-                url_health_check = (self.slb_factory
-                                    .create('URLHealthCheck'))
-                start_codes = (self.slb_factory
-                               .create('ArrayOfunsignedIntSequence'))
-                end_codes = (self.slb_factory
-                             .create('ArrayOfunsignedIntSequence'))
+                sslPortPolicy = (self.slb_factory
+                                 .create('HttpPortPolicy'))
+                urlHealthCheck = (self.slb_factory
+                                  .create('URLHealthCheck'))
+                startCodes = (self.slb_factory
+                              .create('ArrayOfunsignedIntSequence'))
+                endCodes = (self.slb_factory
+                            .create('ArrayOfunsignedIntSequence'))
 
-                url_health_check.url = http_method + ' ' + url_path
-                url_health_check.statusCodeRangeStart = start_codes
-                url_health_check.statusCodeRangeEnd = end_codes
+                urlHealthCheck.url = http_method + ' ' + url_path
+                urlHealthCheck.statusCodeRangeStart = startCodes
+                urlHealthCheck.statusCodeRangeEnd = endCodes
 
-                ssl_port_policy.urlStatusCodeInfo = url_health_check
-                ssl_port_policy.healthCheckType = 'SIMPLE'
+                sslPortPolicy.urlStatusCodeInfo = urlHealthCheck
+                sslPortPolicy.healthCheckType = 'SIMPLE'
 
-                port_policy.sslPolInfo = ssl_port_policy
+                portPolicy.sslPolInfo = sslPortPolicy
 
             try:
                 if is_create:
-                    self.slb_service.createPortPolicy(port_policy)
+                    self.slb_service.createPortPolicy(portPolicy)
                 else:
-                    self.slb_service.updatePortPolicy(port_policy)
+                    self.slb_service.updatePortPolicy(portPolicy)
             except suds.WebFault as e:
                 LOG.error('Error in create/update port policy %s', e)
                 raise adx_exception.ConfigError(msg=e.message)
@@ -676,8 +685,8 @@ class BrocadeAdxDeviceDriverImpl():
 
         if monitor_type in ["HTTP", "HTTPS", "TCP"]:
             if not self._does_port_policy_exist(healthmonitor):
-                LOG.debug('Health Monitor %s does not '
-                          'exist on the device', name)
+                LOG.debug(_('Health Monitor %s does not '
+                            'exist on the device'), name)
                 return
 
             if not self._is_port_policy_in_use(name):
@@ -709,39 +718,39 @@ class BrocadeAdxDeviceDriverImpl():
     def _create_real_server(self, member):
         address = member['address']
         weight = member['weight']
-        name = member.get('name', address)
+        name = address
+        if member.get('name'):
+            name = member['name']
         is_remote = member.get('is_remote', False)
 
-        rsportcount = self._get_server_port_count(member['address'], False)
+        try:
+            rs = self._adx_server(address, name)
+            rsConfigSequence = (self.slb_factory.create
+                                ('ArrayOfRealServerConfigurationSequence'))
+            rsConfig = (self.slb_factory
+                        .create('RealServerConfiguration'))
 
-        if rsportcount == 0:
-            try:
-                rs = self._adx_server(address, name)
-                rsconfigsequence = (self.slb_factory.create
-                                    ('ArrayOfRealServerConfigurationSequence'))
-                rsconfig = (self.slb_factory
-                            .create('RealServerConfiguration'))
+            rsConfig.realServer = rs
+            rsConfig.isRemoteServer = is_remote
+            rsConfig.adminState = 'ENABLED'
+            rsConfig.leastConnectionWeight = weight
+            rsConfig.hcTrackingMode = 'NONE'
 
-                rsconfig.realServer = rs
-                rsconfig.isRemoteServer = is_remote
-                rsconfig.adminState = 'ENABLED'
-                rsconfig.leastConnectionWeight = weight
-                rsconfig.hcTrackingMode = 'NONE'
-
-                rsconfigsequence.RealServerConfigurationSequence.append(rsconfig)
-                (self.slb_service
-                 .createRealServerWithConfiguration(rsconfigsequence))
-            except suds.WebFault as e:
-                LOG.debug('Error in creating Real Server %s', e)
-                pass
+            rsConfigSequence.RealServerConfigurationSequence.append(rsConfig)
+            (self.slb_service
+             .createRealServerWithConfiguration(rsConfigSequence))
+        except suds.WebFault as e:
+            LOG.debug('Error in creating Real Server %s', e)
+            pass
 
     def _create_real_server_port(self, member):
         address = member['address']
         port = member['protocol_port']
         admin_state_up = member['admin_state_up']
-        name = member.get('name', address)
+        name = address
+        if member.get('name'):
+            name = member['name']
         is_backup = member.get('is_backup', False)
-        max_connections = member['max_connections']
 
         try:
             # Create Port Profile if it is not a standard port
@@ -750,44 +759,46 @@ class BrocadeAdxDeviceDriverImpl():
                 port_profile['protocol_port'] = port
                 self._create_port_profile(port_profile)
 
-            rs_server_port = self._adx_server_port(address, port, name)
-            rs_port_seq = (self.slb_factory
-                           .create('ArrayOfRealServerPortConfigurationSequence'))
-            rs_port_config = (self.slb_factory
-                              .create('RealServerPortConfiguration'))
+            rsServerPort = self._adx_server_port(address, port, name)
+            rsPortSeq = (self.slb_factory
+                         .create('ArrayOfRealServerPortConfigurationSequence'))
+            rsPortConfig = (self.slb_factory
+                            .create('RealServerPortConfiguration'))
 
-            rs_port_config.serverPort = rs_server_port
-            rs_port_config.adminState = admin_state_up
-            rs_port_config.maxConnection = max_connections
-            rs_port_config.isBackup = is_backup
+            rsPortConfig.serverPort = rsServerPort
+            rsAdminState = 'ENABLED' if admin_state_up else 'DISABLED'
+            rsPortConfig.adminState = rsAdminState
+            if 'max_connections' in member:
+                rsPortConfig.maxConnection = member['max_connections']
+            rsPortConfig.isBackup = is_backup
 
             # Work Around to define a value for Enumeration Type
-            rs_port_config.runTimeStatus = 'UNDEFINED'
+            rsPortConfig.runTimeStatus = 'UNDEFINED'
 
-            (rs_port_seq.RealServerPortConfigurationSequence
-             .append(rs_port_config))
+            (rsPortSeq.RealServerPortConfigurationSequence
+             .append(rsPortConfig))
 
-            self.slb_service.createRealServerPortWithConfiguration(rs_port_seq)
+            self.slb_service.createRealServerPortWithConfiguration(rsPortSeq)
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
     def create_member(self, member):
         self._create_real_server(member)
-        #self._create_real_server_port(member)
+        self._create_real_server_port(member)
 
     @log
     def delete_member(self, member):
-        rsportcount = self._get_server_port_count(member['address'], False)
+        rsPortCount = self._get_server_port_count(member['address'], False)
         try:
-            rsserverport = self._adx_server_port(member['address'],
+            rsServerPort = self._adx_server_port(member['address'],
                                                  member['protocol_port'])
-            # self.slb_service.deleteRealServerPort(rsserverport)
+            self.slb_service.deleteRealServerPort(rsServerPort)
 
             # Delete the Real Server
             # if this is the only port other than default port
-            if rsportcount <= 2:
-                self.slb_service.deleteRealServer(rsserverport.srvr)
+            if rsPortCount <= 2:
+                self.slb_service.deleteRealServer(rsServerPort.srvr)
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
@@ -816,15 +827,15 @@ class BrocadeAdxDeviceDriverImpl():
         pool_name = pool['name']
 
         try:
-            server_group_list = (self.slb_factory.create
-                                 ('ArrayOfRealServerGroupSequence'))
-            real_server_group = (self.slb_factory
-                                 .create('RealServerGroup'))
-            real_server_group.groupName = pool_name
-            server_group_list.RealServerGroupSequence.append(real_server_group)
+            serverGroupList = (self.slb_factory.create
+                               ('ArrayOfRealServerGroupSequence'))
+            realServerGroup = (self.slb_factory
+                               .create('RealServerGroup'))
+            realServerGroup.groupName = pool_name
+            serverGroupList.RealServerGroupSequence.append(realServerGroup)
 
             (self.slb_service
-             .createRealServerGroups(server_group_list))
+             .createRealServerGroups(serverGroupList))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
@@ -836,9 +847,9 @@ class BrocadeAdxDeviceDriverImpl():
     def delete_pool(self, pool):
         pool_name = pool['name']
         try:
-            server_group_list = (self.slb_factory
-                                 .create('ArrayOfStringSequence'))
-            server_group_list.StringSequence.append(pool_name)
+            serverGroupList = (self.slb_factory
+                               .create('ArrayOfStringSequence'))
+            serverGroupList.StringSequence.append(pool_name)
 
             (self.slb_service
              .deleteRealServerGroups(pool_name))
@@ -847,47 +858,47 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def get_pool_stats(self, pool_id, members):
-        bytes_in = 0
-        bytes_out = 0
-        active_connections = 0
-        total_connections = 0
+        bytesIn = 0
+        bytesOut = 0
+        activeConnections = 0
+        totalConnections = 0
 
         for m in members:
             try:
-                rs_ip_address = m['address']
-                rs_name = m['address']
-                rs_port = m['protocol_port']
-                rs_server_port = self._adx_server_port(rs_ip_address,
-                                                       rs_port, rs_name)
+                rsIpAddress = m['address']
+                rsName = m['address']
+                rsPort = m['protocol_port']
+                rsServerPort = self._adx_server_port(rsIpAddress,
+                                                     rsPort, rsName)
                 reply = (self.slb_service
-                         .getRealServerPortMonitoringDetails(rs_server_port))
+                         .getRealServerPortMonitoringDetails(rsServerPort))
 
                 statistics = reply.statistics.statistics
-                bytes_in += statistics.rxBytes
-                bytes_out += statistics.txBytes
-                active_connections += statistics.currentConn
-                total_connections += statistics.totalConn
+                bytesIn = bytesIn + statistics.rxBytes
+                bytesOut = bytesOut + statistics.txBytes
+                activeConnections = activeConnections + statistics.currentConn
+                totalConnections = totalConnections + statistics.totalConn
 
             except suds.WebFault:
                 pass
 
-        return {"bytes_in": bytes_in,
-                "bytes_out": bytes_out,
-                "active_connections": active_connections,
-                "total_connections": total_connections}
+        return {"bytes_in": bytesIn,
+                "bytes_out": bytesOut,
+                "active_connections": activeConnections,
+                "total_connections": totalConnections}
 
     @log
-    def _create_port_profile(self, port):
-        port = port['protocol_port']
+    def _create_port_profile(self, port_profile):
+        protocol_port = port_profile['protocol_port']
         try:
-            port_profile = self.slb_factory.create('PortProfile')
-            l4_port = self.slb_factory.create('L4Port')
-            l4_port.NameOrNumber = port
-            port_profile.port = l4_port
-            port_profile.portType = 'TCP'
-            port_profile.status = True
+            portProfile = self.slb_factory.create('PortProfile')
+            l4Port = self.slb_factory.create('L4Port')
+            l4Port.NameOrNumber = protocol_port
+            portProfile.port = l4Port
+            portProfile.portType = 'TCP'
+            portProfile.status = True
 
-            self.slb_service.createPortProfile(port_profile)
+            self.slb_service.createPortProfile(portProfile)
         except suds.WebFault as e:
             LOG.debug('Exception in create port profile %s', e)
 
@@ -895,11 +906,11 @@ class BrocadeAdxDeviceDriverImpl():
     def _delete_port_profile(self, port_profile):
         protocol_port = port_profile['protocol_port']
         try:
-            l4_port = self.slb_factory.create('L4Port')
-            l4_port.NameOrNumber = protocol_port
-            self.slb_service.deletePortProfile(l4_port)
+            l4Port = self.slb_factory.create('L4Port')
+            l4Port.NameOrNumber = protocol_port
+            self.slb_service.deletePortProfile(l4Port)
         except suds.WebFault as e:
-            LOG.debug('Exception in Delete Port Profile %s', e)
+            LOG.debug(_('Exception in Delete Port Profile %s'), e)
 
     @log
     def ifconfig_e1(self, ip_address, cidr):
@@ -913,16 +924,16 @@ class BrocadeAdxDeviceDriverImpl():
             ifconfig.id.portString = "1"
             ifconfig.isRouteOnly = True
 
-            interface_config_seq = self.net_factory.create(
+            interfaceConfigSeq = self.net_factory.create(
                 'ArrayOfInterfaceConfigSequence')
-            interface_config_seq.InterfaceConfigSequence.append(ifconfig)
+            interfaceConfigSeq.InterfaceConfigSequence.append(ifconfig)
 
-            self.net_service.setInterfaceConfig(interface_config_seq)
+            self.net_service.setInterfaceConfig(interfaceConfigSeq)
 
             # Configure ip address on e1
             ifid = self.net_factory.create('InterfaceID')
-            ipaddr_seq = (self.net_factory
-                          .create('ArrayOfInterfaceIPAddressSequence'))
+            ipaddrSeq = (self.net_factory
+                         .create('ArrayOfInterfaceIPAddressSequence'))
             ipaddr = self.net_factory.create('InterfaceIPAddress')
 
             ifid.portString = "1"
@@ -930,34 +941,34 @@ class BrocadeAdxDeviceDriverImpl():
             ipaddr.ip = ip_address
             ipaddr.subnetMaskLength = mask
 
-            ipaddr_seq.InterfaceIPAddressSequence.append(ipaddr)
+            ipaddrSeq.InterfaceIPAddressSequence.append(ipaddr)
 
             # Sending operations to the vLb
-            self.net_service.setInterfaceConfig(interface_config_seq)
-            self.net_service.addIPsToInterface(ifid, ipaddr_seq)
+            self.net_service.setInterfaceConfig(interfaceConfigSeq)
+            self.net_service.addIPsToInterface(ifid, ipaddrSeq)
         except suds.WebFault as e:
             LOG.debug('Exception configuring e1 %s', e)
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
     def create_static_route(self,
-                            dest_ip_address,
-                            network_mask,
-                            nexthop_ip_address):
+                            destIPAddress,
+                            networkMask,
+                            nexthopIPAddress):
         try:
-            static_route = self.net_factory.create('StaticRoute')
-            static_route_seq = (self.net_factory
-                                .create('ArrayOfStaticRouteSequence'))
+            staticRoute = self.net_factory.create('StaticRoute')
+            staticRouteSeq = (self.net_factory
+                              .create('ArrayOfStaticRouteSequence'))
 
-            static_route.staticRouteType = 'STANDARD'
-            static_route.ipVersion = 'IPV4'
-            static_route.destIPAddress = dest_ip_address
-            static_route.networkMaskBits = network_mask
-            static_route.nexthopIPAddress = nexthop_ip_address
+            staticRoute.staticRouteType = 'STANDARD'
+            staticRoute.ipVersion = 'IPV4'
+            staticRoute.destIPAddress = destIPAddress
+            staticRoute.networkMaskBits = networkMask
+            staticRoute.nexthopIPAddress = nexthopIPAddress
 
-            static_route_seq.StaticRouteSequence.append(static_route)
+            staticRouteSeq.StaticRouteSequence.append(staticRoute)
 
-            self.net_service.createStaticRoute(static_route_seq)
+            self.net_service.createStaticRoute(staticRouteSeq)
         except suds.WebFault as e:
             LOG.debug('Exception configuring static route %s', e)
             raise adx_exception.ConfigError(msg=e.message)
@@ -965,9 +976,9 @@ class BrocadeAdxDeviceDriverImpl():
     @log
     def enable_source_nat(self):
         try:
-            global_config = self.slb_factory.create('GlobalSlbConfiguration')
-            global_config.enableSourceNat = True
-            self.slb_service.updateSlbGlobalConfiguration(global_config)
+            globalConfig = self.slb_factory.create('GlobalSlbConfiguration')
+            globalConfig.enableSourceNat = True
+            self.slb_service.updateSlbGlobalConfiguration(globalConfig)
         except suds.WebFault as e:
-            LOG.debug(('Exception enabling source nat %s'), e)
+            LOG.debug('Exception enabling source nat %s', e)
             raise adx_exception.ConfigError(msg=e.message)

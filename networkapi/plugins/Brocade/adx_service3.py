@@ -1,3 +1,5 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+#
 # Copyright 2014 Brocade Communications Systems, Inc.  All rights reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
+
 import base64
 import logging
 import StringIO
@@ -45,14 +48,14 @@ class ClientCache:
         password = device['password']
 
         if ip not in cls._ADX_SERVICE_CLIENTS:
-            adxslbservice = AdxService(ip, user, password)
-            slb_service_client = adxslbservice.create_slb_service_client()
+            adxSlbService = AdxService(ip, user, password)
+            slb_service_client = adxSlbService.createSlbServiceClient()
 
-            adx_sys_service = AdxService(ip, user, password)
-            sys_service_client = adx_sys_service.create_sys_service_client()
+            adxSysService = AdxService(ip, user, password)
+            sys_service_client = adxSysService.createSysServiceClient()
 
-            adx_net_service = AdxService(ip, user, password)
-            net_service_client = adx_net_service.create_net_service_client()
+            adxNetService = AdxService(ip, user, password)
+            net_service_client = adxNetService.createNetServiceClient()
 
             cls._ADX_SERVICE_CLIENTS[ip] = [slb_service_client,
                                             sys_service_client,
@@ -92,7 +95,7 @@ class Httplib2Transport(suds_transport.Transport):
     def credentials(self):
         return (self.username, self.password)
 
-    def add_credentials(self, request):
+    def addCredentials(self, request):
         credentials = self.credentials()
         if not (None in credentials):
             encoded = base64.encodestring(':'.join(credentials))
@@ -109,7 +112,7 @@ class Httplib2Transport(suds_transport.Transport):
         return StringIO.StringIO(response.message)
 
     def send(self, request):
-        self.add_credentials(request)
+        self.addCredentials(request)
         url = request.url
         message = request.message
         headers = request.headers
@@ -128,18 +131,18 @@ class AdxService:
     ns0 = ('ns0', 'https://schemas.xmlsoap.org/soap/envelope123/')
 
     def __init__(self, adx_ip_address, user_name, password):
-        self.adx_ip_address = adx_ip_address
-        self.user_name = user_name
+        self.adxIpAddress = adx_ip_address
+        self.userName = user_name
         self.password = password
         self.wsdl_base = "https://" + adx_ip_address + "/wsdl/"
         self.sys_service_wsdl = "sys_service.wsdl"
         self.slb_service_wsdl = "slb_service.wsdl"
         self.net_service_wsdl = "network_service.wsdl"
         self.location = "https://" + adx_ip_address + "/WS/SYS"
-        self.transport = Httplib2Transport(username=self.user_name,
+        self.transport = Httplib2Transport(username=self.userName,
                                            password=self.password)
 
-    def create_slb_service_client(self):
+    def createSlbServiceClient(self):
         def soap_header():
             request_header = suds_element.Element('RequestHeader',
                                                   ns=AdxService.ns0)
@@ -148,8 +151,9 @@ class AdxService:
             return request_header
 
         url = self.wsdl_base + self.slb_service_wsdl
-        location = "https://" + self.adx_ip_address + "/WS/SLB"
+        location = "https://" + self.adxIpAddress + "/WS/SLB"
         start = time.time()
+
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSlb',
                                     location=location, timeout=300,
@@ -161,7 +165,7 @@ class AdxService:
         client.set_options(soapheaders=request_header)
         return client
 
-    def create_sys_service_client(self):
+    def createSysServiceClient(self):
         def soap_header():
             request_header = suds_element.Element('RequestHeader',
                                                   ns=AdxService.ns0)
@@ -170,7 +174,7 @@ class AdxService:
             return request_header
 
         url = self.wsdl_base + self.sys_service_wsdl
-        location = "https://" + self.adx_ip_address + "/WS/SYS"
+        location = "https://" + self.adxIpAddress + "/WS/SYS"
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSysInfo',
@@ -183,7 +187,7 @@ class AdxService:
         client.set_options(soapheaders=request_header)
         return client
 
-    def create_net_service_client(self):
+    def createNetServiceClient(self):
         def soap_header():
             request_header = suds_element.Element('RequestHeader',
                                                   ns=AdxService.ns0)
@@ -192,7 +196,7 @@ class AdxService:
             return request_header
 
         url = self.wsdl_base + self.net_service_wsdl
-        location = "https://" + self.adx_ip_address + "/WS/NET"
+        location = "https://" + self.adxIpAddress + "/WS/NET"
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcNet',
