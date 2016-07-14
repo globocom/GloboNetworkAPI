@@ -62,6 +62,7 @@ def prepare_apply(pools, user):
                 'action': pool['servicedownaction']['name'],
                 'pools_members': [{
                     'id': pool_member['id'],
+                    'identifier': pool_member['identifier'],
                     'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
                     'port': pool_member['port_real'],
                     'member_status': pool_member['member_status'],
@@ -141,6 +142,7 @@ def update_real_pool(pools, user):
                     # update info of member
                     pools_members.append({
                         'id': pool_member['id'],
+                        'identifier': pool_member['identifier'],
                         'ip': ip,
                         'port': pool_member['port_real'],
                         'limit': pool_member['limit'],
@@ -159,6 +161,7 @@ def update_real_pool(pools, user):
                     # create delete member with new port and new ip
                     pools_members.append({
                         'id': pool_member['id'],
+                        'identifier': pool_member['identifier'],
                         'ip': ip,
                         'port': pool_member['port_real'],
                         'limit': pool_member['limit'],
@@ -171,6 +174,7 @@ def update_real_pool(pools, user):
                 # create member
                 pools_members.append({
                     'id': None,
+                    'identifier': pool_member['identifier'],
                     'ip': ip,
                     'port': pool_member['port_real'],
                     'limit': pool_member['limit'],
