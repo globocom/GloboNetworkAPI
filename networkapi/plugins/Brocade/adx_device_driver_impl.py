@@ -782,7 +782,7 @@ class BrocadeAdxDeviceDriverImpl():
         try:
             rsserverport = self._adx_server_port(member['address'],
                                                  member['protocol_port'])
-            # self.slb_service.deleteRealServerPort(rsserverport)
+            self.slb_service.deleteRealServerPort(rsserverport)
 
             # Delete the Real Server
             # if this is the only port other than default port
@@ -823,6 +823,14 @@ class BrocadeAdxDeviceDriverImpl():
             real_server_group.groupName = pool_name
             server_group_list.RealServerGroupSequence.append(real_server_group)
 
+            real_servers_list = (self.slb_factory
+                                 .create('ArrayOfStringSequence'))
+
+            for member in pool['members']:
+                real_servers_list.StringSequence.append(member)
+
+            real_server_group.realServers = real_servers_list
+
             (self.slb_service
              .createRealServerGroups(server_group_list))
         except suds.WebFault as e:
@@ -841,7 +849,7 @@ class BrocadeAdxDeviceDriverImpl():
             server_group_list.StringSequence.append(pool_name)
 
             (self.slb_service
-             .deleteRealServerGroups(pool_name))
+             .deleteRealServerGroups(server_group_list))
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 

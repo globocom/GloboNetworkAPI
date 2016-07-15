@@ -17,3 +17,13 @@ class Node(F5Base):
         self._lb._channel.LocalLB.NodeAddressV2.set_monitor_rule(
             nodes=kwargs['nodes'],
             monitor_rules=kwargs['monitor_rules'])
+
+    @logger
+    def set_description(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.NodeAddressV2.set_description(
+            nodes=kwargs['nodes'],
+            descriptions=kwargs['descriptions'])

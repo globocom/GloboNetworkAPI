@@ -18,9 +18,12 @@ class Generic(BasePlugin):
     def create_pool(self, pools):
 
         baddi = BrocadeAdxDeviceDriverImpl(service_clients=self._lb.service_clients)
-        import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint 603d1364 //
 
         for pool in pools['pools']:
+
+            pl = dict()
+            pl['members'] = list()
+
             for member in pool['pools_members']:
                 mbc = copy.deepcopy(member)
                 mb = dict()
@@ -30,12 +33,19 @@ class Generic(BasePlugin):
                 member_status = util.get_status_name(
                     str(mbc['member_status']))
                 mb['admin_state_up'] = member_status['monitor']
-                mb['name'] = member_status['identifier']
+                mb['name'] = mbc['identifier']
                 mb['is_remote'] = True
                 mb['max_connections'] = int(mbc['limit'])
                 mb['weight'] = int(mbc['weight']) or 1
 
                 baddi.create_member(mb)
+
+                pl['members'].append(mbc['identifier'])
+
+            pl['name'] = pool['nome']
+            baddi.create_pool(pl)
+
+        baddi.write_mem()
 
     @util.connection
     def delete_pool(self, pools):
@@ -50,6 +60,12 @@ class Generic(BasePlugin):
                 mb['address'] = mbc['ip']
                 mb['protocol_port'] = mbc['port']
                 baddi.delete_member(mb)
+
+            pl = dict()
+            pl['name'] = pool['nome']
+            baddi.delete_pool(pl)
+
+        baddi.write_mem()
 
 #     @util.connection
 #     def create_pool(self, pools):
