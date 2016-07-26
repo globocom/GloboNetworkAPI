@@ -256,9 +256,10 @@ class BrocadeAdxDeviceDriverImpl():
             pass
 
     @log
-    def set_predictor_on_virtual_server(self, vip, lb_method):
+    def set_predictor_on_virtual_server(self, vip):
         try:
             server = self._adx_server(vip['address'], vip['name'])
+            lb_method = vip['lb_method']
 
             predictor_method_configuration = (self.slb_factory.create
                                               ('PredictorMethodConfiguration'))
@@ -318,6 +319,9 @@ class BrocadeAdxDeviceDriverImpl():
         vs_ip_address = vip['address']
         vs_port = vip['protocol_port']
         description = vip['description']
+        tos = vip.get('tos')
+        l4_protocol = vip.get('l4_protocol')
+        timeout = vip.get('timeout')
 
         server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
 
@@ -329,7 +333,16 @@ class BrocadeAdxDeviceDriverImpl():
 
             vs_config.virtualServer = server_port.srvr
             vs_config.adminState = True
+            vs_config.enableAdvertiseVipRoute = True
             vs_config.description = description
+            if tos:
+                vs_config.tosMarking = tos
+                vs_config.enableHealthCheckLayer3DSR = True
+
+            if l4_protocol == 'TCP':
+                vs_config.tcpAge = timeout
+            else:
+                vs_config.udpAge = timeout
 
             # Work Around to define a value for Enumeration Type
             vs_config.predictor = 'ROUND_ROBIN'
@@ -351,6 +364,7 @@ class BrocadeAdxDeviceDriverImpl():
         vs_ip_address = vip['address']
         vs_port = vip['protocol_port']
         admin_state_up = vip.get('admin_state_up', 'DISABLED')
+        l4_protocol = vip.get('l4_protocol')
 
         try:
             server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
@@ -362,6 +376,11 @@ class BrocadeAdxDeviceDriverImpl():
             vs_port_config.virtualServer = server_port.srvr
             vs_port_config.port = server_port.port
             vs_port_config.adminState = admin_state_up
+
+            if l4_protocol == 'TCP':
+                vs_port_config.tcpOnly = True
+            else:
+                vs_port_config.udpOnly = True
 
             session_persistence = vip.get('session_persistence')
             if session_persistence:

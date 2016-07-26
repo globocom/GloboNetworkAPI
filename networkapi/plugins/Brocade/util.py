@@ -3,6 +3,7 @@ import logging
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.Brocade import lb
+from networkapi.plugins.Brocade.adx_device_driver_impl import BrocadeAdxDeviceDriverImpl
 from networkapi.util import is_healthcheck_valid
 
 log = logging.getLogger(__name__)
@@ -18,10 +19,14 @@ def connection(func):
         try:
             access = args[0].get('access').filter(tipo_acesso__protocolo='ssh').uniqueResult()
             self._lb = lb.Lb(access.fqdn, access.user, access.password)
+            self.baddi = BrocadeAdxDeviceDriverImpl(service_clients=self._lb.service_clients)
             return func(self, *args, **kwargs)
         except Exception, e:
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
+        else:
+            log.info("writing in mem")
+            self.baddi.write_mem()
     return inner
 
 
@@ -50,6 +55,12 @@ def get_service_down_action_name(action):
         msg = '"%s" is not a valid value for Service Down Action' % (action)
         log.error(msg)
         raise base_exceptions.NamePropertyInvalid(msg)
+
+
+def trata_nome(name):
+    name_spt = name.split('_')
+    del name_spt[-1]
+    return '_'.join(name_spt)
 
 
 def trata_param_pool(pools):

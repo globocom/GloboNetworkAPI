@@ -2,7 +2,7 @@ import copy
 import logging
 
 from networkapi.plugins.Brocade import util
-from networkapi.plugins.Brocade.adx_device_driver_impl import BrocadeAdxDeviceDriverImpl
+from networkapi.util import valid_expression
 
 from ..base import BasePlugin
 
@@ -11,63 +11,191 @@ log = logging.getLogger(__name__)
 
 class Generic(BasePlugin):
 
+    baddi = None
+
+    #######################################
+    # MEMBER
+    #######################################
+    def _create_member(self, pool):
+        members = list()
+        for member in pool['pools_members']:
+            mb = self.prepare_member(member)
+            self.baddi.create_member(mb)
+            members.append(mb)
+        return members
+
+    def _delete_member(self, pool):
+        for member in pool['pools_members']:
+            mb = self.prepare_member(member)
+            self.baddi.delete_member(mb)
+
     #######################################
     # POOL
     #######################################
     @util.connection
     def create_pool(self, pools):
 
-        baddi = BrocadeAdxDeviceDriverImpl(service_clients=self._lb.service_clients)
+        self._create_pool(pools)
 
+    def _create_pool(self, pools):
         for pool in pools['pools']:
-
             pl = dict()
-            pl['members'] = list()
 
-            for member in pool['pools_members']:
-                mbc = copy.deepcopy(member)
-                mb = dict()
+            members = self._create_member(pool)
 
-                mb['address'] = mbc['ip']
-                mb['protocol_port'] = int(mbc['port'])
-                member_status = util.get_status_name(
-                    str(mbc['member_status']))
-                mb['admin_state_up'] = member_status['monitor']
-                mb['name'] = mbc['identifier']
-                mb['is_remote'] = True
-                mb['max_connections'] = int(mbc['limit'])
-                mb['weight'] = int(mbc['weight']) or 1
-
-                baddi.create_member(mb)
-
-                pl['members'].append(mbc['identifier'])
-
-            pl['name'] = pool['nome']
-            baddi.create_pool(pl)
-
-        baddi.write_mem()
+            pl['members'] = [mbc['identifier'] for mbc in members]
+            pl['name'] = util.trata_nome(pool['nome'])
+            self.baddi.create_pool(pl)
 
     @util.connection
     def delete_pool(self, pools):
+        self._delete_pool(pools)
 
-        baddi = BrocadeAdxDeviceDriverImpl(service_clients=self._lb.service_clients)
-
+    def _delete_pool(self, pools):
         for pool in pools['pools']:
-            for member in pool['pools_members']:
-                mbc = copy.deepcopy(member)
-                mb = dict()
-
-                mb['address'] = mbc['ip']
-                mb['protocol_port'] = mbc['port']
-                baddi.delete_member(mb)
 
             pl = dict()
-            pl['name'] = pool['nome']
-            baddi.delete_pool(pl)
+            pl['name'] = util.trata_nome(pool['nome'])
+            self.baddi.delete_pool(pl)
 
-        baddi.write_mem()
+    #######################################
+    # VIP
+    #######################################
+    @util.connection
+    def create_vip(self, vips):
 
-#     @util.connection
+        for vip in vips['vips']:
+            vps = self.prepare_vips(vip)
+
+            for idx, vp in enumerate(vps):
+                if idx == 0:
+                    # creates vip and port default
+                    self.baddi.create_vip(vp)
+                    self.baddi.set_predictor_on_virtual_server(vp)
+                else:
+                    # creates reals ports
+                    self.baddi.create_virtual_server_port(vp)
+
+                for member in vp.get('members'):
+                    self.baddi.create_member(member)
+                    self.baddi.bind_member_to_vip(member, vp)
+
+    @util.connection
+    def delete_vip(self, vips):
+
+        pools_del = list()
+
+        for vip in vips['vips']:
+            vps = self.prepare_vips(vip)
+
+            for idx, vp in enumerate(vps):
+                for member in vp.get('members'):
+                    self.baddi.unbind_member_from_vip(member, vp)
+                    self.baddi.create_member(member)
+
+                self.baddi.delete_vip(vp)
+                pools_del += vp.get('pools')
+
+        return pools_del
+
+    def trata_extends(self, vip_request):
+        values = {
+            'persistence': None
+        }
+        conf = vip_request.get('conf').get('conf').get('optionsvip_extended')
+        if conf:
+            requiments = conf.get('requiments')
+            if requiments:
+                for requiment in requiments:
+                    condicionals = requiment.get('condicionals')
+                    for condicional in condicionals:
+
+                        validated = True
+
+                        validations = condicional.get('validations')
+                        for validation in validations:
+                            if validation.get('type') == 'optionvip':
+                                validated &= valid_expression(
+                                    validation.get('operator'),
+                                    int(vip_request['options'][validation.get('variable')]['id']),
+                                    int(validation.get('value'))
+                                )
+
+                        if validated:
+                            use = condicional.get('use')
+                            for item in use:
+
+                                if item.get('type') == 'persistence':
+                                    if item.get('value'):
+                                        values['persistence'] = {
+                                            'type': item.get('value')
+                                        }
+
+        return values
+
+    def prepare_member(self, member):
+        mbc = copy.deepcopy(member)
+        mb = dict()
+
+        mb['address'] = mbc['ip']
+        mb['protocol_port'] = int(mbc['port'])
+        member_status = util.get_status_name(
+            str(mbc['member_status']))
+        mb['admin_state_up'] = member_status['monitor']
+        mb['name'] = mbc['identifier']
+        mb['is_remote'] = True
+        mb['max_connections'] = int(mbc['limit'])
+        mb['weight'] = int(mbc['weight']) or 1
+
+        return mb
+
+    def prepare_vips(self, vip):
+        vps = list()
+        vp = dict()
+        vpc = copy.deepcopy(vip.get('vip_request'))
+
+        ports = vpc.get('ports')
+        address = vpc['ipv4']['ip_formated'] if vpc['ipv4'] else vpc['ipv6']['ip_formated']
+        values = self.trata_extends(vpc)
+
+        vp['name'] = 'VIP_{}_{}'.format(vpc['id'], address)
+        vp['address'] = address
+        vp['description'] = vpc['name']
+        vp['timeout'] = vpc['options']['timeout']['nome_opcao_txt']
+        vp['session_persistence'] = values['persistence']
+        vp['l4_protocol'] = [port['options']['l4_protocol']['nome_opcao_txt'].upper()
+                             for port in ports][0]
+
+        lb_method = [pool['server_pool']['lb_method']
+                     for pool in port['pools'] for port in ports][0]
+        vp['lb_method'] = 'LEAST_CONNECTIONS' if lb_method == 'least-conn' else 'ROUND_ROBIN'
+
+        # prepare member default
+        vppc_default = copy.deepcopy(vp)
+        vppc_default['protocol_port'] = 'default'
+        vppc_default['admin_state_up'] = 'DISABLED'
+        vppc_default['session_persistence'] = ''
+        vppc_default['members'] = list()
+        vppc_default['pools'] = list()
+        vps.append(vppc_default)
+
+        # reals members
+        for port in ports:
+            vppc = copy.deepcopy(vp)
+            vppc['protocol_port'] = int(port['port'])
+            vppc['admin_state_up'] = 'ENABLED'
+            vppc['members'] = list()
+            vppc['pools'] = list()
+            for pool in port['pools']:
+                vppc['pools'].append(pool['id'])
+                for member in pool['server_pool']['pools_members']:
+                    mb = self.prepare_member(member)
+                    vppc['members'].append(mb)
+            vps.append(vppc)
+
+        return vps
+        # vip_request['options']['dscp']
+
 #     def create_pool(self, pools):
 #         self.__create_pool(pools)
 

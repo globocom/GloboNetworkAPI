@@ -191,7 +191,10 @@
                   "maximum": 65535
                 },
                 "member_status": {
-                  "type": "integer",
+                  "type":[
+                    "integer",
+                    "null"
+                  ],
                   "minimum": 0,
                   "maximum": 7
                 }

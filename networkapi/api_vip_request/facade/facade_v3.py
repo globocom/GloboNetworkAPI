@@ -101,9 +101,11 @@ def update_vip_request(vip_request):
     syncs.new_to_old(vip)
 
 
-def delete_vip_request(vip_request_ids):
+def delete_vip_request(vip_request_ids, keep_ip='0'):
     """delete vip request"""
 
+    ipv4_list = list()
+    ipv6_list = list()
     for vip_request_id in vip_request_ids:
         try:
             vp = models.VipRequest.objects.get(id=vip_request_id)
@@ -115,8 +117,48 @@ def delete_vip_request(vip_request_ids):
 
         vp.delete()
 
+    try:
+        if vp.ipv4 and keep_ip == '0':
+            if not _is_ipv4_in_use(vp.ipv4, vip_request_ids):
+                ipv4 = Ip.objects.get(id=vp.ipv4.id)
+                ipv4_list.append(ipv4)
+        if vp.ipv6 and keep_ip == '0':
+            if not _is_ipv6_in_use(vp.ipv6, vip_request_ids):
+                ipv6 = Ipv6.objects.get(id=vp.ipv6.id)
+                ipv6_list.append(ipv6)
+    except Exception, e:
+        raise e
+
     # sync with old tables
     syncs.delete_old(vip_request_ids)
+
+    ipv4_list = list(set(ipv4_list))
+    ipv6_list = list(set(ipv6_list))
+    return ipv4_list, ipv6_list
+
+
+def _is_ipv4_in_use(ipv4, vip_id):
+
+    is_in_use = True
+    pool_member_count = ServerPoolMember.objects.filter(ip=ipv4).exclude(
+        server_pool__vipporttopool__requisicao_vip__id=vip_id).count()
+    vip_count = models.VipRequest.objects.filter(ipv4=ipv4).exclude(pk=vip_id).count()
+    if vip_count == 0 and pool_member_count == 0:
+        is_in_use = False
+
+    return is_in_use
+
+
+def _is_ipv6_in_use(ipv6, vip_id):
+
+    is_in_use = True
+    pool_member_count = ServerPoolMember.objects.filter(ipv6=ipv6).exclude(
+        server_pool__vipporttopool__requisicao_vip__ipv6=vip_id).count()
+    vip_count = models.VipRequest.objects.filter(ipv6=ipv6).exclude(pk=vip_id).count()
+    if vip_count == 0 and pool_member_count == 0:
+        is_in_use = False
+
+    return is_in_use
 
 
 def _create_port(ports, vip_request_id):
@@ -394,6 +436,7 @@ def prepare_apply(vip_requests, update=False, created=True, user=None):
                     'pool_created': pool_serializer.data['pool_created'],
                     'pools_members': [{
                         'id': pool_member['id'],
+                        'identifier': pool_member['identifier'],
                         'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
                         'port': pool_member['port_real'],
                         'member_status': pool_member['member_status'],

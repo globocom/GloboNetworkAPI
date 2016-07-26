@@ -1110,7 +1110,6 @@ def list_environment_environment_vip_related(request):
 
         environment_list.extend(env_list_net_v4_related)
         environment_list.extend(env_list_net_v6_related)
-
         environment_list = set(environment_list)
 
         environment_list_dict = []

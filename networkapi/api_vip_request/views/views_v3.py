@@ -5,10 +5,12 @@ import urllib
 
 from django.db.transaction import commit_on_success
 
+from networkapi.api_ip import facade as facade_ip
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions, facade
 from networkapi.api_vip_request.permissions import DeployCreate, DeployDelete, DeployUpdate, Read, Write
 from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer, VipRequestSerializer, VipRequestTableSerializer
+from networkapi.ip.models import IpCantBeRemovedFromVip
 from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview, permission_classes_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate
@@ -413,16 +415,24 @@ class VipRequestDBView(APIView):
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of vip request
-        :url /api/v3/vip-request/<vip_request_ids>/
+        :url /api/v3/vip-request/<vip_request_ids>/?keepip=<keepip>
         :param vip_request_ids=<vip_request_ids>
+        :param keepip=(0|1)
         """
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         locks_list = facade.create_lock(vip_request_ids)
+        keepip = request.GET.get('keepip') or '0'
         try:
-            facade.delete_vip_request(vip_request_ids)
+            ipv4_list, ipv6_list = facade.delete_vip_request(vip_request_ids, keepip)
+
+            facade_ip.delete_ipv4_list(ipv4_list)
+            facade_ip.delete_ipv4_list(ipv6_list)
+
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
+        except IpCantBeRemovedFromVip:
+            pass
         finally:
             facade.destroy_lock(locks_list)
 
