@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
-
-from functools import wraps
 import logging
+from functools import wraps
 
 import bigsuds
 
@@ -134,7 +133,8 @@ def trata_param_pool(pools):
                 get_method_name(p['lb_method']))
 
         if p.get('healthcheck') is not None:
-            pls['pools_healthcheck'].append(p['healthcheck'])
+            if p.get('healthcheck').get('new'):
+                pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):
             pls['pools_actions'].append(get_service_down_action_name(p['action']))

@@ -449,6 +449,7 @@ def prepare_apply(vip_requests, update=False, created=True, user=None):
                 healthcheck = pool_serializer.data['healthcheck']
                 healthcheck['identifier'] = reserve_name_healthcheck(
                     pool_serializer.data['identifier'])
+                healthcheck['new'] = True
                 vip_request['ports'][idx]['pools'][i]['server_pool'] = {
                     'id': pool_serializer.data['id'],
                     'nome': pool_serializer.data['identifier'],

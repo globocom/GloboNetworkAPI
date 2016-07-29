@@ -20,7 +20,6 @@ import logging
 import time
 
 import adx_exception
-
 import suds as suds
 
 LOG = logging.getLogger(__name__)
@@ -88,15 +87,13 @@ class BrocadeAdxDeviceDriverImpl():
         server_port.port = l4_port
         return server_port
 
-    def _update_real_server_port_properties(self, new_member, old_member):
+    def _update_real_server_port_properties(self, new_member):
         try:
             address = new_member['address']
             protocol_port = new_member['protocol_port']
             new_admin_state_up = new_member.get('admin_state_up')
-            old_admin_state_up = old_member.get('admin_state_up')
-
-            if new_admin_state_up == old_admin_state_up:
-                return
+            max_connections = new_member['max_connections']
+            healthcheck = new_member.get('healthcheck')
 
             rs_server_port = self._adx_server_port(address, protocol_port)
             reply = (self.slb_service
@@ -104,10 +101,24 @@ class BrocadeAdxDeviceDriverImpl():
             rs_port_conf_seq = (self.slb_factory.create
                                 ('ArrayOfRealServerPortConfigurationSequence'))
             reply.rsPortConfig.serverPort = rs_server_port
-            rs_port_admin_state = 'ENABLED'
-            if not new_admin_state_up:
-                rs_port_admin_state = 'DISABLED'
-            reply.rsPortConfig.adminState = rs_port_admin_state
+            reply.rsPortConfig.maxConnection = max_connections
+            reply.rsPortConfig.adminState = new_admin_state_up
+
+            if healthcheck:
+                port_policy = self._create_update_port_policy(healthcheck)
+
+                if port_policy.get('sslPolInfo'):
+                    reply.rsPortConfig.sslPolInfo = port_policy.get('sslPolInfo')
+                else:
+                    reply.rsPortConfig.sslPolInfo = None
+
+                if port_policy.get('l4Check'):
+                    reply.rsPortConfig.enableL4CheckOnly = port_policy.get('l4Check')
+
+                if port_policy.get('httpPolInfo'):
+                    reply.rsPortConfig.httpPolInfo = port_policy.get('httpPolInfo')
+                else:
+                    reply.rsPortConfig.httpPolInfo = None
 
             rs_port_conf_list = [reply.rsPortConfig]
             rs_port_conf_seq.RealServerPortConfigurationSequence = rs_port_conf_list
@@ -117,14 +128,10 @@ class BrocadeAdxDeviceDriverImpl():
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
-    def _update_real_server_properties(self, new_member, old_member):
+    def _update_real_server_properties(self, new_member):
         try:
             address = new_member['address']
             new_weight = new_member.get('weight')
-            old_weight = old_member.get('weight')
-
-            if new_weight == old_weight:
-                return
 
             rs_server = self._adx_server(address)
             reply = (self.slb_service
@@ -132,8 +139,11 @@ class BrocadeAdxDeviceDriverImpl():
 
             rs_conf_seq = (self.slb_factory.create
                            ("ArrayOfRealServerConfigurationSequence"))
-            if new_weight:
-                reply.rsConfig.leastConnectionWeight = new_weight
+
+            reply.rsConfig.leastConnectionWeight = new_weight
+
+            # Work Around to fix bug in WSDL
+            reply.rsConfig.byteRateThresold = None
 
             rs_conf_list = list()
             rs_conf_list.append(reply.rsConfig)
@@ -153,6 +163,16 @@ class BrocadeAdxDeviceDriverImpl():
                     else self.slb_service.getAllRealServerPortsSummary)
         try:
             reply = api_call(server, start_index, num_retrieved)
+            return reply.genericInfo.totalEntriesAvailable
+        except suds.WebFault:
+            return 0
+
+    def _get_server_port_by_virtual_count(self, server_port):
+        start_index = 1
+        num_retrieved = 5
+        api_call = (self.slb_service.getAllVirtualServerPortsBoundtoRealServerPort)
+        try:
+            reply = api_call(server_port, start_index, num_retrieved)
             return reply.genericInfo.totalEntriesAvailable
         except suds.WebFault:
             return 0
@@ -536,123 +556,92 @@ class BrocadeAdxDeviceDriverImpl():
                                                       name="max_retries")
 
     @log
-    def _create_update_port_policy(self, healthmonitor, is_create=True):
+    def _create_update_port_policy(self, healthmonitor):
 
-        name = healthmonitor['id']
         monitor_type = healthmonitor['type']
-        delay = healthmonitor['delay']
-        self._validate_delay(monitor_type, delay)
-        max_retries = healthmonitor['max_retries']
-        self._validate_max_retries(monitor_type, max_retries)
+        url_health = healthmonitor['url_health']
 
-        if monitor_type in ["HTTP",
-                            "HTTPS",
-                            "TCP"]:
-            port_policy = self.slb_factory.create('PortPolicy')
+        port_policy = dict()
 
-            if monitor_type == "HTTP":
-                port_policy.name = name
-                port_policy.protocol = (ADX_PROTOCOL_MAP.get("HTTP"))
-                port_policy.l4Check = False
-            elif monitor_type == "HTTPS":
-                port_policy.name = name
-                port_policy.protocol = (ADX_PROTOCOL_MAP.get("HTTPS"))
-                port_policy.l4Check = False
-            elif monitor_type == "TCP":
-                # TCP Monitor
-                port_policy.name = name
-                port_policy.l4Check = True
+        if monitor_type == "HTTP":
+            port_policy['l4Check'] = False
+        elif monitor_type == "HTTPS":
+            port_policy['l4Check'] = False
+        elif monitor_type == "TCP":
+            port_policy['l4Check'] = True
 
-                # Setting Protocol and Port to HTTP
-                # so that this can be bound to a Real Server Port
-                port_policy.protocol = (ADX_PROTOCOL_MAP.get("HTTP"))
+        expected_codes = '200'
 
-            port_policy.keepAliveInterval = delay
-            port_policy.numRetries = max_retries
-
-            http_method = 'GET'
-            url_path = '/'
-            expected_codes = '200'
-            if 'http_method' in healthmonitor:
-                http_method = healthmonitor['http_method']
-            if 'url_path' in healthmonitor:
-                url_path = healthmonitor['url_path']
-
-            start_status_codes = []
-            end_status_codes = []
-            if 'expected_codes' in healthmonitor:
-                expected_codes = healthmonitor['expected_codes']
-                # parse the expected codes.
-                # Format:"200, 201, 300-400, 400-410"
-                for code in map(lambda x: x.strip(' '),
-                                expected_codes.split(',')):
-                    if '-' in code:
-                        code_range = map(lambda x: x.strip(' '),
-                                         code.split('-'))
-                        start_status_codes.append(int(code_range[0]))
-                        end_status_codes.append(int(code_range[1]))
-                    else:
-                        start_status_codes.append(int(code))
-                        end_status_codes.append(int(code))
-
-            if monitor_type == "HTTP":
-                http_port_policy = (self.slb_factory
-                                    .create('HttpPortPolicy'))
-                url_health_check = (self.slb_factory
-                                    .create('URLHealthCheck'))
-                start_codes = (self.slb_factory
-                               .create('ArrayOfunsignedIntSequence'))
-                end_codes = (self.slb_factory
-                             .create('ArrayOfunsignedIntSequence'))
-
-                start_codes.unsignedIntSequence = start_status_codes
-                end_codes.unsignedIntSequence = end_status_codes
-                url_health_check.url = http_method + ' ' + url_path
-                url_health_check.statusCodeRangeStart = start_codes
-                url_health_check.statusCodeRangeEnd = end_codes
-                http_port_policy.urlStatusCodeInfo = url_health_check
-                http_port_policy.healthCheckType = 'SIMPLE'
-
-                port_policy.httpPolInfo = http_port_policy
-
-            elif monitor_type == "TCP":
-                http_port_policy = (self.slb_factory
-                                    .create('HttpPortPolicy'))
-                url_health_check = (self.slb_factory
-                                    .create('URLHealthCheck'))
-                url_health_check.url = 'HEAD /'
-                http_port_policy.urlStatusCodeInfo = url_health_check
-                http_port_policy.healthCheckType = 'SIMPLE'
-
-                port_policy.httpPolInfo = http_port_policy
-
-            elif monitor_type == "HTTPS":
-                ssl_port_policy = (self.slb_factory
-                                   .create('HttpPortPolicy'))
-                url_health_check = (self.slb_factory
-                                    .create('URLHealthCheck'))
-                start_codes = (self.slb_factory
-                               .create('ArrayOfunsignedIntSequence'))
-                end_codes = (self.slb_factory
-                             .create('ArrayOfunsignedIntSequence'))
-
-                url_health_check.url = http_method + ' ' + url_path
-                url_health_check.statusCodeRangeStart = start_codes
-                url_health_check.statusCodeRangeEnd = end_codes
-
-                ssl_port_policy.urlStatusCodeInfo = url_health_check
-                ssl_port_policy.healthCheckType = 'SIMPLE'
-
-                port_policy.sslPolInfo = ssl_port_policy
-
-            try:
-                if is_create:
-                    self.slb_service.createPortPolicy(port_policy)
+        start_status_codes = []
+        end_status_codes = []
+        if 'expected_codes' in healthmonitor:
+            expected_codes = healthmonitor['expected_codes']
+            # parse the expected codes.
+            # Format:"200, 201, 300-400, 400-410"
+            for code in map(lambda x: x.strip(' '),
+                            expected_codes.split(',')):
+                if '-' in code:
+                    code_range = map(lambda x: x.strip(' '),
+                                     code.split('-'))
+                    start_status_codes.append(int(code_range[0]))
+                    end_status_codes.append(int(code_range[1]))
                 else:
-                    self.slb_service.updatePortPolicy(port_policy)
-            except suds.WebFault as e:
-                LOG.error('Error in create/update port policy %s', e)
-                raise adx_exception.ConfigError(msg=e.message)
+                    start_status_codes.append(int(code))
+                    end_status_codes.append(int(code))
+
+        if monitor_type == "HTTP":
+            http_port_policy = (self.slb_factory
+                                .create('HttpPortPolicy'))
+            url_health_check = (self.slb_factory
+                                .create('URLHealthCheck'))
+            start_codes = (self.slb_factory
+                           .create('ArrayOfunsignedIntSequence'))
+            end_codes = (self.slb_factory
+                         .create('ArrayOfunsignedIntSequence'))
+
+            start_codes.unsignedIntSequence = start_status_codes
+            end_codes.unsignedIntSequence = end_status_codes
+            url_health_check.url = url_health
+            url_health_check.statusCodeRangeStart = start_codes
+            url_health_check.statusCodeRangeEnd = end_codes
+            http_port_policy.urlStatusCodeInfo = url_health_check
+            http_port_policy.healthCheckType = 'SIMPLE'
+            http_port_policy.contentMatch = "WORKING"
+
+            port_policy['httpPolInfo'] = http_port_policy
+
+        elif monitor_type == "TCP":
+            http_port_policy = (self.slb_factory
+                                .create('HttpPortPolicy'))
+            url_health_check = (self.slb_factory
+                                .create('URLHealthCheck'))
+            url_health_check.url = 'HEAD /'
+            http_port_policy.urlStatusCodeInfo = url_health_check
+            http_port_policy.healthCheckType = 'SIMPLE'
+
+            port_policy['httpPolInfo'] = http_port_policy
+
+        elif monitor_type == "HTTPS":
+            ssl_port_policy = (self.slb_factory
+                               .create('HttpPortPolicy'))
+            url_health_check = (self.slb_factory
+                                .create('URLHealthCheck'))
+            start_codes = (self.slb_factory
+                           .create('ArrayOfunsignedIntSequence'))
+            end_codes = (self.slb_factory
+                         .create('ArrayOfunsignedIntSequence'))
+
+            url_health_check.url = url_health
+            url_health_check.statusCodeRangeStart = start_codes
+            url_health_check.statusCodeRangeEnd = end_codes
+
+            ssl_port_policy.urlStatusCodeInfo = url_health_check
+            ssl_port_policy.healthCheckType = 'SIMPLE'
+            ssl_port_policy.contentMatch = "WORKING"
+
+            port_policy['sslPolInfo'] = ssl_port_policy
+
+        return port_policy
 
     @log
     def set_l2l3l4_health_check(self, new_hm, old_hm=None):
@@ -755,12 +744,14 @@ class BrocadeAdxDeviceDriverImpl():
                 pass
 
     def _create_real_server_port(self, member):
+
         address = member['address']
         port = member['protocol_port']
         admin_state_up = member['admin_state_up']
         name = member.get('name', address)
         is_backup = member.get('is_backup', False)
         max_connections = member['max_connections']
+        healthcheck = member.get('healthcheck')
 
         try:
             # Create Port Profile if it is not a standard port
@@ -780,6 +771,15 @@ class BrocadeAdxDeviceDriverImpl():
             rs_port_config.maxConnection = max_connections
             rs_port_config.isBackup = is_backup
 
+            if healthcheck:
+                port_policy = self._create_update_port_policy(healthcheck)
+                if port_policy.get('sslPolInfo'):
+                    rs_port_config.sslPolInfo = port_policy.get('sslPolInfo')
+                if port_policy.get('l4Check'):
+                    rs_port_config.enableL4CheckOnly = port_policy.get('l4Check')
+                if port_policy.get('httpPolInfo'):
+                    rs_port_config.httpPolInfo = port_policy.get('httpPolInfo')
+
             # Work Around to define a value for Enumeration Type
             rs_port_config.runTimeStatus = 'UNDEFINED'
 
@@ -792,6 +792,7 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def create_member(self, member):
+
         self._create_real_server(member)
         self._create_real_server_port(member)
 
@@ -799,22 +800,36 @@ class BrocadeAdxDeviceDriverImpl():
     def delete_member(self, member):
         rsportcount = self._get_server_port_count(member['address'], False)
         try:
+            pool_del = False
             rsserverport = self._adx_server_port(member['address'],
                                                  member['protocol_port'])
-            self.slb_service.deleteRealServerPort(rsserverport)
+
+            rsportbyvirtualcount = self._get_server_port_by_virtual_count(rsserverport)
+            if rsportbyvirtualcount == 0:
+                pool_del = True
+                self.slb_service.deleteRealServerPort(rsserverport)
 
             # Delete the Real Server
             # if this is the only port other than default port
-            if rsportcount <= 2:
+
+            if rsportcount <= 1:
+                pool_del = True
                 self.slb_service.deleteRealServer(rsserverport.srvr)
+
+            return pool_del
+
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
-    def update_member(self, new_member, old_member):
+    def update_member(self, new_member):
 
-        self._update_real_server_properties(new_member, old_member)
-        self._update_real_server_port_properties(new_member, old_member)
+        self._update_real_server_properties(new_member)
+        self._update_real_server_port_properties(new_member)
+
+    @log
+    def update_member_status(self, new_member):
+        self._update_real_server_port_properties(new_member)
 
     @log
     def write_mem(self):
@@ -998,3 +1013,15 @@ class BrocadeAdxDeviceDriverImpl():
         except suds.WebFault as e:
             LOG.debug(('Exception enabling source nat %s'), e)
             raise adx_exception.ConfigError(msg=e.message)
+
+    @log
+    def get_real_port_status(self, member):
+
+        rsserverport = self._adx_server_port(member['address'],
+                                             member['protocol_port'])
+        api_call = (self.slb_service.getRealServerPortStatus)
+        try:
+            reply = api_call(rsserverport)
+            return reply.rsPortStatus.status
+        except suds.WebFault:
+            return 0

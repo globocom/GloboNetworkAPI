@@ -127,9 +127,10 @@ class AdxService:
     "ADX Service Initialization Class"
     ns0 = ('ns0', 'https://schemas.xmlsoap.org/soap/envelope123/')
 
-    def __init__(self, adx_ip_address, user_name, password):
+    def __init__(self, adx_ip_address, user_name, password, timeout=1300):
         self.adx_ip_address = adx_ip_address
         self.user_name = user_name
+        self.timeout = timeout
         self.password = password
         self.wsdl_base = "https://" + adx_ip_address + "/wsdl/"
         self.sys_service_wsdl = "sys_service.wsdl"
@@ -152,7 +153,7 @@ class AdxService:
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSlb',
-                                    location=location, timeout=300,
+                                    location=location, timeout=self.timeout,
                                     plugins=[RemoveEmptyTags()])
         elapsed = (time.time() - start)
         LOG.debug('Time to initialize SLB Service Client: %s', elapsed)
@@ -174,7 +175,7 @@ class AdxService:
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSysInfo',
-                                    location=location, timeout=300,
+                                    location=location, timeout=self.timeout,
                                     plugins=[RemoveEmptyTags()])
         elapsed = (time.time() - start)
         LOG.debug('Time to initialize SYS Service Client: %s', elapsed)
@@ -197,7 +198,7 @@ class AdxService:
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcNet',
                                     location=location,
-                                    timeout=300,
+                                    timeout=self.timeout,
                                     plugins=[RemoveEmptyTags()])
         elapsed = (time.time() - start)
         LOG.debug('Time to initialize NET Service Client: %s', elapsed)

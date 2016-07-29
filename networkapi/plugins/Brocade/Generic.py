@@ -1,10 +1,10 @@
 import copy
 import logging
 
+from ..base import BasePlugin
 from networkapi.plugins.Brocade import util
 from networkapi.util import valid_expression
-
-from ..base import BasePlugin
+from networkapi.util import valid_regex
 
 log = logging.getLogger(__name__)
 
@@ -16,18 +16,85 @@ class Generic(BasePlugin):
     #######################################
     # MEMBER
     #######################################
-    def _create_member(self, pool):
-        members = list()
-        for member in pool['pools_members']:
-            mb = self.prepare_member(member)
-            self.baddi.create_member(mb)
-            members.append(mb)
-        return members
+    def _action_member(self, pool, mb, action):
 
-    def _delete_member(self, pool):
-        for member in pool['pools_members']:
-            mb = self.prepare_member(member)
-            self.baddi.delete_member(mb)
+        if pool.get('healthcheck'):
+            if action == 'create' or pool['healthcheck'].get('new'):
+                healthcheck = pool['healthcheck']
+                hr = self._prepare_healthcheck(healthcheck['healthcheck_request'])
+                mb['healthcheck'] = {
+                    'type': healthcheck['healthcheck_type'],
+                    'url_health': hr
+                }
+
+        # vip assoc with pool
+
+        for vip in pool['vips']:
+            vpc = copy.deepcopy(vip)
+            ports = vpc.get('ports')
+
+            address = vpc['ipv4']['ip_formated'] if vpc['ipv4'] else vpc['ipv6']['ip_formated']
+            vp = dict()
+            vp['name'] = 'VIP_{}_{}'.format(vpc['id'], address)
+            vp['address'] = address
+            for port in ports:
+
+                for pool_vip in port['pools']:
+                    # pool
+                    if int(pool_vip['server_pool']['id']) == int(pool['id']):
+                        vp['protocol_port'] = int(port['port'])
+                        if action == 'delete':
+                            if vip['created']:
+                                self.baddi.unbind_member_from_vip(mb, vp)
+                            self.baddi.delete_member(mb)
+                        if action == 'create':
+                            self.baddi.create_member(mb)
+                            if vip['created']:
+                                self.baddi.bind_member_to_vip(mb, vp)
+                        if action == 'update':
+
+                            self.baddi.update_member(mb)
+
+    @util.connection
+    def set_state_member(self, pools):
+        for pool in pools['pools']:
+            for member in pool['pools_members']:
+                mb = self.prepare_member(member)
+                self.baddi.update_member_status(mb)
+
+    @util.connection
+    def get_state_member(self, pools):
+
+        status_pools = list()
+        for pool in pools['pools']:
+            status = list()
+            for member in pool['pools_members']:
+
+                mb = self.prepare_member(member)
+                state = self.baddi.get_real_port_status(mb)
+                # default 1
+                if state == 'DISABLED':
+                    healthcheck = '0'
+                    user_up_down = '0'
+                elif state == 'ENABLED':
+                    healthcheck = '0'
+                    user_up_down = '1'
+                elif state == 'ACTIVE':
+                    healthcheck = '1'
+                    user_up_down = '1'
+                elif state == 'FAILED' or state == 'NOTBOUND':
+                    healthcheck = '0'
+                    user_up_down = '1'
+                else:
+                    healthcheck = '0'
+                    user_up_down = '0'
+                session = user_up_down
+                log.info("member: {} - state: {}".format(mb, state))
+                status.append(int(healthcheck + session + user_up_down, 2))
+
+            status_pools.append(status)
+
+        return status_pools
 
     #######################################
     # POOL
@@ -35,28 +102,37 @@ class Generic(BasePlugin):
     @util.connection
     def create_pool(self, pools):
 
-        self._create_pool(pools)
-
-    def _create_pool(self, pools):
         for pool in pools['pools']:
-            pl = dict()
 
-            members = self._create_member(pool)
-
-            pl['members'] = [mbc['identifier'] for mbc in members]
-            pl['name'] = util.trata_nome(pool['nome'])
-            self.baddi.create_pool(pl)
+            for member in pool['pools_members']:
+                mb = self.prepare_member(member)
+                self._action_member(pool, mb, 'create')
 
     @util.connection
     def delete_pool(self, pools):
-        self._delete_pool(pools)
 
-    def _delete_pool(self, pools):
         for pool in pools['pools']:
 
-            pl = dict()
-            pl['name'] = util.trata_nome(pool['nome'])
-            self.baddi.delete_pool(pl)
+            for member in pool['pools_members']:
+                mb = self.prepare_member(member)
+                self._action_member(pool, mb, 'delete')
+
+    @util.connection
+    def update_pool(self, pools):
+
+        for pool in pools['pools']:
+
+            for member in pool['pools_members']:
+                mb = self.prepare_member(member)
+
+                if mb.get('new'):
+                    self._action_member(pool, mb, 'create')
+
+                elif not mb.get('remove'):
+                    self._action_member(pool, mb, 'update')
+
+                elif mb.get('remove'):
+                    self._action_member(pool, mb, 'delete')
 
     #######################################
     # VIP
@@ -70,8 +146,12 @@ class Generic(BasePlugin):
             for idx, vp in enumerate(vps):
                 if idx == 0:
                     # creates vip and port default
-                    self.baddi.create_vip(vp)
-                    self.baddi.set_predictor_on_virtual_server(vp)
+                    try:
+                        self.baddi.create_vip(vp)
+                    except:
+                        pass
+                    else:
+                        self.baddi.set_predictor_on_virtual_server(vp)
                 else:
                     # creates reals ports
                     self.baddi.create_virtual_server_port(vp)
@@ -91,10 +171,13 @@ class Generic(BasePlugin):
             for idx, vp in enumerate(vps):
                 for member in vp.get('members'):
                     self.baddi.unbind_member_from_vip(member, vp)
-                    self.baddi.create_member(member)
+                    ret = self.baddi.delete_member(member)
+
+                    # workaround to return pools deleted
+                    if ret:
+                        pools_del.append(member.get('pool_id'))
 
                 self.baddi.delete_vip(vp)
-                pools_del += vp.get('pools')
 
         return pools_del
 
@@ -134,18 +217,25 @@ class Generic(BasePlugin):
         return values
 
     def prepare_member(self, member):
+
         mbc = copy.deepcopy(member)
         mb = dict()
 
         mb['address'] = mbc['ip']
         mb['protocol_port'] = int(mbc['port'])
-        member_status = util.get_status_name(
-            str(mbc['member_status']))
-        mb['admin_state_up'] = member_status['monitor']
-        mb['name'] = mbc['identifier']
+        if mbc.get('member_status'):
+            member_status = util.get_status_name(
+                str(mbc['member_status']))
+            mb['admin_state_up'] = member_status['monitor']
+        if mbc.get('identifier'):
+            mb['name'] = mbc.get('identifier')
         mb['is_remote'] = True
-        mb['max_connections'] = int(mbc['limit'])
-        mb['weight'] = int(mbc['weight']) or 1
+        if mbc.get('limit'):
+            mb['max_connections'] = int(mbc['limit'])
+        mb['weight'] = int(mbc.get('weight', '0')) or 1
+
+        mb['new'] = mbc.get('new')
+        mb['remove'] = mbc.get('remove')
 
         return mb
 
@@ -190,169 +280,45 @@ class Generic(BasePlugin):
                 vppc['pools'].append(pool['id'])
                 for member in pool['server_pool']['pools_members']:
                     mb = self.prepare_member(member)
+
+                    if pool['server_pool'].get('healthcheck'):
+                        healthcheck = pool['server_pool']['healthcheck']
+                        hr = self._prepare_healthcheck(healthcheck['healthcheck_request'])
+                        mb['healthcheck'] = {
+                            'type': healthcheck['healthcheck_type'],
+                            'url_health': hr
+                        }
+                        mb['pool_id'] = pool['id']
+
                     vppc['members'].append(mb)
             vps.append(vppc)
 
         return vps
-        # vip_request['options']['dscp']
 
-#     def create_pool(self, pools):
-#         self.__create_pool(pools)
+    def _prepare_healthcheck(self, hr):
 
-#     def __create_pool(self, data):
-#         import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint bc0dc317 //
+        rg = '^([\" ]?)+(GET|HEAD|POST|PUT|CONNECT|DELETE|OPTIONS|TRACE|PATCH)'
+        if not valid_regex(hr, rg):
+            hr = 'GET ' + hr
 
-#         log.info("skipping create pool")
-#         return
+        # do escape when healthcheck has simple \r\n
+        rg = '((\\r\\n))'
+        if valid_regex(hr, rg):
+            log.debug('adding unicode-escape')
+            hr = hr.encode('unicode-escape')
 
-# pool_names = ['P123_teste2','P123_teste3']
-# servergrouplist = (_lb.slb_factory.create('ArrayOfRealServerGroupSequence'))
-# for pool_name in pool_names:
-#     realservergroup = (_lb.slb_factory.create('RealServerGroup'))
-#     realservergroup.groupName = pool_name
-#     servergrouplist.RealServerGroupSequence.append(realservergroup)
+        # add HTTP/1.\\r\\n\\r\\n when plugin no receive in
+        # healthcheck
+        rg = 'HTTP\/1'
+        if not valid_regex(hr, rg):
+            log.debug('adding HTTP/1.\\r\\n\\r\\n')
+            hr = hr + ' HTTP/1.0\\r\\n\\r\\n'
 
-# (_lb.slb_service.createRealServerGroups(servergrouplist))
+        # add \\r\\n\\r\\n when plugin no receive in
+        # healthcheck
+        rg = '(?:((\\r\\n)|(\\\\r\\\\n)){1,2}?)$'
+        if not valid_regex(hr, rg):
+            log.debug('adding \\r\\n\\r\\n')
+            hr = hr + '\\r\\n\\r\\n'
 
-
-# servergrouplist = (_lb.slb_factory.create('ArrayOfStringSequence'))
-# for pool_name in pool_names:
-#     servergrouplist.StringSequence.append(pool_name)
-
-# (_lb.slb_service.deleteRealServerGroups(servergrouplist))
-
-# addRealServersToGroup
-
-# servergrouplist = (_lb.slb_factory.create('ArrayOfRealServerGroupSequence'))
-# for pool in pools:
-#     realservergroup = (_lb.slb_factory.create('RealServerGroup'))
-#     realservergroup.groupName = pool['identifier']
-#     realservers = (_lb.slb_factory.create('ArrayOfStringSequence'))
-#     for member in pool['server_pool_members']:
-#         member_name = member.get('ip').get('ip_formated') if member.get('ip') \
-#             else member.get('ipv6').get('ip_formated')
-#         realservergroup.realservers.StringSequence.append(member_name)
-
-#     servergrouplist.RealServerGroupSequence.append(realservergroup)
-
-# (_lb.slb_service.createRealServerGroups(servergrouplist))
-
-#         try:
-#             for pool in data["pools"]:
-#                 pool_name = "P%s_%s" % (pool["id"], pool["nome"])
-
-#                 servergrouplist = (self._lb.slb_factory.create
-#                                    ('ArrayOfRealServerGroupSequence'))
-#                 realservergroup = (self._lb.slb_factory
-#                                    .create('RealServerGroup'))
-
-#                 realservergroup.groupName = pool_name
-#                 servergrouplist.RealServerGroupSequence.append(realservergroup)
-
-#                 (self._lb.slb_service
-#                  .createRealServerGroups(servergrouplist))
-#         except suds.WebFault as e:
-#             raise base_exceptions.CommandErrorException(e)
-
-#     @util.connection
-#     def update_pool(self, pools):
-#         self.__update_pool(pools)
-
-#     def __update_pool(self, pools):
-#         log.info('update_pool')
-#         monitor_associations = []
-#         pls = util.trata_param_pool(pools)
-
-#         pl = pool.Pool(self._lb)
-#         mon = monitor.Monitor(self._lb)
-
-#         # get template currents
-#         monitor_associations_old = pl.get_monitor_association(names=pls['pools_names'])
-
-#         # creates templates
-#         monitor_associations = mon.create_template(
-#             names=pls['pools_names'],
-#             healthcheck=pls['pools_healthcheck']
-#         )
-
-#         try:
-#             self._lb._channel.System.Session.start_transaction()
-
-#             pl.remove_monitor_association(names=pls['pools_names'])
-
-#             pl.set_monitor_association(monitor_associations=monitor_associations)
-
-#             pl.set_lb_method(
-#                 names=pls['pools_names'],
-#                 lbmethod=pls['pools_lbmethod'])
-
-#             pl.set_service_down_action(
-#                 names=pls['pools_names'],
-#                 actions=pls['pools_actions'])
-
-#             plm = poolmember.PoolMember(self._lb)
-
-#             if pls['pools_members']['members_remove']:
-#                 plm.remove(
-#                     names=pls['pools_names'],
-#                     members=pls['pools_members']['members_remove'])
-
-#             if pls['pools_members']['members_new']:
-#                 plm.create(
-#                     names=pls['pools_names'],
-#                     members=pls['pools_members']['members_new'])
-
-#             plm.set_connection_limit(
-#                 names=pls['pools_names'],
-#                 members=pls['pools_members']['members'],
-#                 connection_limit=pls['pools_members']['limit'])
-
-#             plm.set_priority(
-#                 names=pls['pools_names'],
-#                 members=pls['pools_members']['members'],
-#                 priority=pls['pools_members']['priority'])
-
-#             plm.set_states(
-#                 names=pls['pools_names'],
-#                 members=pls['pools_members']['members'],
-#                 monitor_state=pls['pools_members']['monitor'],
-#                 session_state=pls['pools_members']['session'])
-
-#         except Exception, e:
-#             self._lb._channel.System.Session.rollback_transaction()
-
-#             # delete templates created
-#             template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
-#             if template_names:
-#                 mon.delete_template(
-#                     template_names=template_names
-#                 )
-#             raise base_exceptions.CommandErrorException(e)
-#         else:
-#             self._lb._channel.System.Session.submit_transaction()
-
-#             # delete templates old
-#             template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations_old])) if 'MONITOR' in m]
-#             if template_names:
-#                 mon.delete_template(
-#                     template_names=template_names
-#                 )
-
-#     @util.connection
-#     def delete_pool(self, data):
-#         self.__delete_pool(data)
-
-#     def __delete_pool(self, data):
-
-#         for pool in data["pools"]:
-#             try:
-#                 pool_name = "P%s_%s" % (pool["id"], pool["nome"])
-#                 log.info('deleting pool %s' % pool_name)
-#                 servergrouplist = (self._lb.slb_factory
-#                                    .create('ArrayOfStringSequence'))
-#                 servergrouplist.StringSequence.append(pool_name)
-
-#                 (self._lb.slb_service
-#                  .deleteRealServerGroups(pool_name))
-#             except suds.WebFault as e:
-#                 raise base_exceptions.CommandErrorException(e)
+        return hr
