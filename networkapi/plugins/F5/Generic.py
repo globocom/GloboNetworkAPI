@@ -242,6 +242,11 @@ class Generic(BasePlugin):
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
+            plm.set_member_description(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                description=pls['pools_members']['description'])
+
             plm.set_states(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
@@ -327,6 +332,11 @@ class Generic(BasePlugin):
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
+            plm.set_member_description(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                description=pls['pools_members']['description'])
+
             plm.set_states(
                 names=pls['pools_names'],
                 members=pls['pools_members']['members'],
@@ -340,7 +350,8 @@ class Generic(BasePlugin):
             # delete templates created
             template_names = [m for m in list(
                 itertools.chain(
-                    *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                    *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])
+            ) if 'MONITOR' in m]
             if template_names:
                 mon.delete_template(
                     template_names=template_names

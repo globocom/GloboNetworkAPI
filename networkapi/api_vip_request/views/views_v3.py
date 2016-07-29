@@ -4,19 +4,29 @@ import logging
 import urllib
 
 from django.db.transaction import commit_on_success
-
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_vip_request import exceptions, facade
-from networkapi.api_vip_request.permissions import DeployCreate, DeployDelete, DeployUpdate, Read, Write
-from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer, VipRequestSerializer, VipRequestTableSerializer
-from networkapi.settings import SPECS
-from networkapi.util import logs_method_apiview, permission_classes_apiview
-from networkapi.util.json_validate import json_validate, raise_json_validate
-
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from networkapi.api_ip import facade as facade_ip
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_vip_request import exceptions
+from networkapi.api_vip_request import facade
+from networkapi.api_vip_request.permissions import DeployCreate
+from networkapi.api_vip_request.permissions import DeployDelete
+from networkapi.api_vip_request.permissions import DeployUpdate
+from networkapi.api_vip_request.permissions import Read
+from networkapi.api_vip_request.permissions import Write
+from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer
+from networkapi.api_vip_request.serializers import VipRequestSerializer
+from networkapi.api_vip_request.serializers import VipRequestTableSerializer
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.settings import SPECS
+from networkapi.util import logs_method_apiview
+from networkapi.util import permission_classes_apiview
+from networkapi.util.json_validate import json_validate
+from networkapi.util.json_validate import raise_json_validate
 
 
 log = logging.getLogger(__name__)
@@ -43,7 +53,8 @@ class VipRequestDeployView(APIView):
 
         locks_list = facade.create_lock(vip_serializer.data)
         try:
-            response = facade.create_real_vip_request(vip_serializer.data, request.user)
+            response = facade.create_real_vip_request(
+                vip_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
@@ -70,7 +81,8 @@ class VipRequestDeployView(APIView):
 
         locks_list = facade.create_lock(vip_serializer.data)
         try:
-            response = facade.delete_real_vip_request(vip_serializer.data, request.user)
+            response = facade.delete_real_vip_request(
+                vip_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
@@ -124,7 +136,8 @@ class VipRequestDeployView(APIView):
         json_validate(SPECS.get('vip_put')).validate(vips)
         locks_list = facade.create_lock(vips.get('vips'))
         try:
-            response = facade.update_real_vip_request(vips['vips'], request.user)
+            response = facade.update_real_vip_request(
+                vips['vips'], request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
@@ -252,12 +265,14 @@ class VipRequestDBView(APIView):
                 )
                 protocol = 'https' if request.is_secure() else 'http'
 
-                next_search = urllib.urlencode({"search": vips_requests['next_search']})
+                next_search = urllib.urlencode(
+                    {"search": vips_requests['next_search']})
                 url_next_search = '%s://%s%s?%s' % (
                     protocol, request.get_host(), request.path, next_search)
 
                 if vips_requests['prev_search']:
-                    prev_search = urllib.urlencode({"search": vips_requests['prev_search']})
+                    prev_search = urllib.urlencode(
+                        {"search": vips_requests['prev_search']})
                     url_prev_search = '%s://%s%s?%s' % (
                         protocol, request.get_host(), request.path, prev_search)
                 else:
@@ -413,18 +428,31 @@ class VipRequestDBView(APIView):
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of vip request
-        :url /api/v3/vip-request/<vip_request_ids>/
+        :url /api/v3/vip-request/<vip_request_ids>/?keepip=<keepip>
         :param vip_request_ids=<vip_request_ids>
+        :param keepip=(0|1)
         """
+
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         locks_list = facade.create_lock(vip_request_ids)
+        keepip = request.GET.get('keepip') or '0'
+        success_del = False
         try:
-            facade.delete_vip_request(vip_request_ids)
+            ipv4_list, ipv6_list = facade.delete_vip_request(
+                vip_request_ids, keepip)
+            success_del = True
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
             facade.destroy_lock(locks_list)
+            if success_del:
+
+                try:
+                    facade_ip.delete_ipv4_list(ipv4_list)
+                    facade_ip.delete_ipv4_list(ipv6_list)
+                except IpCantBeRemovedFromVip:
+                    pass
 
         return Response({})
 
@@ -600,12 +628,14 @@ class VipRequestDBDetailsView(APIView):
 
                 protocol = 'https' if request.is_secure() else 'http'
 
-                next_search = urllib.urlencode({"search": vips_requests['next_search']})
+                next_search = urllib.urlencode(
+                    {"search": vips_requests['next_search']})
                 url_next_search = '%s://%s%s?%s' % (
                     protocol, request.get_host(), request.path, next_search)
 
                 if vips_requests['prev_search']:
-                    prev_search = urllib.urlencode({"search": vips_requests['prev_search']})
+                    prev_search = urllib.urlencode(
+                        {"search": vips_requests['prev_search']})
                     url_prev_search = '%s://%s%s?%s' % (
                         protocol, request.get_host(), request.path, prev_search)
                 else:
@@ -734,7 +764,8 @@ class VipRequestPoolView(APIView):
 
             pool_id = int(kwargs['pool_id'])
 
-            extends_search = {'viprequestport__viprequestportpool__server_pool': pool_id}
+            extends_search = {
+                'viprequestport__viprequestportpool__server_pool': pool_id}
             search['extends_search'] = [ex.append(extends_search) for ex in search['extends_search']] \
                 if search['extends_search'] else [extends_search]
 
@@ -747,12 +778,14 @@ class VipRequestPoolView(APIView):
 
             protocol = 'https' if request.is_secure() else 'http'
 
-            next_search = urllib.urlencode({"search": vips_requests['next_search']})
+            next_search = urllib.urlencode(
+                {"search": vips_requests['next_search']})
             url_next_search = '%s://%s%s?%s' % (
                 protocol, request.get_host(), request.path, next_search)
 
             if vips_requests['prev_search']:
-                prev_search = urllib.urlencode({"search": vips_requests['prev_search']})
+                prev_search = urllib.urlencode(
+                    {"search": vips_requests['prev_search']})
                 url_prev_search = '%s://%s%s?%s' % (
                     protocol, request.get_host(), request.path, prev_search)
             else:

@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
-
-from functools import wraps
 import logging
+from functools import wraps
 
 import bigsuds
 
@@ -118,6 +117,7 @@ def trata_param_pool(pools):
             'members': [],
             'monitor': [],
             'session': [],
+            'description': [],
             'priority': [],
             'weight': [],
             'limit': []
@@ -133,7 +133,8 @@ def trata_param_pool(pools):
                 get_method_name(p['lb_method']))
 
         if p.get('healthcheck') is not None:
-            pls['pools_healthcheck'].append(p['healthcheck'])
+            if p.get('healthcheck').get('new'):
+                pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):
             pls['pools_actions'].append(get_service_down_action_name(p['action']))
@@ -142,6 +143,7 @@ def trata_param_pool(pools):
         member_status_session = []
         member_limit = []
         member_priority = []
+        member_description = []
         member_weight = []
         member = []
         member_new = []
@@ -178,6 +180,9 @@ def trata_param_pool(pools):
             if pool_member.get('priority') is not None:
                 member_priority.append(pool_member['priority'])
 
+            if pool_member.get('identifier') is not None:
+                member_description.append(pool_member['identifier'])
+
             if pool_member.get('weight') is not None:
                 member_weight.append(pool_member['weight'])
 
@@ -195,6 +200,7 @@ def trata_param_pool(pools):
         pls['pools_members']['session'].append(member_status_session)
         pls['pools_members']['limit'].append(member_limit)
         pls['pools_members']['priority'].append(member_priority)
+        pls['pools_members']['description'].append(member_description)
         pls['pools_members']['weight'].append(member_weight)
         pls['pools_members']['members'].append(member)
         pls['pools_members']['members_new'].append(member_new)

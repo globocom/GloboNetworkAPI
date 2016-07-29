@@ -152,7 +152,7 @@ class VipRequestPortPool(BaseModel):
     )
 
     order = models.IntegerField(
-        default=0
+        null=True
     )
 
     class Meta(BaseModel.Meta):

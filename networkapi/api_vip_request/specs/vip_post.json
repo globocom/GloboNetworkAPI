@@ -56,6 +56,9 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "id": {
+                        "type": "null"
+                      },
                       "server_pool": {
                         "type": "integer"
                       },
@@ -77,8 +80,7 @@
                     },
                     "required": [
                       "server_pool",
-                      "l7_rule",
-                      "l7_value"
+                      "l7_rule"
                     ],
                     "additionalProperties": false
                   }
