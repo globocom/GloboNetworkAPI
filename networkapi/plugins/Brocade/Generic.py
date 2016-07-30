@@ -223,7 +223,7 @@ class Generic(BasePlugin):
 
         mb['address'] = mbc['ip']
         mb['protocol_port'] = int(mbc['port'])
-        if mbc.get('member_status'):
+        if mbc.get('member_status') is not None:
             member_status = util.get_status_name(
                 str(mbc['member_status']))
             mb['admin_state_up'] = member_status['monitor']
@@ -255,6 +255,7 @@ class Generic(BasePlugin):
         vp['session_persistence'] = values['persistence']
         vp['l4_protocol'] = [port['options']['l4_protocol']['nome_opcao_txt'].upper()
                              for port in ports][0]
+        vp['tos'] = vpc['options']['dscp']
 
         lb_method = [pool['server_pool']['lb_method']
                      for pool in port['pools'] for port in ports][0]
