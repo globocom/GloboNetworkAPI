@@ -1,4 +1,8 @@
 #!/bin/bash
+# virtualenv ipdb_env
+# source ipdb_env/bin/activate
+# pip install -r requirements.txt
+# pip install -r requirements_test.txt
 echo "exporting NETWORKAPI_PDB"
 export NETWORKAPI_PDB=1
 echo "clearing memcached:"

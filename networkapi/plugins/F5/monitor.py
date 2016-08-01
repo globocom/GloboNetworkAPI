@@ -27,101 +27,102 @@ class Monitor(F5Base):
 
         try:
 
-            for i, pool in enumerate(kwargs['names']):
-                if kwargs['healthcheck'][i]:
+            if kwargs.get('healthcheck'):
+                for i, pool in enumerate(kwargs['names']):
+                    if kwargs['healthcheck'][i]:
 
-                    monitor_association = {
-                        'pool_name': None,
-                        'monitor_rule': {
-                            'monitor_templates': [],
-                            'type': None,
-                            'quorum': None
-                        }
-                    }
-
-                    if kwargs['healthcheck'][i]['healthcheck_request'] != '' or \
-                        kwargs['healthcheck'][i]['healthcheck_expect'] != '' or \
-                            kwargs['healthcheck'][i]['destination'] != '*:*':
-
-                        name = kwargs['healthcheck'][i]['identifier']
-
-                        template = {
-                            'template_name': name,
-                            'template_type': types.template_type(kwargs['healthcheck'][i]['healthcheck_type'])
-                        }
-
-                        templates.append(template)
-                        template_attributes.append({
-                            'parent_template': kwargs['healthcheck'][i]['healthcheck_type'].lower(),
-                            'interval': 5,
-                            'timeout': 16,
-                            'dest_ipport': types.address_type(kwargs['healthcheck'][i]['destination']),
-                            'is_read_only': 0,
-                            'is_directly_usable': 1
-                        })
-
-                        hr = kwargs['healthcheck'][i]['healthcheck_request']
-                        healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
-                        if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
-                            rg = '^([\" ]?)+(GET|HEAD|POST|PUT|CONNECT|DELETE|OPTIONS|TRACE|PATCH)'
-                            if not valid_regex(hr, rg):
-                                hr = 'GET ' + hr
-
-                            # do escape when healthcheck has simple \r\n
-                            rg = '((\\r\\n))'
-                            if valid_regex(hr, rg):
-                                log.debug('adding unicode-escape')
-                                hr = hr.encode('unicode-escape')
-
-                            # add HTTP/1.\\r\\n\\r\\n when plugin no receive in
-                            # healthcheck
-                            rg = 'HTTP\/1'
-                            if not valid_regex(hr, rg):
-                                log.debug('adding HTTP/1.\\r\\n\\r\\n')
-                                hr = hr + ' HTTP/1.0\\r\\n\\r\\n'
-
-                            # add \\r\\n\\r\\n when plugin no receive in
-                            # healthcheck
-                            rg = '(?:((\\r\\n)|(\\\\r\\\\n)){1,2}?)$'
-                            if not valid_regex(hr, rg):
-                                log.debug('adding \\r\\n\\r\\n')
-                                hr = hr + '\\r\\n\\r\\n'
-
-                        healthcheck_request = hr
-
-                        template_names.append(name)
-                        values.append({
-                            'type': 'STYPE_SEND',
-                            'value': healthcheck_request
-                        })
-
-                        template_names.append(name)
-                        values.append({
-                            'type': 'STYPE_RECEIVE',
-                            'value': healthcheck_expect
-                        })
-
-                    else:
-                        name = kwargs['healthcheck'][i]['healthcheck_type'].lower()
-
-                    monitor_association['pool_name'] = kwargs['names'][i]
-                    monitor_association['monitor_rule']['monitor_templates'].append(name)
-                    monitor_association['monitor_rule']['type'] = 'MONITOR_RULE_TYPE_SINGLE'
-                    monitor_association['monitor_rule']['quorum'] = 0
-                    monitor_associations.append(monitor_association)
-
-                    if name == 'udp':
-                        for node in kwargs['members'][i]:
-                            monitor_association_node = {
+                        monitor_association = {
+                            'pool_name': None,
+                            'monitor_rule': {
                                 'monitor_templates': [],
                                 'type': None,
                                 'quorum': None
                             }
-                            monitor_association_node['monitor_templates'].append('icmp')
-                            monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
-                            monitor_association_node['quorum'] = 0
-                            monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
-                            monitor_associations_nodes['nodes'].append(node['address'])
+                        }
+
+                        if kwargs['healthcheck'][i]['healthcheck_request'] != '' or \
+                            kwargs['healthcheck'][i]['healthcheck_expect'] != '' or \
+                                kwargs['healthcheck'][i]['destination'] != '*:*':
+
+                            name = kwargs['healthcheck'][i]['identifier']
+
+                            template = {
+                                'template_name': name,
+                                'template_type': types.template_type(kwargs['healthcheck'][i]['healthcheck_type'])
+                            }
+
+                            templates.append(template)
+                            template_attributes.append({
+                                'parent_template': kwargs['healthcheck'][i]['healthcheck_type'].lower(),
+                                'interval': 5,
+                                'timeout': 16,
+                                'dest_ipport': types.address_type(kwargs['healthcheck'][i]['destination']),
+                                'is_read_only': 0,
+                                'is_directly_usable': 1
+                            })
+
+                            hr = kwargs['healthcheck'][i]['healthcheck_request']
+                            healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
+                            if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
+                                rg = '^([\" ]?)+(GET|HEAD|POST|PUT|CONNECT|DELETE|OPTIONS|TRACE|PATCH)'
+                                if not valid_regex(hr, rg):
+                                    hr = 'GET ' + hr
+
+                                # do escape when healthcheck has simple \r\n
+                                rg = '((\\r\\n))'
+                                if valid_regex(hr, rg):
+                                    log.debug('adding unicode-escape')
+                                    hr = hr.encode('unicode-escape')
+
+                                # add HTTP/1.\\r\\n\\r\\n when plugin no receive in
+                                # healthcheck
+                                rg = 'HTTP\/1'
+                                if not valid_regex(hr, rg):
+                                    log.debug('adding HTTP/1.\\r\\n\\r\\n')
+                                    hr = hr + ' HTTP/1.0\\r\\n\\r\\n'
+
+                                # add \\r\\n\\r\\n when plugin no receive in
+                                # healthcheck
+                                rg = '(?:((\\r\\n)|(\\\\r\\\\n)){1,2}?)$'
+                                if not valid_regex(hr, rg):
+                                    log.debug('adding \\r\\n\\r\\n')
+                                    hr = hr + '\\r\\n\\r\\n'
+
+                            healthcheck_request = hr
+
+                            template_names.append(name)
+                            values.append({
+                                'type': 'STYPE_SEND',
+                                'value': healthcheck_request
+                            })
+
+                            template_names.append(name)
+                            values.append({
+                                'type': 'STYPE_RECEIVE',
+                                'value': healthcheck_expect
+                            })
+
+                        else:
+                            name = kwargs['healthcheck'][i]['healthcheck_type'].lower()
+
+                        monitor_association['pool_name'] = kwargs['names'][i]
+                        monitor_association['monitor_rule']['monitor_templates'].append(name)
+                        monitor_association['monitor_rule']['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                        monitor_association['monitor_rule']['quorum'] = 0
+                        monitor_associations.append(monitor_association)
+
+                        if name == 'udp':
+                            for node in kwargs['members'][i]:
+                                monitor_association_node = {
+                                    'monitor_templates': [],
+                                    'type': None,
+                                    'quorum': None
+                                }
+                                monitor_association_node['monitor_templates'].append('icmp')
+                                monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                                monitor_association_node['quorum'] = 0
+                                monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
+                                monitor_associations_nodes['nodes'].append(node['address'])
 
         except Exception, e:
             log.error(e)

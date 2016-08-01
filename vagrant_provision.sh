@@ -10,6 +10,10 @@ pip install -r /vagrant/requirements.txt
 pip install gunicorn
 #criar usuario  no DB
 #load migrations
+# externel access: 
+# mysql -uroot -hlocalhost -e 'GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '' WITH GRANT OPTION; FLUSH PRIVILEGES;' 
+# vim /etc/mysql/my.cnf
+# change bind-address		= 127.0.0.1 to bind-address		= 0.0.0.0
 mysql -uroot -hlocalhost -e 'drop database if exists networkapi;'
 mysql -uroot -hlocalhost -e 'create database networkapi;'
 cd /vagrant/dbmigrate; db-migrate --show-sql
