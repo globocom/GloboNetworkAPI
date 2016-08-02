@@ -77,3 +77,21 @@ def permission_classes_apiview(permission_classes):
             return func(self, request, *args, **kwargs)
         return inner
     return outer
+
+
+def permission_obj_apiview(functions):
+    def outer(func):
+        @functools.wraps(func)
+        def inner(self, request, *args, **kwargs):
+            permission_classes = list(self.permission_classes)
+
+            for param in functions:
+
+                perm_add = param(request, *args, **kwargs)
+                permission_classes.append(perm_add)
+
+            self.permission_classes = tuple(permission_classes)
+            self.initial(request, *args, **kwargs)
+            return func(self, request, *args, **kwargs)
+        return inner
+    return outer

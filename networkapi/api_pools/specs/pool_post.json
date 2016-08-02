@@ -2,7 +2,6 @@
   "title": "Pool Post",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "server_pools"
   ],
@@ -124,6 +123,39 @@
           "default_limit": {
             "type": "integer",
             "minimum": 0
+          },
+          "groups_permissions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "group": {
+                   "type": "integer"
+                },
+                "read": {
+                   "type": "boolean"
+                },
+                "write": {
+                   "type": "boolean"
+                },
+                "delete": {
+                   "type": "boolean"
+                },
+                "change_config": {
+                   "type": "boolean"
+                }
+              },
+              "required": [
+                "group",
+                "read",
+                "write",
+                "delete",
+                "change_config"
+              ]
+            }
           },
           "server_pool_members": {
             "type": "array",

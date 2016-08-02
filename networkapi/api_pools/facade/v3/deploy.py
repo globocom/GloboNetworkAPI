@@ -10,7 +10,7 @@ from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions
 from networkapi.api_pools import serializers
-from networkapi.api_pools.facade import facade_v3
+from networkapi.api_pools.facade.v3 import base as facade_v3
 from networkapi.api_vip_request import facade as facade_vip
 from networkapi.api_vip_request import serializers as serializers_vip
 from networkapi.equipamento.models import Equipamento

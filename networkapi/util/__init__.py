@@ -34,7 +34,7 @@ from django.forms.models import model_to_dict
 from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
 from networkapi.plugins import exceptions as plugins_exceptions
 
-from .decorators import deprecated, logs_method_apiview, state_change, permission_classes_apiview
+from .decorators import deprecated, logs_method_apiview, state_change, permission_classes_apiview, permission_obj_apiview
 
 LOCK = 'LOCK'
 PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]

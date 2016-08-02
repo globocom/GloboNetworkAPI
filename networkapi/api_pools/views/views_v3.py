@@ -4,13 +4,16 @@ from datetime import datetime
 import logging
 
 from django.db.transaction import commit_on_success
-from networkapi.api_pools import exceptions, facade, serializers
+from networkapi.api_pools import exceptions, serializers
+from networkapi.api_pools.facade.v3 import base as facade
+from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
 from networkapi.api_pools.permissions import Read, ScriptAlterPermission, \
-    ScriptCreatePermission, ScriptRemovePermission, Write
+    ScriptCreatePermission, ScriptRemovePermission, Write, deploy_pool_permission, \
+    write_pool_permission, delete_pool_permission
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.requisicaovips import models as models_vips
 from networkapi.settings import SPECS
-from networkapi.util import logs_method_apiview, permission_classes_apiview
+from networkapi.util import logs_method_apiview, permission_classes_apiview, permission_obj_apiview
 from networkapi.util.json_validate import json_validate, raise_json_validate, verify_ports
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -24,6 +27,7 @@ log = logging.getLogger(__name__)
 class PoolMemberStateView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
+    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     @raise_json_validate('pool_member_status')
     @commit_on_success
@@ -79,7 +83,7 @@ class PoolMemberStateView(APIView):
         try:
             pools = request.DATA
             json_validate(SPECS.get('pool_member_status')).validate(pools)
-            response = facade.set_poolmember_state(pools, request.user)
+            response = facade_pool_deploy.set_poolmember_state(pools, request.user)
 
             return Response(response)
         except Exception, exception:
@@ -158,7 +162,7 @@ class PoolMemberStateView(APIView):
 
             if checkstatus == '1':
 
-                status = facade.get_poolmember_state(
+                status = facade_pool_deploy.get_poolmember_state(
                     serializer_server_pool.data)
 
                 for server_pool in server_pools:
@@ -195,6 +199,7 @@ class PoolMemberStateView(APIView):
 class PoolDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
+    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     def post(self, request, *args, **kwargs):
         """
@@ -208,7 +213,7 @@ class PoolDeployView(APIView):
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade.create_real_pool(pool_serializer.data, request.user)
+            response = facade_pool_deploy.create_real_pool(pool_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -218,6 +223,7 @@ class PoolDeployView(APIView):
         return Response(response)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
+    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     @raise_json_validate('pool_put')
     def put(self, request, *args, **kwargs):
@@ -276,7 +282,7 @@ class PoolDeployView(APIView):
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
-            response = facade.update_real_pool(server_pools, request.user)
+            response = facade_pool_deploy.update_real_pool(server_pools, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -285,6 +291,7 @@ class PoolDeployView(APIView):
         return Response(response)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
+    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
         """
@@ -298,7 +305,7 @@ class PoolDeployView(APIView):
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade.delete_real_pool(pool_serializer.data, request.user)
+            response = facade_pool_deploy.delete_real_pool(pool_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -669,6 +676,7 @@ class PoolDBView(APIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_pool_permission])
     @logs_method_apiview
     @raise_json_validate('pool_put')
     @commit_on_success
@@ -737,6 +745,7 @@ class PoolDBView(APIView):
         return Response(response, status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([delete_pool_permission])
     @logs_method_apiview
     @commit_on_success
     def delete(self, request, *args, **kwargs):

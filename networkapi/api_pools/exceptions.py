@@ -306,3 +306,10 @@ class PoolMemberChange(APIException):
     def __init__(self, msg=None):
         self.detail = u'Not is possible to change pool members when pool is created. <<%s>>' % (
             msg)
+
+
+class PoolError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, msg=None):
+        self.detail = u' <<%s>>' % (msg)

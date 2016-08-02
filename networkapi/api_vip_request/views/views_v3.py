@@ -16,6 +16,9 @@ from networkapi.api_vip_request import facade
 from networkapi.api_vip_request.permissions import DeployCreate
 from networkapi.api_vip_request.permissions import DeployDelete
 from networkapi.api_vip_request.permissions import DeployUpdate
+from networkapi.api_vip_request.permissions import deploy_vip_permission
+from networkapi.api_vip_request.permissions import write_vip_permission
+from networkapi.api_vip_request.permissions import delete_vip_permission
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
 from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer
@@ -25,6 +28,7 @@ from networkapi.ip.models import IpCantBeRemovedFromVip
 from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview
 from networkapi.util import permission_classes_apiview
+from networkapi.util import permission_obj_apiview
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
@@ -35,6 +39,7 @@ log = logging.getLogger(__name__)
 class VipRequestDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
+    @permission_obj_apiview([deploy_vip_permission])
     @logs_method_apiview
     def post(self, request, *args, **kwargs):
         """
@@ -64,6 +69,7 @@ class VipRequestDeployView(APIView):
         return Response(response)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
+    @permission_obj_apiview([deploy_vip_permission])
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
         """
@@ -92,6 +98,7 @@ class VipRequestDeployView(APIView):
         return Response(response)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
+    @permission_obj_apiview([deploy_vip_permission])
     @logs_method_apiview
     def put(self, request, *args, **kwargs):
         """
@@ -365,6 +372,7 @@ class VipRequestDBView(APIView):
         return Response(response, status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_vip_permission])
     @logs_method_apiview
     @raise_json_validate('vip_put')
     @commit_on_success
@@ -424,6 +432,7 @@ class VipRequestDBView(APIView):
         return Response({})
 
     @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([delete_vip_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """

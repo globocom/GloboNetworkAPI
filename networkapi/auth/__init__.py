@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from networkapi.admin_permission import AdminPermission
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.api_vip_request.models import VipRequest
 
 from networkapi.usuario.models import Usuario
 
@@ -22,7 +25,10 @@ from networkapi.grupo.models import PermissaoAdministrativa, UGrupo, DireitosGru
 
 from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError
 
-from networkapi.admin_permission import AdminPermission
+
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def authenticate(username, password, user_ldap=None):
@@ -47,7 +53,7 @@ def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equi
 
     @raise GrupoError: Falha ao pesquisar os direitos do grupo-equipamento, ou as permissões administrativas, ou o grupo do equipamento.
 
-    @raise EquipamentoError: Falha ao pesquisar o equipamento.    
+    @raise EquipamentoError: Falha ao pesquisar o equipamento.
     '''
     if user is None:
         return False
@@ -82,3 +88,96 @@ def _has_equip_perm(ugroup, egroups, equip_oper):
         if direito.egrupo in egroups:
             return True
     return False
+
+
+def validate_pool_perm(pools, user, pool_operation):
+
+    if len(pools) == 0:
+        return False
+
+    server_pools = ServerPool.objects.filter(id__in=pools)
+    for pool in server_pools:
+
+        perms = pool.serverpoolgrouppermission_set.all()
+
+        if not perms:
+            return True
+
+        ugroups = user.grupos.all()
+
+        if perms:
+
+            pool_perm = _validate_obj(perms, ugroups, pool_operation)
+            if not pool_perm:
+                log.warning('User{} does not have permission {} to Pool {}'.format(
+                    user, pool_operation, pool.id
+                ))
+                return False
+
+    return True
+
+
+def validate_vip_perm(vips, user, vip_operation):
+
+    if len(vips) == 0:
+        return False
+
+    vips_request = VipRequest.objects.filter(id__in=vips)
+    for vip in vips_request:
+
+        perms = vip.viprequestgrouppermission_set.all()
+
+        if not perms:
+            return True
+
+        ugroups = user.grupos.all()
+
+        if perms:
+
+            vip_perm = _validate_obj(perms, ugroups, vip_operation)
+            if not vip_perm:
+                log.warning('User{} does not have permission {} to Vip {}'.format(
+                    user, vip_operation, vip.id
+                ))
+                return False
+
+    return True
+
+
+def _validate_obj(perms, ugroups, pool_operation):
+    obj_perm = False
+
+    perms = perms.filter(user_group__in=ugroups)
+
+    if pool_operation == AdminPermission.POOL_READ_OPERATION:
+        perms = perms.filter(read=True)
+    elif pool_operation == AdminPermission.POOL_WRITE_OPERATION:
+        perms = perms.filter(write=True)
+    elif pool_operation == AdminPermission.POOL_DELETE_OPERATION:
+        perms = perms.filter(delete=True)
+    elif pool_operation == AdminPermission.POOL_UPDATE_CONFIG_OPERATION:
+        perms = perms.filter(change_config=True)
+
+    if perms:
+        obj_perm = True
+
+    return obj_perm
+
+
+def perm_pool(request, operation, *args, **kwargs):
+    pools = kwargs.get('pool_ids').split(';')
+    return validate_pool_perm(
+        pools,
+        request.user,
+        operation
+    )
+
+
+def perm_vip(request, operation, *args, **kwargs):
+
+    vips = kwargs.get('vip_request_ids').split(';')
+    return validate_vip_perm(
+        vips,
+        request.user,
+        operation
+    )

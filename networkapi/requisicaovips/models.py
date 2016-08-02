@@ -40,6 +40,9 @@ from networkapi.api_pools.models import OptionPool
 from networkapi.util.decorators import cached_property
 import logging
 
+from networkapi.grupo.models import UGrupo
+from networkapi.api_pools.exceptions import PoolError
+
 
 class RequisicaoVipsError(Exception):
 
@@ -2420,3 +2423,19 @@ class DsrL3_to_Vip(BaseModel):
         except Exception, e:
             self.log.error(u'Failure to list all DsrL3_to_Vip .')
             raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
+
+
+class ServerPoolGroupPermission(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id')
+    user_group = models.ForeignKey(UGrupo, db_column='id_user_group')
+    server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
+    read = models.BooleanField()
+    write = models.BooleanField()
+    change_config = models.BooleanField()
+    delete = models.BooleanField()
+
+    log = logging.getLogger('ServerPoolGroupPermission')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'server_pool_group_permission'
+        managed = True

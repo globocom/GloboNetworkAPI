@@ -1,0 +1,53 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `server_pool_group_permission` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_user_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_server_pool` INT(11) NOT NULL COMMENT '',
+  `read` CHAR(1) NOT NULL COMMENT '',
+  `write` CHAR(1) NOT NULL COMMENT '',
+  `change_config` CHAR(1) NOT NULL COMMENT '',
+  `delete` CHAR(1) NOT NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '',
+  UNIQUE INDEX `uniq_user_group_server_pool` (`id_user_group` ASC, `id_server_pool` ASC)  COMMENT '',
+  INDEX `fk_server_pool_group_permission_id_server_pool_idx` (`id_server_pool` ASC)  COMMENT '',
+  CONSTRAINT `fk_server_pool_group_permission_id_server_pool`
+    FOREIGN KEY (`id_server_pool`)
+    REFERENCES `server_pool` (`id_server_pool`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_server_pool_group_permission_id_usergroup`
+    FOREIGN KEY (`id_user_group`)
+    REFERENCES `grupos` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `vip_request_group_permission` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_user_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_vip_request` INT(11) UNSIGNED NOT NULL COMMENT '',
+  `read` CHAR(1) NOT NULL COMMENT '',
+  `write` CHAR(1) NOT NULL COMMENT '',
+  `change_config` CHAR(1) NOT NULL COMMENT '',
+  `delete` CHAR(1) NOT NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '',
+  INDEX `uniq_user_group_vip_request` (`id_user_group` ASC, `id_vip_request` ASC)  COMMENT '',
+  INDEX `fk_vip_request_gp_id_vip_request_idx` (`id_vip_request` ASC)  COMMENT '',
+  CONSTRAINT `fk_vip_request_gp_id_vip_request`
+    FOREIGN KEY (`id_vip_request`)
+    REFERENCES `vip_request` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vip_request_gp_id_usergroup`
+    FOREIGN KEY (`id_user_group`)
+    REFERENCES `grupos` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+"""
+
+SQL_DOWN = u"""
+DROP TABLE `server_pool_group_permission`;
+DROP TABLE `vip_request_group_permission`;
+
+"""

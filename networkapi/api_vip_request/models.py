@@ -3,6 +3,7 @@ from django.db import models
 
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.ip.models import Ip, Ipv6
+from networkapi.grupo.models import UGrupo
 from networkapi.models.BaseModel import BaseModel
 from networkapi.requisicaovips.models import OptionVip, ServerPool
 
@@ -180,3 +181,18 @@ class VipRequestDSCP(BaseModel):
 
         db_table = u'vip_request_dscp'
         managed = True
+
+
+class VipRequestGroupPermission(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id')
+    user_group = models.ForeignKey(UGrupo, db_column='id_user_group')
+    vip_request = models.ForeignKey(VipRequest, db_column='id_vip_request')
+    read = models.BooleanField()
+    write = models.BooleanField()
+    change_config = models.BooleanField()
+    delete = models.BooleanField()
+
+    class Meta(BaseModel.Meta):
+        db_table = u'vip_request_group_permission'
+        managed = True
+        unique_together = ('user_group', 'vip_request')

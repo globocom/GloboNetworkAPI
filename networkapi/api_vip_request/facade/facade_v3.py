@@ -11,8 +11,8 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions as exceptions_pool
-from networkapi.api_pools.facade import get_pool_by_id
-from networkapi.api_pools.facade import reserve_name_healthcheck
+from networkapi.api_pools.facade.v3.base import get_pool_by_id
+from networkapi.api_pools.facade.v3.base import reserve_name_healthcheck
 from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import models
