@@ -366,7 +366,7 @@ class VipRequestDBView(APIView):
         response = list()
         for vip in data['vips']:
             facade.validate_save(vip)
-            vp = facade.create_vip_request(vip)
+            vp = facade.create_vip_request(vip, request.user)
             response.append({'id': vp.id})
 
         return Response(response, status.HTTP_201_CREATED)

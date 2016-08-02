@@ -24,6 +24,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
+from networkapi.usuario.models import UsuarioGrupo
 from networkapi.plugins.factory import PluginFactory
 from networkapi.requisicaovips.models import OptionVip
 from networkapi.requisicaovips.models import RequisicaoVips
@@ -44,7 +45,7 @@ def get_vip_request(vip_request_ids):
     return vip_requests
 
 
-def create_vip_request(vip_request):
+def create_vip_request(vip_request, user):
     """
     Create Vip Request
     """
@@ -69,6 +70,8 @@ def create_vip_request(vip_request):
 
     _create_port(vip_request['ports'], vip.id)
     _create_option(option_create, vip.id)
+
+    _create_groups_permissions(vip_request.get('groups_permissions'), vip.id, user)
 
     # sync with old tables
     syncs.new_to_old(vip)
@@ -173,6 +176,48 @@ def _is_ipv6_in_use(ipv6, vip_id):
         is_in_use = False
 
     return is_in_use
+
+
+def _create_groups_permissions(groups_permissions, vip_id, user):
+    """Creates permissions to access for vips"""
+
+    group_adm = {
+        'group': 1,
+        'read': 1,
+        'write': 1,
+        'delete': 1,
+        'change_config': 1,
+    }
+    _create_group_permission(group_adm, vip_id)
+
+    if groups_permissions:
+        for group_permission in groups_permissions:
+            if group_permission['group'] != 1:
+                _create_group_permission(group_permission, vip_id)
+    else:
+        for group in UsuarioGrupo.list_by_user_id(user.id):
+            group_id = int(group.ugrupo.id)
+            if group_id != 1:
+                _create_group_permission({
+                    'group': group_id,
+                    'read': 1,
+                    'write': 1,
+                    'delete': 1,
+                    'change_config': 1,
+                }, vip_id)
+
+
+def _create_group_permission(group_permission, vip_id):
+    """Creates permissions to access for vips"""
+
+    vip_perm = models.VipRequestGroupPermission()
+    vip_perm.vip_request_id = vip_id
+    vip_perm.user_group_id = group_permission['group']
+    vip_perm.read = group_permission['read']
+    vip_perm.write = group_permission['write']
+    vip_perm.delete = group_permission['delete']
+    vip_perm.change_config = group_permission['change_config']
+    vip_perm.save()
 
 
 def _create_port(ports, vip_request_id):

@@ -670,7 +670,7 @@ class PoolDBView(APIView):
         for pool in pools['server_pools']:
             facade.validate_save(pool)
 
-            pl = facade.create_pool(pool)
+            pl = facade.create_pool(pool, request.user)
             response.append({'id': pl.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
