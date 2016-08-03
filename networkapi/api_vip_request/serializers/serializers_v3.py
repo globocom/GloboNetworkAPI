@@ -1,13 +1,19 @@
 # -*- coding:utf-8 -*-
-from networkapi.ambiente.models import Ambiente
-from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer, OptionVipSerializer
-from networkapi.api_equipment.serializers import EquipmentSerializer
-from networkapi.api_pools.serializers import Ipv4DetailsSerializer, Ipv4Serializer,\
-    Ipv6DetailsSerializer, Ipv6Serializer, PoolV3DetailsSerializer
-from networkapi.api_vip_request.models import VipRequest, VipRequestOptionVip, VipRequestPort,\
-    VipRequestPortPool
-
 from rest_framework import serializers
+
+from networkapi.ambiente.models import Ambiente
+from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer
+from networkapi.api_environment_vip.serializers import OptionVipSerializer
+from networkapi.api_equipment.serializers import EquipmentSerializer
+from networkapi.api_pools.serializers import Ipv4DetailsSerializer
+from networkapi.api_pools.serializers import Ipv4Serializer
+from networkapi.api_pools.serializers import Ipv6DetailsSerializer
+from networkapi.api_pools.serializers import Ipv6Serializer
+from networkapi.api_pools.serializers import PoolV3DetailsSerializer
+from networkapi.api_vip_request.models import VipRequest
+from networkapi.api_vip_request.models import VipRequestOptionVip
+from networkapi.api_vip_request.models import VipRequestPort
+from networkapi.api_vip_request.models import VipRequestPortPool
 
 
 class VipRequestOptionVipSerializer(serializers.ModelSerializer):

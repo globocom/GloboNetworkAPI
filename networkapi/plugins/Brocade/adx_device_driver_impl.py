@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 #
 # Copyright 2014 Brocade Communication Systems, Inc.  All rights reserved.

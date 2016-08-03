@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import logging
 
 from networkapi.plugins import exceptions as base_exceptions

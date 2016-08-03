@@ -1,5 +1,6 @@
-from functools import wraps
+# -*- coding:utf-8 -*-
 import logging
+from functools import wraps
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.Brocade import lb
