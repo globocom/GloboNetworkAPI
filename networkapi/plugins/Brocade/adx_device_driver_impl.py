@@ -167,6 +167,19 @@ class BrocadeAdxDeviceDriverImpl():
         except suds.WebFault:
             return 0
 
+    def _is_server_port(self, server_port):
+        start_index = 1
+        num_retrieved = 5
+        api_call = (self.slb_service.getRealServerPortConfiguration)
+        try:
+            reply = api_call(server_port, start_index, num_retrieved)
+            if reply:
+                return True
+            else:
+                return False
+        except suds.WebFault:
+            return 0
+
     def _get_server_port_by_virtual_count(self, server_port):
         start_index = 1
         num_retrieved = 5
@@ -353,6 +366,7 @@ class BrocadeAdxDeviceDriverImpl():
 
             vs_config.virtualServer = server_port.srvr
             vs_config.adminState = True
+            vs_config.allowAdvertiseVipRoute = True
             vs_config.enableAdvertiseVipRoute = True
             vs_config.description = description
             if tos:
@@ -798,7 +812,7 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def delete_member(self, member):
-        rsportcount = self._get_server_port_count(member['address'], False)
+
         try:
             pool_del = False
             rsserverport = self._adx_server_port(member['address'],
@@ -807,13 +821,20 @@ class BrocadeAdxDeviceDriverImpl():
             rsportbyvirtualcount = self._get_server_port_by_virtual_count(rsserverport)
             if rsportbyvirtualcount == 0:
                 pool_del = True
-                self.slb_service.deleteRealServerPort(rsserverport)
+                rsportbyserver = self._is_server_port(rsserverport)
+                if rsportbyserver:
+                    self.slb_service.deleteRealServerPort(rsserverport)
 
             # Delete the Real Server
             # if this is the only port other than default port
+            time.sleep(5)
+            rsportcount = self._get_server_port_count(member['address'], False)
 
+            # work around to delete real
             if rsportcount <= 1:
+                import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint c7e42a4e //
                 pool_del = True
+
                 self.slb_service.deleteRealServer(rsserverport.srvr)
 
             return pool_del

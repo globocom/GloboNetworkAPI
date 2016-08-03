@@ -28,14 +28,13 @@ class Generic(BasePlugin):
                 }
 
         # vip assoc with pool
-
         for vip in pool['vips']:
             vpc = copy.deepcopy(vip)
             ports = vpc.get('ports')
 
             address = vpc['ipv4']['ip_formated'] if vpc['ipv4'] else vpc['ipv6']['ip_formated']
             vp = dict()
-            vp['name'] = 'VIP_{}_{}'.format(vpc['id'], address)
+            vp['name'] = 'VIP_{}'.format(vpc['id'])
             vp['address'] = address
             for port in ports:
 
@@ -185,34 +184,35 @@ class Generic(BasePlugin):
         values = {
             'persistence': None
         }
-        conf = vip_request.get('conf').get('conf').get('optionsvip_extended')
-        if conf:
-            requiments = conf.get('requiments')
-            if requiments:
-                for requiment in requiments:
-                    condicionals = requiment.get('condicionals')
-                    for condicional in condicionals:
+        if vip_request.get('conf'):
+            conf = vip_request.get('conf').get('conf').get('optionsvip_extended')
+            if conf:
+                requiments = conf.get('requiments')
+                if requiments:
+                    for requiment in requiments:
+                        condicionals = requiment.get('condicionals')
+                        for condicional in condicionals:
 
-                        validated = True
+                            validated = True
 
-                        validations = condicional.get('validations')
-                        for validation in validations:
-                            if validation.get('type') == 'optionvip':
-                                validated &= valid_expression(
-                                    validation.get('operator'),
-                                    int(vip_request['options'][validation.get('variable')]['id']),
-                                    int(validation.get('value'))
-                                )
+                            validations = condicional.get('validations')
+                            for validation in validations:
+                                if validation.get('type') == 'optionvip':
+                                    validated &= valid_expression(
+                                        validation.get('operator'),
+                                        int(vip_request['options'][validation.get('variable')]['id']),
+                                        int(validation.get('value'))
+                                    )
 
-                        if validated:
-                            use = condicional.get('use')
-                            for item in use:
+                            if validated:
+                                use = condicional.get('use')
+                                for item in use:
 
-                                if item.get('type') == 'persistence':
-                                    if item.get('value'):
-                                        values['persistence'] = {
-                                            'type': item.get('value')
-                                        }
+                                    if item.get('type') == 'persistence':
+                                        if item.get('value'):
+                                            values['persistence'] = {
+                                                'type': item.get('value')
+                                            }
 
         return values
 
@@ -240,6 +240,7 @@ class Generic(BasePlugin):
         return mb
 
     def prepare_vips(self, vip):
+
         vps = list()
         vp = dict()
         vpc = copy.deepcopy(vip.get('vip_request'))
@@ -248,7 +249,7 @@ class Generic(BasePlugin):
         address = vpc['ipv4']['ip_formated'] if vpc['ipv4'] else vpc['ipv6']['ip_formated']
         values = self.trata_extends(vpc)
 
-        vp['name'] = 'VIP_{}_{}'.format(vpc['id'], address)
+        vp['name'] = 'VIP_{}'.format(vpc['id'])
         vp['address'] = address
         vp['description'] = vpc['name']
         vp['timeout'] = vpc['options']['timeout']['nome_opcao_txt']
