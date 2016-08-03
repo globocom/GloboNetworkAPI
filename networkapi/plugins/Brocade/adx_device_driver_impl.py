@@ -209,6 +209,7 @@ class BrocadeAdxDeviceDriverImpl():
             raise adx_exception.ConfigError(msg=e.message)
 
     def unbind_member_from_vip(self, member, vip):
+
         rs_ip_address = member['address']
         rs_name = rs_ip_address
         if member.get('name'):
@@ -832,7 +833,6 @@ class BrocadeAdxDeviceDriverImpl():
 
             # work around to delete real
             if rsportcount <= 1:
-                import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint c7e42a4e //
                 pool_del = True
 
                 self.slb_service.deleteRealServer(rsserverport.srvr)

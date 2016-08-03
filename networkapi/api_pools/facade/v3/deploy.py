@@ -163,6 +163,7 @@ def update_real_pool(pools, user):
                     # delete member with old port and old ip
                     pools_members.append({
                         'id': None,
+                        'identifier': pool_member['identifier'],
                         'ip': ip_db,
                         'port': member.port_real,
                         'remove': 1
@@ -197,6 +198,7 @@ def update_real_pool(pools, user):
         for member in db_members_remove:
             pools_members.append({
                 'id': member.id,
+                'identifier': member.identifier,
                 'ip': member.ip.ip_formated if member.ip else member.ipv6.ip_formated,
                 'port': member.port_real,
                 'remove': 1
