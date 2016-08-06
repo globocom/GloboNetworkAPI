@@ -1,9 +1,14 @@
 # -*- coding:utf-8 -*-
 import logging
 
-from networkapi.plugins.F5 import pool, rule, types
+from networkapi.plugins.F5 import pool
+from networkapi.plugins.F5 import rule
+from networkapi.plugins.F5 import types
 from networkapi.plugins.F5.f5base import F5Base
-from networkapi.plugins.F5.profile import ProfileFastL4, ProfileHttp, ProfileTCP, ProfileUDP
+from networkapi.plugins.F5.profile import ProfileFastL4
+from networkapi.plugins.F5.profile import ProfileHttp
+from networkapi.plugins.F5.profile import ProfileTCP
+from networkapi.plugins.F5.profile import ProfileUDP
 from networkapi.plugins.F5.util import logger
 from networkapi.util import valid_expression
 
@@ -36,7 +41,8 @@ class VirtualServer(F5Base):
             },
             'profiles_timeout_fastl4': {
                 'profile_names': list(),
-                'timeouts': list()
+                'timeouts': list(),
+                'loose_close_state': list(),
             },
             'profiles_persistence': {
                 'virtual_servers': list(),
@@ -206,6 +212,42 @@ class VirtualServer(F5Base):
 
     @logger
     def update(self, **kwargs):
+        self.__properties = {
+
+            'profiles': list(),
+            'profiles_timeout_tcp': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_timeout_udp': {
+                'profile_names': list(),
+                'timeouts': list()
+            },
+            'profiles_timeout_fastl4': {
+                'profile_names': list(),
+                'timeouts': list(),
+                'loose_close_state': list(),
+            },
+            'profiles_persistence': {
+                'virtual_servers': list(),
+                'profiles': list()
+            },
+            'translate_port_state': {
+                'virtual_servers': list(),
+                'states': list()
+            },
+            'vip_snat_auto': {
+                'virtual_servers': list()
+            },
+            'vip_snat_none': {
+                'virtual_servers': list()
+            },
+            'vip_snat_pool': {
+                'virtual_servers': list(),
+                'pools': list()
+            }
+        }
+
         virtual_servers = [vip_request['name'] for vip_request in kwargs['vips']]
 
         resources = {
@@ -383,6 +425,11 @@ class VirtualServer(F5Base):
                 profile_names=kwargs['profiles_timeout_fastl4']['profile_names'],
                 timeouts=kwargs['profiles_timeout_fastl4']['timeouts'],
             )
+            if kwargs['profiles_timeout_fastl4']['loose_close_state']:
+                pfl4.set_loose_close_state(
+                    profile_names=kwargs['profiles_timeout_fastl4']['profile_names'],
+                    states=kwargs['profiles_timeout_fastl4']['loose_close_state'],
+                )
 
     @logger
     def __set_default_pool_name(self, resources):
@@ -497,27 +544,32 @@ class VirtualServer(F5Base):
                                     if '$' in profile_name:
                                         try:
                                             pn = profile_name.split('$')
-                                            time_profie = int(vip_request['optionsvip']['timeout']['nome_opcao_txt']) * 60
-                                            profile_name = pn[0] + str(time_profie)
+                                            time_profile = int(vip_request['optionsvip']['timeout']['nome_opcao_txt']) * 60
+                                            profile_name = pn[0] + str(time_profile)
                                             if '/Common/' + profile_name not in profiles_list:
                                                 if 'tcp' in profile_name and profile_name not in self.__properties['profiles_timeout_tcp']['profile_names']:
                                                     self.__properties['profiles_timeout_tcp']['profile_names'].append(profile_name)
                                                     self.__properties['profiles_timeout_tcp']['timeouts'].append({
-                                                        'value': time_profie,
+                                                        'value': time_profile,
                                                         'default_flag': 0
                                                     })
                                                 elif 'udp' in profile_name and profile_name not in self.__properties['profiles_timeout_udp']['profile_names']:
                                                     self.__properties['profiles_timeout_udp']['profile_names'].append(profile_name)
                                                     self.__properties['profiles_timeout_udp']['timeouts'].append({
-                                                        'value': time_profie,
+                                                        'value': time_profile,
                                                         'default_flag': 0
                                                     })
                                                 elif 'fastL4' in profile_name and profile_name not in self.__properties['profiles_timeout_fastl4']['profile_names']:
                                                     self.__properties['profiles_timeout_fastl4']['profile_names'].append(profile_name)
                                                     self.__properties['profiles_timeout_fastl4']['timeouts'].append({
-                                                        'value': time_profie,
+                                                        'value': time_profile,
                                                         'default_flag': 0
                                                     })
+                                                    if 'fastL4_npath_' in profile_name:
+                                                        self.__properties['profiles_timeout_fastl4']['loose_close_state'].append({
+                                                            'value': 'STATE_ENABLED',
+                                                            'default_flag': 0
+                                                        })
                                         except:
                                             if '/Common/' + profile_name not in profiles_list:
                                                 log.error(u'Profile %s nao existe')

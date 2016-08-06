@@ -13,14 +13,14 @@ from networkapi.api_ip import facade as facade_ip
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import facade
+from networkapi.api_vip_request.permissions import delete_vip_permission
+from networkapi.api_vip_request.permissions import deploy_vip_permission
 from networkapi.api_vip_request.permissions import DeployCreate
 from networkapi.api_vip_request.permissions import DeployDelete
 from networkapi.api_vip_request.permissions import DeployUpdate
-from networkapi.api_vip_request.permissions import deploy_vip_permission
-from networkapi.api_vip_request.permissions import write_vip_permission
-from networkapi.api_vip_request.permissions import delete_vip_permission
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
+from networkapi.api_vip_request.permissions import write_vip_permission
 from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer
 from networkapi.api_vip_request.serializers import VipRequestSerializer
 from networkapi.api_vip_request.serializers import VipRequestTableSerializer
@@ -31,6 +31,7 @@ from networkapi.util import permission_classes_apiview
 from networkapi.util import permission_obj_apiview
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+from networkapi.util.json_validate import verify_ports_vip
 
 
 log = logging.getLogger(__name__)
@@ -143,6 +144,8 @@ class VipRequestDeployView(APIView):
         json_validate(SPECS.get('vip_put')).validate(vips)
         locks_list = facade.create_lock(vips.get('vips'))
         try:
+            verify_ports_vip(vips)
+
             response = facade.update_real_vip_request(
                 vips['vips'], request.user)
         except Exception, exception:
@@ -364,6 +367,7 @@ class VipRequestDBView(APIView):
         json_validate(SPECS.get('vip_post')).validate(data)
 
         response = list()
+        verify_ports_vip(data)
         for vip in data['vips']:
             facade.validate_save(vip)
             vp = facade.create_vip_request(vip, request.user)
@@ -420,6 +424,7 @@ class VipRequestDBView(APIView):
 
         locks_list = facade.create_lock(data['vips'])
         try:
+            verify_ports_vip(data)
             for vip in data['vips']:
                 facade.validate_save(vip)
                 facade.update_vip_request(vip)

@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,19 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.requisicaovips.models import ServerPool
 from networkapi.api_vip_request.models import VipRequest
-
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.grupo.models import DireitosGrupoEquipamento
+from networkapi.grupo.models import EGrupo
+from networkapi.grupo.models import EGrupoNotFoundError
+from networkapi.grupo.models import GrupoError
+from networkapi.grupo.models import PermissaoAdministrativa
+from networkapi.grupo.models import PermissaoAdministrativaNotFoundError
+from networkapi.grupo.models import UGrupo
+from networkapi.requisicaovips.models import ServerPool
 from networkapi.usuario.models import Usuario
-
-from networkapi.grupo.models import PermissaoAdministrativa, UGrupo, DireitosGrupoEquipamento, EGrupo, EGrupoNotFoundError, PermissaoAdministrativaNotFoundError, GrupoError
-
-from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError
-
-
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -71,7 +72,8 @@ def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equi
     ugroups = user.grupos.all()
     for ugroup in ugroups:
         try:
-            perm = PermissaoAdministrativa().get_permission(perm_function, ugroup, perm_oper)
+            # perm = PermissaoAdministrativa().get_permission(perm_function, ugroup, perm_oper)
+            PermissaoAdministrativa().get_permission(perm_function, ugroup, perm_oper)
             if (egroups is None) or (_has_equip_perm(ugroup, egroups, equip_oper)):
                 return True
         except PermissaoAdministrativaNotFoundError:

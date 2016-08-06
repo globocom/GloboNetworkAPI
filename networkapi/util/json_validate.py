@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
-from functools import wraps
 import json
 import logging
+from functools import wraps
 
 from jsonspec.reference import resolve
 from jsonspec.validators import load
@@ -30,6 +30,19 @@ def verify_ports(pools):
             raise ValidationError(
                 'Ipv6 have same ports',
                 ['#server_pools/%s/server_pool_members/*/ipv6/id - #server_pools/%s/server_pool_members/*/port_real' % (idx, idx)])
+
+
+def verify_ports_vip(vips):
+    for idx, vip in enumerate(vips['vips']):
+        pts = list()
+        for port in vip['ports']:
+            if port['port']:
+                pts.append(resolve(port, '#/port'))
+
+        if len(pts) != len(list(set(pts))):
+            raise ValidationError(
+                'Vip has same ports',
+                ['#vips/%s/ports/*/port ' % (idx)])
 
 
 def json_validate(json_file):

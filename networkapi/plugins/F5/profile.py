@@ -56,6 +56,13 @@ class ProfileFastL4(F5Base):
             timeouts=kwargs['timeouts']
         )
 
+    @logger
+    def set_loose_close_state(self, **kwargs):
+        self._lb._channel.LocalLB.ProfileFastL4.set_loose_close_state(
+            profile_names=kwargs['profile_names'],
+            states=kwargs['states']
+        )
+
 
 class ProfileUDP(F5Base):
 

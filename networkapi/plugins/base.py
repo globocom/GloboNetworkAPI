@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -17,16 +16,15 @@
 import logging
 import re
 import string
-from time import sleep
 import unicodedata
-
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.equipamento.models import EquipamentoAcesso
-from networkapi.settings import TFTP_SERVER_ADDR
+from time import sleep
 
 import paramiko
 
 from . import exceptions
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.settings import TFTP_SERVER_ADDR
 
 
 log = logging.getLogger(__name__)
@@ -200,6 +198,12 @@ class BasePlugin(object):
         raise NotImplementedError()
 
     def remove_member(self, status):
+        '''
+        Remove poolmember
+        '''
+        raise NotImplementedError()
+
+    def get_restrictions(self, status):
         '''
         Remove poolmember
         '''
