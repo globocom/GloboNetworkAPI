@@ -648,7 +648,7 @@ def create_real_vip_request(vip_requests, user):
 
     for vip in vip_requests:
         load_balance = prepare_apply(
-            load_balance, vip, created=True, user=user)
+            load_balance, vip, created=False, user=user)
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
@@ -842,6 +842,12 @@ def validate_save(vip_request, permit_created=False):
                 if vip.ipv6.id != vip_request['ipv6']:
                     raise exceptions.CreatedVipRequestValuesException(
                         'Ipv6 of vip request id: %s' % (vip_request.get('id')))
+
+            # change traffic return
+            options = [op.optionvip.id for op in vip.viprequestoptionvip_set.all()]
+            if vip_request['options']['traffic_return'] not in options:
+                raise exceptions.CreatedVipRequestValuesException(
+                    'Traffic Return of vip request id: %s' % (vip_request.get('id')))
 
             for port in vip_request.get('ports'):
                 if port.get('id'):

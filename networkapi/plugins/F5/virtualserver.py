@@ -282,10 +282,6 @@ class VirtualServer(F5Base):
             vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
 
             # RULES
-            if vip_request.get('rules'):
-                vip_rules['rules'].append(vip_request['rules'])
-                vip_rules['virtual_servers'].append(vip_request['name'])
-
             rules = list()
             if vip_request.get('pool_l7'):
                 rule_definition = vip_request['pool_l7']
@@ -309,24 +305,14 @@ class VirtualServer(F5Base):
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            self.__remove_all_persistence_profiles(virtual_servers)
-
-            self.__remove_all_rule(virtual_servers)
-
-            self.__add_rule(vip_rules)
-
-            self.__set_default_pool_name(resources)
-
-            self.__set_snat(
-                vip_snat_pool=self.__properties['vip_snat_pool'],
-                vip_snat_auto=self.__properties['vip_snat_auto'],
-                vip_snat_none=self.__properties['vip_snat_none'])
-
-            self.__add_persistence_profile(self.__properties['profiles_persistence'])
-
-            self.__set_dscp(dscp=vip_dscp)
-
-            self.__set_translate_port_state(self.__properties['translate_port_state'])
+            if rule_l7:
+                rl = rule.Rule(self._lb)
+                rls = rl.list()
+                for rl_l7 in rule_l7:
+                    if '/Common/{}'.format(rl_l7['rule_name']) in rls:
+                        rl.update(rules=[rl_l7])
+                    else:
+                        rl.create(rules=[rl_l7])
 
         except Exception, e:
             log.error(e)
@@ -334,6 +320,35 @@ class VirtualServer(F5Base):
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
+
+            try:
+                self._lb._channel.System.Session.start_transaction()
+
+                self.__remove_all_persistence_profiles(virtual_servers)
+
+                self.__remove_all_rule(virtual_servers)
+
+                self.__add_rule(vip_rules)
+
+                self.__set_default_pool_name(resources)
+
+                self.__set_snat(
+                    vip_snat_pool=self.__properties['vip_snat_pool'],
+                    vip_snat_auto=self.__properties['vip_snat_auto'],
+                    vip_snat_none=self.__properties['vip_snat_none'])
+
+                self.__add_persistence_profile(self.__properties['profiles_persistence'])
+
+                self.__set_dscp(dscp=vip_dscp)
+
+                self.__set_translate_port_state(self.__properties['translate_port_state'])
+
+            except Exception, e:
+                log.error(e)
+                self._lb._channel.System.Session.rollback_transaction()
+                raise e
+            else:
+                self._lb._channel.System.Session.submit_transaction()
 
     @logger
     def __create_vip(self, **kwargs):

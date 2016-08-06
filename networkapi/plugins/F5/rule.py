@@ -35,3 +35,18 @@ class Rule(F5Base):
 
         self._lb._channel.LocalLB.Rule.delete_rule(
             rule_names=kwargs['rule_names'])
+
+    @logger
+    def get(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        rules = self._lb._channel.LocalLB.Rule.query_rule(
+            rule_names=kwargs['rule_names'])
+        return rules
+
+    @logger
+    def list(self):
+        rules = self._lb._channel.LocalLB.Rule.get_list()
+        return rules
