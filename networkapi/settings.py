@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,8 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import logging
 import os
 import sys
@@ -350,8 +347,7 @@ INSTALLED_APPS += (
     'rest_framework',
 )
 
-"""Rest Configuration
-"""
+# Rest Configuration
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -554,14 +550,15 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PAT
 # TESTS CONFIGS
 ####################
 # If is running on CI: if CI=1 or running inside jenkins
+INTEGRATION = os.getenv('CI', '0') == '1'
+INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
+
+TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--verbosity=2', '--no-byte-compile', '-d', '-s']
 if CI:
 
-    INTEGRATION = os.getenv('CI', '0') == '1'
-    INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
-
-    TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
-
-    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
     NOSE_ARGS = [
         '--verbosity=2',
