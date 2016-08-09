@@ -687,14 +687,16 @@ def update_real_vip_request(vip_requests, user):
 
         ids_port_old = [port.get('id') for port in serializer_vips_data.get('ports')]
         ids_port_new = [port.get('id') for port in vip_request.get('ports') if port.get('id')]
+        ids_port_all = [port.get('id') for port in vip_request.get('ports')]
         ids_port_to_del = list(set(ids_port_old) - set(ids_port_new))
         ids_port_to_change = list(set(ids_port_old) & set(ids_port_new))
 
         for id_port_to_change in ids_port_to_change:
-            idx = ids_port_old.index(id_port_to_change)
-            port_old = serializer_vips_data.get('ports')[idx]
-            idx = ids_port_old.index(id_port_to_change)
-            port_new = vip_request.get('ports')[idx]
+            idx_pt_old = ids_port_old.index(id_port_to_change)
+            port_old = serializer_vips_data.get('ports')[idx_pt_old]
+            idx_pt_new = ids_port_old.index(id_port_to_change)
+            port_new = vip_request.get('ports')[idx_pt_new]
+            idx_pt_all = ids_port_all.index(id_port_to_change)
 
             ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
             ids_pool_new = [pool.get('id') for pool in port_new.get('pools') if pool.get('id')]
@@ -702,15 +704,15 @@ def update_real_vip_request(vip_requests, user):
 
             # pools to delete in ports dont delete
             for id_pool_to_del in ids_pool_to_del:
-                idx = ids_pool_old.index(id_pool_to_del)
-                pool_del = copy.deepcopy(port_old.get('pools')[idx])
+                idx_pl_del = ids_pool_old.index(id_pool_to_del)
+                pool_del = copy.deepcopy(port_old.get('pools')[idx_pl_del])
                 pool_del['delete'] = True
-                vip_request['ports'][idx]['pools'].append(pool_del)
+                vip_request['ports'][idx_pt_all]['pools'].append(pool_del)
 
         # ports to delete
         for id_port_to_del in ids_port_to_del:
-            idx = ids_port_old.index(id_port_to_del)
-            port_del = copy.deepcopy(serializer_vips_data.get('ports')[idx])
+            idx_pt_del = ids_port_old.index(id_port_to_del)
+            port_del = copy.deepcopy(serializer_vips_data.get('ports')[idx_pt_del])
             port_del['delete'] = True
             vip_request['ports'].append(port_del)
 

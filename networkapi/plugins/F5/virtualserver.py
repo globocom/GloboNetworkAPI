@@ -266,6 +266,7 @@ class VirtualServer(F5Base):
         }
 
         rule_l7 = list()
+        rule_l7_delete = list()
 
         profiles_list = list()
 
@@ -282,6 +283,7 @@ class VirtualServer(F5Base):
             vip_dscp['pool_names'].append(vip_request['optionsvip']['dscp']['pool_name'])
 
             # RULES
+
             rules = list()
             if vip_request.get('pool_l7'):
                 rule_definition = vip_request['pool_l7']
@@ -293,6 +295,8 @@ class VirtualServer(F5Base):
                 })
 
                 rules.append({'rule_name': rule_name, 'priority': 1})
+            else:
+                rule_l7_delete.append('{}_RULE_L7'.format(vip_request['name']))
 
             if vip_request.get('rules'):
                 for rule_name in vip_request['rules']:
@@ -349,6 +353,14 @@ class VirtualServer(F5Base):
                 raise e
             else:
                 self._lb._channel.System.Session.submit_transaction()
+
+                if rule_l7_delete:
+                    rl = rule.Rule(self._lb)
+                    for rl_l7 in rule_l7_delete:
+                        try:
+                            rl.delete(rule_names=[rl_l7])
+                        except:
+                            pass
 
     @logger
     def __create_vip(self, **kwargs):

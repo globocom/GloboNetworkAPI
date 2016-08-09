@@ -132,6 +132,7 @@ class Generic(BasePlugin):
 
     @util.connection
     def update_vip(self, vips):
+
         tratado = util.trata_param_vip(vips)
         vts = virtualserver.VirtualServer(self._lb)
 
