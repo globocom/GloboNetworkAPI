@@ -461,50 +461,34 @@ class BrocadeAdxDeviceDriverImpl():
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
-    def update_vip(self, new_vip, old_vip):
+    def update_vip(self, new_vip):
         vs_ipaddress = new_vip['address']
         vs_port = new_vip['protocol_port']
         vs_name = new_vip['name']
         vs_server_port = self._adx_server_port(vs_ipaddress, vs_port, vs_name)
 
-        self._update_virtual_server_properties(new_vip, old_vip)
+        new_session_persistence = new_vip.get('session_persistence')
 
-        old_admin_state_up = old_vip.get('admin_state_up')
-        new_admin_state_up = new_vip.get('admin_state_up')
-        if new_admin_state_up != old_admin_state_up:
+        LOG.debug('Update Session Persistence')
+        if new_session_persistence is None:
             try:
-                if new_admin_state_up:
-                    (self.slb_service
-                     .enableVirtualServerPort(vs_server_port))
-                else:
-                    (self.slb_service
-                     .disableVirtualServerPort(vs_server_port))
+                (self.slb_service
+                 .disableStickyOnVirtualServerPort(vs_server_port))
             except suds.WebFault as e:
                 raise adx_exception.ConfigError(msg=e.message)
-
-        old_session_persistence = old_vip.get('session_persistence')
-        new_session_persistence = new_vip.get('session_persistence')
-        if new_session_persistence != old_session_persistence:
-            LOG.debug('Update Session Persistence')
-            if new_session_persistence is None:
+        else:
+            type = new_vip['session_persistence']['type']
+            if type == "SOURCE_IP":
                 try:
                     (self.slb_service
-                     .disableStickyOnVirtualServerPort(vs_server_port))
+                     .enableStickyOnVirtualServerPort(vs_server_port))
                 except suds.WebFault as e:
                     raise adx_exception.ConfigError(msg=e.message)
             else:
-                type = new_vip['session_persistence']['type']
-                if type == "SOURCE_IP":
-                    try:
-                        (self.slb_service
-                         .enableStickyOnVirtualServerPort(vs_server_port))
-                    except suds.WebFault as e:
-                        raise adx_exception.ConfigError(msg=e.message)
-                else:
-                    error_message = ('Session Persistence of type %s '
-                                     'not supported') % (type)
-                    LOG.error(error_message)
-                    raise adx_exception.UnsupportedFeature(msg=error_message)
+                error_message = ('Session Persistence of type %s '
+                                 'not supported') % (type)
+                LOG.error(error_message)
+                raise adx_exception.UnsupportedFeature(msg=error_message)
 
     @log
     def _is_port_policy_in_use(self, healthmonitor_name):

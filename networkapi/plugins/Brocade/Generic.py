@@ -37,9 +37,12 @@ class Generic(BasePlugin):
             vp = dict()
             vp['name'] = 'VIP_{}'.format(vpc['id'])
             vp['address'] = address
+
             for port in ports:
 
                 for pool_vip in port['pools']:
+                    lb_method = pool_vip['server_pool']['lb_method']
+                    vp['lb_method'] = 'LEAST_CONNECTIONS' if lb_method == 'least-conn' else 'ROUND_ROBIN'
                     # pool
                     if int(pool_vip['server_pool']['id']) == int(pool['id']):
                         vp['protocol_port'] = int(port['port'])
@@ -52,7 +55,8 @@ class Generic(BasePlugin):
                             if vip['created']:
                                 self.baddi.bind_member_to_vip(mb, vp)
                         if action == 'update':
-
+                            if vip['created']:
+                                self.baddi.set_predictor_on_virtual_server(vp)
                             self.baddi.update_member(mb)
 
     @util.connection
@@ -139,45 +143,107 @@ class Generic(BasePlugin):
     #######################################
     @util.connection
     def create_vip(self, vips):
-
+        pools_ins = list()
         for vip in vips['vips']:
             vps = self.prepare_vips(vip)
 
             for idx, vp in enumerate(vps):
                 if idx == 0:
-                    # creates vip and port default
-                    try:
-                        self.baddi.create_vip(vp)
-                    except:
-                        pass
-                    else:
-                        self.baddi.set_predictor_on_virtual_server(vp)
+                    pools_ins += self._create_vip(vp, port_default=True)
                 else:
-                    # creates reals ports
-                    self.baddi.create_virtual_server_port(vp)
+                    pools_ins += self._create_vip(vp)
 
-                for member in vp.get('members'):
-                    self.baddi.create_member(member)
-                    self.baddi.bind_member_to_vip(member, vp)
+        return pools_ins
+
+    def _create_vip(self, vp, port_default=False):
+
+        if port_default:
+            # creates vip and port default
+            try:
+                self.baddi.create_vip(vp)
+            except:
+                pass
+            else:
+                self.baddi.set_predictor_on_virtual_server(vp)
+        else:
+            # creates reals ports
+            self.baddi.create_virtual_server_port(vp)
+            pools_ins = self._create_vip_members(vp)
+
+        return pools_ins
+
+    def _create_vip_members(self, vp):
+        pools_ins = list()
+
+        for member in vp.get('members'):
+            self.baddi.create_member(member)
+            self.baddi.bind_member_to_vip(member, vp)
+            pools_ins.append(member.get('pool_id'))
+
+        return pools_ins
+
+    @util.connection
+    def update_vip(self, vips):
+
+        pools_del = list()
+        pools_ins = list()
+        for vip in vips['vips']:
+            vps = self.prepare_vips(vip)
+
+            for idx, vp in enumerate(vps):
+                if idx != 0:
+                    if vp.get('new'):
+                        vp['members'] = copy.deepcopy(vp.get('members_new'))
+                        pools_ins += self._create_vip(vp)
+                    elif vp.get('delete'):
+                        pools_del += self._delete_vip(vp)
+                    else:
+                        vpu = copy.deepcopy(vp)
+                        self.baddi.update_vip(vpu)
+
+                        # new pool
+                        vpn = copy.deepcopy(vp)
+                        vpn['members'] = copy.deepcopy(vpn.get('members_new'))
+                        pools_ins += self._create_vip_members(vpn)
+
+                        # pool to delete
+                        vpd = copy.deepcopy(vp)
+                        vpd['members'] = copy.deepcopy(vpd.get('members_delete'))
+                        pools_del = self._delete_vip_members(vpd)
+
+        pools_ins = list(set(pools_ins))
+        pools_del = list(set(pools_del))
+
+        return pools_ins, pools_del
 
     @util.connection
     def delete_vip(self, vips):
 
         pools_del = list()
-
         for vip in vips['vips']:
             vps = self.prepare_vips(vip)
 
             for idx, vp in enumerate(vps):
-                for member in vp.get('members'):
-                    self.baddi.unbind_member_from_vip(member, vp)
-                    ret = self.baddi.delete_member(member)
+                pools_del += self._delete_vip(vp)
 
-                    # workaround to return pools deleted
-                    if ret:
-                        pools_del.append(member.get('pool_id'))
+        return pools_del
 
-                self.baddi.delete_vip(vp)
+    def _delete_vip(self, vp):
+        pools_del = self._delete_vip_members(vp)
+
+        self.baddi.delete_vip(vp)
+
+        return pools_del
+
+    def _delete_vip_members(self, vp):
+        pools_del = list()
+        for member in vp.get('members'):
+            self.baddi.unbind_member_from_vip(member, vp)
+            ret = self.baddi.delete_member(member)
+
+            # workaround to return pools deleted
+            if ret:
+                pools_del.append(member.get('pool_id'))
 
         return pools_del
 
@@ -278,9 +344,13 @@ class Generic(BasePlugin):
             vppc['protocol_port'] = int(port['port'])
             vppc['admin_state_up'] = 'ENABLED'
             vppc['members'] = list()
+            vppc['members_new'] = list()
+            vppc['members_delete'] = list()
             vppc['pools'] = list()
+            vppc['new'] = True if not port.get('id') else False
+            vppc['delete'] = True if port.get('delete') else False
             for pool in port['pools']:
-                vppc['pools'].append(pool['id'])
+                vppc['pools'].append(pool['server_pool']['id'])
                 for member in pool['server_pool']['pools_members']:
                     mb = self.prepare_member(member)
 
@@ -291,9 +361,16 @@ class Generic(BasePlugin):
                             'type': healthcheck['healthcheck_type'],
                             'url_health': hr
                         }
-                        mb['pool_id'] = pool['id']
+                        mb['pool_id'] = pool['server_pool']['id']
 
-                    vppc['members'].append(mb)
+                    # used in pools new and deleted in ports
+                    if not pool.get('id'):
+                        vppc['members_new'].append(mb)
+                    elif pool.get('delete'):
+                        vppc['members_delete'].append(mb)
+                    else:
+                        vppc['members'].append(mb)
+
             vps.append(vppc)
 
         return vps
