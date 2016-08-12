@@ -57,6 +57,14 @@ def update_pool(pool):
 
     sp = ServerPool.objects.get(id=pool.get('id'))
     sp.identifier = pool.get('identifier')
+    if sp.dscp:
+        if sp.default_port != pool.get('default_port'):
+            raise Exception(
+                'DRSL3 Restriction: Pool {} cannot change port'.format(
+                    sp.identifier
+                )
+            )
+
     sp.default_port = pool.get('default_port')
     sp.environment_id = pool.get('environment')
     sp.servicedownaction_id = _get_option_pool(
