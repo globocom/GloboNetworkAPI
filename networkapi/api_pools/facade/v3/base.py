@@ -11,14 +11,15 @@ from networkapi.api_pools import exceptions
 from networkapi.api_pools import models
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_POOL
-from networkapi.usuario.models import UsuarioGrupo
+from networkapi.equipamento.models import Equipamento
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
 from networkapi.requisicaovips.models import ServerPool
-from networkapi.requisicaovips.models import ServerPoolMember
 from networkapi.requisicaovips.models import ServerPoolGroupPermission
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.usuario.models import UsuarioGrupo
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ def create_pool(pool, user):
 
     sp.save()
 
-    _create_pool_member(pool['server_pool_members'], sp.id)
+    _create_pool_member(pool['server_pool_members'], sp)
 
     _create_groups_permissions(pool.get('groups_permissions'), sp.id, user)
 
@@ -73,7 +74,7 @@ def update_pool(pool):
 
     sp.save()
 
-    _create_pool_member(members_create, sp.id)
+    _create_pool_member(members_create, sp)
     _update_pool_member(members_update)
     _delete_pool_member(members_remove)
 
@@ -230,37 +231,73 @@ def _create_group_permission(group_permission, pool_id):
     pool_perm.save()
 
 
-def _create_pool_member(members, pool_id):
+def _create_pool_member(members, pool):
     """Creates pool members"""
-
     for member in members:
+        ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
+        ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
+        eqpt = Equipamento.get_by_pk(member['equipment']['id'])
+
         pool_member = ServerPoolMember()
-        pool_member.server_pool_id = pool_id
-        pool_member.ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
-        pool_member.ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
-        pool_member.identifier = member['identifier']
+        pool_member.server_pool = pool
+        pool_member.ip = ip
+        pool_member.ipv6 = ipv6
+        pool_member.identifier = eqpt.nome
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
         pool_member.member_status = member['member_status']
         pool_member.limit = member['limit']
         pool_member.save()
+
+        # vip with dsrl3 using pool
+        if pool.dscp:
+            mbs = pool_member.get_spm_by_eqpt_id(pool_member.equipment.id)
+
+            sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id=pool.id)
+            dscps = [sp.dscp for sp in sps]
+
+            mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+            if pool.dscp in dscps:
+                raise Exception(
+                    'DRSL3 Restriction: Pool Member {} cannot be insert in Pool {}, because already in other pool'.format(
+                        mb_name, pool.identifier
+                    )
+                )
+
+            if pool_member.port_real != pool.default_port:
+                raise Exception(
+                    'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
+                        mb_name, pool.identifier
+                    )
+                )
 
 
 def _update_pool_member(members):
     """Updates pool members"""
-
     for member in members:
+        ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
+        ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
+        eqpt = Equipamento.get_by_pk(member['equipment']['id'])
+
         pool_member = ServerPoolMember.objects.get(id=member['id'])
-        pool_member.ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
-        pool_member.ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
-        pool_member.identifier = member['identifier']
+        pool_member.ip = ip
+        pool_member.ipv6 = ipv6
+        pool_member.identifier = eqpt.nome
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
         pool_member.member_status = member['member_status']
         pool_member.limit = member['limit']
         pool_member.save()
+
+        if pool_member.port_real != pool_member.server_pool.default_port:
+            mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+            raise Exception(
+                'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
+                    mb_name, pool_member.server_pool.identifier
+                )
+            )
 
 
 def _delete_pool_member(members):

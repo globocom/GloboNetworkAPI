@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,34 +13,50 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+from string import upper
+
+from _mysql_exceptions import OperationalError
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
-from networkapi.util.decorators import cached_property
-from networkapi.healthcheckexpect.models import HealthcheckExpect
-from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
-from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
-from django.core.exceptions import ObjectDoesNotExist
-from _mysql_exceptions import OperationalError
-import logging
-from networkapi.models.BaseModel import BaseModel
-from string import upper
-from networkapi.util import is_valid_ip, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
-    is_valid_string_maxsize, is_valid_string_minsize, is_valid_option, is_valid_regex, is_valid_ipv6, is_valid_ipv4, \
-    mount_ipv4_string, mount_ipv6_string
-from networkapi.exception import InvalidValueError, OptionVipError, OptionVipNotFoundError, \
-    OptionVipEnvironmentVipError, OptionVipEnvironmentVipNotFoundError, OptionVipEnvironmentVipDuplicatedError, \
-    EnvironmentVipNotFoundError
-from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.api_pools.models import OptionPool
-from networkapi.util.decorators import cached_property
-import logging
 
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.api_pools.models import OptionPool
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.exception import OptionVipEnvironmentVipDuplicatedError
+from networkapi.exception import OptionVipEnvironmentVipError
+from networkapi.exception import OptionVipEnvironmentVipNotFoundError
+from networkapi.exception import OptionVipError
+from networkapi.exception import OptionVipNotFoundError
 from networkapi.grupo.models import UGrupo
-from networkapi.api_pools.exceptions import PoolError
+from networkapi.healthcheckexpect.models import Healthcheck
+from networkapi.healthcheckexpect.models import HealthcheckExpect
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import Ipv6
+from networkapi.models.BaseModel import BaseModel
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_ip
+from networkapi.util import is_valid_ipv4
+from networkapi.util import is_valid_ipv6
+from networkapi.util import is_valid_option
+from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.util import mount_ipv4_string
+from networkapi.util import mount_ipv6_string
+from networkapi.util.decorators import cached_property
+# from networkapi.api_pools.exceptions import PoolError
 
 
 class RequisicaoVipsError(Exception):
@@ -407,7 +422,7 @@ class OptionVip(BaseModel):
 
             @raise OperationalError: Failed to search for all Option Vip Traffic Return.
         """
-        #log = logging.getLogger('get_all_trafficreturn')
+        # log = logging.getLogger('get_all_trafficreturn')
 
         try:
 
@@ -1078,7 +1093,7 @@ class RequisicaoVips(BaseModel):
         # maxcon
         maxcon = variables_map.get('maxcon')
         try:
-            maxcon_int = int(maxcon)
+            # maxcon_int = int(maxcon)
             self.add_variable('maxcon', maxcon)
         except (TypeError, ValueError):
             raise InvalidMaxConValueError(
@@ -1634,7 +1649,7 @@ class RequisicaoVips(BaseModel):
             return vip_map, vip, 275
 
         if healthcheck_type != 'HTTP':
-            if not (id_healthcheck_expect == None and healthcheck == None):
+            if not (id_healthcheck_expect is None and healthcheck is None):
                 self.log.error(
                     u'The healthcheck_type parameter is %s, then healthcheck and id_healthcheck_expect must be None.',
                     healthcheck_type)
@@ -1647,7 +1662,7 @@ class RequisicaoVips(BaseModel):
         # If healthcheck_type is 'HTTP' id_healthcheck_expect and healthcheck
         # must NOT be None
         elif healthcheck_type == 'HTTP':
-            if id_healthcheck_expect == None or healthcheck == None:
+            if id_healthcheck_expect is None or healthcheck is None:
                 self.log.error(
                     u'The healthcheck_type parameter is HTTP, then healthcheck and id_healthcheck_expect must NOT be None.')
                 return vip_map, vip, 277
@@ -1750,8 +1765,8 @@ class RequisicaoVips(BaseModel):
                                     'ambiente_logico')):
                                 lista_ips_equip.append(ipequip.ip)
 
-            if valid == True:
-                if not ip in lista_ips_equip:
+            if valid is True:
+                if ip not in lista_ips_equip:
                     raise IpNotFoundByEquipAndVipError(None,
                                                        'Ipv4 não está relacionado com equipamento %s e Ambiente Vip: %s' % (
                                                            equip.name, evip.show_environment_vip()))
@@ -1785,8 +1800,8 @@ class RequisicaoVips(BaseModel):
                                     'ambiente_logico')):
                                 lista_ipsv6_equip.append(ipequip.ip)
 
-            if valid == True:
-                if not ip in lista_ipsv6_equip:
+            if valid is True:
+                if ip not in lista_ipsv6_equip:
                     raise IpNotFoundByEquipAndVipError(None,
                                                        'Ipv6 não está relacionado com equipamento %s e Ambiente Vip: %s' % (
                                                            equip.name, evip.show_environment_vip()))
@@ -1849,10 +1864,10 @@ class RequisicaoVips(BaseModel):
                 healthcheck_expect = HealthcheckExpect.get_by_pk(
                     id_healthcheck_expect).match_list
 
-            if healthcheck_request == None:
+            if healthcheck_request is None:
                 healthcheck_request = ''
             healthcheck_request = healthcheck_request.replace(chr(10), '\\n').replace(chr(13), '\\r')
-            if healthcheck_expect == None:
+            if healthcheck_expect is None:
                 healthcheck_expect = ''
             healthcheck_expect = healthcheck_expect.replace(chr(10), '\\n').replace(chr(13), '\\r')
 
@@ -1866,7 +1881,7 @@ class RequisicaoVips(BaseModel):
 
             healthcheck_obj = healthcheck_query.uniqueResult()
 
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             # O codigo acima procura um HT ja existente, mas nao acha.
             # Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
             self.log.debug("Criando um novo Healthcheck, pois o desejado ainda não existe")
@@ -1891,7 +1906,7 @@ class RequisicaoVips(BaseModel):
             reals_weights = vip_map.get('reals_weights')
             weights = None
 
-            if reals_weights != None:
+            if reals_weights is not None:
                 weights = reals_weights.get('reals_weight')
 
         # save ServerPool and VipPortToPool
@@ -1940,7 +1955,7 @@ class RequisicaoVips(BaseModel):
             server_pool.default_port = default_port
             server_pool.default_limit = vip_map.get('maxcon')
 
-            if healthcheck_obj != None:
+            if healthcheck_obj is not None:
                 server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
 
@@ -2015,7 +2030,7 @@ class RequisicaoVips(BaseModel):
                     weight = weights[i]
 
             # procura se já existe o member
-            if server_pool.id != None:
+            if server_pool.id is not None:
                 server_pool_members = ServerPoolMember.objects.filter(ip=ip_id, port_real=port_real,
                                                                       server_pool=server_pool.id)
 
@@ -2226,6 +2241,15 @@ class ServerPool(BaseModel):
     def vip_ports(self):
         return self.vipporttopool_set.all()
 
+    @cached_property
+    def dscp(self):
+        ports_assoc = self.viprequestportpool_set.select_related()
+        for poolport in ports_assoc:
+            dscp = poolport.vip_request_port.vip_request.viprequestdscp_set.select_related()
+            if dscp:
+                return dscp.uniqueResult()
+        return None
+
 
 class ServerPoolMember(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_server_pool_member')
@@ -2244,6 +2268,16 @@ class ServerPoolMember(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
         managed = True
+
+    @classmethod
+    def get_spm_by_eqpt_id(cls, eqpt_id):
+
+        spm = ServerPoolMember.objects.filter(
+            Q(ip__ipequipamento__equipamento__id=eqpt_id) |
+            Q(ipv6__ipv6equipament__equipamento__id=eqpt_id)
+        )
+
+        return spm
 
     @cached_property
     def equipment(self):
@@ -2393,7 +2427,7 @@ class DsrL3_to_Vip(BaseModel):
         return dscp
 
     @classmethod
-    def get_by_vip_id(self, id_vip):
+    def get_by_vip_id(cls, id_vip):
         """Get Request VipPortToPool associated with id_vip.
 
             @return: Request VipPortToPool with given id_vip.
@@ -2406,12 +2440,12 @@ class DsrL3_to_Vip(BaseModel):
             raise ObjectDoesNotExist(
                 e, u'There is not DSRL3 entry for vip = %s.' % id_vip)
         except Exception, e:
-            self.log.error(u'Failure to list id of DSR L3 by id_vip.')
+            cls.log.error(u'Failure to list id of DSR L3 by id_vip.')
             raise RequisicaoVipsError(
                 e, u'Failure to list Request DsrL3_to_Vip by id_vip.')
 
     @classmethod
-    def get_all(self):
+    def get_all(cls):
         """Get All Option Vip.
 
             @return: All Option Vip.
@@ -2421,7 +2455,7 @@ class DsrL3_to_Vip(BaseModel):
         try:
             return DsrL3_to_Vip.objects.all()
         except Exception, e:
-            self.log.error(u'Failure to list all DsrL3_to_Vip .')
+            cls.log.error(u'Failure to list all DsrL3_to_Vip .')
             raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
 
 

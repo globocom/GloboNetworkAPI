@@ -28,12 +28,16 @@ log = logging.getLogger(__name__)
 def _prepare_apply(pools, user):
 
     load_balance = dict()
+    keys = list()
 
     for pool in pools:
 
         equips = _validate_pool_members_to_apply(pool, user)
 
+        keys.append(sorted([str(eqpt.id) for eqpt in equips]))
+
         for e in equips:
+
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
                 equipamento=e.id
@@ -81,6 +85,11 @@ def _prepare_apply(pools, user):
                 } for pool_member in pool['server_pool_members']]
             })
 
+    # pools are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Pools are in differents load balancers')
+
     return load_balance
 
 
@@ -125,6 +134,7 @@ def update_real_pool(pools, user):
     - update data pool in db
     """
     load_balance = dict()
+    keys = list()
 
     for pool in pools['server_pools']:
         facade_v3.validate_save(pool, permit_created=True)
@@ -207,6 +217,8 @@ def update_real_pool(pools, user):
         # get eqpts associate with pool
         equips = _validate_pool_to_apply(pool, update=True, user=user)
 
+        keys.append(sorted([str(eqpt.id) for eqpt in equips]))
+
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
@@ -255,6 +267,11 @@ def update_real_pool(pools, user):
 
         facade_v3.update_pool(pool)
 
+    # pools are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Pools are in differents load balancers')
+
     for lb in load_balance:
         load_balance[lb]['plugin'].update_pool(load_balance[lb])
 
@@ -262,11 +279,14 @@ def update_real_pool(pools, user):
 
 
 def _prepare_apply_state(pools, user=None):
-    load_balance = {}
+    load_balance = dict()
+    keys = list()
 
     for pool in pools:
         if pool['server_pool_members']:
             equips = _validate_pool_members_to_apply(pool, user)
+
+            keys.append(sorted([str(eqpt.id) for eqpt in equips]))
 
             for e in equips:
                 eqpt_id = str(e.id)
@@ -294,6 +314,10 @@ def _prepare_apply_state(pools, user=None):
                         'member_status': pool_member['member_status']
                     } for pool_member in pool['server_pool_members']]
                 })
+    # pools are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Pools are in differents load balancers')
 
     return load_balance
 

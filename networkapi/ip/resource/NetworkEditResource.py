@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,29 +13,50 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4NotFoundError, NetworkIPv4Error, NetworkIPv4, NetworkIPv6NotFoundError, NetworkIPv6, NetworkIPv6Error, NetworkIpAddressNotAvailableError
+
 import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError, EnvironmentVipError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_int_param
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanError, \
-    Vlan, VlanNotFoundError
-from networkapi.infrastructure.ipaddr import IPNetwork, IPv6Network, IPv4Network
-from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV4, LOCK_NETWORK_IPV6,\
-    LOCK_VLAN
-from networkapi.settings import NETWORKIPV4_CREATE, NETWORKIPV6_CREATE, \
-    VLAN_CREATE
-from networkapi.infrastructure.script_utils import exec_script
-from networkapi.util import is_valid_version_ip
 from networkapi.ambiente.models import IP_VERSION
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_NETWORK_IPV4
+from networkapi.distributedlock import LOCK_NETWORK_IPV6
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.equipamento.models import Equipamento
+from networkapi.exception import EnvironmentVipError
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.ipaddr import IPNetwork
+from networkapi.infrastructure.ipaddr import IPv4Network
+from networkapi.infrastructure.ipaddr import IPv6Network
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import NetworkIpAddressNotAvailableError
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4Error
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6Error
+from networkapi.ip.models import NetworkIPv6NotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.settings import NETWORKIPV4_CREATE
+from networkapi.settings import NETWORKIPV6_CREATE
+from networkapi.settings import VLAN_CREATE
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_int_param
+from networkapi.util import is_valid_version_ip
+from networkapi.vlan.models import NetworkTypeNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class NetworkEditResource(RestResource):
@@ -72,6 +92,7 @@ class NetworkEditResource(RestResource):
             ip_type = net_map.get('ip_type')
             id_net_type = net_map.get('id_net_type')
             id_env_vip = net_map.get('id_env_vip')
+            cluster_unit = net_map.get('cluster_unit')
 
             # Valid id_network
             if not is_valid_int_greater_zero_param(id_network):
@@ -145,7 +166,7 @@ class NetworkEditResource(RestResource):
                                 raise NetworkIpAddressNotAvailableError(
                                     None, u'Unavailable address to create a NetworkIPv4.')
 
-                    net.edit_network_ipv4(user, id_net_type, id_env_vip)
+                    net.edit_network_ipv4(user, id_net_type, id_env_vip, cluster_unit)
 
             # EDIT NETWORK IP6
             else:

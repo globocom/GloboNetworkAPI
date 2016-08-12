@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -17,26 +16,42 @@
 import logging
 
 from _mysql_exceptions import OperationalError
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db import transaction
 
-from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironment, IP_VERSION, ConfigEnvironmentInvalidError, Ambiente
-from networkapi.api_vip_request.syncs import delete_new, old_to_new
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import ConfigEnvironment
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.api_vip_request.syncs import delete_new
+from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.config.models import Configuration
-from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT, LOCK_VIP
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente,\
-    EquipamentoAmbienteDuplicatedError, EquipamentoAmbienteNotFoundError, EquipamentoError, TipoEquipamento
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_ENVIRONMENT
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import EquipamentoAmbienteDuplicatedError
+from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import TipoEquipamento
 from networkapi.exception import InvalidValueError
 from networkapi.filterequiptype.models import FilterEquipType
-from networkapi.infrastructure.ipaddr import AddressValueError, IPv4Address, IPv4Network, IPv6Address, IPv6Network
+from networkapi.infrastructure.ipaddr import AddressValueError
+from networkapi.infrastructure.ipaddr import IPv4Address
+from networkapi.infrastructure.ipaddr import IPv4Network
+from networkapi.infrastructure.ipaddr import IPv6Address
+from networkapi.infrastructure.ipaddr import IPv6Network
 from networkapi.models.BaseModel import BaseModel
 from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
-from networkapi.util import mount_ipv4_string, mount_ipv6_string
+from networkapi.util import mount_ipv4_string
+from networkapi.util import mount_ipv6_string
 from networkapi.util.decorators import cached_property
-from networkapi.vlan.models import TipoRede, Vlan
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import Vlan
 
 
 class NetworkIPv4Error(Exception):
@@ -344,10 +359,11 @@ class NetworkIPv4(BaseModel):
             self.log.error(u'Error disabling NetworkIPv4.')
             raise NetworkIPv4Error(e, u'Error disabling NetworkIPv4.')
 
-    def edit_network_ipv4(self, authenticated_user, id_net_type, id_env_vip):
+    def edit_network_ipv4(self, authenticated_user, id_net_type, id_env_vip, cluster_unit):
         try:
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
+            self.cluster_unit = cluster_unit
             self.save()
         except Exception, e:
             self.log.error(u'Error on update NetworkIPv4.')
@@ -1522,10 +1538,11 @@ class NetworkIPv6(BaseModel):
             self.log.error(u'Error disabling NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error disabling NetworkIPv6.')
 
-    def edit_network_ipv6(self, authenticated_user, id_net_type, id_env_vip):
+    def edit_network_ipv6(self, authenticated_user, id_net_type, id_env_vip, cluster_unit):
         try:
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
+            self.cluster_unit = cluster_unit
             self.save()
         except Exception, e:
             self.log.error(u'Error on update NetworkIPv6.')

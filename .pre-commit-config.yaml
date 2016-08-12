@@ -13,7 +13,7 @@
     -   id: name-tests-test
     -   id: requirements-txt-fixer
     -   id: flake8
-        args: ['-', '--ignore=E501,F401,F403']
+        args: ['-', '--ignore=E501,F401,F403,F821,F841']
 -   repo: https://github.com/pre-commit/pre-commit
     sha: 8dba3281d5051060755459dcf88e28fc26c27526
     hooks:

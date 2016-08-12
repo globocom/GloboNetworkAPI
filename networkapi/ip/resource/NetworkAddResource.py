@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,27 +13,51 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+from string import split
+
+from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import IP_VERSION
 from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4, NetworkIPv4AddressNotAvailableError, NetworkIPv6, IpError, NetworkIPv6Error, NetworkIPv4Error, NetworkIPv6AddressNotAvailableError, NetworkIpAddressNotAvailableError, NetworkIPRangeEnvError
-import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, \
-    destroy_cache_function
-from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError, Vlan, VlanError
 from networkapi.equipamento.models import EquipamentoAmbiente
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironmentInvalidError, IP_VERSION, \
-    Ambiente
-from networkapi.infrastructure.ipaddr import IPNetwork, IPv6Network, IPv4Network
-from networkapi.vlan.resource.VlanFindResource import break_network
-from string import split
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
 from networkapi.filterequiptype.models import FilterEquipType
-from django.forms.models import model_to_dict
-from networkapi.ip.models import Ip, Ipv6, IpEquipamento, Ipv6Equipament
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.ipaddr import IPNetwork
+from networkapi.infrastructure.ipaddr import IPv4Network
+from networkapi.infrastructure.ipaddr import IPv6Network
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIpAddressNotAvailableError
+from networkapi.ip.models import NetworkIPRangeEnvError
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4AddressNotAvailableError
+from networkapi.ip.models import NetworkIPv4Error
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6AddressNotAvailableError
+from networkapi.ip.models import NetworkIPv6Error
+from networkapi.rest import RestResource
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.vlan.models import NetworkTypeNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
+from networkapi.vlan.resource.VlanFindResource import break_network
+
 
 class NetworkAddResource(RestResource):
 
@@ -78,6 +101,7 @@ class NetworkAddResource(RestResource):
             id_vlan = network_map.get('id_vlan')
             network_type = network_map.get('id_network_type')
             environment_vip = network_map.get('id_environment_vip')
+            cluster_unit = network_map.get('cluster_unit')
 
             # Valid Network
             try:
@@ -340,19 +364,19 @@ class NetworkAddResource(RestResource):
             equips = list()
             envs = list()
 
-            #equips = all equipments from the environment which this network is about to be allocated on
+            # equips = all equipments from the environment which this network is about to be allocated on
             for env in ambiente.equipamentoambiente_set.all():
                 equips.append(env.equipamento)
 
-            #envs = all environments from all equips above
-            #This will be used to test all networks from the environments. 
+            # envs = all environments from all equips above
+            # This will be used to test all networks from the environments.
             for equip in equips:
                 for env in equip.equipamentoambiente_set.all():
-                    if not env.ambiente in envs:
+                    if env.ambiente not in envs:
                         envs.append(env.ambiente)
 
             network_ip_verify = IPNetwork(network)
-            #For all vlans in all common environments,
+            # For all vlans in all common environments,
             # check if any network is a subnetwork or supernetwork
             # of the desired network network_ip_verify
             for env in envs:
@@ -375,6 +399,9 @@ class NetworkAddResource(RestResource):
 
             # Set Environment VIP
             network_ip.ambient_vip = env_vip
+
+            # Set Cluster Unit
+            network_ip.cluster_unit = cluster_unit
 
             # Persist
             try:
@@ -429,7 +456,6 @@ class NetworkAddResource(RestResource):
                                     ip_model2.save(user)
                                     IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
-
                     else:
                         if network_ip.block < 127:
 
@@ -478,7 +504,6 @@ class NetworkAddResource(RestResource):
                                     ipv6_model2.save(user)
                                     Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 
-
             except Exception, e:
                 raise IpError(e, u'Error persisting Network.')
 
@@ -491,7 +516,7 @@ class NetworkAddResource(RestResource):
             network_map['id_vlan'] = vlan.id
             network_map['id_tipo_rede'] = net_type.id
             network_map[
-                'id_ambiente_vip'] = env_vip.id if env_vip != None else ''
+                'id_ambiente_vip'] = env_vip.id if env_vip is not None else ''
             network_map['active'] = network_ip
 
             # Return XML

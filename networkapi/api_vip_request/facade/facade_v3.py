@@ -645,10 +645,18 @@ def prepare_apply(load_balance, vip, created=True, user=None):
 def create_real_vip_request(vip_requests, user):
 
     load_balance = dict()
+    keys = list()
 
     for vip in vip_requests:
         load_balance = prepare_apply(
             load_balance, vip, created=False, user=user)
+
+        keys.append(sorted([str(key) for key in load_balance.keys()]))
+
+    # vips are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Vips Request are in differents load balancers')
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
@@ -672,6 +680,7 @@ def create_real_vip_request(vip_requests, user):
 def update_real_vip_request(vip_requests, user):
 
     load_balance = dict()
+    keys = list()
     for vip in vip_requests:
         vip_request = copy.deepcopy(vip)
 
@@ -719,6 +728,13 @@ def update_real_vip_request(vip_requests, user):
         load_balance = prepare_apply(
             load_balance, vip_request, created=True, user=user)
 
+        keys.append(sorted([str(key) for key in load_balance.keys()]))
+
+    # vips are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Vips Request are in differents load balancers')
+
     pools_ids_ins = list()
     pools_ids_del = list()
 
@@ -743,9 +759,17 @@ def update_real_vip_request(vip_requests, user):
 def delete_real_vip_request(vip_requests, user):
     load_balance = dict()
 
+    keys = list()
     for vip in vip_requests:
         load_balance = prepare_apply(
             load_balance, vip, created=True, user=user)
+
+        keys.append(sorted([str(key) for key in load_balance.keys()]))
+
+    # vips are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Vips Request are in differents load balancers')
 
     pools_ids = list()
     for lb in load_balance:
@@ -828,8 +852,7 @@ def validate_save(vip_request, permit_created=False):
         vip = models.VipRequest.get_by_pk(vip_request.get('id'))
         if vip.created:
             if not permit_created:
-                raise exceptions.CreatedVipRequestValuesException(
-                    'vip request id: %s' % vip_request.get('id'))
+                raise exceptions.CreatedVipRequestValuesException()
 
             if vip.environmentvip_id != vip_request['environmentvip']:
                 raise exceptions.CreatedVipRequestValuesException(
@@ -940,6 +963,7 @@ def validate_save(vip_request, permit_created=False):
             id=vip_request['options']['traffic_return'],
         )
 
+        # validate dsrl3: 1 pool by port
         if dsrl3 and len(port['pools']) > 1:
             raise Exception(
                 u'Vip %s has DSRL3 and can not to have L7' % (vip_request['name'])
@@ -967,6 +991,7 @@ def validate_save(vip_request, permit_created=False):
             if l7_rule_opt.nome_opcao_txt == 'default_vip':
                 count_l7_opt += 1
 
+            # validate dsrl3: pool assoc only vip and no l7 rules
             if dsrl3:
                 # Vip with dscp(dsrl3) cannot L7 rules
                 if l7_rule_opt.nome_opcao_txt != 'default_vip':
@@ -989,15 +1014,32 @@ def validate_save(vip_request, permit_created=False):
                             pool['server_pool']))
 
             try:
-                ServerPool.objects.get(id=pool['server_pool'])
+                sp = ServerPool.objects.get(id=pool['server_pool'])
             except Exception, e:
                 log.error(e)
                 raise exceptions_pool.PoolDoesNotExistException(
                     pool['server_pool'])
 
+            # validate dsrl3: Pool must have same port of vip
+            if dsrl3:
+                if int(sp.default_port) != int(port['port']):
+                    raise Exception(
+                        u'Pool {} must have same port of vip {}'.format(
+                            pool['server_pool'], vip_request['name'])
+                    )
+
             spms = ServerPoolMember.objects.filter(
                 server_pool=pool['server_pool'])
             for spm in spms:
+                # validate dsrl3: Pool Members must have same port of vip
+                if dsrl3:
+                    if int(spm.port_real) != int(port['port']):
+                        ip_mb = spm.ip if spm.ip else spm.ipv6
+                        raise Exception(
+                            u'Pool Member {} of Pool {} must have same port of vip {}'.format(
+                                ip_mb, pool['server_pool'], vip_request['name'])
+                        )
+
                 if spm.ip:
 
                     vips = EnvironmentVip.objects.filter(
