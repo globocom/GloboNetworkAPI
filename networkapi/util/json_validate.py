@@ -87,6 +87,6 @@ def raise_json_validate(info=None):
                 raise rest_exceptions.ValidationExceptionJson(res)
             except Exception as error:
                 log.error(error)
-                raise rest_exceptions.NetworkAPIException(error)
+                raise error
         return inner
     return raise_json_validate_inner

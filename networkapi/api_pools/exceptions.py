@@ -29,6 +29,7 @@ class InvalidIdEnvironmentException(APIException):
     default_detail = 'Invalid id for Environment.'
 
     def __init__(self, msg=None):
+
         if msg:
             self.detail = '{} {}'.format(self.default_detail, msg)
         else:
