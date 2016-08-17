@@ -1,11 +1,13 @@
 # -*- coding:utf-8 -*-
-from networkapi.ambiente.models import EnvironmentVip
-from networkapi.requisicaovips.models import OptionVip, OptionVipEnvironmentVip
-
 from rest_framework import serializers
 
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.requisicaovips.models import OptionVip
+from networkapi.requisicaovips.models import OptionVipEnvironmentVip
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
-class EnvironmentVipSerializer(serializers.ModelSerializer):
+
+class EnvironmentVipSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
     class Meta:
@@ -15,7 +17,8 @@ class EnvironmentVipSerializer(serializers.ModelSerializer):
             'finalidade_txt',
             'cliente_txt',
             'ambiente_p44_txt',
-            'description'
+            'description',
+            'conf'
         )
 
 

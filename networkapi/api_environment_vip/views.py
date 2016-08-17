@@ -2,16 +2,19 @@
 import logging
 import urllib
 
-from networkapi.ambiente.models import EnvironmentVip
-from networkapi.api_environment_vip import exceptions, facade, serializers
-from networkapi.api_environment_vip.permissions import Read
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.util import logs_method_apiview, permission_classes_apiview
-
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.api_environment_vip import exceptions
+from networkapi.api_environment_vip import facade
+from networkapi.api_environment_vip import serializers
+from networkapi.api_environment_vip.permissions import Read
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.util import logs_method_apiview
+from networkapi.util import permission_classes_apiview
 
 log = logging.getLogger(__name__)
 
@@ -105,12 +108,24 @@ class EnvironmentVipView(APIView):
             else:
                 environment_vip_ids = kwargs['environment_vip_ids'].split(';')
 
+                default_fields = (
+                    'id',
+                    'finalidade_txt',
+                    'cliente_txt',
+                    'ambiente_p44_txt',
+                    'description'
+                )
+
+                data = request.GET
+                fields = tuple(data.get('fields').split(',')) if data.get('fields') else default_fields
+
                 environments_vip = facade.get_environmentvip_by_ids(environment_vip_ids)
 
                 if environments_vip:
                     environmentvip_serializer = serializers.EnvironmentVipSerializer(
                         environments_vip,
-                        many=True
+                        many=True,
+                        fields=fields
                     )
                     data = {
                         'environments_vip': environmentvip_serializer.data
