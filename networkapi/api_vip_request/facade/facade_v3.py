@@ -660,9 +660,9 @@ def create_real_vip_request(vip_requests, user):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.debug('started call:%s' % lb)
+        log.info('started call:%s' % lb)
         inst.get('plugin').create_vip(inst)
-        log.debug('ended call')
+        log.info('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
 
@@ -740,9 +740,9 @@ def update_real_vip_request(vip_requests, user):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.debug('started call:%s' % lb)
+        log.info('started call:%s' % lb)
         pool_ins, pool_del = inst.get('plugin').update_vip(inst)
-        log.debug('ended call')
+        log.info('ended call')
         pools_ids_ins += pool_ins
         pools_ids_del += pool_del
 
@@ -772,11 +772,13 @@ def delete_real_vip_request(vip_requests, user):
         raise Exception('Vips Request are in differents load balancers')
 
     pools_ids = list()
+
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.debug('started call:%s' % lb)
-        pools_ids += inst.get('plugin').delete_vip(inst)
-        log.debug('ended call')
+        log.info('started call:%s' % lb)
+        pool_del = inst.get('plugin').delete_vip(inst)
+        log.info('ended call')
+        pools_ids += pool_del
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
 

@@ -37,6 +37,7 @@ class Generic(BasePlugin):
         return pools_del
 
     def _delete_vip(self, tratado):
+
         pools_del = list()
         vts = virtualserver.VirtualServer(self._lb)
         try:
@@ -73,7 +74,7 @@ class Generic(BasePlugin):
                         else:
                             raise e
                     else:
-                        pools_del.append(pool.get('id'))
+                        pools_del.append(server_pool.get('id'))
 
         return pools_del
 
