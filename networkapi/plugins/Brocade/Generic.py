@@ -156,7 +156,7 @@ class Generic(BasePlugin):
         return pools_ins
 
     def _create_vip(self, vp, port_default=False):
-
+        pools_ins = list()
         if port_default:
             # creates vip and port default
             try:
