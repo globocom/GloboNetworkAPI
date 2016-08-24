@@ -615,7 +615,6 @@ class BrocadeAdxDeviceDriverImpl():
                                 .create('HttpPortPolicy'))
             url_health_check = (self.slb_factory
                                 .create('URLHealthCheck'))
-            url_health_check.url = 'HEAD /'
             http_port_policy.urlStatusCodeInfo = url_health_check
             http_port_policy.healthCheckType = 'SIMPLE'
 

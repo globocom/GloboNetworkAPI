@@ -11,7 +11,6 @@ from networkapi.api_pools import exceptions
 from networkapi.api_pools import models
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_POOL
-from networkapi.equipamento.models import Equipamento
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.datatable import build_query_to_datatable
 from networkapi.ip.models import Ip
@@ -244,13 +243,13 @@ def _create_pool_member(members, pool):
     for member in members:
         ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
         ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
-        eqpt = Equipamento.get_by_pk(member['equipment']['id'])
+        identifier = ip.ip_formated if ip else ipv6.ip_formated
 
         pool_member = ServerPoolMember()
         pool_member.server_pool = pool
         pool_member.ip = ip
         pool_member.ipv6 = ipv6
-        pool_member.identifier = eqpt.nome
+        pool_member.identifier = identifier
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']
@@ -286,12 +285,10 @@ def _update_pool_member(members):
     for member in members:
         ip = Ip.get_by_pk(member['ip']['id']) if member['ip'] else None
         ipv6 = Ipv6.get_by_pk(member['ipv6']['id']) if member['ipv6'] else None
-        eqpt = Equipamento.get_by_pk(member['equipment']['id'])
 
         pool_member = ServerPoolMember.objects.get(id=member['id'])
         pool_member.ip = ip
         pool_member.ipv6 = ipv6
-        pool_member.identifier = eqpt.nome
         pool_member.weight = member['weight']
         pool_member.priority = member['priority']
         pool_member.port_real = member['port_real']

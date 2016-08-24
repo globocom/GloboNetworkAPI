@@ -100,6 +100,7 @@ class VipRequestDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
     @permission_obj_apiview([deploy_vip_permission])
+    @raise_json_validate('vip_put')
     @logs_method_apiview
     def put(self, request, *args, **kwargs):
         """
@@ -143,9 +144,8 @@ class VipRequestDeployView(APIView):
         vips = request.DATA
         json_validate(SPECS.get('vip_put')).validate(vips)
         locks_list = facade.create_lock(vips.get('vips'))
+        verify_ports_vip(vips)
         try:
-            verify_ports_vip(vips)
-
             response = facade.update_real_vip_request(
                 vips['vips'], request.user)
         except Exception, exception:
