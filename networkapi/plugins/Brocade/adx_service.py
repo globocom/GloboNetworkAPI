@@ -128,7 +128,7 @@ class AdxService:
     "ADX Service Initialization Class"
     ns0 = ('ns0', 'https://schemas.xmlsoap.org/soap/envelope123/')
 
-    def __init__(self, adx_ip_address, user_name, password, timeout=1300):
+    def __init__(self, adx_ip_address, user_name, password, timeout=300):
         self.adx_ip_address = adx_ip_address
         self.user_name = user_name
         self.timeout = timeout

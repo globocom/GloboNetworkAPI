@@ -46,7 +46,7 @@ def create_pool(pool, user):
 
     _create_pool_member(pool['server_pool_members'], sp)
 
-    _create_groups_permissions(pool.get('groups_permissions'), sp.id, user)
+    create_groups_permissions(pool.get('groups_permissions'), sp.id, user)
 
     return sp
 
@@ -193,10 +193,7 @@ def get_pool_by_search(search=dict()):
     return pool_map
 
 
-########################
-# Members
-########################
-def _create_groups_permissions(groups_permissions, pool_id, user):
+def create_groups_permissions(groups_permissions, pool_id, user):
     """Creates permissions to access for pools"""
 
     group_adm = {
@@ -238,6 +235,9 @@ def _create_group_permission(group_permission, pool_id):
     pool_perm.save()
 
 
+########################
+# Members
+########################
 def _create_pool_member(members, pool):
     """Creates pool members"""
     for member in members:

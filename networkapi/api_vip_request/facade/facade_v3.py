@@ -71,7 +71,7 @@ def create_vip_request(vip_request, user):
     _create_port(vip_request['ports'], vip.id)
     _create_option(option_create, vip.id)
 
-    _create_groups_permissions(vip_request.get('groups_permissions'), vip.id, user)
+    create_groups_permissions(vip_request.get('groups_permissions'), vip.id, user)
 
     # sync with old tables
     syncs.new_to_old(vip)
@@ -172,7 +172,7 @@ def _is_ipv6_in_use(ipv6, vip_id):
     return is_in_use
 
 
-def _create_groups_permissions(groups_permissions, vip_id, user):
+def create_groups_permissions(groups_permissions, vip_id, user):
     """Creates permissions to access for vips"""
 
     group_adm = {

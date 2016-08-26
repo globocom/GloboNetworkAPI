@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -18,22 +17,29 @@ import logging
 
 from django.db.models import Q
 from django.db.transaction import commit_on_success
-
-from networkapi.ambiente.models import Ambiente, EnvironmentVip
-from networkapi.api_pools import exceptions as pool_exceptions
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_vip_request import exceptions, facade, syncs
-from networkapi.api_vip_request.permissions import Read, Write
-from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
-from networkapi.exception import EnvironmentVipNotFoundError, InvalidValueError
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, \
-    ServerPool, VipPortToPool
-from networkapi.util.decorators import deprecated
-
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.api_pools import exceptions as pool_exceptions
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_vip_request import exceptions
+from networkapi.api_vip_request import facade
+from networkapi.api_vip_request import syncs
+from networkapi.api_vip_request.permissions import Read
+from networkapi.api_vip_request.permissions import Write
+from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import VipPortToPool
+from networkapi.util.decorators import deprecated
 
 log = logging.getLogger(__name__)
 
@@ -181,6 +187,9 @@ def save(request, pk=None):
         if request.method == "POST":
 
             data = facade.save(request)
+
+            facade.create_groups_permissions(
+                '', data['id'], request.user)
 
             return Response(data=data, status=status.HTTP_201_CREATED)
 
