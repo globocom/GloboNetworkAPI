@@ -102,7 +102,15 @@ class VipRequestListSerializer(serializers.ModelSerializer):
 
     ipv6 = Ipv6Serializer()
 
-    environmentvip = EnvironmentVipSerializer()
+    environmentvip = EnvironmentVipSerializer(
+        fields=(
+            'id',
+            'finalidade_txt',
+            'cliente_txt',
+            'ambiente_p44_txt',
+            'description'
+        )
+    )
 
     def get_eqpt(self, obj):
         eqpts = list()
@@ -196,7 +204,15 @@ class VipRequestTableSerializer(serializers.ModelSerializer):
 
     equipments = serializers.SerializerMethodField('get_eqpt')
 
-    environmentvip = EnvironmentVipSerializer()
+    environmentvip = EnvironmentVipSerializer(
+        fields=(
+            'id',
+            'finalidade_txt',
+            'cliente_txt',
+            'ambiente_p44_txt',
+            'description'
+        )
+    )
 
     ipv4 = Ipv4DetailsSerializer()
 
@@ -274,7 +290,15 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
         required=True
     )
 
-    environmentvip = EnvironmentVipSerializer()
+    environmentvip = EnvironmentVipSerializer(
+        fields=(
+            'id',
+            'finalidade_txt',
+            'cliente_txt',
+            'ambiente_p44_txt',
+            'description'
+        )
+    )
 
     ipv4 = Ipv4DetailsSerializer()
 
