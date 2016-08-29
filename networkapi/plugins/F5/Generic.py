@@ -37,6 +37,7 @@ class Generic(BasePlugin):
         return pools_del
 
     def _delete_vip(self, tratado):
+
         pools_del = list()
         vts = virtualserver.VirtualServer(self._lb)
         try:
@@ -73,7 +74,7 @@ class Generic(BasePlugin):
                         else:
                             raise e
                     else:
-                        pools_del.append(pool.get('id'))
+                        pools_del.append(server_pool.get('id'))
 
         return pools_del
 
@@ -132,6 +133,8 @@ class Generic(BasePlugin):
 
     @util.connection
     def update_vip(self, vips):
+        pools_ins = list()
+        pools_del = list()
 
         tratado = util.trata_param_vip(vips)
         vts = virtualserver.VirtualServer(self._lb)
@@ -144,30 +147,44 @@ class Generic(BasePlugin):
             'vips': tratado.get('vips_filter_to_delete'),
             'pool_created': tratado.get('pool_filter_to_delete')
         }
-        try:
-            pools_ins = self._create_vip(dict_create_vip)
 
+        try:
+            # create new ports
+            pools_ins = self._create_vip(dict_create_vip)
         except Exception, e:
             raise base_exceptions.CommandErrorException(e)
 
         else:
             try:
+                # delete ports
                 pools_del = self._delete_vip(dict_delete_vip)
-
                 vts = virtualserver.VirtualServer(self._lb)
             except Exception, e:
-                # rollback new vips and pools
+                # rollback in insert and delete of ports
                 pools_del = self._delete_vip(dict_create_vip)
                 raise base_exceptions.CommandErrorException(e)
 
             else:
 
                 try:
-                    if tratado.get('vips_filter'):
-                        vts.update(vips=tratado.get('vips_filter'))
+                    # update vips
+                    if tratado.get('pool_filter'):
+                        self.__create_pool({'pools': tratado.get('pool_filter')})
+                        pools_ins += [server_pool.get('id') for server_pool in tratado.get('pool')]
+                    try:
+                        if tratado.get('vips_filter'):
+                            vts.update(vips=tratado.get('vips_filter'))
+                    except Exception, e:
+                        # rollback pool in update port
+                        if tratado.get('pool_filter'):
+                            self.__delete_pool({'pools': tratado.get('pool_filter')})
+                        raise e
                 except Exception, e:
-                    pools_ins = self._create_vip(dict_delete_vip)
-                    pools_del = self._delete_vip(dict_create_vip)
+                    # rollback create port
+                    pools_ins += self._create_vip(dict_delete_vip)
+                    # rollback delete port
+                    pools_del += self._delete_vip(dict_create_vip)
+
                     log.error(e)
                     raise base_exceptions.CommandErrorException(e)
                 else:
@@ -298,10 +315,10 @@ class Generic(BasePlugin):
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
-            plm.set_member_description(
-                names=pls['pools_names'],
-                members=pls['pools_members']['members'],
-                description=pls['pools_members']['description'])
+            # plm.set_member_description(
+            #     names=pls['pools_names'],
+            #     members=pls['pools_members']['members'],
+            #     description=pls['pools_members']['description'])
 
             plm.set_states(
                 names=pls['pools_names'],
@@ -388,10 +405,10 @@ class Generic(BasePlugin):
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
-            plm.set_member_description(
-                names=pls['pools_names'],
-                members=pls['pools_members']['members'],
-                description=pls['pools_members']['description'])
+            # plm.set_member_description(
+            #     names=pls['pools_names'],
+            #     members=pls['pools_members']['members'],
+            #     description=pls['pools_members']['description'])
 
             plm.set_states(
                 names=pls['pools_names'],

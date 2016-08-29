@@ -289,11 +289,11 @@ def trata_param_vip(vips):
                         pool_filter_to_delete.append(server_pool)
                 # pool to insert in update of vip
                 elif not pl.get('id'):
-                    if server_pool.get('id') not in pool_filter_to_insert:
+                    if server_pool.get('id') not in pool_filter_to_insert and \
+                            not server_pool.get('pool_created'):
                         ids_pool_filter_to_insert.append(server_pool.get('id'))
                         pool_filter_to_insert.append(server_pool)
                 else:
-                    # pool to create in post
                     if not server_pool.get('pool_created'):
                         if server_pool.get('id') not in ids_pool_filter:
                             ids_pool_filter.append(server_pool.get('id'))
@@ -416,8 +416,8 @@ def trata_param_vip(vips):
         'vips_cache_filter': vips_cache_filter,
         'pool_filter_created': pool_filter_created,
         # used in update of vips
-        'pool_filter_to_delete': vips_cache_filter,
-        'pool_filter_to_insert': vips_cache_filter,
+        'pool_filter_to_delete': pool_filter_to_delete,
+        'pool_filter_to_insert': pool_filter_to_insert,
         'vips_filter_to_delete': vips_filter_to_delete,
         'vips_filter_to_insert': vips_filter_to_insert,
     }

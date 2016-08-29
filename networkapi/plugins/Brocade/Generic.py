@@ -156,7 +156,7 @@ class Generic(BasePlugin):
         return pools_ins
 
     def _create_vip(self, vp, port_default=False):
-
+        pools_ins = list()
         if port_default:
             # creates vip and port default
             try:
@@ -224,11 +224,13 @@ class Generic(BasePlugin):
             vps = self.prepare_vips(vip)
 
             for idx, vp in enumerate(vps):
-                pools_del += self._delete_vip(vp)
+                if idx != 0:
+                    pools_del += self._delete_vip(vp)
 
         return pools_del
 
     def _delete_vip(self, vp):
+
         pools_del = self._delete_vip_members(vp)
 
         self.baddi.delete_vip(vp)
@@ -236,6 +238,7 @@ class Generic(BasePlugin):
         return pools_del
 
     def _delete_vip_members(self, vp):
+
         pools_del = list()
         for member in vp.get('members'):
             self.baddi.unbind_member_from_vip(member, vp)
@@ -376,6 +379,9 @@ class Generic(BasePlugin):
         return vps
 
     def _prepare_healthcheck(self, hr):
+
+        if not hr:
+            hr = 'HEAD /'
 
         rg = '^([\" ]?)+(GET|HEAD|POST|PUT|CONNECT|DELETE|OPTIONS|TRACE|PATCH)'
         if not valid_regex(hr, rg):

@@ -129,6 +129,28 @@ class BrocadeAdxDeviceDriverImpl():
         except suds.WebFault as e:
             raise adx_exception.ConfigError(msg=e.message)
 
+    def _update_real_server_port_status(self, new_member):
+        try:
+            address = new_member['address']
+            protocol_port = new_member['protocol_port']
+            new_admin_state_up = new_member.get('admin_state_up')
+
+            rs_server_port = self._adx_server_port(address, protocol_port)
+            reply = (self.slb_service
+                     .getRealServerPortConfiguration(rs_server_port))
+            rs_port_conf_seq = (self.slb_factory.create
+                                ('ArrayOfRealServerPortConfigurationSequence'))
+            reply.rsPortConfig.serverPort = rs_server_port
+            reply.rsPortConfig.adminState = new_admin_state_up
+
+            rs_port_conf_list = [reply.rsPortConfig]
+            rs_port_conf_seq.RealServerPortConfigurationSequence = rs_port_conf_list
+
+            (self.slb_service
+             .setRealServersPortConfiguration(rs_port_conf_seq))
+        except suds.WebFault as e:
+            raise adx_exception.ConfigError(msg=e.message)
+
     def _update_real_server_properties(self, new_member):
         try:
             address = new_member['address']
@@ -615,7 +637,6 @@ class BrocadeAdxDeviceDriverImpl():
                                 .create('HttpPortPolicy'))
             url_health_check = (self.slb_factory
                                 .create('URLHealthCheck'))
-            url_health_check.url = 'HEAD /'
             http_port_policy.urlStatusCodeInfo = url_health_check
             http_port_policy.healthCheckType = 'SIMPLE'
 
@@ -835,7 +856,7 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def update_member_status(self, new_member):
-        self._update_real_server_port_properties(new_member)
+        self._update_real_server_port_status(new_member)
 
     @log
     def write_mem(self):

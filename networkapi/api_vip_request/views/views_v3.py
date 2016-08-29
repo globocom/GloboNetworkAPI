@@ -100,6 +100,7 @@ class VipRequestDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
     @permission_obj_apiview([deploy_vip_permission])
+    @raise_json_validate('vip_put')
     @logs_method_apiview
     def put(self, request, *args, **kwargs):
         """
@@ -143,9 +144,8 @@ class VipRequestDeployView(APIView):
         vips = request.DATA
         json_validate(SPECS.get('vip_put')).validate(vips)
         locks_list = facade.create_lock(vips.get('vips'))
+        verify_ports_vip(vips)
         try:
-            verify_ports_vip(vips)
-
             response = facade.update_real_vip_request(
                 vips['vips'], request.user)
         except Exception, exception:
@@ -164,100 +164,6 @@ class VipRequestDBView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Returns a list of vip request by ids ou dict
-        ##############
-        ## With ids ##
-        ##############
-        :url /api/v3/vip-request/<vip_request_ids>
-        :param vip_request_ids=<vip_request_ids>
-        :return
-        {
-            "vips": [{
-                "business": <string>,
-                "created": <boolean>,
-                "environmentvip": <environmentvip_id>,
-                "id": <vip_id>,
-                "ipv4": <ipv4_id>,
-                "ipv6": <ipv6_id>,
-                "name": <string>,
-                "options": {
-                    "cache_group": <optionvip_id>,
-                    "persistence": <optionvip_id>,
-                    "timeout": <optionvip_id>,
-                    "traffic_return": <optionvip_id>
-                },
-                "ports": [{
-                    "id": <vip_port_id>,
-                    "options": {
-                        "l4_protocol": <optionvip_id>,
-                        "l7_protocol": <optionvip_id>
-                    },
-                    "pools": [{
-                            "l7_rule": <optionvip_id>,
-                            "l7_value": <string>,
-                            "order": <interger>,
-                            "server_pool": <server_pool_id>
-                        },..],
-                    "port": <integer>
-                    },..],
-                "service": <string>
-            },..]
-        }
-        :example
-            /api/v3/vip-request/1;5/
-            Return vips request with id 1 and 5
-            {"vips": [{"id":1,...},{"id":5,... }]}
-
-        ###############
-        ## With dict ##
-        ###############
-        Return list of vip request by dict
-        :url /api/v3/vip-request/
-        :param search:GET['search']
-            {'extends_search': [{
-                    'ipv4__oct1': <ipv4__oct1>,
-                    'ipv4__oct2': <ipv4__oct2>,
-                    'ipv4__oct3': <ipv4__oct3>,
-                    'ipv4__oct4': <ipv4__oct4>,
-                    'ipv6__block1__iexact': <ipv6_block1>,
-                    'ipv6__block2__iexact': <ipv6_block2>,
-                    'ipv6__block3__iexact': <ipv6_block3>,
-                    'ipv6__block4__iexact': <ipv6_block4>,
-                    'ipv6__block5__iexact': <ipv6_block5>,
-                    'ipv6__block6__iexact': <ipv6_block6>,
-                    'ipv6__block7__iexact': <ipv6_block7>,
-                    'ipv6__block8__iexact': <ipv6_block8>,
-                    'created': <boolean>,
-                }],
-                'start_record': <interger>,
-                'custom_search': '<string>',
-                'end_record': <interger>,
-                'asorting_cols': [<string>,..],
-                'searchable_columns': [<string>,..]
-                }
-        :return list of vips request with property "total"
-        {"total": <interger>,
-            "vips": [..]
-        }
-
-        :example
-        Search server pools where the ipv4 "192.168.x.x" and are created,
-        or the ipv4 "x.168.17.x" and are not created.
-        {
-            'extends_search': [{
-                'ipv4__oct1': "192",
-                'ipv4__oct2': "168",
-                'created': True,
-            },{
-                'ipv4__oct2': "168",
-                'ipv4__oct3': "17",
-                'created': False,
-            }],
-            'start_record': 0,
-            'custom_search': '',
-            'end_record': 25,
-            'asorting_cols': [],
-            'searchable_columns': []
-        }
         """
         try:
             if not kwargs.get('vip_request_ids'):

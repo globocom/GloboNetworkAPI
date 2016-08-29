@@ -1,4 +1,12 @@
 #!/bin/bash
+# export NETWORKAPI_DATABASE_NAME=networkapi
+# export NETWORKAPI_DATABASE_USER=root
+# export NETWORKAPI_DATABASE_PASSWORD=
+# export NETWORKAPI_DATABASE_HOST=localhost
+# export NETWORKAPI_DATABASE_PORT=3306
+
+echo "exporting NETWORKAPI_DEBUG=1"
+export NETWORKAPI_DEBUG=1
 echo "clearing memcached:"
 echo 'flush_all' | nc localhost 11211
 echo "killing gunicorn"

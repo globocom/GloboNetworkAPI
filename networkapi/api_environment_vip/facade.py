@@ -2,16 +2,18 @@
 import logging
 
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.requisicaovips.models import OptionVip, OptionVipEnvironmentVip
+from networkapi.requisicaovips.models import OptionVip
+from networkapi.requisicaovips.models import OptionVipEnvironmentVip
 
 log = logging.getLogger(__name__)
 
 
 def get_option_vip_by_environment_vip_ids(environment_vip_ids):
-    """
-    Return option vip list by ids of environment vip
-    param environment_vip_ids: ids list of environment vip
-    example: [<environment_vip_id>,...]
+    """Return option vip list by ids of environment vip.
+
+    :param environment_vip_ids: ids list of environment vip
+    :example: [<environment_vip_id>,...]
+
     """
     options_vip = list()
     for environment_vip_id in environment_vip_ids:
@@ -22,11 +24,11 @@ def get_option_vip_by_environment_vip_ids(environment_vip_ids):
 
 
 def get_option_vip_by_environment_vip_type(search_list):
-    """
-    Return option vip list by ids of environment vip and option vip type
-    param environment_vip_ids: ids list of environment vip
-    param type_option: option vip type
-    example: [{
+    """Return option vip list by ids of environment vip and option vip type.
+
+    :param environment_vip_ids: ids list of environment vip
+    :param type_option: option vip type
+    :example: [{
         environment_vip_id:<environment_vip_id>
         type_option:<type_option>
     ]}
@@ -43,9 +45,10 @@ def get_option_vip_by_environment_vip_type(search_list):
 
 
 def get_type_option_vip_by_environment_vip_ids(environment_vip_ids):
-    """
-    Return option vip list by ids of environment vip and option vip type
-    param environment_vip_ids: ids list of environment vip
+    """Return option vip list by ids of environment vip and option vip type.
+
+    :param environment_vip_ids: ids list of environment vip
+
     """
     type_option_vip = list()
     for environment_vip_id in environment_vip_ids:

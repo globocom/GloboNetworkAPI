@@ -71,7 +71,7 @@ def create_vip_request(vip_request, user):
     _create_port(vip_request['ports'], vip.id)
     _create_option(option_create, vip.id)
 
-    _create_groups_permissions(vip_request.get('groups_permissions'), vip.id, user)
+    create_groups_permissions(vip_request.get('groups_permissions'), vip.id, user)
 
     # sync with old tables
     syncs.new_to_old(vip)
@@ -172,7 +172,7 @@ def _is_ipv6_in_use(ipv6, vip_id):
     return is_in_use
 
 
-def _create_groups_permissions(groups_permissions, vip_id, user):
+def create_groups_permissions(groups_permissions, vip_id, user):
     """Creates permissions to access for vips"""
 
     group_adm = {
@@ -660,9 +660,9 @@ def create_real_vip_request(vip_requests, user):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.debug('started call:%s' % lb)
+        log.info('started call:%s' % lb)
         inst.get('plugin').create_vip(inst)
-        log.debug('ended call')
+        log.info('ended call')
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
 
@@ -682,6 +682,7 @@ def update_real_vip_request(vip_requests, user):
     load_balance = dict()
     keys = list()
     for vip in vip_requests:
+
         vip_request = copy.deepcopy(vip)
 
         vip_old = models.VipRequest.get_by_pk(vip.get('id'))
@@ -695,33 +696,44 @@ def update_real_vip_request(vip_requests, user):
         update_vip_request(vip)
 
         ids_port_old = [port.get('id') for port in serializer_vips_data.get('ports')]
-        ids_port_new = [port.get('id') for port in vip_request.get('ports') if port.get('id')]
-        ids_port_all = [port.get('id') for port in vip_request.get('ports')]
-        ids_port_to_del = list(set(ids_port_old) - set(ids_port_new))
-        ids_port_to_change = list(set(ids_port_old) & set(ids_port_new))
+        ids_port_upt = [port.get('id') for port in vip_request.get('ports') if port.get('id')]
+        ids_port_to_del = list(set(ids_port_old) - set(ids_port_upt))
 
-        for id_port_to_change in ids_port_to_change:
-            idx_pt_old = ids_port_old.index(id_port_to_change)
-            port_old = serializer_vips_data.get('ports')[idx_pt_old]
-            idx_pt_new = ids_port_old.index(id_port_to_change)
-            port_new = vip_request.get('ports')[idx_pt_new]
-            idx_pt_all = ids_port_all.index(id_port_to_change)
+        # ports to change and insert
+        for idx_port, port in enumerate(vip_request.get('ports')):
+            # change port
+            if port.get('id'):
 
-            ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
-            ids_pool_new = [pool.get('id') for pool in port_new.get('pools') if pool.get('id')]
-            ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_new))
+                # idx port old
+                idx_port_old = ids_port_old.index(port.get('id'))
+                # port old
+                port_old = serializer_vips_data.get('ports')[idx_port_old]
+                # ids pools old
+                ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
 
-            # pools to delete in ports dont delete
-            for id_pool_to_del in ids_pool_to_del:
-                idx_pl_del = ids_pool_old.index(id_pool_to_del)
-                pool_del = copy.deepcopy(port_old.get('pools')[idx_pl_del])
-                pool_del['delete'] = True
-                vip_request['ports'][idx_pt_all]['pools'].append(pool_del)
+                # ids pools changed
+                ids_pool_cur = [pool.get('id') for pool in port_old.get('pools') if pool.get('id')]
+
+                # ids to delete
+                ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_cur))
+
+                # pools to delete in port
+                for id_pool in ids_pool_to_del:
+                    # idx pool to delete
+                    idx_pool_del = ids_pool_old.index(id_pool)
+
+                    # pool to delete
+                    pool_del = copy.deepcopy(port_old.get('pools')[idx_pool_del])
+                    pool_del['delete'] = True
+                    vip_request['ports'][idx_port]['pools'].append(pool_del)
 
         # ports to delete
-        for id_port_to_del in ids_port_to_del:
-            idx_pt_del = ids_port_old.index(id_port_to_del)
-            port_del = copy.deepcopy(serializer_vips_data.get('ports')[idx_pt_del])
+        for id_port in ids_port_to_del:
+            # idx pool to delete
+            idx_port_del = ids_port_old.index(id_port)
+
+            # port to delete
+            port_del = copy.deepcopy(serializer_vips_data.get('ports')[idx_port_del])
             port_del['delete'] = True
             vip_request['ports'].append(port_del)
 
@@ -740,9 +752,9 @@ def update_real_vip_request(vip_requests, user):
 
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.debug('started call:%s' % lb)
+        log.info('started call:%s' % lb)
         pool_ins, pool_del = inst.get('plugin').update_vip(inst)
-        log.debug('ended call')
+        log.info('ended call')
         pools_ids_ins += pool_ins
         pools_ids_del += pool_del
 
@@ -772,11 +784,13 @@ def delete_real_vip_request(vip_requests, user):
         raise Exception('Vips Request are in differents load balancers')
 
     pools_ids = list()
+
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
-        log.debug('started call:%s' % lb)
-        pools_ids += inst.get('plugin').delete_vip(inst)
-        log.debug('ended call')
+        log.info('started call:%s' % lb)
+        pool_del = inst.get('plugin').delete_vip(inst)
+        log.info('ended call')
+        pools_ids += pool_del
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
 

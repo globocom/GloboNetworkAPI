@@ -125,7 +125,7 @@ class InvalidIdVipRequestException(APIException):
 
 class AlreadyVipRequestException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Vip with ip or ipv4 already exists.'
+    default_detail = 'Vip with ipv4 or ipv6 already exists.'
 
 
 class CreatedVipRequestValuesException(APIException):

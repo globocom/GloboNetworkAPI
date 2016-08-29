@@ -252,7 +252,7 @@ def old_to_new(vip_request):
                 l7_protocol = 'Outros'
                 if mp.get('healthcheck_type') == 'HTTP':
                     tipo_opcao = 'l7_rule'
-                    nome_opcao_txt = 'default'
+                    nome_opcao_txt = 'default_vip'
                     l4_protocol = 'TCP'
                     l7_protocol = 'HTTP'
 
