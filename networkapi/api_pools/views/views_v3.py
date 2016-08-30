@@ -1,24 +1,36 @@
 # -*- coding:utf-8 -*-
 import ast
-from datetime import datetime
 import logging
+from datetime import datetime
 
 from django.db.transaction import commit_on_success
-from networkapi.api_pools import exceptions, serializers
-from networkapi.api_pools.facade.v3 import base as facade
-from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
-from networkapi.api_pools.permissions import Read, ScriptAlterPermission, \
-    ScriptCreatePermission, ScriptRemovePermission, Write, deploy_pool_permission, \
-    write_pool_permission, delete_pool_permission
-from networkapi.api_rest import exceptions as rest_exceptions
-from networkapi.requisicaovips import models as models_vips
-from networkapi.settings import SPECS
-from networkapi.util import logs_method_apiview, permission_classes_apiview, permission_obj_apiview
-from networkapi.util.json_validate import json_validate, raise_json_validate, verify_ports
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from networkapi.api_pools import exceptions
+from networkapi.api_pools import serializers
+from networkapi.api_pools.facade.v3 import base as facade
+from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
+from networkapi.api_pools.permissions import delete_pool_permission
+from networkapi.api_pools.permissions import deploy_pool_permission
+from networkapi.api_pools.permissions import Read
+from networkapi.api_pools.permissions import ScriptAlterPermission
+from networkapi.api_pools.permissions import ScriptCreatePermission
+from networkapi.api_pools.permissions import ScriptRemovePermission
+from networkapi.api_pools.permissions import Write
+from networkapi.api_pools.permissions import write_pool_permission
+from networkapi.api_rest import exceptions as rest_exceptions
+from networkapi.requisicaovips import models as models_vips
+from networkapi.settings import SPECS
+from networkapi.util import logs_method_apiview
+from networkapi.util import permission_classes_apiview
+from networkapi.util import permission_obj_apiview
+from networkapi.util.geral import generate_return_json
+from networkapi.util.json_validate import json_validate
+from networkapi.util.json_validate import raise_json_validate
+from networkapi.util.json_validate import verify_ports
 
 
 log = logging.getLogger(__name__)
@@ -431,10 +443,12 @@ class PoolDBDetailsView(APIView):
                     pools['pools'],
                     many=True
                 )
-                data = {
-                    'server_pools': pool_serializer.data,
-                    'total': pools['total'],
-                }
+                data = generate_return_json(
+                    pool_serializer,
+                    'server_pools',
+                    pools,
+                    request
+                )
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
 
@@ -445,9 +459,11 @@ class PoolDBDetailsView(APIView):
                         pools,
                         many=True
                     )
-                    data = {
-                        'server_pools': pool_serializer.data
-                    }
+                    data = generate_return_json(
+                        pool_serializer,
+                        'server_pools',
+                        only_main_property=True
+                    )
                 else:
                     raise exceptions.PoolDoesNotExistException()
 
@@ -582,10 +598,12 @@ class PoolDBView(APIView):
                     pools['pools'],
                     many=True
                 )
-                data = {
-                    'server_pools': pool_serializer.data,
-                    'total': pools['total'],
-                }
+                data = generate_return_json(
+                    pool_serializer,
+                    'server_pools',
+                    pools,
+                    request
+                )
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
 
@@ -596,9 +614,11 @@ class PoolDBView(APIView):
                         pools,
                         many=True
                     )
-                    data = {
-                        'server_pools': pool_serializer.data
-                    }
+                    data = generate_return_json(
+                        pool_serializer,
+                        'server_pools',
+                        only_main_property=True
+                    )
                 else:
                     raise exceptions.PoolDoesNotExistException()
 
@@ -824,9 +844,11 @@ class PoolEnvironmentVip(APIView):
                 pools,
                 many=True
             )
-            data = {
-                'server_pools': pool_serializer.data
-            }
+            data = generate_return_json(
+                pool_serializer,
+                'server_pools',
+                only_main_property=True
+            )
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)
@@ -852,9 +874,11 @@ class OptionPoolEnvironmentView(APIView):
                 options_pool,
                 many=True
             )
-            data = {
-                'options_pool': options_pool_serializer.data
-            }
+            data = generate_return_json(
+                options_pool_serializer,
+                'options_pool',
+                only_main_property=True
+            )
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)

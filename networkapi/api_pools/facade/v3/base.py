@@ -12,7 +12,7 @@ from networkapi.api_pools import models
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_POOL
 from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.infrastructure.datatable import build_query_to_datatable
+from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
 from networkapi.requisicaovips.models import ServerPool
@@ -167,28 +167,8 @@ def get_options_pool_list_by_environment(environment_id):
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
-    if search.get('extends_search'):
-        pools = pools.filter(reduce(
-            lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
-    search_query = dict()
-    search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
-    search_query['custom_search'] = search.get('custom_search') or None
-    search_query['searchable_columns'] = search.get('searchable_columns') or None
-    search_query['start_record'] = search.get('start_record') or 0
-    search_query['end_record'] = search.get('end_record') or 25
-
-    pools, total = build_query_to_datatable(
-        pools,
-        search_query['asorting_cols'],
-        search_query['custom_search'],
-        search_query['searchable_columns'],
-        search_query['start_record'],
-        search_query['end_record'])
-
-    pool_map = dict()
-    pool_map["pools"] = pools
-    pool_map["total"] = total
+    pool_map = build_query_to_datatable_v3(pools, 'pools', search)
 
     return pool_map
 
