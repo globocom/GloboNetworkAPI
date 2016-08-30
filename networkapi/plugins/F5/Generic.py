@@ -65,16 +65,8 @@ class Generic(BasePlugin):
 
             if tratado.get('pool_created'):
                 for server_pool in tratado.get('pool_created'):
-                    try:
-                        self.__delete_pool({'pools': [server_pool]})
-                    except Exception, e:
-                        if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
-                            log.warning('"Pool cannot be deleted because it is in use by a Virtual Server"')
-                            pass
-                        else:
-                            raise e
-                    else:
-                        pools_del.append(server_pool.get('id'))
+                    self._delete_pool_by_pass(server_pool)
+                    pools_del.append(server_pool.get('id'))
 
         return pools_del
 
@@ -150,17 +142,22 @@ class Generic(BasePlugin):
 
         try:
             # create new ports
+            log.info('try create new ports')
             pools_ins = self._create_vip(dict_create_vip)
         except Exception, e:
+            log.error('error to create new ports')
             raise base_exceptions.CommandErrorException(e)
 
         else:
             try:
+                log.info('try delete ports')
                 # delete ports
                 pools_del = self._delete_vip(dict_delete_vip)
                 vts = virtualserver.VirtualServer(self._lb)
             except Exception, e:
+                log.error('error to delete ports')
                 # rollback in insert and delete of ports
+                log.info('rollback in insert and delete of ports')
                 pools_del = self._delete_vip(dict_create_vip)
                 raise base_exceptions.CommandErrorException(e)
 
@@ -168,27 +165,49 @@ class Generic(BasePlugin):
 
                 try:
                     # update vips
+                    log.info('try update vips')
                     if tratado.get('pool_filter'):
+                        log.info('try create pool')
                         self.__create_pool({'pools': tratado.get('pool_filter')})
                         pools_ins += [server_pool.get('id') for server_pool in tratado.get('pool')]
                     try:
+
                         if tratado.get('vips_filter'):
                             vts.update(vips=tratado.get('vips_filter'))
+
                     except Exception, e:
+                        log.error('error to update ports')
                         # rollback pool in update port
+                        log.info('rollback pool in update port')
                         if tratado.get('pool_filter'):
                             self.__delete_pool({'pools': tratado.get('pool_filter')})
                         raise e
+
                 except Exception, e:
                     # rollback create port
+                    log.info('rollback create port')
                     pools_ins += self._create_vip(dict_delete_vip)
                     # rollback delete port
+                    log.info('rollback delete port')
                     pools_del += self._delete_vip(dict_create_vip)
 
                     log.error(e)
                     raise base_exceptions.CommandErrorException(e)
                 else:
                     return pools_ins, pools_del
+
+    def _delete_pool_by_pass(self, server_pool):
+        try:
+            self.__delete_pool({'pools': [server_pool]})
+        except Exception, e:
+            if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
+                log.warning('Pool cannot be deleted because it is in use by a Virtual Server')
+                pass
+            elif 'is referenced by one or more virtual servers' in str(e.message):
+                log.warning('Pool cannot be deleted because it is referenced by one or more virtual servers')
+                pass
+            else:
+                raise e
 
     #######################################
     # POOLMEMBER
