@@ -261,7 +261,12 @@ def _create_pool_member(members, pool):
         if pool.dscp:
             mbs = pool_member.get_spm_by_eqpt_id(pool_member.equipment.id)
 
-            sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id=pool.id)
+            #check all the pools related to this pool vip request to filter dscp value
+            related_viprequestports = pool.vips[0].viprequestport_set.all()
+            vippools = [p.viprequestportpool_set.all()[0].server_pool_id \
+                        for p in related_viprequestports]
+
+            sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id__in=vippools)
             dscps = [sp.dscp for sp in sps]
 
             mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])

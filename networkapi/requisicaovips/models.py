@@ -497,7 +497,7 @@ class OptionVip(BaseModel):
         super(OptionVip, self).delete(authenticated_user)
 
 
-class RequisicaoVips(BaseModel):
+    BaseModel):
     id = models.AutoField(
         primary_key=True,
         db_column='id_requisicao_vips'
@@ -2240,6 +2240,12 @@ class ServerPool(BaseModel):
     @cached_property
     def vip_ports(self):
         return self.vipporttopool_set.all()
+
+  @cached_property
+    def vips(self):
+        ports_assoc = self.viprequestportpool_set.select_related()
+        vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
+        return vips
 
     @cached_property
     def dscp(self):
