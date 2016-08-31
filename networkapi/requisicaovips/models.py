@@ -497,7 +497,7 @@ class OptionVip(BaseModel):
         super(OptionVip, self).delete(authenticated_user)
 
 
-    BaseModel):
+class RequisicaoVips(BaseModel):
     id = models.AutoField(
         primary_key=True,
         db_column='id_requisicao_vips'
