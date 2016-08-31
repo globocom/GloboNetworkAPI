@@ -213,7 +213,7 @@ class Generic(BasePlugin):
             else:
                 raise e
 
-                return False
+            return False
         return True
 
     #######################################
