@@ -2,6 +2,13 @@
 import functools
 import logging
 
+from jsonspec.validators.exceptions import ValidationError
+from rest_framework import exceptions as exceptions_api
+
+from networkapi.api_rest import exceptions as rest_exceptions
+
+log = logging.getLogger(__name__)
+
 
 class cached_property(object):
 
@@ -95,3 +102,24 @@ def permission_obj_apiview(functions):
             return func(self, request, *args, **kwargs)
         return inner
     return outer
+
+
+def raise_exception_treat(func):
+    @functools.wraps(func)
+    def inner(self, request, *args, **kwargs):
+        try:
+            return func(self, request, *args, **kwargs)
+        except ValidationError, error:
+            log.error(error)
+            raise rest_exceptions.ValidationExceptionJson(error)
+        except (exceptions_api.APIException, exceptions_api.AuthenticationFailed,
+                exceptions_api.MethodNotAllowed, exceptions_api.NotAcceptable,
+                exceptions_api.NotAuthenticated, exceptions_api.ParseError,
+                exceptions_api.PermissionDenied, exceptions_api.Throttled,
+                exceptions_api.UnsupportedMediaType, rest_exceptions.ValidationAPIException), error:
+            log.error(error)
+            raise error
+        except Exception, error:
+            log.error(error)
+            raise rest_exceptions.NetworkAPIException(error)
+    return inner

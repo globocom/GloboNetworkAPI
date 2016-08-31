@@ -48,7 +48,7 @@ class EnvironmentDBView(APIView):
 
             else:
                 environment_ids = kwargs['environment_ids'].split(';')
-                environments = facade.get_vip_request(environment_ids)
+                environments = facade.get_environment_by_ids(environment_ids)
 
                 if environments:
                     serializer_env = serializers.EnvironmentV3Serializer(
@@ -61,7 +61,7 @@ class EnvironmentDBView(APIView):
                         only_main_property=True
                     )
                 else:
-                    raise exceptions.VipRequestDoesNotExistException()
+                    raise exceptions.EnvironmentDoesNotExistException()
 
             return Response(data, status.HTTP_200_OK)
 

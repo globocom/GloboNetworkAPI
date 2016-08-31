@@ -19,6 +19,15 @@ class ValidationException(APIException):
         self.detail = u'Error validating request parameter: %s' % (param)
 
 
+class ValidationAPIException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Validation Bad Request.'
+
+    def __init__(self, detail=None):
+        detail = detail if detail else self.default_detail
+        self.detail = u'%s' % (detail)
+
+
 class ValidationExceptionJson(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 

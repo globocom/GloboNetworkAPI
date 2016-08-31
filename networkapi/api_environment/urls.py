@@ -6,5 +6,5 @@ from networkapi.api_environment import views
 
 urlpatterns = patterns(
     '',
-    url(r'^v3/environment/(?P<environment_ids>[;\d]+)/$', views.EnvironmentDBView.as_view()),
+    url(r'^v3/environment/((?P<environment_ids>[;\w]+)/)?$', views.EnvironmentDBView.as_view()),
 )

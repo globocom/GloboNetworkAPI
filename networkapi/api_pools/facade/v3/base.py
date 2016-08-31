@@ -9,6 +9,7 @@ from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_pools import exceptions
 from networkapi.api_pools import models
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_POOL
 from networkapi.healthcheckexpect.models import Healthcheck
@@ -239,6 +240,7 @@ def _create_pool_member(members, pool):
 
         # vip with dsrl3 using pool
         if pool.dscp:
+
             mbs = pool_member.get_spm_by_eqpt_id(pool_member.equipment.id)
 
             sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id=pool.id)
@@ -246,14 +248,14 @@ def _create_pool_member(members, pool):
 
             mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
             if pool.dscp in dscps:
-                raise Exception(
+                raise ValidationAPIException(
                     'DRSL3 Restriction: Pool Member {} cannot be insert in Pool {}, because already in other pool'.format(
                         mb_name, pool.identifier
                     )
                 )
 
             if pool_member.port_real != pool.default_port:
-                raise Exception(
+                raise ValidationAPIException(
                     'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
                         mb_name, pool.identifier
                     )
@@ -276,13 +278,14 @@ def _update_pool_member(members):
         pool_member.limit = member['limit']
         pool_member.save()
 
-        if pool_member.port_real != pool_member.server_pool.default_port:
-            mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
-            raise Exception(
-                'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
-                    mb_name, pool_member.server_pool.identifier
+        if pool_member.server_pool.dscp:
+            if pool_member.port_real != pool_member.server_pool.default_port:
+                mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+                raise ValidationAPIException(
+                    'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
+                        mb_name, pool_member.server_pool.identifier
+                    )
                 )
-            )
 
 
 def _delete_pool_member(members):
