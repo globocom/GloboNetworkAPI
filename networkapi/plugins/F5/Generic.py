@@ -65,8 +65,8 @@ class Generic(BasePlugin):
 
             if tratado.get('pool_created'):
                 for server_pool in tratado.get('pool_created'):
-                    self._delete_pool_by_pass(server_pool)
-                    pools_del.append(server_pool.get('id'))
+                    if self._delete_pool_by_pass(server_pool):
+                        pools_del.append(server_pool.get('id'))
 
         return pools_del
 
@@ -128,6 +128,8 @@ class Generic(BasePlugin):
         pools_ins = list()
         pools_del = list()
 
+        log.debug(vips)
+
         tratado = util.trata_param_vip(vips)
         vts = virtualserver.VirtualServer(self._lb)
 
@@ -149,6 +151,7 @@ class Generic(BasePlugin):
             raise base_exceptions.CommandErrorException(e)
 
         else:
+            log.info('create new ports with success')
             try:
                 log.info('try delete ports')
                 # delete ports
@@ -162,7 +165,7 @@ class Generic(BasePlugin):
                 raise base_exceptions.CommandErrorException(e)
 
             else:
-
+                log.info('delete ports with success')
                 try:
                     # update vips
                     log.info('try update vips')
@@ -182,6 +185,7 @@ class Generic(BasePlugin):
                         if tratado.get('pool_filter'):
                             self.__delete_pool({'pools': tratado.get('pool_filter')})
                         raise e
+                    log.info('update vips with success')
 
                 except Exception, e:
                     # rollback create port
@@ -208,6 +212,9 @@ class Generic(BasePlugin):
                 pass
             else:
                 raise e
+
+                return False
+        return True
 
     #######################################
     # POOLMEMBER
