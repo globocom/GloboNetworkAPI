@@ -2241,7 +2241,7 @@ class ServerPool(BaseModel):
     def vip_ports(self):
         return self.vipporttopool_set.all()
 
-  @cached_property
+    @cached_property
     def vips(self):
         ports_assoc = self.viprequestportpool_set.select_related()
         vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
