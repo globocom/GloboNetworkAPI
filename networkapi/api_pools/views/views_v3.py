@@ -1,24 +1,35 @@
 # -*- coding:utf-8 -*-
 import ast
-from datetime import datetime
 import logging
+from datetime import datetime
 
 from django.db.transaction import commit_on_success
-from networkapi.api_pools import exceptions, serializers
-from networkapi.api_pools.facade.v3 import base as facade
-from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
-from networkapi.api_pools.permissions import Read, ScriptAlterPermission, \
-    ScriptCreatePermission, ScriptRemovePermission, Write, deploy_pool_permission, \
-    write_pool_permission, delete_pool_permission
-from networkapi.api_rest import exceptions as rest_exceptions
-from networkapi.requisicaovips import models as models_vips
-from networkapi.settings import SPECS
-from networkapi.util import logs_method_apiview, permission_classes_apiview, permission_obj_apiview
-from networkapi.util.json_validate import json_validate, raise_json_validate, verify_ports
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from networkapi.api_pools import exceptions
+from networkapi.api_pools import serializers
+from networkapi.api_pools.facade.v3 import base as facade
+from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
+from networkapi.api_pools.permissions import delete_pool_permission
+from networkapi.api_pools.permissions import deploy_pool_permission
+from networkapi.api_pools.permissions import Read
+from networkapi.api_pools.permissions import ScriptAlterPermission
+from networkapi.api_pools.permissions import ScriptCreatePermission
+from networkapi.api_pools.permissions import ScriptRemovePermission
+from networkapi.api_pools.permissions import Write
+from networkapi.api_pools.permissions import write_pool_permission
+from networkapi.api_rest import exceptions as rest_exceptions
+from networkapi.requisicaovips import models as models_vips
+from networkapi.settings import SPECS
+from networkapi.util import logs_method_apiview
+from networkapi.util import permission_classes_apiview
+from networkapi.util import permission_obj_apiview
+from networkapi.util.json_validate import json_validate
+from networkapi.util.json_validate import raise_json_validate
+from networkapi.util.json_validate import verify_ports
 
 
 log = logging.getLogger(__name__)
@@ -40,7 +51,7 @@ class PoolMemberStateView(APIView):
                 "id": <server_pool_id>,
                 "identifier": <string>,
                 "default_port": <interger>,
-                environmentvip": <environment_id>,
+                "environmentvip": <environment_id>,
                 "servicedownaction": {
                     "id": <optionvip_id>,
                     "name": <string>

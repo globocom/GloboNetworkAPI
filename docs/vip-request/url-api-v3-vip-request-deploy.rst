@@ -7,4 +7,4 @@
    url-api-v3-vip-request-deploy/put
    url-api-v3-vip-request-deploy/delete
 
-
+Using this affects database and the equipments.
