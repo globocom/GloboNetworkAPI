@@ -359,7 +359,8 @@ class VirtualServer(F5Base):
                     for rl_l7 in rule_l7_delete:
                         try:
                             rl.delete(rule_names=[rl_l7])
-                        except:
+                        except Exception, e:
+                            log.info(e)
                             pass
 
     @logger

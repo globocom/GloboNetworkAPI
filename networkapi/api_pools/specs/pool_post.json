@@ -57,7 +57,7 @@
         "properties": {
           "identifier": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9._]){3,}$",
+            "pattern": "^([a-zA-Z0-9._-]){3,}$",
             "minimum": 3
           },
           "default_port": {
