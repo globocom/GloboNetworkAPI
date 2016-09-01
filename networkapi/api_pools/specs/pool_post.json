@@ -164,12 +164,6 @@
             "items": {
               "type": "object",
               "properties": {
-                "identifier": {
-                   "type": [
-                     "string",
-                     "null"
-                   ]
-                },
                 "ipv6": {
                   "oneOf": [
                     {
@@ -225,7 +219,6 @@
                 }
               },
               "required": [
-                "identifier",
                 "ipv6",
                 "ip",
                 "priority",

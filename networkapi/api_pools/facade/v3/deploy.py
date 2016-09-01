@@ -161,7 +161,7 @@ def update_real_pool(pools, user):
                     # update info of member
                     pools_members.append({
                         'id': pool_member['id'],
-                        'identifier': pool_member['identifier'],
+                        'identifier': member.identifier,
                         'ip': ip,
                         'port': pool_member['port_real'],
                         'limit': pool_member['limit'],
@@ -173,15 +173,15 @@ def update_real_pool(pools, user):
                     # delete member with old port and old ip
                     pools_members.append({
                         'id': None,
-                        'identifier': pool_member['identifier'],
+                        'identifier': member.identifier,
                         'ip': ip_db,
                         'port': member.port_real,
                         'remove': 1
                     })
-                    # create delete member with new port and new ip
+                    # create member with new port and new ip
                     pools_members.append({
                         'id': pool_member['id'],
-                        'identifier': pool_member['identifier'],
+                        'identifier': ip,
                         'ip': ip,
                         'port': pool_member['port_real'],
                         'limit': pool_member['limit'],
@@ -194,7 +194,7 @@ def update_real_pool(pools, user):
                 # create member
                 pools_members.append({
                     'id': None,
-                    'identifier': pool_member['identifier'],
+                    'identifier': ip,
                     'ip': ip,
                     'port': pool_member['port_real'],
                     'limit': pool_member['limit'],

@@ -60,6 +60,7 @@ class Generic(BasePlugin):
                             self.baddi.update_member(mb)
 
     @util.connection
+    @util.logger
     def set_state_member(self, pools):
         for pool in pools['pools']:
             for member in pool['pools_members']:
@@ -67,6 +68,7 @@ class Generic(BasePlugin):
                 self.baddi.update_member_status(mb)
 
     @util.connection
+    @util.logger
     def get_state_member(self, pools):
 
         status_pools = list()
@@ -104,6 +106,7 @@ class Generic(BasePlugin):
     # POOL
     #######################################
     @util.connection
+    @util.logger
     def create_pool(self, pools):
 
         for pool in pools['pools']:
@@ -113,6 +116,7 @@ class Generic(BasePlugin):
                 self._action_member(pool, mb, 'create')
 
     @util.connection
+    @util.logger
     def delete_pool(self, pools):
 
         for pool in pools['pools']:
@@ -122,6 +126,7 @@ class Generic(BasePlugin):
                 self._action_member(pool, mb, 'delete')
 
     @util.connection
+    @util.logger
     def update_pool(self, pools):
 
         for pool in pools['pools']:
@@ -142,6 +147,7 @@ class Generic(BasePlugin):
     # VIP
     #######################################
     @util.connection
+    @util.logger
     def create_vip(self, vips):
         pools_ins = list()
         for vip in vips['vips']:
@@ -183,6 +189,7 @@ class Generic(BasePlugin):
         return pools_ins
 
     @util.connection
+    @util.logger
     def update_vip(self, vips):
 
         pools_del = list()
@@ -217,6 +224,7 @@ class Generic(BasePlugin):
         return pools_ins, pools_del
 
     @util.connection
+    @util.logger
     def delete_vip(self, vips):
 
         pools_del = list()

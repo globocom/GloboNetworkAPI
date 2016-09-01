@@ -140,9 +140,6 @@
                     "null"
                   ]
                 },
-                "identifier": {
-                  "type": "string"
-                },
                 "ipv6": {
                   "oneOf": [
                     {
@@ -202,7 +199,6 @@
               },
               "required": [
                 "id",
-                "identifier",
                 "ipv6",
                 "ip",
                 "priority",
