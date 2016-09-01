@@ -1,8 +1,8 @@
-Using GloboNetworkAPI
-#####################
+Using GloboNetworkAPI V3
+########################
 
 .. toctree::
 
    vip-request/vip-request
+   pool/pool
 
-:doc:`vip-request/vip-request`

@@ -1,9 +1,21 @@
 POST
-****
+####
 
+Creating list of pools in equipments
+************************************
 
-"""
-        Creates pools by list in equipments
-        :url /api/v3/pool/deploy/<pool_ids>/
-        :param pool_ids=<pool_ids>
-        """
+URL::
+
+    /api/v3/pool/deploy/<pool_ids>/
+
+where **pool_ids** are the identifiers of each pool desired to be deployed. To deploy more than one pool, semicolons between the identifiers should be used.
+
+Example with Parameter IDs:
+
+One ID::
+
+/api/v3/pool/1/
+
+Many IDs::
+
+/api/v3/pool/1;3;8/

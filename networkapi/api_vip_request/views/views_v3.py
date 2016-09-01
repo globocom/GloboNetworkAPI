@@ -100,7 +100,7 @@ class VipRequestDeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
     @permission_obj_apiview([deploy_vip_permission])
-    @raise_json_validate('vip_put')
+    @raise_json_validate('vip_request_put')
     @logs_method_apiview
     def put(self, request, *args, **kwargs):
         """
@@ -227,7 +227,7 @@ class VipRequestDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('vip_post')
+    @raise_json_validate('vip_request_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -270,7 +270,7 @@ class VipRequestDBView(APIView):
 
         data = request.DATA
 
-        json_validate(SPECS.get('vip_post')).validate(data)
+        json_validate(SPECS.get('vip_request_post')).validate(data)
 
         response = list()
         verify_ports_vip(data)
@@ -284,7 +284,7 @@ class VipRequestDBView(APIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_vip_permission])
     @logs_method_apiview
-    @raise_json_validate('vip_put')
+    @raise_json_validate('vip_request_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -326,7 +326,7 @@ class VipRequestDBView(APIView):
         """
         data = request.DATA
 
-        json_validate(SPECS.get('vip_put')).validate(data)
+        json_validate(SPECS.get('vip_request_put')).validate(data)
 
         locks_list = facade.create_lock(data['vips'])
         try:

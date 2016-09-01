@@ -1,12 +1,14 @@
 GET
 ###
 
-Obtaining servel pools through id's
+Obtaining server pools through id's
 ***********************************
 
 URL::
 
     /api/v3/pool/<pool_ids>/
+
+where **pool_ids** are the identifiers of each pool desired to be obtained. To obtain more than one pool, semicolons between the identifiers should be used.
 
 Example with Parameter IDs:
 
@@ -26,7 +28,7 @@ Response body:
         "server_pools": [{
             "id": <server_pool_id>,
             "identifier": <string>,
-            "default_port": <interger>,
+            "default_port": <integer>,
             environmentvip": <environment_id>,
             "servicedownaction": {
                 "id": <optionvip_id>,
@@ -40,7 +42,7 @@ Response body:
                 "healthcheck_expect": <string>,
                 "destination": <string>
             },
-            "default_limit": <interger>,
+            "default_limit": <integer>,
             "server_pool_members": [{
                 "id": <server_pool_member_id>,
                 "identifier": <string>,
@@ -52,16 +54,16 @@ Response body:
                     "ip_formated": <ipv4_formated>,
                     "id": <ipv4_id>
                 },
-                "priority": <interger>,
+                "priority": <integer>,
                 "equipment": {
-                    "id": <interger>,
+                    "id": <integer>,
                     "name": <string>
                 },
-                "weight": <interger>,
-                "limit": <interger>,
-                "port_real": <interger>,
+                "weight": <integer>,
+                "limit": <integer>,
+                "port_real": <integer>,
                 "last_status_update_formated": <string>,
-                "member_status": <interger>
+                "member_status": <integer>
             }],
             "pool_created": <boolean>
         },..]
@@ -75,11 +77,15 @@ URL::
 
     /api/v3/pool/
 
-GET Params::
+GET Parameter::
 
-    GET['search']
+    search=[encoded dict]
 
-Request body::
+Example::
+
+    /api/v3/pool/?search=[dict encoded]
+
+Request body:
 
 .. code-block:: json
 
@@ -93,11 +99,11 @@ Request body::
         'asorting_cols': [<string>,..],
         'searchable_columns': [<string>,..]
     }
-    :return list of server pool with property "total"
-    {
-        "total": <interger>,
-        "server_pools": [..]
-    }
+
+Request body example:
+
+.. code-block:: json
+
     :example
     {
         'extends_search': [{
@@ -115,3 +121,11 @@ Request body::
         ]
     }
 
+Response body:
+
+.. code-block:: json
+
+    {
+        "total" [integer],
+        "server_pools": [...]
+    }

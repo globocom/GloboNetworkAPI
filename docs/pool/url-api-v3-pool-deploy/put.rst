@@ -1,5 +1,5 @@
 PUT
-***
+###
 
 Enabling/Disabling pool member by list of server pool
 *****************************************************
@@ -107,3 +107,5 @@ Updates pools by list in equipments
             },..]
         }
         """
+
+COLOCAR O LINK DO HELP

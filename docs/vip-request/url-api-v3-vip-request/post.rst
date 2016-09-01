@@ -45,12 +45,12 @@ Request body:
         },..]
     }
 
-* "environmentvip" attribute is an integer that identifies the environment vip that is desired to associate to the new vip request.
-* "options" are the configured options vip that is desired to associate to the new vip request.
+* **"environmentvip"** attribute is an integer that identifies the environment vip that is desired to associate to the new vip request.
+* **"options"** are the configured options vip that is desired to associate to the new vip request.
     * cache-group, persistence, timeout and traffic_return are some values present in the database. These values are configured to a set of restricted values.
-* "ports" are the configured ports that is desired to asssociate to the new vip request.
-    * l4_protocol and l7_protocol in options and l7_rule in pools work as well as the values present in "options" discussed above.
-    * "server_pool" is the identifier of the server-pool port associated to the new vip request.
+* **"ports"** are the configured ports that is desired to asssociate to the new vip request.
+    * l4_protocol and l7_protocol in options and l7_rule in pools work as well as the values present in **"options"** discussed above.
+    * **"server_pool"** is the identifier of the server-pool port associated to the new vip request.
 
 URL Example::
 
