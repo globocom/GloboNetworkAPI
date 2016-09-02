@@ -677,7 +677,7 @@ def update_real_vip_request(vip_requests, user):
                 ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
 
                 # ids pools changed
-                ids_pool_cur = [pool.get('id') for pool in port_old.get('pools') if pool.get('id')]
+                ids_pool_cur = [pool.get('id') for pool in port.get('pools') if pool.get('id')]
 
                 # ids to delete
                 ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_cur))
