@@ -1113,4 +1113,5 @@ def _validate_vip_to_apply(vip_request, update=False, user=None):
                     vip_request['id']))
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
+
     return equips, conf, cluster_unit
