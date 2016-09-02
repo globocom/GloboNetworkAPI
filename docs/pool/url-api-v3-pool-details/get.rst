@@ -28,7 +28,7 @@ Response body:
         "server_pools": [{
             "id": <server_pool_id>,
             "identifier": <string>,
-            "default_port": <interger>,
+            "default_port": <integer>,
             "environmentvip": {
                 "id": <environment_id>,
                 "finalidade_txt": <string>,
@@ -48,7 +48,7 @@ Response body:
                 "healthcheck_expect": <string>,
                 "destination": <string>
             },
-            "default_limit": <interger>,
+            "default_limit": <integer>,
             "server_pool_members": [{
                 "id": <server_pool_member_id>,
                 "identifier": <string>,
@@ -60,29 +60,29 @@ Response body:
                     "ip_formated": <ipv4_formated>,
                     "id": <ipv4_id>
                 },
-                "priority": <interger>,
+                "priority": <integer>,
                 "equipment": {
-                    "id": <interger>,
+                    "id": <integer>,
                     "name": <string>
                 },
-                "weight": <interger>,
-                "limit": <interger>,
-                "port_real": <interger>,
+                "weight": <integer>,
+                "limit": <integer>,
+                "port_real": <integer>,
                 "last_status_update_formated": <string>,
-                "member_status": <interger>
+                "member_status": <integer>
             }],
             "pool_created": <boolean>
         },...]
     }
 
-Obtaining server pools with some more details through dict
-**********************************************************
+Obtaining server pools with some more details through extended search
+*********************************************************************
 
 URL::
 
     /api/v3/pool/details/
 
-GET Parameter:
+GET Parameter::
 
     search=[encoded dict]
 
@@ -98,9 +98,9 @@ Request body:
         'extends_search': [{
             'environment': <environment_id>
         }],
-        'start_record': <interger>,
+        'start_record': <integer>,
         'custom_search': '<string>',
-        'end_record': <interger>,
+        'end_record': <integer>,
         'asorting_cols': [<string>,..],
         'searchable_columns': [<string>,..]
     }

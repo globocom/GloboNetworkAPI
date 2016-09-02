@@ -1,8 +1,8 @@
 POST
 ####
 
-Creating list of vip request:
-*****************************
+Creating list of vip request
+****************************
 
 URL::
 
@@ -36,7 +36,7 @@ Request body:
                 "pools": [{
                         "l7_rule": [optionvip_id],
                         "l7_value": [string],
-                        "order": [interger],
+                        "order": [integer],
                         "server_pool": [server_pool_id]
                     },..],
                 "port": [integer]
@@ -55,4 +55,8 @@ Request body:
 URL Example::
 
     /api/v3/vip-request/
+
+More information about the POST request can be obtained in::
+
+    /api/v3/help/vip_request_post/
 

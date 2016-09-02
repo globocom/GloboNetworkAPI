@@ -70,8 +70,8 @@ Response body:
     }
 
 
-Obtaining server pools through dicts
-************************************
+Obtaining server pools through extended search
+**********************************************
 
 URL::
 
@@ -93,9 +93,9 @@ Request body:
         'extends_search': [{
             'environment': <environment_id>
         }],
-        'start_record': <interger>,
+        'start_record': <integer>,
         'custom_search': '<string>',
-        'end_record': <interger>,
+        'end_record': <integer>,
         'asorting_cols': [<string>,..],
         'searchable_columns': [<string>,..]
     }
@@ -104,7 +104,6 @@ Request body example:
 
 .. code-block:: json
 
-    :example
     {
         'extends_search': [{
             'environment': 1

@@ -6,5 +6,3 @@
    url-api-v3-pool-deploy/post
    url-api-v3-pool-deploy/put
    url-api-v3-pool-deploy/delete
-
-Using this affects database and the equipments.

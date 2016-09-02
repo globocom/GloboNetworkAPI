@@ -8,7 +8,7 @@ URL::
 
     /api/v3/pool/<pool_ids>
 
-where **pool_ids** are the identifiers of each pool desired to be updated. To update more than one pool, semicolons between the identifiers should be used.
+where **pool_ids** are the identifiers of each pool desired to be updated. Only pools not deployed to equipments can be updated in this way. To update more than one pool, semicolons between the identifiers should be used.
 
 Example with Parameter IDs:
 
@@ -28,7 +28,7 @@ Request body:
         "server_pools": [{
             "id": <server_pool_id>,
             "identifier": <string>,
-            "default_port": <interger>,
+            "default_port": <integer>,
             environmentvip": <environment_id>,
             "servicedownaction": {
                 "id": <optionvip_id>,

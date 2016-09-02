@@ -8,7 +8,7 @@ URL::
 
 /api/v3/vip-request/[vip_request_ids]/
 
-where **vip_request_ids** is the identifier of vip request. It can use multiple ids separated by semicolons.
+where **vip_request_ids** are the identifiers of vip requests. It can use multiple ids separated by semicolons.
 
 Example with Parameter IDs:
 
@@ -48,7 +48,7 @@ Request body:
                 "pools": [{
                         "l7_rule": [optionvip_id],
                         "l7_value": [string],
-                        "order": [interger],
+                        "order": [integer],
                         "server_pool": [server_pool_id]
                     },..],
                 "port": [integer]
@@ -57,13 +57,18 @@ Request body:
         },..]
     }
 
-* "environmentvip" attribute is an integer that identifies the environment vip that is desired to associate to the existent vip request.
-* "options" are the configured options vip that is desired to associate to the existent vip request.
+* **"environmentvip"** attribute is an integer that identifies the environment vip that is desired to associate to the existent vip request.
+* **"options"** are the configured options vip that is desired to associate to the existent vip request.
     * cache-group, persistence, timeout and traffic_return are some values present in the database. These values are configured to a set of restricted values.
-* "ports" are the configured ports that is desired to asssociate to the existent vip request.
-    * l4_protocol and l7_protocol in options and l7_rule in pools work as well as the values present in "options" discussed above.
-    * "server_pool" is the identifier of the server-pool port associated to the existent vip request.
+* **"ports"** are the configured ports that is desired to asssociate to the existent vip request.
+    * l4_protocol and l7_protocol in options and l7_rule in pools work as well as the values present in **"options"** discussed above.
+    * **"server_pool"** is the identifier of the server-pool port associated to the existent vip request.
 
-URL Examples::
+URL Example::
 
 /api/v3/vip-request/1/
+
+More information about the PUT request can be obtained in::
+
+    /api/v3/help/vip_request_put/
+

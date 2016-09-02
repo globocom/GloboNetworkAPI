@@ -8,7 +8,7 @@ URL::
 
     /api/v3/pool/deploy/<pool_ids>/
 
-where **pool_ids** are the identifiers of each pool desired to be deployed. To deploy more than one pool, semicolons between the identifiers should be used.
+where **pool_ids** are the identifiers of each pool desired to be deployed. These pools must exist in database. To deploy more than one pool, semicolons between the identifiers should be used.
 
 Example with Parameter IDs:
 

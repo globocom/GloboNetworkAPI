@@ -4,6 +4,8 @@ POST
 Creating list of pools in database:
 ***********************************
 
+This only affects database, if flag **"created"** is assigned true, it will be ignored.
+
 URL::
 
     /api/v3/pool/
@@ -17,7 +19,7 @@ Request body:
             "id": <null>,
             "identifier": <string>,
             "default_port": <integer>,
-            environmentvip": <environment_id>,
+            "environmentvip": <environment_id>,
             "servicedownaction": {
                 "id": <optionvip_id>,
                 "name": <string>

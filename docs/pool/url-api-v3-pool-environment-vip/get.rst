@@ -12,7 +12,7 @@ where **environment_vip_id** is the identifier of the environment vip used as an
 
 Example::
 
-    /api/v3/pool/1/
+    /api/v3/pool/environment-vip/1/
 
 Response body:
 
@@ -63,10 +63,3 @@ Response body:
         },..]
     }
 
-Obtaining option vip list by environment id
-*******************************************
-
-    Method to return option vip list by environment id
-    Param environment_id: environment id
-    Return list of option pool
-    """

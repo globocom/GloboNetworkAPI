@@ -1,5 +1,5 @@
 GET
-***
+###
 
 Obtaining list of pools with member states updated
 **************************************************
@@ -12,9 +12,9 @@ where **pool_ids** are the identifiers of each pool desired to be obtained. To o
 
 GET Param::
 
-    checkstatus=(0|1)
+    checkstatus=[0|1]
 
-    To obtain member states **updated**, checkstatus should be assigned to 1. If it is assigned to 0, server pools will be retrieved but the real status of the equipments will not be checked.
+To obtain member states **updated**, checkstatus should be assigned to 1. If it is assigned to 0, server pools will be retrieved but the real status of the equipments will not be checked in the equipment.
 
 Response body:
 
@@ -24,7 +24,7 @@ Response body:
         "server_pools": [{
             "id": <server_pool_id>,
             "identifier": <string>,
-            "default_port": <interger>,
+            "default_port": <integer>,
             environmentvip": <environment_id>,
             "servicedownaction": {
                 "id": <optionvip_id>,
@@ -38,7 +38,7 @@ Response body:
                 "healthcheck_expect": <string>,
                 "destination": <string>
             },
-            "default_limit": <interger>,
+            "default_limit": <integer>,
             "server_pool_members": [{
                 "id": <server_pool_member_id>,
                 "identifier": <string>,
@@ -50,16 +50,16 @@ Response body:
                     "ip_formated": <ipv4_formated>,
                     "id": <ipv4_id>
                 },
-                "priority": <interger>,
+                "priority": <integer>,
                 "equipment": {
-                    "id": <interger>,
+                    "id": <integer>,
                     "name": <string>
                 },
-                "weight": <interger>,
-                "limit": <interger>,
-                "port_real": <interger>,
+                "weight": <integer>,
+                "limit": <integer>,
+                "port_real": <integer>,
                 "last_status_update_formated": <string>,
-                "member_status": <interger>
+                "member_status": <integer>
             }],
             "pool_created": <boolean>
         },...]
@@ -67,14 +67,16 @@ Response body:
 
 Pool Member
 ===========
-healthcheck+session enable/disable+user up/down(000 - 111 = 0 - 7)
 
-0 0 0
-| | \-- user up/user down (forcado a nao receber nem sessoes de persistencia)
-| |     1/0 forcar disable do membro no pool (user up/down)
-| \---- habilitar/desabilitar membro (session enable/session disable -
-|       nao recebe novas sessoes mas honra persistencia)
-|       1/0 habilitar/desabilitar membro no pool para novas sessoes (session disable)
-\------ status do healthcheck no LB, somente GET, nao e alterado
-        por usuario flag ignorada no PUT.
-        1/0 status do healthcheck no LB member up/down
+* **member_status** in "server_pool_members must receive a value ranging from 0 to 7. These value will be converted into binary format. On PUT, first bit will be ignored because in the equipment it's read-only
+* **member_status** format: X X X where **X** is 0 or 1.
+    * First bit:
+        * User up - 1
+        * User down - 0
+    * Second bit:
+        * Enable member - 1
+        * Disable member - 0
+    * Third bit (**read-only**):
+        * Healthcheck status is up - 1
+        * Healthcheck status is down - 0
+
