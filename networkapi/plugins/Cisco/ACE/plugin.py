@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,10 +15,9 @@
 # limitations under the License.
 import logging
 
+from ...base import BasePlugin
 from networkapi.infrastructure.script_utils import exec_script
 from networkapi.plugins import exceptions as base_exceptions
-
-from ...base import BasePlugin
 
 
 log = logging.getLogger(__name__)
@@ -40,11 +38,16 @@ class ACE(BasePlugin):
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
 
-        return []
+        pools_del = list()
+        return pools_del
 
     def update_vip(self, vips):
         log.info('bypass')
-        pass
+
+        pools_ins = list()
+        pools_del = list()
+
+        return pools_ins, pools_del
 
     def create_vip(self, vips):
         try:
@@ -58,3 +61,6 @@ class ACE(BasePlugin):
         except Exception, e:
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
+
+        pools_ins = list()
+        return pools_ins

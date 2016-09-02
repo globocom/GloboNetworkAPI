@@ -32,6 +32,7 @@ class PluginFactory(object):
 
     @classmethod
     def get_plugin(cls, **kwargs):
+
         if 'modelo' in kwargs:
             modelo = kwargs.get('modelo')
 
