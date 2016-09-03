@@ -56,7 +56,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 1
           },
           "identifier": {
             "type": "string",
@@ -69,13 +70,15 @@
             "maximum": 65535
           },
           "environment": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 1
           },
           "servicedownaction": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "integer"
+                "type": "integer",
+                "minimum": 1
               },
               "name": {
                 "type": "string"
