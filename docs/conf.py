@@ -71,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Globo NetworkAPI'
-copyright = u'2000-2014 Globo Comunicação e Participações S.A.'
+copyright = u'2000-2016 Globo Comunicação e Participações S.A.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
