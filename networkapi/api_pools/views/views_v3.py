@@ -52,7 +52,7 @@ class PoolMemberStateView(APIView):
                 "id": <server_pool_id>,
                 "identifier": <string>,
                 "default_port": <interger>,
-                environmentvip": <environment_id>,
+                "environmentvip": <environment_id>,
                 "servicedownaction": {
                     "id": <optionvip_id>,
                     "name": <string>

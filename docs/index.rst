@@ -17,6 +17,7 @@ Contents:
    definitions
    faq
    code_doc
+   use_doc
 
 E-mail lists (Forums)
 =====================
