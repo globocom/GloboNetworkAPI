@@ -9,10 +9,11 @@ from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_pools import exceptions
 from networkapi.api_pools import models
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_POOL
 from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.infrastructure.datatable import build_query_to_datatable
+from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
 from networkapi.requisicaovips.models import ServerPool
@@ -167,28 +168,8 @@ def get_options_pool_list_by_environment(environment_id):
 def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
-    if search.get('extends_search'):
-        pools = pools.filter(reduce(
-            lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
 
-    search_query = dict()
-    search_query['asorting_cols'] = search.get('asorting_cols') or ['-id']
-    search_query['custom_search'] = search.get('custom_search') or None
-    search_query['searchable_columns'] = search.get('searchable_columns') or None
-    search_query['start_record'] = search.get('start_record') or 0
-    search_query['end_record'] = search.get('end_record') or 25
-
-    pools, total = build_query_to_datatable(
-        pools,
-        search_query['asorting_cols'],
-        search_query['custom_search'],
-        search_query['searchable_columns'],
-        search_query['start_record'],
-        search_query['end_record'])
-
-    pool_map = dict()
-    pool_map["pools"] = pools
-    pool_map["total"] = total
+    pool_map = build_query_to_datatable_v3(pools, 'pools', search)
 
     return pool_map
 
@@ -259,21 +240,27 @@ def _create_pool_member(members, pool):
 
         # vip with dsrl3 using pool
         if pool.dscp:
+
             mbs = pool_member.get_spm_by_eqpt_id(pool_member.equipment.id)
 
-            sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id=pool.id)
+            #check all the pools related to this pool vip request to filter dscp value
+            related_viprequestports = pool.vips[0].viprequestport_set.all()
+            vippools = [p.viprequestportpool_set.all()[0].server_pool_id \
+                        for p in related_viprequestports]
+
+            sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id__in=vippools)
             dscps = [sp.dscp for sp in sps]
 
             mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
             if pool.dscp in dscps:
-                raise Exception(
+                raise ValidationAPIException(
                     'DRSL3 Restriction: Pool Member {} cannot be insert in Pool {}, because already in other pool'.format(
                         mb_name, pool.identifier
                     )
                 )
 
             if pool_member.port_real != pool.default_port:
-                raise Exception(
+                raise ValidationAPIException(
                     'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
                         mb_name, pool.identifier
                     )
@@ -296,13 +283,14 @@ def _update_pool_member(members):
         pool_member.limit = member['limit']
         pool_member.save()
 
-        if pool_member.port_real != pool_member.server_pool.default_port:
-            mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
-            raise Exception(
-                'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
-                    mb_name, pool_member.server_pool.identifier
+        if pool_member.server_pool.dscp:
+            if pool_member.port_real != pool_member.server_pool.default_port:
+                mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+                raise ValidationAPIException(
+                    'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
+                        mb_name, pool_member.server_pool.identifier
+                    )
                 )
-            )
 
 
 def _delete_pool_member(members):

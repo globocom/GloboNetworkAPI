@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `ambiente` 
+ADD COLUMN `id_father_environment` INT(10) UNSIGNED NULL COMMENT '' AFTER `vrf`;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `ambiente` 
+DROP COLUMN `id_father_environment`;
+
+"""

@@ -21,7 +21,7 @@ from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
-from networkapi.infrastructure.datatable import build_query_to_datatable
+from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
 from networkapi.plugins.factory import PluginFactory
@@ -366,42 +366,7 @@ def get_vip_request_by_search(search=dict()):
 
     vip_requests = models.VipRequest.objects.filter()
 
-    if search.get('extends_search'):
-        vip_requests = vip_requests.filter(reduce(
-            lambda x, y: x | y, [Q(**item) for item in search.get('extends_search')]))
-
-    search_query = dict()
-    search_query["extends_search"] = search.get('extends_search') or []
-    search_query["asorting_cols"] = search.get("asorting_cols") or ["-id"]
-    search_query["custom_search"] = search.get("custom_search") or None
-    search_query["searchable_columns"] = search.get("searchable_columns") or []
-    search_query["start_record"] = search.get("start_record") or 0
-    search_query["end_record"] = search.get("end_record") or 25
-
-    vip_requests, total = build_query_to_datatable(
-        vip_requests,
-        search_query["asorting_cols"],
-        search_query["custom_search"],
-        search_query["searchable_columns"],
-        search_query["start_record"],
-        search_query["end_record"])
-
-    vip_map = dict()
-    vip_map["vips"] = vip_requests
-    vip_map["total"] = total
-
-    vip_map["next_search"] = search_query.copy()
-    vip_map["next_search"]["start_record"] += 25
-    vip_map["next_search"]["end_record"] += 25
-
-    vip_map["prev_search"] = None
-    if search_query["start_record"] > 0:
-        t = search_query["end_record"] - search_query["start_record"]
-        i = t - 25
-        f = search_query["start_record"]
-        vip_map["prev_search"] = search_query.copy()
-        vip_map["prev_search"]["start_record"] = i if i >= 0 else 0
-        vip_map["prev_search"]["end_record"] = f if f >= 0 else 25
+    vip_map = build_query_to_datatable_v3(vip_requests, 'vips', search)
 
     return vip_map
 
@@ -712,7 +677,7 @@ def update_real_vip_request(vip_requests, user):
                 ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
 
                 # ids pools changed
-                ids_pool_cur = [pool.get('id') for pool in port_old.get('pools') if pool.get('id')]
+                ids_pool_cur = [pool.get('id') for pool in port.get('pools') if pool.get('id')]
 
                 # ids to delete
                 ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_cur))
@@ -1148,4 +1113,5 @@ def _validate_vip_to_apply(vip_request, update=False, user=None):
                     vip_request['id']))
 
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
+
     return equips, conf, cluster_unit

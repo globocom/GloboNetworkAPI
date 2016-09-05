@@ -2242,6 +2242,12 @@ class ServerPool(BaseModel):
         return self.vipporttopool_set.all()
 
     @cached_property
+    def vips(self):
+        ports_assoc = self.viprequestportpool_set.select_related()
+        vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
+        return vips
+
+    @cached_property
     def dscp(self):
         ports_assoc = self.viprequestportpool_set.select_related()
         for poolport in ports_assoc:

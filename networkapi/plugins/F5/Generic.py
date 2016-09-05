@@ -36,6 +36,7 @@ class Generic(BasePlugin):
 
         return pools_del
 
+    @logger
     def _delete_vip(self, tratado):
 
         pools_del = list()
@@ -65,15 +66,7 @@ class Generic(BasePlugin):
 
             if tratado.get('pool_created'):
                 for server_pool in tratado.get('pool_created'):
-                    try:
-                        self.__delete_pool({'pools': [server_pool]})
-                    except Exception, e:
-                        if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
-                            log.warning('"Pool cannot be deleted because it is in use by a Virtual Server"')
-                            pass
-                        else:
-                            raise e
-                    else:
+                    if self._delete_pool_by_pass(server_pool):
                         pools_del.append(server_pool.get('id'))
 
         return pools_del
@@ -90,6 +83,7 @@ class Generic(BasePlugin):
         pools_ins = self._create_vip(dict_vip)
         return pools_ins
 
+    @logger
     def _create_vip(self, tratado):
         pools_ins = list()
         vts = virtualserver.VirtualServer(self._lb)
@@ -131,6 +125,7 @@ class Generic(BasePlugin):
                 raise base_exceptions.CommandErrorException(e)
         return pools_ins
 
+    @logger
     @util.connection
     def update_vip(self, vips):
         pools_ins = list()
@@ -148,47 +143,98 @@ class Generic(BasePlugin):
             'pool_created': tratado.get('pool_filter_to_delete')
         }
 
+        # delete ports
         try:
-            # create new ports
-            pools_ins = self._create_vip(dict_create_vip)
+
+            log.info('try delete ports')
+            pools_del = self._delete_vip(dict_delete_vip)
+            vts = virtualserver.VirtualServer(self._lb)
+
         except Exception, e:
+
+            log.error('error to delete ports')
+            log.error(e)
+
+            # rollback delete of ports
+            log.info('rollback delete of ports')
+            pools_del = self._delete_vip(dict_create_vip)
+
             raise base_exceptions.CommandErrorException(e)
 
         else:
-            try:
-                # delete ports
-                pools_del = self._delete_vip(dict_delete_vip)
-                vts = virtualserver.VirtualServer(self._lb)
-            except Exception, e:
-                # rollback in insert and delete of ports
-                pools_del = self._delete_vip(dict_create_vip)
-                raise base_exceptions.CommandErrorException(e)
 
+            log.info('delete ports with success')
+
+        # create new ports
+        # create new pools(of new ports and old ports)
+        try:
+
+            log.info('try create ports')
+            pools_ins = self._create_vip(dict_create_vip)
+
+        except Exception, e:
+
+            log.error('error to create new ports and new pools')
+            log.error(e)
+            raise base_exceptions.CommandErrorException(e)
+
+        else:
+
+            log.info('success create ports')
+
+        # update vips(old ports)
+        try:
+
+            log.info('try update vips')
+            if tratado.get('vips_filter'):
+                vts.update(vips=tratado.get('vips_filter'))
+
+        except Exception, e:
+
+            log.info('error update vips')
+            log.error(e)
+
+            # rollback create port
+            log.info('rollback create port')
+            self._create_vip(dict_delete_vip)
+
+            # rollback delete port
+            log.info('rollback delete port')
+            self._delete_vip(dict_create_vip)
+
+            raise base_exceptions.CommandErrorException(e)
+
+        else:
+            # delete pools that not were deleted in first call
+            if dict_delete_vip.get('pool_created'):
+                log.info('try delete pools that not were deleted in first call')
+                for server_pool in dict_delete_vip.get('pool_created'):
+                    if self._delete_pool_by_pass(server_pool):
+                        pools_del.append(server_pool.get('id'))
+
+            log.info('update vips with success')
+
+        return pools_ins, pools_del
+
+    @logger
+    def _delete_pool_by_pass(self, server_pool):
+        try:
+            self.__delete_pool({'pools': [server_pool]})
+        except Exception, e:
+            if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
+                log.warning('Pool cannot be deleted because it is in use by a Virtual Server')
+                pass
+            elif 'is referenced by one or more virtual servers' in str(e.message):
+                log.warning('Pool cannot be deleted because it is referenced by one or more virtual servers')
+                pass
+            elif 'is referenced by one or more rules' in str(e.message):
+                log.warning('Pool cannot be deleted because is referenced by one or more rules')
+                pass
             else:
+                raise e
 
-                try:
-                    # update vips
-                    if tratado.get('pool_filter'):
-                        self.__create_pool({'pools': tratado.get('pool_filter')})
-                        pools_ins += [server_pool.get('id') for server_pool in tratado.get('pool')]
-                    try:
-                        if tratado.get('vips_filter'):
-                            vts.update(vips=tratado.get('vips_filter'))
-                    except Exception, e:
-                        # rollback pool in update port
-                        if tratado.get('pool_filter'):
-                            self.__delete_pool({'pools': tratado.get('pool_filter')})
-                        raise e
-                except Exception, e:
-                    # rollback create port
-                    pools_ins += self._create_vip(dict_delete_vip)
-                    # rollback delete port
-                    pools_del += self._delete_vip(dict_create_vip)
-
-                    log.error(e)
-                    raise base_exceptions.CommandErrorException(e)
-                else:
-                    return pools_ins, pools_del
+            return False
+        return True
 
     #######################################
     # POOLMEMBER

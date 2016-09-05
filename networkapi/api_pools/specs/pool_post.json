@@ -55,9 +55,12 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "null"
+          },
           "identifier": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9._]){3,}$",
+            "pattern": "^([a-zA-Z0-9._-]){3,}$",
             "minimum": 3
           },
           "default_port": {
@@ -66,13 +69,15 @@
             "maximum": 65535
           },
           "environment": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 1
           },
           "servicedownaction": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "integer"
+                "type": "integer",
+                "minimum": 1
               },
               "name": {
                 "type": "string"
@@ -159,17 +164,44 @@
               ]
             }
           },
+          "users_permissions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "user": {
+                   "type": "integer"
+                },
+                "read": {
+                   "type": "boolean"
+                },
+                "write": {
+                   "type": "boolean"
+                },
+                "delete": {
+                   "type": "boolean"
+                },
+                "change_config": {
+                   "type": "boolean"
+                }
+              },
+              "required": [
+                "user",
+                "read",
+                "write",
+                "delete",
+                "change_config"
+              ]
+            }
+          },
           "server_pool_members": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "identifier": {
-                   "type": [
-                     "string",
-                     "null"
-                   ]
-                },
                 "ipv6": {
                   "oneOf": [
                     {
@@ -225,7 +257,6 @@
                 }
               },
               "required": [
-                "identifier",
                 "ipv6",
                 "ip",
                 "priority",

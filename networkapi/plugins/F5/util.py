@@ -281,18 +281,19 @@ def trata_param_vip(vips):
                 name_pool = server_pool['nome']
                 usage_l7 = True
 
-                # pool to delete in update of vip(when delete pool or port)
+                # pool to delete in put request of vip(when delete pool or port)
                 if pl.get('delete') or pt.get('delete'):
                     usage_l7 = False
                     if server_pool.get('id') not in ids_pool_filter_to_delete:
                         ids_pool_filter_to_delete.append(server_pool.get('id'))
                         pool_filter_to_delete.append(server_pool)
-                # pool to insert in update of vip
+                # pool to insert in put request of vip(update port or insert port)
                 elif not pl.get('id'):
                     if server_pool.get('id') not in pool_filter_to_insert and \
                             not server_pool.get('pool_created'):
                         ids_pool_filter_to_insert.append(server_pool.get('id'))
                         pool_filter_to_insert.append(server_pool)
+                # used in post and delete request of vip
                 else:
                     if not server_pool.get('pool_created'):
                         if server_pool.get('id') not in ids_pool_filter:

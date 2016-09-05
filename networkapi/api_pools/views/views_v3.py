@@ -27,6 +27,7 @@ from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview
 from networkapi.util import permission_classes_apiview
 from networkapi.util import permission_obj_apiview
+from networkapi.util.geral import generate_return_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.json_validate import verify_ports
@@ -442,10 +443,12 @@ class PoolDBDetailsView(APIView):
                     pools['pools'],
                     many=True
                 )
-                data = {
-                    'server_pools': pool_serializer.data,
-                    'total': pools['total'],
-                }
+                data = generate_return_json(
+                    pool_serializer,
+                    'server_pools',
+                    pools,
+                    request
+                )
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
 
@@ -456,9 +459,11 @@ class PoolDBDetailsView(APIView):
                         pools,
                         many=True
                     )
-                    data = {
-                        'server_pools': pool_serializer.data
-                    }
+                    data = generate_return_json(
+                        pool_serializer,
+                        'server_pools',
+                        only_main_property=True
+                    )
                 else:
                     raise exceptions.PoolDoesNotExistException()
 
@@ -593,10 +598,12 @@ class PoolDBView(APIView):
                     pools['pools'],
                     many=True
                 )
-                data = {
-                    'server_pools': pool_serializer.data,
-                    'total': pools['total'],
-                }
+                data = generate_return_json(
+                    pool_serializer,
+                    'server_pools',
+                    pools,
+                    request
+                )
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
 
@@ -607,9 +614,11 @@ class PoolDBView(APIView):
                         pools,
                         many=True
                     )
-                    data = {
-                        'server_pools': pool_serializer.data
-                    }
+                    data = generate_return_json(
+                        pool_serializer,
+                        'server_pools',
+                        only_main_property=True
+                    )
                 else:
                     raise exceptions.PoolDoesNotExistException()
 
@@ -835,9 +844,11 @@ class PoolEnvironmentVip(APIView):
                 pools,
                 many=True
             )
-            data = {
-                'server_pools': pool_serializer.data
-            }
+            data = generate_return_json(
+                pool_serializer,
+                'server_pools',
+                only_main_property=True
+            )
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)
@@ -863,9 +874,11 @@ class OptionPoolEnvironmentView(APIView):
                 options_pool,
                 many=True
             )
-            data = {
-                'options_pool': options_pool_serializer.data
-            }
+            data = generate_return_json(
+                options_pool_serializer,
+                'options_pool',
+                only_main_property=True
+            )
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)

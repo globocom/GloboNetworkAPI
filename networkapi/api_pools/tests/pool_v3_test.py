@@ -17,61 +17,31 @@ class PoolTestV3Case(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    # def test_get_success(self):
-    #     """ test_get_success"""
-    #     response = self.client.get(
-    #         '/api/v3/pool/1/',
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #     self.assertEqual(
-    #         self.load_json_file('api_pools/tests/json/test_pool_get.json'),
-    #         response.data
-    #     )
-    #     self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
+    def test_valid_post_after_equals_valid_put(self):
+        """ test_valid_post_after_equals_valid_put"""
 
-    # def test_get_error(self):
-    #     """ test_get_error"""
-    #     response = self.client.get(
-    #         '/api/v3/pool/300000/',
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #     self.assertEqual(500, response.status_code, "Status code should be 500 and was %s" % response.status_code)
+        # try to get datas
+        response = self.client.get(
+            '/api/v3/pool/1/',
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-    # def test_get_details_success(self):
-    #     """ test_get_details_success"""
-    #     response = self.client.get(
-    #         '/api/v3/pool/details/1/',
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #     log.info(response.data)
-    #     self.assertEqual(
-    #         self.load_json_file('api_pools/tests/json/test_pool_get_details.json'),
-    #         response.data
-    #     )
-    #     self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
+        # test if data were not inserted
+        self.assertEqual(200, response.status_code, "Status code should be 500 and was %s" % response.status_code)
 
-    # def test_put_success(self):
-    #     """ test_put_success"""
-    #     # update
-    #     response = self.client.put(
-    #         '/api/v3/pool/1/',
-    #         data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_put.json')),
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #     self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
+        response = self.client.put(
+            '/api/v3/pool/1/',
+            data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_put_and_post.json')),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
 
-    #     # get datas updated
-    #     response = self.client.get(
-    #         '/api/v3/pool/1/',
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-    #     # test if datas were updated
-    #     self.assertEqual(
-    #         self.load_json_file('api_pools/tests/json/test_pool_put.json'),
-    #         response.data
-    #     )
-    #     self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
+        response = self.client.post(
+            '/api/v3/pool/',
+            data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_put_and_post.json')),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        self.assertEqual(400, response.status_code, "Status code should be 500 and was %s" % response.status_code)
 
     def execute_some_put_verify_error(self, name_file):
         # update
@@ -321,29 +291,3 @@ class PoolTestV3Case(NetworkApiTestCase):
     def test_post_negative_id_servicedownaction(self):
         """  test_post_negative_id_servicedownaction"""
         self.execute_some_post_verify_error('api_pools/tests/json/post/test_pool_post_negative_id_servicedownaction.json')
-
-    def test_valid_post_after_equals_valid_put(self):
-        """ test_valid_post_after_equals_valid_put"""
-        response = self.client.put(
-            '/api/v3/pool/1/',
-            data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_put_and_post.json')),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-        self.assertEqual(200, response.status_code, "Status code should be 200 and was %s" % response.status_code)
-
-        response = self.client.post(
-            '/api/v3/pool/',
-            data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_put_and_post.json')),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-        self.assertEqual(500, response.status_code, "Status code should be 500 and was %s" % response.status_code)
-
-    # def test_post_success(self):
-    #     """ test_post_success"""
-    #     response = self.client.post(
-    #         '/api/v3/pool/',
-    #         data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_post.json')),
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-    #     self.assertEqual(201, response.status_code, "Status code should be 201 and was %s" % response.status_code)

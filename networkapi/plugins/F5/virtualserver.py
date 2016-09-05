@@ -22,6 +22,7 @@ class VirtualServer(F5Base):
 
     @logger
     def delete(self, **kwargs):
+        self.__remove_all_rule(kwargs['vps_names'])
         self._lb._channel.LocalLB.VirtualServer.delete_virtual_server(
             virtual_servers=kwargs['vps_names']
         )
@@ -359,7 +360,8 @@ class VirtualServer(F5Base):
                     for rl_l7 in rule_l7_delete:
                         try:
                             rl.delete(rule_names=[rl_l7])
-                        except:
+                        except Exception, e:
+                            log.info(e)
                             pass
 
     @logger
@@ -482,16 +484,9 @@ class VirtualServer(F5Base):
 
     @logger
     def __remove_all_rule(self, virtual_servers):
-        version_split = self._lb._version[8:len(self._lb._version)].split('.')
-        # old version
-        if version_split[0] == '11' and int(version_split[1]) <= 2:
-            self._lb._channel.LocalLB.VirtualServer.remove_all_rules(
-                virtual_servers=virtual_servers
-            )
-        else:
-            self._lb._channel.LocalLB.VirtualServer.remove_all_related_rules(
-                virtual_servers=virtual_servers
-            )
+        self._lb._channel.LocalLB.VirtualServer.remove_all_rules(
+            virtual_servers=virtual_servers
+        )
 
     @logger
     def __get_profile(self, virtual_servers):

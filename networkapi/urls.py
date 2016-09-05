@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,15 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from django.conf import settings
-from django.conf.urls import include, patterns, url
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
 from django.contrib import admin
-# from django.conf.urls.defaults import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 
 from networkapi.check.CheckAction import CheckAction
+# from django.conf.urls.defaults import *
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -34,6 +34,7 @@ urlpatterns = patterns(
     '',
     # new API URL patterns are all prefixed with '/api/'
     url(api_prefix, include('networkapi.api_deploy.urls')),
+    url(api_prefix, include('networkapi.api_environment.urls')),
     url(api_prefix, include('networkapi.api_environment_vip.urls')),
     url(api_prefix, include('networkapi.api_equipment.urls')),
     url(api_prefix, include('networkapi.api_healthcheck.urls')),

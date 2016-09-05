@@ -6,6 +6,7 @@ from functools import wraps
 from jsonspec.reference import resolve
 from jsonspec.validators import load
 from jsonspec.validators.exceptions import ValidationError
+from rest_framework import exceptions as exceptions_api
 
 from networkapi.api_rest import exceptions as rest_exceptions
 
@@ -61,6 +62,7 @@ def raise_json_validate(info=None):
             try:
                 return func(self, request, *args, **kwargs)
             except ValidationError, error:
+
                 msg = list()
 
                 if error.flatten():
@@ -85,8 +87,15 @@ def raise_json_validate(info=None):
                     res['spec'] = '%s://%s/api/v3/help/%s/' % (protocol, request.get_host(), info)
                 log.error(res)
                 raise rest_exceptions.ValidationExceptionJson(res)
-            except Exception as error:
+            except (exceptions_api.APIException, exceptions_api.AuthenticationFailed,
+                    exceptions_api.MethodNotAllowed, exceptions_api.NotAcceptable,
+                    exceptions_api.NotAuthenticated, exceptions_api.ParseError,
+                    exceptions_api.PermissionDenied, exceptions_api.Throttled,
+                    exceptions_api.UnsupportedMediaType, rest_exceptions.ValidationAPIException), error:
                 log.error(error)
                 raise error
+            except Exception, error:
+                log.error(error)
+                raise rest_exceptions.NetworkAPIException(error)
         return inner
     return raise_json_validate_inner

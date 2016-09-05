@@ -235,8 +235,7 @@ class BrocadeAdxDeviceDriverImpl():
 
         rs_ip_address = member['address']
         rs_name = rs_ip_address
-        if member.get('name'):
-            rs_name = member['name']
+        rs_name = member.get('name', rs_ip_address)
         rs_port = member['protocol_port']
 
         vs_ip_address = vip['address']
