@@ -70,7 +70,13 @@ Response body:
 Obtaining list of vip request through extended search
 =====================================================
 
-Extended search permits a search with multiple options, according with user desires. In the following example, **extended-search** attribute receives an array with two dicts where the expected result is a list of vip requests where the ipv4 "192.168.x.x" are created or the ipv4 "x.168.17.x" are not created in each associated server pools. Remember that an OR operation is made to each element in an array and an AND operation is made to each element in an dict. An array can be a value associated to some key into a dict as well as a dict can be an element of an array.
+Extended search permits a search with multiple options, according with user desires. The following two examples are shown to demonstrate how easy is to use this resource. In the first example, **extended-search** attribute receives an array with two dicts where the expected result is a list of vip requests where the ipv4 "192.168.x.x" are created or the ipv4 "x.168.17.x" are not created in each associated server pools. Remember that an OR operation is made to each element in an array and an AND operation is made to each element in a dict. An array can be a value associated to some key into a dict as well as a dict can be an element of an array.
+
+In the second example, **extended-search** attribute receives an array with only one dict where the expected result is a list of vip requests where the ipv4 "192.x.x.x" are created on each associated server pools and the name of each virtual lan associated with each ipv4 contains the word "G1". This is one of many possibilities offered by Django QuerySet API.  Due to use of **icontains**, the search of "G1" is not case sensitive.
+
+More information about Django QuerySet API, please see::
+
+    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 
@@ -82,9 +88,9 @@ GET Param::
 
 Example::
 
-    /api/v3/vip-request/?search=[dict encoded]
+    /api/v3/vip-request/?search=[encoded dict]
 
-Request body example:
+First request body example:
 
 .. code-block:: json
 
@@ -106,9 +112,32 @@ Request body example:
         "searchable_columns": []
     }
 
-URL encoded::
+Second request body example:
+
+.. code-block:: json
+
+    {
+        "extends_search": [{
+            "ipv4__vlan__nome__icontains": "G1",
+            "ipv4__oct1": "192",
+            "created": true
+            }
+        ],
+        "start_record": 0,
+        "custom_search": "",
+        "end_record": 25,
+        "asorting_cols": [],
+        "searchable_columns": []
+    }
+
+
+URL encoded for first request body example::
 
     /api/v3/vip-request/?search=%22%7B+++++%22extends_search%22%3A+%5B%7B+++++++++%22ipv4__oct1%22%3A+%22192%22%2C+++++++++%22ipv4__oct2%22%3A+%22168%22%2C+++++++++%22created%22%3A+true+++++++++%7D%2C+++++%7B+++++++++%22ipv4__oct2%22%3A+%22168%22%2C+++++++++%22ipv4__oct3%22%3A+%2217%22%2C+++++++++%22created%22%3A+false+++++%7D%5D%2C+++++%22start_record%22%3A+0%2C+++++%22custom_search%22%3A+%22%22%2C+++++%22end_record%22%3A+25%2C+++++%22asorting_cols%22%3A+%5B%5D%2C+++++%22searchable_columns%22%3A+%5B%5D+%7D%22
+
+URL encoded for second request body example::
+
+    /api/v3/vip-request/?search=%7B+++++++++%22extends_search%22%3A+%5B%7B+++++++++++++%22ipv4__vlan__nome__icontains%22%3A+%22TVGLOBO%22+%2C+++++++++++++%22ipv4__oct1%22%3A+%22192%22%2C+++++++++++++%22created%22%3A+true+++++++++++++%7D%2C+++++++++%7B+++++++++++++%22ipv4__vlan_nome__icontains%22%3A+%22G1%22%2C+++++++++++++%22ipv4__oct2%22%3A+%22168%22%2C+++++++++++++%22created%22%3A+false+++++++++%7D%5D%2C+++++++++%22start_record%22%3A+0%2C+++++++++%22custom_search%22%3A+%22%22%2C+++++++++%22end_record%22%3A+25%2C+++++++++%22asorting_cols%22%3A+%5B%5D%2C+++++++++%22searchable_columns%22%3A+%5B%5D+++++%7D
 
 Response body:
 

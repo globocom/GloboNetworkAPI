@@ -83,7 +83,7 @@ GET Parameter::
 
 Example::
 
-    /api/v3/pool/?search=[dict encoded]
+    /api/v3/pool/?search=[encoded dict]
 
 Request body:
 
