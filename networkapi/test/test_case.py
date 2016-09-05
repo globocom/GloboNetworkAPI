@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import base64
 import logging
@@ -39,12 +40,12 @@ class NetworkApiTestCase(TestCase):
         'initial_ipv4.json',
         'initial_optionsvip.json',
         'initial_pools.json',
-        'initial_vip_request.json',
-        'initial_vip_request_port.json',
-        'initial_vip_request_port_options_vip.json',
-        'initial_vip_request_port_pool.json',
-        'initial_vip_request_options_vip.json',
-        'initial_vip_request_dscp.json',
+        # 'initial_vip_request.json',
+        # 'initial_vip_request_port.json',
+        # 'initial_vip_request_port_options_vip.json',
+        # 'initial_vip_request_port_pool.json',
+        # 'initial_vip_request_options_vip.json',
+        # 'initial_vip_request_dscp.json',
     ]
 
     def setUp(self):

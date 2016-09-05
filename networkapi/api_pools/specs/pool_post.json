@@ -55,6 +55,9 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "null"
+          },
           "identifier": {
             "type": "string",
             "pattern": "^([a-zA-Z0-9._-]){3,}$",
