@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import ast
+import json
 import logging
 from datetime import datetime
 
@@ -434,9 +435,14 @@ class PoolDBDetailsView(APIView):
         try:
             if not kwargs.get('pool_ids'):
                 try:
-                    search = ast.literal_eval(request.GET.get('search'))
+                    search = json.loads(request.GET.get('search'))
                 except:
-                    search = {}
+                    try:
+                        search = ast.literal_eval(request.GET.get('search'))
+                    except:
+                        search = {
+                            'extends_search': []
+                        }
 
                 pools = facade.get_pool_by_search(search)
                 pool_serializer = serializers.PoolV3DetailsSerializer(
@@ -589,9 +595,14 @@ class PoolDBView(APIView):
         try:
             if not kwargs.get('pool_ids'):
                 try:
-                    search = ast.literal_eval(request.GET.get('search'))
+                    search = json.loads(request.GET.get('search'))
                 except:
-                    search = {}
+                    try:
+                        search = ast.literal_eval(request.GET.get('search'))
+                    except:
+                        search = {
+                            'extends_search': []
+                        }
 
                 pools = facade.get_pool_by_search(search)
                 pool_serializer = serializers.PoolV3DatatableSerializer(

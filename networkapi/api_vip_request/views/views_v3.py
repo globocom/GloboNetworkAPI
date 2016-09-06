@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import ast
+import json
 import logging
 
 from django.db.transaction import commit_on_success
@@ -135,9 +136,14 @@ class VipRequestDBView(APIView):
         try:
             if not kwargs.get('vip_request_ids'):
                 try:
-                    search = ast.literal_eval(request.GET.get('search'))
+                    search = json.loads(request.GET.get('search'))
                 except:
-                    search = {}
+                    try:
+                        search = ast.literal_eval(request.GET.get('search'))
+                    except:
+                        search = {
+                            'extends_search': []
+                        }
 
                 vips_requests = facade.get_vip_request_by_search(search)
                 serializer_vips = VipRequestTableSerializer(
@@ -268,9 +274,14 @@ class VipRequestDBDetailsView(APIView):
 
             if not kwargs.get('vip_request_ids'):
                 try:
-                    search = ast.literal_eval(request.GET.get('search'))
+                    search = json.loads(request.GET.get('search'))
                 except:
-                    search = {}
+                    try:
+                        search = ast.literal_eval(request.GET.get('search'))
+                    except:
+                        search = {
+                            'extends_search': []
+                        }
 
                 vips_requests = facade.get_vip_request_by_search(search)
                 serializer_vips = VipRequestDetailsSerializer(
@@ -319,11 +330,14 @@ class VipRequestPoolView(APIView):
         try:
 
             try:
-                search = ast.literal_eval(request.GET.get('search'))
+                search = json.loads(request.GET.get('search'))
             except:
-                search = {
-                    'extends_search': []
-                }
+                try:
+                    search = ast.literal_eval(request.GET.get('search'))
+                except:
+                    search = {
+                        'extends_search': []
+                    }
 
             pool_id = int(kwargs['pool_id'])
 
