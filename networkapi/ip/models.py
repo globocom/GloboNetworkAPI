@@ -1230,13 +1230,15 @@ class Ip(BaseModel):
                 #     ambienteequip.delete()
 
                 ie.delete()
-            super(Ip, self).delete()
+
             from networkapi.api_pools.serializers import Ipv4Serializer
+            serializer = Ipv4Serializer(self)
+            data_to_queue = serializer.data
+
+            super(Ip, self).delete()
 
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = Ipv4Serializer(self)
-            data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
             queue_manager.append(
                 {'action': queue_keys.IPv4_REMOVE, 'kind': queue_keys.IPv4_KEY, 'data': data_to_queue})
@@ -2408,13 +2410,14 @@ class Ipv6(BaseModel):
 
                 ie.delete()
 
-            super(Ipv6, self).delete()
             from networkapi.api_pools.serializers import Ipv6Serializer
+            serializer = Ipv6Serializer(self)
+            data_to_queue = serializer.data
+
+            super(Ipv6, self).delete()
+
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = Ipv6Serializer(self)
-
-            data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
             queue_manager.append(
                 {'action': queue_keys.IPv6_REMOVE, 'kind': queue_keys.IPv6_KEY, 'data': data_to_queue})
