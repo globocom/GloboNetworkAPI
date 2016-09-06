@@ -2414,6 +2414,7 @@ class Ipv6(BaseModel):
             # Send to Queue
             queue_manager = QueueManager()
             serializer = Ipv6Serializer(self)
+
             data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
             queue_manager.append(

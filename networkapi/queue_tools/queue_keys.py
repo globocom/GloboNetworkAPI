@@ -31,7 +31,6 @@ NETWORKv4_DEACTIVATE = "deactivate_networkv4"
 NETWORKv6_ACTIVATE = "activate_networkv6"
 NETWORKv6_DEACTIVATE = "deactivate_networkv6"
 
-
 # Vlan keys
 VLAN_CREATE_ACL = "create_acl"
 VLAN_CREATE_NETWORK_IPV4 = "create_ipv4"
