@@ -290,7 +290,7 @@ class VlanFindResource(RestResource):
             # Business Rules
 
             # Start with alls
-            vlans = Vlan.objects.all()
+            vlans = Vlan.objects.all().prefetch_related('ambiente')
 
             if number is not None:
                 # If number is valid, add to filter
