@@ -25,8 +25,6 @@ from networkapi.ambiente.models import ConfigEnvironment
 from networkapi.ambiente.models import ConfigEnvironmentInvalidError
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.ambiente.models import IP_VERSION
-from networkapi.api_pools.serializers import Ipv4Serializer
-from networkapi.api_pools.serializers import Ipv6Serializer
 from networkapi.api_vip_request.syncs import delete_new
 from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.config.models import Configuration
@@ -1233,6 +1231,7 @@ class Ip(BaseModel):
 
                 ie.delete()
             super(Ip, self).delete()
+            from networkapi.api_pools.serializers import Ipv4Serializer
 
             # Send to Queue
             queue_manager = QueueManager()
@@ -2410,7 +2409,7 @@ class Ipv6(BaseModel):
                 ie.delete()
 
             super(Ipv6, self).delete()
-
+            from networkapi.api_pools.serializers import Ipv6Serializer
             # Send to Queue
             queue_manager = QueueManager()
             serializer = Ipv6Serializer(self)
