@@ -110,7 +110,7 @@ class VipRequestDeployView(APIView):
         """
 
         vips = request.DATA
-        json_validate(SPECS.get('vip_put')).validate(vips)
+        json_validate(SPECS.get('vip_request_put')).validate(vips)
         locks_list = facade.create_lock(vips.get('vips'))
         verify_ports_vip(vips)
         try:

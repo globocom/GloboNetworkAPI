@@ -59,6 +59,7 @@ def raise_json_validate(info=None):
     def raise_json_validate_inner(func):
         @wraps(func)
         def inner(self, request, *args, **kwargs):
+
             try:
                 return func(self, request, *args, **kwargs)
             except ValidationError, error:
