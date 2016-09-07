@@ -146,8 +146,10 @@ def prepares_network(vlan, half):
             for ip in netv4.ip_set.all():
                 for ip_equip in ip.ipequipamento_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
-                            equip_itens.append(ip_equip.equipamento.nome)
+                        #for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
+                            if equip_amb.ambiente == vlan.ambiente and equip_amb.is_router:
+                                equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -174,8 +176,10 @@ def prepares_network(vlan, half):
             for ip in netv6.ipv6_set.all():
                 for ip_equip in ip.ipv6equipament_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
-                            equip_itens.append(ip_equip.equipamento.nome)
+                        #for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
+                            if equip_amb.ambiente == vlan.ambiente and equip_amb.is_router:
+                                equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -290,11 +294,14 @@ class VlanFindResource(RestResource):
             # Business Rules
 
             # Start with alls
-            vlans = Vlan.objects.all().prefetch_related('ambiente', 
-                'networkipv4_set__network_type', 
-                'networkipv4_set__ip_set__ipequipamento_set__equipamento__equipamentoambiente_set',
-                'networkipv6_set__network_type', 
-                'networkipv6_set__ipv6_set__ipv6equipament_set__equipamento__equipamentoambiente_set')
+            if subnet = 1:
+                vlans = Vlan.objects.all().prefetch_related('ambiente')
+            else:
+                vlans = Vlan.objects.all().prefetch_related('ambiente', 
+                    'networkipv4_set__network_type', 
+                    'networkipv4_set__ip_set__ipequipamento_set__equipamento__equipamentoambiente_set',
+                    'networkipv6_set__network_type', 
+                    'networkipv6_set__ipv6_set__ipv6equipament_set__equipamento__equipamentoambiente_set')
 
             if number is not None:
                 # If number is valid, add to filter
