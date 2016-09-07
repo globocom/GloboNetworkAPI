@@ -300,6 +300,7 @@ PROJECT_APPS = (
     'networkapi.api_environment_vip',
     'networkapi.api_rack',
     'networkapi.api_rest',
+    'networkapi.api_usuario',
     # 'networkapi.api_task',
     'networkapi.api_vip_request',
     'networkapi.blockrules',

@@ -4,19 +4,24 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
 
-from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, \
-    EnvironmentVip
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import EnvironmentEnvironmentVip
+from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_vip_request import exceptions, syncs
-from networkapi.api_vip_request.serializers import RequestVipSerializer, \
-    VipPortToPoolSerializer
-from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.api_vip_request import exceptions
+from networkapi.api_vip_request import syncs
+from networkapi.api_vip_request.serializers import RequestVipSerializer
+from networkapi.api_vip_request.serializers import VipPortToPoolSerializer
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
 from networkapi.error_message_utils import error_messages
-
-from networkapi.requisicaovips.models import DsrL3_to_Vip, OptionVip, \
-    RequisicaoVips, ServerPool, VipPortToPool
-from networkapi.util import convert_boolean_to_int, \
-    is_valid_int_greater_zero_param
+from networkapi.requisicaovips.models import DsrL3_to_Vip
+from networkapi.requisicaovips.models import OptionVip
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import VipPortToPool
+from networkapi.util import convert_boolean_to_int
+from networkapi.util import is_valid_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 

@@ -25,5 +25,18 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         model = Ambiente
         fields = (
             'id',
-            'name',
+            'grupo_l3',
+            'ambiente_logico',
+            'divisao_dc',
+            'filter',
+            'acl_path',
+            'ipv4_template',
+            'ipv6_template',
+            'link',
+            'min_num_vlan_1',
+            'max_num_vlan_1',
+            'min_num_vlan_2',
+            'max_num_vlan_2',
+            'vrf',
+            'father_environment'
         )

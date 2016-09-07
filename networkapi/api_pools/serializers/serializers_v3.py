@@ -1,12 +1,15 @@
 # -*- coding:utf-8 -*-
+from rest_framework import serializers
+
 from networkapi.api_environment import serializers as env_serializers
 from networkapi.api_equipment import serializers as eqpt_serializers
 from networkapi.api_pools.models import OptionPool
 from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-
-from rest_framework import serializers
+from networkapi.ip.models import Ip
+from networkapi.ip.models import Ipv6
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
 class Ipv4BasicSerializer(serializers.ModelSerializer):
@@ -270,6 +273,32 @@ class PoolV3DetailsSerializer(serializers.ModelSerializer):
         members_serializer = PoolMemberV3Serializer(members, many=True)
 
         return members_serializer.data
+
+    class Meta:
+        model = ServerPool
+        fields = (
+            'id',
+            'identifier',
+            'default_port',
+            'environment',
+            'servicedownaction',
+            'lb_method',
+            'healthcheck',
+            'default_limit',
+            'server_pool_members',
+            'pool_created'
+        )
+
+
+class PoolDynamicSerializer(DynamicFieldsModelSerializer):
+    server_pool_members = serializers.PoolMemberV3Serializer(source='serverpoolmember_set')
+
+    @staticmethod
+    def setup_eager_loading(queryset):
+        queryset = queryset.prefetch_related(
+            'serverpoolmember_set',
+        )
+        return queryset
 
     class Meta:
         model = ServerPool

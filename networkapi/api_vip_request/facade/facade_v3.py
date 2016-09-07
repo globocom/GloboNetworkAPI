@@ -13,6 +13,7 @@ from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade.v3.base import get_pool_by_id
 from networkapi.api_pools.facade.v3.base import reserve_name_healthcheck
 from networkapi.api_pools.serializers import PoolV3Serializer
+from networkapi.api_usuario import facade as facade_usr
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import models
 from networkapi.api_vip_request import syncs
@@ -71,7 +72,11 @@ def create_vip_request(vip_request, user):
     _create_port(vip_request['ports'], vip.id)
     _create_option(option_create, vip.id)
 
-    create_groups_permissions(vip_request.get('groups_permissions'), vip.id, user)
+    # perms
+    groups_perm = vip_request.get('groups_permissions')
+    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions'))
+    groups = facade_usr.reduce_groups(groups_perm)
+    create_groups_permissions(groups, vip.id, user)
 
     # sync with old tables
     syncs.new_to_old(vip)
@@ -79,7 +84,7 @@ def create_vip_request(vip_request, user):
     return vip
 
 
-def update_vip_request(vip_request):
+def update_vip_request(vip_request, user):
     """
     update Vip Request
     """
@@ -107,13 +112,19 @@ def update_vip_request(vip_request):
     _update_port(vip_request['ports'], vip.id)
 
     _create_option(option_create, vip.id)
-    _delete_option(option_remove)
+    _delete_option(option_remove, vip.id)
 
     dsrl3 = OptionVip.objects.filter(
         nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
     if dsrl3:
         if dsrl3[0]['id'] in option_remove:
             models.VipRequestDSCP.objects.filter(vip_request=vip.id).delete()
+
+    # perms
+    groups_perm = vip_request.get('groups_permissions')
+    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions'))
+    groups = facade_usr.reduce_groups(groups_perm)
+    update_groups_permissions(groups, vip.id, user)
 
     # sync with old tables
     syncs.new_to_old(vip)
@@ -170,48 +181,6 @@ def _is_ipv6_in_use(ipv6, vip_id):
         is_in_use = False
 
     return is_in_use
-
-
-def create_groups_permissions(groups_permissions, vip_id, user):
-    """Creates permissions to access for vips"""
-
-    group_adm = {
-        'group': 1,
-        'read': 1,
-        'write': 1,
-        'delete': 1,
-        'change_config': 1,
-    }
-    _create_group_permission(group_adm, vip_id)
-
-    if groups_permissions:
-        for group_permission in groups_permissions:
-            if group_permission['group'] != 1:
-                _create_group_permission(group_permission, vip_id)
-    else:
-        for group in UsuarioGrupo.list_by_user_id(user.id):
-            group_id = int(group.ugrupo.id)
-            if group_id != 1:
-                _create_group_permission({
-                    'group': group_id,
-                    'read': 1,
-                    'write': 1,
-                    'delete': 1,
-                    'change_config': 1,
-                }, vip_id)
-
-
-def _create_group_permission(group_permission, vip_id):
-    """Creates permissions to access for vips"""
-
-    vip_perm = models.VipRequestGroupPermission()
-    vip_perm.vip_request_id = vip_id
-    vip_perm.user_group_id = group_permission['group']
-    vip_perm.read = group_permission['read']
-    vip_perm.write = group_permission['write']
-    vip_perm.delete = group_permission['delete']
-    vip_perm.change_config = group_permission['change_config']
-    vip_perm.save()
 
 
 def _create_port(ports, vip_request_id):
@@ -355,9 +324,10 @@ def _create_option(options, vip_request_id):
             vip_dscp.save()
 
 
-def _delete_option(options):
+def _delete_option(options, vip_request_id):
     """Deletes options"""
     models.VipRequestOptionVip.objects.filter(
+        vip_request=vip_request_id,
         optionvip__in=options
     ).delete()
 
@@ -1115,3 +1085,100 @@ def _validate_vip_to_apply(vip_request, update=False, user=None):
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
 
     return equips, conf, cluster_unit
+
+
+# PERMS
+def create_groups_permissions(groups_permissions, vip_id, user):
+    """Creates permissions to access for vips"""
+
+    group_adm = {
+        'group': 1,
+        'read': 1,
+        'write': 1,
+        'delete': 1,
+        'change_config': 1,
+    }
+    _create_group_permission(group_adm, vip_id)
+
+    if groups_permissions:
+        for group_permission in groups_permissions:
+            if group_permission['group'] != 1:
+                _create_group_permission(group_permission, vip_id)
+    else:
+        for group in UsuarioGrupo.list_by_user_id(user.id):
+            group_id = int(group.ugrupo.id)
+            if group_id != 1:
+                _create_group_permission({
+                    'group': group_id,
+                    'read': 1,
+                    'write': 1,
+                    'delete': 1,
+                    'change_config': 1,
+                }, vip_id)
+
+
+def update_groups_permissions(groups_permissions, vip_id, user):
+    """Creates permissions to access for vips"""
+
+    # groups default
+    if not groups_permissions:
+        for group in UsuarioGrupo.list_by_user_id(user.id):
+            group_id = int(group.ugrupo.id)
+            if group_id != 1:
+                groups_permissions.append({
+                    'group': group_id,
+                    'read': 1,
+                    'write': 1,
+                    'delete': 1,
+                    'change_config': 1,
+                })
+
+    groups_perm = models.VipRequestGroupPermission(vip_request=vip_id)
+
+    groups_permissions_idx = [gp['group'] for gp in groups_permissions]
+    groups_perm_idx = [gp.user_group_id for gp in groups_perm]
+
+    for group_perm in groups_perm:
+
+        # change or delete group != 1(ADM)
+        if group_perm.user_group_id != 1:
+            # update perms
+            if group_perm.user_group_id in groups_permissions_idx:
+                idx = groups_permissions_idx.index(group_perm.user_group_id)
+                _update_group_permission(groups_permissions[idx], group_perm)
+            # delete perms
+            else:
+                group_perm.delete()
+
+    for group_permission in groups_permissions:
+
+        # change or delete group != 1(ADM)
+        if group_permission['group'] != 1:
+            # insert perms
+            if group_permission in groups_perm_idx:
+                _create_group_permission(group_permission, vip_id)
+
+
+def _create_group_permission(group_permission, vip_id):
+    """Creates permissions to access for vips"""
+
+    vip_perm = models.VipRequestGroupPermission()
+    vip_perm.vip_request_id = vip_id
+    vip_perm.user_group_id = group_permission['group']
+    vip_perm.read = group_permission['read']
+    vip_perm.write = group_permission['write']
+    vip_perm.delete = group_permission['delete']
+    vip_perm.change_config = group_permission['change_config']
+    vip_perm.save()
+
+
+def _update_group_permission(group_permission, obj_id):
+    """Updates permissions to access for vips"""
+
+    vip_perm = models.VipRequestGroupPermission(id=obj_id)
+    vip_perm.user_group_id = group_permission['group']
+    vip_perm.read = group_permission['read']
+    vip_perm.write = group_permission['write']
+    vip_perm.delete = group_permission['delete']
+    vip_perm.change_config = group_permission['change_config']
+    vip_perm.save()

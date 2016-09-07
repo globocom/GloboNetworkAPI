@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,47 +13,77 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from datetime import datetime
 import json
 import logging
+from datetime import datetime
 
 from django.conf import settings
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 from django.forms.models import model_to_dict
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from networkapi.ambiente.models import Ambiente, EnvironmentEnvironmentVip, EnvironmentVip
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import EnvironmentEnvironmentVip
+from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_pools import exceptions
-from networkapi.api_pools.facade import get_or_create_healthcheck, save_server_pool_member, save_server_pool, \
-    prepare_to_save_reals, manager_pools, save_option_pool, update_option_pool, save_environment_option_pool, \
-    update_environment_option_pool, delete_environment_option_pool, delete_option_pool, \
-    exec_script_check_poolmember_by_pool
-from networkapi.api_pools.models import OpcaoPoolAmbiente, OptionPool, OptionPoolEnvironment
-from networkapi.api_pools.permissions import Read, Write, ScriptRemovePermission, \
-    ScriptCreatePermission, ScriptAlterPermission
-from networkapi.api_pools.serializers.serializers_v1 import ServerPoolSerializer, HealthcheckSerializer, \
-    ServerPoolMemberSerializer, ServerPoolDatatableSerializer, EquipamentoSerializer, OpcaoPoolAmbienteSerializer, \
-    VipPortToPoolSerializer, PoolSerializer, AmbienteSerializer, OptionPoolSerializer, OptionPoolEnvironmentSerializer
+from networkapi.api_pools.facade import delete_environment_option_pool
+from networkapi.api_pools.facade import delete_option_pool
+from networkapi.api_pools.facade import exec_script_check_poolmember_by_pool
+from networkapi.api_pools.facade import get_or_create_healthcheck
+from networkapi.api_pools.facade import manager_pools
+from networkapi.api_pools.facade import prepare_to_save_reals
+from networkapi.api_pools.facade import save_environment_option_pool
+from networkapi.api_pools.facade import save_option_pool
+from networkapi.api_pools.facade import save_server_pool
+from networkapi.api_pools.facade import save_server_pool_member
+from networkapi.api_pools.facade import update_environment_option_pool
+from networkapi.api_pools.facade import update_option_pool
+from networkapi.api_pools.models import OpcaoPoolAmbiente
+from networkapi.api_pools.models import OptionPool
+from networkapi.api_pools.models import OptionPoolEnvironment
+from networkapi.api_pools.permissions import Read
+from networkapi.api_pools.permissions import ScriptAlterPermission
+from networkapi.api_pools.permissions import ScriptCreatePermission
+from networkapi.api_pools.permissions import ScriptRemovePermission
+from networkapi.api_pools.permissions import Write
+from networkapi.api_pools.serializers.serializers_v1 import AmbienteSerializer
+from networkapi.api_pools.serializers.serializers_v1 import EquipamentoSerializer
+from networkapi.api_pools.serializers.serializers_v1 import HealthcheckSerializer
+from networkapi.api_pools.serializers.serializers_v1 import OpcaoPoolAmbienteSerializer
+from networkapi.api_pools.serializers.serializers_v1 import OptionPoolEnvironmentSerializer
+from networkapi.api_pools.serializers.serializers_v1 import OptionPoolSerializer
+from networkapi.api_pools.serializers.serializers_v1 import PoolSerializer
+from networkapi.api_pools.serializers.serializers_v1 import ServerPoolDatatableSerializer
+from networkapi.api_pools.serializers.serializers_v1 import ServerPoolMemberSerializer
+from networkapi.api_pools.serializers.serializers_v1 import ServerPoolSerializer
+from networkapi.api_pools.serializers.serializers_v1 import VipPortToPoolSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.equipamento.models import Equipamento
 from networkapi.error_message_utils import error_messages
 from networkapi.exception import InvalidValueError
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.datatable import build_query_to_datatable
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.ip.models import Ip, IpEquipamento, Ipv6
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, \
-    VipPortToPool
-from networkapi.util import is_valid_string_maxsize, is_valid_option, \
-    is_valid_list_int_greater_zero_param, is_valid_int_greater_zero_param, \
-    is_valid_healthcheck_destination, is_valid_pool_identifier_text
-
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import Ipv6
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.requisicaovips.models import VipPortToPool
+from networkapi.util import is_valid_healthcheck_destination
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_list_int_greater_zero_param
+from networkapi.util import is_valid_option
+from networkapi.util import is_valid_pool_identifier_text
+from networkapi.util import is_valid_string_maxsize
 
 log = logging.getLogger(__name__)
 

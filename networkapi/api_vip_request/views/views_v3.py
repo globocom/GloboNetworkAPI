@@ -220,7 +220,7 @@ class VipRequestDBView(APIView):
             verify_ports_vip(data)
             for vip in data['vips']:
                 facade.validate_save(vip)
-                facade.update_vip_request(vip)
+                facade.update_vip_request(vip, request.user)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)

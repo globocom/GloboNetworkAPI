@@ -10,6 +10,7 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_pools import exceptions
 from networkapi.api_pools import models
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.api_usuario import facade as facade_usr
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_POOL
 from networkapi.healthcheckexpect.models import Healthcheck
@@ -47,12 +48,16 @@ def create_pool(pool, user):
 
     _create_pool_member(pool['server_pool_members'], sp)
 
-    create_groups_permissions(pool.get('groups_permissions'), sp.id, user)
+    # perms
+    groups_perm = pool.get('groups_permissions')
+    groups_perm += facade_usr.get_groups(pool.get('users_permissions'))
+    groups = facade_usr.reduce_groups(groups_perm)
+    create_groups_permissions(groups, sp.id, user)
 
     return sp
 
 
-def update_pool(pool):
+def update_pool(pool, user):
     """Updates pool"""
 
     sp = ServerPool.objects.get(id=pool.get('id'))
@@ -85,6 +90,12 @@ def update_pool(pool):
     _create_pool_member(members_create, sp)
     _update_pool_member(members_update)
     _delete_pool_member(members_remove)
+
+    # perms
+    groups_perm = pool.get('groups_permissions')
+    groups_perm += facade_usr.get_groups(pool.get('users_permissions'))
+    groups = facade_usr.reduce_groups(groups_perm)
+    update_groups_permissions(groups, sp.id, user)
 
     return sp
 
@@ -173,52 +184,11 @@ def get_pool_by_search(search=dict()):
 
     return pool_map
 
-
-def create_groups_permissions(groups_permissions, pool_id, user):
-    """Creates permissions to access for pools"""
-
-    group_adm = {
-        'group': 1,
-        'read': 1,
-        'write': 1,
-        'delete': 1,
-        'change_config': 1,
-    }
-    _create_group_permission(group_adm, pool_id)
-
-    if groups_permissions:
-        for group_permission in groups_permissions:
-            if group_permission['group'] != 1:
-                _create_group_permission(group_permission, pool_id)
-    else:
-        for group in UsuarioGrupo.list_by_user_id(user.id):
-            group_id = int(group.ugrupo.id)
-            if group_id != 1:
-                _create_group_permission({
-                    'group': group_id,
-                    'read': 1,
-                    'write': 1,
-                    'delete': 1,
-                    'change_config': 1,
-                }, pool_id)
-
-
-def _create_group_permission(group_permission, pool_id):
-    """Creates permissions to access for vips"""
-
-    pool_perm = ServerPoolGroupPermission()
-    pool_perm.server_pool_id = pool_id
-    pool_perm.user_group_id = group_permission['group']
-    pool_perm.read = group_permission['read']
-    pool_perm.write = group_permission['write']
-    pool_perm.delete = group_permission['delete']
-    pool_perm.change_config = group_permission['change_config']
-    pool_perm.save()
-
-
 ########################
 # Members
 ########################
+
+
 def _create_pool_member(members, pool):
     """Creates pool members"""
     for member in members:
@@ -243,9 +213,9 @@ def _create_pool_member(members, pool):
 
             mbs = pool_member.get_spm_by_eqpt_id(pool_member.equipment.id)
 
-            #check all the pools related to this pool vip request to filter dscp value
+            # check all the pools related to this pool vip request to filter dscp value
             related_viprequestports = pool.vips[0].viprequestport_set.all()
-            vippools = [p.viprequestportpool_set.all()[0].server_pool_id \
+            vippools = [p.viprequestportpool_set.all()[0].server_pool_id
                         for p in related_viprequestports]
 
             sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id__in=vippools)
@@ -409,3 +379,100 @@ def _get_option_pool(option_name, option_type):
         return models.OptionPool.objects.get(name=option_name, type=option_type).id
     except:
         raise exceptions.InvalidServiceDownActionException()
+
+
+# PERMS
+def create_groups_permissions(groups_permissions, pool_id, user):
+    """Creates permissions to access for pools"""
+
+    group_adm = {
+        'group': 1,
+        'read': 1,
+        'write': 1,
+        'delete': 1,
+        'change_config': 1,
+    }
+    _create_group_permission(group_adm, pool_id)
+
+    if groups_permissions:
+        for group_permission in groups_permissions:
+            if group_permission['group'] != 1:
+                _create_group_permission(group_permission, pool_id)
+    else:
+        for group in UsuarioGrupo.list_by_user_id(user.id):
+            group_id = int(group.ugrupo.id)
+            if group_id != 1:
+                _create_group_permission({
+                    'group': group_id,
+                    'read': 1,
+                    'write': 1,
+                    'delete': 1,
+                    'change_config': 1,
+                }, pool_id)
+
+
+def update_groups_permissions(groups_permissions, pool_id, user):
+    """Creates permissions to access for pools"""
+
+    # groups default
+    if not groups_permissions:
+        for group in UsuarioGrupo.list_by_user_id(user.id):
+            group_id = int(group.ugrupo.id)
+            if group_id != 1:
+                groups_permissions.append({
+                    'group': group_id,
+                    'read': 1,
+                    'write': 1,
+                    'delete': 1,
+                    'change_config': 1,
+                })
+
+    groups_perm = ServerPoolGroupPermission(id=pool_id)
+
+    groups_permissions_idx = [gp['group'] for gp in groups_permissions]
+    groups_perm_idx = [gp.user_group_id for gp in groups_perm]
+
+    for group_perm in groups_perm:
+
+        # change or delete group != 1(ADM)
+        if group_perm.user_group_id != 1:
+            # update perms
+            if group_perm.user_group_id in groups_permissions_idx:
+                idx = groups_permissions_idx.index(group_perm.user_group_id)
+                _update_group_permission(groups_permissions[idx], group_perm)
+            # delete perms
+            else:
+                group_perm.delete()
+
+    for group_permission in groups_permissions:
+
+        # change or delete group != 1(ADM)
+        if group_permission['group'] != 1:
+            # insert perms
+            if group_permission in groups_perm_idx:
+                _create_group_permission(group_permission, pool_id)
+
+
+def _create_group_permission(group_permission, pool_id):
+    """Creates permissions to access for pools"""
+
+    pool_perm = ServerPoolGroupPermission()
+    pool_perm.server_pool_id = pool_id
+    pool_perm.user_group_id = group_permission['group']
+    pool_perm.read = group_permission['read']
+    pool_perm.write = group_permission['write']
+    pool_perm.delete = group_permission['delete']
+    pool_perm.change_config = group_permission['change_config']
+    pool_perm.save()
+
+
+def _update_group_permission(group_permission, obj_id):
+    """Updates permissions to access for pools"""
+
+    vip_perm = ServerPoolGroupPermission(id=obj_id)
+    vip_perm.user_group_id = group_permission['group']
+    vip_perm.read = group_permission['read']
+    vip_perm.write = group_permission['write']
+    vip_perm.delete = group_permission['delete']
+    vip_perm.change_config = group_permission['change_config']
+    vip_perm.save()
