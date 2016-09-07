@@ -294,7 +294,7 @@ class VlanFindResource(RestResource):
             # Business Rules
 
             # Start with alls
-            if subnet = 1:
+            if subnet == 1:
                 vlans = Vlan.objects.all().prefetch_related('ambiente')
             else:
                 vlans = Vlan.objects.all().prefetch_related('ambiente', 
