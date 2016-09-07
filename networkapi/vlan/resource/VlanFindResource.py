@@ -133,7 +133,7 @@ def prepares_network(vlan, half):
 
     vlan_dict["is_more"] = False
     netv4_itens = []
-    for netv4 in vlan.networkipv4_set.all().prefetch_related("network_type"):
+    for netv4 in vlan.networkipv4_set.all():
         net_dict = dict()
         net = str(netv4.oct1) + "." + str(netv4.oct2) + "." + \
             str(netv4.oct3) + "." + str(netv4.oct4) + "/" + str(netv4.block)
@@ -290,7 +290,11 @@ class VlanFindResource(RestResource):
             # Business Rules
 
             # Start with alls
-            vlans = Vlan.objects.all().prefetch_related('ambiente')
+            vlans = Vlan.objects.all().prefetch_related('ambiente', 
+                'networkipv4_set__network_type', 
+                'networkipv4_set__ip_set__ipequipamento_set__equipamento__equipamentoambiente_set',
+                'networkipv6_set__network_type', 
+                'networkipv6_set__ipv6_set__ipv6equipament_set__equipamento__equipamentoambiente_set')
 
             if number is not None:
                 # If number is valid, add to filter
