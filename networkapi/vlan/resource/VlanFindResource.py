@@ -334,7 +334,7 @@ class VlanFindResource(RestResource):
             # Business Rules
 
             # Start with alls
-            vlans = Vlan.objects.all().prefetch_related('ambiente', 'networkipv4_set', 'networkipv6_set')
+            vlans = Vlan.objects.all().prefetch_related('networkipv4_set', 'networkipv6_set')
             
             if number is not None:
                 # If number is valid, add to filter
