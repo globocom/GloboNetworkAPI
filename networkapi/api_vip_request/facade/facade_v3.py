@@ -107,7 +107,7 @@ def update_vip_request(vip_request):
     _update_port(vip_request['ports'], vip.id)
 
     _create_option(option_create, vip.id)
-    _delete_option(option_remove)
+    _delete_option(option_remove, vip.id)
 
     dsrl3 = OptionVip.objects.filter(
         nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
@@ -355,9 +355,10 @@ def _create_option(options, vip_request_id):
             vip_dscp.save()
 
 
-def _delete_option(options):
+def _delete_option(options, vip_request_id):
     """Deletes options"""
     models.VipRequestOptionVip.objects.filter(
+        vip_request=vip_request_id,
         optionvip__in=options
     ).delete()
 
