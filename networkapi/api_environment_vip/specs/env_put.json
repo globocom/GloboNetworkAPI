@@ -1,0 +1,28 @@
+{
+  "title": "Environment Vip Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "environments_vip"
+  ],
+  "properties": {
+    "environments_vip": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "config": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "conf"
+        ]
+      }
+    }
+  }
+}

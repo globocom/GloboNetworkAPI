@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
-from networkapi.equipamento.models import Equipamento
-
 from rest_framework import serializers
+
+from networkapi.equipamento.models import Equipamento
 
 
 class EquipmentSerializer(serializers.ModelSerializer):
@@ -22,6 +22,18 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
 
 class EquipmentBasicSerializer(serializers.ModelSerializer):
+
+    name = serializers.Field(source='nome')
+
+    class Meta:
+        model = Equipamento
+        fields = (
+            'id',
+            'name'
+        )
+
+
+class EquipmentV3Serializer(serializers.ModelSerializer):
 
     name = serializers.Field(source='nome')
 

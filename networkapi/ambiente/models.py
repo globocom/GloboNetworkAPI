@@ -438,7 +438,11 @@ class EnvironmentVip(BaseModel):
         @raise OperationalError: Lock wait timeout exceeded.
         """
         try:
-            return EnvironmentVip.objects.filter(finalidade_txt=finalidade, cliente_txt=cliente, ambiente_p44_txt=ambiente_p44).uniqueResult()
+            return EnvironmentVip.objects.filter(
+                finalidade_txt=finalidade,
+                cliente_txt=cliente,
+                ambiente_p44_txt=ambiente_p44
+            ).uniqueResult()
         except ObjectDoesNotExist, e:
             raise EnvironmentVipNotFoundError(
                 e, u'Dont there is a request of environment vip by values = %s,%s,%s.' % (finalidade, cliente, ambiente_p44))
@@ -463,7 +467,11 @@ class EnvironmentVip(BaseModel):
 
         try:
 
-            return EnvironmentVip.objects.values('finalidade_txt').distinct()
+            return EnvironmentVip.objects.values(
+                'finalidade_txt'
+            ).order_by(
+                'finalidade_txt'
+            ).distinct()
 
         except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
@@ -486,7 +494,13 @@ class EnvironmentVip(BaseModel):
 
         try:
 
-            return EnvironmentVip.objects.filter(finalidade_txt__iexact=finalidade).values('cliente_txt').distinct()
+            return EnvironmentVip.objects.filter(
+                finalidade_txt__iexact=finalidade
+            ).values(
+                'cliente_txt'
+            ).order_by(
+                'cliente_txt'
+            ).distinct()
 
         except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
@@ -509,7 +523,14 @@ class EnvironmentVip(BaseModel):
 
         try:
 
-            return EnvironmentVip.objects.filter(finalidade_txt__iexact=finalidade, cliente_txt__iexact=cliente_txt)
+            return EnvironmentVip.objects.filter(
+                finalidade_txt__iexact=finalidade,
+                cliente_txt__iexact=cliente_txt
+            ).order_by(
+                'finalidade_txt',
+                'cliente_txt',
+                'ambiente_p44_txt'
+            )
 
         except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')

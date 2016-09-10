@@ -173,7 +173,8 @@
               "type": "object",
               "properties": {
                 "user": {
-                   "type": "integer"
+                   "type": "integer",
+                   "type": "string"
                 },
                 "read": {
                    "type": "boolean"
@@ -227,17 +228,6 @@
                   "minimum": 0,
                   "maximum": 4294967295
                 },
-                "equipment": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "identifier": {
-                      "type": "string"
-                    }
-                  }
-                },
                 "weight": {
                   "type": "integer"
                 },
@@ -260,7 +250,6 @@
                 "ipv6",
                 "ip",
                 "priority",
-                "equipment",
                 "weight",
                 "limit",
                 "port_real",

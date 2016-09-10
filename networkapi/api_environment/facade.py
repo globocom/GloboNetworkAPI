@@ -2,6 +2,7 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
@@ -56,3 +57,17 @@ def get_environment_by_ids(environment_ids):
         environments.append(sp)
 
     return environments
+
+
+def list_environment_environment_vip_related():
+
+    env_list_net_related = Ambiente.objects.filter(
+        Q(vlan__networkipv4__ambient_vip__id__isnull=False) |
+        Q(vlan__networkipv6__ambient_vip__id__isnull=False)
+    ).order_by(
+        'divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome'
+    ).select_related(
+        'grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter'
+    ).distinct()
+
+    return env_list_net_related

@@ -206,6 +206,7 @@ class PoolDBDetailsView(APIView):
                         }
 
                 pools = facade.get_pool_by_search(search)
+
                 pool_serializer = serializers.PoolV3DetailsSerializer(
                     pools['pools'],
                     many=True
@@ -325,6 +326,7 @@ class PoolDBView(APIView):
         """
         Updates server pool
         """
+
         pools = request.DATA
         json_validate(SPECS.get('pool_put')).validate(pools)
         verify_ports(pools)

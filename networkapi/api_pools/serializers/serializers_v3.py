@@ -3,13 +3,15 @@ from rest_framework import serializers
 
 from networkapi.api_environment import serializers as env_serializers
 from networkapi.api_equipment import serializers as eqpt_serializers
+from networkapi.api_group import serializers as grp_serializers
 from networkapi.api_pools.models import OptionPool
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
 from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolGroupPermission
 from networkapi.requisicaovips.models import ServerPoolMember
-from networkapi.util.serializers import DynamicFieldsModelSerializer
+# from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
 class Ipv4BasicSerializer(serializers.ModelSerializer):
@@ -22,6 +24,36 @@ class Ipv4BasicSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'ip_formated'
+        )
+
+
+class PoolPermissionSerializer(serializers.ModelSerializer):
+
+    group = serializers.Field(source='user_group.id')
+
+    class Meta:
+        model = ServerPoolGroupPermission
+        fields = (
+            'group',
+            'read',
+            'write',
+            'change_config',
+            'delete'
+        )
+
+
+class PoolPermissionDetailsSerializer(serializers.ModelSerializer):
+
+    group = grp_serializers.UserGroupSerializer(source='user_group')
+
+    class Meta:
+        model = ServerPoolGroupPermission
+        fields = (
+            'group',
+            'read',
+            'write',
+            'change_config',
+            'delete'
         )
 
 
@@ -207,8 +239,15 @@ class PoolMemberV3Serializer(serializers.ModelSerializer):
 class PoolV3Serializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    groups_permissions = serializers.SerializerMethodField('get_perms')
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
+
+    def get_perms(self, obj):
+        perms = obj.serverpoolgrouppermission_set.all()
+        perms_serializer = PoolPermissionSerializer(perms, many=True)
+
+        return perms_serializer.data
 
     def get_server_pool_members(self, obj):
         members = obj.serverpoolmember_set.all()
@@ -228,6 +267,7 @@ class PoolV3Serializer(serializers.ModelSerializer):
             'healthcheck',
             'default_limit',
             'server_pool_members',
+            'groups_permissions',
             'pool_created'
         )
 
@@ -235,6 +275,7 @@ class PoolV3Serializer(serializers.ModelSerializer):
 class PoolV3DatatableSerializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
     environment = serializers.RelatedField(source='environment.name')
@@ -264,6 +305,7 @@ class PoolV3DatatableSerializer(serializers.ModelSerializer):
 class PoolV3DetailsSerializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    groups_permissions = serializers.SerializerMethodField('get_perms')
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3DetailsSerializer()
     environment = env_serializers.EnvironmentSerializer()
@@ -274,31 +316,11 @@ class PoolV3DetailsSerializer(serializers.ModelSerializer):
 
         return members_serializer.data
 
-    class Meta:
-        model = ServerPool
-        fields = (
-            'id',
-            'identifier',
-            'default_port',
-            'environment',
-            'servicedownaction',
-            'lb_method',
-            'healthcheck',
-            'default_limit',
-            'server_pool_members',
-            'pool_created'
-        )
+    def get_perms(self, obj):
+        perms = obj.serverpoolgrouppermission_set.all()
+        perms_serializer = PoolPermissionDetailsSerializer(perms, many=True)
 
-
-class PoolDynamicSerializer(DynamicFieldsModelSerializer):
-    server_pool_members = serializers.PoolMemberV3Serializer(source='serverpoolmember_set')
-
-    @staticmethod
-    def setup_eager_loading(queryset):
-        queryset = queryset.prefetch_related(
-            'serverpoolmember_set',
-        )
-        return queryset
+        return perms_serializer.data
 
     class Meta:
         model = ServerPool
@@ -312,5 +334,64 @@ class PoolDynamicSerializer(DynamicFieldsModelSerializer):
             'healthcheck',
             'default_limit',
             'server_pool_members',
+            'groups_permissions',
             'pool_created'
         )
+
+# class PoolMemberDynamicSerializer(DynamicFieldsModelSerializer):
+#     id = serializers.Field()
+
+#     equipment = eqpt_serializers.EquipmentBasicSerializer()
+
+#     @staticmethod
+#     def setup_eager_loading(queryset):
+#         queryset = queryset.prefetch_related(
+#             'ipv6',
+#             'ip',
+#         )
+#         return queryset
+
+#     class Meta:
+#         depth = 1
+#         model = ServerPoolMember
+#         fields = (
+#             'id',
+#             'identifier',
+#             'ipv6',
+#             'ip',
+#             'priority',
+#             'equipment',
+#             'weight',
+#             'limit',
+#             'port_real',
+#             'last_status_update_formated',
+#             'member_status'
+#         )
+
+
+# class PoolDynamicSerializer(DynamicFieldsModelSerializer):
+
+
+#     server_pool_members = PoolMemberDynamicSerializer(source='serverpoolmember_set')
+
+#     @staticmethod
+#     def setup_eager_loading(queryset):
+#         queryset = queryset.prefetch_related(
+#             'serverpoolmember_set',
+#         )
+#         return queryset
+
+#     class Meta:
+#         model = ServerPool
+#         fields = (
+#             'id',
+#             'identifier',
+#             'default_port',
+#             'environment',
+#             'servicedownaction',
+#             'lb_method',
+#             'healthcheck',
+#             'default_limit',
+#             'server_pool_members',
+#             'pool_created'
+#         )

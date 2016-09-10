@@ -94,6 +94,14 @@
               }
             }
           },
+          "permissions":{
+            "type": "object",
+            "properties": {
+              "replace": {
+                 "type": "boolean"
+              }
+            }
+          },
           "groups_permissions": {
             "type": [
               "array",
@@ -136,7 +144,8 @@
               "type": "object",
               "properties": {
                 "user": {
-                   "type": "integer"
+                   "type": "integer",
+                   "type": "string"
                 },
                 "read": {
                    "type": "boolean"

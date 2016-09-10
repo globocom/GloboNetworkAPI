@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 import logging
 
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente
 # from networkapi.admin_permission import AdminPermission
 # from networkapi.auth import has_perm
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 
 
 log = logging.getLogger(__name__)
@@ -33,6 +34,36 @@ def get_equipment_map(equipment):
     equipment_map['maintenance'] = equipment.maintenance
 
     return equipment_map
+
+
+def get_equipments_by_user(user, environment):
+    """
+    Return a list of equipments by user with rights of read
+    :param user: Id user
+
+    """
+    eqpts = Equipamento.objects.filter(
+        equipamentogrupo__egrupo__direitosgrupoequipamento__ugrupo__usuario=user,
+        equipamentogrupo__egrupo__direitosgrupoequipamento__escrita=1
+    )
+
+    eqptsv4 = eqpts.filter(
+        ipequipamento__ip__networkipv4__vlan__ambiente__environmentenvironmentvip__environment_vip__networkipv4__vlan__ambiente=environment
+    )
+
+    eqptsv6 = eqpts.filter(
+        ipv6equipament__ip__networkipv6__vlan__ambiente__environmentenvironmentvip__environment_vip__networkipv6__vlan__ambiente=environment
+    )
+
+    eqpt = eqptsv4 | eqptsv6
+
+    eqpt = eqpt.distinct()
+    eqpt.prefetch_related(
+        'ipequipamento_set__ip',
+        'ipv6equipament_set__ipv6'
+    )
+
+    return eqpt
 
 
 def all_equipments_can_update_config(equipment_list, user):

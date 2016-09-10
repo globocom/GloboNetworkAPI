@@ -17,7 +17,12 @@ def get_option_vip_by_environment_vip_ids(environment_vip_ids):
     """
     options_vip = list()
     for environment_vip_id in environment_vip_ids:
-        option_environment_vips = OptionVipEnvironmentVip.objects.filter(environment=environment_vip_id)
+        option_environment_vips = OptionVipEnvironmentVip.objects.filter(
+            environment=environment_vip_id
+        ).order_by(
+            'option__tipo_opcao',
+            'option__nome_opcao_txt'
+        )
 
         options_vip.append(option_environment_vips)
     return options_vip

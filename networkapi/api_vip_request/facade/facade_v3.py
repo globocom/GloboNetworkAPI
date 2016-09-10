@@ -121,10 +121,13 @@ def update_vip_request(vip_request, user):
             models.VipRequestDSCP.objects.filter(vip_request=vip.id).delete()
 
     # perms
-    groups_perm = vip_request.get('groups_permissions')
-    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions'))
+    groups_perm = vip_request.get('groups_permissions', [])
+    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions', []))
     groups = facade_usr.reduce_groups(groups_perm)
-    update_groups_permissions(groups, vip.id, user)
+
+    perm = vip_request.get('permissions')
+    perm_replace = perm.get('replace') if perm else False
+    update_groups_permissions(groups, vip.id, user, perm_replace)
 
     # sync with old tables
     syncs.new_to_old(vip)
@@ -1092,11 +1095,11 @@ def create_groups_permissions(groups_permissions, vip_id, user):
     """Creates permissions to access for vips"""
 
     group_adm = {
-        'group': 1,
-        'read': 1,
-        'write': 1,
-        'delete': 1,
-        'change_config': 1,
+        'group': True,
+        'read': True,
+        'write': True,
+        'delete': True,
+        'change_config': True,
     }
     _create_group_permission(group_adm, vip_id)
 
@@ -1110,14 +1113,14 @@ def create_groups_permissions(groups_permissions, vip_id, user):
             if group_id != 1:
                 _create_group_permission({
                     'group': group_id,
-                    'read': 1,
-                    'write': 1,
-                    'delete': 1,
-                    'change_config': 1,
+                    'read': True,
+                    'write': True,
+                    'delete': True,
+                    'change_config': True,
                 }, vip_id)
 
 
-def update_groups_permissions(groups_permissions, vip_id, user):
+def update_groups_permissions(groups_permissions, vip_id, user, replace_permissions=False):
     """Creates permissions to access for vips"""
 
     # groups default
@@ -1127,18 +1130,18 @@ def update_groups_permissions(groups_permissions, vip_id, user):
             if group_id != 1:
                 groups_permissions.append({
                     'group': group_id,
-                    'read': 1,
-                    'write': 1,
-                    'delete': 1,
-                    'change_config': 1,
+                    'read': True,
+                    'write': True,
+                    'delete': True,
+                    'change_config': True,
                 })
 
-    groups_perm = models.VipRequestGroupPermission(vip_request=vip_id)
+    groups_perms = models.VipRequestGroupPermission.objects.filter(vip_request=vip_id)
 
     groups_permissions_idx = [gp['group'] for gp in groups_permissions]
-    groups_perm_idx = [gp.user_group_id for gp in groups_perm]
+    groups_perm_idx = [gp.user_group_id for gp in groups_perms]
 
-    for group_perm in groups_perm:
+    for group_perm in groups_perms:
 
         # change or delete group != 1(ADM)
         if group_perm.user_group_id != 1:
@@ -1147,15 +1150,17 @@ def update_groups_permissions(groups_permissions, vip_id, user):
                 idx = groups_permissions_idx.index(group_perm.user_group_id)
                 _update_group_permission(groups_permissions[idx], group_perm)
             # delete perms
-            else:
-                group_perm.delete()
+            elif replace_permissions is True:
+
+                models.VipRequestGroupPermission.objects.filter(
+                    id=group_perm.id).delete()
 
     for group_permission in groups_permissions:
 
         # change or delete group != 1(ADM)
         if group_permission['group'] != 1:
             # insert perms
-            if group_permission in groups_perm_idx:
+            if group_permission['group'] not in groups_perm_idx:
                 _create_group_permission(group_permission, vip_id)
 
 

@@ -92,10 +92,13 @@ def update_pool(pool, user):
     _delete_pool_member(members_remove)
 
     # perms
-    groups_perm = pool.get('groups_permissions')
-    groups_perm += facade_usr.get_groups(pool.get('users_permissions'))
+    groups_perm = pool.get('groups_permissions', [])
+    groups_perm += facade_usr.get_groups(pool.get('users_permissions', []))
     groups = facade_usr.reduce_groups(groups_perm)
-    update_groups_permissions(groups, sp.id, user)
+
+    perm = pool.get('permissions')
+    perm_replace = perm.get('replace') if perm else False
+    update_groups_permissions(groups, sp.id, user, perm_replace)
 
     return sp
 
@@ -171,7 +174,8 @@ def get_options_pool_list_by_environment(environment_id):
     """
 
     options_pool = models.OptionPool.objects.filter(
-        optionpoolenvironment__environment=environment_id)
+        optionpoolenvironment__environment=environment_id
+    ).order_by('name')
 
     return options_pool
 
@@ -387,10 +391,10 @@ def create_groups_permissions(groups_permissions, pool_id, user):
 
     group_adm = {
         'group': 1,
-        'read': 1,
-        'write': 1,
-        'delete': 1,
-        'change_config': 1,
+        'read': True,
+        'write': True,
+        'delete': True,
+        'change_config': True,
     }
     _create_group_permission(group_adm, pool_id)
 
@@ -404,14 +408,15 @@ def create_groups_permissions(groups_permissions, pool_id, user):
             if group_id != 1:
                 _create_group_permission({
                     'group': group_id,
-                    'read': 1,
-                    'write': 1,
-                    'delete': 1,
-                    'change_config': 1,
+                    'read': True,
+                    'write': True,
+                    'delete': True,
+                    'change_config': True,
                 }, pool_id)
 
 
-def update_groups_permissions(groups_permissions, pool_id, user):
+def update_groups_permissions(groups_permissions, pool_id,
+                              user, replace_permissions=False):
     """Creates permissions to access for pools"""
 
     # groups default
@@ -421,18 +426,18 @@ def update_groups_permissions(groups_permissions, pool_id, user):
             if group_id != 1:
                 groups_permissions.append({
                     'group': group_id,
-                    'read': 1,
-                    'write': 1,
-                    'delete': 1,
-                    'change_config': 1,
+                    'read': True,
+                    'write': True,
+                    'delete': True,
+                    'change_config': True,
                 })
 
-    groups_perm = ServerPoolGroupPermission(id=pool_id)
+    groups_perms = ServerPoolGroupPermission.objects.filter(server_pool=pool_id)
 
     groups_permissions_idx = [gp['group'] for gp in groups_permissions]
-    groups_perm_idx = [gp.user_group_id for gp in groups_perm]
+    groups_perm_idx = [gp.user_group_id for gp in groups_perms]
 
-    for group_perm in groups_perm:
+    for group_perm in groups_perms:
 
         # change or delete group != 1(ADM)
         if group_perm.user_group_id != 1:
@@ -441,15 +446,17 @@ def update_groups_permissions(groups_permissions, pool_id, user):
                 idx = groups_permissions_idx.index(group_perm.user_group_id)
                 _update_group_permission(groups_permissions[idx], group_perm)
             # delete perms
-            else:
-                group_perm.delete()
+            elif replace_permissions is True:
+
+                ServerPoolGroupPermission.objects.filter(
+                    id=group_perm.id).delete()
 
     for group_permission in groups_permissions:
 
         # change or delete group != 1(ADM)
         if group_permission['group'] != 1:
             # insert perms
-            if group_permission in groups_perm_idx:
+            if group_permission['group'] not in groups_perm_idx:
                 _create_group_permission(group_permission, pool_id)
 
 
@@ -466,10 +473,10 @@ def _create_group_permission(group_permission, pool_id):
     pool_perm.save()
 
 
-def _update_group_permission(group_permission, obj_id):
+def _update_group_permission(group_permission, obj_perm):
     """Updates permissions to access for pools"""
 
-    vip_perm = ServerPoolGroupPermission(id=obj_id)
+    vip_perm = ServerPoolGroupPermission.objects.get(id=obj_perm.id)
     vip_perm.user_group_id = group_permission['group']
     vip_perm.read = group_permission['read']
     vip_perm.write = group_permission['write']

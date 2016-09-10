@@ -171,17 +171,6 @@
                   "minimum": 0,
                   "maximum": 4294967295
                 },
-                "equipment": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "identifier": {
-                      "type": "string"
-                    }
-                  }
-                },
                 "weight": {
                   "type": "integer"
                 },

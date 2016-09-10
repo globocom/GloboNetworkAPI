@@ -41,7 +41,7 @@ class EnvironmentDBView(APIView):
                 )
                 data = generate_return_json(
                     serializer_env,
-                    'envs',
+                    'environments',
                     environments,
                     request
                 )
@@ -57,11 +57,39 @@ class EnvironmentDBView(APIView):
                     )
                     data = generate_return_json(
                         serializer_env,
-                        'envs',
+                        'environments',
                         only_main_property=True
                     )
                 else:
                     raise exceptions.EnvironmentDoesNotExistException()
+
+            return Response(data, status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)
+
+
+class EnvEnvVipRelatedView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @logs_method_apiview
+    def get(self, request, *args, **kwargs):
+        """
+        Returns a list of environment by ids ou dict
+        """
+        try:
+
+            environments = facade.list_environment_environment_vip_related()
+            serializer_env = serializers.EnvironmentDetaailsSerializer(
+                environments,
+                many=True
+            )
+            data = generate_return_json(
+                serializer_env,
+                'environments',
+                only_main_property=True
+            )
 
             return Response(data, status.HTTP_200_OK)
 
