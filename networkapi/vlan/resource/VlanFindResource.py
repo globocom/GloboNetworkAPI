@@ -122,7 +122,6 @@ def get_networks(vlans, half=True):
 
 #@cache_function(VLAN_CACHE_TIME)
 
-
 def prepares_network(vlan, half):
     vlan_dict = dict()
     if not half:
@@ -133,7 +132,7 @@ def prepares_network(vlan, half):
 
     vlan_dict["is_more"] = False
     netv4_itens = []
-    for netv4 in vlan.networkipv4_set.all().prefetch_related("network_type"):
+    for netv4 in vlan.networkipv4_set.all():
         net_dict = dict()
         net = str(netv4.oct1) + "." + str(netv4.oct2) + "." + \
             str(netv4.oct3) + "." + str(netv4.oct4) + "/" + str(netv4.block)
@@ -146,8 +145,9 @@ def prepares_network(vlan, half):
             for ip in netv4.ip_set.all():
                 for ip_equip in ip.ipequipamento_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
-                            equip_itens.append(ip_equip.equipamento.nome)
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
+                            if equip_amb.ambiente == vlan.ambiente and equip_amb.is_router:
+                                equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -174,8 +174,9 @@ def prepares_network(vlan, half):
             for ip in netv6.ipv6_set.all():
                 for ip_equip in ip.ipv6equipament_set.all():
                     if not ip_equip.equipamento.nome in equip_itens:
-                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.filter(ambiente=vlan.ambiente, is_router=True):
-                            equip_itens.append(ip_equip.equipamento.nome)
+                        for equip_amb in ip_equip.equipamento.equipamentoambiente_set.all():
+                            if equip_amb.ambiente == vlan.ambiente and equip_amb.is_router:
+                                equip_itens.append(ip_equip.equipamento.nome)
 
             if len(equip_itens) == 0:
                 equip_itens.append("&nbsp;")
@@ -201,6 +202,49 @@ def prepares_network(vlan, half):
         vlan_dict["is_more"] = True
     if len(netv6_itens) > 3:
         vlan_dict["is_more"] = True
+
+    return vlan_dict
+
+
+def get_networks_simple(vlans):
+    """
+    Join networks of vlan
+    """
+
+    itens = []
+    for vlan in vlans:
+        vlan_dict = prepares_network_simple(vlan)
+        itens.append(vlan_dict)
+
+    return itens
+
+def prepares_network_simple(vlan):
+    vlan_dict = dict()
+
+    netv4_itens = []
+    for netv4 in vlan.networkipv4_set.all():
+        net_dict = dict()
+        net = str(netv4.oct1) + "." + str(netv4.oct2) + "." + \
+            str(netv4.oct3) + "." + str(netv4.oct4) + "/" + str(netv4.block)
+        net_dict['network'] = IPNetwork(net).exploded
+        net_dict['id'] = netv4.id
+
+        netv4_itens.append(net_dict)
+
+    netv6_itens = []
+    for netv6 in vlan.networkipv6_set.all():
+        net_dict = dict()
+        net = str(netv6.block1) + ":" + str(netv6.block2) + ":" + str(netv6.block3) + ":" + str(netv6.block4) + ":" + \
+            str(netv6.block5) + ":" + str(netv6.block6) + ":" + \
+            str(netv6.block7) + ":" + \
+            str(netv6.block8) + "/" + str(netv6.block)
+        net_dict['network'] = IPNetwork(net).compressed
+        net_dict['id'] = netv6.id
+        netv6_itens.append(net_dict)
+
+    vlan_dict["id"] = vlan.id
+    vlan_dict["redeipv4"] = netv4_itens
+    vlan_dict["redeipv6"] = netv6_itens
 
     return vlan_dict
 
@@ -290,8 +334,8 @@ class VlanFindResource(RestResource):
             # Business Rules
 
             # Start with alls
-            vlans = Vlan.objects.all()
-
+            vlans = Vlan.objects.all().prefetch_related('networkipv4_set', 'networkipv6_set')
+            
             if number is not None:
                 # If number is valid, add to filter
                 if not is_valid_int_greater_zero_param(number, False):
@@ -441,7 +485,7 @@ class VlanFindResource(RestResource):
                             raise InvalidValueError(None, 'rede', network)
 
                         # First, get all vlans filtered until now
-                        itens = get_networks(vlans)
+                        itens = get_networks_simple(vlans)
 
                         ids_exclude = []
                         # Then iterate over it to verify each vlan
@@ -486,6 +530,11 @@ class VlanFindResource(RestResource):
             # Datatable paginator
             vlans, total = build_query_to_datatable(
                 vlans, asorting_cols, custom_search, searchable_columns, start_record, end_record)
+            vlans = vlans.prefetch_related('ambiente',
+                    'networkipv4_set__network_type',
+                    'networkipv4_set__ip_set__ipequipamento_set__equipamento__equipamentoambiente_set__ambiente',
+                    'networkipv6_set__network_type',
+                    'networkipv6_set__ipv6_set__ipv6equipament_set__equipamento__equipamentoambiente_set__ambiente')
 
             itens = get_networks(vlans, False)
 

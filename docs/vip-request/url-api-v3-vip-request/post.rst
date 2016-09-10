@@ -17,7 +17,7 @@ Request body:
             "business": [string],
             "created": [boolean],
             "environmentvip": [environmentvip_id],
-            "id": [vip_id],
+            "id": [null],
             "ipv4": [ipv4_id],
             "ipv6": [ipv6_id],
             "name": [string],
