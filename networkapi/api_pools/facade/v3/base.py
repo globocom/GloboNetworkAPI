@@ -49,8 +49,8 @@ def create_pool(pool, user):
     _create_pool_member(pool['server_pool_members'], sp)
 
     # perms
-    groups_perm = pool.get('groups_permissions')
-    groups_perm += facade_usr.get_groups(pool.get('users_permissions'))
+    groups_perm = pool.get('groups_permissions', [])
+    groups_perm += facade_usr.get_groups(pool.get('users_permissions', []))
     groups = facade_usr.reduce_groups(groups_perm)
     create_groups_permissions(groups, sp.id, user)
 

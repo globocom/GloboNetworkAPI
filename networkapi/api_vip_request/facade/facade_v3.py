@@ -73,8 +73,8 @@ def create_vip_request(vip_request, user):
     _create_option(option_create, vip.id)
 
     # perms
-    groups_perm = vip_request.get('groups_permissions')
-    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions'))
+    groups_perm = vip_request.get('groups_permissions', [])
+    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions', []))
     groups = facade_usr.reduce_groups(groups_perm)
     create_groups_permissions(groups, vip.id, user)
 
