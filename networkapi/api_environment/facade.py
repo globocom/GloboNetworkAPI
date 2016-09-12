@@ -59,12 +59,20 @@ def get_environment_by_ids(environment_ids):
     return environments
 
 
-def list_environment_environment_vip_related():
+def list_environment_environment_vip_related(env_id=None):
 
-    env_list_net_related = Ambiente.objects.filter(
-        Q(vlan__networkipv4__ambient_vip__id__isnull=False) |
-        Q(vlan__networkipv6__ambient_vip__id__isnull=False)
-    ).order_by(
+    if not env_id:
+        env_list_net_related = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip__id__isnull=False) |
+            Q(vlan__networkipv6__ambient_vip__id__isnull=False)
+        )
+    else:
+        env_list_net_related = Ambiente.objects.filter(
+            Q(vlan__networkipv4__ambient_vip__id=env_id) |
+            Q(vlan__networkipv6__ambient_vip__id=env_id)
+        )
+
+    env_list_net_related = env_list_net_related.order_by(
         'divisao_dc__nome', 'ambiente_logico__nome', 'grupo_l3__nome'
     ).select_related(
         'grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter'

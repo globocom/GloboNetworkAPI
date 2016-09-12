@@ -342,6 +342,8 @@ class VipRequestDetailsSerializer(serializers.ModelSerializer):
 
     ports = serializers.SerializerMethodField('get_server_pools')
 
+    groups_permissions = serializers.SerializerMethodField('get_perms')
+
     def get_dscp(self, obj):
         try:
             dscp = obj.viprequestdscp_set.get().dscp

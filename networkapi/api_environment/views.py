@@ -80,16 +80,29 @@ class EnvEnvVipRelatedView(APIView):
         """
         try:
 
-            environments = facade.list_environment_environment_vip_related()
-            serializer_env = serializers.EnvironmentDetaailsSerializer(
-                environments,
-                many=True
-            )
-            data = generate_return_json(
-                serializer_env,
-                'environments',
-                only_main_property=True
-            )
+            if not kwargs.get('environment_vip_ids'):
+                environments = facade.list_environment_environment_vip_related()
+                serializer_env = serializers.EnvironmentDetaailsSerializer(
+                    environments,
+                    many=True
+                )
+                data = generate_return_json(
+                    serializer_env,
+                    'environments',
+                    only_main_property=True
+                )
+            else:
+                env_id = kwargs.get('environment_vip_ids')
+                environments = facade.list_environment_environment_vip_related(env_id)
+                serializer_env = serializers.EnvironmentDetaailsSerializer(
+                    environments,
+                    many=True
+                )
+                data = generate_return_json(
+                    serializer_env,
+                    'environments',
+                    only_main_property=True
+                )
 
             return Response(data, status.HTTP_200_OK)
 
