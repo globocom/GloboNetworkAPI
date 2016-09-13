@@ -239,15 +239,15 @@ class PoolMemberV3Serializer(serializers.ModelSerializer):
 class PoolV3Serializer(serializers.ModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
-    groups_permissions = serializers.SerializerMethodField('get_perms')
+    # groups_permissions = serializers.SerializerMethodField('get_perms')
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
 
-    def get_perms(self, obj):
-        perms = obj.serverpoolgrouppermission_set.all()
-        perms_serializer = PoolPermissionSerializer(perms, many=True)
+    # def get_perms(self, obj):
+    #     perms = obj.serverpoolgrouppermission_set.all()
+    #     perms_serializer = PoolPermissionSerializer(perms, many=True)
 
-        return perms_serializer.data
+    #     return perms_serializer.data
 
     def get_server_pool_members(self, obj):
         members = obj.serverpoolmember_set.all()
@@ -267,7 +267,7 @@ class PoolV3Serializer(serializers.ModelSerializer):
             'healthcheck',
             'default_limit',
             'server_pool_members',
-            'groups_permissions',
+            # 'groups_permissions',
             'pool_created'
         )
 

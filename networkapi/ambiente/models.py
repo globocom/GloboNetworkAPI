@@ -716,6 +716,7 @@ class Ambiente(BaseModel):
     )
     father_environment = models.ForeignKey(
         'self',
+        null=True,
         db_column='id_father_environment'
     )
 

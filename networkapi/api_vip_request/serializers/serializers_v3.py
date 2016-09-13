@@ -143,7 +143,7 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
     options = serializers.SerializerMethodField('get_options')
     ports = serializers.SerializerMethodField('get_server_pools')
-    groups_permissions = serializers.SerializerMethodField('get_perms')
+    # groups_permissions = serializers.SerializerMethodField('get_perms')
 
     def get_options(self, obj):
         options = obj.viprequestoptionvip_set.all()
@@ -171,11 +171,11 @@ class VipRequestSerializer(serializers.ModelSerializer):
 
         return ports_serializer.data
 
-    def get_perms(self, obj):
-        perms = obj.viprequestgrouppermission_set.all()
-        perms_serializer = VipRequestPermSerializer(perms, many=True)
+    # def get_perms(self, obj):
+    #     perms = obj.viprequestgrouppermission_set.all()
+    #     perms_serializer = VipRequestPermSerializer(perms, many=True)
 
-        return perms_serializer.data
+    #     return perms_serializer.data
 
     class Meta:
         model = VipRequest
@@ -189,7 +189,7 @@ class VipRequestSerializer(serializers.ModelSerializer):
             'ipv6',
             'ports',
             'options',
-            'groups_permissions',
+            # 'groups_permissions',
             'created'
         )
 
