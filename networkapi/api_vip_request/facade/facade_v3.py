@@ -631,7 +631,7 @@ def update_real_vip_request(vip_requests, user):
         serializer_vips_data = copy.deepcopy(serializer_vips.data)
 
         validate_save(vip, True)
-        update_vip_request(vip)
+        update_vip_request(vip, user)
 
         ids_port_old = [port.get('id') for port in serializer_vips_data.get('ports')]
         ids_port_upt = [port.get('id') for port in vip_request.get('ports') if port.get('id')]
