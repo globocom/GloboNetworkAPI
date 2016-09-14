@@ -265,7 +265,7 @@ def update_real_pool(pools, user):
                 'pools_members': pools_members
             })
 
-        facade_v3.update_pool(pool)
+        facade_v3.update_pool(pool, user)
 
     # pools are in differents load balancers
     keys = [','.join(key) for key in keys]
