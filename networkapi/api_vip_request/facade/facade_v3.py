@@ -127,6 +127,7 @@ def update_vip_request(vip_request, user):
 
     perm = vip_request.get('permissions')
     perm_replace = perm.get('replace') if perm else False
+
     update_groups_permissions(groups, vip.id, user, perm_replace)
 
     # sync with old tables
@@ -1148,7 +1149,7 @@ def update_groups_permissions(groups_permissions, vip_id, user, replace_permissi
             # update perms
             if group_perm.user_group_id in groups_permissions_idx:
                 idx = groups_permissions_idx.index(group_perm.user_group_id)
-                _update_group_permission(groups_permissions[idx], group_perm)
+                _update_group_permission(groups_permissions[idx], group_perm.id)
             # delete perms
             elif replace_permissions is True:
 
@@ -1180,7 +1181,7 @@ def _create_group_permission(group_permission, vip_id):
 def _update_group_permission(group_permission, obj_id):
     """Updates permissions to access for vips"""
 
-    vip_perm = models.VipRequestGroupPermission(id=obj_id)
+    vip_perm = models.VipRequestGroupPermission.objects.get(id=obj_id)
     vip_perm.user_group_id = group_permission['group']
     vip_perm.read = group_permission['read']
     vip_perm.write = group_permission['write']
