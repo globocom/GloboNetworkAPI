@@ -61,5 +61,26 @@
     "oct4": "0",
     "vlan": 2
     }
+  },
+  {
+  "pk": 4,
+  "model": "ip.networkipv4",
+  "fields": {
+    "active": "1",
+    "ambient_vip": null,
+    "block": "24",
+    "broadcast": "10.10.10.1",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "1",
+    "network_type": 2,
+    "oct1": "10",
+    "oct2": "10",
+    "oct3": "10",
+    "oct4": "0",
+    "vlan": 3
+    }
   }
 ]

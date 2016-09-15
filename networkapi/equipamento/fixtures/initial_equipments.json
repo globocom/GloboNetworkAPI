@@ -30,6 +30,26 @@
     }
   },
   {
+    "pk": 4,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "F5-LB-DC01-01",
+      "tipo_equipamento": "2",
+      "modelo": "2",
+      "maintenance": "False"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "F5-LB-DC01-02",
+      "tipo_equipamento": "2",
+      "modelo": "2",
+      "maintenance": "False"
+    }
+  },
+  {
     "pk": 1,
     "model": "equipamento.equipamentogrupo",
     "fields": {
@@ -51,6 +71,22 @@
     "fields": {
       "egrupo": "2",
       "equipamento": "3"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "13",
+      "equipamento": "4"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "13",
+      "equipamento": "5"
     }
   }
 ]

@@ -5,5 +5,12 @@
     "fields": {
       "nome": "e_marca"
     }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.marca",
+    "fields": {
+      "nome": "F5"
+    }
   }
 ]

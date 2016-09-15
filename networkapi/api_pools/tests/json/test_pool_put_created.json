@@ -1,0 +1,25 @@
+{
+  "server_pools": [
+    {
+      "id": 5,
+      "identifier": "vm-teste2",
+      "default_port": 801,
+      "environment": 1,
+      "servicedownaction": {
+        "id": 6,
+        "name": "drop"
+      },
+      "lb_method": "round-robin",
+      "healthcheck": {
+        "identifier": "",
+        "healthcheck_type": "HTTP",
+        "healthcheck_request": "get 1",
+        "healthcheck_expect": "ok",
+        "destination": "*:*"
+      },
+      "default_limit": 1001,
+      "server_pool_members": [],
+      "pool_created": true
+    }
+  ]
+}

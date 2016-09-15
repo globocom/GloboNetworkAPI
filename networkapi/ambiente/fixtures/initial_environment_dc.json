@@ -5,5 +5,12 @@
   "fields": {
     "nome": "BE"
     }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "FE"
+    }
   }
 ]

@@ -7,5 +7,23 @@
     "ambiente_logico": 1,
     "divisao_dc": 1
     }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 2,
+    "ambiente_logico": 1,
+    "divisao_dc": 1
+    }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 1,
+    "ambiente_logico": 1,
+    "divisao_dc": 2
+    }
   }
 ]

@@ -5,5 +5,12 @@
   "fields": {
     "tipo_rede": "rede tipo 1"
     }
+  },
+  {
+  "pk": 2,
+  "model": "vlan.tiporede",
+  "fields": {
+    "tipo_rede": "rede tipo 2"
+    }
   }
 ]

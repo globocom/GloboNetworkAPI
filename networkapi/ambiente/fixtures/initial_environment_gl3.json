@@ -5,5 +5,12 @@
   "fields": {
     "nome": "GRUPO 1"
     }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "GRUPO 2"
+    }
   }
 ]

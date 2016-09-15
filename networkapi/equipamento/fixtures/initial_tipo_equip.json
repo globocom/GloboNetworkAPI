@@ -5,5 +5,12 @@
     "fields": {
       "tipo_equipamento": "switch"
     }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.tipoequipamento",
+    "fields": {
+      "tipo_equipamento": "Balanceador"
+    }
   }
 ]

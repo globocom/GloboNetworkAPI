@@ -5,5 +5,12 @@
   "fields": {
     "nome": "TESTE"
     }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TESTE2"
+    }
   }
 ]

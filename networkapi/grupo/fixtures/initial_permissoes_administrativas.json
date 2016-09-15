@@ -1,252 +1,284 @@
 [
   {
-    "pk": 1, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 1,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 1
     }
-  }, 
+  },
   {
-    "pk": 2, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 2,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 2
     }
-  }, 
+  },
   {
-    "pk": 3, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 3,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 3
     }
-  }, 
+  },
   {
-    "pk": 4, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 4,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 4
     }
-  }, 
+  },
   {
-    "pk": 5, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 5,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 5
     }
-  }, 
+  },
   {
-    "pk": 6, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 6,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 6
     }
-  }, 
+  },
   {
-    "pk": 7, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 7,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 7
     }
-  }, 
+  },
   {
-    "pk": 8, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 8,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 8
     }
-  }, 
+  },
   {
-    "pk": 9, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 9,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 9
     }
-  }, 
+  },
   {
-    "pk": 10, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 10,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 10
     }
-  }, 
+  },
   {
-    "pk": 11, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 11,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 11
     }
-  }, 
+  },
   {
-    "pk": 12, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 12,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 12
     }
-  }, 
+  },
   {
-    "pk": 13, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 13,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 13
     }
-  }, 
+  },
   {
-    "pk": 14, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 14,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 14
     }
-  }, 
+  },
   {
-    "pk": 15, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 15,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 15
     }
-  }, 
+  },
   {
-    "pk": 16, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 16,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 16
     }
-  }, 
+  },
   {
-    "pk": 17, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 17,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 17
     }
-  }, 
+  },
   {
-    "pk": 18, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 18,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 18
     }
-  }, 
+  },
   {
-    "pk": 19, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 19,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 19
     }
-  }, 
+  },
   {
-    "pk": 20, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 20,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 20
     }
-  }, 
+  },
   {
-    "pk": 21, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 21,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 21
     }
-  }, 
+  },
   {
-    "pk": 22, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 22,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 22
     }
-  }, 
+  },
   {
-    "pk": 23, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 23,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 23
     }
-  }, 
+  },
   {
-    "pk": 24, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 24,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 24
     }
-  }, 
+  },
   {
-    "pk": 25, 
-    "model": "grupo.permissaoadministrativa", 
+    "pk": 25,
+    "model": "grupo.permissaoadministrativa",
     "fields": {
-      "ugrupo": 1, 
-      "leitura": true, 
-      "escrita": true, 
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
       "permission": 29
+    }
+  },
+  {
+    "pk": 26,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
+      "permission": 30
+    }
+  }
+,
+  {
+    "pk": 27,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
+      "permission": 31
+    }
+  }
+,
+  {
+    "pk": 28,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
+      "permission": 32
     }
   }
 ]

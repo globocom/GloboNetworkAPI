@@ -6,5 +6,13 @@
       "marca": "1",
       "nome": "e_modelo"
     }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.modelo",
+    "fields": {
+      "marca": "2",
+      "nome": "BIGIP"
+    }
   }
 ]

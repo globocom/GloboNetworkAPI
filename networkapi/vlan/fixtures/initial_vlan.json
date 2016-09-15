@@ -4,7 +4,7 @@
   "model": "vlan.vlan",
   "fields": {
     "ambiente": 1,
-    "nome": "vlan teste",
+    "nome": "vlan 1 - ambiente 1",
     "num_vlan": "1"
     }
   },
@@ -13,8 +13,26 @@
   "model": "vlan.vlan",
   "fields": {
     "ambiente": 1,
-    "nome": "vlan teste 2",
+    "nome": "vlan 2 - ambiente 1",
     "num_vlan": "2"
+    }
+  },
+  {
+  "pk": 3,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 2,
+    "nome": "vlan 1 - ambiente 2",
+    "num_vlan": "3"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 2,
+    "nome": "vlan 2 - ambiente 2",
+    "num_vlan": "4"
     }
   }
 ]
