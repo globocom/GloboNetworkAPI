@@ -283,6 +283,10 @@ def _prepare_apply_state(pools, user=None):
     keys = list()
 
     for pool in pools:
+        server_pool = ServerPool.objects.get(id=pool['id'])
+
+        server_pool_members = server_pool.serverpoolmember_set.all()
+
         if pool['server_pool_members']:
             equips = _validate_pool_members_to_apply(pool, user)
 
@@ -304,15 +308,19 @@ def _prepare_apply_state(pools, user=None):
                         'pools': [],
                     }
 
+                mbs = pool['server_pool_members']
+                idx_mbs = [mb['id'] for mb in mbs]
+
                 load_balance[eqpt_id]['pools'].append({
-                    'id': pool['id'],
-                    'nome': pool['identifier'],
+                    'id': server_pool.id,
+                    'nome': server_pool.identifier,
                     'pools_members': [{
-                        'id': pool_member['id'],
-                        'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
-                        'port': pool_member['port_real'],
-                        'member_status': pool_member['member_status']
-                    } for pool_member in pool['server_pool_members']]
+                        'id': pool_member.id,
+                        'ip': pool_member.ip.ip_formated
+                        if pool_member.ip else pool_member.ipv6.ip_formated,
+                        'port': pool_member.port_real,
+                        'member_status': mbs[idx_mbs.index(pool_member.id)]['member_status']
+                    } for pool_member in server_pool_members if pool_member.id in idx_mbs]
                 })
     # pools are in differents load balancers
     keys = [','.join(key) for key in keys]
@@ -335,7 +343,11 @@ def set_poolmember_state(pools, user):
 
     for pool in pools['server_pools']:
         for pool_member in pool['server_pool_members']:
-            ServerPoolMember.objects.filter(id=pool_member['id']).update(member_status=pool_member['member_status'])
+            ServerPoolMember.objects.filter(
+                id=pool_member['id']
+            ).update(
+                member_status=pool_member['member_status']
+            )
 
     return {}
 
@@ -383,10 +395,7 @@ def _validate_pool_members_to_apply(pool, user=None):
 
     if pool['server_pool_members']:
         q_filters = [{
-            'ipv6': pool_member['ipv6']['id'] if pool_member['ipv6'] else None,
-            'ip': pool_member['ip']['id'] if pool_member['ip'] else None,
-            'id': pool_member['id'],
-            'port_real': pool_member['port_real']
+            'id': pool_member['id']
         } for pool_member in pool['server_pool_members']]
 
         server_pool_members = ServerPoolMember.objects.filter(
@@ -402,10 +411,7 @@ def _validate_pool_members_to_apply(pool, user=None):
 
 
 def _validate_pool_to_apply(pool, update=False, user=None):
-    server_pool = ServerPool.objects.get(
-        identifier=pool['identifier'],
-        environment=pool['environment'],
-        id=pool['id'])
+    server_pool = ServerPool.objects.get(id=pool['id'])
     if not server_pool:
         raise exceptions.PoolNotExist()
 
@@ -414,7 +420,7 @@ def _validate_pool_to_apply(pool, update=False, user=None):
 
     equips = Equipamento.objects.filter(
         maintenance=0,
-        equipamentoambiente__ambiente__id=pool['environment'],
+        equipamentoambiente__ambiente__id=server_pool.environment.id,
         tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
     if facade_eqpt.all_equipments_are_in_maintenance(equips):

@@ -16,15 +16,13 @@ class Lb(object):
         self._hostname = hostname
         self._username = username
         self._password = password
-        self._timeout = 90
         self._time_reconn = 10
 
         try:
             self._channel = bigsuds.BIGIP(
                 hostname=self._hostname,
                 username=self._username,
-                password=self._password,
-                timeout=self._timeout
+                password=self._password
             )
 
         except Exception, e:
