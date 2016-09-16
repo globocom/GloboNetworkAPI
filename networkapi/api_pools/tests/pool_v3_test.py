@@ -112,9 +112,11 @@ class PoolTestV3Case(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
         self.assertEqual(201, response.status_code, "Status code should be 201 and was %s" % response.status_code)
 
+        id_pool = response.data[0]['id']
+
         # get data inserted
         response = self.client.get(
-            '/api/v3/pool/1/',
+            '/api/v3/pool/%s/' % id_pool,
             content_type="application/json",
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
