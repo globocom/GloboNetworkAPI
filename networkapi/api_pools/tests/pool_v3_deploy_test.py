@@ -14,11 +14,11 @@ log = logging.getLogger(__name__)
 
 class MockPlugin(object):
 
-    status = True
+    _status = True
 
     @classmethod
-    def status(cls, status):
-        cls.status = status
+    def status(cls, status=True):
+        cls._status = status
 
     @classmethod
     def update_pool(cls, pools):
@@ -54,7 +54,7 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         pass
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def etest_update_deploy_with_mock_success(self, test_patch):
+    def test_update_deploy_with_mock_success(self, test_patch):
         """
             Method that factory in networkapi.plugins.factory.PluginFactory
             is mocked to test the flow in deploys
@@ -66,7 +66,7 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         facade_pool_deploy.update_real_pool(dp, self.user)
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def etest_create_deploy_with_mock_success(self, test_patch):
+    def test_create_deploy_with_mock_success(self, test_patch):
         """
             Method that factory in networkapi.plugins.factory.PluginFactory
             is mocked to test the flow in deploys
@@ -78,7 +78,7 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         facade_pool_deploy.create_real_pool(dp, self.user)
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def etest_create_deploy_with_mock_error(self, test_patch):
+    def test_create_deploy_with_mock_error(self, test_patch):
         """
             Method that factory in networkapi.plugins.factory.PluginFactory
             is mocked to test the flow in deploys
@@ -89,7 +89,10 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         mock.status(False)
         test_patch.return_value = mock
         dp = dp.get('server_pools')
-        facade_pool_deploy.create_real_pool(dp, self.user)
+        self.assertRaises(
+            Exception,
+            facade_pool_deploy.create_real_pool(dp, self.user)
+        )
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_create_deploy_with_mock_success_url(self, test_patch):
