@@ -104,11 +104,11 @@ def update_pool(pool, user):
 
 
 def delete_pool(pools_ids):
-    """Updates pool"""
+    """Delete pool"""
 
-    for pools_id in pools_ids:
+    for pool_id in pools_ids:
         try:
-            sp = ServerPool.objects.get(id=pools_id)
+            sp = ServerPool.objects.get(id=pool_id)
         except ObjectDoesNotExist:
             raise exceptions.PoolNotExist()
 

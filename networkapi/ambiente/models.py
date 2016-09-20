@@ -982,12 +982,28 @@ class IPConfig(BaseModel):
 
     from networkapi.vlan.models import TipoRede
 
-    id = models.AutoField(primary_key=True, db_column='id_ip_config')
-    subnet = models.CharField(max_length=45, blank=False)
-    new_prefix = models.CharField(max_length=3, blank=False)
-    type = models.CharField(max_length=2, blank=False, choices=IP_VERSION.List)
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_ip_config'
+    )
+    subnet = models.CharField(
+        max_length=45,
+        blank=False
+    )
+    new_prefix = models.CharField(
+        max_length=3,
+        blank=False
+    )
+    type = models.CharField(
+        max_length=2,
+        blank=False,
+        choices=IP_VERSION.List
+    )
     network_type = models.ForeignKey(
-        TipoRede, null=True, db_column='network_type')
+        TipoRede,
+        null=True,
+        db_column='network_type'
+    )
 
     log = logging.getLogger('IPConfig')
 
@@ -1029,7 +1045,8 @@ class IPConfig(BaseModel):
         try:
 
             config_environment = ConfigEnvironment.objects.filter(
-                environment=environment_id).values('ip_config').query
+                environment=environment_id
+            ).values('ip_config').query
 
             return IPConfig.objects.filter(id__in=config_environment)
 
