@@ -109,7 +109,7 @@ class VirtualServer(F5Base):
 
             vip_resources.append({
                 'type': 'RESOURCE_TYPE_POOL',
-                'default_pool_name': vip_request['pool']
+                'default_pool_name': vip_request.get('pool')
             })
 
             # DSCP
