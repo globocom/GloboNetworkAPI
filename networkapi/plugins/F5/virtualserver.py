@@ -398,7 +398,7 @@ class VirtualServer(F5Base):
                     virtual_servers=kwargs.get('vip_snat_auto').get('virtual_servers')
                 )
             if kwargs.get('vip_snat_pool').get('virtual_servers'):
-                self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_lsn_pool(
+                self._lb._channel.LocalLB.VirtualServer.set_source_address_translation_snat_pool(
                     virtual_servers=kwargs.get('vip_snat_pool').get('virtual_servers'),
                     pools=kwargs.get('vip_snat_pool').get('pools')
                 )
