@@ -1230,7 +1230,19 @@ class Ip(BaseModel):
                 #     ambienteequip.delete()
 
                 ie.delete()
+
+            from networkapi.api_pools.serializers import Ipv4Serializer
+            serializer = Ipv4Serializer(self)
+            data_to_queue = serializer.data
+
             super(Ip, self).delete()
+
+            # Send to Queue
+            queue_manager = QueueManager()
+            data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
+            queue_manager.append(
+                {'action': queue_keys.IPv4_REMOVE, 'kind': queue_keys.IPv4_KEY, 'data': data_to_queue})
+            queue_manager.send()
 
         except EquipamentoAmbienteNotFoundError, e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
@@ -1422,6 +1434,7 @@ class IpEquipamento(BaseModel):
 
         try:
             ip_equipamento.delete()
+
         except (IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip), e:
             raise e
         except Exception, e:
@@ -2397,7 +2410,18 @@ class Ipv6(BaseModel):
 
                 ie.delete()
 
+            from networkapi.api_pools.serializers import Ipv6Serializer
+            serializer = Ipv6Serializer(self)
+            data_to_queue = serializer.data
+
             super(Ipv6, self).delete()
+
+            # Send to Queue
+            queue_manager = QueueManager()
+            data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
+            queue_manager.append(
+                {'action': queue_keys.IPv6_REMOVE, 'kind': queue_keys.IPv6_KEY, 'data': data_to_queue})
+            queue_manager.send()
 
         except EquipamentoAmbienteNotFoundError, e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
