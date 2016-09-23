@@ -156,7 +156,7 @@ class PoolV3SimpleSerializer(serializers.ModelSerializer):
         )
 
 
-class PoolV3MinimumSerializer(serializers.ModelSerializer):
+class PoolV3MinimumSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = ServerPool

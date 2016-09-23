@@ -331,8 +331,8 @@ class VipRequestPoolView(APIView):
             data = generate_return_json(
                 serializer_vips,
                 'vips',
-                vips_requests,
-                request
+                obj_model=vips_requests,
+                request=request
             )
 
             return Response(data, status.HTTP_200_OK)
