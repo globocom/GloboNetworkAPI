@@ -386,6 +386,7 @@ SPECS = {
     'vip_request_put': 'networkapi/api_vip_request/specs/vip_put.json',
     'environment_post': 'networkapi/api_environment/specs/env_put.json',
     'environment_put': 'networkapi/api_environment/specs/env_put.json',
+    'environment_vip_put': 'networkapi/api_environment_vip/specs/env_put.json',
 }
 
 ##########

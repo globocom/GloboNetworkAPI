@@ -73,3 +73,12 @@ def get_environmentvip_by_ids(environment_vip_ids):
     environmentvips = EnvironmentVip.objects.filter(id__in=environment_vip_ids)
 
     return environmentvips
+
+
+def update_environment_vip(environment_vip):
+
+    env = EnvironmentVip.objects.get(id=environment_vip.get('id'))
+    env.conf = environment_vip.get('conf')
+    env.save()
+
+    return env

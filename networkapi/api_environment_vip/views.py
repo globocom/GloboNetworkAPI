@@ -2,6 +2,7 @@
 import logging
 import urllib
 
+from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,9 +13,13 @@ from networkapi.api_environment_vip import exceptions
 from networkapi.api_environment_vip import facade
 from networkapi.api_environment_vip import serializers
 from networkapi.api_environment_vip.permissions import Read
+from networkapi.api_environment_vip.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.settings import SPECS
 from networkapi.util import logs_method_apiview
 from networkapi.util import permission_classes_apiview
+from networkapi.util.json_validate import json_validate
+from networkapi.util.json_validate import raise_json_validate
 
 log = logging.getLogger(__name__)
 
@@ -148,6 +153,25 @@ class EnvironmentVipView(APIView):
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException(exception)
+
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('environment_vip_put')
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+
+        envs = request.DATA
+        json_validate(SPECS.get('environment_vip_put')).validate(envs)
+        response = list()
+        for env in envs['environments_vip']:
+
+            ret = facade.update_environment_vip(env)
+            response.append({
+                'id': ret.id,
+                'msg': 'success'
+            })
+
+        return Response(response, status.HTTP_200_OK)
 
 
 class OptionVipEnvironmentTypeVipView(APIView):
