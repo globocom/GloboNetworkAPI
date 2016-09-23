@@ -371,6 +371,7 @@ def trata_param_vip(vips):
 
                     address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
+                    vip_cache_filter['pool'] = None
                     vip_cache_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
                     vip_cache_filter['address'] = address
                     vip_cache_filter['port'] = port['port']
