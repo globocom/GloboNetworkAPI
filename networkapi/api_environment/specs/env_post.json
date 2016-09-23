@@ -1,0 +1,109 @@
+{
+  "title": "Environment Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "environments"
+  ],
+  "properties": {
+    "environments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "grupo_l3": {
+            "type": "integer"
+          },
+          "ambiente_logico": {
+            "type": "integer"
+          },
+          "divisao_dc": {
+            "type": "integer"
+          },
+          "filter": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "min_num_vlan_1": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "max_num_vlan_1": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "min_num_vlan_2": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "max_num_vlan_2": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ipv4_template": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ipv6_template": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "link": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "acl_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vrf": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "father_environment": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "grupo_l3",
+          "ambiente_logico",
+          "divisao_dc",
+          "filter",
+          "acl_path",
+          "ipv4_template",
+          "ipv6_template",
+          "link",
+          "min_num_vlan_1",
+          "max_num_vlan_1",
+          "min_num_vlan_2",
+          "max_num_vlan_2",
+          "vrf",
+          "father_environment"
+        ]
+      }
+    }
+  }
+}

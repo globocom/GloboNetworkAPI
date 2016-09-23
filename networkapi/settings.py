@@ -384,6 +384,8 @@ SPECS = {
     'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json',
     'vip_request_post': 'networkapi/api_vip_request/specs/vip_post.json',
     'vip_request_put': 'networkapi/api_vip_request/specs/vip_put.json',
+    'environment_post': 'networkapi/api_environment/specs/env_put.json',
+    'environment_put': 'networkapi/api_environment/specs/env_put.json',
 }
 
 ##########
