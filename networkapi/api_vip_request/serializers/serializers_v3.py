@@ -16,6 +16,7 @@ from networkapi.api_vip_request.models import VipRequestGroupPermission
 from networkapi.api_vip_request.models import VipRequestOptionVip
 from networkapi.api_vip_request.models import VipRequestPort
 from networkapi.api_vip_request.models import VipRequestPortPool
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
 class VipRequestOptionVipSerializer(serializers.ModelSerializer):
@@ -315,7 +316,7 @@ class VipRequestTableSerializer(serializers.ModelSerializer):
 
 
 # details
-class VipRequestDetailsSerializer(serializers.ModelSerializer):
+class VipRequestDetailsSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
     environmentvip = EnvironmentVipSerializer(

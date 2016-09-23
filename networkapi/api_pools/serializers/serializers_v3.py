@@ -11,7 +11,7 @@ from networkapi.ip.models import Ipv6
 from networkapi.requisicaovips.models import ServerPool
 from networkapi.requisicaovips.models import ServerPoolGroupPermission
 from networkapi.requisicaovips.models import ServerPoolMember
-# from networkapi.util.serializers import DynamicFieldsModelSerializer
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
 class Ipv4BasicSerializer(serializers.ModelSerializer):
@@ -302,7 +302,7 @@ class PoolV3DatatableSerializer(serializers.ModelSerializer):
         )
 
 
-class PoolV3DetailsSerializer(serializers.ModelSerializer):
+class PoolV3DetailsSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
     server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
     groups_permissions = serializers.SerializerMethodField('get_perms')

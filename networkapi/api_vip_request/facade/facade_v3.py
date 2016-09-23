@@ -3,6 +3,7 @@ import copy
 import json
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.transaction import commit_on_success
 
@@ -37,11 +38,25 @@ from networkapi.util import valid_expression
 log = logging.getLogger(__name__)
 
 
-def get_vip_request(vip_request_ids):
+def get_vip_request(vip_request_id):
     """
     get Vip Request
     """
-    vip_requests = models.VipRequest.objects.filter(id__in=vip_request_ids)
+    try:
+        vip_request = models.VipRequest.objects.get(id=vip_request_id)
+    except ObjectDoesNotExist:
+        raise exceptions.VipRequestDoesNotExistException()
+
+    return vip_request
+
+
+def get_vips_request(vip_request_ids):
+    """
+    get Vip Request
+    """
+    vip_requests = list()
+    for vip_request_id in vip_request_ids:
+        vip_requests.append(get_vip_request(vip_request_id))
 
     return vip_requests
 

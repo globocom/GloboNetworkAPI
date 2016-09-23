@@ -25,9 +25,10 @@ from networkapi.api_pools.permissions import write_pool_permission
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.requisicaovips import models as models_vips
 from networkapi.settings import SPECS
-from networkapi.util import logs_method_apiview
-from networkapi.util import permission_classes_apiview
-from networkapi.util import permission_obj_apiview
+from networkapi.util.decorators import logs_method_apiview
+from networkapi.util.decorators import permission_classes_apiview
+from networkapi.util.decorators import permission_obj_apiview
+from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import generate_return_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -74,12 +75,12 @@ class PoolMemberStateView(APIView):
             server_pools = models_vips.ServerPool.objects.filter(
                 id__in=pool_ids)
 
-            serializer_server_pool = serializers.PoolV3Serializer(
-                server_pools,
-                many=True
-            )
-
             if checkstatus == '1':
+
+                serializer_server_pool = serializers.PoolV3Serializer(
+                    server_pools,
+                    many=True
+                )
 
                 status = facade_pool_deploy.get_poolmember_state(
                     serializer_server_pool.data)
@@ -187,53 +188,53 @@ class PoolDeployView(APIView):
 
 class PoolDBDetailsView(APIView):
 
+    def render(self, obj, **kwargs):
+
+        obj_model = None
+        if isinstance(obj, dict):
+            obj_model = obj
+            obj = obj['pools']
+
+        pool_serializer = serializers.PoolV3DetailsSerializer(
+            obj,
+            many=True,
+            fields=kwargs.get('fields'),
+            include=kwargs.get('include'),
+            exclude=kwargs.get('exclude')
+        )
+        data = generate_return_json(
+            pool_serializer,
+            'server_pools',
+            obj_model=obj_model,
+            request=kwargs.get('request', None),
+            only_main_property=kwargs.get('only_main_property', False)
+        )
+        return data
+
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Return server pools by ids or dict
         """
         try:
             if not kwargs.get('pool_ids'):
-                try:
-                    search = json.loads(request.GET.get('search'))
-                except:
-                    try:
-                        search = ast.literal_eval(request.GET.get('search'))
-                    except:
-                        search = {
-                            'extends_search': []
-                        }
-
-                pools = facade.get_pool_by_search(search)
-
-                pool_serializer = serializers.PoolV3DetailsSerializer(
-                    pools['pools'],
-                    many=True
-                )
-                data = generate_return_json(
-                    pool_serializer,
-                    'server_pools',
-                    pools,
-                    request
-                )
+                pools = facade.get_pool_by_search(self.search)
+                only_main_property = False
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
-
                 pools = facade.get_pool_by_ids(pool_ids)
+                only_main_property = True
 
-                if pools:
-                    pool_serializer = serializers.PoolV3DetailsSerializer(
-                        pools,
-                        many=True
-                    )
-                    data = generate_return_json(
-                        pool_serializer,
-                        'server_pools',
-                        only_main_property=True
-                    )
-                else:
-                    raise exceptions.PoolDoesNotExistException()
+            data = self.render(
+                pools,
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude,
+                only_main_property=only_main_property,
+                request=request
+            )
 
             return Response(data, status.HTTP_200_OK)
 
@@ -270,8 +271,8 @@ class PoolDBView(APIView):
                 data = generate_return_json(
                     pool_serializer,
                     'server_pools',
-                    pools,
-                    request
+                    obj_model=pools,
+                    request=request
                 )
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
@@ -360,8 +361,25 @@ class PoolDBView(APIView):
 
 class PoolEnvironmentVip(APIView):
 
+    def render(self, obj, **kwargs):
+
+        pool_serializer = serializers.PoolV3MinimumSerializer(
+            obj,
+            many=True,
+            fields=kwargs.get('fields'),
+            include=kwargs.get('include'),
+            exclude=kwargs.get('exclude')
+        )
+        data = generate_return_json(
+            pool_serializer,
+            'server_pools',
+            only_main_property=kwargs.get('only_main_property', False)
+        )
+        return data
+
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns list of pool by environment vip
@@ -369,15 +387,17 @@ class PoolEnvironmentVip(APIView):
         try:
             environment_vip_id = kwargs['environment_vip_id']
             pools = facade.get_pool_list_by_environmentvip(environment_vip_id)
-            pool_serializer = serializers.PoolV3MinimumSerializer(
+
+            only_main_property = True
+
+            data = self.render(
                 pools,
-                many=True
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude,
+                only_main_property=only_main_property,
             )
-            data = generate_return_json(
-                pool_serializer,
-                'server_pools',
-                only_main_property=True
-            )
+
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)
@@ -386,8 +406,25 @@ class PoolEnvironmentVip(APIView):
 
 class OptionPoolEnvironmentView(APIView):
 
+    def render(self, obj, **kwargs):
+
+        options_pool_serializer = serializers.OptionPoolV3DetailsSerializer(
+            obj,
+            many=True,
+            fields=kwargs.get('fields'),
+            include=kwargs.get('include'),
+            exclude=kwargs.get('exclude')
+        )
+        data = generate_return_json(
+            options_pool_serializer,
+            'options_pool',
+            only_main_property=kwargs.get('only_main_property', False)
+        )
+        return data
+
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return option vip list by environment id
@@ -399,15 +436,14 @@ class OptionPoolEnvironmentView(APIView):
 
             options_pool = facade.get_options_pool_list_by_environment(environment_id)
 
-            options_pool_serializer = serializers.OptionPoolV3DetailsSerializer(
+            data = self.render(
                 options_pool,
-                many=True
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude,
+                only_main_property=True,
             )
-            data = generate_return_json(
-                options_pool_serializer,
-                'options_pool',
-                only_main_property=True
-            )
+
             return Response(data, status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)

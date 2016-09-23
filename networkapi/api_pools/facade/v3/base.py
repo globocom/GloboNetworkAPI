@@ -127,11 +127,7 @@ def get_pool_by_ids(pools_ids):
 
     server_pools = list()
     for pools_id in pools_ids:
-        try:
-            sp = ServerPool.objects.get(id=pools_id)
-        except ObjectDoesNotExist:
-            raise exceptions.PoolNotExist()
-
+        sp = get_pool_by_id(pools_id)
         server_pools.append(sp)
 
     return server_pools
