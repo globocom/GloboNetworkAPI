@@ -24,7 +24,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     # get fields with prefetch_related
                     maping = self.get_maping_eager_loading(self)
                     for key in maping:
-                        if key in fields:
+                        if key in fields and key not in exclude:
                             queryset = maping[key](queryset)
                     args = (queryset,)
                 except:
