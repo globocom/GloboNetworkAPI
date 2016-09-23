@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteLogico
+from networkapi.ambiente.models import ConfigEnvironment
 from networkapi.ambiente.models import DivisaoDc
 from networkapi.ambiente.models import GrupoL3
 from networkapi.util.serializers import DynamicFieldsModelSerializer
@@ -57,6 +58,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
     name = serializers.RelatedField(source='name')
 
+    configs = serializers.SerializerMethodField('get_configs')
+
     class Meta:
         model = Ambiente
         fields = (
@@ -74,11 +77,53 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
-            'father_environment'
+            'father_environment',
+            'configs'
+        )
+
+    def get_configs(self, obj):
+        configs = obj.configenvironment_set.all()
+        configs_serializer = ConfigEnvironmentSerializer(configs, many=True)
+
+        return configs_serializer.data
+
+    @staticmethod
+    def get_maping_eager_loading(self):
+        maping = {
+            'configs': self.setup_eager_loading_configs
+        }
+
+        return maping
+
+    @staticmethod
+    def setup_eager_loading_configs(queryset):
+        queryset = queryset.prefetch_related(
+            'configenvironment_set',
+            'configenvironment_set__ip_config',
+        )
+        return queryset
+
+
+class ConfigEnvironmentSerializer(DynamicFieldsModelSerializer):
+
+    id = serializers.RelatedField(source='ip_config.id')
+    subnet = serializers.RelatedField(source='ip_config.subnet')
+    new_prefix = serializers.RelatedField(source='ip_config.new_prefix')
+    type = serializers.RelatedField(source='ip_config.type')
+    network_type = serializers.RelatedField(source='ip_config.network_type')
+
+    class Meta:
+        model = ConfigEnvironment
+        fields = (
+            'id',
+            'subnet',
+            'new_prefix',
+            'type',
+            'network_type'
         )
 
 
-class EnvironmentDetaailsSerializer(DynamicFieldsModelSerializer):
+class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
     name = serializers.RelatedField(source='name')
 

@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
+import ast
 import functools
+import json
 import logging
 
 from jsonspec.validators.exceptions import ValidationError
@@ -122,4 +124,37 @@ def raise_exception_treat(func):
         except Exception, error:
             log.error(error)
             raise rest_exceptions.NetworkAPIException(error)
+    return inner
+
+
+def prepare_search(func):
+    @functools.wraps(func)
+    def inner(self, request, *args, **kwargs):
+
+        data = request.GET
+
+        # param search
+        try:
+            search = json.loads(data.get('search'))
+        except:
+            try:
+                search = ast.literal_eval(data.get('search'))
+            except:
+                search = {
+                    'extends_search': []
+                }
+        finally:
+            self.search = search
+
+        # param fields
+        self.fields = tuple(data.get('fields').split(','))\
+            if data.get('fields') else tuple()
+
+        self.include = tuple(data.get('include').split(','))\
+            if data.get('include') else tuple()
+
+        self.exclude = tuple(data.get('exclude').split(','))\
+            if data.get('exclude') else tuple()
+
+        return func(self, request, *args, **kwargs)
     return inner

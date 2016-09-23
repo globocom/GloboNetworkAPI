@@ -35,41 +35,36 @@ def get_environment_by_id(environment_id):
     try:
         environment = Ambiente.objects.get(id=environment_id)
     except ObjectDoesNotExist:
-        raise exceptions.PoolNotExist()
+        raise exceptions.EnvironmentDoesNotExistException()
 
     return environment
 
 
 def get_environment_by_ids(environment_ids):
     """
-    Return pool list by ids
-    param pools_ids: ids list
-    example: [<pools_id>,...]
+    Return environment list by ids
+    param environment_ids: ids list
     """
 
     environments = list()
     for environment_id in environment_ids:
-        try:
-            sp = Ambiente.objects.get(id=environment_id)
-        except ObjectDoesNotExist:
-            raise exceptions.PoolNotExist()
-
-        environments.append(sp)
+        env = get_environment_by_id(environment_id)
+        environments.append(env)
 
     return environments
 
 
-def list_environment_environment_vip_related(env_id=None):
+def list_environment_environment_vip_related(env_ids=None):
 
-    if not env_id:
+    if env_ids is None:
         env_list_net_related = Ambiente.objects.filter(
             Q(vlan__networkipv4__ambient_vip__id__isnull=False) |
             Q(vlan__networkipv6__ambient_vip__id__isnull=False)
         )
     else:
         env_list_net_related = Ambiente.objects.filter(
-            Q(vlan__networkipv4__ambient_vip__id=env_id) |
-            Q(vlan__networkipv6__ambient_vip__id=env_id)
+            Q(vlan__networkipv4__ambient_vip__id__in=env_ids) |
+            Q(vlan__networkipv6__ambient_vip__id__in=env_ids)
         )
 
     env_list_net_related = env_list_net_related.order_by(
