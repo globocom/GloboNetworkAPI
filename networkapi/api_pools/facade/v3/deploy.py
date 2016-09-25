@@ -53,13 +53,10 @@ def _prepare_apply(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_search({
-                'extends_search': [{
-                    'viprequestport__viprequestportpool__server_pool': pool['id']
-                }]
-            })
+            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+
             serializer_vips = serializers_vip.VipRequestDetailsSerializer(
-                vips_requests['vips'],
+                vips_requests,
                 many=True
             )
 
@@ -76,7 +73,8 @@ def _prepare_apply(pools, user):
                 'pools_members': [{
                     'id': pool_member['id'],
                     'identifier': pool_member['identifier'],
-                    'ip': pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
+                    'ip': pool_member['ip']['ip_formated']
+                    if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
                     'port': pool_member['port_real'],
                     'member_status': pool_member['member_status'],
                     'limit': pool_member['limit'],
@@ -245,13 +243,10 @@ def update_real_pool(pools, user):
                     pool['identifier'])
                 healthcheck['new'] = True
 
-            vips_requests = facade_vip.get_vip_request_by_search({
-                'extends_search': [{
-                    'viprequestport__viprequestportpool__server_pool': pool['id']
-                }]
-            })
+            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+
             serializer_vips = serializers_vip.VipRequestDetailsSerializer(
-                vips_requests['vips'],
+                vips_requests,
                 many=True
             )
 

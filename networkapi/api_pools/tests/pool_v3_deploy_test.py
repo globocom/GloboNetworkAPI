@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 
 from django.test.client import Client
@@ -56,8 +57,9 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_update_deploy_with_mock_success(self, test_patch):
         """
+            Deploy update of one pool with success.
             Method that factory in networkapi.plugins.factory.PluginFactory
-            is mocked to test the flow in deploys
+            is mock to test the flow in deploys of pool.
         """
 
         dp = self.load_json_file('api_pools/tests/json/test_pool_put_created.json')
@@ -66,13 +68,68 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         facade_pool_deploy.update_real_pool(dp, self.user)
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def test_create_deploy_with_mock_success(self, test_patch):
+    def test_update_deploy_with_mock_error(self, test_patch):
         """
+            Deploy update of one pool with error.
             Method that factory in networkapi.plugins.factory.PluginFactory
-            is mocked to test the flow in deploys
+            is mock to test the flow in deploys of pool.
         """
 
-        dp = self.load_json_file('api_pools/tests/json/test_pool_post_mock_deploy.json')
+        dp = self.load_json_file('api_pools/tests/json/test_pool_put_created.json')
+        mock = MockPlugin()
+        mock.status(False)
+        test_patch.return_value = mock
+        dp = dp.get('server_pools')
+        self.assertRaises(
+            Exception,
+            facade_pool_deploy.delete_real_pool(dp, self.user)
+        )
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_delete_deploy_with_mock_success(self, test_patch):
+        """
+            Deploy delete of one pool with success.
+            Method that factory in networkapi.plugins.factory.PluginFactory
+            is mock to test the flow in deploys of pool.
+        """
+
+        dp = self.load_json_file('api_pools/tests/json/test_pool_delete_created.json')
+        mock = MockPlugin()
+        mock.status(True)
+        test_patch.return_value = mock
+        dp = dp.get('server_pools')
+        self.assertRaises(
+            Exception,
+            facade_pool_deploy.delete_real_pool(dp, self.user)
+        )
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_delete_deploy_with_mock_error(self, test_patch):
+        """
+            Deploy delete of one pool with error.
+            Method that factory in networkapi.plugins.factory.PluginFactory
+            is mock to test the flow in deploys of pool.
+        """
+
+        dp = self.load_json_file('api_pools/tests/json/test_pool_delete_created.json')
+        mock = MockPlugin()
+        mock.status(False)
+        test_patch.return_value = mock
+        dp = dp.get('server_pools')
+        self.assertRaises(
+            Exception,
+            facade_pool_deploy.delete_real_pool(dp, self.user)
+        )
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_create_deploy_with_mock_success(self, test_patch):
+        """
+            Deploy create of one pool with success.
+            Method that factory in networkapi.plugins.factory.PluginFactory
+            is mock to test the flow in deploys of pool.
+        """
+
+        dp = self.load_json_file('api_pools/tests/json/test_pool_post_not_created.json')
         test_patch.return_value = MockPlugin()
         dp = dp.get('server_pools')
         facade_pool_deploy.create_real_pool(dp, self.user)
@@ -80,11 +137,12 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_create_deploy_with_mock_error(self, test_patch):
         """
+            Deploy create of one pool with error.
             Method that factory in networkapi.plugins.factory.PluginFactory
-            is mocked to test the flow in deploys
+            is mock to test the flow in deploys of pool.
         """
 
-        dp = self.load_json_file('api_pools/tests/json/test_pool_post_mock_deploy.json')
+        dp = self.load_json_file('api_pools/tests/json/test_pool_post_not_created.json')
         mock = MockPlugin()
         mock.status(False)
         test_patch.return_value = mock
@@ -95,10 +153,53 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         )
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_update_deploy_with_mock_success_url(self, test_patch):
+        """
+            Deploy update of one pool with success by url.
+            Method that factory in networkapi.plugins.factory.PluginFactory
+            is mock to test the flow in deploys of pool by url.
+        """
+        mock = MockPlugin()
+        mock.status(True)
+        test_patch.return_value = mock
+
+        # update
+        response = self.client.put(
+            '/api/v3/pool/deploy/5/',
+            data=json.dumps(self.load_json_file(
+                'api_pools/tests/json/test_pool_put_created.json')),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        log.info(response.data)
+        self.assertEqual(200, response.status_code,
+                         "Status code should be 200 and was %s" % response.status_code)
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_delete_deploy_with_mock_success_url(self, test_patch):
+        """
+            Deploy delete of one pool with success by url.
+            Method that factory in networkapi.plugins.factory.PluginFactory
+            is mock to test the flow in deploys of pool by url.
+        """
+        mock = MockPlugin()
+        mock.status(True)
+        test_patch.return_value = mock
+
+        # update
+        response = self.client.delete(
+            '/api/v3/pool/deploy/5/',
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        log.info(response.data)
+        self.assertEqual(200, response.status_code,
+                         "Status code should be 200 and was %s" % response.status_code)
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_create_deploy_with_mock_success_url(self, test_patch):
         """
+            Deploy create of one pool with success by url.
             Method that factory in networkapi.plugins.factory.PluginFactory
-            is mocked to test the flow in deploys
+            is mock to test the flow in deploys of pool by url.
         """
         mock = MockPlugin()
         mock.status(True)
@@ -106,8 +207,7 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
 
         # update
         response = self.client.post(
-            '/api/v3/pool/deploy/1/',
-            #  data=json.dumps(self.load_json_file('api_pools/tests/json/test_pool_post_mock_deploy.json')),
+            '/api/v3/pool/deploy/8/',
             content_type="application/json",
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
         log.info(response.data)

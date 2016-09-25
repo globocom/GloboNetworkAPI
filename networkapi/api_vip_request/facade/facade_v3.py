@@ -990,14 +990,11 @@ def validate_save(vip_request, permit_created=False):
                             pool['server_pool'], vip_request['name'])
                     )
 
-                pool_assoc = models.VipRequest.objects.filter(
-                    viprequestport__viprequestportpool__server_pool=pool[
-                        'server_pool']
-                )
+                pool_assoc_vip = get_vip_request_by_pool(pool['server_pool'])
                 if vip_request.get('id'):
-                    pool_assoc = pool_assoc.exclude(id=vip_request.get('id'))
+                    pool_assoc_vip = pool_assoc_vip.exclude(id=vip_request.get('id'))
 
-                if pool_assoc:
+                if pool_assoc_vip:
                     raise Exception(
                         u'Pool {} must be associated to a only vip request, \
                         when vip request has dslr3 option'.format(
@@ -1232,3 +1229,10 @@ def _update_group_permission(group_permission, obj_id):
     vip_perm.delete = group_permission['delete']
     vip_perm.change_config = group_permission['change_config']
     vip_perm.save()
+
+
+def get_vip_request_by_pool(pool_id):
+    pool_assoc_vip = models.VipRequest.objects.filter(
+        viprequestport__viprequestportpool__server_pool__id=pool_id
+    )
+    return pool_assoc_vip

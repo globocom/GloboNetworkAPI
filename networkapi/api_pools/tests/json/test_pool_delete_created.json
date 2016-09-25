@@ -1,8 +1,8 @@
 {
   "server_pools": [
     {
-      "id": 5,
-      "identifier": "vm-teste-5",
+      "id": 9,
+      "identifier": "vm-teste-9",
       "default_port": 801,
       "environment": 1,
       "servicedownaction": {
@@ -19,7 +19,7 @@
       },
       "default_limit": 1001,
       "server_pool_members": [],
-      "pool_created": false
+      "pool_created": true
     }
   ]
 }
