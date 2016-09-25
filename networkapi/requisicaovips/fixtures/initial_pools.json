@@ -26,5 +26,33 @@
     "environment": 1,
     "lb_method": "least-conn"
     }
+  },
+  {
+  "pk": 6,
+  "model": "requisicaovips.serverpool",
+  "fields": {
+    "identifier": "vm-teste-6",
+    "healthcheck": 1,
+    "servicedownaction": 5,
+    "default_port": 80,
+    "default_limit": 100,
+    "pool_created": "True",
+    "environment": 1,
+    "lb_method": "least-conn"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "requisicaovips.serverpool",
+  "fields": {
+    "identifier": "vm-teste-7",
+    "healthcheck": 1,
+    "servicedownaction": 5,
+    "default_port": 80,
+    "default_limit": 100,
+    "pool_created": "True",
+    "environment": 1,
+    "lb_method": "least-conn"
+    }
   }
 ]

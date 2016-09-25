@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from networkapi.equipamento.models import Equipamento
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
 class EquipmentSerializer(serializers.ModelSerializer):
@@ -33,7 +34,7 @@ class EquipmentBasicSerializer(serializers.ModelSerializer):
         )
 
 
-class EquipmentV3Serializer(serializers.ModelSerializer):
+class EquipmentV3Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
 

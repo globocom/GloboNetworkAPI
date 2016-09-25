@@ -21,7 +21,7 @@ def get_environment_by_search(search=dict()):
 
     environments = Ambiente.objects.filter()
 
-    env_map = build_query_to_datatable_v3(environments, 'envs', search)
+    env_map = build_query_to_datatable_v3(environments, search)
 
     return env_map
 
@@ -56,22 +56,22 @@ def get_environment_by_ids(environment_ids):
     return environments
 
 
-def list_environment_environment_vip_related(env_ids=None):
+def list_environment_environment_vip_related(env_id=None):
     """
     List of environments related with environment vip
 
     :param env_id: environment id(optional)
     """
 
-    if env_ids is None:
+    if env_id is None:
         env_list_net_related = Ambiente.objects.filter(
             Q(vlan__networkipv4__ambient_vip__id__isnull=False) |
             Q(vlan__networkipv6__ambient_vip__id__isnull=False)
         )
     else:
         env_list_net_related = Ambiente.objects.filter(
-            Q(vlan__networkipv4__ambient_vip__id__in=env_ids) |
-            Q(vlan__networkipv6__ambient_vip__id__in=env_ids)
+            Q(vlan__networkipv4__ambient_vip__id=env_id) |
+            Q(vlan__networkipv6__ambient_vip__id=env_id)
         )
 
     env_list_net_related = env_list_net_related.order_by(

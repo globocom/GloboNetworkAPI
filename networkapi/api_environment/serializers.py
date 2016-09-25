@@ -10,7 +10,7 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 # from networkapi.ambiente.models import IPConfig
 
 
-class GrupoL3Serializer(serializers.ModelSerializer):
+class GrupoL3Serializer(DynamicFieldsModelSerializer):
     name = serializers.RelatedField(source='nome')
 
     class Meta:
@@ -21,7 +21,7 @@ class GrupoL3Serializer(serializers.ModelSerializer):
         )
 
 
-class AmbienteLogicoSerializer(serializers.ModelSerializer):
+class AmbienteLogicoSerializer(DynamicFieldsModelSerializer):
     name = serializers.RelatedField(source='nome')
 
     class Meta:
@@ -32,7 +32,7 @@ class AmbienteLogicoSerializer(serializers.ModelSerializer):
         )
 
 
-class DivisaoDcSerializer(serializers.ModelSerializer):
+class DivisaoDcSerializer(DynamicFieldsModelSerializer):
     name = serializers.RelatedField(source='nome')
 
     class Meta:
@@ -43,7 +43,7 @@ class DivisaoDcSerializer(serializers.ModelSerializer):
         )
 
 
-class EnvironmentSerializer(serializers.ModelSerializer):
+class EnvironmentSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
     name = serializers.RelatedField(source='name')
 

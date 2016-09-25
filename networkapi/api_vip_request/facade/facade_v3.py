@@ -38,7 +38,29 @@ from networkapi.util import valid_expression
 log = logging.getLogger(__name__)
 
 
-def get_vip_request(vip_request_id):
+def get_vip_request_by_ip(ipv4=None, ipv6=None, environment_vip=None):
+    """
+    Get Vip Request by Ipv4, Ipv6, Environment Vip
+
+    :param ip: Id of Ipv4
+    :param ipv6: Id of Ipv6
+    :param environment_vip: Id of Environment Vip
+    """
+    vip_request = models.VipRequest.objects.all()
+
+    if environment_vip:
+        vip_request = vip_request.filter(environmentvip=environment_vip)
+
+    if ipv4 is not None:
+        vip_request = vip_request.filter(ipv4=ipv4)
+
+    if ipv6 is not None:
+        vip_request = vip_request.filter(ipv6=ipv6)
+
+    return vip_request
+
+
+def get_vip_request_by_id(vip_request_id):
     """
     get Vip Request
     """
@@ -50,13 +72,13 @@ def get_vip_request(vip_request_id):
     return vip_request
 
 
-def get_vips_request(vip_request_ids):
+def get_vip_request_by_ids(vip_request_ids):
     """
     get Vip Request
     """
     vip_requests = list()
     for vip_request_id in vip_request_ids:
-        vip_requests.append(get_vip_request(vip_request_id))
+        vip_requests.append(get_vip_request_by_id(vip_request_id))
 
     return vip_requests
 
@@ -355,7 +377,7 @@ def get_vip_request_by_search(search=dict()):
 
     vip_requests = models.VipRequest.objects.filter()
 
-    vip_map = build_query_to_datatable_v3(vip_requests, 'vips', search)
+    vip_map = build_query_to_datatable_v3(vip_requests, search)
 
     return vip_map
 
@@ -859,9 +881,9 @@ def validate_save(vip_request, permit_created=False):
 
         has_identifier = has_identifier.exclude(id=vip_request.get('id'))
 
-    has_identifier = has_identifier.distinct()
-    if has_identifier.count() > 0:
-        raise exceptions.AlreadyVipRequestException()
+    # has_identifier = has_identifier.distinct()
+    # if has_identifier.count() > 0:
+    #     raise exceptions.AlreadyVipRequestException()
 
     # validate option vip assoc with environment vip
     opts = list()
@@ -1064,12 +1086,19 @@ def _dscp(vip_request_id):
 
 
 def _validate_vip_to_apply(vip_request, update=False, user=None):
-    vip = models.VipRequest.objects.get(
-        name=vip_request['name'],
-        environmentvip=vip_request['environmentvip'],
-        id=vip_request.get('id'))
-    if not vip:
-        raise exceptions.VipRequestDoesNotExistException()
+
+    vip = get_vip_request_by_id(vip_request.get('id'))
+
+    # validate vip with same ipv4 ou ipv6
+    vip_with_ip = get_vip_request_by_ip(vip.ipv4, vip.ipv6, vip.environmentvip)
+    vip_with_ip = vip_with_ip.exclude(
+        id=vip.id
+    ).exclude(
+        created=False
+    ).distinct()
+
+    if vip_with_ip.count() > 0:
+        raise exceptions.AlreadyVipRequestException()
 
     if update and not vip.created:
         raise exceptions.VipRequestNotCreated(vip.id)

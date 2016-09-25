@@ -9,7 +9,6 @@ from rest_framework.views import APIView
 
 from networkapi.api_ip import facade as facade_ip
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import facade
 from networkapi.api_vip_request.permissions import delete_vip_permission
 from networkapi.api_vip_request.permissions import deploy_vip_permission
@@ -28,7 +27,7 @@ from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import generate_return_json
+from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.json_validate import verify_ports_vip
@@ -50,7 +49,7 @@ class VipRequestDeployView(APIView):
         """
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
-        vips = facade.get_vips_request(vip_request_ids)
+        vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestSerializer(vips, many=True)
 
         locks_list = facade.create_lock(vip_serializer.data)
@@ -76,7 +75,7 @@ class VipRequestDeployView(APIView):
         """
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
-        vips = facade.get_vips_request(vip_request_ids)
+        vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestSerializer(vips, many=True)
 
         locks_list = facade.create_lock(vip_serializer.data)
@@ -129,34 +128,40 @@ class VipRequestDBView(APIView):
         try:
             if not kwargs.get('vip_request_ids'):
 
-                vips_requests = facade.get_vip_request_by_search(self.search)
+                obj_model = facade.get_vip_request_by_search(self.search)
+                # serializer vips
                 serializer_vips = VipRequestTableSerializer(
-                    vips_requests['vips'],
-                    many=True
+                    obj_model['query_set'],
+                    many=True,
+                    fields=self.fields,
+                    include=self.include,
+                    exclude=self.exclude
                 )
-                data = generate_return_json(
-                    serializer_vips,
-                    'vips',
-                    obj_model=vips_requests,
-                    request=request
-                )
+                only_main_property = False
 
             else:
-                vip_request_ids = kwargs['vip_request_ids'].split(';')
-                vips_requests = facade.get_vips_request(vip_request_ids)
 
-                if vips_requests:
-                    serializer_vips = VipRequestSerializer(
-                        vips_requests,
-                        many=True
-                    )
-                    data = generate_return_json(
-                        serializer_vips,
-                        'vips',
-                        only_main_property=True
-                    )
-                else:
-                    raise exceptions.VipRequestDoesNotExistException()
+                vip_request_ids = kwargs['vip_request_ids'].split(';')
+                vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
+                obj_model = None
+                # serializer vips
+                serializer_vips = VipRequestSerializer(
+                    vips_requests,
+                    many=True,
+                    fields=self.fields,
+                    include=self.include,
+                    exclude=self.exclude
+                )
+                only_main_property = True
+
+            # prepare serializer with customized properties
+            data = render_to_json(
+                serializer_vips,
+                main_property='vips',
+                obj_model=obj_model,
+                request=request,
+                only_main_property=only_main_property
+            )
 
             return Response(data, status.HTTP_200_OK)
 
@@ -247,29 +252,6 @@ class VipRequestDBView(APIView):
 
 class VipRequestDBDetailsView(APIView):
 
-    def render(self, obj, **kwargs):
-
-        obj_model = None
-        if isinstance(obj, dict):
-            obj_model = obj
-            obj = obj['vips']
-
-        serializer_vips = VipRequestDetailsSerializer(
-            obj,
-            many=True,
-            fields=kwargs.get('fields'),
-            include=kwargs.get('include'),
-            exclude=kwargs.get('exclude')
-        )
-        data = generate_return_json(
-            serializer_vips,
-            'vips',
-            obj_model=obj_model,
-            request=kwargs.get('request', None),
-            only_main_property=kwargs.get('only_main_property', False)
-        )
-        return data
-
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
     @prepare_search
@@ -281,20 +263,31 @@ class VipRequestDBDetailsView(APIView):
         try:
 
             if not kwargs.get('vip_request_ids'):
-                vips_request = facade.get_vip_request_by_search(self.search)
+                obj_model = facade.get_vip_request_by_search(self.search)
+                vips_requests = obj_model['query_set']
                 only_main_property = False
             else:
                 vip_request_ids = kwargs['vip_request_ids'].split(';')
-                vips_request = facade.get_vips_request(vip_request_ids)
+                vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
+                obj_model = None
                 only_main_property = True
 
-            data = self.render(
-                vips_request,
+            # serializer vips
+            serializer_vips = VipRequestDetailsSerializer(
+                vips_requests,
+                many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude,
-                only_main_property=only_main_property,
-                request=request
+                exclude=self.exclude
+            )
+
+            # prepare serializer with customized properties
+            data = render_to_json(
+                serializer_vips,
+                main_property='vips',
+                obj_model=obj_model,
+                request=request,
+                only_main_property=only_main_property
             )
 
             return Response(data, status.HTTP_200_OK)
@@ -320,19 +313,28 @@ class VipRequestPoolView(APIView):
             extends_search = {
                 'viprequestport__viprequestportpool__server_pool': pool_id
             }
-            self.search['extends_search'] = [ex.append(extends_search) for ex in self.search['extends_search']] \
+            self.search['extends_search'] = \
+                [ex.append(extends_search) for ex in self.search['extends_search']] \
                 if self.search['extends_search'] else [extends_search]
 
             vips_requests = facade.get_vip_request_by_search(self.search)
+
+            only_main_property = True
+
+            # serializer vips
             serializer_vips = VipRequestTableSerializer(
-                vips_requests['vips'],
-                many=True
+                vips_requests['query_set'],
+                many=True,
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude
             )
-            data = generate_return_json(
+
+            # prepare serializer with customized properties
+            data = render_to_json(
                 serializer_vips,
-                'vips',
-                obj_model=vips_requests,
-                request=request
+                main_property='vips',
+                only_main_property=only_main_property
             )
 
             return Response(data, status.HTTP_200_OK)

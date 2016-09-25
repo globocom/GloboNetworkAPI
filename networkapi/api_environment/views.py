@@ -16,7 +16,7 @@ from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import generate_return_json
+from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
@@ -24,29 +24,6 @@ log = logging.getLogger(__name__)
 
 
 class EnvironmentDBView(APIView):
-
-    def render(self, obj, **kwargs):
-
-        obj_model = None
-        if isinstance(obj, dict):
-            obj_model = obj
-            obj = obj['envs']
-
-        serializer_env = serializers.EnvironmentV3Serializer(
-            obj,
-            many=True,
-            fields=kwargs.get('fields'),
-            include=kwargs.get('include'),
-            exclude=kwargs.get('exclude')
-        )
-        data = generate_return_json(
-            serializer_env,
-            'environments',
-            obj_model=obj_model,
-            request=kwargs.get('request', None),
-            only_main_property=kwargs.get('only_main_property', False)
-        )
-        return data
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
@@ -74,7 +51,8 @@ class EnvironmentDBView(APIView):
         )
         try:
             if not kwargs.get('environment_ids'):
-                environments = facade.get_environment_by_search(self.search)
+                obj_model = facade.get_environment_by_search(self.search)
+                environments = obj_model['query_set']
                 only_main_property = False
             else:
                 environment_ids = kwargs.get('environment_ids').split(';')
@@ -83,16 +61,26 @@ class EnvironmentDBView(APIView):
                 default_list.append('configs')
                 default_fields = tuple(default_list)
                 only_main_property = True
+                obj_model = None
 
-            fields = self.fields if self.fields else default_fields
+            self.fields = self.fields if self.fields else default_fields
 
-            data = self.render(
+            # serializer environments
+            serializer_env = serializers.EnvironmentV3Serializer(
                 environments,
-                fields=fields,
+                many=True,
+                fields=self.fields,
                 include=self.include,
-                exclude=self.exclude,
-                only_main_property=only_main_property,
-                request=request
+                exclude=self.exclude
+            )
+
+            # prepare serializer with customized properties
+            data = render_to_json(
+                serializer_env,
+                main_property='environments',
+                obj_model=obj_model,
+                request=request,
+                only_main_property=only_main_property
             )
 
             return Response(data, status.HTTP_200_OK)
@@ -155,21 +143,6 @@ class EnvironmentDBView(APIView):
 
 class EnvEnvVipRelatedView(APIView):
 
-    def render(self, obj, **kwargs):
-        serializer_env = serializers.EnvironmentDetailsSerializer(
-            obj,
-            many=True,
-            fields=kwargs.get('fields'),
-            include=kwargs.get('include'),
-            exclude=kwargs.get('exclude')
-        )
-        data = generate_return_json(
-            serializer_env,
-            'environments',
-            only_main_property=kwargs.get('only_main_property', False)
-        )
-        return data
-
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
@@ -179,17 +152,26 @@ class EnvEnvVipRelatedView(APIView):
         """
         try:
             only_main_property = True
-            if not kwargs.get('environment_vip_ids'):
+            if not kwargs.get('environment_vip_id'):
                 environments = facade.list_environment_environment_vip_related()
             else:
-                env_id = kwargs.get('environment_vip_ids').split(';')
+                env_id = kwargs.get('environment_vip_id')
                 environments = facade.list_environment_environment_vip_related(env_id)
 
-            data = self.render(
+            # serializer environments
+            serializer_env = serializers.EnvironmentDetailsSerializer(
                 environments,
+                many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude,
+                exclude=self.exclude
+            )
+
+            # prepare serializer with customized properties
+            data = render_to_json(
+                serializer_env,
+                main_property='environments',
+                request=request,
                 only_main_property=only_main_property
             )
 

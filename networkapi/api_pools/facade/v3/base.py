@@ -180,7 +180,7 @@ def get_pool_by_search(search=dict()):
 
     pools = ServerPool.objects.filter()
 
-    pool_map = build_query_to_datatable_v3(pools, 'pools', search)
+    pool_map = build_query_to_datatable_v3(pools, search)
 
     return pool_map
 

@@ -37,6 +37,8 @@ def build_query_to_datatable(query_set, asorting_cols, custom_search,
             output_q = output_q | Q(**kwargz) if output_q else Q(**kwargz)
         query_set = query_set.filter(output_q)
 
+    query_set = query_set.distinct()
+
     total = query_set.count()
     # Slice pages
     query_set = query_set[start_record:end_record]
@@ -45,12 +47,11 @@ def build_query_to_datatable(query_set, asorting_cols, custom_search,
     return query_set, total
 
 
-def build_query_to_datatable_v3(query_set, main_property, search={}):
+def build_query_to_datatable_v3(query_set, search={}):
     """
     Build query using params received and return with dict
 
     :param query_set: Object "query" with data
-    :param main_property: Property used in map returned as identifier of data main
     :param search.extends_search: Permmit to filter objects by relationship or
     :param search.asorting_cols: List of fields to use in "order_by"
     :param search.custom_search: Value generic to search in some fields
@@ -87,10 +88,11 @@ def build_query_to_datatable_v3(query_set, main_property, search={}):
         search_query["custom_search"],
         search_query["searchable_columns"],
         search_query["start_record"],
-        search_query["end_record"])
+        search_query["end_record"]
+    )
 
     obj_map = dict()
-    obj_map[main_property] = query_set
+    obj_map['query_set'] = query_set
     obj_map["total"] = total
 
     obj_map["next_search"] = search_query.copy()

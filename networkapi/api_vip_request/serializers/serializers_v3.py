@@ -139,7 +139,7 @@ class VipRequestListSerializer(serializers.ModelSerializer):
         )
 
 
-class VipRequestSerializer(serializers.ModelSerializer):
+class VipRequestSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
     options = serializers.SerializerMethodField('get_options')
@@ -225,7 +225,7 @@ class VipRequestPermDetailsSerializer(serializers.ModelSerializer):
         )
 
 
-class VipRequestTableSerializer(serializers.ModelSerializer):
+class VipRequestTableSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
     business = serializers.CharField(

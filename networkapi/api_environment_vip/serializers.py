@@ -22,7 +22,7 @@ class EnvironmentVipSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class OptionVipSerializer(serializers.ModelSerializer):
+class OptionVipSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
     class Meta:
@@ -34,7 +34,7 @@ class OptionVipSerializer(serializers.ModelSerializer):
         )
 
 
-class OptionVipEnvironmentVipSerializer(serializers.ModelSerializer):
+class OptionVipEnvironmentVipSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
     option = OptionVipSerializer()
 

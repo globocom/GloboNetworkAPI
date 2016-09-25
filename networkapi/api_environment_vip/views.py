@@ -71,9 +71,9 @@ class EnvironmentVipStepOneView(APIView):
         try:
             data = request.GET
 
-            finality = data.get('finality')
-            client = data.get('client')
-            environmentp44 = data.get('environmentp44')
+            finality = data.get('finality', '')
+            client = data.get('client', '')
+            environmentp44 = data.get('environmentp44', '')
 
             fields = (
                 'id',
@@ -83,18 +83,19 @@ class EnvironmentVipStepOneView(APIView):
                 'description'
             )
 
-            if client != '' and finality != '' and environmentp44 != '':
-                obj = EnvironmentVip().get_by_values(finality, client, environmentp44)
+            if client != '' and finality != '':
+                if environmentp44 != '':
+                    obj = EnvironmentVip().get_by_values(
+                        finality, client, environmentp44)
+                    many = False
+                else:
+                    obj = EnvironmentVip().list_all_ambientep44_by_finality_and_cliente(
+                        finality, client)
+                    many = True
+
                 evip_values = serializers.EnvironmentVipSerializer(
                     obj,
-                    many=False,
-                    fields=fields
-                ).data
-            elif client != '' and finality != '':
-                obj = EnvironmentVip().list_all_ambientep44_by_finality_and_cliente(finality, client)
-                evip_values = serializers.EnvironmentVipSerializer(
-                    obj,
-                    many=True,
+                    many=many,
                     fields=fields
                 ).data
             elif finality != '':
