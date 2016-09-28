@@ -129,7 +129,7 @@ class IpConfigSerializer(DynamicFieldsModelSerializer):
     subnet = serializers.RelatedField(source='ip_config.subnet')
     new_prefix = serializers.RelatedField(source='ip_config.new_prefix')
     type = serializers.RelatedField(source='ip_config.type')
-    network_type = serializers.RelatedField(source='ip_config.network_type')
+    network_type = serializers.RelatedField(source='ip_config.network_type.id')
 
     class Meta:
         model = ConfigEnvironment

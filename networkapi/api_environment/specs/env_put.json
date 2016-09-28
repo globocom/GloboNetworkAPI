@@ -88,6 +88,32 @@
               "integer",
               "null"
             ]
+          },
+          "configs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "subnet": {
+                  "type": "string"
+                },
+                "new_prefix": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "network_type": {
+                  "type": "integer"
+                }
+              }
+            }
           }
         },
         "required": [

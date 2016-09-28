@@ -809,6 +809,9 @@ class Ambiente(BaseModel):
                     raise FilterNotFoundError(
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
 
+            if self.father_environment is not None:
+                self.father_environment = Ambiente.get_by_pk(self.father_environment)
+
             return self.save()
 
         except FilterNotFoundError, e:
@@ -870,6 +873,8 @@ class Ambiente(BaseModel):
         except (KeyError):
             l3_group_id = environment.grupo_l3_id
             pass
+
+        environment.father_environment = Ambiente.get_by_pk(kwargs['father_environment_id'])
 
         try:
             try:
@@ -1062,6 +1067,32 @@ class IPConfig(BaseModel):
             cls.log.error(u'Error finding ConfigEnvironment.')
             raise ConfigEnvironmentError(
                 e, u'Error finding ConfigEnvironment.')
+
+    @staticmethod
+    def create(environment_id, configuration):
+        """
+        @raise IPConfigError: Error saving IPConfig by ID.
+        """
+        try:
+
+            ip_config = IPConfig()
+
+            ip_config.subnet = configuration.get('subnet')
+            ip_config.new_prefix = configuration.get('new_prefix')
+            ip_config.type = configuration.get('type')
+            ip_config.network_type_id = configuration.get('network_type')
+
+            ip_config.save()
+
+            config_environment = ConfigEnvironment()
+            config_environment.ip_config = ip_config
+            config_environment.environment_id = environment_id
+
+            config_environment.save()
+
+            return ip_config
+        except Exception, e:
+            raise IPConfigError(e, u'Error saving IpConfig.')
 
     @staticmethod
     def remove(cls, authenticated_user, environment_id, configuration_id):

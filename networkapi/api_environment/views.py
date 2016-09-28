@@ -91,7 +91,7 @@ class EnvironmentDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('pool_post')
+    @raise_json_validate('environment_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -109,7 +109,7 @@ class EnvironmentDBView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('pool_post')
+    @raise_json_validate('environment_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """

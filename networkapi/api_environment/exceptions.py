@@ -9,3 +9,11 @@ class EnvironmentDoesNotExistException(APIException):
 
     def __init__(self, msg=None):
         self.detail = self.default_detail if not msg else msg
+
+
+class ConfigIpDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Configs Ip Does Not Exist.'
+
+    def __init__(self, msg=None):
+        self.detail = self.default_detail if not msg else msg
