@@ -77,6 +77,23 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
+            'father_environment'
+        )
+        allow_fields = (
+            'id',
+            'grupo_l3',
+            'ambiente_logico',
+            'divisao_dc',
+            'filter',
+            'acl_path',
+            'ipv4_template',
+            'ipv6_template',
+            'link',
+            'min_num_vlan_1',
+            'max_num_vlan_1',
+            'min_num_vlan_2',
+            'max_num_vlan_2',
+            'vrf',
             'father_environment',
             'configs'
         )
@@ -120,6 +137,24 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
             'ambiente_logico',
             'divisao_dc',
             'filter'
+        )
+        allow_fields = (
+            'id',
+            'grupo_l3',
+            'ambiente_logico',
+            'divisao_dc',
+            'filter',
+            'acl_path',
+            'ipv4_template',
+            'ipv6_template',
+            'link',
+            'min_num_vlan_1',
+            'max_num_vlan_1',
+            'min_num_vlan_2',
+            'max_num_vlan_2',
+            'vrf',
+            'father_environment',
+            'configs'
         )
 
 

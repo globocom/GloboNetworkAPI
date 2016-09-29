@@ -113,33 +113,33 @@ def update_environment(env):
     )
 
     # configs of environment
-    env_id = env.get('id')
-    configs = env.get('configs', [])
-    ips_by_env = IPConfig.get_by_environment(None, env_id)
-    ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+    # env_id = env.get('id')
+    # configs = env.get('configs', [])
+    # ips_by_env = IPConfig.get_by_environment(None, env_id)
+    # ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
 
-    if configs:
-        # configs with ids
-        ids_conf_receive = [cfg.get('id') for cfg in configs
-                            if cfg.get('id')]
+    # if configs:
+    #     # configs with ids
+    #     ids_conf_receive = [cfg.get('id') for cfg in configs
+    #                         if cfg.get('id')]
 
-        # configs to update: configs with id
-        cfg_upt = [cfg for cfg in configs if cfg.get('id') and
-                   cfg.get('id') in ids_conf_current]
+    #     # configs to update: configs with id
+    #     cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+    #                cfg.get('id') in ids_conf_current]
 
-        # configs to create: configs without id
-        cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+    #     # configs to create: configs without id
+    #     cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
 
-        # configs to delete: configs not received
-        cfg_del = [id_conf for id_conf in ids_conf_current
-                   if id_conf not in ids_conf_receive]
+    #     # configs to delete: configs not received
+    #     cfg_del = [id_conf for id_conf in ids_conf_current
+    #                if id_conf not in ids_conf_receive]
 
-        update_configs(cfg_upt, env_id)
-        create_configs(cfg_ins, env_id)
-        delete_configs(cfg_del, env_id)
+    #     update_configs(cfg_upt, env_id)
+    #     create_configs(cfg_ins, env_id)
+    #     delete_configs(cfg_del, env_id)
 
-    else:
-        delete_configs(ids_conf_current, env_id)
+    # else:
+    #     delete_configs(ids_conf_current, env_id)
 
     return env_obj
 
@@ -170,7 +170,7 @@ def create_environment(env):
 
     env_obj.create(None)
 
-    create_configs(env.get('configs', []), env_obj.id)
+    # create_configs(env.get('configs', []), env_obj.id)
 
     return env_obj
 

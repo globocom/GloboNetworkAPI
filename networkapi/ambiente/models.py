@@ -874,7 +874,10 @@ class Ambiente(BaseModel):
             l3_group_id = environment.grupo_l3_id
             pass
 
-        environment.father_environment = Ambiente.get_by_pk(kwargs['father_environment_id'])
+        if kwargs['father_environment_id']:
+            environment.father_environment = Ambiente.get_by_pk(kwargs['father_environment_id'])
+        else:
+            environment.father_environment = None
 
         try:
             try:

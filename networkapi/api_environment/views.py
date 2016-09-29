@@ -32,6 +32,9 @@ class EnvironmentDBView(APIView):
         """
         Returns a list of environment by ids ou dict
         """
+
+        details = request.GET.get("details", 0)
+
         default_fields = (
             'id',
             'grupo_l3',
@@ -65,8 +68,11 @@ class EnvironmentDBView(APIView):
 
             self.fields = self.fields if self.fields else default_fields
 
+            serializer_class = serializers.EnvironmentV3Serializer \
+                if details == 1 else serializers.EnvironmentDetailsSerializer
+
             # serializer environments
-            serializer_env = serializers.EnvironmentV3Serializer(
+            serializer_env = serializer_class(
                 environments,
                 many=True,
                 fields=self.fields,
