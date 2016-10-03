@@ -1,25 +1,46 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import os
 import unittest
+
 from django.core.exceptions import ObjectDoesNotExist
-from mock import patch, MagicMock
+from mock import MagicMock
+from mock import patch
 from rest_framework.test import APIClient
-from networkapi.ambiente.models import Ambiente, EnvironmentVip, DivisaoDc, AmbienteLogico, GrupoL3
-from networkapi.api_pools.exceptions import *
+
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteLogico
+from networkapi.ambiente.models import DivisaoDc
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import GrupoL3
+from networkapi.api_pools.exceptions import CreatedPoolIdentifierException
+from networkapi.api_pools.exceptions import InvalidRealPoolException
+from networkapi.api_pools.exceptions import ScriptAlterLimitPoolDiffMembersException
+from networkapi.api_pools.exceptions import ScriptAlterLimitPoolException
+from networkapi.api_pools.exceptions import ScriptAlterPriorityPoolMembersException
+from networkapi.api_pools.exceptions import ScriptAlterServiceDownActionException
+from networkapi.api_pools.exceptions import ScriptCreatePoolException
+from networkapi.api_pools.exceptions import UpdateEnvironmentPoolCreatedException
+from networkapi.api_pools.exceptions import UpdateEnvironmentServerPoolMemberException
+from networkapi.api_pools.exceptions import UpdateEnvironmentVIPException
 from networkapi.api_pools.models import OptionPool
 from networkapi.api_rest.exceptions import EnvironmentEnvironmentVipNotBoundedException
 from networkapi.equipamento.models import Equipamento
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.ip.models import Ip
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.test import mock_login, load_json
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.test import load_json
+from networkapi.test import mock_login
+
 
 class PoolSaveTestCase(unittest.TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.mock_get_environment_by_id(Ambiente(id = 1))
+        self.mock_get_environment_by_id(Ambiente(id=1))
 
     def tearDown(self):
         patch.stopall()
@@ -34,8 +55,8 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_duplicate_identifier(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
-        self.mock_filter_server_pool_by_identifier(ServerPool(identifier = "pool_1"))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
+        self.mock_filter_server_pool_by_identifier(ServerPool(identifier="pool_1"))
 
         response = self.client.post('/api/pools/save/', self.load_pool_json('pool.json'), format='json')
         self.assertEquals(400, response.status_code)
@@ -51,7 +72,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_invalid_identifier(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
 
         response = self.client.post('/api/pools/save/', self.load_pool_json('pool_with_invalid_identifier.json'), format='json')
@@ -60,7 +81,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_invalid_health_check(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
 
         response = self.client.post('/api/pools/save/', self.load_pool_json('pool_with_invalid_health_check.json'), format='json')
@@ -69,7 +90,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_pool_already_created_on_equipment(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(UpdateEnvironmentPoolCreatedException())
@@ -81,7 +102,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_pool_associated_with_one_or_more_vips(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(UpdateEnvironmentVIPException())
@@ -93,7 +114,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_pool_associated_with_one_or_more_pool_members(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(UpdateEnvironmentServerPoolMemberException())
@@ -105,7 +126,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_pool_already_having_an_identifier_saved(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(CreatedPoolIdentifierException())
@@ -117,7 +138,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_fail_on_change_pool_limits(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptAlterLimitPoolDiffMembersException())
@@ -129,7 +150,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_fail_on_execute_limit_script_for_pool(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptAlterLimitPoolException())
@@ -141,7 +162,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_fail_on_execute_create_pool_script(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptCreatePoolException())
@@ -153,7 +174,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_fail_on_create_service_down_action(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool(ScriptAlterServiceDownActionException())
@@ -165,7 +186,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_invalid_real_data(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool((self.create_server_pool_model(), None))
@@ -179,7 +200,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_environment_not_linked_to_vip_environment(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool((self.create_server_pool_model(), None))
@@ -193,13 +214,12 @@ class PoolSaveTestCase(unittest.TestCase):
         self.assertTrue(prepare_to_save_reals_mock.called)
         self.assertTrue(reals_can_associate_server_pool_mock.called)
 
-
     @mock_login
     def test_reals_can_associate_server_pool_given_environment_not_linked_to_vip_environment(self):
-        #imported locally given conflict in namespace
-        from networkapi.api_pools.views import reals_can_associate_server_pool
+        # imported locally given conflict in namespace
+        from networkapi.api_pools.views.v1 import reals_can_associate_server_pool
 
-        self.mock_get_environment_vips_by_environment_id(EnvironmentVip(id = 1, finalidade_txt = 'environment_1'))
+        self.mock_get_environment_vips_by_environment_id(EnvironmentVip(id=1, finalidade_txt='environment_1'))
         self.mock_get_environment_list_by_environment_vip_list([])
         self.mock_get_ip_by_ok(self.create_ipv4())
         self.mock_find_environment_by_id(self.create_environment())
@@ -209,10 +229,10 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_reals_can_associate_server_pool_given_environment_linked_to_vip_environment(self):
-        #imported locally given conflict in namespace
-        from networkapi.api_pools.views import reals_can_associate_server_pool
+        # imported locally given conflict in namespace
+        from networkapi.api_pools.views.v1 import reals_can_associate_server_pool
 
-        self.mock_get_environment_vips_by_environment_id(EnvironmentVip(id = 1, finalidade_txt = 'environment_1'))
+        self.mock_get_environment_vips_by_environment_id(EnvironmentVip(id=1, finalidade_txt='environment_1'))
         self.mock_get_environment_list_by_environment_vip_list([self.create_environment()])
         self.mock_get_ip_by_ok(self.create_ipv4())
         self.mock_find_environment_by_id(self.create_environment())
@@ -221,7 +241,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_script_error_on_save_pool(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool((self.create_server_pool_model(), None))
@@ -239,7 +259,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_script_error_change_pool_priority(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool((self.create_server_pool_model(), None))
@@ -257,7 +277,7 @@ class PoolSaveTestCase(unittest.TestCase):
 
     @mock_login
     def test_save_pool_given_(self):
-        self.mock_get_service_down_action_by_environment(OptionPool(name = 'none'))
+        self.mock_get_service_down_action_by_environment(OptionPool(name='none'))
         self.mock_filter_server_pool_by_identifier(None)
         self.mock_get_or_create_healthcheck(Healthcheck())
         save_pool_mock = self.mock_save_server_pool((self.create_server_pool_model(), None))
@@ -275,7 +295,7 @@ class PoolSaveTestCase(unittest.TestCase):
         self.assertTrue(reals_can_associate_server_pool_mock.called)
         self.assertTrue(save_server_pool_member_mock.called)
 
-#UTILS
+# UTILS
     def create_pool_member(self):
         pool = self.create_server_pool_model()
         member = ServerPoolMember(
@@ -287,7 +307,7 @@ class PoolSaveTestCase(unittest.TestCase):
             limit=pool.default_limit,
             port_real=8080
         )
-        member.equipment = Equipamento(id = 1, nome = "l-59c0df40-624d-4174-ad7e-a67e54bb3ced")
+        member.equipment = Equipamento(id=1, nome="l-59c0df40-624d-4174-ad7e-a67e54bb3ced")
         return member
 
     def create_real_dict(self):
@@ -306,20 +326,20 @@ class PoolSaveTestCase(unittest.TestCase):
 
     def create_server_pool_model(self):
         return ServerPool(
-            id = 1,
-            default_port = 8080,
-            identifier = "pool_1",
-            environment = Ambiente(id = 1)
+            id=1,
+            default_port=8080,
+            identifier="pool_1",
+            environment=Ambiente(id=1)
         )
 
     def create_environment(self):
-        return Ambiente(divisao_dc=DivisaoDc(nome='division_1'), ambiente_logico=AmbienteLogico(nome='env'), grupo_l3 = GrupoL3(nome='l3'))
-    
+        return Ambiente(divisao_dc=DivisaoDc(nome='division_1'), ambiente_logico=AmbienteLogico(nome='env'), grupo_l3=GrupoL3(nome='l3'))
+
     def load_pool_json(self, file_name):
         path = os.path.dirname(os.path.realpath(__file__)) + '/' + file_name
         return load_json(path)
 
-    #MOCKS
+    # MOCKS
     def mock_get_service_down_action_by_environment(self, option_pool):
         mock = patch("networkapi.api_pools.models.OptionPool.get_all_by_type_and_environment").start()
         query_return_mock = MagicMock()
@@ -339,10 +359,10 @@ class PoolSaveTestCase(unittest.TestCase):
     def mock_filter_server_pool_by_identifier(self, server_pool):
         mock = patch("networkapi.requisicaovips.models.ServerPool.objects.filter").start()
         mock.return_value = MagicMock()
-        mock.return_value.count = lambda : 1 if server_pool is not None else 0
+        mock.return_value.count = lambda: 1 if server_pool is not None else 0
 
     def mock_get_or_create_healthcheck(self, healthcheck):
-        mock = patch("networkapi.api_pools.views.get_or_create_healthcheck").start()
+        mock = patch("networkapi.api_pools.views.v1.get_or_create_healthcheck").start()
         mock.return_value = healthcheck
 
     def mock_get_environment_by_id(self, environment):
@@ -350,7 +370,7 @@ class PoolSaveTestCase(unittest.TestCase):
         mock.return_value = environment
 
     def mock_save_server_pool(self, response):
-        mock = patch("networkapi.api_pools.views.save_server_pool").start()
+        mock = patch("networkapi.api_pools.views.v1.save_server_pool").start()
         if(issubclass(response.__class__, Exception)):
             mock.side_effect = response
         else:
@@ -358,7 +378,7 @@ class PoolSaveTestCase(unittest.TestCase):
         return mock
 
     def mock_prepare_to_save_reals(self, response):
-        mock = patch("networkapi.api_pools.views.prepare_to_save_reals").start()
+        mock = patch("networkapi.api_pools.views.v1.prepare_to_save_reals").start()
         if(issubclass(response.__class__, Exception)):
             mock.side_effect = response
         else:
@@ -366,7 +386,7 @@ class PoolSaveTestCase(unittest.TestCase):
         return mock
 
     def mock_reals_can_associate_server_pool(self, response):
-        mock = patch("networkapi.api_pools.views.reals_can_associate_server_pool").start()
+        mock = patch("networkapi.api_pools.views.v1.reals_can_associate_server_pool").start()
         if(issubclass(response.__class__, Exception)):
             mock.side_effect = response
         else:
@@ -392,7 +412,7 @@ class PoolSaveTestCase(unittest.TestCase):
         patch('networkapi.ip.models.Ip.get_by_pk').start().return_value = ip
 
     def mock_save_server_pool_member(self, response):
-        mock = patch("networkapi.api_pools.views.save_server_pool_member").start()
+        mock = patch("networkapi.api_pools.views.v1.save_server_pool_member").start()
         if(issubclass(response.__class__, Exception)):
             mock.side_effect = response
         else:

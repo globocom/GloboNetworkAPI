@@ -6,10 +6,10 @@ from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer
 from networkapi.api_environment_vip.serializers import OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
 from networkapi.api_group import serializers as grp_serializers
-from networkapi.api_pools.serializers import Ipv4DetailsSerializer
-from networkapi.api_pools.serializers import Ipv4Serializer
-from networkapi.api_pools.serializers import Ipv6DetailsSerializer
-from networkapi.api_pools.serializers import Ipv6Serializer
+from networkapi.api_ip.serializers import Ipv4DetailsSerializer
+from networkapi.api_ip.serializers import Ipv6DetailsSerializer
+from networkapi.api_network.serializers import Ipv4Serializer
+from networkapi.api_network.serializers import Ipv6Serializer
 from networkapi.api_pools.serializers import PoolV3DetailsSerializer
 from networkapi.api_vip_request.models import VipRequest
 from networkapi.api_vip_request.models import VipRequestGroupPermission
@@ -254,9 +254,21 @@ class VipRequestTableSerializer(DynamicFieldsModelSerializer):
         )
     )
 
-    ipv4 = Ipv4DetailsSerializer()
+    ipv4 = Ipv4DetailsSerializer(
+        fields=(
+            'id',
+            'ip_formated',
+            'description',
+        )
+    )
 
-    ipv6 = Ipv6DetailsSerializer()
+    ipv6 = Ipv6DetailsSerializer(
+        fields=(
+            'id',
+            'ip_formated',
+            'description',
+        )
+    )
 
     def get_eqpt(self, obj):
         eqpts = list()
@@ -329,9 +341,21 @@ class VipRequestDetailsSerializer(DynamicFieldsModelSerializer):
         )
     )
 
-    ipv4 = Ipv4DetailsSerializer()
+    ipv4 = Ipv4DetailsSerializer(
+        fields=(
+            'id',
+            'ip_formated',
+            'description',
+        )
+    )
 
-    ipv6 = Ipv6DetailsSerializer()
+    ipv6 = Ipv6DetailsSerializer(
+        fields=(
+            'id',
+            'ip_formated',
+            'description',
+        )
+    )
 
     options = serializers.SerializerMethodField('get_options')
 

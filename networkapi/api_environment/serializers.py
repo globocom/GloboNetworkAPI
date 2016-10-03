@@ -77,9 +77,10 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
-            'father_environment'
+            'father_environment',
+            'configs'
         )
-        allow_fields = (
+        default_fields = (
             'id',
             'grupo_l3',
             'ambiente_logico',
@@ -94,8 +95,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
-            'father_environment',
-            'configs'
+            'father_environment'
         )
 
     def get_configs(self, obj):
@@ -105,12 +105,12 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         return configs_serializer.data
 
     @staticmethod
-    def get_maping_eager_loading(self):
-        maping = {
+    def get_mapping_eager_loading(self):
+        mapping = {
             'configs': self.setup_eager_loading_configs
         }
 
-        return maping
+        return mapping
 
     @staticmethod
     def setup_eager_loading_configs(queryset):
@@ -124,6 +124,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
     name = serializers.RelatedField(source='name')
+    configs = serializers.SerializerMethodField('get_configs')
 
     grupo_l3 = GrupoL3Serializer()
     ambiente_logico = AmbienteLogicoSerializer()
@@ -132,13 +133,6 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Ambiente
         fields = (
-            'id',
-            'grupo_l3',
-            'ambiente_logico',
-            'divisao_dc',
-            'filter'
-        )
-        allow_fields = (
             'id',
             'grupo_l3',
             'ambiente_logico',
@@ -156,6 +150,29 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
             'father_environment',
             'configs'
         )
+        default_fields = (
+            'id',
+            'grupo_l3',
+            'ambiente_logico',
+            'divisao_dc',
+            'filter',
+            'acl_path',
+            'ipv4_template',
+            'ipv6_template',
+            'link',
+            'min_num_vlan_1',
+            'max_num_vlan_1',
+            'min_num_vlan_2',
+            'max_num_vlan_2',
+            'vrf',
+            'father_environment'
+        )
+
+    def get_configs(self, obj):
+        configs = obj.configenvironment_set.all()
+        configs_serializer = IpConfigSerializer(configs, many=True)
+
+        return configs_serializer.data
 
 
 class IpConfigSerializer(DynamicFieldsModelSerializer):

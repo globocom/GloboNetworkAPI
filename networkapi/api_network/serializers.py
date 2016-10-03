@@ -1,8 +1,28 @@
-from networkapi.api_network.models import DHCPRelayIPv4, DHCPRelayIPv6
-from networkapi.api_pools.serializers import Ipv4Serializer, Ipv6Serializer
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
-
 from rest_framework import serializers
+
+from networkapi.api_network.models import DHCPRelayIPv4
+from networkapi.api_network.models import DHCPRelayIPv6
+from networkapi.ip.models import Ip
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv6
+from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+
+class Ipv4Serializer(DynamicFieldsModelSerializer):
+
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ip
+
+
+class Ipv6Serializer(DynamicFieldsModelSerializer):
+
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ipv6
 
 
 class DHCPRelayIPv4Serializer(serializers.ModelSerializer):

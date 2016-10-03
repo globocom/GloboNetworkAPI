@@ -24,6 +24,15 @@ class Generic(BasePlugin):
     # VIP
     #######################################
     @logger
+    def get_name_eqpt(self, obj, port):
+        address = obj.ipv4.ip_formated \
+            if obj.ipv4 else obj.ipv6.ip_formated
+
+        name_vip = 'VIP%s_%s_%s' % (obj.id, address, port)
+
+        return name_vip
+
+    @logger
     @util.connection
     def delete_vip(self, vips):
         tratado = util.trata_param_vip(vips)

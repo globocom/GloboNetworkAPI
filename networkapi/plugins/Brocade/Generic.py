@@ -146,6 +146,15 @@ class Generic(BasePlugin):
     #######################################
     # VIP
     #######################################
+    @util.logger
+    def get_name_eqpt(self, obj, port):
+        address = obj.ipv4.ip_formated \
+            if obj.ipv4 else obj.ipv6.ip_formated
+
+        name_vip = 'VIP%s_%s' % (obj.id, address)
+
+        return name_vip
+
     @util.connection
     @util.logger
     def create_vip(self, vips):

@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,3 +13,42 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# -*- coding:utf-8 -*-
+from rest_framework import serializers
+
+from networkapi.api_environment.serializers import EnvironmentV3Serializer
+from networkapi.util.serializers import DynamicFieldsModelSerializer
+from networkapi.vlan.models import Vlan
+
+
+class VlanSerializerV3(DynamicFieldsModelSerializer):
+    name = serializers.Field(source='nome')
+    description = serializers.Field(source='descricao')
+    active = serializers.Field(source='ativada')
+    environment = EnvironmentV3Serializer()
+
+    class Meta:
+        model = Vlan
+        fields = (
+            'id',
+            'name',
+            'num_vlan',
+            'environment',
+            'description',
+            'acl_file_name',
+            'acl_valida',
+            'acl_file_name_v6',
+            'acl_valida_v6',
+            'active',
+            'vrf',
+            'acl_draft',
+            'acl_draft_v6',
+        )
+        default_fields = (
+            'id',
+            'name',
+            'num_vlan',
+            'environment',
+            'description',
+            'active',
+        )

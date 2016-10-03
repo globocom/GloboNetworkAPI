@@ -35,23 +35,6 @@ class EnvironmentDBView(APIView):
 
         details = request.GET.get("details", 0)
 
-        default_fields = (
-            'id',
-            'grupo_l3',
-            'ambiente_logico',
-            'divisao_dc',
-            'filter',
-            'acl_path',
-            'ipv4_template',
-            'ipv6_template',
-            'link',
-            'min_num_vlan_1',
-            'max_num_vlan_1',
-            'min_num_vlan_2',
-            'max_num_vlan_2',
-            'vrf',
-            'father_environment'
-        )
         try:
             if not kwargs.get('environment_ids'):
                 obj_model = facade.get_environment_by_search(self.search)
@@ -60,13 +43,8 @@ class EnvironmentDBView(APIView):
             else:
                 environment_ids = kwargs.get('environment_ids').split(';')
                 environments = facade.get_environment_by_ids(environment_ids)
-                default_list = list(default_fields)
-                default_list.append('configs')
-                default_fields = tuple(default_list)
                 only_main_property = True
                 obj_model = None
-
-            self.fields = self.fields if self.fields else default_fields
 
             serializer_class = serializers.EnvironmentV3Serializer \
                 if details == 1 else serializers.EnvironmentDetailsSerializer

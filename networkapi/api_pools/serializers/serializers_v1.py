@@ -1,15 +1,19 @@
 # -*- coding:utf-8 -*-
+from rest_framework import serializers
 
 from networkapi.ambiente.models import Ambiente
-from networkapi.api_pools.models import OpcaoPoolAmbiente, OptionPool, OptionPoolEnvironment
+from networkapi.api_network.serializers import Ipv4Serializer
+from networkapi.api_network.serializers import Ipv6Serializer
+from networkapi.api_pools.models import OpcaoPoolAmbiente
+from networkapi.api_pools.models import OptionPool
+from networkapi.api_pools.models import OptionPoolEnvironment
 from networkapi.equipamento.models import Equipamento
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.script_utils import exec_script
-from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember, VipPortToPool
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.requisicaovips.models import VipPortToPool
 from networkapi.settings import POOL_REAL_CHECK
-
-from rest_framework import serializers
 
 
 class HealthcheckSerializer(serializers.ModelSerializer):
@@ -55,22 +59,6 @@ class ServerPoolDatatableSerializer(serializers.ModelSerializer):
     # def get_vip_ports(self, obj):
     #
     #     return [p.port_vip for p in obj.vip_ports]
-
-
-class Ipv4Serializer(serializers.ModelSerializer):
-
-    ip_formated = serializers.Field(source='ip_formated')
-
-    class Meta:
-        model = Ip
-
-
-class Ipv6Serializer(serializers.ModelSerializer):
-
-    ip_formated = serializers.Field(source='ip_formated')
-
-    class Meta:
-        model = Ipv6
 
 
 class EquipamentoSerializer(serializers.ModelSerializer):

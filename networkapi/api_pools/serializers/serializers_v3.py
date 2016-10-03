@@ -70,36 +70,6 @@ class Ipv6BasicSerializer(serializers.ModelSerializer):
         )
 
 
-class Ipv4DetailsSerializer(serializers.ModelSerializer):
-
-    id = serializers.Field()
-    ip_formated = serializers.Field(source='ip_formated')
-    description = serializers.Field(source='descricao')
-
-    class Meta:
-        model = Ip
-        fields = (
-            'id',
-            'ip_formated',
-            'description'
-        )
-
-
-class Ipv6DetailsSerializer(serializers.ModelSerializer):
-
-    id = serializers.Field()
-    ip_formated = serializers.Field(source='ip_formated')
-    description = serializers.Field(source='descricao')
-
-    class Meta:
-        model = Ipv6
-        fields = (
-            'id',
-            'ip_formated',
-            'description'
-        )
-
-
 class OptionPoolV3DetailsSerializer(DynamicFieldsModelSerializer):
 
     class Meta:

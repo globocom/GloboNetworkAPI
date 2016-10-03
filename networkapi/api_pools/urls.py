@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns
+from django.conf.urls import url
 
-from networkapi.api_pools import views
+from networkapi.api_pools.views import v3 as views_v3
 
 urlpatterns = patterns(
-    'networkapi.api_pools.views',
+    'networkapi.api_pools.views.v1',
     url(r'^pools/save/$', 'save'),
     url(r'^pools/save_reals/$', 'save_reals'),
     url(r'^pools/delete/$', 'delete'),
@@ -46,12 +47,12 @@ urlpatterns = patterns(
     ########################
     # Manage Pool V3
     ########################
-    url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/member/status/$', views.PoolMemberStateView.as_view()),  # GET, PUT
-    url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/$', views.PoolDeployView.as_view()),  # POST, PUT, DELETE
+    url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/member/status/$', views_v3.PoolMemberStateView.as_view()),  # GET, PUT
+    url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/$', views_v3.PoolDeployView.as_view()),  # POST, PUT, DELETE
     # url(r'^v3/pool/task/deploy/$', views.PoolDeployTaskView.as_view()),  # POST, PUT, DELETE
-    url(r'^v3/pool/details/((?P<pool_ids>[;\w]+)/)?$', views.PoolDBDetailsView.as_view()),  # GET
-    url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views.PoolDBView.as_view()),  # POST, PUT, GET, DELETE
-    url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$', views.PoolEnvironmentVip.as_view()),  # GET
+    url(r'^v3/pool/details/((?P<pool_ids>[;\w]+)/)?$', views_v3.PoolDBDetailsView.as_view()),  # GET
+    url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views_v3.PoolDBView.as_view()),  # POST, PUT, GET, DELETE
+    url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$', views_v3.PoolEnvironmentVip.as_view()),  # GET
 
-    url(r'^v3/option-pool/environment/(?P<environment_id>\d+)/$', views.OptionPoolEnvironmentView.as_view()),
+    url(r'^v3/option-pool/environment/(?P<environment_id>\d+)/$', views_v3.OptionPoolEnvironmentView.as_view()),
 )

@@ -319,7 +319,7 @@ class VipRequestPoolView(APIView):
 
             vips_requests = facade.get_vip_request_by_search(self.search)
 
-            only_main_property = True
+            only_main_property = False
 
             # serializer vips
             serializer_vips = VipRequestTableSerializer(
@@ -334,6 +334,8 @@ class VipRequestPoolView(APIView):
             data = render_to_json(
                 serializer_vips,
                 main_property='vips',
+                obj_model=vips_requests,
+                request=request,
                 only_main_property=only_main_property
             )
 

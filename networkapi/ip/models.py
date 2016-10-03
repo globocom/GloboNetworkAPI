@@ -288,6 +288,12 @@ class NetworkIPv4(BaseModel):
 
     networkv4 = property(_get_formated_ip)
 
+    def _get_formated_mask(self):
+        "Returns formated mask."
+        return '%s.%s.%s.%s' % (self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4)
+
+    mask_formated = property(_get_formated_mask)
+
     @cached_property
     def dhcprelay(self):
         from networkapi.api_network.models import DHCPRelayIPv4
@@ -1231,7 +1237,7 @@ class Ip(BaseModel):
 
                 ie.delete()
 
-            from networkapi.api_pools.serializers import Ipv4Serializer
+            from networkapi.api_network.serializers import Ipv4Serializer
             serializer = Ipv4Serializer(self)
             data_to_queue = serializer.data
 
@@ -1481,6 +1487,13 @@ class NetworkIPv6(BaseModel):
         return '%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.block)
 
     networkv6 = property(_get_formated_ip)
+
+    def _get_formated_mask(self):
+        "Returns formated mask."
+        return '%s:%s:%s:%s:%s:%s:%s:%s' % (self.mask1, self.mask2, self.mask3, self.mask4,
+                                            self.mask5, self.mask6, self.mask7, self.mask8)
+
+    mask_formated = property(_get_formated_mask)
 
     @cached_property
     def dhcprelay(self):
