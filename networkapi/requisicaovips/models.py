@@ -727,10 +727,10 @@ class RequisicaoVips(BaseModel):
         @param reals_priority_map: List of reals_priority.
         @return: reals_priority_map: List of reals_priority.
         '''
-        firstValue = reals_priority_map[0]
+        first_value = reals_priority_map[0]
         valid_number_map = []
         for reals_priority in reals_priority_map:
-            valid_number_map.append(firstValue)
+            valid_number_map.append(first_value)
 
         if reals_priority_map == valid_number_map and len(reals_priority_map) != 1:
 
@@ -1832,7 +1832,7 @@ class RequisicaoVips(BaseModel):
                     'ServerPool %s ja esta indicado como criado no equipamento nao pode ser alterado.' % server_pool.identifier)
 
         vip_port_list = list()
-        pool_member_pks_removed = list()
+        # pool_member_pks_removed = list()
 
         finalidade = vip_map.get('finalidade')
         cliente = vip_map.get('cliente')
@@ -1915,7 +1915,7 @@ class RequisicaoVips(BaseModel):
             port_to_vip = port_vip.split(':')
             default_port = port_to_vip[1]
             vip_port = port_to_vip[0]
-            ip_vip = self.ip or self.ipv6
+            # ip_vip = self.ip or self.ipv6
 
             # Procura se já existe o pool
             server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self,
@@ -2370,6 +2370,12 @@ class VipPortToPool(BaseModel):
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
 
     port_vip = models.IntegerField(db_column='vip_port')
+
+    identifier = models.CharField(
+        max_length=255,
+        db_column='identifier',
+        null=True
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'vip_port_to_pool'

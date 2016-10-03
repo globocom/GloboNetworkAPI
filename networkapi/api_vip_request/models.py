@@ -149,7 +149,14 @@ class VipRequestPort(BaseModel):
 
     port = models.IntegerField(
         max_length=5,
-        db_column='port')
+        db_column='port'
+    )
+
+    identifier = models.CharField(
+        max_length=255,
+        db_column='identifier',
+        null=True
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'vip_request_port'
