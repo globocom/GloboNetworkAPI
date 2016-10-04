@@ -13,11 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from django.conf.urls import patterns
-from django.conf.urls import url
-
-urlpatterns = patterns(
-    'networkapi.api_vlan.views.v1',
-    url(r'^vlan/acl/remove/draft/(?P<id_vlan>[^/]+)/(?P<acl_type>[^/]+)/$', 'acl_remove_draft'),
-    url(r'^vlan/acl/save/draft/(?P<id_vlan>[^/]+)/(?P<acl_type>[^/]+)/$', 'acl_save_draft'),
-)
