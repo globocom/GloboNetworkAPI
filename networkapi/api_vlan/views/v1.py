@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,17 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 from django.db.transaction import commit_on_success
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-import logging
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_vlan import exceptions
+from networkapi.api_vlan.facade import v1 as facade
 from networkapi.api_vlan.permissions import Write
 from networkapi.vlan.models import Vlan
-from networkapi.api_vlan import exceptions
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_vlan import facade
 
 
 log = logging.getLogger(__name__)

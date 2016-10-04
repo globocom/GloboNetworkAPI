@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,11 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from networkapi.vlan.models import Vlan
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.api_vlan import exceptions
 from rest_framework.views import Response
+
+from networkapi.api_vlan import exceptions
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.vlan.models import Vlan
 
 type_acl_v4 = "v4"
 type_acl_v6 = "v6"
