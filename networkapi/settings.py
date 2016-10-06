@@ -302,6 +302,7 @@ PROJECT_APPS = (
     'networkapi.api_rest',
     'networkapi.api_usuario',
     # 'networkapi.api_task',
+    'networkapi.api_ogp',
     'networkapi.api_vip_request',
     'networkapi.blockrules',
     'networkapi.config',
@@ -387,6 +388,8 @@ SPECS = {
     'environment_post': 'networkapi/api_environment/specs/env_post.json',
     'environment_put': 'networkapi/api_environment/specs/env_put.json',
     'environment_vip_put': 'networkapi/api_environment_vip/specs/env_put.json',
+    'vlan_put': 'networkapi/api_vlan/specs/vlan_put.json',
+    'vlan_post': 'networkapi/api_vlan/specs/vlan_post.json',
 }
 
 ##########

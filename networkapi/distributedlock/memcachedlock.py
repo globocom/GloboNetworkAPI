@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,10 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 import time
 import uuid
-import logging
 
 log = logging.getLogger('MemcachedLock')
 
@@ -44,7 +42,8 @@ class MemcachedLock(object):
     def acquire(self, blocking=True):
         while True:
             added = self.client.add(self.key, self.instance_id, self.timeout)
-            log.warning("Added=%s" % repr(added))
+            log.warning("Added Lock=%s,Key=%s,instance_id=%s,timeout=%s" % (
+                repr(added), self.key, self.instance_id, self.timeout))
             if added:
                 break
 
@@ -66,6 +65,7 @@ class MemcachedLock(object):
             # below can delete another lock! There is no way to solve this in
             # memcached
             self.client.delete(self.key)
+            log.warning("Removed Lock,Key=%s" % (self.key))
         else:
             log.warning(
                 "I've no lock to release. Increase TIMEOUT of lock operations")

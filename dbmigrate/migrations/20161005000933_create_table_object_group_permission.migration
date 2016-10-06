@@ -1,0 +1,62 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `object_type` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(45) NOT NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '');
+
+CREATE TABLE `object_group_permission` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_user_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_object_type` INT(11) UNSIGNED NOT NULL COMMENT '',
+  `id_object` INT(11) UNSIGNED NULL COMMENT '',
+  `read` TINYINT(1) UNSIGNED NULL COMMENT '',
+  `write` TINYINT(1) UNSIGNED NULL COMMENT '',
+  `change_config` TINYINT(1) UNSIGNED NULL COMMENT '',
+  `delete` TINYINT(1) UNSIGNED NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '',
+  INDEX `fk_ogp_id_usergroup_idx` (`id_user_group` ASC)  COMMENT '',
+  INDEX `fk_ogp_id_object_type_idx` (`id_object_type` ASC)  COMMENT '',
+  UNIQUE INDEX `uniq_user_group_object` (`id_user_group` ASC, `id_object_type` ASC, `id_object` ASC)  COMMENT '',
+  CONSTRAINT `fk_ogp_id_usergroup`
+    FOREIGN KEY (`id_user_group`)
+    REFERENCES `grupos` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ogp_id_object_type`
+    FOREIGN KEY (`id_object_type`)
+    REFERENCES `object_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `object_group_permission_general` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_user_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_object_type` INT(11) UNSIGNED NOT NULL COMMENT '',
+  `read` TINYINT(1) UNSIGNED NULL COMMENT '',
+  `write` TINYINT(1) UNSIGNED NULL COMMENT '',
+  `change_config` TINYINT(1) UNSIGNED NULL COMMENT '',
+  `delete` TINYINT(1) UNSIGNED NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '',
+  INDEX `fk_ogpg_id_usergroup_idx` (`id_user_group` ASC)  COMMENT '',
+  INDEX `fk_ogpg_id_object_type_idx` (`id_object_type` ASC)  COMMENT '',
+  UNIQUE INDEX `uniq_user_group_object_general` (`id_user_group` ASC, `id_object_type` ASC)  COMMENT '',
+  CONSTRAINT `fk_ogpg_id_usergroup`
+    FOREIGN KEY (`id_user_group`)
+    REFERENCES `grupos` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ogpg_id_object_type`
+    FOREIGN KEY (`id_object_type`)
+    REFERENCES `object_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+"""
+
+SQL_DOWN = u"""
+DROP TABLE `object_group_permission`;
+DROP TABLE `object_group_permission_general`;
+DROP TABLE `object_type`;
+
+"""

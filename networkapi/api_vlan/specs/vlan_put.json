@@ -1,0 +1,72 @@
+{
+  "title": "Vlan Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "vlans"
+  ],
+  "properties": {
+    "vlans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "num_vlan": {
+            "type": "integer"
+          },
+          "environment": {
+            "type": "integer"
+          },
+          "description": {
+            "type": ["string","null"]
+          },
+          "acl_file_name": {
+            "type": ["string","null"]
+          },
+          "acl_valida": {
+            "type": "boolean"
+          },
+          "acl_file_name_v6": {
+            "type": ["string","null"]
+          },
+          "acl_valida_v6": {
+            "type": "boolean"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "vrf": {
+            "type": ["string","null"]
+          },
+          "acl_draft": {
+            "type": ["string","null"]
+          },
+          "acl_draft_v6": {
+            "type": ["string","null"]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "num_vlan",
+          "environment",
+          "description",
+          "acl_file_name",
+          "acl_valida",
+          "acl_file_name_v6",
+          "acl_valida_v6",
+          "active",
+          "vrf",
+          "acl_draft",
+          "acl_draft_v6"
+        ]
+      }
+    }
+  }
+}

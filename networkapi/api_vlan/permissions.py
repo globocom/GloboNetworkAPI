@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -17,6 +16,7 @@
 from rest_framework.permissions import BasePermission
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.api_ogp.facade import perm_obj
 from networkapi.auth import has_perm
 
 
@@ -38,3 +38,67 @@ class Write(BasePermission):
             AdminPermission.VLAN_MANAGEMENT,
             AdminPermission.WRITE_OPERATION
         )
+
+
+def deploy_obj_permission(request, *args, **kwargs):
+
+    class Perm(BasePermission):
+
+        def has_permission(self, request, view):
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_UPDATE_CONFIG_OPERATION,
+                AdminPermission.OBJ_TYPE_VLAN,
+                *args,
+                **kwargs
+            )
+
+    return Perm
+
+
+def write_obj_permission(request, *args, **kwargs):
+
+    class Perm(BasePermission):
+
+        def has_permission(self, request, view):
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_WRITE_OPERATION,
+                AdminPermission.OBJ_TYPE_VLAN,
+                *args,
+                **kwargs
+            )
+
+    return Perm
+
+
+def delete_obj_permission(request, *args, **kwargs):
+
+    class Perm(BasePermission):
+
+        def has_permission(self, request, view):
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_DELETE_OPERATION,
+                AdminPermission.OBJ_TYPE_VLAN,
+                *args,
+                **kwargs
+            )
+
+    return Perm
+
+
+def read_obj_permission(request, *args, **kwargs):
+
+    class Perm(BasePermission):
+
+        def has_permission(self, request, view):
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_READ_OPERATION,
+                AdminPermission.OBJ_TYPE_VLAN,
+                *args,
+                **kwargs
+            )
+
+    return Perm
