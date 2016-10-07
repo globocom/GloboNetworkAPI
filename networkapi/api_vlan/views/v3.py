@@ -85,7 +85,6 @@ class VlanDBView(APIView):
 
         response = list()
         for vlan in data['vlans']:
-            facade.validate_save(vlan)
             vl = facade.create_vlan(vlan, request.user)
             response.append({'id': vl.id})
 

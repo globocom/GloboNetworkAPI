@@ -1,0 +1,40 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `networkapi`.`vrf` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `vrf` VARCHAR(45) NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '');
+
+
+CREATE TABLE `networkapi`.`vrf_vlan_eqpt` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_vrf` INT UNSIGNED NOT NULL COMMENT '',
+  `id_vlan` INT UNSIGNED NOT NULL COMMENT '',
+  `id_equipment` INT UNSIGNED NOT NULL COMMENT '',
+  PRIMARY KEY (`id`)  COMMENT '',
+  INDEX `fk_vrf_vlan_eqpt_id_vrf_idx` (`id_vrf` ASC)  COMMENT '',
+  INDEX `fk_vrf_vlan_eqpt_id_vlan_idx` (`id_vlan` ASC)  COMMENT '',
+  INDEX `fk_vrf_vlan_eqpt_id_eqpt_idx` (`id_equipment` ASC)  COMMENT '',
+  UNIQUE INDEX `uq_vrf_vlan_eqpt_1` (`id_vlan` ASC, `id_equipment` ASC)  COMMENT '',
+  CONSTRAINT `fk_vrf_vlan_eqpt_id_vrf`
+    FOREIGN KEY (`id_vrf`)
+    REFERENCES `networkapi`.`vrf` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vrf_vlan_eqpt_id_vlan`
+    FOREIGN KEY (`id_vlan`)
+    REFERENCES `networkapi`.`vlans` (`id_vlan`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vrf_vlan_eqpt_id_eqpt`
+    FOREIGN KEY (`id_equipment`)
+    REFERENCES `networkapi`.`equipamentos` (`id_equip`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+"""
+
+SQL_DOWN = u"""
+DROP TABLE `networkapi`.`vrf_vlan_eqpt`;
+DROP TABLE `networkapi`.`vrf`
+"""

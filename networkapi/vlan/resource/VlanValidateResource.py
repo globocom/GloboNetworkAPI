@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.exception import InvalidValueError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
+
 import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_version_ip
-from networkapi.vlan.models import VlanError, Vlan, VlanNotFoundError
-from networkapi.ambiente.models import IP_VERSION, AmbienteNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_VLAN
-from networkapi.ambiente.models import Ambiente
 from string import split
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VLAN
+from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.ipaddr import IPNetwork
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_version_ip
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class VlanValidateResource(RestResource):
@@ -36,7 +43,7 @@ class VlanValidateResource(RestResource):
     log = logging.getLogger('VlanValidateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Treat PUT requests to Validate a vlan 
+        '''Treat PUT requests to Validate a vlan
 
         URL: vlan/<id_vlan>/validate/<network>
         '''
@@ -146,7 +153,7 @@ class VlanValidateResource(RestResource):
 
                 for equip in equips:
                     for env in equip.equipamentoambiente_set.all():
-                        if not env.ambiente_id in envs_aux:
+                        if env.ambiente_id not in envs_aux:
                             envs.append(env.ambiente)
                             envs_aux.append(env.ambiente_id)
 
@@ -157,7 +164,7 @@ class VlanValidateResource(RestResource):
                 for env in envs:
                     for vlan in env.vlan_set.all():
                         if int(vlan.num_vlan) == int(number):
-                            if ambiente.filter_id == None or vlan.ambiente.filter_id == None or int(vlan.ambiente.filter_id) != int(ambiente.filter_id):
+                            if ambiente.filter_id is None or vlan.ambiente.filter_id is None or int(vlan.ambiente.filter_id) != int(ambiente.filter_id):
                                 map['needs_confirmation'] = False
                             else:
                                 map['needs_confirmation'] = True
@@ -185,7 +192,7 @@ class VlanValidateResource(RestResource):
 
                 for equip in equips:
                     for env in equip.equipamentoambiente_set.all():
-                        if not env.ambiente_id in envs_aux:
+                        if env.ambiente_id not in envs_aux:
                             envs.append(env.ambiente)
                             envs_aux.append(env.ambiente_id)
 
@@ -214,7 +221,7 @@ class VlanValidateResource(RestResource):
                         if not is_subnet:
                             ids_exclude.append(vlan_obj.id)
                         else:
-                            if ambiente.filter_id == None or vlan_obj.ambiente.filter_id == None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
+                            if ambiente.filter_id is None or vlan_obj.ambiente.filter_id is None or int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
                                 pass
                             else:
                                 ids_exclude.append(vlan_obj.id)

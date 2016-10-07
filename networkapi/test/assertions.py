@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,8 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from networkapi.test.utils import xml2dict, log
+from networkapi.test.utils import log
+from networkapi.test.utils import xml2dict
 
 
 def assert_response_error(response, codigo, descricao=None):
@@ -31,7 +30,7 @@ def assert_response_error(response, codigo, descricao=None):
         descricao_resposta = networkapi_response['erro']['descricao']
         assert codigo_resposta in codigos, u"Código de resposta inválido: %d (descricao: %s). Esperados: %s" % (
             codigo_resposta, descricao_resposta, repr(codigos))
-        assert descricao_resposta != None
+        assert descricao_resposta is not None
         assert len(descricao_resposta) > 0
         if descricao:
             assert descricao_resposta == descricao

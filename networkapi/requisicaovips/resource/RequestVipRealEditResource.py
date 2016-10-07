@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,39 +13,75 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
-from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
-from networkapi.settings import VIP_REAL_v4_CREATE, VIP_REAL_v6_CREATE, VIP_REAL_v4_REMOVE, VIP_REAL_v6_REMOVE, VIP_REALS_v6_CREATE, VIP_REALS_v4_CREATE, \
-    VIP_REALS_v6_REMOVE, VIP_REALS_v4_REMOVE
-from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError, HealthcheckExpectError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-from networkapi.ip.models import IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError, \
-    Ip, Ipv6
+
 import logging
-from networkapi.requisicaovips.models import RequisicaoVips, \
-    RequisicaoVipsNotFoundError, RequisicaoVipsError, \
-    InvalidFinalidadeValueError, \
-    InvalidClienteValueError, InvalidAmbienteValueError, InvalidCacheValueError, \
-    InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
-    InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, \
-    InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, \
-    InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidPriorityValueError, ServerPoolMember, \
-    ServerPool, VipPortToPool
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, clone, \
-    is_valid_int_greater_equal_zero_param, is_valid_ipv4
-from networkapi.ambiente.models import EnvironmentVip, IP_VERSION
-from django.db.utils import IntegrityError
+
 from django.db import transaction
+from django.db.utils import IntegrityError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import EquipmentGroupsNotAuthorizedError
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidPriorityValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.requisicaovips.models import VipPortToPool
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.settings import VIP_REAL_v4_CREATE
+from networkapi.settings import VIP_REAL_v4_REMOVE
+from networkapi.settings import VIP_REAL_v6_CREATE
+from networkapi.settings import VIP_REAL_v6_REMOVE
+from networkapi.settings import VIP_REALS_v4_CREATE
+from networkapi.settings import VIP_REALS_v4_REMOVE
+from networkapi.settings import VIP_REALS_v6_CREATE
+from networkapi.settings import VIP_REALS_v6_REMOVE
+from networkapi.util import clone
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_ipv4
 from networkapi.util.decorators import deprecated
 
 
@@ -173,7 +208,7 @@ class RequestVipRealEditResource(RestResource):
                 variables_map['portas_servicos'] = {'porta': vip_port_list}
 
                 # clone variables_map
-                variables_map_old = clone(variables_map)
+                # variables_map_old = clone(variables_map)
 
                 # Valid ports
                 variables_map, code = vip.valid_values_ports(variables_map)
@@ -256,7 +291,7 @@ class RequestVipRealEditResource(RestResource):
                         reals_to_stay, i, new_call)
 
                     # Check ip type
-                    if is_valid_ipv4(real.get('real_ip')) == True:
+                    if is_valid_ipv4(real.get('real_ip')) is True:
                         ip_type = IP_VERSION.IPv4[1]
                         ip = Ip().get_by_pk(id_ip)
                     else:
@@ -578,12 +613,12 @@ def get_variables(map, i, new_call):
     if map['weighted']:
         weight = map['weights'][i]
     else:
-        if new_call == False:
+        if new_call is False:
             weight = 1
         else:
             weight = 0
 
-    if new_call == False:
+    if new_call is False:
         id_ip = get_id_ip(real)
     else:
         id_ip = real.get('id_ip')
@@ -592,7 +627,7 @@ def get_variables(map, i, new_call):
         port_vip = real.get('port_vip')
         port_real = real.get('port_real')
 
-    # if port_vip != None and port_real != None:
+    # if port_vip is not None and port_real is not None:
     #    new_call = True
 
     return real, priority, weight, id_ip, port_vip, port_real, new_call
@@ -605,7 +640,7 @@ def get_id_ip(real):
     equip = Equipamento().get_by_name(real['real_name'])
 
     # Check ip type
-    if is_valid_ipv4(real['real_ip']) == True:
+    if is_valid_ipv4(real['real_ip']) is True:
         oct = real['real_ip'].split('.')
         ip = Ip().get_by_octs_equipment(
             oct[0], oct[1], oct[2], oct[3], equip.id)

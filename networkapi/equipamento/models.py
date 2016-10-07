@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,25 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
-
+from _mysql_exceptions import OperationalError
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.ambiente.models import Ambiente
-
 from networkapi.grupo.models import EGrupo
-
-from networkapi.tipoacesso.models import TipoAcesso
-
-from networkapi.roteiro.models import Roteiro
-
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-
-import logging
-
 from networkapi.models.BaseModel import BaseModel
-
-from _mysql_exceptions import OperationalError
+from networkapi.roteiro.models import Roteiro
+from networkapi.tipoacesso.models import TipoAcesso
 
 
 class EquipamentoError(Exception):
@@ -246,25 +238,25 @@ class Marca(BaseModel):
         except Exception:
             cls.log.error(u'Falha ao pesquisar as marcas de equipamentos.')
             raise EquipamentoError(u'Falha ao pesquisar as marcas de equipamentos.')
-        
+
     def create(self, authenticated_user):
         try:
             Marca.get_by_name(self.nome)
             raise MarcaNameDuplicatedError(None, u'Marca com o nome %s já cadastrada.' % self.nome)
         except MarcaNotFoundError:
             pass
-        
+
         try:
             self.save()
         except Exception:
             self.log.error(u'Falha ao inserir marca de equipamento.')
             raise EquipamentoError(u'Falha ao inserir marca de equipamento.')
 
-        
+
     @classmethod
     def update(cls, authenticated_user, pk, **kwargs):
         brand = Marca.get_by_pk(pk)
-        
+
         try:
             name = kwargs['nome']
             if brand.nome.lower() != name.lower():
@@ -272,18 +264,18 @@ class Marca(BaseModel):
                 raise MarcaNameDuplicatedError(None, u'Marca com o nome %s já cadastrada.' % name)
         except (KeyError, MarcaNotFoundError):
             pass
-        
+
         try:
             brand.__dict__.update(kwargs)
             brand.save(authenticated_user)
         except Exception, e:
             cls.log.error(u'Falha ao atualizar a marca de equipamento.')
-            raise EquipamentoError(e, u'Falha ao atualizar a marca de equipamento.')   
-    
-    @classmethod 
+            raise EquipamentoError(e, u'Falha ao atualizar a marca de equipamento.')
+
+    @classmethod
     def remove(cls, authenticated_user, pk):
         brand = Marca.get_by_pk(pk)
-        
+
         try:
             if brand.modelo_set.count() > 0:
                 raise MarcaUsedByModeloError(None, u"A marca %d tem modelo associado." % brand.id)
@@ -582,16 +574,16 @@ class Equipamento(BaseModel):
     def create(self, authenticated_user, group_id):
         '''Insere um novo Equipamento
 
-        Se o grupo do equipamento, informado nos dados da requisição, for igual à “Equipamentos Orquestracao” (id = 1) 
+        Se o grupo do equipamento, informado nos dados da requisição, for igual à “Equipamentos Orquestracao” (id = 1)
         então o tipo do equipamento deverá ser igual a “Servidor Virtual” (id = 10).
 
         @return: Nothing
 
         @raise InvalidGroupToEquipmentTypeError: Equipamento do grupo “Equipamentos Orquestração” somente poderá ser criado com tipo igual a “Servidor Virtual”.
 
-        @raise EGrupoNotFoundError: Grupo não cadastrado. 
+        @raise EGrupoNotFoundError: Grupo não cadastrado.
 
-        @raise GrupoError: Falha ao pesquisar o Grupo. 
+        @raise GrupoError: Falha ao pesquisar o Grupo.
 
         @raise TipoEquipamentoNotFoundError: Tipo de equipamento nao cadastrado.
 
@@ -599,7 +591,7 @@ class Equipamento(BaseModel):
 
         @raise EquipamentoNameDuplicatedError: Nome do equipamento duplicado.
 
-        @raise EquipamentoError: Falha ou inserir o equipamento. 
+        @raise EquipamentoError: Falha ou inserir o equipamento.
         '''
         if self.nome is not None:
             self.nome = self.nome.upper()
@@ -646,7 +638,7 @@ class Equipamento(BaseModel):
 
             @raise EquipamentoNotFoundError: Equipament is not registered.
             @raise EquipamentoError: Failed to search for the Equipament.
-            @raise OperationalError: Lock wait timeout exceeded. 
+            @raise OperationalError: Lock wait timeout exceeded.
         """
         try:
             query = Equipamento.objects.filter(id=pk)
@@ -667,7 +659,7 @@ class Equipamento(BaseModel):
 
     def edit(self, user, nome, tipo_equip, modelo, maintenance=None):
         try:
-            if maintenance == None:
+            if maintenance is None:
                 maintenance = self.maintenance
             self.modelo = modelo
             self.tipo_equipamento = tipo_equip
@@ -903,7 +895,7 @@ class EquipamentoGrupo(BaseModel):
 
         @raise EGrupoNotFoundError: Grupo não cadastrado.
 
-        @raise GrupoError: Falha ao pesquisar o grupo do equipamento.  
+        @raise GrupoError: Falha ao pesquisar o grupo do equipamento.
 
         @raise EquipamentoGrupoDuplicatedError: Equipamento já está cadastrado no grupo
 
@@ -1082,8 +1074,8 @@ class EquipamentoAcesso(BaseModel):
     @classmethod
     def update(cls, authenticated_user, id_equipamento, id_tipo_acesso, **kwargs):
         """Efetua a alteração de informações de acesso a equipamentos conforme argumentos recebidos
-        @param id_equipamento: Identificador do equipamento da informação de acesso a equipamento a ser alterada 
-        @param id_tipo_acesso: Identificador do tipo de acesso da informação de acesso a equipamento a ser alterada 
+        @param id_equipamento: Identificador do equipamento da informação de acesso a equipamento a ser alterada
+        @param id_tipo_acesso: Identificador do tipo de acesso da informação de acesso a equipamento a ser alterada
         @return: Instância da informação de acesso a equipamento alterada
         @raise EquipamentoAcesso.DoesNotExist: Informação de acesso a equipamento informada é inexistente
         @raise EquipamentoError: Falha ao alterar informação de acesso a equipamento.
@@ -1111,8 +1103,8 @@ class EquipamentoAcesso(BaseModel):
     @classmethod
     def remove(cls, authenticated_user, id_equipamento, id_tipo_acesso):
         """Efetua a remoção de um tipo de acesso
-        @param id_equipamento: Identificador do equipamento da informação de acesso a equipamento a ser excluída 
-        @param id_tipo_acesso: Identificador do tipo de acesso da informação de acesso a equipamento a ser excluída 
+        @param id_equipamento: Identificador do equipamento da informação de acesso a equipamento a ser excluída
+        @param id_tipo_acesso: Identificador do tipo de acesso da informação de acesso a equipamento a ser excluída
         @return: nothing
         @raise EquipamentoAcesso.DoesNotExist: Informação de acesso a equipamento informada é inexistente
         @raise EquipamentoError: Falha ao alterar informação de acesso a equipamento.
@@ -1175,7 +1167,7 @@ class EquipamentoRoteiro(BaseModel):
 
         @raise RoteiroNotFoundError: Roteiro não cadastrado.
 
-        @raise RoteiroError: Falha ao pesquisar o roteiro.  
+        @raise RoteiroError: Falha ao pesquisar o roteiro.
 
         @raise EquipamentoRoteiroDuplicatedError: Equipamento já está associado ao roteiro.
 

@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.rest import RestResource
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.admin_permission import AdminPermission
+
 import logging
-from networkapi.grupo.models import GrupoError
-from networkapi.interface.models import EnvironmentInterface, TipoInterface, Interface, InterfaceError, InterfaceNotFoundError, FrontLinkNotFoundError, BackLinkNotFoundError, InterfaceForEquipmentDuplicatedError, InterfaceUsedByOtherInterfaceError
-from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError
+
 from django.forms.models import model_to_dict
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_INTERFACE
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_boolean_param, convert_string_or_int_to_boolean
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.interface.models import BackLinkNotFoundError
+from networkapi.interface.models import EnvironmentInterface
+from networkapi.interface.models import FrontLinkNotFoundError
+from networkapi.interface.models import Interface
+from networkapi.interface.models import InterfaceError
+from networkapi.interface.models import InterfaceForEquipmentDuplicatedError
+from networkapi.interface.models import InterfaceNotFoundError
+from networkapi.interface.models import InterfaceUsedByOtherInterfaceError
+from networkapi.interface.models import TipoInterface
+from networkapi.rest import RestResource
+from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class InterfaceResource(RestResource):
@@ -89,7 +107,7 @@ class InterfaceResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Trata as requisições de POST para criar uma nova interface para o equipamento
 
-        URL: /interface/ 
+        URL: /interface/
 
         """
         # Obtém dados do request e verifica acesso
@@ -178,7 +196,7 @@ class InterfaceResource(RestResource):
                 ligacao_back = None
 
             tipo_interface = interface_map.get('tipo')
-            if tipo_interface == None:
+            if tipo_interface is None:
                 tipo_interface = "Access"
             tipo_interface = TipoInterface.get_by_name(tipo_interface)
 
@@ -345,7 +363,7 @@ class InterfaceResource(RestResource):
     def handle_delete(self, request, user, *args, **kwargs):
         """Trata uma requisição DELETE para excluir uma interface
 
-        URL: /interface/<id_interface>/ 
+        URL: /interface/<id_interface>/
 
         """
         # Get request data and check permission

@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,31 +13,61 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
-from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
-from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import Healthcheck, HealthcheckExpect, HealthcheckExpectNotFoundError, HealthcheckExpectError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-from networkapi.ip.models import IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError
+
 import logging
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsNotFoundError, RequisicaoVipsError, \
-    InvalidFinalidadeValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
-    InvalidClienteValueError, InvalidAmbienteValueError, InvalidCacheValueError, \
-    InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, \
-    InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, \
-    InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidPriorityValueError, ServerPool
-from networkapi.api_pools.facade import get_or_create_healthcheck
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, clone
 from string import upper
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.api_pools.facade import get_or_create_healthcheck
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import EquipmentGroupsNotAuthorizedError
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import Healthcheck
+from networkapi.healthcheckexpect.models import HealthcheckExpect
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidPriorityValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import clone
+from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util.decorators import deprecated
 
 
@@ -136,7 +165,7 @@ class RequestHealthcheckResource(RestResource):
                 # If healthcheck_type is not HTTP id_healthcheck_expect and
                 # healthcheck must be None
                 if healthcheck_type != 'HTTP':
-                    if not (id_healthcheck_expect == None and healthcheck == None):
+                    if not (id_healthcheck_expect is None and healthcheck is None):
                         msg = u'The healthcheck_type parameter is %s, then healthcheck and id_healthcheck_expect must be None.' % healthcheck_type
                         self.log.error(msg)
                         raise InvalidValueError(msg)
@@ -144,7 +173,7 @@ class RequestHealthcheckResource(RestResource):
                 # If healthcheck_type is 'HTTP' id_healthcheck_expect and
                 # healthcheck must NOT be None
                 elif healthcheck_type == 'HTTP':
-                    if id_healthcheck_expect == None or healthcheck == None:
+                    if id_healthcheck_expect is None or healthcheck is None:
                         msg = u'The healthcheck_type parameter is HTTP, then healthcheck and id_healthcheck_expect must NOT be None.'
                         self.log.error(msg)
                         raise InvalidValueError(msg)
@@ -209,20 +238,20 @@ class RequestHealthcheckResource(RestResource):
 
                 # Executar script
 
-                #Put old call to work with new pool features
-                #This call is deprecated
+                # Put old call to work with new pool features
+                # This call is deprecated
                 server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
-                if healthcheck == None:
+                if healthcheck is None:
                     healthcheck = ''
-                if id_healthcheck_expect == None:
+                if id_healthcheck_expect is None:
                     healthcheck_expect = ''
                 else:
                     healthcheck_expect = healthcheck_expect.expect_string
                 healthcheck_identifier = ''
                 healthcheck_destination = '*:*'
                 hc = get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
-                #Applies new healthcheck in pool
-                #Todo - new method
+                # Applies new healthcheck in pool
+                # Todo - new method
                 old_healthchecks = []
                 for sp in server_pools:
                     old_healthchecks.append(sp.healthcheck)

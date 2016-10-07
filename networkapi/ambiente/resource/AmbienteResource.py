@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,36 +13,49 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, AmbienteError, AmbienteLogico, GrupoL3, \
-    DivisaoDc, Filter, IPConfig, ConfigEnvironment, FilterNotFoundError, IPConfigNotFoundError, AmbienteLogicoNotFoundError, \
-    DivisaoDcNotFoundError, AmbienteDuplicatedError, GroupL3NotFoundError, AmbienteUsedByEquipmentVlanError, \
-    ConfigEnvironmentDuplicateError
-
-from networkapi.auth import has_perm
-
-from networkapi.equipamento.models import Equipamento, EquipamentoError, \
-    EquipamentoNotFoundError
-
-from networkapi.grupo.models import GrupoError
-
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-
-from networkapi.ip.models import IpError, IpNotFoundError, Ip
 
 import logging
 
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, \
-    destroy_cache_function, is_valid_regex
-from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT, LOCK_DC_DIVISION
-
-from networkapi.filter.models import CannotDissociateFilterError
-
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteDuplicatedError
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteLogico
+from networkapi.ambiente.models import AmbienteLogicoNotFoundError
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
+from networkapi.ambiente.models import ConfigEnvironment
+from networkapi.ambiente.models import ConfigEnvironmentDuplicateError
+from networkapi.ambiente.models import DivisaoDc
+from networkapi.ambiente.models import DivisaoDcNotFoundError
+from networkapi.ambiente.models import Filter
+from networkapi.ambiente.models import FilterNotFoundError
+from networkapi.ambiente.models import GroupL3NotFoundError
+from networkapi.ambiente.models import GrupoL3
+from networkapi.ambiente.models import IPConfig
+from networkapi.ambiente.models import IPConfigNotFoundError
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_DC_DIVISION
+from networkapi.distributedlock import LOCK_ENVIRONMENT
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
+from networkapi.filter.models import CannotDissociateFilterError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.rest import RestResource
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_string_maxsize
 from networkapi.vlan.models import Vlan
 
 
@@ -216,13 +228,13 @@ class AmbienteResource(RestResource):
             max_num_vlan_2 = environment_map.get('max_num_vlan_2')
             min_num_vlan_2 = environment_map.get('min_num_vlan_2')
             # validate  max_num_vlan_1 and min_num_vlan_1
-            if (max_num_vlan_1 != None and min_num_vlan_1 == None) or (min_num_vlan_1 != None and max_num_vlan_1 == None):
+            if (max_num_vlan_1 is not None and min_num_vlan_1 is None) or (min_num_vlan_1 is not None and max_num_vlan_1 is None):
                 self.log.error(
                     u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
                 raise InvalidValueError(
                     None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
 
-            if max_num_vlan_1 != None and min_num_vlan_1 != None:
+            if max_num_vlan_1 is not None and min_num_vlan_1 is not None:
                 max_num_vlan_1 = int(max_num_vlan_1)
                 min_num_vlan_1 = int(min_num_vlan_1)
 
@@ -242,13 +254,13 @@ class AmbienteResource(RestResource):
             # validate  max_num_vlan_1 and min_num_vlan_1
 
             # validate  max_num_vlan_2 and min_num_vlan_2
-            if (max_num_vlan_2 != None and min_num_vlan_2 == None) or (min_num_vlan_2 != None and max_num_vlan_2 == None):
+            if (max_num_vlan_2 is not None and min_num_vlan_2 is None) or (min_num_vlan_2 is not None and max_num_vlan_2 is None):
                 self.log.error(
                     u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
                 raise InvalidValueError(
                     None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
 
-            if max_num_vlan_2 != None and min_num_vlan_2 != None:
+            if max_num_vlan_2 is not None and min_num_vlan_2 is not None:
                 max_num_vlan_2 = int(max_num_vlan_2)
                 min_num_vlan_2 = int(min_num_vlan_2)
 
@@ -468,13 +480,13 @@ class AmbienteResource(RestResource):
             max_num_vlan_2 = environment_map.get('max_num_vlan_2')
             min_num_vlan_2 = environment_map.get('min_num_vlan_2')
             # validate  max_num_vlan_1 and min_num_vlan_1
-            if (max_num_vlan_1 != None and min_num_vlan_1 == None) or (min_num_vlan_1 != None and max_num_vlan_1 == None):
+            if (max_num_vlan_1 is not None and min_num_vlan_1 is None) or (min_num_vlan_1 is not None and max_num_vlan_1 is None):
                 self.log.error(
                     u'Parameters min_num_vlan_1, max_num_vlan_1  is invalid. Values: %s, %s', (min_num_vlan_1, max_num_vlan_1))
                 raise InvalidValueError(
                     None, 'min_num_vlan_1, max_num_vlan_1', min_num_vlan_1 + ',' + max_num_vlan_1)
 
-            if max_num_vlan_1 != None and min_num_vlan_1 != None:
+            if max_num_vlan_1 is not None and min_num_vlan_1 is not None:
                 max_num_vlan_1 = int(max_num_vlan_1)
                 min_num_vlan_1 = int(min_num_vlan_1)
 
@@ -494,13 +506,13 @@ class AmbienteResource(RestResource):
             # validate  max_num_vlan_1 and min_num_vlan_1
 
             # validate  max_num_vlan_2 and min_num_vlan_2
-            if (max_num_vlan_2 != None and min_num_vlan_2 == None) or (min_num_vlan_2 != None and max_num_vlan_2 == None):
+            if (max_num_vlan_2 is not None and min_num_vlan_2 is None) or (min_num_vlan_2 is not None and max_num_vlan_2 is None):
                 self.log.error(
                     u'Parameters min_num_vlan_2, max_num_vlan_2  is invalid. Values: %s, %s', (min_num_vlan_2, max_num_vlan_2))
                 raise InvalidValueError(
                     None, 'min_num_vlan_2, max_num_vlan_2', min_num_vlan_2 + ',' + max_num_vlan_1)
 
-            if max_num_vlan_2 != None and min_num_vlan_2 != None:
+            if max_num_vlan_2 is not None and min_num_vlan_2 is not None:
                 max_num_vlan_2 = int(max_num_vlan_2)
                 min_num_vlan_2 = int(min_num_vlan_2)
 

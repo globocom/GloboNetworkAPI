@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from django.db import models, transaction, router
-from networkapi.models.BaseManager import BaseManager
+from django.db import models
+from django.db import router
+from django.db import transaction
 from django.db.models.deletion import Collector
+
+from networkapi.models.BaseManager import BaseManager
+
 
 class BaseModel(models.Model):
 
     '''
     Classe básica para as classes que herdam de "django.db.models.Model".
 
-    Deverão herdar desta classe as classes "Model" que necessitam gerar log das 
+    Deverão herdar desta classe as classes "Model" que necessitam gerar log das
     suas operações de escrita e exclusão de dados no banco de dados.
     '''
 
@@ -47,7 +50,7 @@ class BaseModel(models.Model):
         if user:
             self.set_authenticated_user(user)
         super(BaseModel, self).save(force_insert, force_update, **kwargs)
-        if commit == True:
+        if commit is True:
             transaction.commit()
 
     def delete(self, *args, **kwargs):

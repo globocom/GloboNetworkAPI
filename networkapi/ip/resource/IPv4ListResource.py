@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.rest import RestResource
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 import logging
-from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param
+
 from django.forms.models import model_to_dict
-from networkapi.ip.models import Ip, IpNotFoundError, IpError, IpEquipmentNotFoundError, IpEquipamento, NetworkIPv4, NetworkIPv4NotFoundError
-from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError, EquipamentoError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class IPv4ListResource(RestResource):
@@ -35,7 +43,7 @@ class IPv4ListResource(RestResource):
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to list all network IPv4 by network ipv4 id.
 
-        URLs: ip/id_network_ipv4/id_rede 
+        URLs: ip/id_network_ipv4/id_rede
         """
 
         try:
@@ -67,12 +75,12 @@ class IPv4ListResource(RestResource):
             except Exception, e:
                 raise InvalidValueError(None, 'id_rede', id_network)
 
-            if ips == None or len(ips) <= 0:
+            if ips is None or len(ips) <= 0:
                 raise IpNotFoundError(305, id_network)
 
             EquipIps = []
             mapa = dict()
-            #lista = []
+            # lista = []
 
             try:
                 for ip in ips:

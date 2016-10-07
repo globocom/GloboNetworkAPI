@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -21,27 +20,56 @@ import logging
 from django.db.utils import IntegrityError
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.api_vip_request.syncs import old_to_new
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, InvalidFinalidadeValueError, InvalidClienteValueError, \
-    InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
-    InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, \
-    InvalidMaxConValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsAlreadyCreatedError, RequisicaoVipsNotFoundError, \
-    InvalidBalAtivoValueError, InvalidTransbordoValueError, \
-    RequestVipServerPoolConstraintError
-from networkapi.equipamento.models import EquipamentoError, Equipamento, EquipamentoNotFoundError
-from networkapi.ip.models import Ip, Ipv6, IpNotFoundError, IpError, IpEquipmentNotFoundError, IpNotFoundByEquipAndVipError
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
-from networkapi.grupo.models import GrupoError
+from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.util import is_valid_boolean_param, is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
-    is_valid_string_minsize, is_valid_string_maxsize
-from networkapi.util.decorators import deprecated
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.blockrules.models import Rule
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import RequestVipServerPoolConstraintError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsAlreadyCreatedError
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.util.decorators import deprecated
 
 
 class RequestVipsResource(RestResource):
@@ -87,14 +115,14 @@ class RequestVipsResource(RestResource):
                 raise InvalidValueError(
                     None, 'id_ipv4 e id_vip6', vip_map.get('id_ipv4'))
 
-            if (vip_map.get('id_ipv4') != None):
+            if (vip_map.get('id_ipv4') is not None):
                 if not is_valid_int_greater_zero_param(vip_map.get('id_ipv4')):
                     self.log.error(
                         u'The id_ipv4 parameter is not a valid value: %s.', vip_map.get('id_ipv4'))
                     raise InvalidValueError(
                         None, 'id_ipv4', vip_map.get('id_ipv4'))
 
-            if (vip_map.get('id_ipv6') != None):
+            if (vip_map.get('id_ipv6') is not None):
                 if not is_valid_int_greater_zero_param(vip_map.get('id_ipv6')):
                     self.log.error(
                         u'The id_ipv6 parameter is not a valid value: %s.', vip_map.get('id_ipv6'))
@@ -341,14 +369,14 @@ class RequestVipsResource(RestResource):
                 raise InvalidValueError(
                     None, 'id_ipv4 e id_vip6', vip_map.get('id_ipv4'))
 
-            if (vip_map.get('id_ipv4') != None):
+            if (vip_map.get('id_ipv4') is not None):
                 if not is_valid_int_greater_zero_param(vip_map.get('id_ipv4')):
                     self.log.error(
                         u'The id_ipv4 parameter is not a valid value: %s.', vip_map.get('id_ipv4'))
                     raise InvalidValueError(
                         None, 'id_ipv4', vip_map.get('id_ipv4'))
 
-            if (vip_map.get('id_ipv6') != None):
+            if (vip_map.get('id_ipv6') is not None):
                 if not is_valid_int_greater_zero_param(vip_map.get('id_ipv6')):
                     self.log.error(
                         u'The id_ipv6 parameter is not a valid value: %s.', vip_map.get('id_ipv6'))

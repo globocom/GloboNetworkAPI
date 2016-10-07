@@ -109,7 +109,7 @@ SCRIPTS_DIR = os.getenv("NETWORKAPI_SCRIPTS_DIR", os.path.abspath(os.path.join(_
 # Armazena a raiz do projeto.
 SITE_ROOT = os.path.abspath(__file__ + '/../../')
 
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = False
 
 API_VERSION = '15.96'
 
@@ -304,6 +304,7 @@ PROJECT_APPS = (
     # 'networkapi.api_task',
     'networkapi.api_ogp',
     'networkapi.api_vip_request',
+    'networkapi.api_vrf',
     'networkapi.blockrules',
     'networkapi.config',
     'networkapi.filter',

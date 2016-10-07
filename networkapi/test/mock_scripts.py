@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,13 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import tempfile
 import os.path
 import stat
-from networkapi.test import log
-from networkapi.infrastructure import script_utils
+import tempfile
+
 from django.conf import settings
+
+from networkapi.infrastructure import script_utils
+from networkapi.test import log
 
 # funções disponiveis via bash para os script mocks de testes
 FUNCTIONS = u"""
@@ -108,7 +108,7 @@ def mock_script(script, exitcode=0, out="", err="", code=None, times=1):
     log.debug('Preparando diretorio de execução de script: %s', script_dir)
 
     # cria o script
-    if code == None:
+    if code is None:
         code = """
 echo "%s" 1>&2
 echo "%s"

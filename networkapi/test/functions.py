@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,13 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import httplib
+import random
+import re
+import string
 
 from networkapi.test import xml2dict
-import re
-import httplib
-import string
-import random
 
 
 def string_generator(size=6, chars=string.ascii_letters):
@@ -55,7 +53,7 @@ def valid_content(response, key=None, force_list=False):
     @return: Content Response
     """
     content = xml2dict(response.content)
-    assert content != None
+    assert content is not None
     assert content != ""
 
     if key is not None:
@@ -66,7 +64,7 @@ def valid_content(response, key=None, force_list=False):
             else:
                 return content.get(key)
         else:
-            assert content.get(key) != None
+            assert content.get(key) is not None
 
     return content
 
@@ -105,11 +103,11 @@ def is_valid_attr(dicts, key, minsize=None, maxsize=None, regex=None, instance=N
     @param minsize: Min size of the value to be validated.
     @param maxsize: Max size of the value to be validated.
     @param regex: Regex of the value be validated.
-    @param instance: type instance of the value be validated. 
+    @param instance: type instance of the value be validated.
     @param required: Check if the value can be None.
     """
 
-    if required == True:
+    if required is True:
 
         assert key in dicts
 

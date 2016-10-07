@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,33 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
+
 from ..base import BasePlugin
 
 log = logging.getLogger(__name__)
 
+
 class Generic(BasePlugin):
 
-	VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
+    VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
 
-	def copyScriptFileToConfig (self, filename, use_vrf=None, destination="running-config"):
-		
-		if use_vrf == None:
-			use_vrf = self.management_vrf
+    def copyScriptFileToConfig(self, filename, use_vrf=None, destination="running-config"):
 
-		command = 'tftp %s get %s %s' % (self.tftpserver,filename, vpn_instance)
-		log.info("sending command: %s" % command)
+        if use_vrf is None:
+            use_vrf = self.management_vrf
 
-		self.channel.send("%s\n" % command)
-		recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+        command = 'tftp %s get %s %s' % (self.tftpserver, filename, vpn_instance)
+        log.info("sending command: %s" % command)
 
-		local_filename = re.split('\/', filename)[-1]
+        self.channel.send("%s\n" % command)
+        recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
 
-		command = 'execute %s' % (local_filename)
-		log.info("sending command: %s" % command)
+        local_filename = re.split('\/', filename)[-1]
 
-		self.channel.send("%s\n" % command)
-		recv += self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+        command = 'execute %s' % (local_filename)
+        log.info("sending command: %s" % command)
 
-		return recv
+        self.channel.send("%s\n" % command)
+        recv += self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+
+        return recv

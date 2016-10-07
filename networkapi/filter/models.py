@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from django.db import models
-
-from django.core.exceptions import ObjectDoesNotExist
-
 import logging
 
-from networkapi.models.BaseModel import BaseModel
-from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is_valid_text
-
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
 from django.db.models import Count
+
+from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.ipaddr import IPNetwork
+from networkapi.models.BaseModel import BaseModel
 from networkapi.util import clone
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.util import is_valid_text
 
 
 class FilterError(Exception):
@@ -190,7 +187,8 @@ def check_filter_use(new_filter_id, env):
             nets_ipv4_aux = clone(nets_ipv4)
             nets_ipv4_aux.remove(nets_ipv4[i])
 
-            if verify_subnet_and_equip(nets_ipv4_aux, network_ip_verify, 'v4', net, nets_ipv4[i].get('vlan_env')):
+            if verify_subnet_and_equip(nets_ipv4_aux, network_ip_verify, 'v4',
+                                       net, nets_ipv4[i].get('vlan_env')):
                 env_aux_id = nets_ipv4[i].get('vlan_env').id
                 if env.id == env_aux_id:
                     raise CannotDissociateFilterError(
@@ -200,13 +198,15 @@ def check_filter_use(new_filter_id, env):
         for i in range(0, len(nets_ipv6)):
             net = nets_ipv6[i].get('net')
             ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
-                                                 net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
+                                                 net.block4, net.block5, net.block6,
+                                                 net.block7, net.block8, net.block)
             network_ip_verify = IPNetwork(ip)
 
             nets_ipv6_aux = clone(nets_ipv6)
             nets_ipv6_aux.remove(nets_ipv6[i])
 
-            if verify_subnet_and_equip(nets_ipv6_aux, network_ip_verify, 'v6', net, nets_ipv6[i].get('vlan_env')):
+            if verify_subnet_and_equip(nets_ipv6_aux, network_ip_verify, 'v6',
+                                       net, nets_ipv6[i].get('vlan_env')):
                 env_aux_id = nets_ipv6[i].get('vlan_env').id
                 if env.id == env_aux_id:
                     raise CannotDissociateFilterError(
@@ -230,14 +230,20 @@ def check_filter_use(new_filter_id, env):
 
             # Check for networks with same ip range
             nets_same_range = NetworkIPv4.objects.values(
-                'oct1', 'oct2', 'oct3', 'oct4', 'block').annotate(count=Count('id')).filter(count__gt=1)
+                'oct1', 'oct2', 'oct3', 'oct4', 'block'
+            ).annotate(count=Count('id')).filter(count__gt=1)
 
             if len(nets_same_range) > 0:
                 for net_gp in nets_same_range:
-                    nets_current_range = NetworkIPv4.objects.filter(oct1=net_gp['oct1'], oct2=net_gp[
-                                                                    'oct2'], oct3=net_gp['oct3'], oct4=net_gp['oct4'], block=net_gp['block'])
+                    nets_current_range = NetworkIPv4.objects.filter(
+                        oct1=net_gp['oct1'],
+                        oct2=net_gp['oct2'],
+                        oct3=net_gp['oct3'],
+                        oct4=net_gp['oct4'],
+                        block=net_gp['block']
+                    )
                     envs_of_nets = [
-                        net.vlan.ambiente.id for net in nets_current_range]
+                        net_crt.vlan.ambiente.id for net_crt in nets_current_range]
                     if env.id in envs_of_nets:
 
                         eqas = EquipamentoAmbiente.objects.filter(
@@ -246,7 +252,9 @@ def check_filter_use(new_filter_id, env):
 
                         # Get other environments with these equips
                         other_envs = [eqa.ambiente.id for eqa in EquipamentoAmbiente.objects.filter(
-                            equipamento__in=equips_in_env, ambiente__in=envs_of_nets).exclude(ambiente=env.id)]
+                            equipamento__in=equips_in_env,
+                            ambiente__in=envs_of_nets
+                        ).exclude(ambiente=env.id)]
 
                         if len(other_envs) > 0:
                             raise CannotDissociateFilterError(
@@ -254,14 +262,25 @@ def check_filter_use(new_filter_id, env):
 
             # Check for networks v6 with same ip range
             nets_same_range_v6 = NetworkIPv6.objects.values(
-                'block1', 'block2', 'block3', 'block4', 'block5', 'block6', 'block7', 'block8', 'block').annotate(count=Count('id')).filter(count__gt=1)
+                'block1', 'block2', 'block3', 'block4',
+                'block5', 'block6', 'block7', 'block8', 'block'
+            ).annotate(count=Count('id')).filter(count__gt=1)
 
             if len(nets_same_range_v6) > 0:
                 for net_gp in nets_same_range_v6:
-                    nets_current_range = NetworkIPv6.objects.filter(block1=net_gp['block1'], block2=net_gp['block2'], block3=net_gp['block3'], block4=net_gp[
-                                                                    'block4'], block5=net_gp['block5'], block6=net_gp['block6'], block7=net_gp['block7'], block8=net_gp['block8'], block=net_gp['block'])
+                    nets_current_range = NetworkIPv6.objects.filter(
+                        block1=net_gp['block1'],
+                        block2=net_gp['block2'],
+                        block3=net_gp['block3'],
+                        block4=net_gp['block4'],
+                        block5=net_gp['block5'],
+                        block6=net_gp['block6'],
+                        block7=net_gp['block7'],
+                        block8=net_gp['block8'],
+                        block=net_gp['block']
+                    )
                     envs_of_nets = [
-                        net.vlan.ambiente.id for net in nets_current_range]
+                        net_crt.vlan.ambiente.id for net_crt in nets_current_range]
                     if env.id in envs_of_nets:
 
                         eqas = EquipamentoAmbiente.objects.filter(
@@ -270,7 +289,9 @@ def check_filter_use(new_filter_id, env):
 
                         # Get other environments with these equips
                         other_envs = [eqa.ambiente.id for eqa in EquipamentoAmbiente.objects.filter(
-                            equipamento__in=equips_in_env, ambiente__in=envs_of_nets).exclude(ambiente=env.id)]
+                            equipamento__in=equips_in_env,
+                            ambiente__in=envs_of_nets
+                        ).exclude(ambiente=env.id)]
 
                         if len(other_envs) > 0:
                             raise CannotDissociateFilterError(
@@ -299,7 +320,9 @@ def check_filter_use(new_filter_id, env):
 
                         # Get other environments with these equips
                         other_envs = [eqa.ambiente.id for eqa in EquipamentoAmbiente.objects.filter(
-                            equipamento__in=equips_in_env, ambiente__in=envs_of_vlans).exclude(ambiente=env.id)]
+                            equipamento__in=equips_in_env,
+                            ambiente__in=envs_of_vlans
+                        ).exclude(ambiente=env.id)]
 
                         if len(other_envs) > 0:
                             raise CannotDissociateFilterError(
@@ -322,11 +345,12 @@ def verify_subnet_and_equip(vlan_net, network_ip, version, net_obj, env_obj):
         net = net_env.get('net')
         env = net_env.get('vlan_env')
         if version == 'v4':
-            ip = "%s.%s.%s.%s/%s" % (net.oct1,
-                                     net.oct2, net.oct3, net.oct4, net.block)
+            ip = "%s.%s.%s.%s/%s" % (net.oct1, net.oct2, net.oct3,
+                                     net.oct4, net.block)
         else:
             ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
-                                                 net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
+                                                 net.block4, net.block5, net.block6,
+                                                 net.block7, net.block8, net.block)
 
         ip_net = IPNetwork(ip)
         # If some network, inside this vlan, is subnet of network search param

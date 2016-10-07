@@ -1,28 +1,12 @@
 # -*- coding:utf-8 -*-
-
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from __future__ import with_statement
 
 import logging
 
 from _mysql_exceptions import OperationalError
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q
 
 from networkapi.filter.models import verify_subnet_and_equip
 from networkapi.infrastructure.ipaddr import IPNetwork
@@ -293,23 +277,46 @@ class Vlan(BaseModel):
             self.log.error(u'Failure to search the Vlan.')
             raise VlanError(e, u'Failure to search the Vlan.')
 
-    def exist_vlan_name_in_environment(self):
+    def exist_vlan_name_in_environment(self, id_vlan=None):
         try:
-            Vlan.objects.get(
-                nome__iexact=self.nome, ambiente__id=self.ambiente.id)
-            return True
-        except ObjectDoesNotExist:
-            return False
+            vlans = Vlan.objects.filter(
+                nome__iexact=self.nome,
+                ambiente__id=self.ambiente.id
+            )
+            if id_vlan:
+                vlans = vlans.exclude(id=id_vlan)
+
+            if vlans:
+                return True
+            else:
+                return False
         except Exception, e:
-            self.log.error(u'Falha ao pesquisar a VLAN.')
-            raise VlanError(e, u'Falha ao pesquisar a VLAN.')
+            self.log.error(u'Failure to search the Vlan.')
+            raise VlanError(e, u'Failure to search the Vlan.')
+
+    def exist_vlan_num_in_environment(self, id_vlan=None):
+        try:
+            vlans = Vlan.objects.filter(
+                num_vlan=self.num_vlan,
+                ambiente__id=self.ambiente.id
+            )
+            if id_vlan:
+                vlans = vlans.exclude(id=id_vlan)
+
+            if vlans:
+                return True
+            else:
+                return False
+        except Exception, e:
+            self.log.error(u'Failure to search the Vlan.')
+            raise VlanError(e, u'Failure to search the Vlan.')
 
     def search_vlan_numbers(self, environment_id, min_num, max_num):
         try:
             return Vlan.objects.filter(num_vlan__range=(min_num, max_num), ambiente__id=environment_id).values_list('num_vlan', flat=True).distinct().order_by('num_vlan')
         except Exception, e:
-            self.log.error(u'Falha ao pesquisar as VLANs.')
-            raise VlanError(e, u'Falha ao pesquisar as VLANs.')
+            self.log.error(u'Failure to search the Vlans.')
+            raise VlanError(e, u'Failure to search the Vlans.')
 
     def search(self, environment_id=None):
         try:
@@ -319,8 +326,8 @@ class Vlan(BaseModel):
                 v = v.filter(ambiente__id=environment_id)
             return v
         except Exception, e:
-            self.log.error(u'Falha ao pesquisar as VLANs.')
-            raise VlanError(e, u'Falha ao pesquisar as VLANs.')
+            self.log.error(u'Failure to search the Vlans.')
+            raise VlanError(e, u'Failure to search the Vlans.')
 
     def calculate_vlan_number(self, min_num, max_num, list_available=False):
 
@@ -762,7 +769,8 @@ class Vlan(BaseModel):
             nets_ipv4_aux = clone(nets_ipv4)
             nets_ipv4_aux.remove(nets_ipv4[i])
 
-            if verify_subnet_and_equip(nets_ipv4_aux, network_ip_verify, 'v4', net, nets_ipv4[i].get('vlan_env')):
+            if verify_subnet_and_equip(nets_ipv4_aux, network_ip_verify, 'v4',
+                                       net, nets_ipv4[i].get('vlan_env')):
                 env_aux_id = nets_ipv4[i].get('vlan_env').id
                 if old_env.id == env_aux_id:
                     return True
@@ -771,13 +779,15 @@ class Vlan(BaseModel):
         for i in range(0, len(nets_ipv6)):
             net = nets_ipv6[i].get('net')
             ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
-                                                 net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
+                                                 net.block4, net.block5, net.block6,
+                                                 net.block7, net.block8, net.block)
             network_ip_verify = IPNetwork(ip)
 
             nets_ipv6_aux = clone(nets_ipv6)
             nets_ipv6_aux.remove(nets_ipv6[i])
 
-            if verify_subnet_and_equip(nets_ipv6_aux, network_ip_verify, 'v6', net, nets_ipv6[i].get('vlan_env')):
+            if verify_subnet_and_equip(nets_ipv6_aux, network_ip_verify, 'v6',
+                                       net, nets_ipv6[i].get('vlan_env')):
                 env_aux_id = nets_ipv6[i].get('vlan_env').id
                 if old_env.id == env_aux_id:
                     return True
@@ -808,3 +818,172 @@ class Vlan(BaseModel):
                 cause, "Esta Vlan possui uma Rede com Requisição Vip apontando para ela, e não pode ser excluída")
         except VlanCantDeallocate, e:
             raise e
+
+    def get_eqpt(self):
+        # get all eqpts of environment
+        eqpts = self.ambiente.equipamentoambiente_set.all().exclude(
+            equipamento__tipo_equipamento__filterequiptype__filter=self.ambiente.filter
+        ).distinct().values_list('equipamento')
+
+        eqpts = [equip[0] for equip in eqpts]
+
+        return eqpts
+
+    def validate_num_vlan_v3(self):
+        """
+            Validate if number of vlan is duplicated in environment or
+            environment assoc with eqpt
+        """
+        equips = self.get_eqpt()
+
+        # get vlans with same num_vlan
+        vlan = Vlan.objects.filter(
+            ambiente__equipamentoambiente__equipamento__in=equips,
+            num_vlan=self.num_vlan
+        ).exclude(
+            id=self.id
+        )
+
+        if vlan:
+            raise Exception(
+                'There is a registered VLAN with the number in '
+                'equipments of environment')
+
+    def validate_v3(self):
+        """
+            Make validations in values inputted
+        """
+        if self.exist_vlan_num_in_environment(self.id):
+            raise Exception(
+                'Number Vlan can not be duplicated in the environment.')
+
+        if self.exist_vlan_name_in_environment(self.id):
+            raise Exception(
+                'Name VLAN can not be duplicated in the environment.')
+
+        # update
+        if self.id:
+            old_env = self.get_by_pk(self.id)
+            if old_env.ativada:
+                if old_env.ambiente != self.ambiente:
+                    raise Exception(
+                        'Environment can not be changed in vlan actived')
+                if old_env.num_vlan != self.num_vlan:
+                    raise Exception(
+                        'Number Vlan can not be changed in vlan actived')
+            if old_env.ambiente != self.ambiente:
+                self.validate_network()
+
+        self.validate_num_vlan_v3()
+
+    def create_v3(self):
+        """
+            Create new vlan
+        """
+        self.validate_v3()
+
+        self.save()
+
+    def update_v3(self):
+        """
+            Update vlan
+        """
+        self.validate_v3()
+
+        self.save()
+
+    def validate_network(self):
+
+        # get networks of environment or environment assoc
+        vlans_env_eqpt = Vlan.objects.filter(
+            Q(ambiente=self.ambiente) |
+            Q(ambiente__equipamentoambiente__equipamento__in=self.get_eqpt()),
+        ).exclude(
+            id=self.id
+        ).distinct()
+
+        netv4 = reduce(list.__add__, [list(vlan_env.networkipv4_set.all())
+                                      for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
+        netv6 = reduce(list.__add__, [list(vlan_env.networkipv6_set.all())
+                                      for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
+
+        netv4_env, netv6_env = self.prepare_networks(
+            netv4,
+            netv6
+        )
+
+        netv4, netv6 = self.prepare_networks(
+            self.networkipv4_set.all(),
+            self.networkipv6_set.all()
+        )
+
+        v4_interset, v4_supernet = self.verify_networks(netv4, netv4_env)
+        v6_interset, v6_supernet = self.verify_networks(netv6, netv6_env)
+
+        if v4_interset or v6_interset:
+            raise Exception(
+                'Um dos equipamentos associados com o ambiente desta Vlan'
+                'também está associado com outro ambiente que tem uma rede'
+                'com a mesma faixa, adicione filtros nos ambientes se necessário.')
+
+    def prepare_networks(self, netv4, netv6):
+
+        netv4_dict = dict()
+        for net in netv4:
+            if not netv4_dict.get(net.block):
+                netv4_dict.update({
+                    net.block: list()
+                })
+            nt = IPNetwork(net.networkv4)
+            netv4_dict[net.block].append(nt)
+
+        netv6_dict = dict()
+        for net in netv6:
+            if not netv6_dict.get(net.block):
+                netv6_dict.update({
+                    net.block: list()
+                })
+            nt = IPNetwork(net.networkv6)
+            netv6_dict[net.block].append(nt)
+
+        return netv4_dict, netv6_dict
+
+    def verify_networks(self, nets1, nets2):
+
+        vl_net1 = reduce(list.__add__, nets1.values(), [])
+        vl_net2 = reduce(list.__add__, nets2.values(), [])
+
+        # has network conflict with same networks
+        intersect = list(set(vl_net1) & set(vl_net2))
+        if intersect:
+            self.log.error('Same network - intersect:%s' % intersect)
+            return intersect, intersect
+
+        for key in nets1.keys():
+
+            for key2 in nets2.keys():
+
+                # network1 < network2 of environment
+                if key < key2:
+                    # get subnet of network1
+                    for net in nets1[key]:
+                        subnets_net1 = list(net.subnet(new_prefix=key2))
+                        # has network conflict with subnet of network1
+                        intersect = list(set(subnets_net1) & set(vl_net2))
+                        if intersect:
+                            self.log.error('Subnet intersect:%s, supernet:%s' % (intersect, net))
+                            return intersect, net
+
+                # network1 >= network2 of environment
+                else:
+                    # get subnet of network2
+                    for net in nets2[key]:
+                        subnets_net2 = list(net.subnet(new_prefix=key))
+                        # has network conflict with subnet of network1
+
+                        intersect = list(set(subnets_net2) & set(vl_net1))
+                        if intersect:
+                            self.log.error('Subnet intersect:%s, supernet:%s' % (intersect, net))
+                            return intersect, net
+
+        return [], []

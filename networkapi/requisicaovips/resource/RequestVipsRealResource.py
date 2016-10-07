@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,33 +13,62 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.admin_permission import AdminPermission
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError, \
-    RequestVipWithoutServerPoolError
-from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
-from networkapi.ip.models import IpNotFoundError, IpError, IpEquipamento, Ipv6Equipament, IpEquipmentNotFoundError, \
-    IpNotFoundByEquipAndVipError
-from networkapi.grupo.models import GrupoError, EGrupoNotFoundError
-from networkapi.ambiente.models import IP_VERSION, EnvironmentVip
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+
 import logging
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.exception import InvalidValueError
-from networkapi.settings import VIP_REAL_v4_CREATE, VIP_REAL_v6_CREATE, VIP_REAL_v4_REMOVE, \
-    VIP_REAL_v6_REMOVE, VIP_REAL_v4_ENABLE, VIP_REAL_v6_ENABLE, VIP_REAL_v4_DISABLE, \
-    VIP_REAL_v6_DISABLE, VIP_REAL_v4_CHECK, VIP_REAL_v6_CHECK, \
-    VIP_REALS_v4_CREATE, VIP_REALS_v6_CREATE, VIP_REALS_v4_REMOVE, \
-    VIP_REALS_v6_REMOVE, VIP_REALS_v4_ENABLE, VIP_REALS_v6_ENABLE, VIP_REALS_v4_DISABLE, \
-    VIP_REALS_v6_DISABLE, VIP_REALS_v4_CHECK, VIP_REALS_v6_CHECK
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.distributedlock import distributedlock, LOCK_VIP_IP_EQUIP
-from django.db.utils import IntegrityError
-from networkapi.requisicaovips.models import ServerPoolMember
+
 from django.db import transaction
+from django.db.utils import IntegrityError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP_IP_EQUIP
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import EGrupoNotFoundError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.requisicaovips.models import RequestVipWithoutServerPoolError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.settings import VIP_REAL_v4_CHECK
+from networkapi.settings import VIP_REAL_v4_CREATE
+from networkapi.settings import VIP_REAL_v4_DISABLE
+from networkapi.settings import VIP_REAL_v4_ENABLE
+from networkapi.settings import VIP_REAL_v4_REMOVE
+from networkapi.settings import VIP_REAL_v6_CHECK
+from networkapi.settings import VIP_REAL_v6_CREATE
+from networkapi.settings import VIP_REAL_v6_DISABLE
+from networkapi.settings import VIP_REAL_v6_ENABLE
+from networkapi.settings import VIP_REAL_v6_REMOVE
+from networkapi.settings import VIP_REALS_v4_CHECK
+from networkapi.settings import VIP_REALS_v4_CREATE
+from networkapi.settings import VIP_REALS_v4_DISABLE
+from networkapi.settings import VIP_REALS_v4_ENABLE
+from networkapi.settings import VIP_REALS_v4_REMOVE
+from networkapi.settings import VIP_REALS_v6_CHECK
+from networkapi.settings import VIP_REALS_v6_CREATE
+from networkapi.settings import VIP_REALS_v6_DISABLE
+from networkapi.settings import VIP_REALS_v6_ENABLE
+from networkapi.settings import VIP_REALS_v6_REMOVE
+from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util.decorators import deprecated
 
 
@@ -280,7 +308,7 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         # new_call = True - New calls for Add/Del/Enable/Disable/Check with new params (Port Vip and Port Real)
         # new_call = False = Old calls for compatibility
         new_call = False
-        if port_vip != None and port_real != None:
+        if port_vip is not None and port_real is not None:
             # Valid ports
             if not is_valid_int_greater_zero_param(port_vip):
                 self.log.error(
@@ -299,7 +327,7 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         # Get variables
         variables_map = vip.variables_to_map()
         # Valid variables
-        #vip.set_variables(variables_map)
+        # vip.set_variables(variables_map)
 
         evip = EnvironmentVip.get_by_values(variables_map.get('finalidade'), variables_map.get('cliente'), variables_map.get('ambiente'))
 

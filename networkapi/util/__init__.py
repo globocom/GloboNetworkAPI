@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,27 +13,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import copy
 import functools
-from hashlib import sha1
 import logging
 import re
 import socket
 import sys
 import time
 import warnings
+from hashlib import sha1
 
 from django.core import validators
 from django.core.cache import cache
 from django.forms.models import model_to_dict
 
-from networkapi.infrastructure.ipaddr import IPAddress, AddressValueError
+from .decorators import deprecated
+from .decorators import logs_method_apiview
+from .decorators import permission_classes_apiview
+from .decorators import permission_obj_apiview
+from .decorators import state_change
+from networkapi.infrastructure.ipaddr import AddressValueError
+from networkapi.infrastructure.ipaddr import IPAddress
 from networkapi.plugins import exceptions as plugins_exceptions
-
-from .decorators import deprecated, logs_method_apiview, state_change, permission_classes_apiview, permission_obj_apiview
 
 LOCK = 'LOCK'
 PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
@@ -171,19 +174,19 @@ def is_valid_string_maxsize(param, maxsize=None, required=True):
     @return True if the parameter is valid or False otherwise.
     '''
 
-    if required == True and param == None:
+    if required is True and param is None:
         return False
 
-    elif required == False and (param == None or param == ''):
+    elif required is False and (param is None or param == ''):
         return True
 
     if '' == param.strip():
         return False
 
-    if param != None and not isinstance(param, basestring):
+    if param is not None and not isinstance(param, basestring):
         return False
 
-    if param != None and maxsize is not None:
+    if param is not None and maxsize is not None:
         if is_valid_int_greater_zero_param(maxsize):
             if len(param.strip()) > maxsize:
                 return False
@@ -203,19 +206,19 @@ def is_valid_string_minsize(param, minsize=None, required=True):
     @return True if the parameter is valid or False otherwise.
     '''
 
-    if required == True and param == None:
+    if required is True and param is None:
         return False
 
-    elif required == False and (param == None or param == ''):
+    elif required is False and (param is None or param == ''):
         return True
 
     if '' == param.strip():
         return False
 
-    if param != None and not isinstance(param, basestring):
+    if param is not None and not isinstance(param, basestring):
         return False
 
-    if param != None and minsize is not None:
+    if param is not None and minsize is not None:
         if is_valid_int_greater_zero_param(minsize):
             if len(param.strip()) < minsize:
                 return False
@@ -296,10 +299,10 @@ def is_valid_text(param, required=True):
     @return True if the parameter has a valid text value, or False otherwise.
 
     '''
-    if required == True and param == None:
+    if required is True and param is None:
         return False
 
-    elif required == False and (param == None or param == ''):
+    elif required is False and (param is None or param == ''):
         return True
 
     pattern = r"^[a-zA-Z0-9\\-_\\\-\\ ]*$"
@@ -315,10 +318,10 @@ def is_valid_pool_identifier_text(param, required=True):
     @return True if the parameter has a valid text value, or False otherwise.
 
     '''
-    if required == True and param == None:
+    if required is True and param is None:
         return False
 
-    elif required == False and (param == None or param == ''):
+    elif required is False and (param is None or param == ''):
         return True
 
     pattern = r"^[a-zA-Z]+[a-zA-Z0-9\._-]*$"
@@ -412,10 +415,10 @@ def convert_boolean_to_int(param):
 
     @return Parameter converted.
     '''
-    if param == True:
+    if param is True:
         return int(1)
 
-    elif param == False:
+    elif param is False:
         return int(0)
 
 
@@ -477,7 +480,7 @@ def cache_function(length, equipment=False):
 
         def _cache(*args, **kwargs):
 
-            if equipment == True:
+            if equipment is True:
                 key = sha1(str(args[0].id) + 'equipment').hexdigest()
                 print str(args[0].id) + 'equipment'
             else:
@@ -485,7 +488,7 @@ def cache_function(length, equipment=False):
                 print str(args[0].id)
 
             # Search in cache if it exists
-            if cache.has_key(key):
+            if key in cache:
 
                 # Get value in cache
                 value = cache.get(key)
@@ -513,7 +516,7 @@ def cache_function(length, equipment=False):
 
                 # If not exists in cache
                 # key_list = cache.get(sha1('key_networkapi_vlans').hexdigest())
-                # if(key_list == None):
+                # if(key_list is None):
                 #    key_list = []
 
                 # Set in cache the keys
@@ -529,9 +532,9 @@ def cache_function(length, equipment=False):
 def destroy_cache_function(key_list, equipment=False):
     for key in key_list:
         key = str(key)
-        if equipment == True:
+        if equipment is True:
             key = str(key) + 'equipment'
-        if(cache.has_key(sha1(key).hexdigest())):
+        if sha1(key).hexdigest() in cache:
             cache.delete(sha1(key).hexdigest())
 
 
