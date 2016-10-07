@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import with_statement
 
 import logging
@@ -203,7 +203,8 @@ class Vlan(BaseModel):
     vrf = models.CharField(max_length=100, null=True, db_column='vrf')
 
     acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
-    acl_draft_v6 = models.TextField(blank=True, null=True, db_column='acl_draft_v6')
+    acl_draft_v6 = models.TextField(
+        blank=True, null=True, db_column='acl_draft_v6')
 
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
@@ -211,14 +212,14 @@ class Vlan(BaseModel):
         unique_together = (('nome', 'ambiente'), ('num_vlan', 'ambiente'))
 
     def get_by_pk(self, id):
-        '''Get Vlan by id.
+        """Get Vlan by id.
 
         @return: Vlan.
 
         @raise VlanNotFoundError: Vlan is not registered.
         @raise VlanError: Failed to search for the Vlan.
         @raise OperationalError: Lock wait timeout exceed
-        '''
+        """
         try:
             return Vlan.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
@@ -363,12 +364,12 @@ class Vlan(BaseModel):
         vlan_numbers_in_interval = set(vlan_numbers_in_interval)
         vlan_numbers_in_interval.update(vlans_others_environments)
 
-        self.log.info("Interval: %s.", interval)
-        self.log.info("VLANs in interval: %s.", vlan_numbers_in_interval)
+        self.log.info('Interval: %s.', interval)
+        self.log.info('VLANs in interval: %s.', vlan_numbers_in_interval)
 
         # if len(interval) > len(vlan_numbers_in_interval):
         diff_set = set(interval) - set(vlan_numbers_in_interval)
-        self.log.info("Difference in the lists: %s.", diff_set)
+        self.log.info('Difference in the lists: %s.', diff_set)
         if list_available:
             return diff_set
         for num_vlan in diff_set:
@@ -377,7 +378,6 @@ class Vlan(BaseModel):
 
     def activate(self, authenticated_user):
         """ Set column ativada = 1"""
-
         from networkapi.vlan.serializers import VlanSerializer
 
         try:
@@ -388,7 +388,8 @@ class Vlan(BaseModel):
             serializer = VlanSerializer(self)
             data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.VLAN_ACTIVATE})
-            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE, 'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
+            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE,
+                                  'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
             queue_manager.send()
 
         except Exception, e:
@@ -403,7 +404,6 @@ class Vlan(BaseModel):
 
             @raise VlanError: Exception
         """
-
         from networkapi.vlan.serializers import VlanSerializer
 
         try:
@@ -415,7 +415,8 @@ class Vlan(BaseModel):
             serializer = VlanSerializer(self)
             data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.VLAN_DEACTIVATE})
-            queue_manager.append({'action': queue_keys.VLAN_DEACTIVATE, 'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
+            queue_manager.append({'action': queue_keys.VLAN_DEACTIVATE,
+                                  'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
             queue_manager.send()
 
         except Exception, e:
@@ -430,7 +431,6 @@ class Vlan(BaseModel):
 
         @return: nothing
         """
-
         if self.nome is not None:
             self.nome = self.nome.upper()
 
@@ -460,7 +460,7 @@ class Vlan(BaseModel):
             raise VlanError(e, msg)
 
     def create(self, authenticated_user, min_num_01, max_num_01, min_num_02, max_num_02):
-        '''Insere uma nova VLAN.
+        """Insere uma nova VLAN.
 
         O valor dos campos num_vlan, rede_oct1, rede_oct2, rede_oct3, rede_oct4, bloco,
         broadcast, masc_oct1, masc_oct2, masc_oct3, masc_oct4, acl_file_name, acl_valida e ativada é gerado internamente.
@@ -488,7 +488,7 @@ class Vlan(BaseModel):
         sub-rede ou super-rede de um endereço existe no cadastro de VLANs.
 
         @raise VlanError: Erro não esperado ao executar o save.
-        '''
+        """
         if self.nome is not None:
             self.nome = self.nome.upper()
 
@@ -538,14 +538,14 @@ class Vlan(BaseModel):
             raise VlanError(e, u'Falha ao inserir a VLAN.')
 
     def get_by_number_and_environment(self, number, environment):
-        '''Get Vlan by number.
+        """Get Vlan by number.
 
         @return: Vlan.
 
         @raise VlanNotFoundError: Vlan is not registered.
         @raise VlanError: Failed to search for the Vlan.
         @raise OperationalError: Lock wait timeout exceed
-        '''
+        """
         try:
             return Vlan.objects.filter(num_vlan=number, ambiente=environment).uniqueResult()
         except ObjectDoesNotExist, e:
@@ -560,14 +560,14 @@ class Vlan(BaseModel):
             raise VlanError(e, u'Failure to search the Vlan.')
 
     def get_by_number(self, number):
-        '''Get Vlan by number.
+        """Get Vlan by number.
 
         @return: Vlan.
 
         @raise VlanNotFoundError: Vlan is not registered.
         @raise VlanError: Failed to search for the Vlan.
         @raise OperationalError: Lock wait timeout exceed
-        '''
+        """
         try:
             return Vlan.objects.filter(num_vlan=number).uniqueResult()
         except ObjectDoesNotExist, e:
@@ -582,14 +582,14 @@ class Vlan(BaseModel):
             raise VlanError(e, u'Failure to search the Vlan.')
 
     def get_by_name(self, name):
-        '''Get Vlan by name.
+        """Get Vlan by name.
 
         @return: Vlan.
 
         @raise VlanNotFoundError: Vlan is not registered.
         @raise VlanError: Failed to search for the Vlan.
         @raise OperationalError: Lock wait timeout exceed
-        '''
+        """
         try:
             return Vlan.objects.filter(nome=name).uniqueResult()
         except ObjectDoesNotExist, e:
@@ -605,31 +605,32 @@ class Vlan(BaseModel):
 
     def insert_vlan(self, authenticated_user):
         """
-        Insere uma nova Vlan
+        Insere uma nova Vlan.
 
-        @return ID new Vlan
+        @return ID new Vlan.
 
         @raise VlanNameDuplicatedError: Nome do Vlan já existe.
 
-        @raise VlanNumberEnvironmentNotAvailableError: Numero e Ambiente da VLan já existe.
+        @raise VlanNumberEnvironmentNotAvailableError: Numero e Ambiente
+                                                       da VLan já existe.
 
-        @raise VlanError: Erro ao cadastrar Vlan
+        @raise VlanError: Erro ao cadastrar Vlan.
         """
-
         from networkapi.equipamento.models import TipoEquipamento
 
         try:
             self.get_by_number_and_environment(self.num_vlan, self.ambiente)
-            ambiente = "%s - %s - %s" % (self.ambiente.divisao_dc.nome,
+            ambiente = '%s - %s - %s' % (self.ambiente.divisao_dc.nome,
                                          self.ambiente.ambiente_logico.nome, self.ambiente.grupo_l3.nome)
             raise VlanNumberEnvironmentNotAvailableError(
-                None, "Já existe uma VLAN cadastrada com o número %s no ambiente %s" % (self.num_vlan, ambiente))
+                None, 'Já existe uma VLAN cadastrada com o número %s no ambiente %s' % (self.num_vlan, ambiente))
         except VlanNotFoundError:
             pass
 
         ambiente = self.ambiente
         filter = ambiente.filter
-        equipment_types = TipoEquipamento.objects.filter(filterequiptype__filter=filter)
+        equipment_types = TipoEquipamento.objects.filter(
+            filterequiptype__filter=filter)
 
         equips = list()
         envs = list()
@@ -655,7 +656,7 @@ class Vlan(BaseModel):
             for vlan in env.vlan_set.all():
                 if int(vlan.num_vlan) == int(self.num_vlan):
                     raise VlanNumberEnvironmentNotAvailableError(
-                        None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
+                        None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente' % (self.num_vlan))
 
         # Name VLAN can not be duplicated in the environment
         if self.exist_vlan_name_in_environment():
@@ -671,25 +672,24 @@ class Vlan(BaseModel):
 
     def edit_vlan(self, authenticated_user, change_name, change_number_environment):
         """
-        Edita uma Vlan
+        Edita uma Vlan.
 
-        @return None
+        @return None.
 
         @raise VlanNameDuplicatedError: Nome do Vlan já existe.
 
         @raise VlanNumberEnvironmentNotAvailableError: Numero e Ambiente da VLan já existe.
 
-        @raise VlanError: Erro ao cadastrar Vlan
+        @raise VlanError: Erro ao cadastrar Vlan.
         """
-
         if change_number_environment:
             try:
                 self.get_by_number_and_environment(
                     self.num_vlan, self.ambiente)
-                ambiente = "%s - %s - %s" % (self.ambiente.divisao_dc.nome,
+                ambiente = '%s - %s - %s' % (self.ambiente.divisao_dc.nome,
                                              self.ambiente.ambiente_logico.nome, self.ambiente.grupo_l3.nome)
                 raise VlanNumberEnvironmentNotAvailableError(
-                    None, "Já existe uma VLAN cadastrada com o número %s no ambiente %s" % (self.num_vlan, ambiente))
+                    None, 'Já existe uma VLAN cadastrada com o número %s no ambiente %s' % (self.num_vlan, ambiente))
             except VlanNotFoundError:
                 pass
 
@@ -712,7 +712,7 @@ class Vlan(BaseModel):
                     if int(vlan.num_vlan) == int(self.num_vlan) and int(vlan.id) != int(self.id):
                         if self.ambiente.filter_id is None or vlan.ambiente.filter_id is None or int(vlan.ambiente.filter_id) != int(self.ambiente.filter_id):
                             raise VlanNumberEnvironmentNotAvailableError(
-                                None, "Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente" % (self.num_vlan))
+                                None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente' % (self.num_vlan))
 
             old_vlan = self.get_by_pk(self.id)
             old_env = old_vlan.ambiente
@@ -722,7 +722,7 @@ class Vlan(BaseModel):
                 if self.check_env_shared_equipment(old_env):
                     if self.ambiente.filter_id != old_env.filter_id:
                         raise VlanNumberEnvironmentNotAvailableError(
-                            None, "Um dos equipamentos associados com o ambiente desta Vlan também está associado com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos ambientes se necessário.")
+                            None, 'Um dos equipamentos associados com o ambiente desta Vlan também está associado com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos ambientes se necessário.')
 
         if change_name:
             # Name VLAN can not be duplicated in the environment
@@ -762,7 +762,7 @@ class Vlan(BaseModel):
         # Verify subnet ipv4
         for i in range(0, len(nets_ipv4)):
             net = nets_ipv4[i].get('net')
-            ip = "%s.%s.%s.%s/%s" % (net.oct1,
+            ip = '%s.%s.%s.%s/%s' % (net.oct1,
                                      net.oct2, net.oct3, net.oct4, net.block)
             network_ip_verify = IPNetwork(ip)
 
@@ -778,7 +778,7 @@ class Vlan(BaseModel):
         # Verify subnet ipv6
         for i in range(0, len(nets_ipv6)):
             net = nets_ipv6[i].get('net')
-            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+            ip = '%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net.block1, net.block2, net.block3,
                                                  net.block4, net.block5, net.block6,
                                                  net.block7, net.block8, net.block)
             network_ip_verify = IPNetwork(ip)
@@ -815,7 +815,7 @@ class Vlan(BaseModel):
             cause = e.cause
             cause['Vlan'] = self.nome
             raise IpCantBeRemovedFromVip(
-                cause, "Esta Vlan possui uma Rede com Requisição Vip apontando para ela, e não pode ser excluída")
+                cause, 'Esta Vlan possui uma Rede com Requisição Vip apontando para ela, e não pode ser excluída')
         except VlanCantDeallocate, e:
             raise e
 
@@ -830,10 +830,7 @@ class Vlan(BaseModel):
         return eqpts
 
     def validate_num_vlan_v3(self):
-        """
-            Validate if number of vlan is duplicated in environment or
-            environment assoc with eqpt
-        """
+        """Validate if number of vlan is duplicated in environment or environment assoc with eqpt."""
         equips = self.get_eqpt()
 
         # get vlans with same num_vlan
@@ -850,9 +847,7 @@ class Vlan(BaseModel):
                 'equipments of environment')
 
     def validate_v3(self):
-        """
-            Make validations in values inputted
-        """
+        """Make validations in values inputted."""
         if self.exist_vlan_num_in_environment(self.id):
             raise Exception(
                 'Number Vlan can not be duplicated in the environment.')
@@ -877,17 +872,13 @@ class Vlan(BaseModel):
         self.validate_num_vlan_v3()
 
     def create_v3(self):
-        """
-            Create new vlan
-        """
+        """Create new vlan."""
         self.validate_v3()
 
         self.save()
 
     def update_v3(self):
-        """
-            Update vlan
-        """
+        """Update vlan."""
         self.validate_v3()
 
         self.save()
@@ -971,7 +962,8 @@ class Vlan(BaseModel):
                         # has network conflict with subnet of network1
                         intersect = list(set(subnets_net1) & set(vl_net2))
                         if intersect:
-                            self.log.error('Subnet intersect:%s, supernet:%s' % (intersect, net))
+                            self.log.error(
+                                'Subnet intersect:%s, supernet:%s' % (intersect, net))
                             return intersect, net
 
                 # network1 >= network2 of environment
@@ -983,7 +975,8 @@ class Vlan(BaseModel):
 
                         intersect = list(set(subnets_net2) & set(vl_net1))
                         if intersect:
-                            self.log.error('Subnet intersect:%s, supernet:%s' % (intersect, net))
+                            self.log.error(
+                                'Subnet intersect:%s, supernet:%s' % (intersect, net))
                             return intersect, net
 
         return [], []

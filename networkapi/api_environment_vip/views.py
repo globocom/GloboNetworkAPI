@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 import urllib
 
@@ -16,8 +16,8 @@ from networkapi.api_environment_vip.permissions import Read
 from networkapi.api_environment_vip.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
-from networkapi.util import logs_method_apiview
-from networkapi.util import permission_classes_apiview
+from networkapi.util.decorators import logs_method_apiview
+from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
@@ -35,9 +35,10 @@ class OptionVipEnvironmentVipOneView(APIView):
         Return option vip object list
         """
         try:
-            environment_vip_id = kwargs["environment_vip_id"]
+            environment_vip_id = kwargs['environment_vip_id']
 
-            options_vip = facade.get_option_vip_by_environment_vip_ids([environment_vip_id])
+            options_vip = facade.get_option_vip_by_environment_vip_ids(
+                [environment_vip_id])
 
             if options_vip:
                 options_vip = options_vip[0]
@@ -133,9 +134,11 @@ class EnvironmentVipView(APIView):
                 )
 
                 data = request.GET
-                fields = tuple(data.get('fields').split(',')) if data.get('fields') else default_fields
+                fields = tuple(data.get('fields').split(',')) if data.get(
+                    'fields') else default_fields
 
-                environments_vip = facade.get_environmentvip_by_ids(environment_vip_ids)
+                environments_vip = facade.get_environmentvip_by_ids(
+                    environment_vip_ids)
 
                 if environments_vip:
                     environmentvip_serializer = serializers.EnvironmentVipSerializer(
@@ -187,8 +190,8 @@ class OptionVipEnvironmentTypeVipView(APIView):
         Return option vip object list
         """
         try:
-            environment_vip_ids = kwargs["environment_vip_id"].split(';')
-            type_option = urllib.unquote(kwargs["type_option"]).decode('utf8')
+            environment_vip_ids = kwargs['environment_vip_id'].split(';')
+            type_option = urllib.unquote(kwargs['type_option']).decode('utf8')
             search_list = list()
 
             for environment_vip_id in environment_vip_ids:
@@ -197,7 +200,8 @@ class OptionVipEnvironmentTypeVipView(APIView):
                     'type_option': type_option
                 })
 
-            options_vips = facade.get_option_vip_by_environment_vip_type(search_list)
+            options_vips = facade.get_option_vip_by_environment_vip_type(
+                search_list)
 
             data = dict()
             data['optionsvip'] = list()
@@ -227,8 +231,9 @@ class TypeOptionEnvironmentVipView(APIView):
         Return option vip object list
         """
         try:
-            environment_vip_ids = kwargs["environment_vip_id"].split(';')
-            type_option_vip = facade.get_type_option_vip_by_environment_vip_ids(environment_vip_ids)
+            environment_vip_ids = kwargs['environment_vip_id'].split(';')
+            type_option_vip = facade.get_type_option_vip_by_environment_vip_ids(
+                environment_vip_ids)
 
             return Response(type_option_vip, status.HTTP_200_OK)
 

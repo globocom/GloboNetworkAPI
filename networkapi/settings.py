@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -61,7 +61,8 @@ if NETWORKAPI_USE_NEWRELIC:
     import newrelic.agent
     config_file_path = os.environ.get('NETWORKAPI_NEW_RELIC_CONFIG')
     if config_file_path is not None:
-        newrelic.agent.initialize(config_file_path, os.environ.get('NETWORKAPI_NEW_RELIC_ENV', 'local'))
+        newrelic.agent.initialize(config_file_path, os.environ.get(
+            'NETWORKAPI_NEW_RELIC_ENV', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -70,7 +71,8 @@ NETWORKAPI_DATABASE_USER = os.getenv('NETWORKAPI_DATABASE_USER', 'root')
 NETWORKAPI_DATABASE_PASSWORD = os.getenv('NETWORKAPI_DATABASE_PASSWORD', '')
 NETWORKAPI_DATABASE_HOST = os.getenv('NETWORKAPI_DATABASE_HOST', 'localhost')
 NETWORKAPI_DATABASE_PORT = os.getenv('NETWORKAPI_DATABASE_PORT', '3306')
-NETWORKAPI_DATABASE_OPTIONS = os.getenv('NETWORKAPI_DATABASE_OPTIONS', '{"init_command": "SET storage_engine=INNODB"}')
+NETWORKAPI_DATABASE_OPTIONS = os.getenv(
+    'NETWORKAPI_DATABASE_OPTIONS', '{"init_command": "SET storage_engine=INNODB"}')
 
 # Configurações de banco de dados
 DATABASES = {
@@ -92,7 +94,8 @@ if 'test' in sys.argv or 'jenkins' in sys.argv:
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 
-NETWORKAPI_MEMCACHE_HOSTS = os.getenv("NETWORKAPI_MEMCACHE_HOSTS", '127.0.0.1:11211')
+NETWORKAPI_MEMCACHE_HOSTS = os.getenv(
+    'NETWORKAPI_MEMCACHE_HOSTS', '127.0.0.1:11211')
 
 CACHES = {
     'default': {
@@ -104,7 +107,8 @@ CACHES = {
 
 # Diretório dos arquivos dos scripts
 # SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
-SCRIPTS_DIR = os.getenv("NETWORKAPI_SCRIPTS_DIR", os.path.abspath(os.path.join(__file__, '../../scripts')))
+SCRIPTS_DIR = os.getenv('NETWORKAPI_SCRIPTS_DIR', os.path.abspath(
+    os.path.join(__file__, '../../scripts')))
 
 # Armazena a raiz do projeto.
 SITE_ROOT = os.path.abspath(__file__ + '/../../')
@@ -118,8 +122,10 @@ API_VERSION = '15.96'
 ASSOCIATE_PERMISSION_AUTOMATICALLY = True
 ID_AUTHENTICATE_PERMISSION = 5
 
-NETWORKAPI_SUPPORT_TIME = os.getenv('NETWORKAPI_SUPPORT_TIME', "Suporte Telecom")
-NETWORKAPI_SUPPORT_EMAIL = os.getenv('NETWORKAPI_SUPPORT_EMAIL', 'suptel@corp.globo.com')
+NETWORKAPI_SUPPORT_TIME = os.getenv(
+    'NETWORKAPI_SUPPORT_TIME', 'Suporte Telecom')
+NETWORKAPI_SUPPORT_EMAIL = os.getenv(
+    'NETWORKAPI_SUPPORT_EMAIL', 'suptel@corp.globo.com')
 ADMINS = (
     (NETWORKAPI_SUPPORT_TIME, NETWORKAPI_SUPPORT_EMAIL),
 )
@@ -267,16 +273,17 @@ ROOT_URLCONF = 'networkapi.urls'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.4/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(os.getenv('NETWORKAPI_STATIC_FILE', SITE_ROOT), 'sitestatic')
+STATIC_ROOT = os.path.join(
+    os.getenv('NETWORKAPI_STATIC_FILE', SITE_ROOT), 'sitestatic')
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.core.context_processors.tz",
-    "django.contrib.messages.context_processors.messages",
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
 )
 
@@ -301,7 +308,6 @@ PROJECT_APPS = (
     'networkapi.api_rack',
     'networkapi.api_rest',
     'networkapi.api_usuario',
-    # 'networkapi.api_task',
     'networkapi.api_ogp',
     'networkapi.api_vip_request',
     'networkapi.api_vrf',
@@ -365,7 +371,7 @@ REST_FRAMEWORK = {
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
 
-NETWORKAPI_VERSION = "1.0"
+NETWORKAPI_VERSION = '1.0'
 
 # Intervals to calculate the vlan_num in POST request /vlan/.
 MIN_VLAN_NUMBER_01 = 2
@@ -421,11 +427,11 @@ POOL_SERVICEDOWNACTION = 'gerador_vips --pool %s --servicedownaction'
 POOL_MEMBER_PRIORITIES = 'gerador_vips --pool %s --priority'
 
 # Script to Managemant Status Pool Members
-POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
+POOL_MANAGEMENT_MEMBERS_STATUS = 'gerador_vips --pool %s --apply_status'
 
 # Script to Managemant Status Pool Members
-POOL_MANAGEMENT_LB_METHOD = "gerador_vips --pool %s --lb_method"
-POOL_MANAGEMENT_LIMITS = "gerador_vips --pool %s --maxconn"
+POOL_MANAGEMENT_LB_METHOD = 'gerador_vips --pool %s --lb_method'
+POOL_MANAGEMENT_LIMITS = 'gerador_vips --pool %s --maxconn'
 
 # VIP
 VIP_CREATE = 'gerador_vips -i %d --cria'
@@ -461,8 +467,10 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ##################################
 
 BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
-BROKER_DESTINATION = os.getenv('NETWORKAPI_BROKER_DESTINATION', "/topic/networkapi_queue")
-BROKER_URI = os.getenv('NETWORKAPI_BROKER_URI', u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e")
+BROKER_DESTINATION = os.getenv(
+    'NETWORKAPI_BROKER_DESTINATION', '/topic/networkapi_queue')
+BROKER_URI = os.getenv('NETWORKAPI_BROKER_URI',
+                       u'failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e')
 
 
 ###################################
@@ -476,34 +484,42 @@ PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
 # PATH RACKS
 ###################################
 # HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
-KICKSTART_SO_LF = "n6000-uk9-kickstart.7.1.0.N1.1b.bin"
-IMAGE_SO_LF = "n6000-uk9.7.1.0.N1.1b.bin"
+KICKSTART_SO_LF = 'n6000-uk9-kickstart.7.1.0.N1.1b.bin'
+IMAGE_SO_LF = 'n6000-uk9.7.1.0.N1.1b.bin'
 # <<<<<
 
-PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE', '/vagrant/networkapi/rack/roteiros/')
-PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_PATH_TO_ADD_GUIDE', '/vagrant/networkapi/rack/configuracao/')
-PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG', '/vagrant/networkapi/rack/roteiros/')
-REL_PATH_TO_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_CONFIG', 'networkapi/rack/roteiros/')
-REL_PATH_TO_ADD_CONFIG = os.getenv('NETWORKAPI_REL_PATH_TO_ADD_CONFIG', 'networkapi/rack/configuracao/')
-PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV', '/vagrant/networkapi/rack/roteiros/')
+PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE',
+                          '/vagrant/networkapi/rack/roteiros/')
+PATH_TO_ADD_CONFIG = os.getenv(
+    'NETWORKAPI_PATH_TO_ADD_GUIDE', '/vagrant/networkapi/rack/configuracao/')
+PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG',
+                           '/vagrant/networkapi/rack/roteiros/')
+REL_PATH_TO_CONFIG = os.getenv(
+    'NETWORKAPI_REL_PATH_TO_CONFIG', 'networkapi/rack/roteiros/')
+REL_PATH_TO_ADD_CONFIG = os.getenv(
+    'NETWORKAPI_REL_PATH_TO_ADD_CONFIG', 'networkapi/rack/configuracao/')
+PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV',
+                       '/vagrant/networkapi/rack/roteiros/')
 
-LEAF = "LF-CM"
-OOB = "OOB-CM"
-SPN = "SPN-CM"
-FORMATO = ".cfg"
+LEAF = 'LF-CM'
+OOB = 'OOB-CM'
+SPN = 'SPN-CM'
+FORMATO = '.cfg'
 
-DIVISAODC_MGMT = "OOB-CM"
-AMBLOG_MGMT = "GERENCIA"
-GRPL3_MGMT = "CORE/DENSIDADE"
+DIVISAODC_MGMT = 'OOB-CM'
+AMBLOG_MGMT = 'GERENCIA'
+GRPL3_MGMT = 'CORE/DENSIDADE'
 
 ##################################
 #       FOREMAN SETTINGS
 ##################################
 
 NETWORKAPI_USE_FOREMAN = os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
-NETWORKAPI_FOREMAN_URL = os.getenv('NETWORKAPI_FOREMAN_URL', 'http://foreman_server')
+NETWORKAPI_FOREMAN_URL = os.getenv(
+    'NETWORKAPI_FOREMAN_URL', 'http://foreman_server')
 NETWORKAPI_FOREMAN_USERNAME = os.getenv('NETWORKAPI_FOREMAN_USERNAME', 'admin')
-NETWORKAPI_FOREMAN_PASSWORD = os.getenv('NETWORKAPI_FOREMAN_PASSWORD', 'password')
+NETWORKAPI_FOREMAN_PASSWORD = os.getenv(
+    'NETWORKAPI_FOREMAN_PASSWORD', 'password')
 
 USE_FOREMAN = NETWORKAPI_USE_FOREMAN
 FOREMAN_URL = NETWORKAPI_FOREMAN_URL
@@ -519,36 +535,41 @@ NETWORKAPI_TFTP_SERVER_ADDR = os.getenv('NETWORKAPI_TFTP_SERVER_ADDR', '')
 
 TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
 
-NETWORKAPI_TFTPBOOT_FILES_PATH = os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH', '/mnt/tftpboot/')
+NETWORKAPI_TFTPBOOT_FILES_PATH = os.getenv(
+    'NETWORKAPI_TFTPBOOT_FILES_PATH', '/mnt/tftpboot/')
 TFTPBOOT_FILES_PATH = NETWORKAPI_TFTPBOOT_FILES_PATH
 
 
-NETWORKAPI_CONFIG_TEMPLATE_PATH = os.getenv('NETWORKAPI_CONFIG_TEMPLATE_PATH', '/mnt/config_templates/')
+NETWORKAPI_CONFIG_TEMPLATE_PATH = os.getenv(
+    'NETWORKAPI_CONFIG_TEMPLATE_PATH', '/mnt/config_templates/')
 CONFIG_TEMPLATE_PATH = NETWORKAPI_CONFIG_TEMPLATE_PATH
 
-CONFIG_FILES_REL_PATH = "networkapi/generated_config/"
+CONFIG_FILES_REL_PATH = 'networkapi/generated_config/'
 CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
-APPLYED_CONFIG_REL_PATH = "networkapi/applyed_config/"
+APPLYED_CONFIG_REL_PATH = 'networkapi/applyed_config/'
 
-INTERFACE_CONFIG_REL_PATH = "interface/"
+INTERFACE_CONFIG_REL_PATH = 'interface/'
 # /mnt/config_templates/interface/
 INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + INTERFACE_CONFIG_REL_PATH
 # /mnt/tftpboot/networkapi/generated_config/interface/
-INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
+INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
+    CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
 # networkapi/generated_config/interface/
 INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
 
-USER_SCRIPTS_REL_PATH = "user_scripts/"
+USER_SCRIPTS_REL_PATH = 'user_scripts/'
 # /mnt/tftpboot/networkapi/generated_config/user_scripts/
-USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
+USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + \
+    CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
 # networkapi/generated_config/interface/
 USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
 
-NETWORK_CONFIG_REL_PATH = "network/"
+NETWORK_CONFIG_REL_PATH = 'network/'
 # /mnt/config_templates/interface/
 NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + NETWORK_CONFIG_REL_PATH
 # /mnt/tftpboot/networkapi/generated_config/interface/
-NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
+NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
+    CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
 # networkapi/generated_config/interface/
 NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
 ###################

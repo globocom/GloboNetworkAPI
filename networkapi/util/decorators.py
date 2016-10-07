@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import ast
 import functools
 import json
@@ -41,14 +41,14 @@ def deprecated(new_uri=None):
             import os
             basename = os.path.basename(fun.func_code.co_filename)
             log = logging.getLogger(basename)
-            message = "%s:%s: %s is deprecated. Use the new rest API." % (
+            message = '%s:%s: %s is deprecated. Use the new rest API.' % (
                 basename,
                 fun.func_code.co_firstlineno + 1,
                 fun.__name__,
             )
 
             if new_uri:
-                message += " Uri to access: %s" % new_uri
+                message += ' Uri to access: %s' % new_uri
 
             log.warning(message)
             return fun(*args, **kwargs)
@@ -63,16 +63,8 @@ def logs_method_apiview(func):
         log = logging.getLogger(type(self).__name__)
 
         log.info(
-            "View:%s, method:%s - Data send: %s -  Url params: %s" % (
+            'View:%s, method:%s - Data send: %s -  Url params: %s' % (
                 type(self).__name__, request.method, request.DATA, kwargs))
-        return func(self, request, *args, **kwargs)
-    return inner
-
-
-def state_change(func):
-    @functools.wraps(func)
-    def inner(self, request, *args, **kwargs):
-        self.update_state(state='STARTED')
         return func(self, request, *args, **kwargs)
     return inner
 

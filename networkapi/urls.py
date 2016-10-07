@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.conf.urls import include
 from django.conf.urls import patterns
@@ -30,7 +30,6 @@ urlpatterns = patterns(
     url(api_prefix, include('networkapi.api_pools.urls')),
     url(api_prefix, include('networkapi.api_rack.urls')),
     url(api_prefix, include('networkapi.api_rest.urls')),
-    # url(api_prefix, include('networkapi.api_task.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.snippets.urls')),
@@ -38,17 +37,20 @@ urlpatterns = patterns(
 
     # app healthchecks
     url(r'^check$', CheckAction().check, name='check'),
-    url(r'^healthcheck$', lambda _: HttpResponse("WORKING")),
+    url(r'^healthcheck$', lambda _: HttpResponse('WORKING')),
 
     # equipamento
     url(r'^equipamento/', include('networkapi.equipamento.urls')),
     url(r'^equipment/', include('networkapi.equipamento.urls_equipment')),
-    url(r'^equipamentoacesso/', include('networkapi.equipamento.urls_equipamentoacesso')),
+    url(r'^equipamentoacesso/',
+        include('networkapi.equipamento.urls_equipamentoacesso')),
     url(r'^equipamentogrupo/', include('networkapi.equipamento.urls_equipamentogrupo')),
     url(r'^equipmenttype/', include('networkapi.equipamento.urls_equipmenttype')),
-    url(r'^equipamentoambiente/', include('networkapi.equipamento.urls_equipamentoambiente')),
+    url(r'^equipamentoambiente/',
+        include('networkapi.equipamento.urls_equipamentoambiente')),
     url(r'^equipmentscript/', include('networkapi.equipamento.urls_equipmentscript')),
-    url(r'^equipamentoroteiro/', include('networkapi.equipamento.urls_equipamentoroteiro')),
+    url(r'^equipamentoroteiro/',
+        include('networkapi.equipamento.urls_equipamentoroteiro')),
     url(r'^brand/', include('networkapi.equipamento.urls_brand')),
     url(r'^model/', include('networkapi.equipamento.urls_model')),
 
@@ -57,7 +59,8 @@ urlpatterns = patterns(
     url(r'^environment/', include('networkapi.ambiente.urls_environment')),
     url(r'^divisiondc/', include('networkapi.ambiente.urls_divisiondc')),
     url(r'^groupl3/', include('networkapi.ambiente.urls_groupl3')),
-    url(r'^logicalenvironment/', include('networkapi.ambiente.urls_logicalenvironment')),
+    url(r'^logicalenvironment/',
+        include('networkapi.ambiente.urls_logicalenvironment')),
     url(r'^ipconfig/', include('networkapi.ambiente.urls_ipconfig')),
 
     # rules
@@ -114,7 +117,8 @@ urlpatterns = patterns(
     url(r'^egrupo/', include('networkapi.grupo.urls_egrupo')),
     url(r'^perms/', include('networkapi.grupo.urls_perms')),
     url(r'^aperms/', include('networkapi.grupo.urls_aperms')),
-    url(r'^direitosgrupoequipamento/', include('networkapi.grupo.urls_direitosgrupoequipamento')),
+    url(r'^direitosgrupoequipamento/',
+        include('networkapi.grupo.urls_direitosgrupoequipamento')),
 
     # filter
     url(r'^filter/', include('networkapi.filter.urls')),

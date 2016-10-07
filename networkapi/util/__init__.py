@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -30,17 +30,14 @@ from django.core import validators
 from django.core.cache import cache
 from django.forms.models import model_to_dict
 
-from .decorators import deprecated
-from .decorators import logs_method_apiview
-from .decorators import permission_classes_apiview
-from .decorators import permission_obj_apiview
-from .decorators import state_change
 from networkapi.infrastructure.ipaddr import AddressValueError
 from networkapi.infrastructure.ipaddr import IPAddress
 from networkapi.plugins import exceptions as plugins_exceptions
+# from .decorators import deprecated
 
 LOCK = 'LOCK'
-PATTERN_XML_PASSWORD = ["<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
+PATTERN_XML_PASSWORD = [
+    '<password>(.*?)</password>', '<enable_pass>(.*?)</enable_pass>', '<pass>(.*?)</pass>']
 
 
 def valid_expression(operator, value1, value2):
@@ -56,13 +53,12 @@ def search_hide_password(msg):
     """
     Search and hide password
     """
-
     for text in PATTERN_XML_PASSWORD:
         r = re.compile(text)
         m = r.search(msg)
         if m:
             password = m.group(1)
-            msg = msg.replace(password, "****")
+            msg = msg.replace(password, '****')
 
     return msg
 
@@ -73,20 +69,19 @@ def valid_regex(string, regex):
 
 
 def is_valid_regex(string, regex):
-    '''Checks if the parameter is a valid value by regex.
+    """Checks if the parameter is a valid value by regex.
 
     :param param: Value to be validated.
 
     :return: True if the parameter has a valid vakue, or False otherwise.
-    '''
-
+    """
     pattern = re.compile(regex)
     return pattern.match(string) is not None
 
 
 def is_valid_ip(address):
     """Verifica se address é um endereço ip válido."""
-    pattern = r"\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
+    pattern = r'\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
     return re.match(pattern, address)
 
 
@@ -106,12 +101,12 @@ def to_ip(address):
 
 
 def is_valid_int_param(param, required=True):
-    '''Checks if the parameter is a valid integer value.
+    """Checks if the parameter is a valid integer value.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid integer value, or False otherwise.
-    '''
+    """
     if param is None and not required:
         return True
     elif param is None:
@@ -125,12 +120,12 @@ def is_valid_int_param(param, required=True):
 
 
 def is_valid_int_greater_zero_param(param, required=True):
-    '''Checks if the parameter is a valid integer value and greater than zero.
+    """Checks if the parameter is a valid integer value and greater than zero.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid integer value, or False otherwise.
-    '''
+    """
     if param is None and not required:
         return True
     elif param is None:
@@ -145,12 +140,12 @@ def is_valid_int_greater_zero_param(param, required=True):
 
 
 def is_valid_int_greater_equal_zero_param(param):
-    '''Checks if the parameter is a valid integer value and greater and equal than zero.
+    """Checks if the parameter is a valid integer value and greater and equal than zero.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid integer value, or False otherwise.
-    '''
+    """
     if param is None:
         return False
     try:
@@ -163,7 +158,7 @@ def is_valid_int_greater_equal_zero_param(param):
 
 
 def is_valid_string_maxsize(param, maxsize=None, required=True):
-    '''Checks if the parameter is a valid string and his size is less than maxsize.
+    """Checks if the parameter is a valid string and his size is less than maxsize.
     If the parameter maxsize is None than the size is ignored
     If the parameter required is True than the string can not be None
 
@@ -172,7 +167,7 @@ def is_valid_string_maxsize(param, maxsize=None, required=True):
     @param required: Check if the value can be None
 
     @return True if the parameter is valid or False otherwise.
-    '''
+    """
 
     if required is True and param is None:
         return False
@@ -195,7 +190,7 @@ def is_valid_string_maxsize(param, maxsize=None, required=True):
 
 
 def is_valid_string_minsize(param, minsize=None, required=True):
-    '''Checks if the parameter is a valid string and his size is more than minsize.
+    """Checks if the parameter is a valid string and his size is more than minsize.
     If the parameter minsize is None than the size is ignored
     If the parameter required is True than the string can not be None
 
@@ -204,7 +199,7 @@ def is_valid_string_minsize(param, minsize=None, required=True):
     @param required: Check if the value can be None
 
     @return True if the parameter is valid or False otherwise.
-    '''
+    """
 
     if required is True and param is None:
         return False
@@ -227,12 +222,12 @@ def is_valid_string_minsize(param, minsize=None, required=True):
 
 
 def is_valid_boolean_param(param, required=True):
-    '''Checks if the parameter is a valid boolean.
+    """Checks if the parameter is a valid boolean.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid boolean value, or False otherwise.
-    '''
+    """
 
     if param is None and not required:
         return True
@@ -246,12 +241,12 @@ def is_valid_boolean_param(param, required=True):
 
 
 def is_valid_zero_one_param(param, required=True):
-    '''Checks if the parameter is a valid zero or one string.
+    """Checks if the parameter is a valid zero or one string.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid zero or one value, or False otherwise.
-    '''
+    """
     if param is None and not required:
         return True
     elif param is None:
@@ -266,12 +261,12 @@ def is_valid_zero_one_param(param, required=True):
 
 
 def is_valid_yes_no_choice(param):
-    '''Checks if the parameter is valid 'S' or 'N' char.
+    """Checks if the parameter is valid 'S' or 'N' char.
 
     @param param: valid to be validated.
 
     @return True if the parameter is a valid choice, or False otherwise.
-    '''
+    """
 
     if param in ('S', 'N'):
         return True
@@ -280,73 +275,73 @@ def is_valid_yes_no_choice(param):
 
 
 def is_valid_uri(param):
-    '''Checks if the parameter is a valid uri.
+    """Checks if the parameter is a valid uri.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid uri value, or False otherwise.
-    '''
+    """
     pattern = r"^[a-zA-Z0-9\\-_\\\-\\.!\\~\\*'\\(\\);/\\?:\\@\\&=\\{\\}\\#\\\[\\\]\\,]*$"
     return re.match(pattern, param)
 
 
 def is_valid_text(param, required=True):
-    '''Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
+    """Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
 
     @param param: Value to be validated.
     @param required: Check if the value can be None
 
     @return True if the parameter has a valid text value, or False otherwise.
 
-    '''
+    """
     if required is True and param is None:
         return False
 
     elif required is False and (param is None or param == ''):
         return True
 
-    pattern = r"^[a-zA-Z0-9\\-_\\\-\\ ]*$"
+    pattern = r'^[a-zA-Z0-9\\-_\\\-\\ ]*$'
     return re.match(pattern, param)
 
 
 def is_valid_pool_identifier_text(param, required=True):
-    '''Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
+    """Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
 
     @param param: Value to be validated.
     @param required: Check if the value can be None
 
     @return True if the parameter has a valid text value, or False otherwise.
 
-    '''
+    """
     if required is True and param is None:
         return False
 
     elif required is False and (param is None or param == ''):
         return True
 
-    pattern = r"^[a-zA-Z]+[a-zA-Z0-9\._-]*$"
+    pattern = r'^[a-zA-Z]+[a-zA-Z0-9\._-]*$'
     return re.match(pattern, param)
 
 
 def is_valid_option(param):
-    '''Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z] and special characters hyphen, underline and point.
+    """Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z] and special characters hyphen, underline and point.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid text value, or False otherwise.
 
-    '''
-    pattern = r"^[0-9a-zA-Z\\-_.\\\-\\ ]*$"
+    """
+    pattern = r'^[0-9a-zA-Z\\-_.\\\-\\ ]*$'
     return re.match(pattern, param)
 
 
 def is_valid_email(param):
-    '''Checks if the parameter is a valid e-mail.
+    """Checks if the parameter is a valid e-mail.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid e-mail value, or False otherwise.
-    '''
+    """
     pattern = re.compile(r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"
                          r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"'
                          r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$', re.IGNORECASE)
@@ -355,24 +350,24 @@ def is_valid_email(param):
 
 
 def is_valid_healthcheck_destination(param):
-    '''Checks if the parameter is a valid healthcheck_destination.
+    """Checks if the parameter is a valid healthcheck_destination.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid healthcheck_destination value, or False otherwise.
-    '''
-    pattern = re.compile(r"^([0-9]+|\*):([0-9]+|\*)$")
+    """
+    pattern = re.compile(r'^([0-9]+|\*):([0-9]+|\*)$')
 
     return re.match(pattern, param)
 
 
 def is_valid_ipv4(param):
-    '''Checks if the parameter is a valid ipv4.
+    """Checks if the parameter is a valid ipv4.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid ipv4 value, or False otherwise.
-    '''
+    """
     try:
         IPAddress(param, 4)
         return True
@@ -381,12 +376,12 @@ def is_valid_ipv4(param):
 
 
 def is_valid_ipv6(param):
-    '''Checks if the parameter is a valid ipv6.
+    """Checks if the parameter is a valid ipv6.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid ipv6 value, or False otherwise.
-    '''
+    """
     try:
         IPAddress(param, 6)
         return True
@@ -395,12 +390,12 @@ def is_valid_ipv6(param):
 
 
 def is_valid_ip_ipaddr(param):
-    '''Checks if the parameter is a valid ip is ipv4 or ipv6.
+    """Checks if the parameter is a valid ip is ipv4 or ipv6.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid ipv6 or ipv4 value, or False otherwise.
-    '''
+    """
     try:
         IPAddress(param)
         return True
@@ -409,12 +404,12 @@ def is_valid_ip_ipaddr(param):
 
 
 def convert_boolean_to_int(param):
-    '''Convert the parameter of boolean to int.
+    """Convert the parameter of boolean to int.
 
     @param param: parameter to be converted.
 
     @return Parameter converted.
-    '''
+    """
     if param is True:
         return int(1)
 
@@ -423,36 +418,36 @@ def convert_boolean_to_int(param):
 
 
 def convert_string_or_int_to_boolean(param):
-    '''Convert the parameter of string or int to boolean.
+    """Convert the parameter of string or int to boolean.
 
     @param param: parameter to be converted.
 
     @return Parameter converted.
-    '''
-    if param == "1" or param == int(1) or param == "True":
+    """
+    if param == '1' or param == int(1) or param == 'True':
         return True
 
-    elif param == "0" or int(0) or param == "False":
+    elif param == '0' or int(0) or param == 'False':
         return False
 
 
 def clone(obj):
-    '''Clone the object
+    """Clone the object
 
     @param obj: object to be cloned
 
     @return object cloned.
-    '''
+    """
     return copy.copy(obj)
 
 
 def is_valid_version_ip(param, IP_VERSION):
-    '''Checks if the parameter is a valid ip version value.
+    """Checks if the parameter is a valid ip version value.
 
     @param param: Value to be validated.
 
     @return True if the parameter has a valid ip version value, or False otherwise.
-    '''
+    """
     if param is None:
         return False
 
@@ -608,12 +603,12 @@ def clear_newline_chr(string):
 
 
 def is_valid_list_int_greater_zero_param(list_param, required=True):
-    '''Checks if the parameter list is a valid integer value and greater than zero.
+    """Checks if the parameter list is a valid integer value and greater than zero.
 
     @param param: Value to be validated.
 
     @raise ValidationError: If there is validation error in the field
-    '''
+    """
     if required and list_param in validators.EMPTY_VALUES:
         raise ValueError('Field is required.')
 
@@ -641,7 +636,9 @@ def is_valid_list_int_greater_zero_param(list_param, required=True):
 def is_healthcheck_valid(healthcheck):
     if healthcheck['healthcheck_type'] != 'HTTP' and healthcheck['healthcheck_type'] != 'HTTPS':
         if healthcheck['healthcheck_expect'] != '':
-            raise plugins_exceptions.ValueInvalid('healthcheck expect must be empty')
+            raise plugins_exceptions.ValueInvalid(
+                'healthcheck expect must be empty')
         if healthcheck['healthcheck_request'] != '':
-            raise plugins_exceptions.ValueInvalid('healthcheck request must be empty')
+            raise plugins_exceptions.ValueInvalid(
+                'healthcheck request must be empty')
     return True
