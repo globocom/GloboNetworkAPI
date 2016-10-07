@@ -32,5 +32,4 @@ urlpatterns = patterns(
     ########################
     url(r'^v3/vlan/((?P<obj_ids>[;\w]+)/)?$',
         views.VlanDBView.as_view()),
-
 )

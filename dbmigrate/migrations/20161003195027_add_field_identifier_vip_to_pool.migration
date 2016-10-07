@@ -1,0 +1,16 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `vip_port_to_pool` 
+ADD COLUMN `identifier` VARCHAR(255) NULL COMMENT '' AFTER `vip_port`;
+ALTER TABLE `vip_request_port` 
+ADD COLUMN `identifier` VARCHAR(255) NULL COMMENT '' AFTER `port`;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `vip_port_to_pool` 
+DROP COLUMN `identifier`;
+ALTER TABLE `vip_request_port` 
+DROP COLUMN `identifier`;
+
+"""
