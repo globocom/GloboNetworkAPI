@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from networkapi.ambiente.models import Ambiente
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_VLAN

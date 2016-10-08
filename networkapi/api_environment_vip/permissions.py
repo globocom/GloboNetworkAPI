@@ -1,8 +1,8 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
+from rest_framework.permissions import BasePermission
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-
-from rest_framework.permissions import BasePermission
 
 
 class Read(BasePermission):

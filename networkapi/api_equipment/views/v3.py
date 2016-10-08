@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -52,12 +52,12 @@ class EquipmentView(APIView):
 
         try:
 
-            rights_write = request.GET.get("rights_write")
-            environment = request.GET.get("environment")
-            ipv4 = request.GET.get("ipv4")
-            ipv6 = request.GET.get("ipv6")
-            is_router = request.GET.get("is_router")
-            name = request.GET.get("name")
+            rights_write = request.GET.get('rights_write')
+            environment = request.GET.get('environment')
+            ipv4 = request.GET.get('ipv4')
+            ipv6 = request.GET.get('ipv6')
+            is_router = request.GET.get('is_router')
+            name = request.GET.get('name')
 
             # get equipments queryset
             eqpts_query = facade.get_equipments(

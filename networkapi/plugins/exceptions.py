@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
@@ -32,9 +30,11 @@ class ConnectionException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Failed trying to connect to equipment.'
 
+
 class CurrentlyBusyErrorException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Equipment is currenlty busy. Failed trying to configure equipment.'
+
 
 class InvalidCommandException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -79,6 +79,7 @@ class UnsupportedEquipmentException(APIException):
 class UnsupportedVersion(APIException):
 
     """Return message error: Version unsupported by plugin"""
+
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Version unsupported by plugin'
 
@@ -89,6 +90,7 @@ class UnsupportedVersion(APIException):
 class PluginUninstanced(APIException):
 
     """Return message error: Plugin uninstanced"""
+
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Plugin uninstanced'
 
@@ -99,6 +101,7 @@ class PluginUninstanced(APIException):
 class PluginNotConnected(APIException):
 
     """Return message error: Plugin uninstanced"""
+
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Plugin not connected'
 
@@ -109,6 +112,7 @@ class PluginNotConnected(APIException):
 class NamePropertyInvalid(APIException):
 
     """Return message error: Property Name is invalid"""
+
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Property Name is invalid'
 
@@ -119,6 +123,7 @@ class NamePropertyInvalid(APIException):
 class ValueInvalid(APIException):
 
     """Return message error: value is invalid"""
+
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Value is invalid'
 

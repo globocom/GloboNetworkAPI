@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from networkapi.ambiente.models import Ambiente
@@ -411,7 +411,8 @@ class VipRequestDetailsSerializer(DynamicFieldsModelSerializer):
             elif option.optionvip.tipo_opcao == 'Persistencia':
                 opt['persistence'] = OptionVipSerializer(option.optionvip).data
             elif option.optionvip.tipo_opcao == 'Retorno de trafego':
-                opt['traffic_return'] = OptionVipSerializer(option.optionvip).data
+                opt['traffic_return'] = OptionVipSerializer(
+                    option.optionvip).data
             elif option.optionvip.tipo_opcao == 'timeout':
                 opt['timeout'] = OptionVipSerializer(option.optionvip).data
 
@@ -472,7 +473,8 @@ class VipRequestPortDetailsSerializer(serializers.ModelSerializer):
 
     def get_server_pools(self, obj):
         pools = obj.viprequestportpool_set.all()
-        pools_serializer = VipRequestPortPoolDetailsSerializer(pools, many=True)
+        pools_serializer = VipRequestPortPoolDetailsSerializer(
+            pools, many=True)
 
         return pools_serializer.data
 

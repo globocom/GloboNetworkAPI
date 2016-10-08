@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -32,14 +32,15 @@ log = logging.getLogger(__name__)
 
 class BasePlugin(object):
 
-    '''
+    """
     Base plugin interface
-    '''
+    """
+
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
     INVALID_REGEX = '([Ii]nvalid)'
     VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
     VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
-    VALID_OUTPUT_CHARS = "-_.():/#\\\r\n %s%s" % (string.ascii_letters, string.digits)
+    VALID_OUTPUT_CHARS = '-_.():/#\\\r\n %s%s' % (string.ascii_letters, string.digits)
 
     admin_privileges = 'not defined'
     GUEST_PRIVILEGES = 'not defined'
@@ -64,26 +65,27 @@ class BasePlugin(object):
             self.tftpserver = kwargs.get('tftpserver')
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
-        '''
+        """
         Copy file from server to destination configuration
         By default, plugin should apply file in running configuration (active)
-        '''
+        """
         raise NotImplementedError()
 
     def connect(self):
-        '''Connects to equipment via ssh using paramiko.SSHClient  and
+        """Connects to equipment via ssh using paramiko.SSHClient  and
             sets channel variable with invoked shell object
 
         Raises:
             IOError: if cannot connect to host
             Exception: for other unhandled exceptions
-        '''
-
+        """
         if self.equipment_access is None:
             try:
-                self.equipment_access = EquipamentoAcesso.search(None, self.equipment, "ssh").uniqueResult()
+                self.equipment_access = EquipamentoAcesso.search(
+                    None, self.equipment, 'ssh').uniqueResult()
             except Exception, e:
-                log.error("Access type %s not found for equipment %s." % ("ssh", self.equipment.nome))
+                log.error('Access type %s not found for equipment %s.' %
+                          ('ssh', self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
 
         device = self.equipment_access.fqdn
@@ -94,42 +96,45 @@ class BasePlugin(object):
         self.remote_conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
-            self.remote_conn.connect(device, port=self.connect_port, username=username, password=password)
+            self.remote_conn.connect(
+                device, port=self.connect_port, username=username, password=password)
             self.channel = self.remote_conn.invoke_shell()
         except IOError, e:
-            log.error("Could not connect to host %s: %s" % (device, e))
+            log.error('Could not connect to host %s: %s' % (device, e))
             raise exceptions.ConnectionException(device)
         except Exception, e:
-            log.error("Error connecting to host %s: %s" % (device, e))
+            log.error('Error connecting to host %s: %s' % (device, e))
             raise e
 
     def create_svi(self, svi_number, svi_description='no description'):
-        '''
+        """
         Delete SVI in switch
-        '''
+        """
         raise NotImplementedError()
 
     def close(self):
         self.channel.close()
 
     def ensure_privilege_level(self, privilege_level=None):
-        '''
+        """
         Ensure connection has the right privileges expected
-        '''
+        """
         raise NotImplementedError()
 
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
-        '''
+        """
         Send single command to equipment and than closes connection channel
-        '''
+        """
         if self.channel is None:
-            log.error("No channel connection to the equipment %s. Was the connect() funcion ever called?" % self.equipment.nome)
+            log.error(
+                'No channel connection to the equipment %s. Was the connect() funcion ever called?' % self.equipment.nome)
             raise exceptions.PluginNotConnected()
 
         try:
             stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
         except Exception, e:
-            log.error("Error in connection. Cannot send command %s: %s" % (command, e))
+            log.error('Error in connection. Cannot send command %s: %s' %
+                      (command, e))
             raise api_exceptions.NetworkAPIException
 
         equip_output_lines = stdout.readlines()
@@ -146,13 +151,14 @@ class BasePlugin(object):
 
     def removeDisallowedChars(self, data):
         data = u'%s' % data
-        cleanedStr = unicodedata.normalize('NFKD', data).encode('ASCII', 'ignore')
+        cleanedStr = unicodedata.normalize(
+            'NFKD', data).encode('ASCII', 'ignore')
         return ''.join(c for c in cleanedStr if c in self.VALID_OUTPUT_CHARS)
 
     def remove_svi(self, svi_number):
-        '''
+        """
         Delete SVI from switch
-        '''
+        """
         raise NotImplementedError()
 
     def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
@@ -180,31 +186,31 @@ class BasePlugin(object):
         return recv_string
 
     def get_state_member(self, status):
-        '''
+        """
         Return state of poolmember
-        '''
+        """
         raise NotImplementedError()
 
     def set_state_member(self, status):
-        '''
+        """
         Set state of poolmember
-        '''
+        """
         raise NotImplementedError()
 
     def create_member(self, status):
-        '''
+        """
         Crate poolmember
-        '''
+        """
         raise NotImplementedError()
 
     def remove_member(self, status):
-        '''
+        """
         Remove poolmember
-        '''
+        """
         raise NotImplementedError()
 
     def get_restrictions(self, status):
-        '''
+        """
         Remove poolmember
-        '''
+        """
         raise NotImplementedError()

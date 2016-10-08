@@ -1,11 +1,11 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import json
 import logging
 
-from networkapi.settings import SPECS
-
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from networkapi.settings import SPECS
 
 
 log = logging.getLogger(__name__)

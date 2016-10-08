@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from django.db.transaction import commit_on_success
@@ -33,7 +33,7 @@ class EnvironmentDBView(APIView):
         Returns a list of environment by ids ou dict
         """
 
-        details = request.GET.get("details", 0)
+        details = request.GET.get('details', 0)
 
         try:
             if not kwargs.get('environment_ids'):
@@ -140,7 +140,8 @@ class EnvEnvVipRelatedView(APIView):
                 environments = facade.list_environment_environment_vip_related()
             else:
                 env_id = kwargs.get('environment_vip_id')
-                environments = facade.list_environment_environment_vip_related(env_id)
+                environments = facade.list_environment_environment_vip_related(
+                    env_id)
 
             # serializer environments
             serializer_env = serializers.EnvironmentDetailsSerializer(

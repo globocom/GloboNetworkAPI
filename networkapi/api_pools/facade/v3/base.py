@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 import time
 
@@ -80,10 +80,14 @@ def update_pool(pool, user):
     healthcheck = _get_healthcheck(pool.get('healthcheck'))
     sp.healthcheck = healthcheck
 
-    members_create = [member for member in pool['server_pool_members'] if not member['id']]
-    members_update = [member for member in pool['server_pool_members'] if member['id']]
-    members_ids = [member['id'] for member in pool['server_pool_members'] if member['id']]
-    members_remove = [member.id for member in sp.serverpoolmember_set.all() if member.id not in members_ids]
+    members_create = [member for member in pool[
+        'server_pool_members'] if not member['id']]
+    members_update = [member for member in pool[
+        'server_pool_members'] if member['id']]
+    members_ids = [member['id']
+                   for member in pool['server_pool_members'] if member['id']]
+    members_remove = [member.id for member in sp.serverpoolmember_set.all(
+    ) if member.id not in members_ids]
 
     sp.save()
 
@@ -213,15 +217,18 @@ def _create_pool_member(members, pool):
 
             mbs = pool_member.get_spm_by_eqpt_id(pool_member.equipment.id)
 
-            # check all the pools related to this pool vip request to filter dscp value
+            # check all the pools related to this pool vip request to filter
+            # dscp value
             related_viprequestports = pool.vips[0].viprequestport_set.all()
             vippools = [p.viprequestportpool_set.all()[0].server_pool_id
                         for p in related_viprequestports]
 
-            sps = ServerPool.objects.filter(serverpoolmember__in=mbs).exclude(id__in=vippools)
+            sps = ServerPool.objects.filter(
+                serverpoolmember__in=mbs).exclude(id__in=vippools)
             dscps = [sp.dscp for sp in sps]
 
-            mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+            mb_name = '{}:{}'.format(
+                (ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
             if pool.dscp in dscps:
                 raise ValidationAPIException(
                     'DRSL3 Restriction: Pool Member {} cannot be insert in Pool {}, because already in other pool'.format(
@@ -255,7 +262,8 @@ def _update_pool_member(members):
 
         if pool_member.server_pool.dscp:
             if pool_member.port_real != pool_member.server_pool.default_port:
-                mb_name = '{}:{}'.format((ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+                mb_name = '{}:{}'.format(
+                    (ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
                 raise ValidationAPIException(
                     'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
                         mb_name, pool_member.server_pool.identifier
@@ -281,19 +289,22 @@ def validate_save(pool, permit_created=False):
     try:
         Ambiente.objects.get(id=pool['environment'])
     except ObjectDoesNotExist:
-        raise exceptions.InvalidIdEnvironmentException('pool identifier: %s' % pool['identifier'])
+        raise exceptions.InvalidIdEnvironmentException(
+            'pool identifier: %s' % pool['identifier'])
 
     if pool.get('id'):
         server_pool = ServerPool.objects.get(id=pool['id'])
         if server_pool.pool_created:
             if not permit_created:
-                raise exceptions.CreatedPoolValuesException('pool id: %s' % pool['id'])
+                raise exceptions.CreatedPoolValuesException(
+                    'pool id: %s' % pool['id'])
 
             if server_pool.identifier != pool['identifier']:
                 raise exceptions.PoolNameChange('pool id: %s' % pool['id'])
 
             if server_pool.environment_id != pool['environment']:
-                raise exceptions.PoolEnvironmentChange('pool id: %s' % pool['id'])
+                raise exceptions.PoolEnvironmentChange(
+                    'pool id: %s' % pool['id'])
 
         members_db = [spm.id for spm in server_pool.serverpoolmember_set.all()]
         has_identifier = has_identifier.exclude(id=pool['id'])
@@ -307,7 +318,8 @@ def validate_save(pool, permit_created=False):
                 environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
                     networkipv4__vlan__ambiente=pool['environment'])
             ).filter(
-                environmentenvironmentvip__environment__vlan__networkipv4__ip=member['ip']['id']
+                environmentenvironmentvip__environment__vlan__networkipv4__ip=member[
+                    'ip']['id']
             )
             if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
@@ -317,7 +329,8 @@ def validate_save(pool, permit_created=False):
                 environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
                     networkipv6__vlan__ambiente=pool['environment'])
             ).filter(
-                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ipv6']['id']
+                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member[
+                    'ipv6']['id']
             )
             if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
@@ -428,7 +441,8 @@ def update_groups_permissions(groups_permissions, pool_id,
                     'change_config': True,
                 })
 
-    groups_perms = ServerPoolGroupPermission.objects.filter(server_pool=pool_id)
+    groups_perms = ServerPoolGroupPermission.objects.filter(
+        server_pool=pool_id)
 
     groups_permissions_idx = [gp['group'] for gp in groups_permissions]
     groups_perm_idx = [gp.user_group_id for gp in groups_perms]

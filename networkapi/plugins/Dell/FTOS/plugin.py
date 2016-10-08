@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -39,17 +39,19 @@ class FTOS(BasePlugin):
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
 
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
-        '''
+        """
         Send single command to equipment and than closes connection channel
-        '''
+        """
         if self.channel is None:
-            log.error("No channel connection to the equipment %s. Was the connect() funcion ever called?" % self.equipment.nome)
+            log.error(
+                'No channel connection to the equipment %s. Was the connect() funcion ever called?' % self.equipment.nome)
             raise exceptions.PluginNotConnected()
 
         try:
             stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
         except Exception, e:
-            log.error("Error in connection. Cannot send command %s: %s" % (command, e))
+            log.error('Error in connection. Cannot send command %s: %s' %
+                      (command, e))
             raise api_exceptions.NetworkAPIException
 
         equip_output_lines = stdout.readlines()
@@ -60,7 +62,8 @@ class FTOS(BasePlugin):
                 raise exceptions.InvalidCommandException(output_text)
             elif re.search(error_regex, output_line):
                 if re.seatch(self.WARNING_REGEX, output_line):
-                    log.warning("This is threated as a warning: %s" % output_line)
+                    log.warning('This is threated as a warning: %s' %
+                                output_line)
                 else:
                     raise exceptions.CommandErrorException
 
@@ -70,25 +73,26 @@ class FTOS(BasePlugin):
             raise exceptions.UnableToVerifyResponse()
 
     def create_svi(self, svi_number, svi_description='no description'):
-        '''
+        """
         Create SVI in switch
-        '''
+        """
         self.ensure_privilege_level(self)
-        self.channel.send("terminal length 0\nconfigure terminal\n \
-            interface Vlan%s \n description %s \n end \n" % (svi_number, svi_description))
-        recv = self.waitString("#")
+        self.channel.send('terminal length 0\nconfigure terminal\n \
+            interface Vlan%s \n description %s \n end \n' % (svi_number, svi_description))
+        recv = self.waitString('#')
 
         return recv
 
-    def copyScriptFileToConfig(self, filename, use_vrf=None, destination="running-config"):
-        '''
+    def copyScriptFileToConfig(self, filename, use_vrf=None, destination='running-config'):
+        """
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
-        '''
+        """
         if use_vrf is None:
             use_vrf = self.management_vrf
 
-        command = "copy tftp://%s/%s %s %s\n\n" % (self.tftpserver, filename, destination, use_vrf)
+        command = 'copy tftp://%s/%s %s %s\n\n' % (
+            self.tftpserver, filename, destination, use_vrf)
 
         file_copied = 0
         retries = 0
@@ -97,16 +101,16 @@ class FTOS(BasePlugin):
                 sleep(self.RETRY_WAIT_TIME)
 
             try:
-                log.info("try: %s - sending command: %s" % (retries, command))
-                self.channel.send("%s\n" % command)
+                log.info('try: %s - sending command: %s' % (retries, command))
+                self.channel.send('%s\n' % command)
                 recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
                 file_copied = 1
-            except exceptions.CurrentlyBusyErrorException, e:
+            except exceptions.CurrentlyBusyErrorException:
                 retries += 1
 
         # not capable of configuring after max retries
         if retries is self.MAX_TRIES:
-            raise exceptions.CurrentlyBusyErrorException(file_name_string)
+            raise exceptions.CurrentlyBusyErrorException()
 
         return recv
 
@@ -115,42 +119,43 @@ class FTOS(BasePlugin):
         if privilege_level is None:
             privilege_level = self.admin_privileges
 
-        self.channel.send("\n")
-        recv = self.waitString(">|#")
-        self.channel.send("show privilege\n")
-        recv = self.waitString("Current privilege level is")
-        level = re.search('Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
+        self.channel.send('\n')
+        recv = self.waitString('>|#')
+        self.channel.send('show privilege\n')
+        recv = self.waitString('Current privilege level is')
+        level = re.search(
+            'Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
 
         level = (level.split(' '))[-1]
         if int(level) < privilege_level:
-            self.channel.send("enable\n")
-            recv = self.waitString("Password:")
-            self.channel.send("%s\n" % self.equipment_access.enable_pass)
-            recv = self.waitString("#")
+            self.channel.send('enable\n')
+            recv = self.waitString('Password:')
+            self.channel.send('%s\n' % self.equipment_access.enable_pass)
+            recv = self.waitString('#')
 
     def remove_svi(self, svi_number):
-        '''
+        """
         Delete SVI from switch
-        '''
+        """
         return ''
         self.ensure_privilege_level()
-        self.channel.send("terminal length 0\n")
+        self.channel.send('terminal length 0\n')
 
         self.channel.send('show run interface Vlan %s\n' % (svi_number))
-        recv = self.waitString("#")
+        recv = self.waitString('#')
 
-        conf = "nconfigure terminal\n interface Vlan %s\n" % (svi_number)
+        conf = 'nconfigure terminal\n interface Vlan %s\n' % (svi_number)
         for output_line in recv.splitlines():
             if re.search('(un)?tagged', output_line):
-                conf = conf + "no " + output_line + "\n"
+                conf = conf + 'no ' + output_line + '\n'
 
-        conf = conf + " end\n"
+        conf = conf + ' end\n'
         self.channel.send(conf)
-        recv = self.waitString("#")
+        recv = self.waitString('#')
 
-        self.channel.send("\nconfigure terminal\n \
-            no interface Vlan%s \n end \n" % (svi_number))
-        recv = self.waitString("#")
+        self.channel.send('\nconfigure terminal\n \
+            no interface Vlan%s \n end \n' % (svi_number))
+        recv = self.waitString('#')
 
         return recv
 
@@ -173,18 +178,20 @@ class FTOS(BasePlugin):
 
             for output_line in recv_string.splitlines():
                 if re.search(self.CURRENTLY_BUSY_WAIT, output_line):
-                    log.warning("Need to wait - Switch busy: %s" % output_line)
-                    raise exceptions.CurrentlyBusyErrorException(file_name_string)
+                    log.warning('Need to wait - Switch busy: %s' % output_line)
+                    raise exceptions.CurrentlyBusyErrorException()
                 elif re.search(self.WARNING_REGEX, output_line):
-                    log.warning("Equipment warning: %s" % output_line)
+                    log.warning('Equipment warning: %s' % output_line)
                 elif re.search(wait_str_invalid_regex, output_line):
-                    log.error("Equipment raised INVALID error: %s" % output_line)
+                    log.error('Equipment raised INVALID error: %s' %
+                              output_line)
                     raise exceptions.CommandErrorException(file_name_string)
                 elif re.search(wait_str_failed_regex, output_line):
-                    log.error("Equipment raised FAILED error: %s" % output_line)
+                    log.error('Equipment raised FAILED error: %s' %
+                              output_line)
                     raise exceptions.InvalidCommandException(file_name_string)
                 elif re.search(wait_str_ok_regex, output_line):
-                    log.debug("Equipment output: %s" % output_line)
+                    log.debug('Equipment output: %s' % output_line)
                     string_ok = 1
 
         return recv_string

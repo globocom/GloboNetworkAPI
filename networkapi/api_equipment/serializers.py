@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from networkapi.api_ip.serializers import Ipv4DetailsSerializer

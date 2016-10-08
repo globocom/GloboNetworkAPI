@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 from datetime import datetime
 
@@ -48,7 +48,8 @@ class PoolMemberStateView(APIView):
         try:
             pools = request.DATA
             json_validate(SPECS.get('pool_member_status')).validate(pools)
-            response = facade_pool_deploy.set_poolmember_state(pools, request.user)
+            response = facade_pool_deploy.set_poolmember_state(
+                pools, request.user)
 
             return Response(response)
         except Exception, exception:
@@ -64,7 +65,7 @@ class PoolMemberStateView(APIView):
         """
 
         try:
-            pool_ids = kwargs.get("pool_ids").split(';')
+            pool_ids = kwargs.get('pool_ids').split(';')
             checkstatus = request.GET.get('checkstatus') or '0'
 
             data = dict()
@@ -105,7 +106,7 @@ class PoolMemberStateView(APIView):
                 many=True
             )
 
-            data["server_pools"] = serializer_server_pool.data
+            data['server_pools'] = serializer_server_pool.data
             return Response(data)
 
         except Exception, exception:
@@ -128,7 +129,8 @@ class PoolDeployView(APIView):
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade_pool_deploy.create_real_pool(pool_serializer.data, request.user)
+            response = facade_pool_deploy.create_real_pool(
+                pool_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -151,7 +153,8 @@ class PoolDeployView(APIView):
         verify_ports(server_pools)
         locks_list = facade.create_lock(server_pools.get('server_pools'))
         try:
-            response = facade_pool_deploy.update_real_pool(server_pools, request.user)
+            response = facade_pool_deploy.update_real_pool(
+                server_pools, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -174,7 +177,8 @@ class PoolDeployView(APIView):
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = facade.create_lock(pool_serializer.data)
         try:
-            response = facade_pool_deploy.delete_real_pool(pool_serializer.data, request.user)
+            response = facade_pool_deploy.delete_real_pool(
+                pool_serializer.data, request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -404,9 +408,10 @@ class OptionPoolEnvironmentView(APIView):
         Return list of option pool
         """
         try:
-            environment_id = kwargs["environment_id"]
+            environment_id = kwargs['environment_id']
 
-            options_pool = facade.get_options_pool_list_by_environment(environment_id)
+            options_pool = facade.get_options_pool_list_by_environment(
+                environment_id)
 
             only_main_property = True
 

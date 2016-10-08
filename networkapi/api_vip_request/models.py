@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from _mysql_exceptions import OperationalError
@@ -87,7 +87,8 @@ class VipRequest(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestError(e, u'Failure to search the vip request.')
+            raise exceptions.VipRequestError(
+                e, u'Failure to search the vip request.')
 
 
 class VipRequestOptionVip(BaseModel):
@@ -124,7 +125,8 @@ class VipRequestOptionVip(BaseModel):
         try:
             return VipRequestOptionVip.objects.get(id=id)
         except ObjectDoesNotExist, e:
-            cls.log.error(u'vip request option vip not found. pk {}'.format(id))
+            cls.log.error(
+                u'vip request option vip not found. pk {}'.format(id))
             raise exceptions.VipRequestOptionVipNotFoundError(id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
@@ -132,7 +134,8 @@ class VipRequestOptionVip(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestOptionVipError(e, u'Failure to search the vip request option vip.')
+            raise exceptions.VipRequestOptionVipError(
+                e, u'Failure to search the vip request option vip.')
 
 
 class VipRequestPort(BaseModel):
@@ -183,7 +186,8 @@ class VipRequestPort(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestPortError(e, u'Failure to search the vip request port.')
+            raise exceptions.VipRequestPortError(
+                e, u'Failure to search the vip request port.')
 
 
 class VipRequestPortOptionVip(BaseModel):
@@ -220,7 +224,8 @@ class VipRequestPortOptionVip(BaseModel):
         try:
             return VipRequestPortOptionVip.objects.get(id=id)
         except ObjectDoesNotExist, e:
-            cls.log.error(u'vip request port option vip not found. pk {}'.format(id))
+            cls.log.error(
+                u'vip request port option vip not found. pk {}'.format(id))
             raise exceptions.VipRequestPortOptionVipNotFoundError(id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
@@ -228,7 +233,8 @@ class VipRequestPortOptionVip(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestPortOptionVipError(e, u'Failure to search the vip request port option vip.')
+            raise exceptions.VipRequestPortOptionVipError(
+                e, u'Failure to search the vip request port option vip.')
 
 
 class VipRequestPortPool(BaseModel):
@@ -289,7 +295,8 @@ class VipRequestPortPool(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestPortPoolError(e, u'Failure to search the vip request port pool.')
+            raise exceptions.VipRequestPortPoolError(
+                e, u'Failure to search the vip request port pool.')
 
 
 class VipRequestDSCP(BaseModel):
@@ -334,7 +341,8 @@ class VipRequestDSCP(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestDSCPError(e, u'Failure to search the vip request dscp.')
+            raise exceptions.VipRequestDSCPError(
+                e, u'Failure to search the vip request dscp.')
 
 
 class VipRequestGroupPermission(BaseModel):
@@ -364,7 +372,8 @@ class VipRequestGroupPermission(BaseModel):
         try:
             return VipRequestGroupPermission.objects.get(id=id)
         except ObjectDoesNotExist, e:
-            cls.log.error(u'vip request group permission not found. pk {}'.format(id))
+            cls.log.error(
+                u'vip request group permission not found. pk {}'.format(id))
             raise exceptions.VipRequestGroupPermissionNotFoundError(id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
@@ -372,4 +381,5 @@ class VipRequestGroupPermission(BaseModel):
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the option vip.')
-            raise exceptions.VipRequestGroupPermissionError(e, u'Failure to search the vip request group permission.')
+            raise exceptions.VipRequestGroupPermissionError(
+                e, u'Failure to search the vip request group permission.')

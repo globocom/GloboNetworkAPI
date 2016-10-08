@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from networkapi.api_environment import serializers as env_serializers
@@ -109,7 +109,8 @@ class HealthcheckV3Serializer(serializers.ModelSerializer):
 class PoolV3SimpleSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
-    server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    server_pool_members = serializers.SerializerMethodField(
+        'get_server_pool_members')
 
     def get_server_pool_members(self, obj):
         members = obj.serverpoolmember_set.all()
@@ -146,7 +147,8 @@ class PoolMemberBasicSerializer(serializers.ModelSerializer):
     id = serializers.Field()
     ipv6 = Ipv6BasicSerializer()
     ip = Ipv4BasicSerializer()
-    last_status_update_formated = serializers.Field(source='last_status_update_formated')
+    last_status_update_formated = serializers.Field(
+        source='last_status_update_formated')
 
     class Meta:
         depth = 1
@@ -168,7 +170,8 @@ class PoolMemberV3Serializer(serializers.ModelSerializer):
 
     ipv6 = serializers.SerializerMethodField('get_ipv6')
     ip = serializers.SerializerMethodField('get_ip')
-    last_status_update_formated = serializers.Field(source='last_status_update_formated')
+    last_status_update_formated = serializers.Field(
+        source='last_status_update_formated')
 
     equipment = eqpt_serializers.EquipmentBasicSerializer()
 
@@ -210,7 +213,8 @@ class PoolMemberV3Serializer(serializers.ModelSerializer):
 
 class PoolV3Serializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
-    server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    server_pool_members = serializers.SerializerMethodField(
+        'get_server_pool_members')
     # groups_permissions = serializers.SerializerMethodField('get_perms')
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
@@ -246,7 +250,8 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
 
 class PoolV3DatatableSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
-    server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    server_pool_members = serializers.SerializerMethodField(
+        'get_server_pool_members')
 
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3Serializer()
@@ -276,7 +281,8 @@ class PoolV3DatatableSerializer(DynamicFieldsModelSerializer):
 
 class PoolV3DetailsSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
-    server_pool_members = serializers.SerializerMethodField('get_server_pool_members')
+    server_pool_members = serializers.SerializerMethodField(
+        'get_server_pool_members')
     groups_permissions = serializers.SerializerMethodField('get_perms')
     healthcheck = HealthcheckV3Serializer()
     servicedownaction = OptionPoolV3DetailsSerializer()

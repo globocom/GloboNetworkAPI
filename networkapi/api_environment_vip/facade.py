@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from networkapi.ambiente.models import EnvironmentVip
@@ -42,7 +42,8 @@ def get_option_vip_by_environment_vip_type(search_list):
     for item in search_list:
 
         option_environment_vips = OptionVip.objects.filter(
-            optionvipenvironmentvip__environment__id=item['environment_vip_id'],
+            optionvipenvironmentvip__environment__id=item[
+                'environment_vip_id'],
             tipo_opcao=item['type_option'])
 
         options_vip.append(option_environment_vips)
@@ -62,7 +63,8 @@ def get_type_option_vip_by_environment_vip_ids(environment_vip_ids):
             optionvipenvironmentvip__environment__id=environment_vip_id
         ).values('tipo_opcao').distinct()
 
-        type_options = [type_option['tipo_opcao'] for type_option in type_options]
+        type_options = [type_option['tipo_opcao']
+                        for type_option in type_options]
 
         type_option_vip.append(type_options)
     return type_option_vip

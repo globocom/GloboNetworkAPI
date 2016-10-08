@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework.permissions import BasePermission
 
 from networkapi.admin_permission import AdminPermission

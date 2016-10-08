@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from django.db.models import Q
@@ -34,7 +34,8 @@ def get_equipment_map(equipment):
     equipment_map = dict()
     equipment_map['id'] = equipment.id
     equipment_map['nome'] = equipment.nome
-    equipment_map['tipo_equipamento'] = equipment.tipo_equipamento.tipo_equipamento
+    equipment_map[
+        'tipo_equipamento'] = equipment.tipo_equipamento.tipo_equipamento
     equipment_map['modelo'] = equipment.modelo.nome
     equipment_map['marca'] = equipment.modelo.marca.nome
     equipment_map['maintenance'] = equipment.maintenance
@@ -97,7 +98,8 @@ def get_equipments(**kwargs):
         }]
 
         eqpts = eqpts.filter(
-            reduce(lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters])
+            reduce(lambda x, y: x | y, [Q(**q_filter)
+                                        for q_filter in q_filters])
         )
 
     eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))

@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import copy
 import json
 import logging
@@ -111,7 +111,8 @@ def create_vip_request(vip_request, user):
 
     # perms
     groups_perm = vip_request.get('groups_permissions', [])
-    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions', []))
+    groups_perm += facade_usr.get_groups(
+        vip_request.get('users_permissions', []))
     groups = facade_usr.reduce_groups(groups_perm)
     create_groups_permissions(groups, vip.id, user)
 
@@ -159,7 +160,8 @@ def update_vip_request(vip_request, user):
 
     # perms
     groups_perm = vip_request.get('groups_permissions', [])
-    groups_perm += facade_usr.get_groups(vip_request.get('users_permissions', []))
+    groups_perm += facade_usr.get_groups(
+        vip_request.get('users_permissions', []))
     groups = facade_usr.reduce_groups(groups_perm)
 
     perm = vip_request.get('permissions')
@@ -671,8 +673,10 @@ def update_real_vip_request(vip_requests, user):
         validate_save(vip, True)
         update_vip_request(vip, user)
 
-        ids_port_old = [port.get('id') for port in serializer_vips_data.get('ports')]
-        ids_port_upt = [port.get('id') for port in vip_request.get('ports') if port.get('id')]
+        ids_port_old = [port.get('id')
+                        for port in serializer_vips_data.get('ports')]
+        ids_port_upt = [port.get('id') for port in vip_request.get(
+            'ports') if port.get('id')]
         ids_port_to_del = list(set(ids_port_old) - set(ids_port_upt))
 
         # ports to change and insert
@@ -685,10 +689,12 @@ def update_real_vip_request(vip_requests, user):
                 # port old
                 port_old = serializer_vips_data.get('ports')[idx_port_old]
                 # ids pools old
-                ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
+                ids_pool_old = [pool.get('id')
+                                for pool in port_old.get('pools')]
 
                 # ids pools changed
-                ids_pool_cur = [pool.get('id') for pool in port.get('pools') if pool.get('id')]
+                ids_pool_cur = [pool.get('id') for pool in port.get(
+                    'pools') if pool.get('id')]
 
                 # ids to delete
                 ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_cur))
@@ -699,7 +705,8 @@ def update_real_vip_request(vip_requests, user):
                     idx_pool_del = ids_pool_old.index(id_pool)
 
                     # pool to delete
-                    pool_del = copy.deepcopy(port_old.get('pools')[idx_pool_del])
+                    pool_del = copy.deepcopy(
+                        port_old.get('pools')[idx_pool_del])
                     pool_del['delete'] = True
                     vip_request['ports'][idx_port]['pools'].append(pool_del)
 
@@ -709,7 +716,8 @@ def update_real_vip_request(vip_requests, user):
             idx_port_del = ids_port_old.index(id_port)
 
             # port to delete
-            port_del = copy.deepcopy(serializer_vips_data.get('ports')[idx_port_del])
+            port_del = copy.deepcopy(
+                serializer_vips_data.get('ports')[idx_port_del])
             port_del['delete'] = True
             vip_request['ports'].append(port_del)
 
@@ -736,11 +744,13 @@ def update_real_vip_request(vip_requests, user):
 
     if pools_ids_ins:
         pools_ids_ins = list(set(pools_ids_ins))
-        ServerPool.objects.filter(id__in=pools_ids_ins).update(pool_created=True)
+        ServerPool.objects.filter(
+            id__in=pools_ids_ins).update(pool_created=True)
 
     if pools_ids_del:
         pools_ids_del = list(set(pools_ids_del))
-        ServerPool.objects.filter(id__in=pools_ids_del).update(pool_created=False)
+        ServerPool.objects.filter(
+            id__in=pools_ids_del).update(pool_created=False)
 
 
 @commit_on_success
@@ -859,7 +869,8 @@ def validate_save(vip_request, permit_created=False):
                         'Ipv6 of vip request id: %s' % (vip_request.get('id')))
 
             # change traffic return
-            options = [op.optionvip.id for op in vip.viprequestoptionvip_set.all()]
+            options = [
+                op.optionvip.id for op in vip.viprequestoptionvip_set.all()]
             if vip_request['options']['traffic_return'] not in options:
                 raise exceptions.CreatedVipRequestValuesException(
                     'Traffic Return of vip request id: %s' % (vip_request.get('id')))
@@ -956,7 +967,8 @@ def validate_save(vip_request, permit_created=False):
         # validate dsrl3: 1 pool by port
         if dsrl3 and len(port['pools']) > 1:
             raise Exception(
-                u'Vip %s has DSRL3 and can not to have L7' % (vip_request['name'])
+                u'Vip %s has DSRL3 and can not to have L7' % (
+                    vip_request['name'])
             )
 
         count_l7_opt = 0
@@ -992,7 +1004,8 @@ def validate_save(vip_request, permit_created=False):
 
                 pool_assoc_vip = get_vip_request_by_pool(pool['server_pool'])
                 if vip_request.get('id'):
-                    pool_assoc_vip = pool_assoc_vip.exclude(id=vip_request.get('id'))
+                    pool_assoc_vip = pool_assoc_vip.exclude(
+                        id=vip_request.get('id'))
 
                 if pool_assoc_vip:
                     raise Exception(
@@ -1178,7 +1191,8 @@ def update_groups_permissions(groups_permissions, vip_id, user, replace_permissi
                     'change_config': True,
                 })
 
-    groups_perms = models.VipRequestGroupPermission.objects.filter(vip_request=vip_id)
+    groups_perms = models.VipRequestGroupPermission.objects.filter(
+        vip_request=vip_id)
 
     groups_permissions_idx = [gp['group'] for gp in groups_permissions]
     groups_perm_idx = [gp.user_group_id for gp in groups_perms]
@@ -1190,7 +1204,8 @@ def update_groups_permissions(groups_permissions, vip_id, user, replace_permissi
             # update perms
             if group_perm.user_group_id in groups_permissions_idx:
                 idx = groups_permissions_idx.index(group_perm.user_group_id)
-                _update_group_permission(groups_permissions[idx], group_perm.id)
+                _update_group_permission(
+                    groups_permissions[idx], group_perm.id)
             # delete perms
             elif replace_permissions is True:
 
