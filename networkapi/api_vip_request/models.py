@@ -89,6 +89,30 @@ class VipRequest(BaseModel):
             cls.log.error(u'Failure to search the option vip.')
             raise exceptions.VipRequestError(e, u'Failure to search the vip request.')
 
+    @classmethod
+    def get_pool_related(cls, id_vip):
+        pools = ServerPool.objects.filter(
+            viprequestportpool__vip_request_port__vip_request__id=id_vip
+        ).distinct()
+
+        return pools
+
+    def remove(self):
+        # Pools related with vip and was not created
+        pools = self.get_pool_related(
+            self.id
+        ).filter(pool_created=False)
+        # Pools assoc with others Vips
+        pools_assoc = pools.exclude(
+            viprequestportpool__vip_request_port__vip_request__id=self.id
+        )
+        # Remove pool not created and not assoc with others vips
+        for pool in pools:
+            if pool not in pools_assoc:
+                pool.delete()
+
+        self.delete()
+
 
 class VipRequestOptionVip(BaseModel):
 

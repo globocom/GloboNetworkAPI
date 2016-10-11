@@ -188,7 +188,7 @@ def delete_vip_request(vip_request_ids, keep_ip='0'):
         if vp.created:
             raise exceptions.VipConstraintCreatedException(vip_request_id)
 
-        vp.delete()
+        vp.remove()
 
     # sync with old tables
     syncs.delete_old(vip_request_ids)
