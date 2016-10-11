@@ -174,6 +174,22 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
 
         return configs_serializer.data
 
+    @staticmethod
+    def get_mapping_eager_loading(self):
+        mapping = {
+            'configs': self.setup_eager_loading_configs
+        }
+
+        return mapping
+
+    @staticmethod
+    def setup_eager_loading_configs(queryset):
+        queryset = queryset.prefetch_related(
+            'configenvironment_set',
+            'configenvironment_set__ip_config',
+        )
+        return queryset
+
 
 class IpConfigSerializer(DynamicFieldsModelSerializer):
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 
+from networkapi.api_environment.serializers import EnvironmentDetailsSerializer
 from networkapi.api_environment.serializers import EnvironmentV3Serializer
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 from networkapi.vlan.models import Vlan
@@ -48,12 +49,6 @@ class VlanSerializerV3(DynamicFieldsModelSerializer):
     def get_environment(self, obj):
         return self.extends_serializer(obj.ambiente, 'environment')
 
-    @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {}
-
-        return mapping
-
     @classmethod
     def get_serializers(cls):
         if not cls.mapping:
@@ -65,7 +60,7 @@ class VlanSerializerV3(DynamicFieldsModelSerializer):
                     }
                 },
                 'environment__details': {
-                    'serializer': EnvironmentV3Serializer,
+                    'serializer': EnvironmentDetailsSerializer,
                     'kwargs': {
                         'include': ('configs',)
                     }
@@ -73,3 +68,18 @@ class VlanSerializerV3(DynamicFieldsModelSerializer):
             }
 
         return cls.mapping
+
+    @staticmethod
+    def get_mapping_eager_loading(self):
+        mapping = {
+            'environment': self.setup_eager_loading_environment,
+        }
+
+        return mapping
+
+    @staticmethod
+    def setup_eager_loading_environment(queryset):
+        queryset = queryset.select_related(
+            'environment',
+        )
+        return queryset

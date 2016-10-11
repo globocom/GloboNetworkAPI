@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from networkapi.api_vlan.serializers import VlanSerializerV3
@@ -13,7 +13,7 @@ class NetworkIPv4DetailsSerializerV3(DynamicFieldsModelSerializer):
     networkv4 = serializers.Field(source='networkv4')
     mask_formated = serializers.Field(source='mask_formated')
 
-    vlan = VlanSerializerV3()
+    vlan = serializers.SerializerMethodField('get_vlan')
 
     class Meta:
         model = NetworkIPv4
@@ -39,14 +39,52 @@ class NetworkIPv4DetailsSerializerV3(DynamicFieldsModelSerializer):
             'networkv4',
             'mask_formated',
             'network_type',
+            'vlan'
         )
+
+    @classmethod
+    def get_serializers(cls):
+        if not cls.mapping:
+            cls.mapping = {
+                'vlan': {
+                    'serializer': VlanSerializerV3,
+                    'kwargs': {
+                    }
+                },
+                'vlan__details': {
+                    'serializer': VlanSerializerV3,
+                    'kwargs': {
+                        'include': ('environment',)
+                    }
+                }
+            }
+
+        return cls.mapping
+
+    def get_vlan(self, obj):
+
+        return self.extends_serializer(obj.vlan, 'vlan')
+
+    @staticmethod
+    def get_mapping_eager_loading(self):
+        mapping = {
+            'vlan': self.setup_eager_loading_vlan,
+        }
+
+        return mapping
+
+    @staticmethod
+    def setup_eager_loading_vlan(queryset):
+        queryset = queryset.select_related(
+            'vlan',
+        )
+        return queryset
 
 
 class NetworkIPv6DetailsSerializerV3(DynamicFieldsModelSerializer):
     networkv6 = serializers.Field(source='networkv6')
     mask_formated = serializers.Field(source='mask_formated')
-
-    vlan = VlanSerializerV3()
+    vlan = serializers.SerializerMethodField('get_vlan')
 
     class Meta:
         model = NetworkIPv6
@@ -82,13 +120,36 @@ class NetworkIPv6DetailsSerializerV3(DynamicFieldsModelSerializer):
             'vlan'
         )
 
+    @classmethod
+    def get_serializers(cls):
+        if not cls.mapping:
+            cls.mapping = {
+                'vlan': {
+                    'serializer': VlanSerializerV3,
+                    'kwargs': {
+                    }
+                },
+                'vlan__details': {
+                    'serializer': VlanSerializerV3,
+                    'kwargs': {
+                        'include': ('vlan',)
+                    }
+                }
+            }
+
+        return cls.mapping
+
+    def get_vlan(self, obj):
+
+        return self.extends_serializer(obj.vlan, 'vlan')
+
 
 class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
 
     id = serializers.Field()
     ip_formated = serializers.Field(source='ip_formated')
     description = serializers.Field(source='descricao')
-    networkipv4 = NetworkIPv4DetailsSerializerV3()
+    networkipv4 = serializers.SerializerMethodField('get_networkipv4')
 
     class Meta:
         model = Ip
@@ -110,12 +171,50 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
             'description'
         )
 
+    @classmethod
+    def get_serializers(cls):
+        if not cls.mapping:
+            cls.mapping = {
+                'networkipv4': {
+                    'serializer': NetworkIPv4DetailsSerializerV3,
+                    'kwargs': {
+                    }
+                },
+                'networkipv4__details': {
+                    'serializer': NetworkIPv4DetailsSerializerV3,
+                    'kwargs': {
+                        'include': ('vlan',)
+                    }
+                }
+            }
+
+        return cls.mapping
+
+    def get_networkipv4(self, obj):
+
+        return self.extends_serializer(obj.networkipv4, 'networkipv4')
+
+    @staticmethod
+    def get_mapping_eager_loading(self):
+        mapping = {
+            'networkipv4': self.setup_eager_loading_networkipv4,
+        }
+
+        return mapping
+
+    @staticmethod
+    def setup_eager_loading_networkipv4(queryset):
+        queryset = queryset.select_related(
+            'networkipv4',
+        )
+        return queryset
+
 
 class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
 
     id = serializers.Field()
     ip_formated = serializers.Field(source='ip_formated')
-    networkipv6 = NetworkIPv6DetailsSerializerV3()
+    networkipv6 = serializers.SerializerMethodField('get_networkipv6')
 
     class Meta:
         model = Ipv6
@@ -140,3 +239,41 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
             'ip_formated',
             'description'
         )
+
+    @classmethod
+    def get_serializers(cls):
+        if not cls.mapping:
+            cls.mapping = {
+                'networkipv6': {
+                    'serializer': NetworkIPv6DetailsSerializerV3,
+                    'kwargs': {
+                    }
+                },
+                'networkipv6__details': {
+                    'serializer': NetworkIPv6DetailsSerializerV3,
+                    'kwargs': {
+                        'include': ('vlan',)
+                    }
+                }
+            }
+
+        return cls.mapping
+
+    def get_networkipv6(self, obj):
+
+        return self.extends_serializer(obj.networkipv6, 'networkipv6networkipv6')
+
+    @staticmethod
+    def get_mapping_eager_loading(self):
+        mapping = {
+            'networkipv6': self.setup_eager_loading_networkipv6,
+        }
+
+        return mapping
+
+    @staticmethod
+    def setup_eager_loading_networkipv6(queryset):
+        queryset = queryset.select_related(
+            'networkipv6',
+        )
+        return queryset
