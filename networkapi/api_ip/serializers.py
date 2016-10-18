@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.api_vlan.serializers import VlanSerializerV3
-from networkapi.ip.models import Ip
-from networkapi.ip.models import Ipv6
-from networkapi.ip.models import NetworkIPv4
-from networkapi.ip.models import NetworkIPv6
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+Ip = get_model('ip', 'Ip')
+Ipv6 = get_model('ip', 'Ipv6')
+NetworkIPv4 = get_model('ip', 'NetworkIPv4')
+NetworkIPv6 = get_model('ip', 'NetworkIPv6')
 
 
 class NetworkIPv4DetailsSerializerV3(DynamicFieldsModelSerializer):
@@ -144,6 +146,22 @@ class NetworkIPv6DetailsSerializerV3(DynamicFieldsModelSerializer):
         return self.extends_serializer(obj.vlan, 'vlan')
 
 
+class Ipv4Serializer(DynamicFieldsModelSerializer):
+
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = get_model('ip', 'Ip')
+
+
+class Ipv6Serializer(DynamicFieldsModelSerializer):
+
+    ip_formated = serializers.Field(source='ip_formated')
+
+    class Meta:
+        model = Ipv6
+
+
 class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
 
     id = serializers.Field()
@@ -152,6 +170,7 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
     networkipv4 = serializers.SerializerMethodField('get_networkipv4')
 
     class Meta:
+
         model = Ip
         fields = (
             'id',

@@ -4,7 +4,7 @@
   "model": "api_vip_request.viprequestportpool",
   "fields": {
     "optionvip": 64,
-    "server_pool": 2,
+    "server_pool": 7,
     "val_optionvip": null,
     "vip_request_port": 1
     }
@@ -14,7 +14,7 @@
   "model": "api_vip_request.viprequestportpool",
   "fields": {
     "optionvip": 64,
-    "server_pool": 2,
+    "server_pool": 7,
     "val_optionvip": null,
     "vip_request_port": 2
     }

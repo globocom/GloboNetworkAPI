@@ -7,9 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from networkapi.api_ip import facade as facade_ip
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_vip_request import facade
+from networkapi.api_vip_request.facade import v3 as facade
 from networkapi.api_vip_request.permissions import delete_vip_permission
 from networkapi.api_vip_request.permissions import deploy_vip_permission
 from networkapi.api_vip_request.permissions import DeployCreate
@@ -18,10 +17,9 @@ from networkapi.api_vip_request.permissions import DeployUpdate
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
 from networkapi.api_vip_request.permissions import write_vip_permission
-from networkapi.api_vip_request.serializers import VipRequestDetailsSerializer
-from networkapi.api_vip_request.serializers import VipRequestSerializer
-from networkapi.api_vip_request.serializers import VipRequestTableSerializer
-from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.api_vip_request.serializers.v3 import VipRequestDetailsSerializer
+from networkapi.api_vip_request.serializers.v3 import VipRequestSerializer
+from networkapi.api_vip_request.serializers.v3 import VipRequestTableSerializer
 from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -229,23 +227,14 @@ class VipRequestDBView(APIView):
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         locks_list = facade.create_lock(vip_request_ids)
         keepip = request.GET.get('keepip') or '0'
-        success_del = False
         try:
             ipv4_list, ipv6_list = facade.delete_vip_request(
                 vip_request_ids, keepip)
-            success_del = True
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
             facade.destroy_lock(locks_list)
-            if success_del:
-
-                try:
-                    facade_ip.delete_ipv4_list(ipv4_list)
-                    facade_ip.delete_ipv4_list(ipv6_list)
-                except IpCantBeRemovedFromVip:
-                    pass
 
         return Response({})
 

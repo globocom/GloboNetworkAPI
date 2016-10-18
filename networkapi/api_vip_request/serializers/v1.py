@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from networkapi.ambiente.models import Ambiente
@@ -46,7 +46,8 @@ class VipPortToPoolSerializer(serializers.ModelSerializer):
             port_vip = int(attrs.get(attr_name, 0))
 
             if port_vip > 65535 or 1 > port_vip:
-                raise serializers.ValidationError(u'The port number must be between 1 and 65535.')
+                raise serializers.ValidationError(
+                    u'The port number must be between 1 and 65535.')
 
             return attrs
 
@@ -141,7 +142,8 @@ class RequestVipSerializer(serializers.ModelSerializer):
             ip_to_vip = attrs.get('ip') or attrs.get('ipv6')
 
             if not ip_to_vip:
-                raise serializers.ValidationError('Is required to enter any Ip')
+                raise serializers.ValidationError(
+                    'Is required to enter any Ip')
 
         except EnvironmentVipNotFoundError, exception:
             raise serializers.ValidationError(exception.message)

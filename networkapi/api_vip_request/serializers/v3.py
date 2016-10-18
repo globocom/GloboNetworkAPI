@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.ambiente.models import Ambiente
 from networkapi.api_environment_vip.serializers import EnvironmentVipSerializer
 from networkapi.api_environment_vip.serializers import OptionVipSerializer
 from networkapi.api_equipment.serializers import EquipmentSerializer
 from networkapi.api_group import serializers as grp_serializers
 from networkapi.api_ip.serializers import Ipv4DetailsSerializer
 from networkapi.api_ip.serializers import Ipv6DetailsSerializer
-from networkapi.api_network.serializers import Ipv4Serializer
-from networkapi.api_network.serializers import Ipv6Serializer
 from networkapi.api_pools.serializers import PoolV3DetailsSerializer
-from networkapi.api_vip_request.models import VipRequest
-from networkapi.api_vip_request.models import VipRequestGroupPermission
-from networkapi.api_vip_request.models import VipRequestOptionVip
-from networkapi.api_vip_request.models import VipRequestPort
-from networkapi.api_vip_request.models import VipRequestPortPool
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+
+Ip = get_model('ip', 'Ip')
+Ipv6 = get_model('ip', 'Ipv6')
+NetworkIPv4 = get_model('ip', 'NetworkIPv4')
+NetworkIPv6 = get_model('ip', 'NetworkIPv6')
+
+Ambiente = get_model('ambiente', 'Ambiente')
+VipRequest = get_model('api_vip_request', 'VipRequest')
+VipRequestGroupPermission = get_model(
+    'api_vip_request', 'VipRequestGroupPermission')
+VipRequestOptionVip = get_model('api_vip_request', 'VipRequestOptionVip')
+VipRequestPort = get_model('api_vip_request', 'VipRequestPort')
+VipRequestPortPool = get_model('api_vip_request', 'VipRequestPortPool')
 
 
 class VipRequestOptionVipSerializer(serializers.ModelSerializer):
@@ -97,46 +104,46 @@ class EnvironmentOptionsSerializer(serializers.ModelSerializer):
         )
 
 
-class VipRequestListSerializer(serializers.ModelSerializer):
+# class VipRequestListSerializer(serializers.ModelSerializer):
 
-    eqpt = serializers.SerializerMethodField('get_eqpt')
+#     eqpt = serializers.SerializerMethodField('get_eqpt')
 
-    ipv4 = Ipv4Serializer()
+#     ipv4 = Ipv4Serializer()
 
-    ipv6 = Ipv6Serializer()
+#     ipv6 = Ipv6Serializer()
 
-    environmentvip = EnvironmentVipSerializer(
-        fields=(
-            'id',
-            'finalidade_txt',
-            'cliente_txt',
-            'ambiente_p44_txt',
-            'description'
-        )
-    )
+#     environmentvip = EnvironmentVipSerializer(
+#         fields=(
+#             'id',
+#             'finalidade_txt',
+#             'cliente_txt',
+#             'ambiente_p44_txt',
+#             'description'
+#         )
+#     )
 
-    def get_eqpt(self, obj):
-        eqpts = list()
-        equipments = list()
-        if obj.ipv4:
-            eqpts = obj.ipv4.ipequipamento_set.all()
-        if obj.ipv6:
-            eqpts |= obj.ipv6.ipv6equipament_set.all()
+#     def get_eqpt(self, obj):
+#         eqpts = list()
+#         equipments = list()
+#         if obj.ipv4:
+#             eqpts = obj.ipv4.ipequipamento_set.all()
+#         if obj.ipv6:
+#             eqpts |= obj.ipv6.ipv6equipament_set.all()
 
-        for eqpt in eqpts:
-            equipments.append(eqpt.equipamento)
-        eqpt_serializer = EquipmentSerializer(equipments, many=True)
+#         for eqpt in eqpts:
+#             equipments.append(eqpt.equipamento)
+#         eqpt_serializer = EquipmentSerializer(equipments, many=True)
 
-        return eqpt_serializer.data
+#         return eqpt_serializer.data
 
-    class Meta:
-        model = VipRequest
-        fields = (
-            'environmentvip',
-            'ipv4',
-            'ipv6',
-            'eqpt',
-        )
+#     class Meta:
+#         model = VipRequest
+#         fields = (
+#             'environmentvip',
+#             'ipv4',
+#             'ipv6',
+#             'eqpt',
+#         )
 
 
 class VipRequestSerializer(DynamicFieldsModelSerializer):

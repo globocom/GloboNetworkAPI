@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 
-from networkapi.api_network.serializers import NetworkIPv4Serializer
-from networkapi.api_network.serializers import NetworkIPv6Serializer
+from networkapi.api_network.serializers.v1 import NetworkIPv4Serializer
+from networkapi.api_network.serializers.v1 import NetworkIPv6Serializer
 from networkapi.vlan.models import Vlan
 
 

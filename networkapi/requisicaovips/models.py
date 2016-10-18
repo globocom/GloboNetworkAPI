@@ -21,6 +21,7 @@ from string import upper
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import get_model
 from django.db.models import Q
 
 from networkapi.ambiente.models import Ambiente
@@ -37,12 +38,6 @@ from networkapi.exception import OptionVipEnvironmentVipNotFoundError
 from networkapi.exception import OptionVipError
 from networkapi.exception import OptionVipNotFoundError
 from networkapi.grupo.models import UGrupo
-from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.healthcheckexpect.models import HealthcheckExpect
-from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
-from networkapi.ip.models import Ip
-from networkapi.ip.models import IpNotFoundByEquipAndVipError
-from networkapi.ip.models import Ipv6
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_int_greater_equal_zero_param
 from networkapi.util import is_valid_int_greater_zero_param
@@ -57,6 +52,15 @@ from networkapi.util import mount_ipv4_string
 from networkapi.util import mount_ipv6_string
 from networkapi.util.decorators import cached_property
 # from networkapi.api_pools.exceptions import PoolError
+
+Ip = get_model('ip', 'Ip')
+IpNotFoundByEquipAndVipError = get_model('ip', 'IpNotFoundByEquipAndVipError')
+Ipv6 = get_model('ip', 'Ipv6')
+
+Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
+HealthcheckExpect = get_model('healthcheckexpect', 'HealthcheckExpect')
+HealthcheckExpectNotFoundError = get_model(
+    'healthcheckexpect', 'HealthcheckExpectNotFoundError')
 
 
 class RequisicaoVipsError(Exception):
@@ -275,9 +279,15 @@ class RequestVipServerPoolConstraintError(RequisicaoVipsError):
 class OptionVip(BaseModel):
     id = models.AutoField(primary_key=True)
     tipo_opcao = models.CharField(
-        max_length=50, blank=False, db_column='tipo_opcao')
+        max_length=50,
+        blank=False,
+        db_column='tipo_opcao'
+    )
     nome_opcao_txt = models.CharField(
-        max_length=50, blank=False, db_column='nome_opcao_txt')
+        max_length=50,
+        blank=False,
+        db_column='nome_opcao_txt'
+    )
 
     log = logging.getLogger('OptionVIP')
 
@@ -512,21 +522,21 @@ class RequisicaoVips(BaseModel):
     vip_criado = models.BooleanField()
 
     ip = models.ForeignKey(
-        Ip,
+        'ip.Ip',
         db_column='ips_id_ip',
         blank=True,
         null=True
     )
 
     ipv6 = models.ForeignKey(
-        Ipv6,
+        'ip.Ipv6',
         db_column='ipsv6_id_ipv6',
         blank=True,
         null=True
     )
 
     trafficreturn = models.ForeignKey(
-        OptionVip,
+        'requisicaovips.OptionVip',
         db_column='id_traffic_return',
         default=12, blank=True, null=True
     )
@@ -560,7 +570,7 @@ class RequisicaoVips(BaseModel):
     )
 
     healthcheck_expect = models.ForeignKey(
-        HealthcheckExpect,
+        'healthcheckexpect.HealthcheckExpect',
         null=True,
         db_column='id_healthcheck_expect',
         blank=True
@@ -1142,87 +1152,87 @@ class RequisicaoVips(BaseModel):
                 values = values[0:len(values) - 1]
                 self.add_variable('_transbordo', values)
 
-        """# portas_servicos
-        portas_servicos_map = variables_map.get('portas_servicos')
-        if portas_servicos_map is not None:
-            portas = portas_servicos_map.get('porta')
-            if len(portas) == 0:
-                raise InvalidServicePortValueError(None, portas)
+        # # portas_servicos
+        # portas_servicos_map = variables_map.get('portas_servicos')
+        # if portas_servicos_map is not None:
+        #     portas = portas_servicos_map.get('porta')
+        #     if len(portas) == 0:
+        #         raise InvalidServicePortValueError(None, portas)
 
-            i = 1
-            for porta in portas:
-                try:
-                    if re.match('[0-9]+:[0-9]+', porta):
-                        [porta1, porta2] = re.split(':', porta)
-                        porta1_int = int(porta1)
-                        porta2_int = int(porta2)
-                    else:
-                        porta_int = int(porta)
-                except (TypeError, ValueError):
-                    raise InvalidServicePortValueError(None, porta)
-                self.add_variable('-portas_servico.' + str(i), porta)
-                i = i + 1
-        else:
-            raise InvalidServicePortValueError(None, portas_servicos_map)
+        #     i = 1
+        #     for porta in portas:
+        #         try:
+        #             if re.match('[0-9]+:[0-9]+', porta):
+        #                 [porta1, porta2] = re.split(':', porta)
+        #                 porta1_int = int(porta1)
+        #                 porta2_int = int(porta2)
+        #             else:
+        #                 porta_int = int(porta)
+        #         except (TypeError, ValueError):
+        #             raise InvalidServicePortValueError(None, porta)
+        #         self.add_variable('-portas_servico.' + str(i), porta)
+        #         i = i + 1
+        # else:
+        #     raise InvalidServicePortValueError(None, portas_servicos_map)
 
-        # reals
-        reals_map = variables_map.get('reals')
-        if (reals_map is not None):
-            real_maps = reals_map.get('real')
+        # # reals
+        # reals_map = variables_map.get('reals')
+        # if (reals_map is not None):
+        #     real_maps = reals_map.get('real')
 
-            if len(real_maps) == 0:
-                raise InvalidRealValueError(None, real_maps)
+        #     if len(real_maps) == 0:
+        #         raise InvalidRealValueError(None, real_maps)
 
-            i = 1
-            for real_map in real_maps:
-                real_name = real_map.get('real_name')
-                real_ip = real_map.get('real_ip')
-                if (real_name is None) or (real_ip is None):
-                    raise InvalidRealValueError(None, '(%s-%s)' % (real_name, real_ip) )
-                self.add_variable('-reals_name.' + str(i), real_name)
-                self.add_variable('-reals_ip.' + str(i), real_ip)
-                i = i + 1
+        #     i = 1
+        #     for real_map in real_maps:
+        #         real_name = real_map.get('real_name')
+        #         real_ip = real_map.get('real_ip')
+        #         if (real_name is None) or (real_ip is None):
+        #             raise InvalidRealValueError(None, '(%s-%s)' % (real_name, real_ip) )
+        #         self.add_variable('-reals_name.' + str(i), real_name)
+        #         self.add_variable('-reals_ip.' + str(i), real_ip)
+        #         i = i + 1
 
-            # reals_priority
-            reals_prioritys_map = variables_map.get('reals_prioritys')
-            if (reals_prioritys_map is not None):
-                reals_priority_map = reals_prioritys_map.get('reals_priority')
+        #     # reals_priority
+        #     reals_prioritys_map = variables_map.get('reals_prioritys')
+        #     if (reals_prioritys_map is not None):
+        #         reals_priority_map = reals_prioritys_map.get('reals_priority')
 
-                if len(reals_priority_map) == 0:
-                    raise InvalidPriorityValueError(None, reals_priority_map)
+        #         if len(reals_priority_map) == 0:
+        #             raise InvalidPriorityValueError(None, reals_priority_map)
 
-                i = 1
-                for reals_priority in reals_priority_map:
+        #         i = 1
+        #         for reals_priority in reals_priority_map:
 
-                    if reals_priority is None:
-                        raise InvalidRealValueError(None, '(%s)' % reals_priority )
+        #             if reals_priority is None:
+        #                 raise InvalidRealValueError(None, '(%s)' % reals_priority )
 
-                    self.add_variable('-reals_priority.' + str(i), reals_priority)
-                    i = i + 1
-            else:
-                raise InvalidPriorityValueError(None, reals_prioritys_map)
+        #             self.add_variable('-reals_priority.' + str(i), reals_priority)
+        #             i = i + 1
+        #     else:
+        #         raise InvalidPriorityValueError(None, reals_prioritys_map)
 
-            # reals_weight
-            if ( str(balanceamento).upper() == "WEIGHTED" ):
+        #     # reals_weight
+        #     if ( str(balanceamento).upper() == "WEIGHTED" ):
 
-                # reals_weight
-                reals_weights_map = variables_map.get('reals_weights')
-                if (reals_weights_map is not None):
-                    reals_weight_map = reals_weights_map.get('reals_weight')
+        #         # reals_weight
+        #         reals_weights_map = variables_map.get('reals_weights')
+        #         if (reals_weights_map is not None):
+        #             reals_weight_map = reals_weights_map.get('reals_weight')
 
-                    if len(reals_weight_map) == 0:
-                        raise InvalidPriorityValueError(None, reals_weight_map)
+        #             if len(reals_weight_map) == 0:
+        #                 raise InvalidPriorityValueError(None, reals_weight_map)
 
-                    i = 1
-                    for reals_weight in reals_weight_map:
+        #             i = 1
+        #             for reals_weight in reals_weight_map:
 
-                        if reals_weight is None:
-                            raise InvalidRealValueError(None, '(%s)' % reals_weight )
+        #                 if reals_weight is None:
+        #                     raise InvalidRealValueError(None, '(%s)' % reals_weight )
 
-                        self.add_variable('-reals_weight.' + str(i), reals_weight)
-                        i = i + 1
-                else:
-                    raise InvalidWeightValueError(None, reals_weights_map)"""
+        #                 self.add_variable('-reals_weight.' + str(i), reals_weight)
+        #                 i = i + 1
+        #         else:
+        #             raise InvalidWeightValueError(None, reals_weights_map)
 
         if self.variaveis != '':
             self.variaveis = self.variaveis[0:len(self.variaveis) - 1]
@@ -2280,8 +2290,8 @@ class ServerPoolMember(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_server_pool_member')
     server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
     identifier = models.CharField(max_length=200)
-    ip = models.ForeignKey(Ip, db_column='ips_id_ip', null=True)
-    ipv6 = models.ForeignKey(Ipv6, db_column='ipsv6_id_ipv6', null=True)
+    ip = models.ForeignKey('ip.Ip', db_column='ips_id_ip', null=True)
+    ipv6 = models.ForeignKey('ip.Ipv6', db_column='ipsv6_id_ipv6', null=True)
     priority = models.IntegerField()
     weight = models.IntegerField(db_column='weight')
     limit = models.IntegerField()

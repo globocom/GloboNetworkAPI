@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -28,11 +28,11 @@ from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_pools import exceptions as pool_exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions
-from networkapi.api_vip_request import facade
 from networkapi.api_vip_request import syncs
+from networkapi.api_vip_request.facade import v1 as facade
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
-from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
+from networkapi.api_vip_request.serializers.v1 import EnvironmentOptionsSerializer
 from networkapi.exception import EnvironmentVipNotFoundError
 from networkapi.exception import InvalidValueError
 from networkapi.requisicaovips.models import RequisicaoVips
@@ -136,7 +136,8 @@ def delete(request):
             #     except RequisicaoVipsMissingDSRL3idError, e:
             #         log.error(u'Requisao Vip nao possui id DSRL3 correspondente cadastrado no banco')
             #         raise RequisicaoVipsMissingDSRL3idError(
-            #                 e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' % ids)
+            # e, 'Requisao Vip com id %s possui DSRl3 id não foi encontrado' %
+            # ids)
             vrequest.remove(request.user, vrequest.id)
 
         syncs.delete_new(ids)
@@ -169,7 +170,8 @@ def list_environment_by_environment_vip(request, environment_vip_id):
 
     except EnvironmentVip.DoesNotExist, exception:
         log.error(exception)
-        raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
+        raise api_exceptions.ObjectDoesNotExistException(
+            'Environment Vip Does Not Exist')
 
     except Exception, exception:
         log.error(exception)
@@ -184,7 +186,7 @@ def save(request, pk=None):
 
     try:
 
-        if request.method == "POST":
+        if request.method == 'POST':
 
             data = facade.save(request)
 
@@ -193,7 +195,7 @@ def save(request, pk=None):
 
             return Response(data=data, status=status.HTTP_201_CREATED)
 
-        elif request.method == "PUT":
+        elif request.method == 'PUT':
 
             data = facade.update(request, pk)
 

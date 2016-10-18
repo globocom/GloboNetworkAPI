@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ from _mysql_exceptions import OperationalError
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import get_model
 from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
@@ -61,8 +62,10 @@ class AmbienteNotFoundError(AmbienteError):
 
 class AmbienteDuplicatedError(AmbienteError):
 
-    """Retorna exceção porque existe um Ambiente cadastrada com os mesmos nomes
-       de grupo layer 3, ambiente lógico e divisão DC."""
+    """
+    Retorna exceção porque existe um Ambiente cadastrada com os mesmos nomes
+       de grupo layer 3, ambiente lógico e divisão DC.
+       """
 
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
@@ -70,8 +73,10 @@ class AmbienteDuplicatedError(AmbienteError):
 
 class AmbienteUsedByEquipmentVlanError(AmbienteError):
 
-    """Retorna exceção se houver tentativa de exclusão de um Ambiente utilizado
-       por algum equipamento ou alguma VLAN."""
+    """
+    Retorna exceção se houver tentativa de exclusão de um Ambiente utilizado
+    por algum equipamento ou alguma VLAN.
+    """
 
     def __init__(self, cause, message=None):
         AmbienteError.__init__(self, cause, message)
@@ -288,7 +293,7 @@ class DivisaoDc(BaseModel):
 
     @classmethod
     def get_by_name(cls, name):
-        """"Get Division Dc by name.
+        """Get Division Dc by name.
 
         @return:Division Dc.
 
@@ -398,7 +403,7 @@ class EnvironmentVip(BaseModel):
         managed = True
 
     def _get_name(self):
-        "Returns complete name for environment."
+        """Returns complete name for environment."""
         return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
 
     name = property(_get_name)
@@ -542,12 +547,12 @@ class EnvironmentVip(BaseModel):
                 e, u'Failure to search the environment vip.')
 
     def valid_environment_vip(self, environmentvip_map):
-        '''Validate the values ​​of environment vip
+        """Validate the values ​​of environment vip
 
         @param environmentvip_map: Map with the data of the request.
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Get XML data
         finalidade_txt = environmentvip_map.get('finalidade_txt')
@@ -585,10 +590,10 @@ class EnvironmentVip(BaseModel):
         self.description = description
 
     def delete(self):
-        '''Override Django's method to remove environment vip
+        """Override Django's method to remove environment vip
 
         Before removing the environment vip removes all relationships with option vip.
-        '''
+        """
         from networkapi.requisicaovips.models import OptionVipEnvironmentVip
 
         # Remove all EnvironmentVIP OptionVip related
@@ -598,7 +603,7 @@ class EnvironmentVip(BaseModel):
         super(EnvironmentVip, self).delete()
 
     def show_environment_vip(self):
-        return "%s - %s - %s" % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
+        return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
 
     def available_evips(self, evips, id_vlan):
         # The model couldn't be imported in the top of the file. It is a UWSGI bug, where
@@ -720,6 +725,12 @@ class Ambiente(BaseModel):
         db_column='id_father_environment'
     )
 
+    default_vrf = models.ForeignKey(
+        'api_vrf.Vrf',
+        null=True,
+        db_column='id_vrf'
+    )
+
     log = logging.getLogger('Ambiente')
 
     class Meta(BaseModel.Meta):
@@ -728,7 +739,7 @@ class Ambiente(BaseModel):
         unique_together = ('grupo_l3', 'ambiente_logico', 'divisao_dc')
 
     def _get_name(self):
-        "Returns complete name for environment."
+        """Returns complete name for environment."""
         return '%s - %s - %s' % (self.divisao_dc.nome, self.ambiente_logico.nome, self.grupo_l3.nome)
 
     name = property(_get_name)
@@ -810,7 +821,12 @@ class Ambiente(BaseModel):
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
 
             if self.father_environment is not None:
-                self.father_environment = Ambiente.get_by_pk(self.father_environment)
+                self.father_environment = Ambiente.get_by_pk(
+                    self.father_environment)
+
+            # default vrf
+            vrf_model = get_model('api_vrf', 'Vrf')
+            self.default_vrf = vrf_model.get_by_pk(self.default_vrf)
 
             return self.save()
 
@@ -875,9 +891,14 @@ class Ambiente(BaseModel):
             pass
 
         if kwargs['father_environment_id']:
-            environment.father_environment = Ambiente.get_by_pk(kwargs['father_environment_id'])
+            environment.father_environment = Ambiente.get_by_pk(
+                kwargs['father_environment_id'])
         else:
             environment.father_environment = None
+
+        vrf_model = get_model('api_vrf', 'Vrf')
+        environment.default_vrf = vrf_model.get_by_pk(
+            kwargs['default_vrf'])
 
         try:
             try:
@@ -975,9 +996,30 @@ class Ambiente(BaseModel):
             raise AmbienteError(e, u'Falha ao remover o Ambiente.')
 
     def show_environment(self):
-        environment = "%s - %s - %s" % (self.divisao_dc.nome,
+        environment = '%s - %s - %s' % (self.divisao_dc.nome,
                                         self.ambiente_logico.nome, self.grupo_l3.nome)
         return environment
+
+    def available_envvips_v3(self):
+        """ Return list of environment vip with netv4 or netv6 related
+        environment or environment vip without netv4 and netv6.
+
+        :return envvip_model: List of environment vip
+        """
+        envvip_model = get_model('ambiente', 'EnvironmentVip')
+        envvip_model.objects.filter(
+            # envs with networkv4
+            Q(networkipv4__vlan__ambiente=self.id) |
+            # envs with networkv6
+            Q(networkipv6__vlan__ambiente=self.id) |
+            Q(
+                # envs without networkv4 or networkv6
+                Q(networkipv4__isnull=True) &
+                Q(networkipv6__isnull=True)
+            )
+        )
+
+        return envvip_model
 
 
 class IP_VERSION:
@@ -1238,11 +1280,11 @@ class ConfigEnvironment(BaseModel):
                 e, u'Error removing ConfigEnvironment.')
 
     def save(self):
-        '''
+        """
             Save ConfigEnvironment
 
             @raise ConfigEnvironmentDuplicateError: ConfigEnvironment Duplicate
-        '''
+        """
         try:
 
             super(ConfigEnvironment, self).save()
@@ -1304,7 +1346,8 @@ class EnvironmentEnvironmentVip(BaseModel):
         except ObjectDoesNotExist:
             pass
         except MultipleObjectsReturned:
-            raise EnvironmentEnvironmentVipDuplicatedError(None, u'Environment already registered for the environment vip.')
+            raise EnvironmentEnvironmentVipDuplicatedError(
+                None, u'Environment already registered for the environment vip.')
 
     @classmethod
     def get_server_pool_by_environment_environment_vip(cls, environment_environment_vip):
@@ -1330,12 +1373,14 @@ class EnvironmentEnvironmentVip(BaseModel):
     def get_environment_list_by_environment_vip_list(cls, environment_vip_list):
         env_envivip_list = EnvironmentEnvironmentVip.objects.filter(
             environment_vip__in=environment_vip_list).distinct()
-        environment_list = [env_envivip.environment for env_envivip in env_envivip_list]
+        environment_list = [
+            env_envivip.environment for env_envivip in env_envivip_list]
         return environment_list
 
     @classmethod
     def get_environment_list_by_environment_vip(cls, environment_vip):
         env_envivip_list = EnvironmentEnvironmentVip.objects.filter(
             environment_vip=environment_vip)
-        environment_list = [env_envivip.environment for env_envivip in env_envivip_list]
+        environment_list = [
+            env_envivip.environment for env_envivip in env_envivip_list]
         return environment_list

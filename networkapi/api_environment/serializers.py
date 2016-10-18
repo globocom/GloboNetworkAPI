@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.ambiente.models import Ambiente
-from networkapi.ambiente.models import AmbienteLogico
-from networkapi.ambiente.models import ConfigEnvironment
-from networkapi.ambiente.models import DivisaoDc
-from networkapi.ambiente.models import GrupoL3
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 # from networkapi.ambiente.models import IPConfig
+
+Ambiente = get_model('ambiente', 'Ambiente')
+AmbienteLogico = get_model('ambiente', 'AmbienteLogico')
+ConfigEnvironment = get_model('ambiente', 'ConfigEnvironment')
+DivisaoDc = get_model('ambiente', 'DivisaoDc')
+GrupoL3 = get_model('ambiente', 'GrupoL3')
 
 
 class GrupoL3Serializer(DynamicFieldsModelSerializer):
@@ -77,6 +79,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
+            'default_vrf',
             'father_environment',
             'configs'
         )
@@ -95,6 +98,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
+            'default_vrf',
             'father_environment'
         )
 
@@ -147,6 +151,7 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
+            'default_vrf',
             'father_environment',
             'configs'
         )
@@ -165,6 +170,7 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
             'min_num_vlan_2',
             'max_num_vlan_2',
             'vrf',
+            'default_vrf',
             'father_environment'
         )
 

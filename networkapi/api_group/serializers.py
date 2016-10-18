@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.grupo.models import UGrupo
+UGrupo = get_model('grupo', 'UGrupo')
 
 
 class UserGroupSerializer(serializers.ModelSerializer):

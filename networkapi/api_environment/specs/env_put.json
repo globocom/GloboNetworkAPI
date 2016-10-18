@@ -89,6 +89,11 @@
               "null"
             ]
           },
+          "default_vrf": {
+            "type": [
+              "integer"
+            ]
+          },
           "configs": {
             "type": "array",
             "items": {
@@ -131,6 +136,7 @@
           "min_num_vlan_2",
           "max_num_vlan_2",
           "vrf",
+          "default_vrf",
           "father_environment"
         ]
       }

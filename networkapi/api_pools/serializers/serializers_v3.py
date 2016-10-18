@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.api_environment import serializers as env_serializers
 from networkapi.api_equipment import serializers as eqpt_serializers
 from networkapi.api_group import serializers as grp_serializers
-from networkapi.api_pools.models import OptionPool
-from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.ip.models import Ip
-from networkapi.ip.models import Ipv6
-from networkapi.requisicaovips.models import ServerPool
-from networkapi.requisicaovips.models import ServerPoolGroupPermission
-from networkapi.requisicaovips.models import ServerPoolMember
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+OptionPool = get_model('api_pools', 'OptionPool')
+Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
+Equipamento = get_model('equipamento', 'Equipamento')
+Ip = get_model('ip', 'Ip')
+Ipv6 = get_model('ip', 'Ipv6')
+ServerPool = get_model('requisicaovips', 'ServerPool')
+ServerPoolGroupPermission = get_model(
+    'requisicaovips', 'ServerPoolGroupPermission')
+ServerPoolMember = get_model('requisicaovips', 'ServerPoolMember')
 
 
 class Ipv4BasicSerializer(serializers.ModelSerializer):

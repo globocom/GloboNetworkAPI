@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.api_environment.serializers import EnvironmentDetailsSerializer
 from networkapi.api_environment.serializers import EnvironmentV3Serializer
 from networkapi.util.serializers import DynamicFieldsModelSerializer
-from networkapi.vlan.models import Vlan
+
+Vlan = get_model('vlan', 'Vlan')
 
 
 class VlanSerializerV3(DynamicFieldsModelSerializer):

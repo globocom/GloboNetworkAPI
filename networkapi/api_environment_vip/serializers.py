@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.ambiente.models import EnvironmentVip
-from networkapi.requisicaovips.models import OptionVip
-from networkapi.requisicaovips.models import OptionVipEnvironmentVip
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+EnvironmentVip = get_model('ambiente', 'EnvironmentVip')
+OptionVip = get_model('requisicaovips', 'OptionVip')
+OptionVipEnvironmentVip = get_model(
+    'requisicaovips', 'OptionVipEnvironmentVip')
 
 
 class EnvironmentVipSerializer(DynamicFieldsModelSerializer):

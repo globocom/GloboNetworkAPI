@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-import unittest
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import logging
-from mock import patch, MagicMock
+import unittest
+
+from mock import MagicMock
+from mock import patch
 from rest_framework.test import APIClient
+
 from networkapi.ambiente.models import Ambiente
 from networkapi.equipamento.models import Equipamento
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv6
 from networkapi.test import mock_login
 from networkapi.usuario.models import Usuario
 from networkapi.vlan.models import Vlan
 
 LOG = logging.getLogger(__name__)
+
 
 class NetworkCreateTestCase(unittest.TestCase):
 
@@ -21,43 +28,54 @@ class NetworkCreateTestCase(unittest.TestCase):
         self.mock_networkv6_get_by_pk()
 
     def tearDown(self):
-       patch.stopall()
+        patch.stopall()
 
     @mock_login
     def test_network_ipv4_deploy_given_empty_equipment_list(self):
-        response = self.post('/api/networkv4/1/equipments/', { 'equipments': ''})
+        response = self.post(
+            '/api/networkv4/1/equipments/', {'equipments': ''})
 
-        self.assertEqual(400, response.status_code, "Status code should be 400 and was %s" % response.status_code)
-        self.assertEqual("Error validating request parameter: equipments", response.data['detail'], "Wrong status message")
+        self.assertEqual(400, response.status_code,
+                         'Status code should be 400 and was %s' % response.status_code)
+        self.assertEqual('Error validating request parameter: equipments', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_deploy_given_invalid_equipment_list(self):
-        response = self.post('/api/networkv4/1/equipments/', { 'equipments': ['a']})
+        response = self.post(
+            '/api/networkv4/1/equipments/', {'equipments': ['a']})
 
-        self.assertEqual(400, response.status_code, "Status code should be 400 and was %s" % response.status_code)
-        self.assertEqual("Error validating request parameter: equipments", response.data['detail'], "Wrong status message")
+        self.assertEqual(400, response.status_code,
+                         'Status code should be 400 and was %s' % response.status_code)
+        self.assertEqual('Error validating request parameter: equipments', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_deploy_given_no_equipments_found(self):
         self.mock_find_equipments([])
-        response = self.post('/api/networkv4/1/equipments/', { 'equipments': [1, 2]})
+        response = self.post('/api/networkv4/1/equipments/',
+                             {'equipments': [1, 2]})
 
-        self.assertEqual("Equipments are not part of network environment.", response.data['detail'], "Wrong status message")
+        self.assertEqual('Equipments are not part of network environment.', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_deploy_given_no_routers_found_for_network_environment(self):
         self.mock_find_equipments(self.mock_distinct_list([]))
         response = self.post('/api/networkv4/1/equipments/')
 
-        self.assertEqual("No environment routers found for network configuration.", response.data['detail'], "Wrong status message")
+        self.assertEqual('No environment routers found for network configuration.', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_deploy_given_user_without_permission(self):
-        self.mock_find_equipments(self.mock_distinct_list([Equipamento(id = 1, nome = 'router')]))
+        self.mock_find_equipments(self.mock_distinct_list(
+            [Equipamento(id=1, nome='router')]))
         self.mock_user_has_permission(False)
         response = self.post('/api/networkv4/1/equipments/', None)
 
-        self.assertEqual("No permission to configure equipment 1-router", response.data['detail'], "Wrong status message")
+        self.assertEqual('No permission to configure equipment 1-router',
+                         response.data['detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_deploy(self):
@@ -68,8 +86,10 @@ class NetworkCreateTestCase(unittest.TestCase):
 
         response = self.post('/api/networkv4/1/equipments/', None)
 
-        facade_mock.assert_called_with(Usuario(), self.networkv4, equipment_list)
-        self.assertEqual("Equipment configured", response.data, "Wrong status message")
+        facade_mock.assert_called_with(
+            Usuario(), self.networkv4, equipment_list)
+        self.assertEqual('Equipment configured',
+                         response.data, 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_deploy_given_equipments_supplied(self):
@@ -78,11 +98,15 @@ class NetworkCreateTestCase(unittest.TestCase):
         equipment_find_mock = self.mock_find_equipments(equipment_list)
         facade_mock = self.mock_equipment_script_facade_ipv4('DEPLOY')
 
-        response = self.post('/api/networkv4/1/equipments/', {'equipments': [10]})
+        response = self.post(
+            '/api/networkv4/1/equipments/', {'equipments': [10]})
 
-        equipment_find_mock.assert_called_with(equipamentoambiente__ambiente = self.networkv4.vlan.ambiente, id__in = [equip.id for equip in equipment_list])
-        facade_mock.assert_called_with(Usuario(), self.networkv4, equipment_list)
-        self.assertEqual("Equipment configured", response.data, "Wrong status message")
+        equipment_find_mock.assert_called_with(equipamentoambiente__ambiente=self.networkv4.vlan.ambiente, id__in=[
+                                               equip.id for equip in equipment_list])
+        facade_mock.assert_called_with(
+            Usuario(), self.networkv4, equipment_list)
+        self.assertEqual('Equipment configured',
+                         response.data, 'Wrong status message')
 
     @mock_login
     def test_network_ipv4_undeploy(self):
@@ -93,44 +117,57 @@ class NetworkCreateTestCase(unittest.TestCase):
 
         response = self.delete('/api/networkv4/1/equipments/', None)
 
-        facade_mock.assert_called_with(Usuario(), self.networkv4, equipment_list)
-        self.assertEqual("Equipment configured", response.data, "Wrong status message")
+        facade_mock.assert_called_with(
+            Usuario(), self.networkv4, equipment_list)
+        self.assertEqual('Equipment configured',
+                         response.data, 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy_given_empty_equipment_list(self):
-        response = self.post('/api/networkv6/1/equipments/', { 'equipments': ''})
+        response = self.post(
+            '/api/networkv6/1/equipments/', {'equipments': ''})
 
-        self.assertEqual(400, response.status_code, "Status code should be 400 and was %s" % response.status_code)
-        self.assertEqual("Error validating request parameter: equipments", response.data['detail'], "Wrong status message")
+        self.assertEqual(400, response.status_code,
+                         'Status code should be 400 and was %s' % response.status_code)
+        self.assertEqual('Error validating request parameter: equipments', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy_given_invalid_equipment_list(self):
-        response = self.post('/api/networkv6/1/equipments/', { 'equipments': ['a']})
+        response = self.post(
+            '/api/networkv6/1/equipments/', {'equipments': ['a']})
 
-        self.assertEqual(400, response.status_code, "Status code should be 400 and was %s" % response.status_code)
-        self.assertEqual("Error validating request parameter: equipments", response.data['detail'], "Wrong status message")
+        self.assertEqual(400, response.status_code,
+                         'Status code should be 400 and was %s' % response.status_code)
+        self.assertEqual('Error validating request parameter: equipments', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy_given_no_equipments_found(self):
         self.mock_find_equipments([])
-        response = self.post('/api/networkv6/1/equipments/', { 'equipments': [1, 2]})
+        response = self.post('/api/networkv6/1/equipments/',
+                             {'equipments': [1, 2]})
 
-        self.assertEqual("Equipments are not part of network environment.", response.data['detail'], "Wrong status message")
+        self.assertEqual('Equipments are not part of network environment.', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy_given_no_routers_found_for_network_environment(self):
         self.mock_find_equipments(self.mock_distinct_list([]))
         response = self.post('/api/networkv6/1/equipments/')
 
-        self.assertEqual("No environment routers found for network configuration.", response.data['detail'], "Wrong status message")
+        self.assertEqual('No environment routers found for network configuration.', response.data[
+                         'detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy_given_user_without_permission(self):
-        self.mock_find_equipments(self.mock_distinct_list([Equipamento(id = 1, nome = 'router')]))
+        self.mock_find_equipments(self.mock_distinct_list(
+            [Equipamento(id=1, nome='router')]))
         self.mock_user_has_permission(False)
         response = self.post('/api/networkv6/1/equipments/', None)
 
-        self.assertEqual("No permission to configure equipment 1-router", response.data['detail'], "Wrong status message")
+        self.assertEqual('No permission to configure equipment 1-router',
+                         response.data['detail'], 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy(self):
@@ -141,8 +178,10 @@ class NetworkCreateTestCase(unittest.TestCase):
 
         response = self.post('/api/networkv6/1/equipments/', None)
 
-        facade_mock.assert_called_with(Usuario(), self.networkv6, equipment_list)
-        self.assertEqual("Equipment configured", response.data, "Wrong status message")
+        facade_mock.assert_called_with(
+            Usuario(), self.networkv6, equipment_list)
+        self.assertEqual('Equipment configured',
+                         response.data, 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_deploy_given_equipments_supplied(self):
@@ -151,11 +190,15 @@ class NetworkCreateTestCase(unittest.TestCase):
         equipment_find_mock = self.mock_find_equipments(equipment_list)
         facade_mock = self.mock_equipment_script_facade_ipv6('DEPLOY')
 
-        response = self.post('/api/networkv6/1/equipments/', {'equipments': [10]})
+        response = self.post(
+            '/api/networkv6/1/equipments/', {'equipments': [10]})
 
-        equipment_find_mock.assert_called_with(equipamentoambiente__ambiente = self.networkv6.vlan.ambiente, id__in = [equip.id for equip in equipment_list])
-        facade_mock.assert_called_with(Usuario(), self.networkv6, equipment_list)
-        self.assertEqual("Equipment configured", response.data, "Wrong status message")
+        equipment_find_mock.assert_called_with(equipamentoambiente__ambiente=self.networkv6.vlan.ambiente, id__in=[
+                                               equip.id for equip in equipment_list])
+        facade_mock.assert_called_with(
+            Usuario(), self.networkv6, equipment_list)
+        self.assertEqual('Equipment configured',
+                         response.data, 'Wrong status message')
 
     @mock_login
     def test_network_ipv6_undeploy(self):
@@ -166,28 +209,32 @@ class NetworkCreateTestCase(unittest.TestCase):
 
         response = self.delete('/api/networkv6/1/equipments/', None)
 
-        facade_mock.assert_called_with(Usuario(), self.networkv6, equipment_list)
-        self.assertEqual("Equipment configured", response.data, "Wrong status message")
+        facade_mock.assert_called_with(
+            Usuario(), self.networkv6, equipment_list)
+        self.assertEqual('Equipment configured',
+                         response.data, 'Wrong status message')
 
-    #MOCKS
+    # MOCKS
     def mock_equipment_script_facade_ipv6(self, operation):
-        return self.mock_equipment_script_facade(operation,'IPv6')
+        return self.mock_equipment_script_facade(operation, 'IPv6')
 
     def mock_equipment_script_facade_ipv4(self, operation):
         return self.mock_equipment_script_facade(operation, 'IPv4')
 
     def mock_equipment_script_facade(self, operation, type):
         if operation == 'DEPLOY':
-            facade_mock = patch('networkapi.api_network.facade.deploy_network%s_configuration' % type).start()
+            facade_mock = patch(
+                'networkapi.api_network.facade.v1.deploy_network%s_configuration' % type).start()
         else:
-            facade_mock = patch('networkapi.api_network.facade.remove_deploy_network%s_configuration' % type).start()
-        facade_mock.return_value = "Equipment configured"
+            facade_mock = patch(
+                'networkapi.api_network.facade.v1.remove_deploy_network%s_configuration' % type).start()
+        facade_mock.return_value = 'Equipment configured'
         return facade_mock
 
-    def post(self, uri, content = None):
+    def post(self, uri, content=None):
         return self.client.post(uri, content, format='json')
 
-    def delete(self, uri, content = None):
+    def delete(self, uri, content=None):
         return self.client.delete(uri, content, format='json')
 
     def mock_distinct_list(self, list):
@@ -196,22 +243,26 @@ class NetworkCreateTestCase(unittest.TestCase):
         return mocked_list
 
     def mock_find_equipments(self, equipment_list):
-        equipment_find_mock = patch('networkapi.equipamento.models.Equipamento.objects.filter').start()
+        equipment_find_mock = patch(
+            'networkapi.equipamento.models.Equipamento.objects.filter').start()
         equipment_find_mock.return_value = equipment_list
         return equipment_find_mock
 
     def mock_networkv4_get_by_pk(self):
-        network_mock = patch('networkapi.ip.models.NetworkIPv4.get_by_pk').start()
-        self.networkv4 = NetworkIPv4(vlan = Vlan(ambiente = Ambiente()))
+        network_mock = patch(
+            'networkapi.ip.models.NetworkIPv4.get_by_pk').start()
+        self.networkv4 = NetworkIPv4(vlan=Vlan(ambiente=Ambiente()))
         network_mock.return_value = self.networkv4
         return network_mock
 
     def mock_networkv6_get_by_pk(self):
-        network_mock = patch('networkapi.ip.models.NetworkIPv6.get_by_pk').start()
-        self.networkv6 = NetworkIPv6(vlan = Vlan(ambiente = Ambiente()))
-        network_mock.return_value =  self.networkv6
+        network_mock = patch(
+            'networkapi.ip.models.NetworkIPv6.get_by_pk').start()
+        self.networkv6 = NetworkIPv6(vlan=Vlan(ambiente=Ambiente()))
+        network_mock.return_value = self.networkv6
         return network_mock
 
     def mock_user_has_permission(self, has_permission):
-        permission_decorator = patch('networkapi.api_network.views.has_perm').start()
+        permission_decorator = patch(
+            'networkapi.api_network.views.has_perm').start()
         permission_decorator.return_value = has_permission

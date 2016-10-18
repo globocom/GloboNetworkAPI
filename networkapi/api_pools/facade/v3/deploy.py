@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import copy
 import logging
 
@@ -11,8 +11,8 @@ from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions
 from networkapi.api_pools import serializers
 from networkapi.api_pools.facade.v3 import base as facade_v3
-from networkapi.api_vip_request import facade as facade_vip
-from networkapi.api_vip_request import serializers as serializers_vip
+from networkapi.api_vip_request.facade import v3 as facade_vip
+from networkapi.api_vip_request.serializers import v3 as serializers_vip
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.factory import PluginFactory
@@ -61,7 +61,8 @@ def _prepare_apply(pools, user):
             )
 
             healthcheck = pool['healthcheck']
-            healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(pool['identifier'])
+            healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(pool[
+                                                                           'identifier'])
             healthcheck['new'] = True
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -137,7 +138,8 @@ def update_real_pool(pools, user):
     for pool in pools['server_pools']:
         facade_v3.validate_save(pool, permit_created=True)
 
-        member_ids = [spm['id'] for spm in pool['server_pool_members'] if spm['id']]
+        member_ids = [spm['id']
+                      for spm in pool['server_pool_members'] if spm['id']]
 
         db_members = ServerPoolMember.objects.filter(id__in=member_ids)
         db_members_id = [str(s.id) for s in db_members]
@@ -148,11 +150,13 @@ def update_real_pool(pools, user):
         pools_members = list()
         for pool_member in pool['server_pool_members']:
 
-            ip = pool_member['ip']['ip_formated'] if pool_member['ip'] else pool_member['ipv6']['ip_formated']
+            ip = pool_member['ip']['ip_formated'] if pool_member[
+                'ip'] else pool_member['ipv6']['ip_formated']
 
             if pool_member['id']:
 
-                member = db_members[db_members_id.index(str(pool_member['id']))]
+                member = db_members[
+                    db_members_id.index(str(pool_member['id']))]
                 ip_db = member.ip.ip_formated if member.ip else member.ipv6.ip_formated
 
                 if member.port_real == pool_member['port_real'] and ip_db == ip:
@@ -234,7 +238,8 @@ def update_real_pool(pools, user):
                 }
 
             sp = ServerPool.objects.get(id=pool['id'])
-            healthcheck_old = serializers.HealthcheckV3Serializer(sp.healthcheck).data
+            healthcheck_old = serializers.HealthcheckV3Serializer(
+                sp.healthcheck).data
 
             healthcheck = copy.deepcopy(pool['healthcheck'])
             healthcheck['new'] = False
@@ -368,7 +373,8 @@ def get_poolmember_state(pools):
 
             # populate variable for to verify diff states
             for idx_m, st in enumerate(state):
-                member_id = load_balance[lb]['pools'][idx]['pools_members'][idx_m]['id']
+                member_id = load_balance[lb]['pools'][
+                    idx]['pools_members'][idx_m]['id']
                 if not ps[pool_id].get(member_id):
                     ps[pool_id][member_id] = []
 

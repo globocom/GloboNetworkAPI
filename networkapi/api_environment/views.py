@@ -47,7 +47,7 @@ class EnvironmentDBView(APIView):
                 obj_model = None
 
             serializer_class = serializers.EnvironmentV3Serializer \
-                if details == 1 else serializers.EnvironmentDetailsSerializer
+                if details == 0 else serializers.EnvironmentDetailsSerializer
 
             # serializer environments
             serializer_env = serializer_class(

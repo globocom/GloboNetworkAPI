@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.api_ip.serializers import Ipv4DetailsSerializer
+from networkapi.api_ip.serializers import Ipv4Serializer
 from networkapi.api_ip.serializers import Ipv6DetailsSerializer
-from networkapi.api_network.serializers import Ipv4Serializer
-from networkapi.api_network.serializers import Ipv6Serializer
-from networkapi.equipamento.models import Equipamento
-from networkapi.equipamento.models import Marca
-from networkapi.equipamento.models import Modelo
-from networkapi.equipamento.models import TipoEquipamento
+from networkapi.api_ip.serializers import Ipv6Serializer
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+Equipamento = get_model('equipamento', 'Equipamento')
+Marca = get_model('equipamento', 'Marca')
+Modelo = get_model('equipamento', 'Modelo')
+TipoEquipamento = get_model('equipamento', 'TipoEquipamento')
 
 
 class BrandDetailsSerializer(DynamicFieldsModelSerializer):

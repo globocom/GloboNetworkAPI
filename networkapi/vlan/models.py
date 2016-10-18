@@ -6,6 +6,7 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import get_model
 from django.db.models import Q
 
 from networkapi.filter.models import verify_subnet_and_equip
@@ -186,14 +187,12 @@ class TipoRede(BaseModel):
 
 class Vlan(BaseModel):
 
-    from networkapi.ambiente.models import Ambiente
-
     log = logging.getLogger('Vlan')
 
     id = models.AutoField(primary_key=True, db_column='id_vlan')
     nome = models.CharField(unique=True, max_length=50)
     num_vlan = models.IntegerField(unique=True)
-    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
     descricao = models.CharField(max_length=200, blank=True)
     acl_file_name = models.CharField(max_length=200, blank=True)
     acl_valida = models.BooleanField()
@@ -829,12 +828,27 @@ class Vlan(BaseModel):
 
         return eqpts
 
+    def get_vrf(self):
+
+        # get vrf to filter
+        vrf = get_model('api_vrf', 'Vrf')
+        vrfs = vrf.objects.filter(
+            Q(
+                Q(vrfvlanequipment__equipment__in=self.get_eqpt()) &
+                Q(vrfvlanequipment__vlan__id=self.id)
+            ) |
+            Q(id=self.ambiente.default_vrf_id)
+        )
+
+        return vrfs
+
     def validate_num_vlan_v3(self):
         """Validate if number of vlan is duplicated in environment or environment assoc with eqpt."""
         equips = self.get_eqpt()
+        vlan_model = get_model('vlan', 'Vlan')
 
         # get vlans with same num_vlan
-        vlan = Vlan.objects.filter(
+        vlan = vlan_model.objects.filter(
             ambiente__equipamentoambiente__equipamento__in=equips,
             num_vlan=self.num_vlan
         ).exclude(
@@ -866,7 +880,16 @@ class Vlan(BaseModel):
                 if old_env.num_vlan != self.num_vlan:
                     raise Exception(
                         'Number Vlan can not be changed in vlan actived')
+
             if old_env.ambiente != self.ambiente:
+                netv4_vip = self.networkipv4_set.filter(
+                    ambient_vip__isnull=False)
+                netv6_vip = self.networkipv6_set.filter(
+                    ambient_vip__isnull=False)
+                if netv4_vip or netv6_vip:
+                    raise NotImplementedError(
+                        'Not change vlan when networks are of environment Vip'
+                    )
                 self.validate_network()
 
         self.validate_num_vlan_v3()
@@ -879,24 +902,46 @@ class Vlan(BaseModel):
 
     def update_v3(self):
         """Update vlan."""
+
         self.validate_v3()
 
         self.save()
 
-    def validate_network(self):
+    def get_networks_related(self, has_netv4=True, has_netv6=True):
+        vlan_model = get_model('vlan', 'Vlan')
 
-        # get networks of environment or environment assoc
-        vlans_env_eqpt = Vlan.objects.filter(
-            Q(ambiente=self.ambiente) |
-            Q(ambiente__equipamentoambiente__equipamento__in=self.get_eqpt()),
+        vlans_env_eqpt = vlan_model.objects.filter(
+            # get vlans of environment or environment assoc
+            ambiente__equipamentoambiente__equipamento__in=self.get_eqpt()
+        ).filter(
+            # get vlans with customized vrfs
+            Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
+            # get vlans using vrf of environment
+            Q(ambiente__default_vrf__in=self.get_vrf())
         ).exclude(
+            # exclude current vlan
             id=self.id
         ).distinct()
 
-        netv4 = reduce(list.__add__, [list(vlan_env.networkipv4_set.all())
-                                      for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
-        netv6 = reduce(list.__add__, [list(vlan_env.networkipv6_set.all())
-                                      for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
+        self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
+
+        netv4 = list()
+        if has_netv4:
+            netv4 = reduce(list.__add__, [
+                list(vlan_env.networkipv4_set.all())
+                for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
+
+        netv6 = list()
+        if has_netv6:
+            netv6 = reduce(list.__add__, [
+                list(vlan_env.networkipv6_set.all())
+                for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
+
+        return netv4, netv6
+
+    def validate_network(self):
+
+        netv4, netv6 = self.get_networks_related()
 
         netv4_env, netv6_env = self.prepare_networks(
             netv4,
@@ -913,8 +958,8 @@ class Vlan(BaseModel):
 
         if v4_interset or v6_interset:
             raise Exception(
-                'Um dos equipamentos associados com o ambiente desta Vlan'
-                'também está associado com outro ambiente que tem uma rede'
+                'Um dos equipamentos associados com o ambiente desta Vlan '
+                'também está associado com outro ambiente que tem uma rede '
                 'com a mesma faixa, adicione filtros nos ambientes se necessário.')
 
     def prepare_networks(self, netv4, netv6):

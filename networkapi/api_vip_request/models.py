@@ -4,15 +4,13 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import get_model
 
-from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_vip_request import exceptions
-from networkapi.grupo.models import UGrupo
-from networkapi.ip.models import Ip
-from networkapi.ip.models import Ipv6
+from networkapi.api_vip_request import syncs
 from networkapi.models.BaseModel import BaseModel
-from networkapi.requisicaovips.models import OptionVip
-from networkapi.requisicaovips.models import ServerPool
+
+IpCantBeRemovedFromVip = get_model('ip', 'IpCantBeRemovedFromVip')
 
 
 class VipRequest(BaseModel):
@@ -27,21 +25,21 @@ class VipRequest(BaseModel):
         db_column='created')
 
     ipv4 = models.ForeignKey(
-        Ip,
+        'ip.Ip',
         db_column='id_ipv4',
         blank=True,
         null=True
     )
 
     ipv6 = models.ForeignKey(
-        Ipv6,
+        'ip.Ipv6',
         db_column='id_ipv6',
         blank=True,
         null=True
     )
 
     environmentvip = models.ForeignKey(
-        EnvironmentVip,
+        'ambiente.EnvironmentVip',
         db_column='id_environmentvip',
         blank=True,
         null=True
@@ -90,6 +88,91 @@ class VipRequest(BaseModel):
             raise exceptions.VipRequestError(
                 e, u'Failure to search the vip request.')
 
+    def delete_v3(self, bypass_ipv4=False, bypass_ipv6=False, sync=True):
+        """
+        Delete Vip Request
+
+        @raise VipConstraintCreated: Vip request can not be deleted
+                                     because it is created in equipment.
+        """
+        id_vip = self.id
+        id_ipv4 = self.ipv4
+        id_ipv6 = self.ipv6
+
+        if self.created:
+            raise exceptions.VipConstraintCreated(id_vip)
+
+        self.delete()
+
+        # delete Ipv4
+        if self.ipv4 and bypass_ipv4:
+            if not self._is_ipv4_in_use(id_ipv4, id_vip):
+                try:
+                    self.ipv4.delete_v3(bypass_vip=True)
+                except IpCantBeRemovedFromVip:
+                    self.log.info(
+                        'Tried to delete Ipv4, because assoc with in more Vips.')
+                    pass
+                except Exception, e:
+                    self.log.error(e)
+                    raise Exception('Error to delete Ipv4: %s.', e)
+
+        # delete Ipv6
+        if self.ipv6 and bypass_ipv6 == '0':
+            if not self._is_ipv6_in_use(id_ipv6, id_vip):
+                try:
+                    self.ipv6.delete_v3(bypass_vip=True)
+                except IpCantBeRemovedFromVip:
+                    self.log.info(
+                        'Tried to delete Ipv6, because assoc with in more Vips.')
+                    pass
+                except Exception, e:
+                    self.log.error(e)
+                    raise Exception('Error to delete Ipv4: %s.', e)
+
+        # sync with old tables
+        if sync:
+            syncs.delete_old(id_vip)
+
+    def _is_ipv4_in_use(self, ipv4):
+        spm_model = get_model('requisicaovips', 'ServerPoolMember')
+        vp_model = get_model('api_vip_request', 'VipRequest')
+
+        is_in_use = True
+
+        pm_count = spm_model.objects.filter(ip=ipv4).exclude(
+            server_pool__vipporttopool__requisicao_vip__id=self.id
+        ).count()
+
+        vip_count = vp_model.objects.filter(
+            ipv4=ipv4
+        ).exclude(pk=self.id).count()
+
+        if vip_count == 0 and pm_count == 0:
+            is_in_use = False
+
+        return is_in_use
+
+    def _is_ipv6_in_use(self, ipv6):
+
+        spm_model = get_model('requisicaovips', 'ServerPoolMember')
+        vp_model = get_model('api_vip_request', 'VipRequest')
+
+        is_in_use = True
+
+        pm_count = spm_model.objects.filter(ipv6=ipv6).exclude(
+            server_pool__vipporttopool__requisicao_vip__ipv6=self.id
+        ).count()
+
+        vip_count = vp_model.objects.filter(
+            ipv6=ipv6
+        ).exclude(pk=self.id).count()
+
+        if vip_count == 0 and pm_count == 0:
+            is_in_use = False
+
+        return is_in_use
+
 
 class VipRequestOptionVip(BaseModel):
 
@@ -104,7 +187,7 @@ class VipRequestOptionVip(BaseModel):
     )
 
     optionvip = models.ForeignKey(
-        OptionVip,
+        'requisicaovips.OptionVip',
         db_column='id_opcoesvip',
     )
 
@@ -203,7 +286,7 @@ class VipRequestPortOptionVip(BaseModel):
     )
 
     optionvip = models.ForeignKey(
-        OptionVip,
+        'requisicaovips.OptionVip',
         db_column='id_opcoesvip',
     )
 
@@ -250,12 +333,12 @@ class VipRequestPortPool(BaseModel):
     )
 
     optionvip = models.ForeignKey(
-        OptionVip,
+        'requisicaovips.OptionVip',
         db_column='id_opcoesvip',
     )
 
     server_pool = models.ForeignKey(
-        ServerPool,
+        'requisicaovips.ServerPool',
         db_column='id_server_pool',
     )
 
@@ -346,9 +429,18 @@ class VipRequestDSCP(BaseModel):
 
 
 class VipRequestGroupPermission(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id')
-    user_group = models.ForeignKey(UGrupo, db_column='id_user_group')
-    vip_request = models.ForeignKey(VipRequest, db_column='id_vip_request')
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+    user_group = models.ForeignKey(
+        'grupo.UGrupo',
+        db_column='id_user_group'
+    )
+    vip_request = models.ForeignKey(
+        VipRequest,
+        db_column='id_vip_request'
+    )
     read = models.BooleanField()
     write = models.BooleanField()
     change_config = models.BooleanField()

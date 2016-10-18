@@ -1,9 +1,9 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from networkapi.ambiente.models import Ambiente
-from networkapi.api_network.serializers import Ipv4Serializer
-from networkapi.api_network.serializers import Ipv6Serializer
+from networkapi.api_network.serializers.v1 import Ipv4Serializer
+from networkapi.api_network.serializers.v1 import Ipv6Serializer
 from networkapi.api_pools.models import OpcaoPoolAmbiente
 from networkapi.api_pools.models import OptionPool
 from networkapi.api_pools.models import OptionPoolEnvironment
@@ -79,7 +79,8 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
     # pool_enabled = serializers.SerializerMethodField('check_pool_member_enabled')
     equipment_name = serializers.SerializerMethodField('get_name_equipment')
     equipment_id = serializers.SerializerMethodField('get_id_equipment')
-    last_status_update_formated = serializers.Field(source='last_status_update_formated')
+    last_status_update_formated = serializers.Field(
+        source='last_status_update_formated')
 
     ip = Ipv4Serializer()
     ipv6 = Ipv6Serializer()
@@ -106,7 +107,8 @@ class ServerPoolMemberSerializer(serializers.ModelSerializer):
 
     def check_pool_member_enabled(self, obj):
 
-        command = POOL_REAL_CHECK % (obj.server_pool.id, obj.ip.id, obj.port_real)
+        command = POOL_REAL_CHECK % (
+            obj.server_pool.id, obj.ip.id, obj.port_real)
 
         code, _, _ = exec_script(command)
 
@@ -237,7 +239,8 @@ class ServerPoolMemberStatusSerializer(serializers.ModelSerializer):
 
     def check_pool_member_status(self, obj):
 
-        command = POOL_REAL_CHECK % (obj.server_pool.id, obj.ip.id, obj.port_real)
+        command = POOL_REAL_CHECK % (
+            obj.server_pool.id, obj.ip.id, obj.port_real)
 
         code, _, _ = exec_script(command)
 
