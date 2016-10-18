@@ -36,6 +36,11 @@ def _prepare_apply(pools, user):
 
         keys.append(sorted([str(eqpt.id) for eqpt in equips]))
 
+        healthcheck = pool['healthcheck']
+        healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(pool[
+                                                                       'identifier'])
+        healthcheck['new'] = True
+
         for e in equips:
 
             eqpt_id = str(e.id)
@@ -60,10 +65,6 @@ def _prepare_apply(pools, user):
                 many=True
             )
 
-            healthcheck = pool['healthcheck']
-            healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(pool[
-                                                                           'identifier'])
-            healthcheck['new'] = True
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
                 'nome': pool['identifier'],
@@ -221,6 +222,17 @@ def update_real_pool(pools, user):
 
         keys.append(sorted([str(eqpt.id) for eqpt in equips]))
 
+        sp = ServerPool.objects.get(id=pool['id'])
+        healthcheck_old = serializers.HealthcheckV3Serializer(
+            sp.healthcheck).data
+
+        healthcheck = copy.deepcopy(pool['healthcheck'])
+        healthcheck['new'] = False
+        if json_delta.diff(healthcheck_old, pool['healthcheck']):
+            healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(
+                pool['identifier'])
+            healthcheck['new'] = True
+
         for e in equips:
             eqpt_id = str(e.id)
             equipment_access = EquipamentoAcesso.search(
@@ -236,17 +248,6 @@ def update_real_pool(pools, user):
                     'access': equipment_access,
                     'pools': [],
                 }
-
-            sp = ServerPool.objects.get(id=pool['id'])
-            healthcheck_old = serializers.HealthcheckV3Serializer(
-                sp.healthcheck).data
-
-            healthcheck = copy.deepcopy(pool['healthcheck'])
-            healthcheck['new'] = False
-            if json_delta.diff(healthcheck_old, pool['healthcheck']):
-                healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(
-                    pool['identifier'])
-                healthcheck['new'] = True
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
