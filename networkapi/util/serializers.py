@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 
@@ -98,8 +98,10 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 if self.mapping.get(fd_key):
                     fields_aux = '__'.join(fields_aux)
                     if self.mapping.get(key_aux).get('kwargs'):
-                        inc_ser = self.mapping.get(key_aux).get('kwargs').get('include', tuple())
-                        self.mapping[key_aux]['kwargs']['include'] = inc_ser + (fields_aux,)
+                        inc_ser = self.mapping.get(key_aux).get(
+                            'kwargs').get('include', tuple())
+                        self.mapping[key_aux]['kwargs'][
+                            'include'] = inc_ser + (fields_aux,)
                     else:
                         self.mapping[key_aux].update({
                             'kwargs': {
@@ -110,13 +112,29 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     def extends_serializer(self, obj, default_field):
         key = self.context.get('serializers').get(default_field, default_field)
         slr_model = self.get_serializers().get(key)
-        model_serializer = slr_model.get('serializer')(
-            obj, **slr_model.get('kwargs')
-        )
 
-        ret_srl = model_serializer.data
-        source = slr_model.get('kwargs').get('source')
-        if source:
-            return model_serializer.data.get(source)
+        # obj costum
+        if slr_model.get('obj'):
+
+            obj = obj.__getattribute__(slr_model.get('obj'))
+
+        # If has not serializer return obj
+        if not slr_model.get('serializer'):
+            return obj
+        else:
+            model_serializer = slr_model.get('serializer')(
+                obj, **slr_model.get('kwargs')
+            )
+
+            ret_srl = model_serializer.data
+            source = slr_model.get('kwargs').get('source')
+            if source:
+                return model_serializer.data.get(source)
 
         return ret_srl
+
+
+class RecursiveField(serializers.Serializer):
+
+    def to_native(self, value):
+        return self.parent.to_native(value)

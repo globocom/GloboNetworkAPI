@@ -337,9 +337,8 @@ class NetworkIPv4(BaseModel):
 
     @cached_property
     def dhcprelay(self):
-        from networkapi.api_network.models import DHCPRelayIPv4
-
-        return DHCPRelayIPv4.objects.filter(networkipv4=self)
+        dhcprelay = self.dhcprelayipv4_set.select_related()
+        return dhcprelay
 
     @classmethod
     def get_by_pk(cls, id):
@@ -1818,9 +1817,8 @@ class NetworkIPv6(BaseModel):
 
     @cached_property
     def dhcprelay(self):
-        from networkapi.api_network.models import DHCPRelayIPv6
-
-        return DHCPRelayIPv6.objects.filter(networkipv6=self)
+        dhcprelay = self.dhcprelayipv6_set.select_related()
+        return dhcprelay
 
     @classmethod
     def get_by_pk(cls, id):

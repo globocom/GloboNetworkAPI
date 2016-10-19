@@ -15,6 +15,13 @@ class EnvironmentVipSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = EnvironmentVip
+        default_fields = (
+            'id',
+            'finalidade_txt',
+            'cliente_txt',
+            'ambiente_p44_txt',
+            'description'
+        )
         fields = (
             'id',
             'finalidade_txt',
