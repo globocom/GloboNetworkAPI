@@ -1,8 +1,7 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
 ALTER TABLE `vrf` 
-ADD COLUMN `internal_name` VARCHAR(45) NULL COMMENT '';
-
+ADD COLUMN `internal_name` VARCHAR(45) NULL COMMENT '' AFTER `id`;
 
 CREATE TABLE `vrf_eqpt` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
@@ -24,14 +23,14 @@ CREATE TABLE `vrf_eqpt` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
-
-ALTER TABLE .`ambiente` 
+ALTER TABLE `ambiente`
 ADD COLUMN `id_vrf` INT UNSIGNED NULL COMMENT '' AFTER `id_father_environment`,
 ADD INDEX `fk_ambiente_id_vrf_idx` (`id_vrf` ASC)  COMMENT '';
-ALTER TABLE .`ambiente` 
+
+ALTER TABLE `ambiente`
 ADD CONSTRAINT `fk_ambiente_default_vrf`
   FOREIGN KEY (`id_vrf`)
-  REFERENCES .`vrf` (`id`)
+  REFERENCES `vrf` (`id`)
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
 
@@ -39,11 +38,15 @@ ADD CONSTRAINT `fk_ambiente_default_vrf`
 """
 
 SQL_DOWN = u"""
+ALTER TABLE `ambiente`
+DROP FOREIGN KEY `fk_ambiente_default_vrf`;
+
+ALTER TABLE `ambiente`
+DROP COLUMN `id_vrf`,
+DROP INDEX `fk_ambiente_id_vrf_idx` ;
+
 DROP TABLE `vrf_eqpt`;
 
-ALTER TABLE `vrf` 
+ALTER TABLE `vrf`
 DROP COLUMN `internal_name`;
-
-ALTER TABLE `ambiente` 
-DROP COLUMN `id_vrf`;
 """
