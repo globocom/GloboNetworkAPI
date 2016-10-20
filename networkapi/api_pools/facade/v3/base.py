@@ -295,36 +295,36 @@ def validate_save(pool, permit_created=False):
             if server_pool.environment_id != pool['environment']:
                 raise exceptions.PoolEnvironmentChange('pool id: %s' % pool['id'])
 
-        members_db = [spm.id for spm in server_pool.serverpoolmember_set.all()]
+        # members_db = [spm.id for spm in server_pool.serverpoolmember_set.all()]
         has_identifier = has_identifier.exclude(id=pool['id'])
 
     if has_identifier.count() > 0:
         raise exceptions.InvalidIdentifierAlreadyPoolException()
 
     for member in pool['server_pool_members']:
-        if member['ip']:
-            amb = Ambiente.objects.filter(
+
+        amb = Ambiente.objects.filter(
+            Q(
                 environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
-                    networkipv4__vlan__ambiente=pool['environment'])
-            ).filter(
-                environmentenvironmentvip__environment__vlan__networkipv4__ip=member['ip']['id']
+                    networkipv4__vlan__ambiente=pool['environment'])) |
+            Q(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
+                    networkipv6__vlan__ambiente=pool['environment']))
+        ).distinct()
+
+        if member['ip']:
+            amb = amb.filter(
+                vlan__networkipv4__ip=member['ip']['id']
             )
             if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
 
         if member['ipv6']:
-            amb = Ambiente.objects.filter(
-                environmentenvironmentvip__environment_vip__in=EnvironmentVip.objects.filter(
-                    networkipv6__vlan__ambiente=pool['environment'])
-            ).filter(
-                environmentenvironmentvip__environment__vlan__networkipv6__ipv6=member['ipv6']['id']
+            amb = amb.filter(
+                vlan__networkipv6__ipv6=member['ipv6']['id']
             )
             if not amb:
                 raise exceptions.IpNotFoundByEnvironment()
-
-        if member['id']:
-            if member['id'] not in members_db:
-                raise exceptions.InvalidRealPoolException()
 
 
 def _get_healthcheck(healthcheck_obj):
