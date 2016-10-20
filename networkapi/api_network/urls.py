@@ -34,8 +34,8 @@ urlpatterns = patterns(
     ########################
     # Network V3
     ########################
-    url(r'^v3/network/v4/((?P<obj_id>[;\w]+)/)?$',
+    url(r'^v3/networkv4/((?P<obj_id>[;\w]+)/)?$',
         v3.NetworkIPv4View.as_view()),
-    url(r'^v3/network/v6/((?P<obj_id>[;\w]+)/)?$',
+    url(r'^v3/networkv6/((?P<obj_id>[;\w]+)/)?$',
         v3.NetworkIPv6View.as_view()),
 )

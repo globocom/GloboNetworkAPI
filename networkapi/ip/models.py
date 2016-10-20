@@ -42,6 +42,7 @@ from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.util import mount_ipv4_string
 from networkapi.util import mount_ipv6_string
 from networkapi.util.decorators import cached_property
+from networkapi.util.geral import get_app
 
 
 Equipamento = get_model('equipamento', 'Equipamento')
@@ -687,6 +688,28 @@ class Ip(BaseModel):
 
     ip_formated = property(_get_formated_ip)
 
+    def _get_equipments(self):
+        """Returns equipments list."""
+        ipeqs = self.ipequipamento_set.all().select_related('equipamento')
+        eqpts = [ipeq.equipamento for ipeq in ipeqs]
+        return eqpts
+
+    equipments = property(_get_equipments)
+
+    def _get_vips(self):
+        """Returns vips list."""
+        vips = self.viprequest_set.all()
+        return vips
+
+    vips = property(_get_vips)
+
+    def _get_server_pool_members(self):
+        """Returns pool members list."""
+        server_pool_members = self.serverpoolmember_set.all()
+        return server_pool_members
+
+    server_pool_members = property(_get_server_pool_members)
+
     @classmethod
     def list_by_network(cls, id_network):
         """Get IP LIST by id_network.
@@ -1267,23 +1290,23 @@ class Ip(BaseModel):
             cls.log.error(u'Failure to search the IP.')
             raise IpError(e, u'Failure to search the IP.')
 
-    @classmethod
-    def valid_real_server(cls, oct1, oct2, oct3, oct4, id_evip, real_name):
-        """Validation
-        @param name_equip:
-        @param ip_real:
-        @param id_evip:
-        @return: On success: vip_map, vip, None
-                 In case of error: vip_map, vip, code  (code error message).
-        @todo:  arrruma tudo
-        """
-        try:
-            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__ambient_vip__id=id_evip, ipequipamento__equipamento__nome=real_name)
-        except ObjectDoesNotExist, e:
-            raise IpNotFoundError(e, u'')
-        except Exception, e:
-            cls.log.error(u'')
-            raise IpError(e, u'')
+    # @classmethod
+    # def valid_real_server(cls, oct1, oct2, oct3, oct4, id_evip, real_name):
+    #     """Validation
+    #     @param name_equip:
+    #     @param ip_real:
+    #     @param id_evip:
+    #     @return: On success: vip_map, vip, None
+    #              In case of error: vip_map, vip, code  (code error message).
+    #     @todo:  arrruma tudo
+    #     """
+    #     try:
+    #         return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__ambient_vip__id=id_evip, ipequipamento__equipamento__nome=real_name)
+    #     except ObjectDoesNotExist, e:
+    #         raise IpNotFoundError(e, u'')
+    #     except Exception, e:
+    #         cls.log.error(u'')
+    #         raise IpError(e, u'')
 
     @classmethod
     def get_by_octs(cls, oct1, oct2, oct3, oct4):
@@ -1402,7 +1425,7 @@ class Ip(BaseModel):
                 ip_eqpt.delete_v3()
 
             # Serializes obj
-            from networkapi.api_ip import serializers as ip_slz
+            ip_slz = get_app('api_ip', module_label='serializers')
             serializer = ip_slz.Ipv4Serializer(self)
             data_to_queue = serializer.data
 
@@ -2192,9 +2215,33 @@ class Ipv6(BaseModel):
 
     def _get_formated_ip(self):
         """Returns formated ip."""
-        return '%s:%s:%s:%s:%s:%s:%s:%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8)
+        return '%s:%s:%s:%s:%s:%s:%s:%s' % (
+            self.block1, self.block2, self.block3, self.block4,
+            self.block5, self.block6, self.block7, self.block8)
 
     ip_formated = property(_get_formated_ip)
+
+    def _get_equipments(self):
+        """Returns equipments list."""
+        ipeqs = self.ipv6equipament_set.all().select_related('equipamento')
+        eqpts = [ipeq.equipamento for ipeq in ipeqs]
+        return eqpts
+
+    equipments = property(_get_equipments)
+
+    def _get_vips(self):
+        """Returns vips list."""
+        vips = self.viprequest_set.all()
+        return vips
+
+    vips = property(_get_vips)
+
+    def _get_server_pool_members(self):
+        """Returns pool members list."""
+        server_pool_members = self.serverpoolmember_set.all()
+        return server_pool_members
+
+    server_pool_members = property(_get_server_pool_members)
 
     @classmethod
     def get_by_pk(cls, id):
@@ -2849,7 +2896,7 @@ class Ipv6(BaseModel):
 
                 ie.delete()
 
-            from networkapi.api_pools.serializers import Ipv6Serializer
+            from networkapi.api_network.serializers.v1 import Ipv6Serializer
             serializer = Ipv6Serializer(self)
             data_to_queue = serializer.data
 
@@ -2896,9 +2943,8 @@ class Ipv6(BaseModel):
                 ip_eqpt.delete_v3()
 
             # Serializes obj
-            from networkapi.api_ip import serializers as ip_slz
-
-            serializer = ip_slz.Ipv6Serializer(self)
+            ip_slz = get_app('api_ip', module_label='serializers')
+            serializer = ip_slz.Ipv6Serializer(self, include='')
             data_to_queue = serializer.data
 
             # Deletes Obj IP

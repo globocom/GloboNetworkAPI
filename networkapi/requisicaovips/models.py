@@ -27,7 +27,6 @@ from django.db.models import Q
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.ambiente.models import IP_VERSION
-from networkapi.api_pools.models import OptionPool
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.exception import EnvironmentVipNotFoundError
@@ -2220,14 +2219,14 @@ class ServerPool(BaseModel):
     )
 
     healthcheck = models.ForeignKey(
-        Healthcheck,
+        'healthcheckexpect.Healthcheck',
         db_column='healthcheck_id_healthcheck',
         default=1,
         null=True  # This attribute is here to not raise a exception
     )
 
     servicedownaction = models.ForeignKey(
-        OptionPool,
+        'api_pools.OptionPool',
         db_column='service-down-action_id',
         default=5
     )
@@ -2268,11 +2267,11 @@ class ServerPool(BaseModel):
 
     @cached_property
     def vip_ports(self):
-        return self.vipporttopool_set.all()
+        return self.vipporttopool_set.all().select_related()
 
     @cached_property
     def vips(self):
-        ports_assoc = self.viprequestportpool_set.select_related()
+        ports_assoc = self.viprequestportpool_set.all().select_related()
         vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
         return vips
 
@@ -2285,21 +2284,70 @@ class ServerPool(BaseModel):
                 return dscp.uniqueResult()
         return None
 
+    @cached_property
+    def server_pool_members(self):
+        members = self.serverpoolmember_set.all().select_related()
+        return members
+
+    @cached_property
+    def groups_permissions(self):
+        perms = self.serverpoolgrouppermission_set.all().select_related()
+        return perms
+
 
 class ServerPoolMember(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_server_pool_member')
-    server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
-    identifier = models.CharField(max_length=200)
-    ip = models.ForeignKey('ip.Ip', db_column='ips_id_ip', null=True)
-    ipv6 = models.ForeignKey('ip.Ipv6', db_column='ipsv6_id_ipv6', null=True)
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_server_pool_member'
+    )
+
+    server_pool = models.ForeignKey(
+        ServerPool,
+        db_column='id_server_pool'
+    )
+
+    identifier = models.CharField(
+        max_length=200
+    )
+
+    ip = models.ForeignKey(
+        'ip.Ip',
+        db_column='ips_id_ip',
+        null=True
+    )
+
+    ipv6 = models.ForeignKey(
+        'ip.Ipv6',
+        db_column='ipsv6_id_ipv6',
+        null=True
+    )
+
     priority = models.IntegerField()
-    weight = models.IntegerField(db_column='weight')
+
+    weight = models.IntegerField(
+        db_column='weight'
+    )
+
     limit = models.IntegerField()
-    port_real = models.IntegerField(db_column='port')
+
+    port_real = models.IntegerField(
+        db_column='port'
+    )
+
     healthcheck = models.ForeignKey(
-        Healthcheck, db_column='healthcheck_id_healthcheck', null=True)
-    member_status = models.IntegerField(db_column='status', default=3)
-    last_status_update = models.DateTimeField(null=True)
+        'healthcheckexpect.Healthcheck',
+        db_column='healthcheck_id_healthcheck',
+        null=True
+    )
+
+    member_status = models.IntegerField(
+        db_column='status',
+        default=3
+    )
+
+    last_status_update = models.DateTimeField(
+        null=True
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
@@ -2331,16 +2379,28 @@ class ServerPoolMember(BaseModel):
 
         return equipamento
 
-    def _get_last_status_update_formated(self):
+    @cached_property
+    def equipments(self):
+        eqpts = list()
+        if self.ip:
+            eqpts = self.ip.ipequipamento_set.all()\
+                .select_related('equipamento')
+        if self.ipv6:
+            eqpts |= self.ipv6.ipv6equipament_set.all()\
+                .select_related('equipamento')
+        eqpts = [eqpt.equipamento for eqpt in eqpts]
+        return eqpts
+
+    @cached_property
+    def last_status_update_formated(self):
         formated = None
         if self.last_status_update:
             formated = self.last_status_update.strftime('%d/%m/%Y %H:%M:%S')
 
         return formated
 
-    last_status_update_formated = property(_get_last_status_update_formated)
-
-    def prepare_and_save(self, server_pool, ip, ip_type, priority, weight, port_real, user, commit=False):
+    def prepare_and_save(self, server_pool, ip, ip_type, priority,
+                         weight, port_real, user, commit=False):
 
         self.server_pool = server_pool
 

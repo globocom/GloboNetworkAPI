@@ -753,7 +753,10 @@ class Ambiente(BaseModel):
 
     def _get_configs(self):
         """Returns configs of environment."""
-        configs = self.configenvironment_set.all()
+        configs = self.configenvironment_set.all().prefetch_related(
+            'ip_config',
+        )
+
         return configs
 
     configs = property(_get_configs)

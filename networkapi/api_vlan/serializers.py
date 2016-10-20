@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.api_environment.serializers import EnvironmentDetailsSerializer
-from networkapi.api_environment.serializers import EnvironmentV3Serializer
+from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
-Vlan = get_model('vlan', 'Vlan')
+# serializers
+env_slz = get_app('api_environment', module_label='serializers')
+
+# models
+vlan_model = get_app('vlan', module_label='models')
 
 
 class VlanSerializerV3(DynamicFieldsModelSerializer):
@@ -15,8 +17,11 @@ class VlanSerializerV3(DynamicFieldsModelSerializer):
     active = serializers.Field(source='ativada')
     environment = serializers.SerializerMethodField('get_environment')
 
+    def get_environment(self, obj):
+        return self.extends_serializer(obj, 'environment')
+
     class Meta:
-        model = Vlan
+        model = vlan_model.Vlan
         fields = (
             'id',
             'name',
@@ -48,39 +53,28 @@ class VlanSerializerV3(DynamicFieldsModelSerializer):
             'acl_draft_v6',
         )
 
-    def get_environment(self, obj):
-        return self.extends_serializer(obj.ambiente, 'environment')
-
     @classmethod
     def get_serializers(cls):
+        """Returns the mapping of serializers."""
         if not cls.mapping:
             cls.mapping = {
                 'environment': {
-                    'serializer': EnvironmentV3Serializer,
-                    'kwargs': {
-                        'source': 'id'
-                    }
+                    'obj': 'ambiente_id'
                 },
                 'environment__details': {
-                    'serializer': EnvironmentDetailsSerializer,
+                    'serializer': env_slz.EnvironmentDetailsSerializer,
                     'kwargs': {
-                        'include': ('configs',)
-                    }
+                    },
+                    'obj': 'ambiente',
+                    'eager_loading': cls.setup_eager_loading_environment
                 }
             }
 
         return cls.mapping
 
     @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {
-            'environment': self.setup_eager_loading_environment,
-        }
-
-        return mapping
-
-    @staticmethod
     def setup_eager_loading_environment(queryset):
+        """Eager loading of environment for related Vlan."""
         queryset = queryset.select_related(
             'environment',
         )

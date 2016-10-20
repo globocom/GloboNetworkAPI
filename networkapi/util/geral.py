@@ -129,3 +129,4 @@ class AppCacheExtend(AppCache):
 cache = AppCacheExtend()
 
 get_app = cache.get_app
+get_model = cache.get_model

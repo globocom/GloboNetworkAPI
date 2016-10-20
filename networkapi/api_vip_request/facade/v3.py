@@ -13,12 +13,10 @@ from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade.v3.base import get_pool_by_id
 from networkapi.api_pools.facade.v3.base import reserve_name_healthcheck
-from networkapi.api_pools.serializers import PoolV3Serializer
 from networkapi.api_usuario import facade as facade_usr
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import models
 from networkapi.api_vip_request import syncs
-from networkapi.api_vip_request.serializers.v3 import VipRequestSerializer
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.equipamento.models import Equipamento
@@ -33,6 +31,12 @@ from networkapi.requisicaovips.models import ServerPool
 from networkapi.requisicaovips.models import ServerPoolMember
 from networkapi.usuario.models import UsuarioGrupo
 from networkapi.util import valid_expression
+from networkapi.util.geral import get_app
+
+
+# serializers
+pool_slz = get_app('api_pools', module_label='serializers.v3')
+vip_slz = get_app('api_vip_request', module_label='serializers.v3')
 
 
 log = logging.getLogger(__name__)
@@ -408,7 +412,7 @@ def prepare_apply(load_balance, vip, created=True, user=None):
         for i, pl in enumerate(port['pools']):
 
             pool = get_pool_by_id(pl['server_pool'])
-            pool_serializer = PoolV3Serializer(pool)
+            pool_serializer = pool_slz.PoolV3Serializer(pool)
 
             l7_rule = OptionVip.objects.get(
                 id=pl['l7_rule']).nome_opcao_txt
@@ -620,7 +624,7 @@ def update_real_vip_request(vip_requests, user):
         vip_request = copy.deepcopy(vip)
 
         vip_old = models.VipRequest.get_by_pk(vip.get('id'))
-        serializer_vips = VipRequestSerializer(
+        serializer_vips = vip_slz.VipRequestSerializer(
             vip_old,
             many=False
         )

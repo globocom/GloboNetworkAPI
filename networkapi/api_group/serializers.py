@@ -2,14 +2,15 @@
 from django.db.models import get_model
 from rest_framework import serializers
 
-UGrupo = get_model('grupo', 'UGrupo')
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class UserGroupSerializer(serializers.ModelSerializer):
+class UserGroupSerializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
 
     class Meta:
+        UGrupo = get_model('grupo', 'UGrupo')
         model = UGrupo
         fields = (
             'id',

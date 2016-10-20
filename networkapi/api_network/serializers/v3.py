@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
+from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
-# serializers
-envvip_slz = get_app('api_environment_vip', module_label='serializers')
-vlan_slz = get_app('api_vlan', module_label='serializers')
-
-# models
-type_model = get_app('vlan', module_label='models')
-net4_model = get_app('ip', module_label='models')
-net6_model = get_app('ip', module_label='models')
-
 
 class NetworkTypeSerializer(DynamicFieldsModelSerializer):
+
+    """Serilizes TipoRede Model."""
 
     network_type = serializers.Field(source='tipo_rede')
 
     class Meta:
-        model = type_model.TipoRede
+        TipoRede = get_model('vlan', 'TipoRede')
+        model = TipoRede
         fields = (
             'id',
             'tipo_rede',
@@ -48,6 +43,10 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
 
     @classmethod
     def get_serializers(cls):
+        """Returns the mapping of serializers."""
+        envvip_slz = get_app('api_environment_vip', module_label='serializers')
+        vlan_slz = get_app('api_vlan', module_label='serializers')
+
         if not cls.mapping:
             cls.mapping = {
                 'environmentvip': {
@@ -57,7 +56,8 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
                     'serializer': envvip_slz.EnvironmentVipSerializer,
                     'kwargs': {
                     },
-                    'obj': 'ambient_vip'
+                    'obj': 'ambient_vip',
+                    'eager_loading': cls.setup_eager_loading_envvip
                 },
                 'vlan': {
                     'obj': 'vlan_id'
@@ -66,7 +66,8 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
                     'serializer': vlan_slz.VlanSerializerV3,
                     'kwargs': {
                     },
-                    'obj': 'vlan'
+                    'obj': 'vlan',
+                    'eager_loading': cls.setup_eager_loading_vlan
                 },
                 'network_type': {
                     'obj': 'network_type_id'
@@ -75,14 +76,40 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
                     'serializer': NetworkTypeSerializer,
                     'kwargs': {
                     },
-                    'obj': 'network_type'
+                    'obj': 'network_type',
+                    'eager_loading': cls.setup_eager_loading_net_type
                 },
             }
 
         return cls.mapping
 
+    @staticmethod
+    def setup_eager_loading_net_type(queryset):
+        """Eager loading of network type vip for related NetworkIPv6."""
+        queryset = queryset.select_related(
+            'network_type',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_vlan(queryset):
+        """Eager loading of vlan vip for related NetworkIPv6."""
+        queryset = queryset.select_related(
+            'vlan',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_envvip(queryset):
+        """Eager loading of environment vip for related NetworkIPv6."""
+        queryset = queryset.select_related(
+            'ambient_vip',
+        )
+        return queryset
+
     class Meta:
-        model = net4_model.NetworkIPv4
+        NetworkIPv4 = get_model('ip', 'NetworkIPv4')
+        model = NetworkIPv4
         default_fields = (
             'id',
             'oct1',
@@ -145,6 +172,10 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
 
     @classmethod
     def get_serializers(cls):
+        """Returns the mapping of serializers."""
+        envvip_slz = get_app('api_environment_vip', module_label='serializers')
+        vlan_slz = get_app('api_vlan', module_label='serializers')
+
         if not cls.mapping:
             cls.mapping = {
                 'environmentvip': {
@@ -154,7 +185,8 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
                     'serializer': envvip_slz.EnvironmentVipSerializer,
                     'kwargs': {
                     },
-                    'obj': 'ambient_vip'
+                    'obj': 'ambient_vip',
+                    'eager_loading': cls.setup_eager_loading_envvip
                 },
                 'vlan': {
                     'obj': 'vlan_id'
@@ -163,7 +195,8 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
                     'serializer': vlan_slz.VlanSerializerV3,
                     'kwargs': {
                     },
-                    'obj': 'vlan'
+                    'obj': 'vlan',
+                    'eager_loading': cls.setup_eager_loading_vlan
                 },
                 'network_type': {
                     'obj': 'network_type_id'
@@ -172,14 +205,40 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
                     'serializer': NetworkTypeSerializer,
                     'kwargs': {
                     },
-                    'obj': 'network_type'
+                    'obj': 'network_type',
+                    'eager_loading': cls.setup_eager_loading_net_type
                 },
             }
 
         return cls.mapping
 
+    @staticmethod
+    def setup_eager_loading_net_type(queryset):
+        """Eager loading of network type vip for related NetworkIPv6."""
+        queryset = queryset.select_related(
+            'network_type',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_vlan(queryset):
+        """Eager loading of vlan vip for related NetworkIPv6."""
+        queryset = queryset.select_related(
+            'vlan',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_envvip(queryset):
+        """Eager loading of environment vip for related NetworkIPv6."""
+        queryset = queryset.select_related(
+            'ambient_vip',
+        )
+        return queryset
+
     class Meta:
-        model = net6_model.NetworkIPv6
+        NetworkIPv6 = get_model('ip', 'NetworkIPv6')
+        model = NetworkIPv6
         default_fields = (
             'id',
             'block1',

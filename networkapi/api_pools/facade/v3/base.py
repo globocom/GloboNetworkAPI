@@ -231,14 +231,16 @@ def _create_pool_member(members, pool):
                 (ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
             if pool.dscp in dscps:
                 raise ValidationAPIException(
-                    'DRSL3 Restriction: Pool Member {} cannot be insert in Pool {}, because already in other pool'.format(
+                    'DRSL3 Restriction: Pool Member {} cannot be insert'
+                    ' in Pool {}, because already in other pool'.format(
                         mb_name, pool.identifier
                     )
                 )
 
             if pool_member.port_real != pool.default_port:
                 raise ValidationAPIException(
-                    'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
+                    'DRSL3 Restriction: Pool Member {} cannot have different'
+                    ' port of Pool {}'.format(
                         mb_name, pool.identifier
                     )
                 )
@@ -262,10 +264,14 @@ def _update_pool_member(members):
 
         if pool_member.server_pool.dscp:
             if pool_member.port_real != pool_member.server_pool.default_port:
-                mb_name = '{}:{}'.format(
-                    (ip.ip_formated if ip else ipv6.ip_formated), member['port_real'])
+
+                mb_name = '{}:{}'.format((
+                    ip.ip_formated if ip else ipv6.ip_formated),
+                    member['port_real'])
+
                 raise ValidationAPIException(
-                    'DRSL3 Restriction: Pool Member {} cannot have different port of Pool {}'.format(
+                    'DRSL3 Restriction: Pool Member {} cannot have different '
+                    'port of Pool {}'.format(
                         mb_name, pool_member.server_pool.identifier
                     )
                 )

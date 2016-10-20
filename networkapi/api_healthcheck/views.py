@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from django.db.transaction import commit_on_success
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework.response import Response
-from networkapi.api_healthcheck.permissions import Write
 import logging
-from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.api_pools import exceptions
-from networkapi.api_pools.serializers import HealthcheckSerializer
+
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.transaction import commit_on_success
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from networkapi.api_healthcheck.permissions import Write
+from networkapi.api_pools.serializers.v1 import HealthcheckSerializer
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.requisicaovips.models import ServerPool
 
 
 log = logging.getLogger(__name__)
+
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Write))
@@ -46,13 +46,14 @@ def insert(request):
         old_healthcheck_id = request.DATA.get('old_healthcheck_id')
 
         try:
-            #Query HealthCheck table for one equal this
-            hc_check = Healthcheck.objects.get(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
+            # Query HealthCheck table for one equal this
+            hc_check = Healthcheck.objects.get(
+                healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type, healthcheck_request=healthcheck_request)
 
-            #If a HealthCheck like this already exists, return it
+            # If a HealthCheck like this already exists, return it
             hc_serializer = HealthcheckSerializer(hc_check, many=False)
 
-        #Else, add a new one
+        # Else, add a new one
         except ObjectDoesNotExist:
 
             hc = Healthcheck(
@@ -65,10 +66,11 @@ def insert(request):
 
             hc.save(request.user)
 
-            #Check if someone is using the old healthcheck
-            #If not, delete it to keep the database clean
+            # Check if someone is using the old healthcheck
+            # If not, delete it to keep the database clean
             if old_healthcheck_id is not None:
-                pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+                pools_using_healthcheck = ServerPool.objects.filter(
+                    healthcheck=old_healthcheck_id).count()
 
                 if pools_using_healthcheck == 0:
                     Healthcheck.objects.filter(id=old_healthcheck_id).delete()
