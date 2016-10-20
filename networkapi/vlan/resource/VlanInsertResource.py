@@ -161,7 +161,8 @@ class VlanInsertResource(RestResource):
                     raise InvalidValueError(None, 'acl_file', acl_file)
 
                 # VERIFICA SE VLAN COM MESMO ACL JA EXISTE OU NAO
-                vlan.get_vlan_by_acl(acl_file)
+                #commenting acl name check - issue #55
+                #vlan.get_vlan_by_acl(acl_file)
 
             # Valid acl_file_v6 Vlan
             if acl_file_v6 is not None:
@@ -175,7 +176,8 @@ class VlanInsertResource(RestResource):
                     raise InvalidValueError(None, 'acl_file_v6', acl_file_v6)
 
                 # VERIFICA SE VLAN COM MESMO ACL JA EXISTE OU NAO
-                vlan.get_vlan_by_acl_v6(acl_file_v6)
+                #commenting acl name check - issue #55
+                #vlan.get_vlan_by_acl_v6(acl_file_v6)
 
             ambiente = Ambiente()
             ambiente = ambiente.get_by_pk(environment_id)
