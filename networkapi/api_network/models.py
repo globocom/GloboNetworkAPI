@@ -20,23 +20,33 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import get_model
 
 from networkapi.api_network import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.ip.models import Ip
-from networkapi.ip.models import Ipv6
-from networkapi.ip.models import NetworkIPv4
-from networkapi.ip.models import NetworkIPv6
 from networkapi.models.BaseModel import BaseModel
+# from networkapi.ip.models import Ip
+# from networkapi.ip.models import Ipv6
+# from networkapi.ip.models import NetworkIPv4
+# from networkapi.ip.models import NetworkIPv6
 
 
 class DHCPRelayIPv4(BaseModel):
 
     log = logging.getLogger('DHCPRelayIPv4')
 
-    id = models.AutoField(primary_key=True, db_column='id_dhcprelay_ipv4')
-    ipv4 = models.ForeignKey(Ip, db_column='id_ip')
-    networkipv4 = models.ForeignKey(NetworkIPv4, db_column='id_networkipv4')
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_dhcprelay_ipv4'
+    )
+    ipv4 = models.ForeignKey(
+        'ip.Ip',
+        db_column='id_ip'
+    )
+    networkipv4 = models.ForeignKey(
+        'ip.NetworkIPv4',
+        db_column='id_networkipv4'
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'dhcprelay_ipv4'
@@ -44,8 +54,11 @@ class DHCPRelayIPv4(BaseModel):
         unique_together = ('ipv4', 'networkipv4')
 
     def create(self, ipv4_id, networkipv4_id):
-        ipv4 = Ip.get_by_pk(ipv4_id)
-        networkipv4 = NetworkIPv4.get_by_pk(networkipv4_id)
+        ipv4_model = get_model('ip', 'Ipv6')
+        networkipv4_model = get_model('ip', 'NetworkIPv6')
+
+        ipv4 = ipv4_model.get_by_pk(ipv4_id)
+        networkipv4 = networkipv4_model.get_by_pk(networkipv4_id)
 
         if len(DHCPRelayIPv4.objects.filter(ipv4=ipv4, networkipv4=networkipv4)) > 0:
             raise exceptions.DHCPRelayAlreadyExistsError(
@@ -83,9 +96,18 @@ class DHCPRelayIPv6(BaseModel):
 
     log = logging.getLogger('DHCPRelayIPv6')
 
-    id = models.AutoField(primary_key=True, db_column='id_dhcprelay_ipv6')
-    ipv6 = models.ForeignKey(Ipv6, db_column='id_ipv6')
-    networkipv6 = models.ForeignKey(NetworkIPv6, db_column='id_networkipv6')
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id_dhcprelay_ipv6'
+    )
+    ipv6 = models.ForeignKey(
+        'ip.Ipv6',
+        db_column='id_ipv6'
+    )
+    networkipv6 = models.ForeignKey(
+        'ip.NetworkIPv6',
+        db_column='id_networkipv6'
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'dhcprelay_ipv6'
@@ -93,8 +115,10 @@ class DHCPRelayIPv6(BaseModel):
         unique_together = ('ipv6', 'networkipv6')
 
     def create(self, ipv6_id, networkipv6_id):
-        ipv6 = Ipv6.get_by_pk(ipv6_id)
-        networkipv6 = NetworkIPv6.get_by_pk(networkipv6_id)
+        ipv6_model = get_model('ip', 'Ipv6')
+        networkipv6_model = get_model('ip', 'NetworkIPv6')
+        ipv6 = ipv6_model.get_by_pk(ipv6_id)
+        networkipv6 = networkipv6_model.get_by_pk(networkipv6_id)
 
         if len(DHCPRelayIPv6.objects.filter(ipv6=ipv6, networkipv6=networkipv6)) > 0:
             raise exceptions.DHCPRelayAlreadyExistsError(

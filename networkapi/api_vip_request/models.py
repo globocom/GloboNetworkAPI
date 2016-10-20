@@ -9,8 +9,10 @@ from django.db.models import get_model
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import syncs
 from networkapi.models.BaseModel import BaseModel
+from networkapi.util.decorators import cached_property
 
 IpCantBeRemovedFromVip = get_model('ip', 'IpCantBeRemovedFromVip')
+ServerPool = get_model('ServerPool', 'ServerPool')
 
 
 class VipRequest(BaseModel):
@@ -63,6 +65,31 @@ class VipRequest(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'vip_request'
         managed = True
+
+    @cached_property
+    def dscp(self):
+        return self.viprequestdscp_set.get().dscp
+
+    @cached_property
+    def equipments(self):
+        eqpts = list()
+        if self.ipv4:
+            eqpts = self.ipv4.ipequipamento_set.all().select_related('equipamento')
+        if self.ipv6:
+            eqpts |= self.ipv6.ipv6equipament_set.all().select_related('equipamento')
+        eqpts = [eqpt.equipamento for eqpt in eqpts]
+        return eqpts
+
+    @cached_property
+    def default_names(self):
+        names = [port.identifier for port in self.viprequestport_set.all()]
+        names = list(set(names))
+        return names
+
+    @cached_property
+    def ports(self):
+        ports = self.viprequestport_set.all()
+        return ports
 
     @classmethod
     def get_by_pk(cls, id):

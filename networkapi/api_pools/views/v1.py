@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -53,17 +53,17 @@ from networkapi.api_pools.permissions import ScriptAlterPermission
 from networkapi.api_pools.permissions import ScriptCreatePermission
 from networkapi.api_pools.permissions import ScriptRemovePermission
 from networkapi.api_pools.permissions import Write
-from networkapi.api_pools.serializers.serializers_v1 import AmbienteSerializer
-from networkapi.api_pools.serializers.serializers_v1 import EquipamentoSerializer
-from networkapi.api_pools.serializers.serializers_v1 import HealthcheckSerializer
-from networkapi.api_pools.serializers.serializers_v1 import OpcaoPoolAmbienteSerializer
-from networkapi.api_pools.serializers.serializers_v1 import OptionPoolEnvironmentSerializer
-from networkapi.api_pools.serializers.serializers_v1 import OptionPoolSerializer
-from networkapi.api_pools.serializers.serializers_v1 import PoolSerializer
-from networkapi.api_pools.serializers.serializers_v1 import ServerPoolDatatableSerializer
-from networkapi.api_pools.serializers.serializers_v1 import ServerPoolMemberSerializer
-from networkapi.api_pools.serializers.serializers_v1 import ServerPoolSerializer
-from networkapi.api_pools.serializers.serializers_v1 import VipPortToPoolSerializer
+from networkapi.api_pools.serializers.v1 import AmbienteSerializer
+from networkapi.api_pools.serializers.v1 import EquipamentoSerializer
+from networkapi.api_pools.serializers.v1 import HealthcheckSerializer
+from networkapi.api_pools.serializers.v1 import OpcaoPoolAmbienteSerializer
+from networkapi.api_pools.serializers.v1 import OptionPoolEnvironmentSerializer
+from networkapi.api_pools.serializers.v1 import OptionPoolSerializer
+from networkapi.api_pools.serializers.v1 import PoolSerializer
+from networkapi.api_pools.serializers.v1 import ServerPoolDatatableSerializer
+from networkapi.api_pools.serializers.v1 import ServerPoolMemberSerializer
+from networkapi.api_pools.serializers.v1 import ServerPoolSerializer
+from networkapi.api_pools.serializers.v1 import VipPortToPoolSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.equipamento.models import Equipamento
 from networkapi.error_message_utils import error_messages
@@ -98,12 +98,12 @@ def pool_list(request):
     try:
 
         data = dict()
-        environment_id = request.DATA.get("environment_id")
-        start_record = request.DATA.get("start_record")
-        end_record = request.DATA.get("end_record")
-        asorting_cols = request.DATA.get("asorting_cols")
-        searchable_columns = request.DATA.get("searchable_columns")
-        custom_search = request.DATA.get("custom_search")
+        environment_id = request.DATA.get('environment_id')
+        start_record = request.DATA.get('start_record')
+        end_record = request.DATA.get('end_record')
+        asorting_cols = request.DATA.get('asorting_cols')
+        searchable_columns = request.DATA.get('searchable_columns')
+        custom_search = request.DATA.get('custom_search')
 
         if not is_valid_int_greater_zero_param(environment_id, False):
             raise api_exceptions.ValidationException('Environment id invalid.')
@@ -127,8 +127,8 @@ def pool_list(request):
             many=True
         )
 
-        data["pools"] = serializer_pools.data
-        data["total"] = total
+        data['pools'] = serializer_pools.data
+        data['total'] = total
 
         return Response(data)
 
@@ -152,17 +152,18 @@ def pool_list_by_reqvip(request):
 
         data = dict()
 
-        id_vip = request.DATA.get("id_vip")
-        start_record = request.DATA.get("start_record")
-        end_record = request.DATA.get("end_record")
-        asorting_cols = request.DATA.get("asorting_cols")
-        searchable_columns = request.DATA.get("searchable_columns")
-        custom_search = request.DATA.get("custom_search")
+        id_vip = request.DATA.get('id_vip')
+        start_record = request.DATA.get('start_record')
+        end_record = request.DATA.get('end_record')
+        asorting_cols = request.DATA.get('asorting_cols')
+        searchable_columns = request.DATA.get('searchable_columns')
+        custom_search = request.DATA.get('custom_search')
 
         if not is_valid_int_greater_zero_param(id_vip, False):
             raise api_exceptions.ValidationException('Vip id invalid.')
 
-        query_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=id_vip)
+        query_pools = ServerPool.objects.filter(
+            vipporttopool__requisicao_vip__id=id_vip)
 
         server_pools, total = build_query_to_datatable(
             query_pools,
@@ -178,8 +179,8 @@ def pool_list_by_reqvip(request):
             many=True
         )
 
-        data["pools"] = serializer_pools.data
-        data["total"] = total
+        data['pools'] = serializer_pools.data
+        data['total'] = total
 
         return Response(data)
 
@@ -202,17 +203,18 @@ def list_all_members_by_pool(request, id_server_pool):
             raise exceptions.InvalidIdPoolException()
 
         data = dict()
-        start_record = request.DATA.get("start_record")
-        end_record = request.DATA.get("end_record")
-        asorting_cols = request.DATA.get("asorting_cols")
-        searchable_columns = request.DATA.get("searchable_columns")
-        custom_search = request.DATA.get("custom_search")
+        start_record = request.DATA.get('start_record')
+        end_record = request.DATA.get('end_record')
+        asorting_cols = request.DATA.get('asorting_cols')
+        searchable_columns = request.DATA.get('searchable_columns')
+        custom_search = request.DATA.get('custom_search')
 
-        query_pools = ServerPoolMember.objects.filter(server_pool=id_server_pool)
+        query_pools = ServerPoolMember.objects.filter(
+            server_pool=id_server_pool)
         total = query_pools.count()
 
         checkstatus = False
-        if 'checkstatus' in request.QUERY_PARAMS and request.QUERY_PARAMS["checkstatus"].upper() == "TRUE":
+        if 'checkstatus' in request.QUERY_PARAMS and request.QUERY_PARAMS['checkstatus'].upper() == 'TRUE':
             checkstatus = True
 
         if total > 0 and checkstatus:
@@ -220,13 +222,14 @@ def list_all_members_by_pool(request, id_server_pool):
             script_out = json.loads(stdout)
 
             if id_server_pool not in script_out.keys() or len(script_out[id_server_pool]) != total:
-                raise exceptions.ScriptCheckStatusPoolMemberException(detail="Script did not return as expected.")
+                raise exceptions.ScriptCheckStatusPoolMemberException(
+                    detail='Script did not return as expected.')
 
             for pm in query_pools:
                 member_checked_status = script_out[id_server_pool][str(pm.id)]
                 if member_checked_status not in range(0, 8):
                     raise exceptions.ScriptCheckStatusPoolMemberException(
-                        detail="Status script did not return as expected.")
+                        detail='Status script did not return as expected.')
 
                 # Save to BD
                 pm.member_status = member_checked_status
@@ -244,8 +247,8 @@ def list_all_members_by_pool(request, id_server_pool):
 
         serializer_pools = ServerPoolMemberSerializer(server_pools, many=True)
 
-        data["server_pool_members"] = serializer_pools.data
-        data["total"] = total
+        data['server_pool_members'] = serializer_pools.data
+        data['total'] = total
 
         return Response(data)
 
@@ -273,12 +276,13 @@ def get_equipamento_by_ip(request, id_ip):
         data = dict()
 
         try:
-            ipequips_obj = IpEquipamento.objects.filter(ip=id_ip).uniqueResult()
+            ipequips_obj = IpEquipamento.objects.filter(
+                ip=id_ip).uniqueResult()
             equip = Equipamento.get_by_pk(pk=ipequips_obj.equipamento_id)
 
             serializer_equipamento = EquipamentoSerializer(equip, many=False)
 
-            data["equipamento"] = serializer_equipamento.data
+            data['equipamento'] = serializer_equipamento.data
         except ObjectDoesNotExist, exception:
             pass
 
@@ -459,7 +463,7 @@ def healthcheck_list(request):
             many=True
         )
 
-        data["healthchecks"] = serializer_healthchecks.data
+        data['healthchecks'] = serializer_healthchecks.data
 
         return Response(data)
 
@@ -491,8 +495,8 @@ def get_by_pk(request, id_server_pool):
             many=True
         )
 
-        data["server_pool"] = serializer_server_pool.data
-        data["server_pool_members"] = serializer_server_pool_member.data
+        data['server_pool'] = serializer_server_pool.data
+        data['server_pool_members'] = serializer_server_pool_member.data
 
         return Response(data)
 
@@ -624,7 +628,7 @@ def disable(request):
 @commit_on_success
 def get_opcoes_pool_by_ambiente(request):
     try:
-        log.info("get_opcoes_pool_by_ambiente")
+        log.info('get_opcoes_pool_by_ambiente')
 
         id_ambiente = request.DATA.get('id_environment')
 
@@ -634,7 +638,8 @@ def get_opcoes_pool_by_ambiente(request):
             raise exceptions.InvalidIdEnvironmentException()
 
         query_opcoes = OpcaoPoolAmbiente.objects.filter(ambiente=id_ambiente)
-        opcoes_serializer = OpcaoPoolAmbienteSerializer(query_opcoes, many=True)
+        opcoes_serializer = OpcaoPoolAmbienteSerializer(
+            query_opcoes, many=True)
         data['opcoes_pool'] = opcoes_serializer.data
 
         return Response(data)
@@ -668,13 +673,14 @@ def list_by_environment(request, environment_id):
             many=True
         )
 
-        data["pools"] = serializer_pools.data
+        data['pools'] = serializer_pools.data
 
         return Response(data)
 
     except Ambiente.DoesNotExist, exception:
         log.exception(exception)
-        raise api_exceptions.ObjectDoesNotExistException('Environment Does Not Exist.')
+        raise api_exceptions.ObjectDoesNotExistException(
+            'Environment Does Not Exist.')
 
     except api_exceptions.ValidationException, exception:
         log.exception(exception)
@@ -695,13 +701,14 @@ def get_requisicoes_vip_by_pool(request, id_server_pool):
         if not is_valid_int_greater_zero_param(id_server_pool):
             raise exceptions.InvalidIdPoolException()
 
-        start_record = request.DATA.get("start_record")
-        end_record = request.DATA.get("end_record")
-        asorting_cols = request.DATA.get("asorting_cols")
-        searchable_columns = request.DATA.get("searchable_columns")
-        custom_search = request.DATA.get("custom_search")
+        start_record = request.DATA.get('start_record')
+        end_record = request.DATA.get('end_record')
+        asorting_cols = request.DATA.get('asorting_cols')
+        searchable_columns = request.DATA.get('searchable_columns')
+        custom_search = request.DATA.get('custom_search')
 
-        query_requisicoes = VipPortToPool.objects.filter(server_pool=id_server_pool)
+        query_requisicoes = VipPortToPool.objects.filter(
+            server_pool=id_server_pool)
 
         requisicoes, total = build_query_to_datatable(
             query_requisicoes,
@@ -712,7 +719,8 @@ def get_requisicoes_vip_by_pool(request, id_server_pool):
             end_record
         )
 
-        requisicoes_serializer = VipPortToPoolSerializer(requisicoes, many=True)
+        requisicoes_serializer = VipPortToPoolSerializer(
+            requisicoes, many=True)
 
         data['requisicoes_vip'] = requisicoes_serializer.data
         data['total'] = total
@@ -740,7 +748,7 @@ def list_pool_members(request, pool_id):
 
         serializer_pools = ServerPoolMemberSerializer(query_pools, many=True)
 
-        data["pool_members"] = serializer_pools.data
+        data['pool_members'] = serializer_pools.data
 
         return Response(data)
 
@@ -775,7 +783,8 @@ def list_by_environment_vip(request, environment_vip_id):
 
     except EnvironmentVip.DoesNotExist, exception:
         log.exception(exception)
-        raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
+        raise api_exceptions.ObjectDoesNotExistException(
+            'Environment Vip Does Not Exist')
 
     except Exception, exception:
         log.exception(exception)
@@ -804,7 +813,8 @@ def save_reals(request):
         list_server_pool_member = prepare_to_save_reals(ip_list_full, ports_reals, nome_equips, priorities, weight,
                                                         id_pool_member, id_equips)
 
-        # valid if reals can linked by environment/environment vip relationship rule
+        # valid if reals can linked by environment/environment vip relationship
+        # rule
         reals_can_associate_server_pool(sp, list_server_pool_member)
 
         # Save reals
@@ -863,18 +873,20 @@ def save(request):
         # Servicedownaction was not given
         try:
             if servicedownaction_id is None:
-                servicedownactions = OptionPool.get_all_by_type_and_environment('ServiceDownAction', environment)
+                servicedownactions = OptionPool.get_all_by_type_and_environment(
+                    'ServiceDownAction', environment)
                 # assert isinstance((servicedownactions.filter(name='none')).id, object)
                 servicedownaction = (servicedownactions.get(name='none'))
             else:
                 servicedownaction = OptionPool.get_by_pk(servicedownaction_id)
 
         except ObjectDoesNotExist:
-            log.warning("Service-Down-Action none option not found")
+            log.warning('Service-Down-Action none option not found')
             raise exceptions.InvalidServiceDownActionException()
 
         except MultipleObjectsReturned:
-            log.warning("Multiple service-down-action entries found for the given parameters")
+            log.warning(
+                'Multiple service-down-action entries found for the given parameters')
             raise exceptions.InvalidServiceDownActionException()
 
         # Check identifier is a valid text
@@ -882,11 +894,13 @@ def save(request):
             raise exceptions.InvalidIdentifierPoolException()
 
         # Valid duplicate server pool
-        has_identifier = ServerPool.objects.filter(identifier=identifier, environment=environment)
+        has_identifier = ServerPool.objects.filter(
+            identifier=identifier, environment=environment)
         # Cleans id_pool_member. It should be used only with existing pool
-        id_pool_member = ["" for x in id_pool_member]
+        id_pool_member = ['' for x in id_pool_member]
         if id:
-            # Existing pool member is only valid in existing pools. New pools cannot  use them
+            # Existing pool member is only valid in existing pools. New pools
+            # cannot  use them
             id_pool_member = request.DATA.get('id_pool_member')
             has_identifier = has_identifier.exclude(id=id)
         # current_healthcheck_id = ServerPool.objects.get(id=id).healthcheck.id
@@ -928,25 +942,28 @@ def save(request):
         reals_can_associate_server_pool(sp, list_server_pool_member)
 
         # Save reals
-        pool_member = save_server_pool_member(request.user, sp, list_server_pool_member)
+        pool_member = save_server_pool_member(
+            request.user, sp, list_server_pool_member)
 
         # Check if someone is using the old healthcheck
         # If not, delete it to keep the database clean
         if old_healthcheck_id is not None:
-            pools_using_healthcheck = ServerPool.objects.filter(healthcheck=old_healthcheck_id).count()
+            pools_using_healthcheck = ServerPool.objects.filter(
+                healthcheck=old_healthcheck_id).count()
             if pools_using_healthcheck == 0:
-                Healthcheck.objects.get(id=old_healthcheck_id).delete(request.user)
+                Healthcheck.objects.get(
+                    id=old_healthcheck_id).delete(request.user)
 
         # Return data
         data = dict()
         data['pool'] = sp.id
         serializer_server_pool = ServerPoolSerializer(sp)
-        data["server_pool"] = serializer_server_pool.data
+        data['server_pool'] = serializer_server_pool.data
         serializer_server_pool_member = ServerPoolMemberSerializer(
             pool_member,
             many=True
         )
-        data["server_pool_members"] = serializer_server_pool_member.data
+        data['server_pool_members'] = serializer_server_pool_member.data
 
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -981,7 +998,8 @@ def save(request):
 def list_environments_with_pools(request):
     try:
 
-        environment_query = Ambiente.objects.filter(serverpool__environment__isnull=False).distinct()
+        environment_query = Ambiente.objects.filter(
+            serverpool__environment__isnull=False).distinct()
 
         serializer_pools = AmbienteSerializer(environment_query, many=True)
 
@@ -989,7 +1007,8 @@ def list_environments_with_pools(request):
 
     except ObjectDoesNotExist, exception:
         log.error(exception)
-        raise api_exceptions.ObjectDoesNotExistException('Environment Vip Does Not Exist')
+        raise api_exceptions.ObjectDoesNotExistException(
+            'Environment Vip Does Not Exist')
 
     except Exception, exception:
         log.exception(exception)
@@ -1037,14 +1056,16 @@ def chk_status_poolmembers_by_vip(request, vip_id):
         if not is_valid_int_greater_zero_param(vip_id):
             raise exceptions.InvalidIdVipException()
 
-        list_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip__id=vip_id)
+        list_pools = ServerPool.objects.filter(
+            vipporttopool__requisicao_vip__id=vip_id)
 
         if len(list_pools) is 0:
             raise exceptions.PoolMemberDoesNotExistException()
 
         list_result = []
         for obj_pool in list_pools:
-            list_sts_poolmembers = exec_script_check_poolmember_by_pool(obj_pool.id)
+            list_sts_poolmembers = exec_script_check_poolmember_by_pool(
+                obj_pool.id)
             list_result.append({obj_pool.id: list_sts_poolmembers})
 
         return Response(list_result)
@@ -1101,7 +1122,7 @@ def list_all_options(request):
         type = ''
 
         if 'type' in request.QUERY_PARAMS:
-            type = str(request.QUERY_PARAMS["type"])
+            type = str(request.QUERY_PARAMS['type'])
 
         options = OptionPool.objects.all()
 
@@ -1145,11 +1166,11 @@ def list_environment_environment_vip_related(request):
 
         for environment in environment_list:
             env_map = model_to_dict(environment)
-            env_map["grupo_l3_name"] = environment.grupo_l3.nome
-            env_map["ambiente_logico_name"] = environment.ambiente_logico.nome
-            env_map["divisao_dc_name"] = environment.divisao_dc.nome
+            env_map['grupo_l3_name'] = environment.grupo_l3.nome
+            env_map['ambiente_logico_name'] = environment.ambiente_logico.nome
+            env_map['divisao_dc_name'] = environment.divisao_dc.nome
             if environment.filter is not None:
-                env_map["filter_name"] = environment.filter.name
+                env_map['filter_name'] = environment.filter.name
 
             environment_list_dict.append(env_map)
 
@@ -1204,7 +1225,7 @@ def __delete_pool_option(request, option_id):
 
             po = delete_option_pool(request.user, option_id)
 
-            return Response({"id": po})
+            return Response({'id': po})
 
         except ObjectDoesNotExist:
             pass
@@ -1342,24 +1363,26 @@ def list_all_environment_options(request):
         option_type = ''
 
         if 'environment_id' in request.QUERY_PARAMS:
-            environment_id = int(request.QUERY_PARAMS["environment_id"])
+            environment_id = int(request.QUERY_PARAMS['environment_id'])
 
         if 'option_id' in request.QUERY_PARAMS:
-            option_id = int(request.QUERY_PARAMS["option_id"])
+            option_id = int(request.QUERY_PARAMS['option_id'])
 
         if 'option_type' in request.QUERY_PARAMS:
-            option_type = str(request.QUERY_PARAMS["option_type"])
+            option_type = str(request.QUERY_PARAMS['option_type'])
 
         environment_options = OptionPoolEnvironment.objects.all()
 
         if environment_id:
-            environment_options = environment_options.filter(environment=environment_id)
+            environment_options = environment_options.filter(
+                environment=environment_id)
 
         if option_id:
             environment_options = environment_options.filter(option=option_id)
 
         if option_type:
-            environment_options = environment_options.filter(option__type=option_type)
+            environment_options = environment_options.filter(
+                option__type=option_type)
 
         serializer_options = OptionPoolEnvironmentSerializer(
             environment_options,
@@ -1378,7 +1401,8 @@ def list_all_environment_options(request):
 def __list_environment_options_by_pk(request, environment_option_id):
     try:
 
-        environment_options = OptionPoolEnvironment.objects.get(id=environment_option_id)
+        environment_options = OptionPoolEnvironment.objects.get(
+            id=environment_option_id)
 
         serializer_options = OptionPoolEnvironmentSerializer(
             environment_options,
@@ -1403,7 +1427,8 @@ def get_available_ips_to_add_server_pool(request, equip_name, id_ambiente):
     # Start with alls
     # Get Equipment
 
-    lista_ips_equip, lista_ipsv6_equip = _get_available_ips_to_add_server_pool(equip_name, id_ambiente)
+    lista_ips_equip, lista_ipsv6_equip = _get_available_ips_to_add_server_pool(
+        equip_name, id_ambiente)
     # lists and dicts for return
 
     lista_ip_entregue = list()
@@ -1414,13 +1439,13 @@ def get_available_ips_to_add_server_pool(request, equip_name, id_ambiente):
         dict_network = dict()
 
         dict_ips4['id'] = ip.id
-        dict_ips4['ip'] = "%s.%s.%s.%s" % (
+        dict_ips4['ip'] = '%s.%s.%s.%s' % (
             ip.oct1, ip.oct2, ip.oct3, ip.oct4)
 
         dict_network['id'] = ip.networkipv4_id
-        dict_network["network"] = "%s.%s.%s.%s" % (
+        dict_network['network'] = '%s.%s.%s.%s' % (
             ip.networkipv4.oct1, ip.networkipv4.oct2, ip.networkipv4.oct3, ip.networkipv4.oct4)
-        dict_network["mask"] = "%s.%s.%s.%s" % (
+        dict_network['mask'] = '%s.%s.%s.%s' % (
             ip.networkipv4.mask_oct1, ip.networkipv4.mask_oct2, ip.networkipv4.mask_oct3, ip.networkipv4.mask_oct4)
 
         dict_ips4['network'] = dict_network
@@ -1432,13 +1457,13 @@ def get_available_ips_to_add_server_pool(request, equip_name, id_ambiente):
         dict_network = dict()
 
         dict_ips6['id'] = ip.id
-        dict_ips6['ip'] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
+        dict_ips6['ip'] = '%s:%s:%s:%s:%s:%s:%s:%s' % (
             ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
 
         dict_network['id'] = ip.networkipv6.id
-        dict_network["network"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
+        dict_network['network'] = '%s:%s:%s:%s:%s:%s:%s:%s' % (
             ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
-        dict_network["mask"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
+        dict_network['mask'] = '%s:%s:%s:%s:%s:%s:%s:%s' % (
             ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
 
         dict_ips6['network'] = dict_network
@@ -1460,8 +1485,10 @@ def _get_available_ips_to_add_server_pool(equip_name, id_ambiente):
     lista_ips_equip = set()
     lista_ipsv6_equip = set()
 
-    environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(id_ambiente)
-    environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
+    environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(
+        id_ambiente)
+    environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(
+        environment_vip_list)
 
     # # Get all IPV4's Equipment
     for environment in environment_list_related:
@@ -1502,25 +1529,33 @@ def _get_server_pool_member_ipv4_ipv6(list_server_pool_member):
 def reals_can_associate_server_pool(server_pool, list_server_pool_member):
 
     try:
-        environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(server_pool.environment.id)
-        environment_vip_list_name = ', '.join([envvip.name for envvip in environment_vip_list])
+        environment_vip_list = EnvironmentVip.get_environment_vips_by_environment_id(
+            server_pool.environment.id)
+        environment_vip_list_name = ', '.join(
+            [envvip.name for envvip in environment_vip_list])
 
-        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
+        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(
+            environment_vip_list)
 
-        ipv4_list, ipv6_list = _get_server_pool_member_ipv4_ipv6(list_server_pool_member)
+        ipv4_list, ipv6_list = _get_server_pool_member_ipv4_ipv6(
+            list_server_pool_member)
 
         for ipv4 in ipv4_list:
-            environment = Ambiente.objects.filter(vlan__networkipv4__ip=ipv4).uniqueResult()
+            environment = Ambiente.objects.filter(
+                vlan__networkipv4__ip=ipv4).uniqueResult()
             if environment not in environment_list_related:
                 raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                    error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip_list_name)
+                    error_messages.get(396) % (
+                        environment.name, ipv4.ip_formated, environment_vip_list_name)
                 )
 
         for ipv6 in ipv6_list:
-            environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=ipv6).uniqueResult()
+            environment = Ambiente.objects.filter(
+                vlan__networkipv6__ipv6=ipv6).uniqueResult()
             if environment not in environment_list_related:
                 raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                    error_messages.get(396) % (server_pool.environment.name, ipv6.ip_formated, environment_vip_list_name)
+                    error_messages.get(396) % (
+                        server_pool.environment.name, ipv6.ip_formated, environment_vip_list_name)
                 )
 
     except Exception, error:
@@ -1549,7 +1584,8 @@ def __update_environment_options_by_pk(request, environment_option_id):
                 log.error(exception)
                 raise exceptions.EnvironmentDoesNotExistException
 
-            epo = update_environment_option_pool(request.user, environment_option_id, option_id, environment_id)
+            epo = update_environment_option_pool(
+                request.user, environment_option_id, option_id, environment_id)
 
             serializer_options = OptionPoolEnvironmentSerializer(
                 epo,
@@ -1581,9 +1617,10 @@ def __delete_environment_options_by_pk(request, environment_option_id):
         OptionPoolEnvironment.objects.get(id=environment_option_id)
 
         try:
-            depo = delete_environment_option_pool(request.user, environment_option_id)
+            depo = delete_environment_option_pool(
+                request.user, environment_option_id)
 
-            return Response({"id": depo})
+            return Response({'id': depo})
 
         except ObjectDoesNotExist:
             pass
@@ -1632,7 +1669,8 @@ def save_environment_options(request):
             log.error(exception)
             raise exceptions.EnvironmentDoesNotExistException
 
-        epo = save_environment_option_pool(request.user, option_id, environment_id)
+        epo = save_environment_option_pool(
+            request.user, option_id, environment_id)
 
         serializer_options = OptionPoolEnvironmentSerializer(
             epo,

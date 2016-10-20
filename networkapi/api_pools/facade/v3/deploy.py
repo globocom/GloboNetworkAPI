@@ -9,8 +9,8 @@ from django.db.transaction import commit_on_success
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions
-from networkapi.api_pools import serializers
 from networkapi.api_pools.facade.v3 import base as facade_v3
+from networkapi.api_pools.serializers import v3 as serializers
 from networkapi.api_vip_request.facade import v3 as facade_vip
 from networkapi.api_vip_request.serializers import v3 as serializers_vip
 from networkapi.equipamento.models import Equipamento
@@ -37,8 +37,8 @@ def _prepare_apply(pools, user):
         keys.append(sorted([str(eqpt.id) for eqpt in equips]))
 
         healthcheck = pool['healthcheck']
-        healthcheck['identifier'] = facade_v3.reserve_name_healthcheck(pool[
-                                                                       'identifier'])
+        healthcheck['identifier'] = facade_v3.\
+            reserve_name_healthcheck(pool['identifier'])
         healthcheck['new'] = True
 
         for e in equips:
@@ -76,7 +76,8 @@ def _prepare_apply(pools, user):
                     'id': pool_member['id'],
                     'identifier': pool_member['identifier'],
                     'ip': pool_member['ip']['ip_formated']
-                    if pool_member['ip'] else pool_member['ipv6']['ip_formated'],
+                    if pool_member['ip'] else
+                    pool_member['ipv6']['ip_formated'],
                     'port': pool_member['port_real'],
                     'member_status': pool_member['member_status'],
                     'limit': pool_member['limit'],
@@ -158,9 +159,11 @@ def update_real_pool(pools, user):
 
                 member = db_members[
                     db_members_id.index(str(pool_member['id']))]
-                ip_db = member.ip.ip_formated if member.ip else member.ipv6.ip_formated
+                ip_db = member.ip.ip_formated \
+                    if member.ip else member.ipv6.ip_formated
 
-                if member.port_real == pool_member['port_real'] and ip_db == ip:
+                if member.port_real == pool_member['port_real'] \
+                        and ip_db == ip:
                     # update info of member
                     pools_members.append({
                         'id': pool_member['id'],
@@ -212,7 +215,8 @@ def update_real_pool(pools, user):
             pools_members.append({
                 'id': member.id,
                 'identifier': member.identifier,
-                'ip': member.ip.ip_formated if member.ip else member.ipv6.ip_formated,
+                'ip': member.ip.ip_formated
+                if member.ip else member.ipv6.ip_formated,
                 'port': member.port_real,
                 'remove': 1
             })
@@ -320,8 +324,10 @@ def _prepare_apply_state(pools, user=None):
                         'ip': pool_member.ip.ip_formated
                         if pool_member.ip else pool_member.ipv6.ip_formated,
                         'port': pool_member.port_real,
-                        'member_status': mbs[idx_mbs.index(pool_member.id)]['member_status']
-                    } for pool_member in server_pool_members if pool_member.id in idx_mbs]
+                        'member_status': mbs
+                        [idx_mbs.index(pool_member.id)]['member_status']
+                    } for pool_member in server_pool_members
+                        if pool_member.id in idx_mbs]
                 })
     # pools are in differents load balancers
     keys = [','.join(key) for key in keys]
@@ -364,7 +370,8 @@ def get_poolmember_state(pools):
     status = dict()
     for lb in load_balance:
         # call plugin to get state member
-        states = load_balance[lb]['plugin'].get_state_member(load_balance[lb])
+        states = load_balance[lb]['plugin'].\
+            get_state_member(load_balance[lb])
 
         for idx, state in enumerate(states):
             pool_id = load_balance[lb]['pools'][idx]['id']
@@ -401,8 +408,8 @@ def _validate_pool_members_to_apply(pool, user=None):
         } for pool_member in pool['server_pool_members']]
 
         server_pool_members = ServerPoolMember.objects.filter(
-            reduce(
-                lambda x, y: x | y, [Q(**q_filter) for q_filter in q_filters]),
+            reduce(lambda x, y: x | y, [
+                Q(**q_filter) for q_filter in q_filters]),
             server_pool=pool['id'])
         if len(server_pool_members) != len(q_filters):
             raise exceptions.PoolmemberNotExist()
@@ -431,8 +438,8 @@ def _validate_pool_to_apply(pool, update=False, user=None):
     if user:
         if not facade_eqpt.all_equipments_can_update_config(equips, user):
             raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
-                'User does not have permission to update conf in eqpt. \
-                Verify the permissions of user group with equipment group. Pool:{}'.format(
-                    pool['id']))
+                'User does not have permission to update conf in eqpt. '
+                'Verify the permissions of user group with equipment '
+                'group. Pool:{}'.format(pool['id']))
 
     return equips

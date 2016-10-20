@@ -2,95 +2,61 @@
 from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.api_vlan.serializers import VlanSerializerV3
+from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
-Ip = get_model('ip', 'Ip')
-Ipv6 = get_model('ip', 'Ipv6')
-NetworkIPv4 = get_model('ip', 'NetworkIPv4')
-NetworkIPv6 = get_model('ip', 'NetworkIPv6')
 
+class Ipv4Serializer(DynamicFieldsModelSerializer):
 
-class NetworkIPv4DetailsSerializerV3(DynamicFieldsModelSerializer):
-    networkv4 = serializers.Field(source='networkv4')
-    mask_formated = serializers.Field(source='mask_formated')
-
-    vlan = serializers.SerializerMethodField('get_vlan')
+    ip_formated = serializers.Field(source='ip_formated')
 
     class Meta:
-        model = NetworkIPv4
+        Ip = get_model('ip', 'Ip')
+        model = Ip
         fields = (
             'id',
-            'oct1',
-            'oct2',
-            'oct3',
+            'ip_formated',
             'oct4',
-            'block',
-            'mask_oct1',
-            'mask_oct2',
-            'mask_oct3',
-            'mask_oct4',
-            'broadcast',
-            'networkv4',
-            'mask_formated',
-            'network_type',
-            'vlan'
+            'oct3',
+            'oct2',
+            'oct1',
+            'networkipv4',
+            'description',
         )
+
         default_fields = (
             'id',
-            'networkv4',
-            'mask_formated',
-            'network_type',
-            'vlan'
+            'ip_formated',
+            'description'
         )
 
-    @classmethod
-    def get_serializers(cls):
-        if not cls.mapping:
-            cls.mapping = {
-                'vlan': {
-                    'serializer': VlanSerializerV3,
-                    'kwargs': {
-                    }
-                },
-                'vlan__details': {
-                    'serializer': VlanSerializerV3,
-                    'kwargs': {
-                        'include': ('environment',)
-                    }
-                }
-            }
 
-        return cls.mapping
+class Ipv6Serializer(DynamicFieldsModelSerializer):
 
-    def get_vlan(self, obj):
-
-        return self.extends_serializer(obj.vlan, 'vlan')
-
-    @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {
-            'vlan': self.setup_eager_loading_vlan,
-        }
-
-        return mapping
-
-    @staticmethod
-    def setup_eager_loading_vlan(queryset):
-        queryset = queryset.select_related(
-            'vlan',
-        )
-        return queryset
-
-
-class NetworkIPv6DetailsSerializerV3(DynamicFieldsModelSerializer):
-    networkv6 = serializers.Field(source='networkv6')
-    mask_formated = serializers.Field(source='mask_formated')
-    vlan = serializers.SerializerMethodField('get_vlan')
+    ip_formated = serializers.Field(source='ip_formated')
 
     class Meta:
-        model = NetworkIPv6
+        Ipv6 = get_model('ip', 'Ipv6')
+        model = Ipv6
         fields = (
+            'id',
+            'ip_formated',
+            'block1',
+            'block2',
+            'block3',
+            'block4',
+            'block5',
+            'block6',
+            'block7',
+            'block8',
+            'networkipv6',
+            'description',
+            'equipments',
+            'vips',
+            'server_pool_members',
+        )
+
+        default_fields = (
             'id',
             'block1',
             'block2',
@@ -100,77 +66,30 @@ class NetworkIPv6DetailsSerializerV3(DynamicFieldsModelSerializer):
             'block6',
             'block7',
             'block8',
-            'block',
-            'mask1',
-            'mask2',
-            'mask3',
-            'mask4',
-            'mask5',
-            'mask6',
-            'mask7',
-            'mask8',
-            'networkv6',
-            'mask_formated',
-            'network_type',
+            'networkipv6',
+            'description'
         )
-
-        default_fields = (
-            'id',
-            'networkv6',
-            'mask_formated',
-            'network_type',
-            'vlan'
-        )
-
-    @classmethod
-    def get_serializers(cls):
-        if not cls.mapping:
-            cls.mapping = {
-                'vlan': {
-                    'serializer': VlanSerializerV3,
-                    'kwargs': {
-                    }
-                },
-                'vlan__details': {
-                    'serializer': VlanSerializerV3,
-                    'kwargs': {
-                        'include': ('vlan',)
-                    }
-                }
-            }
-
-        return cls.mapping
-
-    def get_vlan(self, obj):
-
-        return self.extends_serializer(obj.vlan, 'vlan')
-
-
-class Ipv4Serializer(DynamicFieldsModelSerializer):
-
-    ip_formated = serializers.Field(source='ip_formated')
-
-    class Meta:
-        model = get_model('ip', 'Ip')
-
-
-class Ipv6Serializer(DynamicFieldsModelSerializer):
-
-    ip_formated = serializers.Field(source='ip_formated')
-
-    class Meta:
-        model = Ipv6
 
 
 class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
 
-    id = serializers.Field()
     ip_formated = serializers.Field(source='ip_formated')
     description = serializers.Field(source='descricao')
+
+    equipments = serializers.RelatedField(source='equipments')
+    vips = serializers.RelatedField(source='vips')
+    server_pool_members = serializers.RelatedField(
+        source='server_pool_members')
+
+    networkipv6 = serializers.SerializerMethodField('get_networkipv6')
+    server_pool_members = serializers.\
+        SerializerMethodField('get_server_pool_members')
+    vips = serializers.SerializerMethodField('get_vips')
+    equipments = serializers.SerializerMethodField('get_equipments')
     networkipv4 = serializers.SerializerMethodField('get_networkipv4')
 
     class Meta:
-
+        Ip = get_model('ip', 'Ip')
         model = Ip
         fields = (
             'id',
@@ -179,47 +98,103 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
             'oct3',
             'oct2',
             'oct1',
-            'description',
             'networkipv4',
-            'description'
+            'description',
+            'equipments',
+            'vips',
+            'server_pool_members',
         )
 
         default_fields = (
             'id',
-            'ip_formated',
+            'oct4',
+            'oct3',
+            'oct2',
+            'oct1',
+            'networkipv4',
             'description'
         )
 
+    def get_networkipv4(self, obj):
+        return self.extends_serializer(obj, 'networkipv4')
+
+    def get_equipments(self, obj):
+        return self.extends_serializer(obj, 'equipments')
+
+    def get_vips(self, obj):
+        return self.extends_serializer(obj, 'vips')
+
+    def get_server_pool_members(self, obj):
+        return self.extends_serializer(obj, 'server_pool_members')
+
     @classmethod
     def get_serializers(cls):
+        # serializers
+        net_slz = get_app('api_network', module_label='serializers.v3')
+        vip_slz = get_app('api_vip_request', module_label='serializers.v3')
+        eqpt_slz = get_app('api_equipment', module_label='serializers')
+        pool_slz = get_app('api_pools', module_label='serializers.v3')
+
         if not cls.mapping:
             cls.mapping = {
                 'networkipv4': {
-                    'serializer': NetworkIPv4DetailsSerializerV3,
-                    'kwargs': {
-                    }
+                    'obj': 'networkipv4_id'
                 },
                 'networkipv4__details': {
-                    'serializer': NetworkIPv4DetailsSerializerV3,
+                    'serializer': net_slz.NetworkIPv4Serializer,
                     'kwargs': {
-                        'include': ('vlan',)
-                    }
+                    },
+                    'obj': 'networkipv4',
+                    'eager_loading': cls.setup_eager_loading_networkipv4
+                },
+                'equipments': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'equipments'
+                },
+                'equipments__details': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'equipments'
+                },
+                'vips': {
+                    'serializer': vip_slz.VipRequestSerializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'vips'
+                },
+                'vips__details': {
+                    'serializer': vip_slz.VipRequestDetailsSerializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'vips'
+                },
+                'server_pool_members': {
+                    'serializer': pool_slz.PoolMemberV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'server_pool_members'
+                },
+                'server_pool_members__details': {
+                    'serializer': pool_slz.PoolMemberV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'server_pool_members'
                 }
             }
 
         return cls.mapping
-
-    def get_networkipv4(self, obj):
-
-        return self.extends_serializer(obj.networkipv4, 'networkipv4')
-
-    @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {
-            'networkipv4': self.setup_eager_loading_networkipv4,
-        }
-
-        return mapping
 
     @staticmethod
     def setup_eager_loading_networkipv4(queryset):
@@ -233,9 +208,20 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
 
     id = serializers.Field()
     ip_formated = serializers.Field(source='ip_formated')
+
+    server_pool_members = serializers.RelatedField(
+        source='server_pool_members')
+    vips = serializers.RelatedField(source='vips')
+    equipments = serializers.RelatedField(source='equipments')
+
     networkipv6 = serializers.SerializerMethodField('get_networkipv6')
+    server_pool_members = serializers.SerializerMethodField(
+        'get_server_pool_members')
+    vips = serializers.SerializerMethodField('get_vips')
+    equipments = serializers.SerializerMethodField('get_equipments')
 
     class Meta:
+        Ipv6 = get_model('ip', 'Ipv6')
         model = Ipv6
         fields = (
             'id',
@@ -248,47 +234,107 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
             'block6',
             'block7',
             'block8',
-            'description',
             'networkipv6',
-            'description'
+            'description',
+            'equipments',
+            'vips',
+            'server_pool_members',
         )
 
         default_fields = (
             'id',
-            'ip_formated',
+            'block1',
+            'block2',
+            'block3',
+            'block4',
+            'block5',
+            'block6',
+            'block7',
+            'block8',
+            'networkipv6',
             'description'
         )
 
+    def get_networkipv6(self, obj):
+        return self.extends_serializer(obj, 'networkipv6')
+
+    def get_equipments(self, obj):
+        return self.extends_serializer(obj, 'equipments')
+
+    def get_vips(self, obj):
+        return self.extends_serializer(obj, 'vips')
+
+    def get_server_pool_members(self, obj):
+        return self.extends_serializer(obj, 'server_pool_members')
+
     @classmethod
     def get_serializers(cls):
+
+        net_slz = get_app('api_network', module_label='serializers.v3')
+        vip_slz = get_app('api_vip_request', module_label='serializers.v3')
+        eqpt_slz = get_app('api_equipment', module_label='serializers')
+        pool_slz = get_app('api_pools', module_label='serializers.v3')
+
         if not cls.mapping:
             cls.mapping = {
                 'networkipv6': {
-                    'serializer': NetworkIPv6DetailsSerializerV3,
-                    'kwargs': {
-                    }
+                    'obj': 'networkipv6_id'
                 },
                 'networkipv6__details': {
-                    'serializer': NetworkIPv6DetailsSerializerV3,
+                    'serializer': net_slz.NetworkIPv6Serializer,
                     'kwargs': {
-                        'include': ('vlan',)
-                    }
+                    },
+                    'obj': 'networkipv6',
+                    'eager_loading': cls.setup_eager_loading_networkipv6
+                },
+                'equipments': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'equipments'
+                },
+                'equipments__details': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'equipments'
+                },
+                'vips': {
+                    'serializer': vip_slz.VipRequestSerializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'vips'
+                },
+                'vips__details': {
+                    'serializer': vip_slz.VipRequestDetailsSerializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'vips'
+                },
+                'server_pool_members': {
+                    'serializer': pool_slz.PoolMemberV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'server_pool_members'
+                },
+                'server_pool_members__details': {
+                    'serializer': pool_slz.PoolMemberV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'server_pool_members'
                 }
             }
 
         return cls.mapping
-
-    def get_networkipv6(self, obj):
-
-        return self.extends_serializer(obj.networkipv6, 'networkipv6networkipv6')
-
-    @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {
-            'networkipv6': self.setup_eager_loading_networkipv6,
-        }
-
-        return mapping
 
     @staticmethod
     def setup_eager_loading_networkipv6(queryset):

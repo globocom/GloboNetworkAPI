@@ -2,16 +2,8 @@
 from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.api_ip.serializers import Ipv4DetailsSerializer
-from networkapi.api_ip.serializers import Ipv4Serializer
-from networkapi.api_ip.serializers import Ipv6DetailsSerializer
-from networkapi.api_ip.serializers import Ipv6Serializer
+from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
-
-Equipamento = get_model('equipamento', 'Equipamento')
-Marca = get_model('equipamento', 'Marca')
-Modelo = get_model('equipamento', 'Modelo')
-TipoEquipamento = get_model('equipamento', 'TipoEquipamento')
 
 
 class BrandDetailsSerializer(DynamicFieldsModelSerializer):
@@ -19,6 +11,7 @@ class BrandDetailsSerializer(DynamicFieldsModelSerializer):
     name = serializers.Field(source='nome')
 
     class Meta:
+        Marca = get_model('equipamento', 'Marca')
         model = Marca
         fields = (
             'id',
@@ -56,6 +49,7 @@ class ModelDetailsSerializer(DynamicFieldsModelSerializer):
         return cls.mapping
 
     class Meta:
+        Modelo = get_model('equipamento', 'Modelo')
         model = Modelo
         fields = (
             'id',
@@ -74,6 +68,7 @@ class EquipmentTypeSerializer(DynamicFieldsModelSerializer):
     equipment_type = serializers.Field(source='tipo_equipamento')
 
     class Meta:
+        TipoEquipamento = get_model('equipamento', 'TipoEquipamento')
         model = TipoEquipamento
         fields = (
             'id',
@@ -89,6 +84,7 @@ class EquipmentSerializer(DynamicFieldsModelSerializer):
     # groups = serializers.Field(source='grupos')
 
     class Meta:
+        Equipamento = get_model('equipamento', 'Equipamento')
         model = Equipamento
         fields = (
             'id',
@@ -103,6 +99,7 @@ class EquipmentBasicSerializer(DynamicFieldsModelSerializer):
     name = serializers.Field(source='nome')
 
     class Meta:
+        Equipamento = get_model('equipamento', 'Equipamento')
         model = Equipamento
         fields = (
             'id',
@@ -123,6 +120,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     name = serializers.Field(source='nome')
 
     class Meta:
+        Equipamento = get_model('equipamento', 'Equipamento')
         model = Equipamento
         fields = (
             'id',
@@ -169,6 +167,8 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
 
     @classmethod
     def get_serializers(cls):
+        ip_slz = get_app('api_ip', module_label='serializers')
+
         if not cls.mapping:
             cls.mapping = {
                 'model': {
@@ -184,26 +184,26 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     }
                 },
                 'ipv4': {
-                    'serializer': Ipv4Serializer,
+                    'serializer': ip_slz.Ipv4Serializer,
                     'kwargs': {
                         'many': True,
                     }
                 },
                 'ipv6': {
-                    'serializer': Ipv6Serializer,
+                    'serializer': ip_slz.Ipv6Serializer,
                     'kwargs': {
                         'many': True,
                     }
                 },
                 'ipv4__details': {
-                    'serializer': Ipv4DetailsSerializer,
+                    'serializer': ip_slz.Ipv4DetailsSerializer,
                     'kwargs': {
                         'many': True,
                         'include': ('networkipv4',)
                     }
                 },
                 'ipv6__details': {
-                    'serializer': Ipv6DetailsSerializer,
+                    'serializer': ip_slz.Ipv6DetailsSerializer,
                     'kwargs': {
                         'many': True,
                         'include': ('networkipv6',)

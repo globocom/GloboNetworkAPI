@@ -4,17 +4,21 @@ from rest_framework import serializers
 
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
-EnvironmentVip = get_model('ambiente', 'EnvironmentVip')
-OptionVip = get_model('requisicaovips', 'OptionVip')
-OptionVipEnvironmentVip = get_model(
-    'requisicaovips', 'OptionVipEnvironmentVip')
-
 
 class EnvironmentVipSerializer(DynamicFieldsModelSerializer):
-    id = serializers.Field()
+
+    """Serilizes EnvironmentVip Model."""
 
     class Meta:
+        EnvironmentVip = get_model('ambiente', 'EnvironmentVip')
         model = EnvironmentVip
+        default_fields = (
+            'id',
+            'finalidade_txt',
+            'cliente_txt',
+            'ambiente_p44_txt',
+            'description'
+        )
         fields = (
             'id',
             'finalidade_txt',
@@ -24,11 +28,17 @@ class EnvironmentVipSerializer(DynamicFieldsModelSerializer):
             'conf'
         )
 
+    @classmethod
+    def get_serializers(cls):
+        """Returns the mapping of serializers."""
+        pass
+
 
 class OptionVipSerializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
 
     class Meta:
+        OptionVip = get_model('requisicaovips', 'OptionVip')
         model = OptionVip
         fields = (
             'id',
@@ -42,6 +52,8 @@ class OptionVipEnvironmentVipSerializer(DynamicFieldsModelSerializer):
     option = OptionVipSerializer()
 
     class Meta:
+        OptionVipEnvironmentVip = get_model('requisicaovips',
+                                            'OptionVipEnvironmentVip')
         model = OptionVipEnvironmentVip
         fields = (
             'option',

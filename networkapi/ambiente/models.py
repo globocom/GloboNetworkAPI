@@ -744,6 +744,23 @@ class Ambiente(BaseModel):
 
     name = property(_get_name)
 
+    def _get_children(self):
+        """Returns environment children of environment."""
+        children = Ambiente.objects.filter(father_environment=self.id)
+        return children
+
+    children = property(_get_children)
+
+    def _get_configs(self):
+        """Returns configs of environment."""
+        configs = self.configenvironment_set.all().prefetch_related(
+            'ip_config',
+        )
+
+        return configs
+
+    configs = property(_get_configs)
+
     @classmethod
     def get_by_pk(cls, id):
         """Efetua a consulta de Ambiente pelo seu id.

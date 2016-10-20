@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from networkapi.api_pools import serializers
 from networkapi.api_pools.facade.v3 import base as facade
 from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
 from networkapi.api_pools.permissions import delete_pool_permission
@@ -19,6 +18,7 @@ from networkapi.api_pools.permissions import ScriptCreatePermission
 from networkapi.api_pools.permissions import ScriptRemovePermission
 from networkapi.api_pools.permissions import Write
 from networkapi.api_pools.permissions import write_pool_permission
+from networkapi.api_pools.serializers import v3 as serializers
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.requisicaovips import models as models_vips
 from networkapi.settings import SPECS
@@ -207,8 +207,14 @@ class PoolDBDetailsView(APIView):
                 only_main_property = True
                 obj_model = None
 
+            self.include = (
+                'servicedownaction__details',
+                'environment__details',
+                'groups_permissions__details',
+            )
+
             # serializer pools
-            pool_serializer = serializers.PoolV3DetailsSerializer(
+            pool_serializer = serializers.PoolV3Serializer(
                 pools,
                 many=True,
                 fields=self.fields,
@@ -244,33 +250,22 @@ class PoolDBView(APIView):
         try:
             if not kwargs.get('pool_ids'):
                 obj_model = facade.get_pool_by_search(self.search)
-
-                # serializer pools
-                pool_serializer = serializers.PoolV3DatatableSerializer(
-                    obj_model['query_set'],
-                    many=True,
-                    fields=self.fields,
-                    include=self.include,
-                    exclude=self.exclude
-                )
-
+                pools = obj_model['query_set']
                 only_main_property = False
-
             else:
                 pool_ids = kwargs['pool_ids'].split(';')
                 pools = facade.get_pool_by_ids(pool_ids)
-
-                obj_model = None
                 only_main_property = True
+                obj_model = None
 
-                # serializer pools
-                pool_serializer = serializers.PoolV3Serializer(
-                    pools,
-                    many=True,
-                    fields=self.fields,
-                    include=self.include,
-                    exclude=self.exclude
-                )
+            # serializer pools
+            pool_serializer = serializers.PoolV3Serializer(
+                pools,
+                many=True,
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude
+            )
 
             # prepare serializer with customized properties
             data = render_to_json(
@@ -360,17 +355,7 @@ class PoolEnvironmentVip(APIView):
         try:
             environment_vip_id = kwargs['environment_vip_id']
             pools = facade.get_pool_list_by_environmentvip(environment_vip_id)
-
             only_main_property = True
-
-            default_fields = (
-                'id',
-                'identifier',
-                'default_port',
-                'environment',
-                'pool_created'
-            )
-            self.fields = self.fields if self.fields else default_fields
 
             # serializer pools
             pool_serializer = serializers.PoolV3Serializer(
@@ -415,8 +400,10 @@ class OptionPoolEnvironmentView(APIView):
 
             only_main_property = True
 
+            self.include += ('type',)
+
             # serializer pools
-            options_pool_serializer = serializers.OptionPoolV3DetailsSerializer(
+            options_pool_serializer = serializers.OptionPoolV3Serializer(
                 options_pool,
                 many=True,
                 fields=self.fields,

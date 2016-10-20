@@ -19,7 +19,6 @@ from networkapi.api_vip_request.permissions import Write
 from networkapi.api_vip_request.permissions import write_vip_permission
 from networkapi.api_vip_request.serializers.v3 import VipRequestDetailsSerializer
 from networkapi.api_vip_request.serializers.v3 import VipRequestSerializer
-from networkapi.api_vip_request.serializers.v3 import VipRequestTableSerializer
 from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -127,14 +126,7 @@ class VipRequestDBView(APIView):
             if not kwargs.get('vip_request_ids'):
 
                 obj_model = facade.get_vip_request_by_search(self.search)
-                # serializer vips
-                serializer_vips = VipRequestTableSerializer(
-                    obj_model['query_set'],
-                    many=True,
-                    fields=self.fields,
-                    include=self.include,
-                    exclude=self.exclude
-                )
+                vips_requests = obj_model['query_set']
                 only_main_property = False
 
             else:
@@ -143,14 +135,15 @@ class VipRequestDBView(APIView):
                 vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
                 obj_model = None
                 # serializer vips
-                serializer_vips = VipRequestSerializer(
-                    vips_requests,
-                    many=True,
-                    fields=self.fields,
-                    include=self.include,
-                    exclude=self.exclude
-                )
                 only_main_property = True
+
+            serializer_vips = VipRequestSerializer(
+                vips_requests,
+                many=True,
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude
+            )
 
             # prepare serializer with customized properties
             data = render_to_json(
@@ -311,7 +304,7 @@ class VipRequestPoolView(APIView):
             only_main_property = False
 
             # serializer vips
-            serializer_vips = VipRequestTableSerializer(
+            serializer_vips = VipRequestSerializer(
                 vips_requests['query_set'],
                 many=True,
                 fields=self.fields,

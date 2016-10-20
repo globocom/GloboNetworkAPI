@@ -2,11 +2,11 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
-from networkapi.api_vip_request import views
+from networkapi.api_vip_request.views import v3 as views
 
 
 urlpatterns = patterns(
-    'networkapi.api_vip_request.views',
+    'networkapi.api_vip_request.views.v1',
     url(r'^vip/request/save/?(?P<pk>\d+)?/?$', 'save'),
     url(r'^vip/request/add/pools/$', 'add_pools'),
     url(r'^vip/request/delete/(?P<delete_pools>\d+)/$', 'delete'),

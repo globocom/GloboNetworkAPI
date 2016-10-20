@@ -2,11 +2,11 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
+from networkapi.api_network.views import v3
 from networkapi.api_network.views.v1 import DHCPRelayIPv4ByPkView
 from networkapi.api_network.views.v1 import DHCPRelayIPv4View
 from networkapi.api_network.views.v1 import DHCPRelayIPv6ByPkView
 from networkapi.api_network.views.v1 import DHCPRelayIPv6View
-# from networkapi.api_network.views import v3
 
 #     """
 # TODO (v4 and v6)
@@ -34,6 +34,8 @@ urlpatterns = patterns(
     ########################
     # Network V3
     ########################
-    # url(r'^v3/networkv4/(?P<obj_id>\d+)/$',
-    # v3.IpEnvironmentEquipment.as_view()),  # GET
+    url(r'^v3/networkv4/((?P<obj_id>[;\w]+)/)?$',
+        v3.NetworkIPv4View.as_view()),
+    url(r'^v3/networkv6/((?P<obj_id>[;\w]+)/)?$',
+        v3.NetworkIPv6View.as_view()),
 )

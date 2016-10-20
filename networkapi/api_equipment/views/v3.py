@@ -20,15 +20,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from networkapi.api_equipment import facade
-from networkapi.api_equipment import serializers
 from networkapi.api_equipment.permissions import Read
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import get_app
 from networkapi.util.geral import render_to_json
 # from django.db.transaction import commit_on_success
 
+serializers = get_app('api_equipment', module_label='serializers')
 
 log = logging.getLogger(__name__)
 
