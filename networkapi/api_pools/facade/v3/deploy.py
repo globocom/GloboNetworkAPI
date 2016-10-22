@@ -60,9 +60,10 @@ def _prepare_apply(pools, user):
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
-            serializer_vips = serializers_vip.VipRequestDetailsSerializer(
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
-                many=True
+                many=True,
+                kind='details'
             )
 
             load_balance[eqpt_id]['pools'].append({
@@ -255,9 +256,10 @@ def update_real_pool(pools, user):
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
-            serializer_vips = serializers_vip.VipRequestDetailsSerializer(
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
-                many=True
+                many=True,
+                kind='details'
             )
 
             load_balance[eqpt_id]['pools'].append({

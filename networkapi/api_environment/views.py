@@ -33,8 +33,6 @@ class EnvironmentDBView(APIView):
         Returns a list of environment by ids ou dict
         """
 
-        details = request.GET.get('details', 0)
-
         try:
             if not kwargs.get('environment_ids'):
                 obj_model = facade.get_environment_by_search(self.search)
@@ -46,16 +44,14 @@ class EnvironmentDBView(APIView):
                 only_main_property = True
                 obj_model = None
 
-            serializer_class = serializers.EnvironmentV3Serializer \
-                if details == 0 else serializers.EnvironmentDetailsSerializer
-
             # serializer environments
-            serializer_env = serializer_class(
+            serializer_env = serializers.EnvironmentV3Serializer(
                 environments,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties
@@ -144,12 +140,13 @@ class EnvEnvVipRelatedView(APIView):
                     env_id)
 
             # serializer environments
-            serializer_env = serializers.EnvironmentDetailsSerializer(
+            serializer_env = serializers.EnvironmentV3Serializer(
                 environments,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties

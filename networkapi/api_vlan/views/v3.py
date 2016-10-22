@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 
 from django.db.transaction import commit_on_success
@@ -47,12 +48,13 @@ class VlanDBView(APIView):
                 only_main_property = True
 
             # serializer vips
-            serializer_vips = serializers.VlanSerializerV3(
+            serializer_vips = serializers.VlanV3Serializer(
                 vlans,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties

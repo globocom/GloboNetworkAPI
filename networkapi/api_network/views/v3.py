@@ -42,12 +42,13 @@ class NetworkIPv4View(APIView):
                 obj_model = None
 
             # serializer networks
-            serializer_net = serializers.NetworkIPv4Serializer(
+            serializer_net = serializers.NetworkIPv4V3Serializer(
                 networks,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties
@@ -94,12 +95,13 @@ class NetworkIPv6View(APIView):
                 obj_model = None
 
             # serializer networks
-            serializer_net = serializers.NetworkIPv6Serializer(
+            serializer_net = serializers.NetworkIPv6V3Serializer(
                 networks,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties

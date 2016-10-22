@@ -17,30 +17,18 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         fields = kwargs.pop('fields', tuple())
         include = kwargs.pop('include', tuple())
         exclude = kwargs.pop('exclude', tuple())
+        prohibited = kwargs.pop('prohibited', tuple())
+        kind = kwargs.pop('kind', None)
 
-        fields_serializer = tuple()
+        filtred_fields = tuple()
+        all_fields = include + fields
         if args:
-            fields = include + fields
-            fields_serializer = fields
 
-            # get first part
-            # Example: x__details__y
-            # first part = x
-            fields_aux = [f.split('__')[0] for f in fields]
-            fields = list()
-            for fd in fields_aux:
-                fields.append(fd)
-            if fields:
-                try:
-                    queryset = args[0]
-                    # get fields with prefetch_related
-                    mapping = self.get_mapping_eager_loading(self)
-                    for key in mapping:
-                        if key in fields and key not in exclude:
-                            queryset = mapping[key](queryset)
-                    args = (queryset,)
-                except:
-                    pass
+            filtred_fields = [self.get_main_key(field, kind)[0]
+                              for field in all_fields]
+
+            if filtred_fields:
+                args = self.exec_eager_loading(filtred_fields, args)
 
         # Instantiate the superclass normally
         super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
@@ -48,20 +36,29 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         # Use default_fields when exists
         existing = set(self.fields.keys())
 
-        if not fields or include or exclude:
+        if not fields:
             try:
-                fields = self.Meta.default_fields + include
-                fields_serializer = fields
-                fields_aux = [f.split('__')[0] for f in fields]
-                fields = list()
-                for fd in fields_aux:
-                    fields.append(fd)
+                fields_class = None
+
+                if kind == 'basic' and self.Meta.__dict__.get('basic_fields'):
+                    fields_class = self.Meta.basic_fields
+                elif kind == 'details' and self.Meta.__dict__.get('details_fields'):
+                    fields_class = self.Meta.details_fields
+                elif self.Meta.__dict__.get('default_fields'):
+                    fields_class = self.Meta.default_fields
+                else:
+                    fields_class = self.Meta.fields
+
+                all_fields = fields_class + include
+                filtred_fields = [self.get_main_key(field, kind)[0]
+                                  for field in all_fields]
             except:
                 pass
 
-        if fields:
+        if filtred_fields:
             # Drop any fields that are not specified in the `fields` argument.
-            allowed = set(fields)
+            allowed = set([field.split('__')[0] for field in filtred_fields])
+
             for field_name in existing - allowed:
                 try:
                     self.fields.pop(field_name)
@@ -69,7 +66,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     pass
 
         if exclude:
-            forbidden = set(exclude)
+            # Drop any fields that are specified in the `exclude` argument.
+            forbidden = set([field.split('__')[0] for field in exclude])
             for field_name in existing & forbidden:
                 try:
                     self.fields.pop(field_name)
@@ -79,70 +77,142 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         # Prepare field for serializer
         self.context = {'serializers': dict()}
 
-        for key in fields_serializer:
+        try:
+            self.mapping = self.get_serializers() or dict()
+        except:
+            self.mapping = dict()
 
-            fields_aux = key.split('__')
+        for field in all_fields:
 
-            fd_key = fields_aux[0]
+            field_filtered, other_fields = self.get_main_key(field, kind)
 
-            key_aux = key.split('__')[0]
+            key_split = field_filtered.split('__')
+            fd_key = key_split[0]
 
-            if len(fields_aux) > 1:
-                if fields_aux[1] in ('details', 'basic'):
-                    key_aux = '%s__%s' % (fd_key, fields_aux[1])
-                    del fields_aux[0]
-            del fields_aux[0]
+            if self.mapping.get(field_filtered):
 
-            # Example: field: field_details | field: field
-            self.context['serializers'].update({
-                fd_key: key_aux
-            })
+                # remove field because is prohibited
+                if prohibited:
+                    if other_fields in prohibited or field_filtered in prohibited or\
+                            field in prohibited:
+                        self.fields.pop(field_filtered.split('__')[0])
+                        continue
 
-            if fields_aux:
+                if other_fields:
+                    param = self.mapping.get(
+                        field_filtered).get('kwargs', dict())
 
-                self.mapping = self.get_serializers()
-                if self.mapping.get(fd_key):
-                    fields_aux = '__'.join(fields_aux)
-                    if self.mapping.get(key_aux).get('kwargs'):
-                        inc_ser = self.mapping.get(key_aux).get(
-                            'kwargs').get('include', tuple())
-                        self.mapping[key_aux]['kwargs'][
-                            'include'] = inc_ser + (fields_aux,)
+                    if param:
+
+                        inc_ser = param.get('include', tuple())
+
+                        self.mapping[field_filtered]['kwargs']['include'] = \
+                            inc_ser + (other_fields,)
                     else:
-                        self.mapping[key_aux].update({
+                        self.mapping[field_filtered].update({
                             'kwargs': {
-                                'include': (fields_aux,)
+                                'include': (other_fields,)
                             }
                         })
+
+                # Example: field: field_details | field: field
+                self.context['serializers'].update({
+                    fd_key: field_filtered
+                })
 
     def extends_serializer(self, obj, default_field):
 
         key = self.context.get('serializers').get(default_field, default_field)
         slr_model = self.get_serializers().get(key)
 
-        # obj costum
-        if slr_model.get('obj'):
+        # keys
+        if slr_model.get('keys'):
+            keys = slr_model.get('keys')
+            render = dict()
+            for k in keys:
 
+                render[k] = self.render_serializer(obj.get(k), slr_model)
+
+            return render
+        else:
+            return self.render_serializer(obj, slr_model)
+
+    def render_serializer(self, obj, slr_model):
+        # obj costum
+
+        if obj and slr_model.get('obj'):
             obj = obj.__getattribute__(slr_model.get('obj'))
 
         if not obj:
             return None
 
         # If has not serializer return obj
-        if not slr_model.get('serializer'):
+        elif not slr_model.get('serializer'):
             return obj
         else:
 
-            model_serializer = slr_model.get('serializer')(
-                obj, **slr_model.get('kwargs', dict())
-            )
+            try:
+                model_serializer = slr_model.get('serializer')(
+                    obj, **slr_model.get('kwargs', dict())
+                )
+                ret_srl = model_serializer.data
+            except:
+                return None
 
-            ret_srl = model_serializer.data
-            source = slr_model.get('kwargs', dict()).get('source')
-            if source:
-                return model_serializer.data.get(source)
+            return ret_srl
 
-        return ret_srl
+    def get_main_key(self, key, kind):
+
+        # split field
+        # Example: y__details__z__details
+        # key = y__details
+        fields_aux = key.split('__')
+
+        main_key = fields_aux[0]
+
+        kind_key = None
+
+        # many keys
+        if len(fields_aux) > 1:
+            kind_key = fields_aux[1]
+            if kind_key in ('details', 'basic'):
+                del fields_aux[0]
+            else:
+                kind_key = None
+        del fields_aux[0]
+        fields_aux = '__'.join(fields_aux)
+
+        # kind serializer for all
+        if kind:
+            kind_key = kind
+        if not kind_key:
+            key = main_key
+        else:
+            key = '%s__%s' % (main_key, kind_key)
+
+        return key, fields_aux
+
+    def exec_eager_loading(self, filted_fields, args):
+        try:
+            queryset = args[0]
+            # get fields with prefetch_related
+            mapping = self.get_serializers()
+
+            # For each field
+            for key in filted_fields:
+                # if has key
+                if mapping.get(key, dict()).get('eager_loading'):
+                    queryset = mapping[key](queryset)
+            args = (queryset,)
+        except:
+            pass
+        return args
+
+    @classmethod
+    def get_serializers(cls):
+        if not cls.mapping:
+            cls.mapping = dict()
+        return cls.mapping
 
 
 class RecursiveField(serializers.Serializer):

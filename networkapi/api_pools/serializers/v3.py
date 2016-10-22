@@ -6,7 +6,7 @@ from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class PoolPermissionSerializer(DynamicFieldsModelSerializer):
+class PoolPermissionV3Serializer(DynamicFieldsModelSerializer):
 
     group = serializers.SerializerMethodField('get_group')
 
@@ -45,7 +45,7 @@ class PoolPermissionSerializer(DynamicFieldsModelSerializer):
                     'obj': 'user_group_id',
                 },
                 'group__details': {
-                    'serializer': group_slz.UserGroupSerializer,
+                    'serializer': group_slz.UserGroupV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'user_group',
@@ -72,7 +72,7 @@ class OptionPoolV3Serializer(DynamicFieldsModelSerializer):
         )
 
 
-class HealthcheckV3Serializer(serializers.ModelSerializer):
+class HealthcheckV3Serializer(DynamicFieldsModelSerializer):
 
     class Meta:
         Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
@@ -147,6 +147,17 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
             'member_status',
         )
 
+        basic_fields = (
+            'id',
+            'identifier',
+            'ipv6',
+            'ip',
+            'port_real',
+            'member_status',
+        )
+
+        details_fields = fields
+
     @classmethod
     def get_serializers(cls):
         # serializers
@@ -170,7 +181,7 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'server_pool',
                 },
                 'ip': {
-                    'serializer': ip_slz.Ipv4DetailsSerializer,
+                    'serializer': ip_slz.Ipv4V3Serializer,
                     'kwargs': {
                         'fields': (
                             'id',
@@ -180,13 +191,13 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ip',
                 },
                 'ip__details': {
-                    'serializer': ip_slz.Ipv4DetailsSerializer,
+                    'serializer': ip_slz.Ipv4V3Serializer,
                     'kwargs': {
                     },
                     'obj': 'ip',
                 },
                 'ipv6': {
-                    'serializer': ip_slz.Ipv6DetailsSerializer,
+                    'serializer': ip_slz.Ipv6V3Serializer,
                     'kwargs': {
                         'fields': (
                             'id',
@@ -196,7 +207,7 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ipv6',
                 },
                 'ipv6__details': {
-                    'serializer': ip_slz.Ipv6DetailsSerializer,
+                    'serializer': ip_slz.Ipv6V3Serializer,
                     'kwargs': {
                     },
                     'obj': 'ipv6',
@@ -216,8 +227,12 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments',
                 },
                 'equipment': {
-                    'serializer': eqpt_slz.EquipmentBasicSerializer,
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
                     'kwargs': {
+                        'fields': (
+                            'id',
+                            'name',
+                        )
                     },
                     'obj': 'equipment',
                 },
@@ -289,6 +304,13 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
             'pool_created'
         )
 
+        basic_fields = (
+            'id',
+            'identifier',
+            'pool_created'
+        )
+        details_fields = fields
+
     @classmethod
     def get_serializers(cls):
         # serializers
@@ -351,28 +373,29 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'server_pool_members',
                 },
                 'vips': {
-                    'serializer': vip_slz.VipRequestSerializer,
+                    'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
                     },
                     'obj': 'vips',
                 },
                 'vips__details': {
-                    'serializer': vip_slz.VipRequestDetailsSerializer,
+                    'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'vips',
                 },
                 'groups_permissions': {
-                    'serializer': PoolPermissionSerializer,
+                    'serializer': PoolPermissionV3Serializer,
                     'kwargs': {
                         'many': True,
                     },
                     'obj': 'groups_permissions',
                 },
                 'groups_permissions__details': {
-                    'serializer': PoolPermissionSerializer,
+                    'serializer': PoolPermissionV3Serializer,
                     'kwargs': {
                         'include': (
                             'group__details',
@@ -384,36 +407,3 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
             }
 
         return cls.mapping
-
-
-# class PoolV3DetailsSerializer(DynamicFieldsModelSerializer):
-#     server_pool_members = PoolMemberV3Serializer(
-#         source='server_pool_members',
-#         many=True
-#     )
-#     # groups_permissions = serializers.SerializerMethodField('get_perms')
-#     healthcheck = HealthcheckV3Serializer()
-#     # servicedownaction = OptionPoolV3DetailsSerializer()
-#     # environment = env_slz.EnvironmentSerializer()
-
-#     # def get_perms(self, obj):
-#     #     perms = obj.serverpoolgrouppermission_set.all()
-#     #     perms_serializer = PoolPermissionDetailsSerializer(perms, many=True)
-
-#     #     return perms_serializer.data
-
-#     class Meta:
-#         model = ServerPool
-#         fields = (
-#             'id',
-#             'identifier',
-#             'default_port',
-#             'environment',
-#             'servicedownaction',
-#             'lb_method',
-#             'healthcheck',
-#             'default_limit',
-#             'server_pool_members',
-#             # 'groups_permissions',
-#             'pool_created'
-#         )

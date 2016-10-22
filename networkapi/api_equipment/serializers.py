@@ -6,7 +6,7 @@ from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class BrandDetailsSerializer(DynamicFieldsModelSerializer):
+class BrandV3Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
 
@@ -19,7 +19,7 @@ class BrandDetailsSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class ModelDetailsSerializer(DynamicFieldsModelSerializer):
+class ModelV3Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
 
@@ -34,13 +34,13 @@ class ModelDetailsSerializer(DynamicFieldsModelSerializer):
         if not cls.mapping:
             cls.mapping = {
                 'brand': {
-                    'serializer': BrandDetailsSerializer,
+                    'serializer': BrandV3Serializer,
                     'kwargs': {
                         'source': 'id'
                     }
                 },
                 'brand__details': {
-                    'serializer': BrandDetailsSerializer,
+                    'serializer': BrandV3Serializer,
                     'kwargs': {
                     }
                 },
@@ -63,7 +63,7 @@ class ModelDetailsSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class EquipmentTypeSerializer(DynamicFieldsModelSerializer):
+class EquipmentTypeV3Serializer(DynamicFieldsModelSerializer):
 
     equipment_type = serializers.Field(source='tipo_equipamento')
 
@@ -73,37 +73,6 @@ class EquipmentTypeSerializer(DynamicFieldsModelSerializer):
         fields = (
             'id',
             'equipment_type'
-        )
-
-
-class EquipmentSerializer(DynamicFieldsModelSerializer):
-
-    equipment_type = serializers.Field(source='tipo_equipamento')
-    model = serializers.Field(source='modelo')
-    name = serializers.Field(source='nome')
-    # groups = serializers.Field(source='grupos')
-
-    class Meta:
-        Equipamento = get_model('equipamento', 'Equipamento')
-        model = Equipamento
-        fields = (
-            'id',
-            'name',
-            'equipment_type',
-            'model'
-        )
-
-
-class EquipmentBasicSerializer(DynamicFieldsModelSerializer):
-
-    name = serializers.Field(source='nome')
-
-    class Meta:
-        Equipamento = get_model('equipamento', 'Equipamento')
-        model = Equipamento
-        fields = (
-            'id',
-            'name'
         )
 
 
@@ -172,50 +141,60 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
         if not cls.mapping:
             cls.mapping = {
                 'model': {
-                    'serializer': ModelDetailsSerializer,
+                    'serializer': ModelV3Serializer,
                     'kwargs': {
                         'source': 'id'
                     }
                 },
                 'equipment_type': {
-                    'serializer': EquipmentTypeSerializer,
+                    'serializer': EquipmentTypeV3Serializer,
                     'kwargs': {
                         'source': 'id'
                     }
                 },
                 'ipv4': {
-                    'serializer': ip_slz.Ipv4Serializer,
+                    'serializer': ip_slz.Ipv4V3Serializer,
                     'kwargs': {
                         'many': True,
+                        'fields': (
+                            'id',
+                            'ip_formated',
+                            'description',
+                        )
                     }
                 },
                 'ipv6': {
-                    'serializer': ip_slz.Ipv6Serializer,
+                    'serializer': ip_slz.Ipv6V3Serializer,
                     'kwargs': {
                         'many': True,
+                        'fields': (
+                            'id',
+                            'ip_formated',
+                            'description',
+                        )
                     }
                 },
                 'ipv4__details': {
-                    'serializer': ip_slz.Ipv4DetailsSerializer,
+                    'serializer': ip_slz.Ipv4V3Serializer,
                     'kwargs': {
                         'many': True,
                         'include': ('networkipv4',)
                     }
                 },
                 'ipv6__details': {
-                    'serializer': ip_slz.Ipv6DetailsSerializer,
+                    'serializer': ip_slz.Ipv6V3Serializer,
                     'kwargs': {
                         'many': True,
                         'include': ('networkipv6',)
                     }
                 },
                 'equipment_type__details': {
-                    'serializer': EquipmentTypeSerializer,
+                    'serializer': EquipmentTypeV3Serializer,
                     'kwargs': {
                     }
                 },
                 'model__details': {
-                    'serializer': ModelDetailsSerializer,
+                    'serializer': ModelV3Serializer,
                     'kwargs': {
 
                     }

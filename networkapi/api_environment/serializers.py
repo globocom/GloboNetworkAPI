@@ -2,11 +2,11 @@
 from django.db.models import get_model
 from rest_framework import serializers
 
+from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
-from networkapi.util.serializers import RecursiveField
 
 
-class IpConfigSerializer(DynamicFieldsModelSerializer):
+class IpConfigV3Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.RelatedField(source='ip_config.id')
     subnet = serializers.RelatedField(source='ip_config.subnet')
@@ -38,7 +38,7 @@ class GrupoL3Serializer(DynamicFieldsModelSerializer):
         )
 
 
-class AmbienteLogicoSerializer(DynamicFieldsModelSerializer):
+class AmbienteLogicoV3Serializer(DynamicFieldsModelSerializer):
     name = serializers.RelatedField(source='nome')
 
     class Meta:
@@ -50,7 +50,7 @@ class AmbienteLogicoSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class DivisaoDcSerializer(DynamicFieldsModelSerializer):
+class DivisaoDcV3Serializer(DynamicFieldsModelSerializer):
     name = serializers.RelatedField(source='nome')
 
     class Meta:
@@ -62,101 +62,20 @@ class DivisaoDcSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class EnvironmentSerializer(DynamicFieldsModelSerializer):
-    id = serializers.Field()
-    name = serializers.RelatedField(source='name')
-
-    class Meta:
-        Ambiente = get_model('ambiente', 'Ambiente')
-        model = Ambiente
-        fields = (
-            'id',
-            'name',
-        )
-
-
 class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
-    id = serializers.Field()
     name = serializers.RelatedField(source='name')
-    configs = serializers.SerializerMethodField('get_configs')
-
-    class Meta:
-        Ambiente = get_model('ambiente', 'Ambiente')
-        model = Ambiente
-        fields = (
-            'id',
-            'grupo_l3',
-            'ambiente_logico',
-            'divisao_dc',
-            'filter',
-            'acl_path',
-            'ipv4_template',
-            'ipv6_template',
-            'link',
-            'min_num_vlan_1',
-            'max_num_vlan_1',
-            'min_num_vlan_2',
-            'max_num_vlan_2',
-            'vrf',
-            'default_vrf',
-            'father_environment',
-            'configs'
-        )
-        default_fields = (
-            'id',
-            'grupo_l3',
-            'ambiente_logico',
-            'divisao_dc',
-            'filter',
-            'acl_path',
-            'ipv4_template',
-            'ipv6_template',
-            'link',
-            'min_num_vlan_1',
-            'max_num_vlan_1',
-            'min_num_vlan_2',
-            'max_num_vlan_2',
-            'vrf',
-            'default_vrf',
-            'father_environment'
-        )
-
-    def get_configs(self, obj):
-        configs = obj.configenvironment_set.all()
-        configs_serializer = IpConfigSerializer(configs, many=True)
-
-        return configs_serializer.data
-
-    @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {
-            'configs': self.setup_eager_loading_configs
-        }
-
-        return mapping
-
-    @staticmethod
-    def setup_eager_loading_configs(queryset):
-        queryset = queryset.prefetch_related(
-            'configenvironment_set',
-            'configenvironment_set__ip_config',
-        )
-        return queryset
-
-
-class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
-    name = serializers.RelatedField(source='name')
-    children = serializers.RelatedField(source='children')
-    configs = IpConfigSerializer(source='configs', many=True)
-
-    # father_environment = RecursiveField()
-    children = RecursiveField(source='children')
+    configs = IpConfigV3Serializer(source='configs', many=True)
 
     father_environment = serializers.SerializerMethodField(
         'get_father_environment')
     grupo_l3 = serializers.SerializerMethodField('get_grupo_l3')
     ambiente_logico = serializers.SerializerMethodField('get_ambiente_logico')
     divisao_dc = serializers.SerializerMethodField('get_divisao_dc')
+    children = serializers.SerializerMethodField('get_children')
+    filter = serializers.SerializerMethodField('get_filter')
+
+    def get_children(self, obj):
+        return self.extends_serializer(obj, 'children')
 
     def get_father_environment(self, obj):
         return self.extends_serializer(obj, 'father_environment')
@@ -170,8 +89,12 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
     def get_divisao_dc(self, obj):
         return self.extends_serializer(obj, 'divisao_dc')
 
+    def get_filter(self, obj):
+        return self.extends_serializer(obj, 'filter')
+
     class Meta:
         Ambiente = get_model('ambiente', 'Ambiente')
+        depth = 1
         model = Ambiente
         fields = (
             'id',
@@ -213,9 +136,18 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
             'default_vrf',
         )
 
+        basic_fields = (
+            'id',
+            'name',
+        )
+
+        details_fields = fields
+
     @classmethod
     def get_serializers(cls):
         """Returns the mapping of serializers."""
+
+        filter_slz = get_app('api_filter', module_label='serializers')
 
         if not cls.mapping:
             cls.mapping = {
@@ -231,7 +163,7 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'ambiente_logico_id'
                 },
                 'ambiente_logico__details': {
-                    'serializer': AmbienteLogicoSerializer,
+                    'serializer': AmbienteLogicoV3Serializer,
                     'kwargs': {},
                     'obj': 'ambiente_logico'
                 },
@@ -239,31 +171,74 @@ class EnvironmentDetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'divisao_dc_id'
                 },
                 'divisao_dc__details': {
-                    'serializer': DivisaoDcSerializer,
+                    'serializer': DivisaoDcV3Serializer,
                     'kwargs': {},
                     'obj': 'divisao_dc'
                 },
+                'filter': {
+                    'obj': 'filter_id'
+                },
+                'filter__details': {
+                    'serializer': filter_slz.FilterV3Serializer,
+                    'kwargs': {},
+                    'obj': 'filter'
+                },
+                'default_vrf': {
+                    'obj': 'default_vrf_id'
+                },
+                # 'default_vrf__details': {
+                #     'serializer': ,
+                #     'kwargs': {},
+                #     'obj': 'default_vrf'
+                # },
                 'father_environment': {
                     'obj': 'father_environment_id'
                 },
                 'father_environment__basic': {
-                    'serializer': EnvironmentDetailsSerializer,
+                    'serializer': EnvironmentV3Serializer,
                     'kwargs': {
                         'fields': (
                             'id',
+                            'name',
                             'father_environment__basic',
                         )
                     },
                     'obj': 'father_environment'
                 },
                 'father_environment__details': {
-                    'serializer': EnvironmentDetailsSerializer,
+                    'serializer': EnvironmentV3Serializer,
                     'kwargs': {
                         'include': (
                             'father_environment__details',
                         )
                     },
                     'obj': 'father_environment'
+                },
+                'children': {
+                    'serializer': EnvironmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'id',
+                            'name',
+                            'children',
+                        )
+                    },
+                    'obj': 'children'
+                },
+                'children__details': {
+                    'serializer': EnvironmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'include': (
+                            'children__details',
+                        ),
+                        'prohibited': (
+                            'father_environment__details',
+                        )
+
+                    },
+                    'obj': 'children'
                 },
             }
 

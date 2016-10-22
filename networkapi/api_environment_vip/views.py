@@ -43,9 +43,13 @@ class OptionVipEnvironmentVipOneView(APIView):
             if options_vip:
                 options_vip = options_vip[0]
 
-            serializer_options = serializers.OptionVipEnvironmentVipSerializer(
+            serializer_options = serializers.OptionVipEnvironmentVipV3Serializer(
                 options_vip,
-                many=True
+                many=True,
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude,
+                kind=self.kind
             )
             return Response(serializer_options.data, status.HTTP_200_OK)
         except Exception, exception:
@@ -76,14 +80,6 @@ class EnvironmentVipStepOneView(APIView):
             client = data.get('client', '')
             environmentp44 = data.get('environmentp44', '')
 
-            fields = (
-                'id',
-                'finalidade_txt',
-                'cliente_txt',
-                'ambiente_p44_txt',
-                'description'
-            )
-
             if client != '' and finality != '':
                 if environmentp44 != '':
                     obj = EnvironmentVip().get_by_values(
@@ -94,10 +90,13 @@ class EnvironmentVipStepOneView(APIView):
                         finality, client)
                     many = True
 
-                evip_values = serializers.EnvironmentVipSerializer(
+                evip_values = serializers.EnvironmentVipV3Serializer(
                     obj,
                     many=many,
-                    fields=fields
+                    fields=self.fields,
+                    include=self.include,
+                    exclude=self.exclude,
+                    kind=self.kind
                 ).data
             elif finality != '':
                 evip_values = EnvironmentVip().list_all_clientes_by_finalitys(finality)
@@ -125,26 +124,17 @@ class EnvironmentVipView(APIView):
             else:
                 environment_vip_ids = kwargs['environment_vip_ids'].split(';')
 
-                default_fields = (
-                    'id',
-                    'finalidade_txt',
-                    'cliente_txt',
-                    'ambiente_p44_txt',
-                    'description'
-                )
-
-                data = request.GET
-                fields = tuple(data.get('fields').split(',')) if data.get(
-                    'fields') else default_fields
-
                 environments_vip = facade.get_environmentvip_by_ids(
                     environment_vip_ids)
 
                 if environments_vip:
-                    environmentvip_serializer = serializers.EnvironmentVipSerializer(
+                    environmentvip_serializer = serializers.EnvironmentVipV3Serializer(
                         environments_vip,
                         many=True,
-                        fields=fields
+                        fields=self.fields,
+                        include=self.include,
+                        exclude=self.exclude,
+                        kind=self.kind
                     )
                     data = {
                         'environments_vip': environmentvip_serializer.data
@@ -206,9 +196,13 @@ class OptionVipEnvironmentTypeVipView(APIView):
             data = dict()
             data['optionsvip'] = list()
             for options_vip in options_vips:
-                serializer_options = serializers.OptionVipSerializer(
+                serializer_options = serializers.OptionVipV3Serializer(
                     options_vip,
-                    many=True
+                    many=True,
+                    fields=self.fields,
+                    include=self.include,
+                    exclude=self.exclude,
+                    kind=self.kind
                 )
                 data['optionsvip'].append(serializer_options.data)
 

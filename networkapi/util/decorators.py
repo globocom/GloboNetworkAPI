@@ -148,5 +148,7 @@ def prepare_search(func):
         self.exclude = tuple(data.get('exclude').split(','))\
             if data.get('exclude') else tuple()
 
+        self.kind = data.get('kind', None)
+
         return func(self, request, *args, **kwargs)
     return inner
