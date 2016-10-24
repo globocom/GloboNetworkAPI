@@ -97,19 +97,22 @@
               "type": "object",
               "properties": {
                 "group": {
-                   "type": "integer"
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
                 },
                 "read": {
-                   "type": "boolean"
+                  "type": "boolean"
                 },
                 "write": {
-                   "type": "boolean"
+                  "type": "boolean"
                 },
                 "delete": {
-                   "type": "boolean"
+                  "type": "boolean"
                 },
                 "change_config": {
-                   "type": "boolean"
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -130,19 +133,22 @@
               "type": "object",
               "properties": {
                 "user": {
-                   "type": "integer"
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
                 },
                 "read": {
-                   "type": "boolean"
+                  "type": "boolean"
                 },
                 "write": {
-                   "type": "boolean"
+                  "type": "boolean"
                 },
                 "delete": {
-                   "type": "boolean"
+                  "type": "boolean"
                 },
                 "change_config": {
-                   "type": "boolean"
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -174,14 +180,18 @@
           "ipv6": {
             "type": [
               "integer",
-              "null"
-            ]
+              "null",
+              "string"
+            ],
+            "pattern": "^auto$"
           },
           "ipv4": {
             "type": [
               "integer",
-              "null"
-            ]
+              "null",
+              "string"
+            ],
+            "pattern": "^auto$"
           }
         }
       }

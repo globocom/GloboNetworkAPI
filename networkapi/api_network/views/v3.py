@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.db.transaction import commit_on_success
 from rest_framework import status
-from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,7 +16,7 @@ from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
-
+from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
@@ -66,11 +66,17 @@ class NetworkIPv4View(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
 
-    @permission_classes((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('networkv4_post')
+    @commit_on_success
     def post(self, *args, **kwargs):
         pass
 
-    @permission_classes((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('networkv4_put')
+    @commit_on_success
     def put(self, *args, **kwargs):
         pass
 
@@ -119,10 +125,16 @@ class NetworkIPv6View(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
 
-    @permission_classes((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('networkv6_post')
+    @commit_on_success
     def post(self, *args, **kwargs):
         pass
 
-    @permission_classes((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('networkv6_put')
+    @commit_on_success
     def put(self, *args, **kwargs):
         pass

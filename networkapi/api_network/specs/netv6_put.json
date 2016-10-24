@@ -1,0 +1,108 @@
+{
+  "title": "NetworkIPv6 Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "environments_vip"
+  ],
+  "properties": {
+    "environments_vip": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "block1": {
+            "type": "string"
+          },
+          "block2": {
+            "type": "string"
+          },
+          "block3": {
+            "type": "string"
+          },
+          "block4": {
+            "type": "string"
+          },
+          "block5": {
+            "type": "string"
+          },
+          "block6": {
+            "type": "string"
+          },
+          "block7": {
+            "type": "string"
+          },
+          "block8": {
+            "type": "string"
+          },
+          "block": {
+            "type": "integer"
+          },
+          "mask1": {
+            "type": "string"
+          },
+          "mask2": {
+            "type": "string"
+          },
+          "mask3": {
+            "type": "string"
+          },
+          "mask4": {
+            "type": "string"
+          },
+          "mask5": {
+            "type": "string"
+          },
+          "mask6": {
+            "type": "string"
+          },
+          "mask7": {
+            "type": "string"
+          },
+          "mask8": {
+            "type": "string"
+          },
+          "vlan": {
+            "type": "integer"
+          },
+          "network_type": {
+            "type": "integer"
+          },
+          "environmentvip": {
+            "type": "integer"
+          },
+          "active": {
+            "type": "bolean"
+          }
+        },
+        "required": [
+            "id",
+            "block1",
+            "block2",
+            "block3",
+            "block4",
+            "block5",
+            "block6",
+            "block7",
+            "block8",
+            "block",
+            "mask1",
+            "mask2",
+            "mask3",
+            "mask4",
+            "mask5",
+            "mask6",
+            "mask7",
+            "mask8",
+            "vlan",
+            "network_type",
+            "environmentvip",
+            "active"
+        ]
+      }
+    }
+  }
+}

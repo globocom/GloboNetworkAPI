@@ -1,0 +1,80 @@
+{
+  "title": "NetworkIPv4 Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "environments_vip"
+  ],
+  "properties": {
+    "environments_vip": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "oct1": {
+            "type": "integer"
+          },
+          "oct2": {
+            "type": "integer"
+          },
+          "oct3": {
+            "type": "integer"
+          },
+          "oct4": {
+            "type": "integer"
+          },
+          "block": {
+            "type": "integer"
+          },
+          "mask_oct1": {
+            "type": "integer"
+          },
+          "mask_oct2": {
+            "type": "integer"
+          },
+          "mask_oct3": {
+            "type": "integer"
+          },
+          "mask_oct4": {
+            "type": "integer"
+          },
+          "broadcast": {
+            "type": "string"
+          },
+          "vlan": {
+            "type": "integer"
+          },
+          "network_type": {
+            "type": "integer"
+          },
+          "environmentvip": {
+            "type": "integer"
+          },
+          "active": {
+            "type": "bolean"
+          }
+        },
+        "required": [
+            "id",
+            "oct1",
+            "oct2",
+            "oct3",
+            "oct4",
+            "block",
+            "mask_oct1",
+            "mask_oct2",
+            "mask_oct3",
+            "mask_oct4",
+            "broadcast",
+            "vlan",
+            "network_type",
+            "environmentvip",
+            "active"
+        ]
+      }
+    }
+  }
+}
