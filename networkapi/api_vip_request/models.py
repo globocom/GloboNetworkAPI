@@ -74,9 +74,9 @@ class VipRequest(BaseModel):
     def equipments(self):
         eqpts = list()
         if self.ipv4:
-            eqpts = self.ipv4.ipequipamento_set.all().select_related('equipamento')
+            eqpts = self.ipv4.ipequipamento_set.all().prefetch_related('equipamento')
         if self.ipv6:
-            eqpts |= self.ipv6.ipv6equipament_set.all().select_related('equipamento')
+            eqpts |= self.ipv6.ipv6equipament_set.all().prefetch_related('equipamento')
         eqpts = [eqpt.equipamento for eqpt in eqpts]
         return eqpts
 
@@ -88,8 +88,18 @@ class VipRequest(BaseModel):
 
     @cached_property
     def ports(self):
-        ports = self.viprequestport_set.all()
+        ports = self.viprequestport_set.all().select_related()
         return ports
+
+    @cached_property
+    def options(self):
+        options = self.viprequestoptionvip_set.all().select_related()
+        return options
+
+    @cached_property
+    def groups_permissions(self):
+        perms = self.viprequestgrouppermission_set.all().select_related()
+        return perms
 
     @classmethod
     def get_by_pk(cls, id):
@@ -242,6 +252,34 @@ class VipRequestOptionVip(BaseModel):
         db_column='id_opcoesvip',
     )
 
+    @cached_property
+    def traffic_return(self):
+        opt = self.optionvip \
+            if self.optionvip.tipo_opcao == 'Retorno de trafego' \
+            else None
+        return opt
+
+    @cached_property
+    def cache_group(self):
+        opt = self.optionvip \
+            if self.optionvip.tipo_opcao == 'cache' \
+            else None
+        return opt
+
+    @cached_property
+    def persistence(self):
+        opt = self.optionvip \
+            if self.optionvip.tipo_opcao == 'Persistencia' \
+            else None
+        return opt
+
+    @cached_property
+    def timeout(self):
+        opt = self.optionvip \
+            if self.optionvip.tipo_opcao == 'timeout' \
+            else None
+        return opt
+
     class Meta(BaseModel.Meta):
         db_table = u'vip_request_optionsvip'
         managed = True
@@ -261,6 +299,33 @@ class VipRequestOptionVip(BaseModel):
         except ObjectDoesNotExist, e:
             cls.log.error(
                 u'vip request option vip not found. pk {}'.format(id))
+            raise exceptions.VipRequestOptionVipNotFoundError(id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            cls.log.error(u'Failure to search the option vip.')
+            raise exceptions.VipRequestOptionVipError(
+                e, u'Failure to search the vip request option vip.')
+
+    @classmethod
+    def get_by_kind(cls, vip_request_id, kind):
+        """"Get Vip Request Option Vip by Vip Request and kind.
+
+        @return: Vip Request Option Vip.
+
+        @raise VipRequestOptionVipNotFoundError: Vip Request Option Vip not registered.
+        @raise VipRequestOptionVipError: Failed to search for the Vip Request Option Vip.
+        @raise OperationalError: Lock wait timeout exceeded.
+        """
+        try:
+            return VipRequestOptionVip.objects.get(
+                vip_request_id=vip_request_id, optionvip__tipo_opcao=kind)
+        except ObjectDoesNotExist, e:
+            cls.log.error(
+                u'Vip request option vip not found. Vip {} '
+                u'kind {}'.format(vip_request_id, kind))
             raise exceptions.VipRequestOptionVipNotFoundError(id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
@@ -294,6 +359,16 @@ class VipRequestPort(BaseModel):
         db_column='identifier',
         null=True
     )
+
+    @cached_property
+    def pools(self):
+        pools = self.viprequestportpool_set.all().select_related()
+        return pools
+
+    @cached_property
+    def options(self):
+        options = self.viprequestportoptionvip_set.all().select_related()
+        return options
 
     class Meta(BaseModel.Meta):
         db_table = u'vip_request_port'
@@ -403,6 +478,10 @@ class VipRequestPortPool(BaseModel):
     order = models.IntegerField(
         null=True
     )
+
+    @cached_property
+    def l7_rule(self):
+        return self.optionvip
 
     class Meta(BaseModel.Meta):
         db_table = u'vip_request_port_pool'

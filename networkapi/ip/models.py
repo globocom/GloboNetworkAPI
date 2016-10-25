@@ -1426,7 +1426,7 @@ class Ip(BaseModel):
 
             # Serializes obj
             ip_slz = get_app('api_ip', module_label='serializers')
-            serializer = ip_slz.Ipv4Serializer(self)
+            serializer = ip_slz.Ipv4V3Serializer(self)
             data_to_queue = serializer.data
 
             # Deletes Obj IP
@@ -2944,7 +2944,7 @@ class Ipv6(BaseModel):
 
             # Serializes obj
             ip_slz = get_app('api_ip', module_label='serializers')
-            serializer = ip_slz.Ipv6Serializer(self, include='')
+            serializer = ip_slz.Ipv6V3Serializer(self)
             data_to_queue = serializer.data
 
             # Deletes Obj IP

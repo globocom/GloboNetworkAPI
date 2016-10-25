@@ -624,7 +624,7 @@ def update_real_vip_request(vip_requests, user):
         vip_request = copy.deepcopy(vip)
 
         vip_old = models.VipRequest.get_by_pk(vip.get('id'))
-        serializer_vips = vip_slz.VipRequestSerializer(
+        serializer_vips = vip_slz.VipRequestV3Serializer(
             vip_old,
             many=False
         )

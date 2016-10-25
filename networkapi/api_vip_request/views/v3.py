@@ -17,8 +17,7 @@ from networkapi.api_vip_request.permissions import DeployUpdate
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
 from networkapi.api_vip_request.permissions import write_vip_permission
-from networkapi.api_vip_request.serializers.v3 import VipRequestDetailsSerializer
-from networkapi.api_vip_request.serializers.v3 import VipRequestSerializer
+from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -28,6 +27,7 @@ from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.json_validate import verify_ports_vip
+# from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 
 
 log = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class VipRequestDeployView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         vips = facade.get_vip_request_by_ids(vip_request_ids)
-        vip_serializer = VipRequestSerializer(vips, many=True)
+        vip_serializer = VipRequestV3Serializer(vips, many=True)
 
         locks_list = facade.create_lock(vip_serializer.data)
         try:
@@ -73,7 +73,7 @@ class VipRequestDeployView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         vips = facade.get_vip_request_by_ids(vip_request_ids)
-        vip_serializer = VipRequestSerializer(vips, many=True)
+        vip_serializer = VipRequestV3Serializer(vips, many=True)
 
         locks_list = facade.create_lock(vip_serializer.data)
         try:
@@ -137,12 +137,13 @@ class VipRequestDBView(APIView):
                 # serializer vips
                 only_main_property = True
 
-            serializer_vips = VipRequestSerializer(
+            serializer_vips = VipRequestV3Serializer(
                 vips_requests,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties
@@ -255,12 +256,13 @@ class VipRequestDBDetailsView(APIView):
                 only_main_property = True
 
             # serializer vips
-            serializer_vips = VipRequestDetailsSerializer(
+            serializer_vips = VipRequestV3Serializer(
                 vips_requests,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind='details'
             )
 
             # prepare serializer with customized properties
@@ -304,12 +306,13 @@ class VipRequestPoolView(APIView):
             only_main_property = False
 
             # serializer vips
-            serializer_vips = VipRequestSerializer(
+            serializer_vips = VipRequestV3Serializer(
                 vips_requests['query_set'],
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties

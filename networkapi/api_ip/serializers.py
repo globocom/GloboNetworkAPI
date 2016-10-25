@@ -6,72 +6,7 @@ from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class Ipv4Serializer(DynamicFieldsModelSerializer):
-
-    ip_formated = serializers.Field(source='ip_formated')
-
-    class Meta:
-        Ip = get_model('ip', 'Ip')
-        model = Ip
-        fields = (
-            'id',
-            'ip_formated',
-            'oct4',
-            'oct3',
-            'oct2',
-            'oct1',
-            'networkipv4',
-            'description',
-        )
-
-        default_fields = (
-            'id',
-            'ip_formated',
-            'description'
-        )
-
-
-class Ipv6Serializer(DynamicFieldsModelSerializer):
-
-    ip_formated = serializers.Field(source='ip_formated')
-
-    class Meta:
-        Ipv6 = get_model('ip', 'Ipv6')
-        model = Ipv6
-        fields = (
-            'id',
-            'ip_formated',
-            'block1',
-            'block2',
-            'block3',
-            'block4',
-            'block5',
-            'block6',
-            'block7',
-            'block8',
-            'networkipv6',
-            'description',
-            'equipments',
-            'vips',
-            'server_pool_members',
-        )
-
-        default_fields = (
-            'id',
-            'block1',
-            'block2',
-            'block3',
-            'block4',
-            'block5',
-            'block6',
-            'block7',
-            'block8',
-            'networkipv6',
-            'description'
-        )
-
-
-class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
+class Ipv4V3Serializer(DynamicFieldsModelSerializer):
 
     ip_formated = serializers.Field(source='ip_formated')
     description = serializers.Field(source='descricao')
@@ -115,6 +50,13 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
             'description'
         )
 
+        basic_fields = (
+            'id',
+            'ip_formated',
+            'networkipv4',
+            'description',
+        )
+
     def get_networkipv4(self, obj):
         return self.extends_serializer(obj, 'networkipv4')
 
@@ -141,7 +83,7 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'networkipv4_id'
                 },
                 'networkipv4__details': {
-                    'serializer': net_slz.NetworkIPv4Serializer,
+                    'serializer': net_slz.NetworkIPv4V3Serializer,
                     'kwargs': {
                     },
                     'obj': 'networkipv4',
@@ -159,11 +101,12 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
                     'serializer': eqpt_slz.EquipmentV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'equipments'
                 },
                 'vips': {
-                    'serializer': vip_slz.VipRequestSerializer,
+                    'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': ('id',)
@@ -171,9 +114,10 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'vips'
                 },
                 'vips__details': {
-                    'serializer': vip_slz.VipRequestDetailsSerializer,
+                    'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'vips'
                 },
@@ -189,6 +133,7 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
                     'serializer': pool_slz.PoolMemberV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'server_pool_members'
                 }
@@ -204,7 +149,7 @@ class Ipv4DetailsSerializer(DynamicFieldsModelSerializer):
         return queryset
 
 
-class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
+class Ipv6V3Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.Field()
     ip_formated = serializers.Field(source='ip_formated')
@@ -255,6 +200,15 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
             'description'
         )
 
+        basic_fields = (
+            'id',
+            'ip_formated',
+            'networkipv6',
+            'description',
+        )
+
+        details_fields = fields
+
     def get_networkipv6(self, obj):
         return self.extends_serializer(obj, 'networkipv6')
 
@@ -281,7 +235,7 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'networkipv6_id'
                 },
                 'networkipv6__details': {
-                    'serializer': net_slz.NetworkIPv6Serializer,
+                    'serializer': net_slz.NetworkIPv6V3Serializer,
                     'kwargs': {
                     },
                     'obj': 'networkipv6',
@@ -303,7 +257,7 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments'
                 },
                 'vips': {
-                    'serializer': vip_slz.VipRequestSerializer,
+                    'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': ('id',)
@@ -311,9 +265,10 @@ class Ipv6DetailsSerializer(DynamicFieldsModelSerializer):
                     'obj': 'vips'
                 },
                 'vips__details': {
-                    'serializer': vip_slz.VipRequestDetailsSerializer,
+                    'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'vips'
                 },

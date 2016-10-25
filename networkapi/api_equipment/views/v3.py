@@ -79,7 +79,8 @@ class EquipmentView(APIView):
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties

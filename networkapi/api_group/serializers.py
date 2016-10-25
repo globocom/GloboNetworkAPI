@@ -5,7 +5,7 @@ from rest_framework import serializers
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class UserGroupSerializer(DynamicFieldsModelSerializer):
+class UserGroupV3Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
 

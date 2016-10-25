@@ -42,12 +42,13 @@ class IPv4View(APIView):
                 obj_model = None
 
             # serializer ips
-            serializer_ip = serializers.Ipv4DetailsSerializer(
+            serializer_ip = serializers.Ipv4V3Serializer(
                 ips,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties
@@ -94,12 +95,13 @@ class IPv6View(APIView):
                 obj_model = None
 
             # serializer ips
-            serializer_ip = serializers.Ipv6DetailsSerializer(
+            serializer_ip = serializers.Ipv6V3Serializer(
                 ips,
                 many=True,
                 fields=self.fields,
                 include=self.include,
-                exclude=self.exclude
+                exclude=self.exclude,
+                kind=self.kind
             )
 
             # prepare serializer with customized properties

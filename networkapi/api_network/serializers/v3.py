@@ -6,7 +6,7 @@ from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class NetworkTypeSerializer(DynamicFieldsModelSerializer):
+class NetworkTypeV3Serializer(DynamicFieldsModelSerializer):
 
     """Serilizes TipoRede Model."""
 
@@ -21,7 +21,7 @@ class NetworkTypeSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
+class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
 
     """Serilizes NetworkIPv4 Model."""
 
@@ -53,7 +53,7 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ambient_vip_id'
                 },
                 'environmentvip__details': {
-                    'serializer': envvip_slz.EnvironmentVipSerializer,
+                    'serializer': envvip_slz.EnvironmentVipV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'ambient_vip',
@@ -63,7 +63,7 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'vlan_id'
                 },
                 'vlan__details': {
-                    'serializer': vlan_slz.VlanSerializerV3,
+                    'serializer': vlan_slz.VlanV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'vlan',
@@ -73,7 +73,7 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'network_type_id'
                 },
                 'network_type__details': {
-                    'serializer': NetworkTypeSerializer,
+                    'serializer': NetworkTypeV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'network_type',
@@ -149,8 +149,20 @@ class NetworkIPv4Serializer(DynamicFieldsModelSerializer):
             'dhcprelay',
         )
 
+        basic_fields = (
+            'id',
+            'networkv4',
+            'mask_formated',
+            'broadcast',
+            'vlan',
+            'network_type',
+            'environmentvip',
+        )
 
-class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
+        details_fields = fields
+
+
+class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
 
     """Serilizes NetworkIPv6 Model."""
 
@@ -182,7 +194,7 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ambient_vip_id'
                 },
                 'environmentvip__details': {
-                    'serializer': envvip_slz.EnvironmentVipSerializer,
+                    'serializer': envvip_slz.EnvironmentVipV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'ambient_vip',
@@ -192,7 +204,7 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
                     'obj': 'vlan_id'
                 },
                 'vlan__details': {
-                    'serializer': vlan_slz.VlanSerializerV3,
+                    'serializer': vlan_slz.VlanV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'vlan',
@@ -202,7 +214,7 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
                     'obj': 'network_type_id'
                 },
                 'network_type__details': {
-                    'serializer': NetworkTypeSerializer,
+                    'serializer': NetworkTypeV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'network_type',
@@ -290,3 +302,15 @@ class NetworkIPv6Serializer(DynamicFieldsModelSerializer):
             'active',
             'dhcprelay'
         )
+
+        basic_fields = (
+            'id',
+            'networkv6',
+            'mask_formated',
+            'broadcast',
+            'vlan',
+            'network_type',
+            'environmentvip',
+        )
+
+        details_fields = fields
