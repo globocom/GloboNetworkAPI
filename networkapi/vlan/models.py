@@ -16,6 +16,7 @@ from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.semaforo.model import Semaforo
 from networkapi.util import clone
+from networkapi.util.decorators import cached_property
 
 
 class VlanError(Exception):
@@ -209,6 +210,10 @@ class Vlan(BaseModel):
         db_table = u'vlans'
         managed = True
         unique_together = (('nome', 'ambiente'), ('num_vlan', 'ambiente'))
+
+    @cached_property
+    def vrfs(self):
+        return self.get_vrf().prefetch_related()
 
     def get_by_pk(self, id):
         """Get Vlan by id.
