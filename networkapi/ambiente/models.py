@@ -24,6 +24,8 @@ from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 
+from networkapi.api_vrf.models import Vrf
+from networkapi.api_vrf.models import VrfNotFoundError
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
@@ -726,8 +728,7 @@ class Ambiente(BaseModel):
     )
 
     default_vrf = models.ForeignKey(
-        'api_vrf.Vrf',
-        null=True,
+        Vrf,
         db_column='id_vrf'
     )
 
