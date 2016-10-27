@@ -844,7 +844,7 @@ class Ambiente(BaseModel):
 
             # default vrf
             vrf_model = get_model('api_vrf', 'Vrf')
-            self.default_vrf = vrf_model.get_by_pk(self.default_vrf)
+            self.default_vrf = vrf_model.get_by_pk(self.default_vrf.id)
 
             return self.save()
 
