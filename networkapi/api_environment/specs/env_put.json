@@ -126,18 +126,7 @@
           "grupo_l3",
           "ambiente_logico",
           "divisao_dc",
-          "filter",
-          "acl_path",
-          "ipv4_template",
-          "ipv6_template",
-          "link",
-          "min_num_vlan_1",
-          "max_num_vlan_1",
-          "min_num_vlan_2",
-          "max_num_vlan_2",
-          "vrf",
-          "default_vrf",
-          "father_environment"
+          "default_vrf"
         ]
       }
     }

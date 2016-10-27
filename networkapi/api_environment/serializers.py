@@ -2,6 +2,7 @@
 from django.db.models import get_model
 from rest_framework import serializers
 
+from networkapi.api_vrf.serializers import VrfV3Serializer
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
@@ -73,6 +74,10 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     divisao_dc = serializers.SerializerMethodField('get_divisao_dc')
     children = serializers.SerializerMethodField('get_children')
     filter = serializers.SerializerMethodField('get_filter')
+    default_vrf = serializers.SerializerMethodField('get_default_vrf')
+
+    def get_default_vrf(self, obj):
+        return self.extends_serializer(obj, 'default_vrf')
 
     def get_children(self, obj):
         return self.extends_serializer(obj, 'children')
@@ -186,11 +191,15 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 'default_vrf': {
                     'obj': 'default_vrf_id'
                 },
-                # 'default_vrf__details': {
-                #     'serializer': ,
-                #     'kwargs': {},
-                #     'obj': 'default_vrf'
-                # },
+                'default_vrf__details': {
+                    'serializer': VrfV3Serializer,
+                    'kwargs': {
+                        'include': (
+                            'default_vrf__details',
+                        )
+                    },
+                    'obj': 'default_vrf'
+                },
                 'father_environment': {
                     'obj': 'father_environment_id'
                 },

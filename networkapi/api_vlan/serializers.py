@@ -12,6 +12,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
     environment = serializers.SerializerMethodField('get_environment')
     networks_ipv4 = serializers.SerializerMethodField('get_networks_ipv4')
     networks_ipv6 = serializers.SerializerMethodField('get_networks_ipv6')
+    vrfs = serializers.SerializerMethodField('get_vrfs')
 
     def get_environment(self, obj):
         return self.extends_serializer(obj, 'environment')
@@ -21,6 +22,9 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
 
     def get_networks_ipv6(self, obj):
         return self.extends_serializer(obj, 'networks_ipv6')
+
+    def get_vrfs(self, obj):
+        return self.extends_serializer(obj, 'vrfs')
 
     class Meta:
         vlan_model = get_app('vlan', module_label='models')
@@ -41,6 +45,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'acl_draft_v6',
             'networks_ipv4',
             'networks_ipv6',
+            'vrfs',
         )
 
         default_fields = (
@@ -72,6 +77,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
         """Returns the mapping of serializers."""
         env_slz = get_app('api_environment', module_label='serializers')
         ip_slz = get_app('api_network', module_label='serializers.v3')
+        vrf_slz = get_app('api_vrf', module_label='serializers')
 
         if not cls.mapping:
             cls.mapping = {
@@ -127,7 +133,22 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'networks_ipv6',
-                }
+                },
+                'vrfs': {
+                    'serializer': vrf_slz.VrfV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'obj': 'vrfs'
+                },
+                'vrfs__details': {
+                    'serializer': vrf_slz.VrfV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                    },
+                    'obj': 'vrfs'
+                },
             }
 
         return cls.mapping

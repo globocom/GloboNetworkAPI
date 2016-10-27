@@ -167,7 +167,7 @@ def create_environment(env):
     env_obj.min_num_vlan_2 = env.get('min_num_vlan_2')
     env_obj.max_num_vlan_2 = env.get('max_num_vlan_2')
     env_obj.vrf = env.get('vrf')
-    env_obj.default_vrf = env.get('default_vrf')
+    env_obj.default_vrf_id = env.get('default_vrf')
     env_obj.father_environment_id = env.get('father_environment')
 
     env_obj.create(None)
