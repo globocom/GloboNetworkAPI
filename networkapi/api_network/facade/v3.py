@@ -59,3 +59,12 @@ def get_networkipv6_by_search(search=dict()):
     net_map = build_query_to_datatable_v3(networks, search)
 
     return net_map
+
+
+def create_networkipv4(networkv4, user):
+
+    netv4_obj = NetworkIPv4()
+
+    netv4_obj.create_v3(networkv4)
+
+    return netv4_obj

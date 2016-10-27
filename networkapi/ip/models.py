@@ -32,6 +32,7 @@ from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.ipaddr import AddressValueError
+from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.infrastructure.ipaddr import IPv4Address
 from networkapi.infrastructure.ipaddr import IPv4Network
 from networkapi.infrastructure.ipaddr import IPv6Address
@@ -326,9 +327,15 @@ class NetworkIPv4(BaseModel):
 
     def _get_formated_ip(self):
         """Returns formated ip."""
-        return '%s.%s.%s.%s/%s' % (self.oct1, self.oct2, self.oct3, self.oct4, self.block)
+        return '%s/%s' % (self.formated_octs, self.block)
 
     networkv4 = property(_get_formated_ip)
+
+    def _get_formated_octs(self):
+        """Returns formated octs."""
+        return '%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4)
+
+    formated_octs = property(_get_formated_octs)
 
     def _get_formated_mask(self):
         """Returns formated mask."""
@@ -598,10 +605,46 @@ class NetworkIPv4(BaseModel):
             raise IpCantBeRemovedFromVip(
                 cause, 'Esta Rede possui um Vip apontando para ela, e não pode ser excluída')
 
-    def create_v3(self):
+    def create_v3(self, networkv4):
         """
         Create new networkIPv4.
         """
+
+        self.oct1 = networkv4.get('oct1')
+        self.oct2 = networkv4.get('oct2')
+        self.oct3 = networkv4.get('oct3')
+        self.oct4 = networkv4.get('oct4')
+        self.block = networkv4.get('block')
+        self.mask_oct1 = networkv4.get('mask_oct1')
+        self.mask_oct2 = networkv4.get('mask_oct2')
+        self.mask_oct3 = networkv4.get('mask_oct3')
+        self.mask_oct4 = networkv4.get('mask_oct4')
+
+        if self.block:
+            ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
+        else:
+            ip = IPNetwork('%s/%s' % (self.formated_octs, self.mask_formated))
+
+        self.block = ip.prefixlen
+        mask = ip.netmask.exploded.split('.')
+        self.broadcast = ip.broadcast.compressed
+        self.mask_oct1 = mask[0]
+        self.mask_oct2 = mask[1]
+        self.mask_oct3 = mask[2]
+        self.mask_oct4 = mask[3]
+
+        vlan_model = get_model('vlan', 'Vlan')
+        tiporede_model = get_model('vlan', 'TipoRede')
+
+        self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
+        self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
+
+        # has environmentvip
+        if networkv4.get('environmentvip'):
+            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+            self.environmentvip = environmentvip_model().get_by_pk(
+                networkv4.get('environmentvip'))
+
         self.validate_v3()
 
         self.save()
@@ -610,6 +653,7 @@ class NetworkIPv4(BaseModel):
         """
         Update new networkIPv4.
         """
+
         self.validate_v3()
 
         self.save()
@@ -639,21 +683,26 @@ class NetworkIPv4(BaseModel):
         """
         Validate networkIPv4.
         """
+        vlan_inst = self.vlan
 
-        vlan_model = get_model('vlan', 'Vlan')
+        netv4, netv6 = vlan_inst.get_networks_related(
+            has_netv6=False, exclude_current=False)
 
-        vlan_inst = vlan_model().get_by_pk(self.vlan)
+        if netv4:
+            netv4_env, netv6_env = vlan_inst.prepare_networks(netv4, [])
+            netv4_dict, netv6_dict = vlan_inst.prepare_networks([self], [])
+            v4_interset, v4_supernet = vlan_inst.verify_networks(
+                netv4_dict, netv4_env)
 
-        netv4_env, netv6_env = vlan_inst.get_networks_related(has_netv6=False)
+            if v4_interset:
+                raise Exception(
+                    'One of the equipment associated with the environment of this Vlan '
+                    'is also associated with other environment that has a network '
+                    'with the same track, add filters in environments if necessary.')
 
-        v4_interset, v4_supernet = vlan_inst.verify_networks(
-            [self.mask_formated], netv4_env)
-
-        if v4_interset:
-            raise Exception(
-                'One of the equipment associated with the environment of this Vlan '
-                'is also associated with other environment that has a network '
-                'with the same track, add filters in environments if necessary.')
+        # validate if network if allow in environment
+        configs = vlan_inst.ambiente.configs.all()
+        vlan_inst.allow_networks_environment(configs, [self], [])
 
 
 class Ip(BaseModel):
@@ -2141,20 +2190,22 @@ class NetworkIPv6(BaseModel):
         Validate NetworkIPv6.
         """
 
-        vlan_model = get_model('vlan', 'Vlan')
+        vlan_inst = self.vlan
 
-        vlan_inst = vlan_model().get_by_pk(self.vlan)
+        netv4_env, netv6_env = vlan_inst.get_networks_related(
+            has_netv4=False, exclude_current=False)
 
-        netv4_env, netv6_env = vlan_inst.get_networks_related(has_netv4=False)
+        if netv6_env:
+            netv4_env, netv6_env = vlan_inst.prepare_networks([], netv4)
+            netv4_dict, netv6_dict = vlan_inst.prepare_networks([], [self])
+            v6_interset, v6_supernet = vlan_inst.verify_networks(
+                netv6_dict, netv6_env)
 
-        v6_interset, v6_supernet = vlan_inst.verify_networks(
-            [self.mask_formated], netv6_env)
-
-        if v6_interset:
-            raise Exception(
-                'One of the equipment associated with the environment of this Vlan '
-                'is also associated with other environment that has a network '
-                'with the same track, add filters in environments if necessary.')
+            if v6_interset:
+                raise Exception(
+                    'One of the equipment associated with the environment of this Vlan '
+                    'is also associated with other environment that has a network '
+                    'with the same track, add filters in environments if necessary.')
 
 
 class Ipv6(BaseModel):

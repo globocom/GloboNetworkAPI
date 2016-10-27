@@ -12,10 +12,12 @@ from networkapi.api_network.permissions import Read
 from networkapi.api_network.permissions import Write
 from networkapi.api_network.serializers import v3 as serializers
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
+from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
@@ -70,8 +72,21 @@ class NetworkIPv4View(APIView):
     @logs_method_apiview
     @raise_json_validate('networkv4_post')
     @commit_on_success
-    def post(self, *args, **kwargs):
-        pass
+    def post(self, request, *args, **kwargs):
+        """
+        Creates list of networkv4
+        """
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv4_post')).validate(data)
+
+        response = list()
+        for networkv4 in data['networks']:
+            vl = facade.create_networkipv4(networkv4, request.user)
+            response.append({'id': vl.id})
+
+        return Response(response, status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview

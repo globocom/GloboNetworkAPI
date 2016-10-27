@@ -3,10 +3,10 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "required": [
-    "environments_vip"
+    "networks"
   ],
   "properties": {
-    "environments_vip": {
+    "networks": {
       "type": "array",
       "items": {
         "type": "object",
@@ -69,34 +69,22 @@
             "type": "integer"
           },
           "environmentvip": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "active": {
-            "type": "bolean"
+            "type": "boolean"
+          },
+          "cluster_unit": {
+            "type": "string"
           }
         },
         "required": [
-            "block1",
-            "block2",
-            "block3",
-            "block4",
-            "block5",
-            "block6",
-            "block7",
-            "block8",
-            "block",
-            "mask1",
-            "mask2",
-            "mask3",
-            "mask4",
-            "mask5",
-            "mask6",
-            "mask7",
-            "mask8",
             "vlan",
             "network_type",
-            "environmentvip",
-            "active"
+            "environmentvip"
         ]
       }
     }

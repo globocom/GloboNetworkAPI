@@ -205,12 +205,26 @@ class Vlan(BaseModel):
     acl_draft_v6 = models.TextField(
         blank=True, null=True, db_column='acl_draft_v6')
 
+    def _get_networks_ipv4(self):
+        """Returns networks v4."""
+        networkipv4 = self.networkipv4_set.all().select_related()
+        return networkipv4
+
+    networks_ipv4 = property(_get_networks_ipv4)
+
+    def _get_networks_ipv6(self):
+        """Returns networks v6."""
+        networkipv6 = self.networkipv6_set.all().select_related()
+        return networkipv6
+
+    networks_ipv6 = property(_get_networks_ipv6)
+
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
         managed = True
         unique_together = (('nome', 'ambiente'), ('num_vlan', 'ambiente'))
 
-    def get_by_pk(self, id):
+    def get_by_pk(self, vlan_id):
         """Get Vlan by id.
 
         @return: Vlan.
@@ -220,10 +234,10 @@ class Vlan(BaseModel):
         @raise OperationalError: Lock wait timeout exceed
         """
         try:
-            return Vlan.objects.filter(id=id).uniqueResult()
+            return Vlan.objects.get(id=vlan_id)
         except ObjectDoesNotExist, e:
             raise VlanNotFoundError(
-                e, u'Dont there is a Vlan by pk = %s.' % id)
+                e, u'Dont there is a Vlan by pk = %s.' % vlan_id)
         except OperationalError, e:
             self.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -907,7 +921,7 @@ class Vlan(BaseModel):
 
         self.save()
 
-    def get_networks_related(self, has_netv4=True, has_netv6=True):
+    def get_networks_related(self, has_netv4=True, has_netv6=True, exclude_current=True):
         vlan_model = get_model('vlan', 'Vlan')
 
         vlans_env_eqpt = vlan_model.objects.filter(
@@ -918,10 +932,13 @@ class Vlan(BaseModel):
             Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
             # get vlans using vrf of environment
             Q(ambiente__default_vrf__in=self.get_vrf())
-        ).exclude(
-            # exclude current vlan
-            id=self.id
-        ).distinct()
+        )
+
+        if exclude_current:
+            vlans_env_eqpt = vlans_env_eqpt.exclude(
+                # exclude current vlan
+                id=self.id
+            ).distinct()
 
         self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
 
@@ -940,6 +957,11 @@ class Vlan(BaseModel):
         return netv4, netv6
 
     def validate_network(self):
+        configs = self.ambiente.configs.all()
+        netv4 = self.networkipv4_set.filter()
+        netv6 = self.networkipv6_set.filter()
+
+        self.allow_networks_environment(configs, netv4, netv6)
 
         netv4, netv6 = self.get_networks_related()
 
@@ -961,6 +983,42 @@ class Vlan(BaseModel):
                 'Um dos equipamentos associados com o ambiente desta Vlan '
                 'também está associado com outro ambiente que tem uma rede '
                 'com a mesma faixa, adicione filtros nos ambientes se necessário.')
+
+    def allow_networks_environment(self, configs, netv4, netv6):
+
+        for net in netv4:
+            configsv4 = configs.filter(
+                ip_config__type='v4',
+                ip_config__network_type=net.network_type
+            )
+
+            nts = [IPNetwork(config.ip_config.subnet) for config in configsv4]
+
+            net_ip = [IPNetwork(net.networkv4)]
+
+            if not self.verify_intersect(nts, net.block, net_ip):
+                raise Exception(
+                    'Network can not inserted in environment %s because '
+                    'network %s are in out of the range of allowed networks ' %
+                    (self.ambiente.name, net.networkv4)
+                )
+
+        for net in netv6:
+            configsv6 = configs.filter(
+                ip_config__type='v6',
+                ip_config__network_type=net.network_type
+            )
+
+            nts = [IPNetwork(config.ip_config.subnet) for config in configsv6]
+
+            net_ip = [IPNetwork(net.networkv6)]
+
+            if not self.verify_intersect(nts, net.block, net_ip):
+                raise Exception(
+                    'Network can not inserted in environment %s because '
+                    'network %s are in out of the range of allowed networks ' %
+                    (self.ambiente.name, net.networkv6)
+                )
 
     def prepare_networks(self, netv4, netv6):
 
@@ -992,36 +1050,35 @@ class Vlan(BaseModel):
         # has network conflict with same networks
         intersect = list(set(vl_net1) & set(vl_net2))
         if intersect:
-            self.log.error('Same network - intersect:%s' % intersect)
+            self.log.info('Same network - intersect:%s' % intersect)
             return intersect, intersect
 
-        for key in nets1.keys():
+        for block1 in nets1.keys():
 
-            for key2 in nets2.keys():
+            for block2 in nets2.keys():
 
                 # network1 < network2 of environment
-                if key < key2:
+                # Example: /23 < /24 = /24 is subnet
+                if block1 < block2:
                     # get subnet of network1
-                    for net in nets1[key]:
-                        subnets_net1 = list(net.subnet(new_prefix=key2))
-                        # has network conflict with subnet of network1
-                        intersect = list(set(subnets_net1) & set(vl_net2))
-                        if intersect:
-                            self.log.error(
-                                'Subnet intersect:%s, supernet:%s' % (intersect, net))
-                            return intersect, net
+                    return self.verify_intersect(nets1[block1], block2, vl_net2)
 
                 # network1 >= network2 of environment
+                # Example: /24 >= /23 = /24 is subnet
                 else:
                     # get subnet of network2
-                    for net in nets2[key]:
-                        subnets_net2 = list(net.subnet(new_prefix=key))
-                        # has network conflict with subnet of network1
-
-                        intersect = list(set(subnets_net2) & set(vl_net1))
-                        if intersect:
-                            self.log.error(
-                                'Subnet intersect:%s, supernet:%s' % (intersect, net))
-                            return intersect, net
+                    return self.verify_intersect(nets2[block2], block1, vl_net1)
 
         return [], []
+
+    def verify_intersect(self, nets, new_prefix, nets2):
+
+        for net in nets:
+            subnets = list(net.subnet(new_prefix=new_prefix))
+            # has network conflict with subnet of network1
+
+            intersect = list(set(subnets) & set(nets2))
+            if intersect:
+                self.log.info(
+                    'Subnet intersect:%s, supernet:%s' % (intersect, net))
+                return intersect, net

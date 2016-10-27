@@ -404,10 +404,10 @@ SPECS = {
     'environment_vip_put': 'networkapi/api_environment_vip/specs/env_put.json',
     'vlan_put': 'networkapi/api_vlan/specs/vlan_put.json',
     'vlan_post': 'networkapi/api_vlan/specs/vlan_post.json',
-    'networkv4_put': 'networkapi/api_networkv4/specs/netv4_put.json',
-    'networkv4_post': 'networkapi/api_networkv4/specs/netv4_post.json',
-    'networkv6_put': 'networkapi/api_networkv6/netv6__put.json',
-    'networkv6_post': 'networkapi/api_networkv6/netv6_post.json',
+    'networkv4_put': 'networkapi/api_network/specs/netv4_put.json',
+    'networkv4_post': 'networkapi/api_network/specs/netv4_post.json',
+    'networkv6_put': 'networkapi/api_network/netv6_put.json',
+    'networkv6_post': 'networkapi/api_network/netv6_post.json',
 }
 
 ##########

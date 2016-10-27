@@ -126,6 +126,7 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
             'network_type',
             'environmentvip',
             'active',
+            'cluster_unit',
         )
 
         fields = (
@@ -147,6 +148,7 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
             'environmentvip',
             'active',
             'dhcprelay',
+            'cluster_unit',
         )
 
         basic_fields = (
@@ -274,6 +276,7 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
             'network_type',
             'environmentvip',
             'active',
+            'cluster_unit',
         )
         fields = (
             'id',
@@ -300,7 +303,8 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
             'network_type',
             'environmentvip',
             'active',
-            'dhcprelay'
+            'dhcprelay',
+            'cluster_unit',
         )
 
         basic_fields = (

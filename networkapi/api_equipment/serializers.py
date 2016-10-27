@@ -94,6 +94,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
         fields = (
             'id',
             'name',
+            'maintenance',
             'equipment_type',
             'model',
             'ipv4',
