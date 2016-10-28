@@ -1,9 +1,8 @@
 GET
 ###
 
-Obtaining vip requests associated to server pools
-*************************************************
-.. TODO - Nao sei a spec de ipv6, do dscp, e custom search
+Obtaining vip requests associated to server pool
+************************************************
 
 URL::
 
@@ -35,7 +34,11 @@ Response body:
                 "ip_formated": <string>,
                 "description": <string>
             },
-            "ipv6": ??,
+            "ipv6": {
+                "id": <integer>,
+                "ip_formated": <string>,
+                "description": <string>
+            },
             "equipments": [{
                 "id": <integer>,
                 "name": <string>,
@@ -45,7 +48,7 @@ Response body:
             "default_names": [
                 <string>,...
             ],
-            "dscp": ??,
+            "dscp": <integer>,
             "created": <boolean>
         }],
         "url_prev_search": <string>,
@@ -61,7 +64,7 @@ Response body:
             "asorting_cols": [
                 "-id"
             ],
-            "custom_search": ??
+            "custom_search": null
         }
     }
 

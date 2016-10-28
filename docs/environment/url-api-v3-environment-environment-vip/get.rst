@@ -1,38 +1,25 @@
 GET
 ###
 
-Obtaining environments
-**********************
+Obtaining environments associated to environment vip
+****************************************************
 
 URL::
 
-    /api/v3/environment/<environment_ids>/
+    /api/v3/environment/environment-vip/<environment_vip_id>/
 
-where **environment_ids** are the identifiers of each environment desired to be obtained. To obtain more than one environment, semicolons between the identifiers should be used.
+where **environment_vip_id** is the identifier of the environment vip used as an argument to retrieve associated environments. Only one **environment_vip_id** can be assigned.
 
-Example with Parameter IDs:
+Example::
 
-One ID::
-
-    /api/v3/environment/1/
-
-Many IDs::
-
-    /api/v3/environment/1;3;8/
-
-Optional GET Parameters::
-
-    details=[integer]
-
-* where:
-    * details must receive 1 if desired to receive a more-detailed object response, 0 otherwise.
+    /api/v3/environment/environment-vip/1/
 
 Response body:
 
 .. code-block:: json
 
     {
-	    "environments": [{
+        "environments": [{
             "id": <integer>,
             "grupo_l3": {
                 "id": <integer>,
