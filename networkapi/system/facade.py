@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
-from networkapi.system.models import Variable
-from networkapi.system import exceptions
+
 from django.core.exceptions import ObjectDoesNotExist
+
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.system import exceptions
+from networkapi.system.models import Variable
 
 log = logging.getLogger(__name__)
 
+
 def save_variable(user, name, value, description):
 
-    if name==None or name=="":
+    if name is None or name == "":
         raise exceptions.InvalidIdNameException()
-    if value==None or name=="":
+    if value is None or name == "":
         raise exceptions.InvalidIdValueException()
 
     var = Variable()
@@ -41,11 +42,13 @@ def save_variable(user, name, value, description):
         raise exceptions.VariableError()
     return var
 
+
 def get_all_variables():
 
     variables = Variable.objects.all()
 
     return variables
+
 
 def get_by_id(variable_id):
     try:
@@ -54,6 +57,7 @@ def get_by_id(variable_id):
         raise exceptions.VariableDoesNotExistException()
     return var
 
+
 def get_by_name(name):
     try:
         var = Variable.objects.filter(name=name).uniqueResult()
@@ -61,12 +65,16 @@ def get_by_name(name):
         raise exceptions.VariableDoesNotExistException()
     return var
 
-def get_value(name):
+
+def get_value(name, default=None):
     try:
         var = Variable.objects.filter(name=name).uniqueResult()
     except ObjectDoesNotExist:
+        if default:
+            return default
         raise exceptions.VariableDoesNotExistException()
     return var.value
+
 
 def delete_variable(user, variable_id):
     try:

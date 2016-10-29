@@ -137,6 +137,7 @@ class Generic(BasePlugin):
     @logger
     @util.connection
     def update_vip(self, vips):
+
         pools_ins = list()
         pools_del = list()
 

@@ -406,8 +406,17 @@ def trata_param_vip(vips):
                     vips_cache_filter.append(vip_cache_filter)
 
     # remove pools in both lists(to delete and to insert)
-    to_delete = list(set(ids_pool_filter_to_delete) - set(ids_pool_filter_to_insert))
-    to_insert = list(set(ids_pool_filter_to_insert) - set(ids_pool_filter_to_delete))
+    to_delete = list(
+        set(ids_pool_filter_to_delete) -
+        set(ids_pool_filter_to_insert) -
+        set(ids_pool_filter_created) -
+        set(ids_pool_filter)
+    )
+    to_insert = list(
+        set(ids_pool_filter_to_insert) -
+        set(ids_pool_filter_created) -
+        set(ids_pool_filter)
+    )
     pool_filter_to_delete = [pool_del for pool_del in pool_filter_to_delete if pool_del.get('id') in to_delete]
     pool_filter_to_insert = [pool_ins for pool_ins in pool_filter_to_insert if pool_ins.get('id') in to_insert]
 
