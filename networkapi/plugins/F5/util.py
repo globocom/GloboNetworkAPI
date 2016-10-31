@@ -28,7 +28,8 @@ def transation(func):
     def inner(self, *args, **kwargs):
         if not kwargs.__contains__('connection') or kwargs['connection']:
             try:
-                access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+                access = args[0].get('access').filter(
+                    tipo_acesso__protocolo='https').uniqueResult()
                 self._lb = lb.Lb(access.fqdn, access.user, access.password)
                 if not kwargs.__contains__('transation') or kwargs['transation']:
                     log.info('Transaction Started')
@@ -242,9 +243,11 @@ def trata_param_vip(vips):
             vip_request = copy.deepcopy(vp)
             port = copy.deepcopy(pt)
 
-            dscp = vip_request['options']['dscp'] * 4 if vip_request['options']['dscp'] else 65535
+            dscp = vip_request['options']['dscp'] * 4 \
+                if vip_request['options']['dscp'] else 65535
             conf = vip_request['conf']['conf']
-            address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+            address = vip_request['ipv4']['ip_formated'] \
+                if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
             vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
             vip_filter['address'] = address
@@ -278,58 +281,102 @@ def trata_param_vip(vips):
             for pl in pools:
                 pool = copy.deepcopy(pl)
                 server_pool = pool.get('server_pool')
-                name_pool = server_pool['nome']
-                usage_l7 = True
+                pool_delete = False
 
-                # pool to delete in put request of vip(when delete pool or port)
+                # Flag to delete port or pool in port
+                # Pool to delete in put request of vip(when delete pool or port)
                 if pl.get('delete') or pt.get('delete'):
-                    usage_l7 = False
+
+                    pool_delete = True
+
+                    # Objects server_pool and ids to delete afterwards
                     if server_pool.get('id') not in ids_pool_filter_to_delete:
+
+                        log.info('Pool to delete in equipment: %s' %
+                                 server_pool)
+
                         ids_pool_filter_to_delete.append(server_pool.get('id'))
                         pool_filter_to_delete.append(server_pool)
-                # pool to insert in put request of vip(update port or insert port)
+
+                # Pools to insert in put request of vip(update port or insert port)
+                # when id of internal control was removed in update
                 elif not pl.get('id'):
+
+                    # Pools not created yet in equipment
                     if server_pool.get('id') not in pool_filter_to_insert and \
                             not server_pool.get('pool_created'):
+
+                        log.info('Pool to create in equipment: %s and'
+                                 'to need associate with vip' % server_pool)
+
                         ids_pool_filter_to_insert.append(server_pool.get('id'))
                         pool_filter_to_insert.append(server_pool)
-                # used in post and delete request of vip
+
+                    # Pool already created in equipment, but was added in new port
+                    elif server_pool.get('id') not in ids_pool_filter_created:
+
+                        log.info('Pool already created in equipment: %s'
+                                 ', but to need associate with vip '
+                                 % server_pool)
+
+                        ids_pool_filter_created.append(server_pool.get('id'))
+                        pool_filter_created.append(server_pool)
+
+                # Pools to insert or to associate when id of internal control
+                # was changed. POST and DELETE always use this .
                 else:
-                    if not server_pool.get('pool_created'):
-                        if server_pool.get('id') not in ids_pool_filter:
-                            ids_pool_filter.append(server_pool.get('id'))
-                            pool_filter.append(server_pool)
+
+                    # Pool not created yet in equipment
+                    if server_pool.get('id') not in ids_pool_filter and \
+                            not server_pool.get('pool_created'):
+
+                        log.info('Pool to create in equipment: %s and'
+                                 'to need associate with vip' % server_pool)
+
+                        ids_pool_filter.append(server_pool.get('id'))
+                        pool_filter.append(server_pool)
+
+                        # Pool already created in equipment
+                    elif server_pool.get('id') not in ids_pool_filter_created:
+
+                        log.info('Pool already created in equipment: %s'
+                                 ', but to need associate with vip '
+                                 % server_pool)
+
+                        ids_pool_filter_created.append(server_pool.get('id'))
+                        pool_filter_created.append(server_pool)
+
+                # Pools without delete
+                if not pool_delete:
+
+                    name_pool = server_pool['nome']
+
+                    # There is no l7 rule
+                    if pool.get('l7_rule') == 'default_vip':
+
+                        vip_filter['pool'] = name_pool
+
+                        vip_filter['optionsvip']['dscp'] = {
+                            'value': dscp,
+                            'pool_name': name_pool
+                        }
+
+                    # Default of l7 rule
                     else:
-                        # pool already created
-                        if server_pool.get('id') not in ids_pool_filter_created:
-                            ids_pool_filter_created.append(server_pool.get('id'))
-                            pool_filter_created.append(server_pool)
+                        if pool.get('l7_rule') == 'default_glob':
+                            default_l7 = "            default {{ pool {0} }}\n".format(
+                                name_pool)
+                        # l7 rule
+                        elif pool.get('l7_rule') == 'glob':
 
-                # no l7 rule
-                if pool.get('l7_rule') == 'default_vip':
-
-                    vip_filter['pool'] = name_pool
-
-                    vip_filter['optionsvip']['dscp'] = {
-                        'value': dscp,
-                        'pool_name': name_pool
-                    }
-                # default of l7 rule
-                elif usage_l7:
-                    if pool.get('l7_rule') == 'default_glob':
-                        default_l7 = "            default {{ pool {0} }}\n".format(
-                            name_pool)
-                    # l7 rule
-                    elif pool.get('l7_rule') == 'glob':
-
-                        rule = '"{0}"'.format(pool.get('l7_value'))
-                        order = pool.get('order', 'Z')
-                        key_rule = '{}_{}'.format(order, name_pool)
-                        if not rules.get(key_rule):
-                            rules[key_rule] = dict()
-                            rules[key_rule]['pool'] = name_pool
-                            rules[key_rule]['rule'] = list()
-                        rules[key_rule]['rule'].append(rule)
+                            rule = '"{0}"'.format(pool.get('l7_value'))
+                            order = pool.get('order', 'Z')
+                            key_rule = '{}_{}'.format(order, name_pool)
+                            if not rules.get(key_rule):
+                                rules[key_rule] = dict()
+                                rules[key_rule]['pool'] = name_pool
+                                rules[key_rule]['rule'] = list()
+                            rules[key_rule]['rule'].append(rule)
 
             # rules to create
             if rules:
@@ -353,9 +400,11 @@ def trata_param_vip(vips):
             # port(vip_port) to delete in update of vip
             if pt.get('delete'):
                 vips_filter_to_delete.append(vip_filter)
+
             # port(vip_port) to insert in update of vip
             elif not pt.get('id'):
                 vips_filter_to_insert.append(vip_filter)
+
             # vips to create/delete/update
             else:
                 vips_filter.append(vip_filter)
@@ -369,17 +418,20 @@ def trata_param_vip(vips):
                 for port in ports:
                     vip_cache_filter = dict()
 
-                    address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+                    address = vip_request['ipv4']['ip_formated'] \
+                        if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
                     vip_cache_filter['pool'] = None
-                    vip_cache_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
+                    vip_cache_filter['name'] = 'VIP%s_%s_%s' % \
+                        (vip_request['id'], address, port['port'])
                     vip_cache_filter['address'] = address
                     vip_cache_filter['port'] = port['port']
 
                     vip_cache_filter['optionsvip'] = dict()
                     vip_cache_filter['optionsvip_extended'] = dict()
 
-                    vip_cache_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+                    vip_cache_filter['optionsvip']['l4_protocol'] = \
+                        port['options']['l4_protocol']
                     for definition in definitions.get(str(port['port'])):
                         if definition.get('type') == 'pool':
                             vip_cache_filter['pool'] = definition.get('value')
@@ -401,7 +453,8 @@ def trata_param_vip(vips):
                             if definition.get('value') == 'traffic-group-1':
                                 vip_cache_filter['optionsvip']['traffic_group'] = None
                             else:
-                                vip_cache_filter['optionsvip']['traffic_group'] = definition.get('value')
+                                vip_cache_filter['optionsvip']['traffic_group'] = \
+                                    definition.get('value')
 
                     vips_cache_filter.append(vip_cache_filter)
 
@@ -417,15 +470,17 @@ def trata_param_vip(vips):
         set(ids_pool_filter_created) -
         set(ids_pool_filter)
     )
-    pool_filter_to_delete = [pool_del for pool_del in pool_filter_to_delete if pool_del.get('id') in to_delete]
-    pool_filter_to_insert = [pool_ins for pool_ins in pool_filter_to_insert if pool_ins.get('id') in to_insert]
+    pool_filter_to_delete = [pool_del for pool_del in pool_filter_to_delete
+                             if pool_del.get('id') in to_delete]
+    pool_filter_to_insert = [pool_ins for pool_ins in pool_filter_to_insert
+                             if pool_ins.get('id') in to_insert]
 
     res_fil = {
         'vips_filter': vips_filter,
         'pool_filter': pool_filter,
         'vips_cache_filter': vips_cache_filter,
         'pool_filter_created': pool_filter_created,
-        # used in update of vips
+        # used only in update of vips
         'pool_filter_to_delete': pool_filter_to_delete,
         'pool_filter_to_insert': pool_filter_to_insert,
         'vips_filter_to_delete': vips_filter_to_delete,

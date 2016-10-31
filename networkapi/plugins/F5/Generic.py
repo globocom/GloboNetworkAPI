@@ -150,7 +150,7 @@ class Generic(BasePlugin):
         }
         dict_delete_vip = {
             'vips': tratado.get('vips_filter_to_delete'),
-            'pool_created': tratado.get('pool_filter_to_delete')
+            'pool_created': list()
         }
 
         # delete ports
@@ -216,9 +216,9 @@ class Generic(BasePlugin):
 
         else:
             # delete pools that not were deleted in first call
-            if dict_delete_vip.get('pool_created'):
+            if tratado.get('pool_filter_to_delete'):
                 log.info('try delete pools that not were deleted in first call')
-                for server_pool in dict_delete_vip.get('pool_created'):
+                for server_pool in tratado.get('pool_filter_to_delete'):
                     if self._delete_pool_by_pass(server_pool):
                         pools_del.append(server_pool.get('id'))
 
