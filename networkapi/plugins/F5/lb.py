@@ -49,8 +49,6 @@ class Lb(object):
             except Exception, e:
                 log.error(e)
                 raise base_exceptions.CommandErrorException(e)
-        finally:
-            log.info('Disconnected of hostname:%s' % hostname)
 
     def get_session(self):
 

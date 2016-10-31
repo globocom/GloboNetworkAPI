@@ -229,8 +229,8 @@ def trata_param_vip(vips):
 
     # to use in new pool or new port(update vip)
     vips_filter_to_insert = list()
-    pool_filter_to_insert = list()
-    ids_pool_filter_to_insert = list()
+    # pool_filter_to_insert = list()
+    # ids_pool_filter_to_insert = list()
 
     for vip in vips['vips']:
 
@@ -298,32 +298,32 @@ def trata_param_vip(vips):
                         ids_pool_filter_to_delete.append(server_pool.get('id'))
                         pool_filter_to_delete.append(server_pool)
 
-                # Pools to insert in put request of vip(update port or insert port)
-                # when id of internal control was removed in update
-                elif not pl.get('id'):
+                # # Pools to insert in put request of vip(update port or insert port)
+                # # when id of internal control was removed in update
+                # elif not pl.get('id'):
 
-                    # Pools not created yet in equipment
-                    if server_pool.get('id') not in pool_filter_to_insert and \
-                            not server_pool.get('pool_created'):
+                #     # Pools not created yet in equipment
+                #     if server_pool.get('id') not in ids_pool_filter_to_insert and \
+                #             not server_pool.get('pool_created'):
 
-                        log.info('Pool to create in equipment: %s and'
-                                 'to need associate with vip' % server_pool)
+                #         log.info('Pool to create in equipment: %s and'
+                #                  'to need associate with vip' % server_pool)
 
-                        ids_pool_filter_to_insert.append(server_pool.get('id'))
-                        pool_filter_to_insert.append(server_pool)
+                #         ids_pool_filter_to_insert.append(server_pool.get('id'))
+                #         pool_filter_to_insert.append(server_pool)
 
-                    # Pool already created in equipment, but was added in new port
-                    elif server_pool.get('id') not in ids_pool_filter_created:
+                #     # Pool already created in equipment, but was added in new port
+                #     elif server_pool.get('id') not in ids_pool_filter_created:
 
-                        log.info('Pool already created in equipment: %s'
-                                 ', but to need associate with vip '
-                                 % server_pool)
+                #         log.info('Pool already created in equipment: %s'
+                #                  ', but to need associate with vip '
+                #                  % server_pool)
 
-                        ids_pool_filter_created.append(server_pool.get('id'))
-                        pool_filter_created.append(server_pool)
+                #         ids_pool_filter_created.append(server_pool.get('id'))
+                #         pool_filter_created.append(server_pool)
 
-                # Pools to insert or to associate when id of internal control
-                # was changed. POST and DELETE always use this .
+                # # Pools to insert or to associate when id of internal control
+                # # was changed. POST and DELETE always use this .
                 else:
 
                     # Pool not created yet in equipment
@@ -337,7 +337,8 @@ def trata_param_vip(vips):
                         pool_filter.append(server_pool)
 
                         # Pool already created in equipment
-                    elif server_pool.get('id') not in ids_pool_filter_created:
+                    elif server_pool.get('id') not in ids_pool_filter_created and \
+                            server_pool.get('pool_created'):
 
                         log.info('Pool already created in equipment: %s'
                                  ', but to need associate with vip '
@@ -461,18 +462,16 @@ def trata_param_vip(vips):
     # remove pools in both lists(to delete and to insert)
     to_delete = list(
         set(ids_pool_filter_to_delete) -
-        set(ids_pool_filter_to_insert) -
         set(ids_pool_filter_created) -
         set(ids_pool_filter)
     )
     to_insert = list(
-        set(ids_pool_filter_to_insert) -
-        set(ids_pool_filter_created) -
-        set(ids_pool_filter)
+        set(ids_pool_filter) -
+        set(ids_pool_filter_created)
     )
     pool_filter_to_delete = [pool_del for pool_del in pool_filter_to_delete
                              if pool_del.get('id') in to_delete]
-    pool_filter_to_insert = [pool_ins for pool_ins in pool_filter_to_insert
+    pool_filter_to_insert = [pool_ins for pool_ins in pool_filter
                              if pool_ins.get('id') in to_insert]
 
     res_fil = {

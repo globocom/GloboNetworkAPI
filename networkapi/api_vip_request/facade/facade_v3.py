@@ -688,7 +688,7 @@ def update_real_vip_request(vip_requests, user):
                 ids_pool_old = [pool.get('id') for pool in port_old.get('pools')]
 
                 # ids pools changed
-                ids_pool_cur = [pool.get('id') for pool in port.get('pools') if pool.get('id')]
+                ids_pool_cur = [pool.get('id') for pool in port.get('pools')]
 
                 # ids to delete
                 ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_cur))
@@ -702,6 +702,26 @@ def update_real_vip_request(vip_requests, user):
                     pool_del = copy.deepcopy(port_old.get('pools')[idx_pool_del])
                     pool_del['delete'] = True
                     vip_request['ports'][idx_port]['pools'].append(pool_del)
+
+                # pools to delete in port when id of internal controle was not
+                # changed.
+                # Example: OLD - Id: 1, Server_pool: 12, ..
+                #          NEW - Id: 1, Server_pool: 13, ..
+
+                ids_pool_to_del = list(set(ids_pool_cur) & set(ids_pool_old))
+                for id_pool in ids_pool_to_del:
+                    # idx pool to delete
+                    if id_pool:
+                        idx_pool_old = ids_pool_old.index(id_pool)
+                        idx_pool_cur = ids_pool_cur.index(id_pool)
+
+                        # server_pool was changed
+                        if port_old.get('pools')[idx_pool_old]['server_pool'] != \
+                                port.get('pools')[idx_pool_cur]['server_pool']:
+                            # pool to delete
+                            pool_del = copy.deepcopy(port_old.get('pools')[idx_pool_old])
+                            pool_del['delete'] = True
+                            vip_request['ports'][idx_port]['pools'].append(pool_del)
 
         # ports to delete
         for id_port in ids_port_to_del:
