@@ -862,7 +862,10 @@ class Vlan(BaseModel):
         return vrfs
 
     def validate_num_vlan_v3(self):
-        """Validate if number of vlan is duplicated in environment or environment assoc with eqpt."""
+        """
+        Validate if number of vlan is duplicated in environment or
+        environment assoc with eqpt.
+        """
         equips = self.get_eqpt()
         vlan_model = get_model('vlan', 'Vlan')
 
@@ -926,7 +929,25 @@ class Vlan(BaseModel):
 
         self.save()
 
+    def get_environment_related(self):
+
+        env_model = get_model('ambiente', 'Ambiente')
+
+        envs = env_model.objects.filter(
+            # get environment or environment assoc with equipments
+            # of current vlan
+            equipamentoambiente__equipamento__in=self.get_eqpt()
+        ).filter(
+            # get vlans with customized vrfs of current vlan
+            Q(vlan__vrfvlanequipment__vrf__in=self.get_vrf()) |
+            # get environments using vrfs of current vlan
+            Q(default_vrf__in=self.get_vrf())
+        ).distinct()
+
+        return envs
+
     def get_networks_related(self, has_netv4=True, has_netv6=True, exclude_current=True):
+
         vlan_model = get_model('vlan', 'Vlan')
 
         vlans_env_eqpt = vlan_model.objects.filter(
@@ -943,7 +964,8 @@ class Vlan(BaseModel):
             vlans_env_eqpt = vlans_env_eqpt.exclude(
                 # exclude current vlan
                 id=self.id
-            ).distinct()
+            )
+        vlans_env_eqpt = vlans_env_eqpt.distinct()
 
         self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
 
@@ -962,6 +984,7 @@ class Vlan(BaseModel):
         return netv4, netv6
 
     def validate_network(self):
+
         configs = self.ambiente.configs.all()
         netv4 = self.networkipv4_set.filter()
         netv6 = self.networkipv6_set.filter()
@@ -980,16 +1003,20 @@ class Vlan(BaseModel):
             self.networkipv6_set.all()
         )
 
-        v4_interset, v4_supernet = self.verify_networks(netv4, netv4_env)
-        v6_interset, v6_supernet = self.verify_networks(netv6, netv6_env)
+        v4_interset = self.verify_networks(netv4, netv4_env)
+        v6_interset = self.verify_networks(netv6, netv6_env)
 
-        if v4_interset or v6_interset:
+        if v4_interset[0] or v6_interset[0]:
             raise Exception(
                 'Um dos equipamentos associados com o ambiente desta Vlan '
                 'também está associado com outro ambiente que tem uma rede '
                 'com a mesma faixa, adicione filtros nos ambientes se necessário.')
 
     def allow_networks_environment(self, configs, netv4, netv6):
+        """
+            Verify if networksv4 and networksv6 are permitted in environment
+            by way configs settings.
+        """
 
         for net in netv4:
             configsv4 = configs.filter(
@@ -1001,7 +1028,7 @@ class Vlan(BaseModel):
 
             net_ip = [IPNetwork(net.networkv4)]
 
-            if not self.verify_intersect(nts, net.block, net_ip):
+            if not self.verify_intersect(nts, net.block, net_ip)[0]:
                 raise Exception(
                     'Network can not inserted in environment %s because '
                     'network %s are in out of the range of allowed networks ' %
@@ -1018,7 +1045,7 @@ class Vlan(BaseModel):
 
             net_ip = [IPNetwork(net.networkv6)]
 
-            if not self.verify_intersect(nts, net.block, net_ip):
+            if not self.verify_intersect(nts, net.block, net_ip)[0]:
                 raise Exception(
                     'Network can not inserted in environment %s because '
                     'network %s are in out of the range of allowed networks ' %
@@ -1026,6 +1053,10 @@ class Vlan(BaseModel):
                 )
 
     def prepare_networks(self, netv4, netv6):
+        """
+            Make a dict where key is block of network and value is a list
+            network with block.
+        """
 
         netv4_dict = dict()
         for net in netv4:
@@ -1048,6 +1079,10 @@ class Vlan(BaseModel):
         return netv4_dict, netv6_dict
 
     def verify_networks(self, nets1, nets2):
+        """
+            Verify a list of networks has make intersect with a second list
+            and contrariwise.
+        """
 
         vl_net1 = reduce(list.__add__, nets1.values(), [])
         vl_net2 = reduce(list.__add__, nets2.values(), [])
@@ -1066,24 +1101,36 @@ class Vlan(BaseModel):
                 # Example: /23 < /24 = /24 is subnet
                 if block1 < block2:
                     # get subnet of network1
-                    return self.verify_intersect(nets1[block1], block2, vl_net2)
+                    ret = self.verify_intersect(nets1[block1], block2, vl_net2)
 
                 # network1 >= network2 of environment
                 # Example: /24 >= /23 = /24 is subnet
                 else:
                     # get subnet of network2
-                    return self.verify_intersect(nets2[block2], block1, vl_net1)
+                    ret = self.verify_intersect(nets2[block2], block1, vl_net1)
+
+                if ret[0]:
+                    return ret
 
         return [], []
 
     def verify_intersect(self, nets, new_prefix, nets2):
+        """
+            Verify if a item of a list of networks has make intersect
+            with a second list.
+        """
 
         for net in nets:
-            subnets = list(net.subnet(new_prefix=new_prefix))
-            # has network conflict with subnet of network1
+            try:
+                subnets = list(net.subnet(new_prefix=new_prefix))
+                # has network conflict with subnet of network1
 
-            intersect = list(set(subnets) & set(nets2))
-            if intersect:
-                self.log.info(
-                    'Subnet intersect:%s, supernet:%s' % (intersect, net))
-                return intersect, net
+                intersect = list(set(subnets) & set(nets2))
+                if intersect:
+                    self.log.info(
+                        'Subnet intersect:%s, supernet:%s' % (intersect, net))
+                    return intersect, net
+            except:
+                pass
+
+        return [], []

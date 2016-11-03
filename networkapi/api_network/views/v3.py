@@ -29,7 +29,7 @@ class NetworkIPv4View(APIView):
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
-        Returns a list of vip request by ids ou dict
+        Returns a list of networkv4 by ids ou dict
         """
         try:
 
@@ -90,10 +90,37 @@ class NetworkIPv4View(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """
+        Deletes list of networkv4
+        """
+
+        response = list()
+        obj_ids = kwargs['obj_id'].split(';')
+        facade.delete_networkipv4(obj_ids, request.user)
+
+        return Response(response, status.HTTP_200_OK)
+
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
     @raise_json_validate('networkv4_put')
     @commit_on_success
-    def put(self, *args, **kwargs):
-        pass
+    def put(self, request, *args, **kwargs):
+        """
+        Updates list of networkv4
+        """
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv4_put')).validate(data)
+
+        response = list()
+        for networkv4 in data['networks']:
+            vl = facade.update_networkipv4(networkv4, request.user)
+            response.append({'id': vl.id})
+
+        return Response(response, status.HTTP_200_OK)
 
 
 class NetworkIPv6View(APIView):
@@ -102,6 +129,9 @@ class NetworkIPv6View(APIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
+        """
+        Returns a list of networkv6 by ids ou dict
+        """
 
         try:
 
@@ -144,12 +174,38 @@ class NetworkIPv6View(APIView):
     @logs_method_apiview
     @raise_json_validate('networkv6_post')
     @commit_on_success
-    def post(self, *args, **kwargs):
-        pass
+    def post(self, request, *args, **kwargs):
+        """
+        Creates list of networkv6
+        """
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_post')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.create_networkipv6(networkv6, request.user)
+            response.append({'id': vl.id})
+
+        return Response(response, status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('networkv6_put')
     @commit_on_success
-    def put(self, *args, **kwargs):
-        pass
+    def put(self, request, *args, **kwargs):
+        """
+        Updates list of networkv6
+        """
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_put')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.update_networkipv6(networkv6, request.user)
+            response.append({'id': vl.id})
+
+        return Response(response, status.HTTP_200_OK)

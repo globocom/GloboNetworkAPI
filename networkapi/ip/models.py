@@ -609,7 +609,6 @@ class NetworkIPv4(BaseModel):
         """
         Create new networkIPv4.
         """
-
         self.oct1 = networkv4.get('oct1')
         self.oct2 = networkv4.get('oct2')
         self.oct3 = networkv4.get('oct3')
@@ -646,13 +645,26 @@ class NetworkIPv4(BaseModel):
                 networkv4.get('environmentvip'))
 
         self.validate_v3()
+        self.validate_network()
 
         self.save()
 
-    def update_v3(self):
+    def update_v3(self, networkv4):
         """
         Update new networkIPv4.
         """
+
+        # vlan_model = get_model('vlan', 'Vlan')
+        tiporede_model = get_model('vlan', 'TipoRede')
+
+        # self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
+        self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
+
+        # has environmentvip
+        if networkv4.get('environmentvip'):
+            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+            self.environmentvip = environmentvip_model().get_by_pk(
+                networkv4.get('environmentvip'))
 
         self.validate_v3()
 
@@ -683,26 +695,53 @@ class NetworkIPv4(BaseModel):
         """
         Validate networkIPv4.
         """
+
         vlan_inst = self.vlan
-
-        netv4, netv6 = vlan_inst.get_networks_related(
-            has_netv6=False, exclude_current=False)
-
-        if netv4:
-            netv4_env, netv6_env = vlan_inst.prepare_networks(netv4, [])
-            netv4_dict, netv6_dict = vlan_inst.prepare_networks([self], [])
-            v4_interset, v4_supernet = vlan_inst.verify_networks(
-                netv4_dict, netv4_env)
-
-            if v4_interset:
-                raise Exception(
-                    'One of the equipment associated with the environment of this Vlan '
-                    'is also associated with other environment that has a network '
-                    'with the same track, add filters in environments if necessary.')
 
         # validate if network if allow in environment
         configs = vlan_inst.ambiente.configs.all()
         vlan_inst.allow_networks_environment(configs, [self], [])
+
+    def validate_network(self):
+        vlan_inst = self.vlan
+
+        envs = vlan_inst.get_environment_related()
+
+        net_ip = [IPNetwork(self.networkv4)]
+        nets_envs = list()
+        for env in envs:
+            # get configs v4 of environment
+            nts = [IPNetwork(config.ip_config.subnet)
+                   for config in env.configs.filter(
+                ip_config__type='v4')]
+
+            if vlan_inst.verify_intersect(nts, self.block, net_ip)[0]:
+
+                self.log.info('Environment %s has config(%s) permiting insert '
+                              'this network %s' % (env.name, nts, net_ip))
+
+                # get networks that can be intersect with current network
+                nets_envs += reduce(
+                    list.__add__,
+                    [list(vlan.networks_ipv4)
+                        for vlan in env.vlans
+                        if vlan.networks_ipv4],
+                    []
+                )
+
+        if nets_envs:
+            nets_dict = vlan_inst.prepare_networks([self], [])
+            nets_env = vlan_inst.prepare_networks(nets_envs, [])
+
+            interset = vlan_inst.verify_networks(
+                nets_dict[0], nets_env[0])
+
+            if interset[0]:
+                raise Exception(
+                    'One of the equipment associated with the environment '
+                    'of this Vlan is also associated with other environment '
+                    'that has a network with the same track, add filters in '
+                    'environments if necessary. Intersect: %s' % interset[0])
 
 
 class Ip(BaseModel):
@@ -2148,7 +2187,7 @@ class NetworkIPv6(BaseModel):
             raise IpCantBeRemovedFromVip(
                 cause, 'Esta Rede possui um Vip apontando para ela, e não pode ser excluída')
 
-    def create_v3(self):
+    def create_v3(self, networkv6):
         """
         Create new networkIPv6.
         """
@@ -2156,7 +2195,7 @@ class NetworkIPv6(BaseModel):
 
         self.save()
 
-    def update_v3(self):
+    def update_v3(self, networkv6):
         """
         Update new networkIPv6.
         """
@@ -2192,20 +2231,24 @@ class NetworkIPv6(BaseModel):
 
         vlan_inst = self.vlan
 
-        netv4_env, netv6_env = vlan_inst.get_networks_related(
+        net = vlan_inst.get_networks_related(
             has_netv4=False, exclude_current=False)
 
-        if netv6_env:
-            netv4_env, netv6_env = vlan_inst.prepare_networks([], netv4)
-            netv4_dict, netv6_dict = vlan_inst.prepare_networks([], [self])
-            v6_interset, v6_supernet = vlan_inst.verify_networks(
-                netv6_dict, netv6_env)
+        if net[1]:
+            net_env = vlan_inst.prepare_networks([], net[1])
+            net_dict = vlan_inst.prepare_networks([], [self])
+            interset = vlan_inst.verify_networks(
+                net_dict[1], net_env[1])
 
-            if v6_interset:
+            if interset[0]:
                 raise Exception(
                     'One of the equipment associated with the environment of this Vlan '
                     'is also associated with other environment that has a network '
                     'with the same track, add filters in environments if necessary.')
+
+        # validate if network if allow in environment
+        configs = vlan_inst.ambiente.configs.all()
+        vlan_inst.allow_networks_environment(configs, [self], [])
 
 
 class Ipv6(BaseModel):

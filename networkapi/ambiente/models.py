@@ -25,7 +25,6 @@ from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 
 from networkapi.api_vrf.models import Vrf
-from networkapi.api_vrf.models import VrfNotFoundError
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
@@ -761,6 +760,14 @@ class Ambiente(BaseModel):
         return configs
 
     configs = property(_get_configs)
+
+    def _get_vlan(self):
+        """Returns vlans of environment."""
+        vlans = self.vlan_set.all()
+
+        return vlans
+
+    vlans = property(_get_vlan)
 
     @classmethod
     def get_by_pk(cls, id):

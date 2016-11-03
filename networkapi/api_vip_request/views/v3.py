@@ -222,7 +222,7 @@ class VipRequestDBView(APIView):
         locks_list = facade.create_lock(vip_request_ids)
         keepip = request.GET.get('keepip') or '0'
         try:
-            ipv4_list, ipv6_list = facade.delete_vip_request(
+            facade.delete_vip_request(
                 vip_request_ids, keepip)
         except Exception, exception:
             log.error(exception)
