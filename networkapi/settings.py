@@ -406,8 +406,8 @@ SPECS = {
     'vlan_post': 'networkapi/api_vlan/specs/vlan_post.json',
     'networkv4_put': 'networkapi/api_network/specs/netv4_put.json',
     'networkv4_post': 'networkapi/api_network/specs/netv4_post.json',
-    'networkv6_put': 'networkapi/api_network/netv6_put.json',
-    'networkv6_post': 'networkapi/api_network/netv6_post.json',
+    'networkv6_put': 'networkapi/api_network/specs/netv6_put.json',
+    'networkv6_post': 'networkapi/api_network/specs/netv6_post.json',
 }
 
 ##########

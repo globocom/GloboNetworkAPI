@@ -209,3 +209,17 @@ class NetworkIPv6View(APIView):
             response.append({'id': vl.id})
 
         return Response(response, status.HTTP_200_OK)
+
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """
+        Deletes list of networkv6
+        """
+
+        response = list()
+        obj_ids = kwargs['obj_id'].split(';')
+        facade.delete_networkipv6(obj_ids, request.user)
+
+        return Response(response, status.HTTP_200_OK)

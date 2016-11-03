@@ -109,7 +109,7 @@ def create_networkipv6(networkv6, user):
 def update_networkipv6(networkv6, user):
     """Updates a NetworkIPv6."""
 
-    netv6_obj = NetworkIPv6()
+    netv6_obj = get_networkipv6_by_id(networkv6.get('id'))
     netv6_obj.update_v3(networkv6)
 
     return netv6_obj

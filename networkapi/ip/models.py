@@ -609,6 +609,7 @@ class NetworkIPv4(BaseModel):
         """
         Create new networkIPv4.
         """
+
         self.oct1 = networkv4.get('oct1')
         self.oct2 = networkv4.get('oct2')
         self.oct3 = networkv4.get('oct3')
@@ -619,23 +620,27 @@ class NetworkIPv4(BaseModel):
         self.mask_oct3 = networkv4.get('mask_oct3')
         self.mask_oct4 = networkv4.get('mask_oct4')
 
+        self.cluster_unit = networkv4.get('cluster_unit')
+
         if self.block:
             ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
-        else:
+            self.broadcast = ip.broadcast.compressed
+            if not self.mask_formated:
+                mask = ip.netmask.exploded.split('.')
+                self.mask_oct1 = mask[0]
+                self.mask_oct2 = mask[1]
+                self.mask_oct3 = mask[2]
+                self.mask_oct4 = mask[3]
+        elif self.mask_formated:
             ip = IPNetwork('%s/%s' % (self.formated_octs, self.mask_formated))
-
-        self.block = ip.prefixlen
-        mask = ip.netmask.exploded.split('.')
-        self.broadcast = ip.broadcast.compressed
-        self.mask_oct1 = mask[0]
-        self.mask_oct2 = mask[1]
-        self.mask_oct3 = mask[2]
-        self.mask_oct4 = mask[3]
+            self.block = ip.prefixlen
+        else:
+            raise Exception('Is need to send block ou mask.')
 
         vlan_model = get_model('vlan', 'Vlan')
-        tiporede_model = get_model('vlan', 'TipoRede')
-
         self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
+
+        tiporede_model = get_model('vlan', 'TipoRede')
         self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
 
         # has environmentvip
@@ -653,6 +658,8 @@ class NetworkIPv4(BaseModel):
         """
         Update new networkIPv4.
         """
+
+        self.cluster_unit = networkv4.get('cluster_unit')
 
         # vlan_model = get_model('vlan', 'Vlan')
         tiporede_model = get_model('vlan', 'TipoRede')
@@ -680,6 +687,7 @@ class NetworkIPv4(BaseModel):
         """
 
         try:
+
             for ip in self.ip_set.all():
                 ip.delete_v3()
 
@@ -1926,6 +1934,14 @@ class NetworkIPv6(BaseModel):
 
     mask_formated = property(_get_formated_mask)
 
+    def _get_formated_octs(self):
+        """Returns formated octs."""
+        return '%s:%s:%s:%s:%s:%s:%s:%s' % (
+            self.block1, self.block2, self.block3, self.block4,
+            self.block5, self.block6, self.block7, self.block8)
+
+    formated_octs = property(_get_formated_octs)
+
     @cached_property
     def dhcprelay(self):
         dhcprelay = self.dhcprelayipv6_set.select_related()
@@ -2191,7 +2207,59 @@ class NetworkIPv6(BaseModel):
         """
         Create new networkIPv6.
         """
+
+        self.block1 = networkv6.get('block1')
+        self.block2 = networkv6.get('block2')
+        self.block3 = networkv6.get('block3')
+        self.block4 = networkv6.get('block4')
+        self.block5 = networkv6.get('block5')
+        self.block6 = networkv6.get('block6')
+        self.block7 = networkv6.get('block7')
+        self.block8 = networkv6.get('block8')
+        self.block = networkv6.get('block')
+        self.mask1 = networkv6.get('mask1')
+        self.mask2 = networkv6.get('mask2')
+        self.mask3 = networkv6.get('mask3')
+        self.mask4 = networkv6.get('mask4')
+        self.mask5 = networkv6.get('mask5')
+        self.mask6 = networkv6.get('mask6')
+        self.mask7 = networkv6.get('mask7')
+        self.mask8 = networkv6.get('mask8')
+
+        self.cluster_unit = networkv6.get('cluster_unit')
+
+        if self.block:
+            if not self.mask_formated:
+                ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
+                mask = ip.netmask.exploded.split('.')
+                self.mask1 = mask[0]
+                self.mask2 = mask[1]
+                self.mask3 = mask[2]
+                self.mask4 = mask[3]
+                self.mask5 = mask[4]
+                self.mask6 = mask[5]
+                self.mask7 = mask[6]
+                self.mask8 = mask[7]
+        elif self.mask_formated:
+            ip = IPNetwork('%s/%s' % (self.formated_octs, self.mask_formated))
+            self.block = ip.prefixlen
+        else:
+            raise Exception('Is need to send block ou mask.')
+
+        vlan_model = get_model('vlan', 'Vlan')
+        self.vlan = vlan_model().get_by_pk(networkv6.get('vlan'))
+
+        tiporede_model = get_model('vlan', 'TipoRede')
+        self.network_type = tiporede_model().get_by_pk(networkv6.get('network_type'))
+
+        # has environmentvip
+        if networkv6.get('environmentvip'):
+            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+            self.environmentvip = environmentvip_model().get_by_pk(
+                networkv6.get('environmentvip'))
+
         self.validate_v3()
+        self.validate_network()
 
         self.save()
 
@@ -2199,6 +2267,18 @@ class NetworkIPv6(BaseModel):
         """
         Update new networkIPv6.
         """
+
+        self.cluster_unit = networkv6.get('cluster_unit')
+
+        tiporede_model = get_model('vlan', 'TipoRede')
+        self.network_type = tiporede_model().get_by_pk(networkv6.get('network_type'))
+
+        # has environmentvip
+        if networkv6.get('environmentvip'):
+            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+            self.environmentvip = environmentvip_model().get_by_pk(
+                networkv6.get('environmentvip'))
+
         self.validate_v3()
 
         self.save()
@@ -2213,7 +2293,7 @@ class NetworkIPv6(BaseModel):
         """
 
         try:
-            for ip in self.ip_set.all():
+            for ip in self.ipv6_set.all():
                 ip.delete_v3()
 
             super(NetworkIPv6, self).delete()
@@ -2231,24 +2311,50 @@ class NetworkIPv6(BaseModel):
 
         vlan_inst = self.vlan
 
-        net = vlan_inst.get_networks_related(
-            has_netv4=False, exclude_current=False)
+        # validate if network if allow in environment
+        configs = vlan_inst.ambiente.configs.all()
+        vlan_inst.allow_networks_environment(configs, [], [self])
 
-        if net[1]:
-            net_env = vlan_inst.prepare_networks([], net[1])
-            net_dict = vlan_inst.prepare_networks([], [self])
+    def validate_network(self):
+        vlan_inst = self.vlan
+
+        envs = vlan_inst.get_environment_related()
+
+        net_ip = [IPNetwork(self.networkv6)]
+        nets_envs = list()
+        for env in envs:
+            # get configs v4 of environment
+            nts = [IPNetwork(config.ip_config.subnet)
+                   for config in env.configs.filter(
+                ip_config__type='v6')]
+
+            if vlan_inst.verify_intersect(nts, self.block, net_ip)[0]:
+
+                self.log.info('Environment %s has config(%s) permiting insert '
+                              'this network %s' % (env.name, nts, net_ip))
+
+                # get networks that can be intersect with current network
+                nets_envs += reduce(
+                    list.__add__,
+                    [list(vlan.networks_ipv6)
+                        for vlan in env.vlans
+                        if vlan.networks_ipv6],
+                    []
+                )
+
+        if nets_envs:
+            nets_dict = vlan_inst.prepare_networks([], [self])
+            nets_env = vlan_inst.prepare_networks([], nets_envs)
+
             interset = vlan_inst.verify_networks(
-                net_dict[1], net_env[1])
+                nets_dict[1], nets_env[1])
 
             if interset[0]:
                 raise Exception(
-                    'One of the equipment associated with the environment of this Vlan '
-                    'is also associated with other environment that has a network '
-                    'with the same track, add filters in environments if necessary.')
-
-        # validate if network if allow in environment
-        configs = vlan_inst.ambiente.configs.all()
-        vlan_inst.allow_networks_environment(configs, [self], [])
+                    'One of the equipment associated with the environment '
+                    'of this Vlan is also associated with other environment '
+                    'that has a network with the same track, add filters in '
+                    'environments if necessary. Intersect: %s' % interset[0])
 
 
 class Ipv6(BaseModel):

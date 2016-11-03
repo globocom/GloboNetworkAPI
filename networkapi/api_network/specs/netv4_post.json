@@ -54,7 +54,10 @@
             "type": "boolean"
           },
           "cluster_unit": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
