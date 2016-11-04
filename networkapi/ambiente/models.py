@@ -780,7 +780,7 @@ class Ambiente(BaseModel):
         @raise AmbienteNotFoundError: Não existe um Ambiente para o id pesquisado.
         """
         try:
-            return Ambiente.objects.filter(id=id).uniqueResult()
+            return Ambiente.objects.filter(id=id.pk).uniqueResult()
         except ObjectDoesNotExist, e:
             raise AmbienteNotFoundError(
                 e, u'Não existe um ambiente com o id = %s.' % id)
