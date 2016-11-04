@@ -27,15 +27,16 @@ class VrfDBView(APIView):
         """
 
         try:
-            # if not kwargs.get('vrf_ids'):
-            #     obj_model = facade.get_vrfs_by_search(self.search)
-            #     vrfs = obj_model['query_set']
-            #     only_main_property = False
-            # else:
-            vrf_ids = kwargs.get('vrf_ids').split(';')
-            vrfs = facade.get_vrfs_by_ids(vrf_ids)
-            only_main_property = True
-            obj_model = None
+
+            if not kwargs.get('vrf_ids'):
+                obj_model = facade.get_vrfs_by_search(self.search)
+                vrfs = obj_model['query_set']
+                only_main_property = False
+            else:
+                vrf_ids = kwargs.get('environment_ids').split(';')
+                vrfs = facade.get_vrfs_by_ids(vrf_ids)
+                only_main_property = True
+                obj_model = None
 
             serializer_class = serializers.VrfV3Serializer
 
