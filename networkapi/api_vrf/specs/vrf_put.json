@@ -1,0 +1,32 @@
+{
+  "title": "Vrf Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "vrfs"
+  ],
+  "properties": {
+    "vrfs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "vrf": {
+            "type": "string"
+          },
+          "internal_name": {
+            "type": "string"
+          }
+        },
+
+        "required": [
+          "vrf",
+          "internal_name"
+        ]
+      }
+    }
+  }
+}

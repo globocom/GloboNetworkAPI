@@ -53,3 +53,49 @@ def get_vrfs_by_ids(vrfs_ids):
         vrfs.append(vrf)
 
     return vrfs
+
+
+def create_vrf(vrf):
+    """
+    Create vrf
+
+    :param env: dict
+    """
+
+    vrf_obj = Vrf()
+
+    vrf_obj.vrf = vrf.get('vrf')
+    vrf_obj.internal_name = vrf.get('internal_name')
+
+    vrf_obj.create(None)
+
+    return vrf_obj
+
+
+def update_vrf(vrf):
+    """
+    Update vrf
+
+    :param env: dict
+    """
+
+    vrf_obj = get_vrf_by_id(vrf.get('id'))
+
+    Vrf.update(
+        None,
+        vrf_obj.id,
+        vrf=vrf.get('vrf'),
+        internal_name=vrf.get('internal_name'),
+    )
+
+    return vrf_obj
+
+
+def delete_vrf(vrf_id):
+    """
+    Delete environment
+
+    :param env: dict
+    """
+
+    Vrf.remove(None, vrf_id)

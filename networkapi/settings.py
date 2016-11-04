@@ -408,6 +408,8 @@ SPECS = {
     'networkv4_post': 'networkapi/api_network/specs/netv4_post.json',
     'networkv6_put': 'networkapi/api_network/specs/netv6_put.json',
     'networkv6_post': 'networkapi/api_network/specs/netv6_post.json',
+    'vrf_post': 'networkapi/api_vrf/specs/vrf_post.json',
+    'vrf_put': 'networkapi/api_vrf/specs/vrf_put.json',
 }
 
 ##########
