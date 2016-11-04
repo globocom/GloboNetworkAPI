@@ -711,6 +711,10 @@ class NetworkIPv4(BaseModel):
         vlan_inst.allow_networks_environment(configs, [self], [])
 
     def validate_network(self):
+        """
+        Verify if network make conflict in environment or environment related.
+        """
+
         vlan_inst = self.vlan
 
         envs = vlan_inst.get_environment_related()
@@ -750,6 +754,69 @@ class NetworkIPv4(BaseModel):
                     'of this Vlan is also associated with other environment '
                     'that has a network with the same track, add filters in '
                     'environments if necessary. Intersect: %s' % interset[0])
+
+    def activate_v3(self):
+        """
+            Send activate info of network v4 for queue of ACL configuration
+                system.
+            Update status column  to 'active = 0'.
+
+            @raise NetworkIPv4Error: Error activating a NetworkIPv4.
+        """
+
+        try:
+            net_slz = get_app('api_network', 'serializers.v3')
+            self.active = 1
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = net_slz.NetworkIPv4V3Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv4_ACTIVATE
+            })
+            queue_manager.append({
+                'action': queue_keys.NETWORKv4_ACTIVATE,
+                'kind': queue_keys.NETWORKv4_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Error activating NetworkIPv4.')
+            raise NetworkIPv4Error(e, u'Error activating NetworkIPv4.')
+
+    def deactivate_v3(self):
+        """
+            Send deactivate info of network v4 for queue of ACL configuration
+                system.
+            Update status column  to 'active = 0'.
+
+            @raise NetworkIPv4Error: Error disabling a NetworkIPv4.
+        """
+
+        try:
+
+            net_slz = get_app('api_network', 'serializers.v3')
+            self.active = 0
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = net_slz.NetworkIPv4V3Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv4_DEACTIVATE
+            })
+            queue_manager.append({
+                'action': queue_keys.NETWORKv4_DEACTIVATE,
+                'kind': queue_keys.NETWORKv4_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Error disabling NetworkIPv4.')
+            raise NetworkIPv4Error(e, u'Error disabling NetworkIPv4.')
 
 
 class Ip(BaseModel):
@@ -2355,6 +2422,69 @@ class NetworkIPv6(BaseModel):
                     'of this Vlan is also associated with other environment '
                     'that has a network with the same track, add filters in '
                     'environments if necessary. Intersect: %s' % interset[0])
+
+    def activate_v3(self):
+        """
+            Send activate info of network v6 for queue of ACL configuration
+                system.
+            Update status column  to 'active = 0'.
+
+            @raise NetworkIPv6Error: Error activating a NetworkIPv6.
+        """
+
+        try:
+            net_slz = get_app('api_network', 'serializers.v3')
+            self.active = 1
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = net_slz.NetworkIPv6V3Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv6_ACTIVATE
+            })
+            queue_manager.append({
+                'action': queue_keys.NETWORKv6_ACTIVATE,
+                'kind': queue_keys.NETWORKv6_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Error activating NetworkIPv6.')
+            raise NetworkIPv4Error(e, u'Error activating NetworkIPv6.')
+
+    def deactivate_v3(self):
+        """
+            Send deactivate info of network v6 for queue of ACL configuration
+                system.
+            Update status column  to 'active = 0'.
+
+            @raise NetworkIPv6Error: Error disabling a NetworkIPv6.
+        """
+
+        try:
+
+            net_slz = get_app('api_network', 'serializers.v3')
+            self.active = 0
+            # Send to Queue
+            queue_manager = QueueManager()
+            serializer = net_slz.NetworkIPv6V3Serializer(self)
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv6_DEACTIVATE
+            })
+            queue_manager.append({
+                'action': queue_keys.NETWORKv6_DEACTIVATE,
+                'kind': queue_keys.NETWORKv6_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Error disabling NetworkIPv6.')
+            raise NetworkIPv4Error(e, u'Error disabling NetworkIPv6.')
 
 
 class Ipv6(BaseModel):
