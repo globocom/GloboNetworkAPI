@@ -3518,10 +3518,11 @@ class Ipv6Equipament(BaseModel):
     def delete_v3(self):
         """
         Method V3 to remove Ipv6 and Equipment relationship.
-        If Ipv6 from this Ipv6-Equipment is associated with created Vip Request,
-            and the Equipment is the last balancer associated, the IpEquipment
-            association cannot be removed.
-        If Ipv6 has no relationship with other Equipments, then Ipv6 is also removed.
+        If Ipv6 from this Ipv6-Equipment is associated with created Vip
+            Request and the Equipment is the last balancer associated,
+            the IpEquipment association cannot be removed.
+        If Ipv6 has no relationship with other Equipments, then Ipv6 is
+            also removed.
 
         @raise IpCantRemoveFromServerPool: Ip is associated with associated
                                            Pool Member.

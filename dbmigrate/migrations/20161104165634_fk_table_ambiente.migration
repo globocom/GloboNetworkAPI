@@ -1,0 +1,55 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `ambiente` 
+ADD INDEX `fk_ambiente_id_father_environment_idx` (`id_father_environment` ASC)  COMMENT '';
+
+ALTER TABLE `ambiente` 
+ADD CONSTRAINT `fk_ambiente_id_vrf`
+  FOREIGN KEY (`id_vrf`)
+  REFERENCES `vrf` (`id`)
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;
+
+ALTER TABLE `ambiente` 
+ADD CONSTRAINT `fk_ambiente_id_father_environment`
+  FOREIGN KEY (`id_father_environment`)
+  REFERENCES `ambiente` (`id_ambiente`)
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;
+
+ALTER TABLE `ambiente` 
+DROP FOREIGN KEY `fk_ambiente_filter`;
+
+ALTER TABLE `ambiente` 
+ADD CONSTRAINT `fk_ambiente_filter`
+  FOREIGN KEY (`id_filter`)
+  REFERENCES `filter` (`id_filter`)
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;
+
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `ambiente` 
+DROP FOREIGN KEY `fk_ambiente_filter`;
+
+ALTER TABLE `ambiente` 
+ADD CONSTRAINT `fk_ambiente_filter`
+  FOREIGN KEY (`id_filter`)
+  REFERENCES `filter` (`id_filter`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+ALTER TABLE `ambiente` 
+DROP FOREIGN KEY `fk_ambiente_id_father_environment`;
+
+ALTER TABLE `ambiente` 
+DROP FOREIGN KEY `fk_ambiente_id_vrf`;
+
+ALTER TABLE `ambiente` 
+DROP INDEX `fk_ambiente_id_father_environment_idx`;
+
+"""
