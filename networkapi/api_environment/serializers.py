@@ -2,7 +2,6 @@
 from django.db.models import get_model
 from rest_framework import serializers
 
-from networkapi.api_vrf.serializers import VrfV3Serializer
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
@@ -159,6 +158,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
         filter_slz = get_app('api_filter', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
+        vrf_slz = get_app('api_vrf', module_label='serializers')
 
         if not cls.mapping:
             cls.mapping = {
@@ -197,15 +197,29 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 'default_vrf': {
                     'obj': 'default_vrf_id'
                 },
-                'default_vrf__details': {
-                    'serializer': VrfV3Serializer,
+                'default_vrf__basic': {
+                    'serializer': vrf_slz.VrfV3Serializer,
                     'kwargs': {
-                        'include': (
-                            'default_vrf__details',
+                        'fields': (
+                            'id',
+                            'vrf',
+                        ),
+                        'kind': 'basic'
+                    },
+                    'obj': 'default_vrf'
+                },
+                'default_vrf__details': {
+                    'serializer': vrf_slz.VrfV3Serializer,
+                    'kwargs': {
+                        'fields': (
+                            'id',
+                            'vrf',
+                            'internal_name'
                         )
                     },
                     'obj': 'default_vrf'
                 },
+
                 'father_environment': {
                     'obj': 'father_environment_id'
                 },
