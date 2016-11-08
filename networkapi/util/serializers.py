@@ -144,6 +144,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             obj = obj.__getattribute__(slr_model.get('obj'))
 
         if not obj:
+            if slr_model.get('kwargs', dict()).get('many'):
+                return []
             return None
 
         # If has not serializer return obj

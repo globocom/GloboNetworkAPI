@@ -80,10 +80,6 @@ DATABASES = {
     }
 }
 
-if 'test' in sys.argv or 'jenkins' in sys.argv:
-    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
-
-
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
 

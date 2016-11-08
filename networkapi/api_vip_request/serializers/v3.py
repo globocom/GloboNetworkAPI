@@ -46,13 +46,18 @@ class VipRequestPortPoolV3Serializer(DynamicFieldsModelSerializer):
                 'server_pool__basic': {
                     'serializer': pool_slz.PoolV3Serializer,
                     'kwargs': {
+                        'kind': 'basic',
                     },
                     'obj': 'server_pool'
                 },
                 'server_pool__details': {
                     'serializer': pool_slz.PoolV3Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'exclude': (
+                            'vips',
+                            'vips__details',
+                        )
                     },
                     'obj': 'server_pool'
                 },

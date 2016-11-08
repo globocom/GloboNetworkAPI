@@ -244,13 +244,14 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
 
 class PoolV3Serializer(DynamicFieldsModelSerializer):
 
+    dscp = serializers.Field(source='dscp')
+
     healthcheck = serializers.SerializerMethodField('get_healthcheck')
     servicedownaction = serializers.SerializerMethodField(
         'get_servicedownaction')
     server_pool_members = serializers.SerializerMethodField(
         'get_server_pool_members')
     vips = serializers.SerializerMethodField('get_vips')
-    dscp = serializers.SerializerMethodField('get_dscp')
     groups_permissions = serializers.SerializerMethodField(
         'get_groups_permissions')
 
@@ -265,9 +266,6 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
 
     def get_vips(self, obj):
         return self.extends_serializer(obj, 'vips')
-
-    def get_dscp(self, obj):
-        return self.extends_serializer(obj, 'dscp')
 
     def get_groups_permissions(self, obj):
         return self.extends_serializer(obj, 'groups_permissions')
