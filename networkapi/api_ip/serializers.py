@@ -129,6 +129,14 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'server_pool_members'
                 },
+                'server_pool_members__basic': {
+                    'serializer': pool_slz.PoolMemberV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'basic'
+                    },
+                    'obj': 'server_pool_members'
+                },
                 'server_pool_members__details': {
                     'serializer': pool_slz.PoolMemberV3Serializer,
                     'kwargs': {

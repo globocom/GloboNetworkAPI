@@ -17,6 +17,7 @@ import logging
 import re
 
 from ...base import BasePlugin
+from networkapi.util.decorators import mock_return
 # from time import sleep
 # import string
 # import unicodedata
@@ -33,6 +34,7 @@ class NXOS(BasePlugin):
     VALID_TFTP_GET_MESSAGE = 'Copy complete.|Copy complete, now saving to disk'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|utility is occupied'
 
+    @mock_return
     def create_svi(self, svi_number, svi_description='no description'):
         """
         Create SVI in switch
@@ -44,6 +46,7 @@ class NXOS(BasePlugin):
 
         return recv
 
+    @mock_return
     def copyScriptFileToConfig(self, filename, use_vrf=None, destination='running-config'):
         """
         Copy file from TFTP server to destination
@@ -62,6 +65,7 @@ class NXOS(BasePlugin):
 
         return recv
 
+    @mock_return
     def ensure_privilege_level(self, privilege_level=None):
 
         if privilege_level is None:
@@ -80,6 +84,7 @@ class NXOS(BasePlugin):
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
             recv = self.waitString('#')
 
+    @mock_return
     def remove_svi(self, svi_number):
         """
         Delete SVI from switch

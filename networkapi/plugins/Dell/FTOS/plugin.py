@@ -20,6 +20,7 @@ from time import sleep
 from ... import exceptions
 from ...base import BasePlugin
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.util.decorators import mock_return
 
 
 log = logging.getLogger(__name__)
@@ -72,6 +73,7 @@ class FTOS(BasePlugin):
         else:
             raise exceptions.UnableToVerifyResponse()
 
+    @mock_return
     def create_svi(self, svi_number, svi_description='no description'):
         """
         Create SVI in switch
@@ -83,6 +85,7 @@ class FTOS(BasePlugin):
 
         return recv
 
+    @mock_return
     def copyScriptFileToConfig(self, filename, use_vrf=None, destination='running-config'):
         """
         Copy file from TFTP server to destination
@@ -114,6 +117,7 @@ class FTOS(BasePlugin):
 
         return recv
 
+    @mock_return
     def ensure_privilege_level(self, privilege_level=None):
 
         if privilege_level is None:
@@ -133,6 +137,7 @@ class FTOS(BasePlugin):
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
             recv = self.waitString('#')
 
+    @mock_return
     def remove_svi(self, svi_number):
         """
         Delete SVI from switch

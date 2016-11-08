@@ -144,7 +144,7 @@ def undeploy_networkipv4(network_id, user):
                 status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(
                     file_to_deploy, equipment, lockvar)
 
-            netv4_obj.deactivate_v3(user)
+            netv4_obj.deactivate_v3()
 
             # transaction.commit()
             if netv4_obj.vlan.ativada == 1:
@@ -156,7 +156,7 @@ def undeploy_networkipv4(network_id, user):
                     # remove int vlan
                     for equipment in routers:
                         if equipment.maintenance is not True:
-
+                            pass
                             # Delete SVI
                             status_deploy[equipment.id] += _remove_svi(
                                 equipment, netv4_obj.vlan.num_vlan)
@@ -471,10 +471,10 @@ def _load_template_file(equipment, template_type):
         file_handle.close()
     except IOError, e:
         log.error('Error opening template file for read: %s' % filename_in)
-        raise e
+        raise Exception(e)
     except Exception, e:
         log.error('Syntax error when parsing template: %s ' % e)
-        raise e
+        raise Exception(e)
         # TemplateSyntaxError
 
     return template_file

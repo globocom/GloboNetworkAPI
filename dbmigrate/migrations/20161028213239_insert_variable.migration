@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `variables` (`name`, `value`, `description`) VALUES ('set_session_timeout_plugin_f5', '60', 'set_session_timeout');
+
+"""
+
+SQL_DOWN = u"""
+DELETE FROM `variables` WHERE `name`='set_session_timeout_plugin_f5' AND `value`='60' AND `description`='set_session_timeout';
+
+"""

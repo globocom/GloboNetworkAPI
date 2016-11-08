@@ -169,6 +169,13 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                 'server_pool': {
                     'obj': 'server_pool_id',
                 },
+                'server_pool__basic': {
+                    'serializer': PoolV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'server_pool',
+                },
                 'server_pool__details': {
                     'serializer': PoolV3Serializer,
                     'kwargs': {
@@ -374,6 +381,14 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': vip_slz.VipRequestV3Serializer,
                     'kwargs': {
                         'many': True,
+                    },
+                    'obj': 'vips',
+                },
+                'vips__basic': {
+                    'serializer': vip_slz.VipRequestV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'basic'
                     },
                     'obj': 'vips',
                 },

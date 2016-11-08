@@ -5,6 +5,7 @@ from time import sleep
 import bigsuds
 
 from networkapi.plugins import exceptions as base_exceptions
+from networkapi.system.facade import get_value as get_variable
 
 log = logging.getLogger(__name__)
 
@@ -41,14 +42,13 @@ class Lb(object):
                         log.info('Try get new session')
                         session_cur = self._channel.System.Session.get_session_timeout()
                         log.info('Session Timeout Current: %s' % session_cur)
-                        if int(session_cur) > 60:
-                            self._channel.System.Session.set_session_timeout(60)
+                        session_timeout = get_variable("set_session_timeout_plugin_f5", 60)
+                        if int(session_cur) > session_timeout:
+                            self._channel.System.Session.set_session_timeout(session_timeout)
                         self._channel = self.get_session()
             except Exception, e:
                 log.error(e)
                 raise base_exceptions.CommandErrorException(e)
-        finally:
-            log.info('Disconnected of hostname:%s' % hostname)
 
     def get_session(self):
 

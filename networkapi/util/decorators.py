@@ -8,6 +8,7 @@ from jsonspec.validators.exceptions import ValidationError
 from rest_framework import exceptions as exceptions_api
 
 from networkapi.api_rest import exceptions as rest_exceptions
+from networkapi.system.facade import get_value as get_variable
 
 log = logging.getLogger(__name__)
 
@@ -152,3 +153,16 @@ def prepare_search(func):
 
         return func(self, request, *args, **kwargs)
     return inner
+
+
+def mock_return(mock):
+    def outer(func):
+        @functools.wraps(func)
+        def inner(self, request, *args, **kwargs):
+            if get_variable('mock_return', '0') == '0':
+                return func(self, request, *args, **kwargs)
+
+            return mock
+
+        return inner
+    return outer
