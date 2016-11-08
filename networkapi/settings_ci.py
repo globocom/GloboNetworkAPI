@@ -192,7 +192,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
 
 NOSE_ARGS = [
-    '--verbosity=1',
+    '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
     #     '-s',
@@ -240,15 +240,15 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.INFO,
+            'level': logging.ERROR,
         },
         'django.request': {
             'handlers': ['console'],
-            'level': logging.INFO,
+            'level': logging.ERROR,
             'propagate': True,
         },
         'django.db.backends': {
-            'level': logging.INFO,
+            'level': logging.ERROR,
             'propagate': True,
             'handlers': ['console'],
         },
