@@ -7,11 +7,12 @@ apt-get install libmysqlclient-dev -y
 apt-get install python-dev -y
 apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 pip install -r /vagrant/requirements.txt
+
 pip install gunicorn
 #criar usuario  no DB
 #load migrations
-# externel access: 
-# mysql -uroot -hlocalhost -e 'GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '' WITH GRANT OPTION; FLUSH PRIVILEGES;' 
+# externel access:
+# mysql -uroot -hlocalhost -e 'GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '' WITH GRANT OPTION; FLUSH PRIVILEGES;'
 # vim /etc/mysql/my.cnf
 # change bind-address		= 127.0.0.1 to bind-address		= 0.0.0.0
 mysql -uroot -hlocalhost -e 'drop database if exists networkapi;'
@@ -26,4 +27,3 @@ chmod 777 /etc/init.d/gunicorn_networkapi
 update-rc.d gunicorn_networkapi defaults
 export PYTHONPATH="/vagrant/networkapi:/vagrant/$PYTHONPATH"
 /usr/local/bin/gunicorn  -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
-

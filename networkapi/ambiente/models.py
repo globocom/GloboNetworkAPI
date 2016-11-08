@@ -753,9 +753,9 @@ class Ambiente(BaseModel):
 
     def _get_configs(self):
         """Returns configs of environment."""
-        configs = self.configenvironment_set.all().prefetch_related(
+        configs = self.configenvironment_set.prefetch_related(
             'ip_config',
-        )
+        ).all()
 
         return configs
 
@@ -768,6 +768,17 @@ class Ambiente(BaseModel):
         return vlans
 
     vlans = property(_get_vlan)
+
+    def _get_routers(self):
+        """Returns routers of environment."""
+        equips_amb = self.equipamentoambiente_set.select_related(
+            'equipamento').filter(is_router=True)
+
+        routers = [equip_amb.equipamento for equip_amb in equips_amb]
+
+        return routers
+
+    routers = property(_get_routers)
 
     @classmethod
     def get_by_pk(cls, id):

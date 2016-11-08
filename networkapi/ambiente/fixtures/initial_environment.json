@@ -5,7 +5,8 @@
   "fields": {
     "grupo_l3": 1,
     "ambiente_logico": 1,
-    "divisao_dc": 1
+    "divisao_dc": 1,
+    "default_vrf": 1
     }
   },
   {
@@ -14,7 +15,8 @@
   "fields": {
     "grupo_l3": 2,
     "ambiente_logico": 1,
-    "divisao_dc": 1
+    "divisao_dc": 1,
+    "default_vrf": 1
     }
   },
   {
@@ -23,7 +25,8 @@
   "fields": {
     "grupo_l3": 1,
     "ambiente_logico": 1,
-    "divisao_dc": 2
+    "divisao_dc": 2,
+    "default_vrf": 1
     }
   }
 ]

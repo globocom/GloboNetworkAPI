@@ -34,17 +34,10 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
-CI = os.getenv('CI', '0') == '1'
-PDB = os.getenv('NETWORKAPI_PDB', '0') == '1'
-
-NETWORKAPI_LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 
 # Configuração do arquivo de log do projeto.
-LOG_FILE = NETWORKAPI_LOG_FILE
-
+LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
-
-
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
 LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
@@ -135,7 +128,9 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, P:%(request_path)-8s, N:%(name)s:%(lineno)s , T:%(request_id)-6s, MSG:%(message)s',
+            'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, '
+                      'P:%(request_path)-8s, N:%(name)s:%(lineno)s , '
+                      'T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
         'simple': {
@@ -214,8 +209,7 @@ DEFAULT_CHARSET = 'utf-8'  # Set the encoding to database data
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 
-NETWORKAPI_TIMEZONE = os.getenv('NETWORKAPI_TIMEZONE', 'America/Sao_Paulo')
-TIME_ZONE = NETWORKAPI_TIMEZONE
+TIME_ZONE = os.getenv('NETWORKAPI_TIMEZONE', 'America/Sao_Paulo')
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -263,11 +257,6 @@ if LOG_SHOW_SQL:
         'networkapi.middlewares.SQLLogMiddleware',
     )
 
-if PDB:
-    MIDDLEWARE_CLASSES += (
-        'django_pdb.middleware.PdbMiddleware',
-    )
-
 ROOT_URLCONF = 'networkapi.urls'
 
 # Static files (CSS, JavaScript, Images)
@@ -294,13 +283,15 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Put strings here, like "/home/html/django_templates"
+    # or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(SITE_ROOT, 'templates'),
     os.path.join(SITE_ROOT, 'networkapi', 'templates')
 )
 
+# Apps of Project
 PROJECT_APPS = (
     'networkapi.ambiente',
     'networkapi.api_environment',
@@ -340,6 +331,7 @@ PROJECT_APPS = (
     'networkapi.vlan',
 )
 
+# Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
     'django.contrib.admin',
@@ -351,11 +343,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
 )
-
-if PDB:
-    INSTALLED_APPS += (
-        'django_pdb',
-    )
 
 INSTALLED_APPS += PROJECT_APPS
 
@@ -377,8 +364,6 @@ REST_FRAMEWORK = {
 }
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
-
-NETWORKAPI_VERSION = '1.0'
 
 # Intervals to calculate the vlan_num in POST request /vlan/.
 MIN_VLAN_NUMBER_01 = 2
@@ -482,8 +467,11 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
 BROKER_DESTINATION = os.getenv(
     'NETWORKAPI_BROKER_DESTINATION', '/topic/networkapi_queue')
-BROKER_URI = os.getenv('NETWORKAPI_BROKER_URI',
-                       u'failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e')
+BROKER_URI = os.getenv(
+    'NETWORKAPI_BROKER_URI',
+    u'failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)'
+    '?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e'
+)
 
 
 ###################################
@@ -499,7 +487,6 @@ PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
 # HARDCODED - MUDA SEMPRE QE ATUALIZARMOS O SO DO TOR
 KICKSTART_SO_LF = 'n6000-uk9-kickstart.7.1.0.N1.1b.bin'
 IMAGE_SO_LF = 'n6000-uk9.7.1.0.N1.1b.bin'
-# <<<<<
 
 PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE',
                           '/vagrant/networkapi/rack/roteiros/')
@@ -548,135 +535,40 @@ NETWORKAPI_TFTP_SERVER_ADDR = os.getenv('NETWORKAPI_TFTP_SERVER_ADDR', '')
 
 TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
 
-NETWORKAPI_TFTPBOOT_FILES_PATH = os.getenv(
-    'NETWORKAPI_TFTPBOOT_FILES_PATH', '/mnt/tftpboot/')
-TFTPBOOT_FILES_PATH = NETWORKAPI_TFTPBOOT_FILES_PATH
+TFTPBOOT_FILES_PATH = os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH', '/vagrant/')
 
-
-NETWORKAPI_CONFIG_TEMPLATE_PATH = os.getenv(
-    'NETWORKAPI_CONFIG_TEMPLATE_PATH', '/mnt/config_templates/')
-CONFIG_TEMPLATE_PATH = NETWORKAPI_CONFIG_TEMPLATE_PATH
+CONFIG_TEMPLATE_PATH = os.getenv('NETWORKAPI_CONFIG_TEMPLATE_PATH',
+                                 '/vagrant/networkapi/config_templates/')
 
 CONFIG_FILES_REL_PATH = 'networkapi/generated_config/'
-CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
+
 APPLYED_CONFIG_REL_PATH = 'networkapi/applyed_config/'
 
 INTERFACE_CONFIG_REL_PATH = 'interface/'
-# /mnt/config_templates/interface/
-INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + INTERFACE_CONFIG_REL_PATH
-# /mnt/tftpboot/networkapi/generated_config/interface/
-INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
-    CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
+
+USER_SCRIPTS_REL_PATH = 'user_scripts/'
+
+NETWORK_CONFIG_REL_PATH = 'network/'
+
+# /vagrant/networkapi/generated_config/
+CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
+
+# networkapi/generated_config/user_scripts/
+USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
+# networkapi/generated_config/network/
+NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
 # networkapi/generated_config/interface/
 INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
 
-USER_SCRIPTS_REL_PATH = 'user_scripts/'
-# /mnt/tftpboot/networkapi/generated_config/user_scripts/
-USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + \
-    CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
-# networkapi/generated_config/interface/
-USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
-
-NETWORK_CONFIG_REL_PATH = 'network/'
-# /mnt/config_templates/interface/
+# /vagrant/networkapi/config_templates/network/
 NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + NETWORK_CONFIG_REL_PATH
-# /mnt/tftpboot/networkapi/generated_config/interface/
-NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
-    CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
-# networkapi/generated_config/interface/
-NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
-###################
+# /vagrant/networkapi/config_templates/interface/
+INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + INTERFACE_CONFIG_REL_PATH
 
-
-####################
-# TESTS CONFIGS
-####################
-# If is running on CI: if CI=1 or running inside jenkins
-INTEGRATION = os.getenv('CI', '0') == '1'
-INTEGRATION_TEST_URL = os.getenv('INTEGRATION_TEST_URL', 'http://localhost')
-
-TEST_DISCOVER_ROOT = os.path.abspath(os.path.join(__file__, '..'))
-
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = ['--verbosity=2', '--no-byte-compile', '-d', '-s']
-if CI:
-
-    JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
-    NOSE_ARGS = [
-        '--verbosity=2',
-        #     '--no-byte-compile',
-        #     '-d',
-        #     '-s',
-        '--with-fixture-bundling',
-    ]
-
-    INSTALLED_APPS += (
-        'django_nose',
-        'django_jenkins',
-    )
-
-    JENKINS_TASKS = (
-        'django_jenkins.tasks.with_coverage',
-        'django_jenkins.tasks.django_tests',
-        'django_jenkins.tasks.run_pep8',
-        'django_jenkins.tasks.run_pylint',
-        'django_jenkins.tasks.run_pyflakes',
-        # 'django_jenkins.tasks.run_sloccount',
-    )
-
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': True,
-        'formatters': {
-            'verbose': {
-                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-            },
-            'simple': {
-                'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
-            },
-        },
-        'handlers': {
-            'console': {
-                'level': logging.INFO,
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple'
-            },
-        },
-        'loggers': {
-            'default': {
-                'handlers': ['console'],
-                'propagate': True,
-                'level': logging.INFO,
-            },
-            'django': {
-                'handlers': ['console'],
-                'propagate': True,
-                'level': logging.INFO,
-            },
-            'django.request': {
-                'handlers': ['console'],
-                'level': logging.INFO,
-                'propagate': True,
-            },
-            'django.db.backends': {
-                'level': logging.INFO,
-                'propagate': True,
-                'handlers': ['console'],
-            },
-        },
-        'root': {
-            'level': logging.INFO,
-            'propagate': True,
-            'handlers': ['console'],
-        },
-    }
-
-    NOSE_ARGS += [
-        # '--with-coverage',
-        # '--cover-package=networkapi',
-        # '--exclude=.*migrations*',
-        '--with-xunit',
-        '--xunit-file=reports/junit.xml',
-        # '--cover-xml',
-        # '--cover-xml-file=coverage.xml'
-    ]
+# /vagrant/networkapi/generated_config/interface/
+INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
+    INTERFACE_CONFIG_TOAPPLY_REL_PATH
+# /vagrant/networkapi/generated_config/user_scripts/
+USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + USER_SCRIPTS_TOAPPLY_REL_PATH
+# /vagrant/networkapi/generated_config/interface/
+NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + NETWORK_CONFIG_TOAPPLY_REL_PATH

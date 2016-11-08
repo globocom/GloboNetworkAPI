@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,35 +15,34 @@
 # limitations under the License.
 import logging
 import os
-import pkgutil
-import re
-import sys
-import time
-
-import paramiko
 
 from networkapi.api_deploy import exceptions
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import distributedlock
-from networkapi.distributedlock import LOCK_VIP_IP_EQUIP
 from networkapi.equipamento.models import Equipamento
-from networkapi.equipamento.models import EquipamentoAcesso
-from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
 from networkapi.plugins.factory import PluginFactory
-from networkapi.roteiro.models import TipoRoteiro
 from networkapi.settings import CONFIG_FILES_PATH
 from networkapi.settings import CONFIG_FILES_REL_PATH
 from networkapi.settings import TFTP_SERVER_ADDR
 from networkapi.settings import TFTPBOOT_FILES_PATH
+# import pkgutil
+# import re
+# import sys
+# import time
+# import paramiko
+# from networkapi.distributedlock import LOCK_VIP_IP_EQUIP
+# from networkapi.equipamento.models import EquipamentoAcesso
+# from networkapi.equipamento.models import EquipamentoRoteiro
+# from networkapi.roteiro.models import TipoRoteiro
 
 log = logging.getLogger(__name__)
 
 
-def __applyConfig(equipment, filename, equipment_access=None, source_server=None, port=22):
-    '''Apply configuration file on equipment
+def _applyconfig(equipment, filename, equipment_access=None, source_server=None, port=22):
+    """Apply configuration file on equipment
 
     Args:
             equipment: networkapi.equipamento.Equipamento()
@@ -56,15 +55,16 @@ def __applyConfig(equipment, filename, equipment_access=None, source_server=None
             equipment output
 
     Raises:
-    '''
+    """
 
     if equipment.maintenance is True:
-        return "Equipment is in maintenance mode. No action taken."
+        return 'Equipment is in maintenance mode. No action taken.'
 
     if source_server is None:
         source_server = TFTP_SERVER_ADDR
 
-    # TODO: Handle exceptions from the following methods and generate response for the caller
+    # TODO: Handle exceptions from the following methods and generate response
+    # for the caller
     equip_plugin = PluginFactory.factory(equipment)
     equip_plugin.connect()
     equip_plugin.ensure_privilege_level()
@@ -74,8 +74,8 @@ def __applyConfig(equipment, filename, equipment_access=None, source_server=None
     return equip_output
 
 
-def create_file_from_script(script, prefix_name=""):
-    '''Creates a file with script content
+def create_file_from_script(script, prefix_name=''):
+    """Creates a file with script content
 
     Args:
             script: string with commands script
@@ -86,10 +86,10 @@ def create_file_from_script(script, prefix_name=""):
 
     Raises:
             IOError: if cannot write file
-    '''
+    """
 
-    if prefix_name == "":
-        prefix_name = "script_reqid_"
+    if prefix_name == '':
+        prefix_name = 'script_reqid_'
 
     # validate filename
     path = os.path.abspath(CONFIG_FILES_PATH + prefix_name)
@@ -106,14 +106,15 @@ def create_file_from_script(script, prefix_name=""):
         file_handle.write(script)
         file_handle.close()
     except IOError, e:
-        log.error("Error writing to config file: %s" % filename_to_save)
+        log.error('Error writing to config file: %s' % filename_to_save)
         raise e
 
     return CONFIG_FILES_REL_PATH + filename_out
 
 
-def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tftpserver=None, equipment_access=None):
-    '''Apply configuration file on equipment
+def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar,
+                                           tftpserver=None, equipment_access=None):
+    """Apply configuration file on equipment
 
     Args:
             rel_filename: relative file path from TFTPBOOT_FILES_PATH to apply in equipment
@@ -126,7 +127,7 @@ def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tft
             equipment output
 
     Raises:
-    '''
+    """
 
     # validate filename
     path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
@@ -138,11 +139,11 @@ def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar, tft
     elif type(equipment) is Equipamento:
         pass
     else:
-        log.error("Invalid data for equipment")
+        log.error('Invalid data for equipment')
         raise api_exceptions.NetworkAPIException()
 
     if equipment.maintenance:
         raise AllEquipmentsAreInMaintenanceException()
 
     with distributedlock(lockvar):
-        return __applyConfig(equipment, rel_filename, equipment_access, tftpserver)
+        return _applyconfig(equipment, rel_filename, equipment_access, tftpserver)

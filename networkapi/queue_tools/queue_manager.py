@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,12 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import json
+import logging
 import types
-
-import logging
-import logging
 
 from django.conf import settings
 from stompest.config import StompConfig
@@ -30,9 +26,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class QueueManager(object):
-    """
-        Object to manager objects sent to queue
-    """
+
+    """Object to manager objects sent to queue."""
+
     log = logging.getLogger(__name__)
 
     def __init__(self):
@@ -43,9 +39,16 @@ class QueueManager(object):
 
         """
         self._queue = []
-        self._queue_destination = getattr(settings, 'BROKER_DESTINATION', None) or "/topic/networkapi_queue"
-        self._broker_uri = getattr(settings, 'BROKER_URI', None) or "tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1"
-        self._broker_timeout = float(getattr(settings, 'BROKER_CONNECT_TIMEOUT', None) or 2)
+        self._queue_destination = getattr(settings, 'BROKER_DESTINATION', None) or \
+            '/topic/networkapi_queue'
+        self._broker_uri = getattr(settings, 'BROKER_URI', None) or \
+            'tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1'
+        self._broker_timeout = float(
+            getattr(settings, 'BROKER_CONNECT_TIMEOUT', None) or 2)
+
+        self.log.debug('queue_destination:%s', self._queue_destination)
+        self.log.debug('broker_uri:%s', self._broker_uri)
+        self.log.debug('broker_timeout:%s', self._broker_timeout)
 
     def append(self, dict_obj):
         """
@@ -59,16 +62,20 @@ class QueueManager(object):
         try:
 
             if not isinstance(dict_obj, types.DictType):
-                raise ValueError(u"QueueManagerError - The type must be a instance of Dict")
+                raise ValueError(
+                    u'QueueManagerError - The type must be a instance of Dict')
 
             self._queue.append(dict_obj)
+            self.log.debug('dict_obj:%s', dict_obj)
 
         except Exception, e:
-            self.log.error(u"QueueManagerError - Error on appending objects to queue.")
+            self.log.error(
+                u'QueueManagerError - Error on appending objects to queue.')
             self.log.error(e)
+            raise Exception(
+                'QueueManagerError - Error on appending objects to queue.')
 
     def send(self):
-
         """
             Create a new stomp configuration client, connect and
             then serializes message by message posting
@@ -83,11 +90,16 @@ class QueueManager(object):
             client.connect(connectTimeout=self._broker_timeout)
 
             for message in self._queue:
+
                 serialized_message = json.dumps(message, ensure_ascii=False)
                 client.send(self._queue_destination, serialized_message)
 
             client.disconnect()
 
         except Exception, e:
-            self.log.error(u"QueueManagerError - Error on sending objects from queue.")
+
+            self.log.error(
+                u'QueueManagerError - Error on sending objects from queue.')
             self.log.debug(e)
+            raise Exception(
+                'QueueManagerError - Error on sending objects to queue.')

@@ -18,6 +18,7 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
+from networkapi.util.decorators import prepare_search
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
@@ -28,6 +29,7 @@ class OptionVipEnvironmentVipOneView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return option vip list by environment id
@@ -61,6 +63,7 @@ class EnvironmentVipStepOneView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return finality, client or environment vip list.
@@ -113,6 +116,7 @@ class EnvironmentVipView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return environment vip list.
@@ -172,6 +176,7 @@ class OptionVipEnvironmentTypeVipView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return option vip list by environment id and option vip type

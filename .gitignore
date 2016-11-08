@@ -20,3 +20,4 @@ build
 *.db
 sqldump_vm_teste.sql
 sitestatic/
+config_templates/

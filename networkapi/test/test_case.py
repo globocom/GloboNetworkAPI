@@ -27,6 +27,7 @@ class NetworkApiTestCase(TestCase):
         'initial_equip_marca.json',
         'initial_equip_model.json',
         'initial_equipments.json',
+        'initial_vrf.json',
         'initial_environment_dc.json',
         'initial_environment_envlog.json',
         'initial_environment_gl3.json',
@@ -55,7 +56,7 @@ class NetworkApiTestCase(TestCase):
         pass
 
     def get_http_authorization(self, user):
-        return 'Basic %s' % base64.b64encode("%s:teste" % user)
+        return 'Basic %s' % base64.b64encode('%s:teste' % user)
 
     def tearDown(self):
         pass

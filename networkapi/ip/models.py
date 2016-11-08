@@ -325,23 +325,28 @@ class NetworkIPv4(BaseModel):
         db_table = u'redeipv4'
         managed = True
 
-    def _get_formated_ip(self):
+    @cached_property
+    def networkv4(self):
         """Returns formated ip."""
         return '%s/%s' % (self.formated_octs, self.block)
 
-    networkv4 = property(_get_formated_ip)
-
-    def _get_formated_octs(self):
+    @cached_property
+    def formated_octs(self):
         """Returns formated octs."""
         return '%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4)
 
-    formated_octs = property(_get_formated_octs)
-
-    def _get_formated_mask(self):
+    @cached_property
+    def mask_formated(self):
         """Returns formated mask."""
-        return '%s.%s.%s.%s' % (self.mask_oct1, self.mask_oct2, self.mask_oct3, self.mask_oct4)
+        return '%s.%s.%s.%s' % (self.mask_oct1, self.mask_oct2,
+                                self.mask_oct3, self.mask_oct4)
 
-    mask_formated = property(_get_formated_mask)
+    @cached_property
+    def wildcard(self):
+        return '%d.%d.%d.%d' % (255 - self.mask_oct1,
+                                255 - self.mask_oct2,
+                                255 - self.mask_oct3,
+                                255 - self.mask_oct4)
 
     @cached_property
     def dhcprelay(self):
@@ -757,8 +762,8 @@ class NetworkIPv4(BaseModel):
 
     def activate_v3(self):
         """
-            Send activate info of network v4 for queue of ACL configuration
-                system.
+            Send activate notication of network v4 for queue of ACL
+                configuration system.
             Update status column  to 'active = 0'.
 
             @raise NetworkIPv4Error: Error activating a NetworkIPv4.
@@ -769,7 +774,9 @@ class NetworkIPv4(BaseModel):
             self.active = 1
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = net_slz.NetworkIPv4V3Serializer(self)
+            serializer = net_slz.NetworkIPv4V3Serializer(
+                self,
+                include=('vlan__details',))
             data_to_queue = serializer.data
             data_to_queue.update({
                 'description': queue_keys.NETWORKv4_ACTIVATE
@@ -788,8 +795,8 @@ class NetworkIPv4(BaseModel):
 
     def deactivate_v3(self):
         """
-            Send deactivate info of network v4 for queue of ACL configuration
-                system.
+            Send deactivate notication of network v4 for queue of ACL
+                configuration system.
             Update status column  to 'active = 0'.
 
             @raise NetworkIPv4Error: Error disabling a NetworkIPv4.

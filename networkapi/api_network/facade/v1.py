@@ -285,7 +285,7 @@ def _generate_config_file(dict_ips, equipment, template_type):
     equipment to render template to
     template type to load
 
-    Returns: filename with relative path to settings.NETWORKAPI_TFTPBOOT_FILES_PATH
+    Returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
     """
 
     config_to_be_saved = ''

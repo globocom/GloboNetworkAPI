@@ -75,6 +75,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     children = serializers.SerializerMethodField('get_children')
     filter = serializers.SerializerMethodField('get_filter')
     default_vrf = serializers.SerializerMethodField('get_default_vrf')
+    routers = serializers.SerializerMethodField('get_routers')
 
     def get_default_vrf(self, obj):
         return self.extends_serializer(obj, 'default_vrf')
@@ -96,6 +97,9 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
     def get_filter(self, obj):
         return self.extends_serializer(obj, 'filter')
+
+    def get_routers(self, obj):
+        return self.extends_serializer(obj, 'routers')
 
     class Meta:
         Ambiente = get_model('ambiente', 'Ambiente')
@@ -121,6 +125,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'father_environment',
             'children',
             'configs',
+            'routers',
         )
         default_fields = (
             'id',
@@ -153,6 +158,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         """Returns the mapping of serializers."""
 
         filter_slz = get_app('api_filter', module_label='serializers')
+        eqpt_slz = get_app('api_equipment', module_label='serializers')
 
         if not cls.mapping:
             cls.mapping = {
@@ -248,6 +254,24 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
                     },
                     'obj': 'children'
+                },
+                'routers': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'id',
+                        )
+                    },
+                    'obj': 'routers'
+                },
+                'routers__details': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
+                    },
+                    'obj': 'routers'
                 },
             }
 

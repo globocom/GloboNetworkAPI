@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 import os
-
+import sys
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,14 +16,13 @@ import os
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-
 APP_DIR = os.path.realpath(__file__ + './')
 
 sys.path.insert(0, APP_DIR)
 
 os.environ['PYTHON_EGG_CACHE'] = os.path.join(APP_DIR, '.egg-cache')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'networkapi.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = os.getenv('DJANGO_SETTINGS_MODULE',
+                                                 'networkapi.settings')
 
 import django.core.handlers.wsgi
 application = django.core.handlers.wsgi.WSGIHandler()

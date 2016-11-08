@@ -104,7 +104,7 @@ class BasePlugin(object):
             raise exceptions.ConnectionException(device)
         except Exception, e:
             log.error('Error connecting to host %s: %s' % (device, e))
-            raise e
+            raise Exception(e)
 
     def create_svi(self, svi_number, svi_description='no description'):
         """
@@ -151,9 +151,9 @@ class BasePlugin(object):
 
     def removeDisallowedChars(self, data):
         data = u'%s' % data
-        cleanedStr = unicodedata.normalize(
+        cleanedstr = unicodedata.normalize(
             'NFKD', data).encode('ASCII', 'ignore')
-        return ''.join(c for c in cleanedStr if c in self.VALID_OUTPUT_CHARS)
+        return ''.join(c for c in cleanedstr if c in self.VALID_OUTPUT_CHARS)
 
     def remove_svi(self, svi_number):
         """
