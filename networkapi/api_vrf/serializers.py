@@ -17,16 +17,8 @@ class VrfV3Serializer(DynamicFieldsModelSerializer):
             'vrf'
         )
 
-        default_fields = (
-            'id',
-            'internal_name',
+        default_fields = fields
 
-        )
-
-        basic_fields = (
-            'id',
-            'internal_name',
-            'vrf'
-        )
+        basic_fields = fields
 
         details_fields = fields
