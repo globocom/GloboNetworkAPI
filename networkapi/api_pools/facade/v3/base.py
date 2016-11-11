@@ -129,10 +129,12 @@ def get_pool_by_ids(pools_ids):
     example: [<pools_id>,...]
     """
 
-    server_pools = list()
+    pls_ids = list()
     for pools_id in pools_ids:
-        sp = get_pool_by_id(pools_id)
-        server_pools.append(sp)
+        sp = get_pool_by_id(pools_id).id
+        pls_ids.append(sp)
+
+    server_pools = ServerPool.objects.filter(id__in=pls_ids)
 
     return server_pools
 

@@ -16,16 +16,34 @@ def delete_ipv4_list(ipv4_list):
     """Delete Ipv4."""
 
     for ipv4 in ipv4_list:
-        ip = Ip.objects.get(id=ipv4)
-        ip.delete()
+        ipv4_obj = get_ipv4_by_id(ipv4)
+        ipv4_obj.delete_v3()
 
 
 def delete_ipv6_list(ipv6_list):
     """Delete Ipv6."""
 
     for ipv6 in ipv6_list:
-        ip = Ipv6.objects.get(id=ipv6)
-        ip.delete()
+        ipv6_obj = get_ipv6_by_id(ipv6)
+        ipv6_obj.delete_v3()
+
+
+def create_networkipv4(ipv4, user):
+    """Creates a Ipv4."""
+
+    ipv4_obj = Ip()
+    ipv4_obj.create_v3(ipv4)
+
+    return ipv4_obj
+
+
+def update_networkipv4(ipv4, user):
+    """Updates a Ipv4."""
+
+    netv4_obj = get_ipv4_by_id(ipv4.get('id'))
+    netv4_obj.update_v3(ipv4)
+
+    return netv4_obj
 
 
 def get_ipv4_by_id(ip_id):

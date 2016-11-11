@@ -226,7 +226,7 @@ class NetworkIPv6View(APIView):
         return Response(response, status.HTTP_200_OK)
 
 
-class NetworkIpv4DeployView(APIView):
+class NetworkIPv4DeployView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
@@ -255,6 +255,43 @@ class NetworkIpv4DeployView(APIView):
         for obj_id in obj_ids:
             # deploy network configuration
             status_deploy = facade.undeploy_networkipv4(obj_id, request.user)
+            response.append({
+                'status': status_deploy,
+                'id': obj_id,
+            })
+
+        return Response(response, status.HTTP_200_OK)
+
+
+class NetworkIPv6DeployView(APIView):
+
+    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
+    @logs_method_apiview
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+
+        response = list()
+        obj_ids = kwargs['obj_id'].split(';')
+        for obj_id in obj_ids:
+            # deploy network configuration
+            status_deploy = facade.deploy_networkipv6(obj_id, request.user)
+            response.append({
+                'status': status_deploy,
+                'id': obj_id,
+            })
+
+        return Response(response, status.HTTP_200_OK)
+
+    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
+    @logs_method_apiview
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+
+        response = list()
+        obj_ids = kwargs['obj_id'].split(';')
+        for obj_id in obj_ids:
+            # deploy network configuration
+            status_deploy = facade.undeploy_networkipv6(obj_id, request.user)
             response.append({
                 'status': status_deploy,
                 'id': obj_id,

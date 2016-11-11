@@ -49,10 +49,12 @@ def get_environment_by_ids(environment_ids):
     :param environment_ids: ids list
     """
 
-    environments = list()
+    env_ids = list()
     for environment_id in environment_ids:
-        env = get_environment_by_id(environment_id)
-        environments.append(env)
+        env = get_environment_by_id(environment_id).id
+        env_ids.append(env)
+
+    environments = Ambiente.objects.filter(id__in=env_ids)
 
     return environments
 

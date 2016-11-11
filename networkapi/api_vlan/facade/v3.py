@@ -19,9 +19,11 @@ def get_vlan_by_ids(vlan_ids):
     """
     Get vlans by ids
     """
-    vlans = list()
+    vl_ids = list()
     for vlan_id in vlan_ids:
-        vlans.append(get_vlan_by_id(vlan_id))
+        vl_ids.append(get_vlan_by_id(vlan_id).id)
+
+    vlans = Vlan.objects.filter(id__in=vl_ids)
 
     return vlans
 

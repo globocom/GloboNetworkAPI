@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+log = logging.getLogger(__name__)
 
 
 class BrandV3Serializer(DynamicFieldsModelSerializer):
@@ -206,6 +210,8 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_ipv4(queryset):
+
+        log.info('Using setup_eager_loading_ipv4')
         queryset = queryset.prefetch_related(
             'ipequipamento_set',
             'ipequipamento_set__ip',
@@ -214,6 +220,8 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_ipv6(queryset):
+
+        log.info('Using setup_eager_loading_ipv6')
         queryset = queryset.prefetch_related(
             'ipv6equipament_set',
             'ipv6equipament_set__ip',

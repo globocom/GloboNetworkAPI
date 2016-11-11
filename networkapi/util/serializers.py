@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from rest_framework import serializers
+
+from networkapi.models.BaseManager import BaseQuerySet
+
+log = logging.getLogger(__name__)
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
@@ -20,40 +26,60 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         prohibited = kwargs.pop('prohibited', tuple())
         kind = kwargs.pop('kind', None)
 
+        try:
+            self.mapping = self.get_serializers() or dict()
+        except:
+            self.mapping = dict()
+
         filtred_fields = tuple()
-        all_fields = include + fields
+        all_fields = tuple()
         if args:
+            queryset = args[0]
+
+            if not fields:
+                try:
+                    fields_class = None
+
+                    if kind == 'basic' and self.Meta.__dict__.get('basic_fields'):
+                        fields_class = self.Meta.basic_fields
+                    elif kind == 'details' and self.Meta.__dict__.get('details_fields'):
+                        fields_class = self.Meta.details_fields
+                    elif self.Meta.__dict__.get('default_fields'):
+                        fields_class = self.Meta.default_fields
+                    else:
+                        fields_class = self.Meta.fields
+
+                    all_fields = fields_class + include
+                except:
+                    pass
+            else:
+                all_fields = include + fields
 
             filtred_fields = [self.get_main_key(field, kind)[0]
                               for field in all_fields]
 
-            if filtred_fields:
-                args = self.exec_eager_loading(filtred_fields, args)
+            if filtred_fields and type(queryset) == BaseQuerySet:
+                # import pdb; pdb.Pdb(skip=['django.*']).set_trace()  #
+                # breakpoint 184999ff //
+
+                # for key in all_fields:
+                # import pdb; pdb.Pdb(skip=['django.*']).set_trace()  #
+                # breakpoint 50ca06f4 //
+
+                #     queryset = self.recur(self, key, kind, queryset)
+
+                queryset = self.exec_eager_loading(filtred_fields, queryset)
+
+            args = (queryset,)
 
         # Instantiate the superclass normally
         super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
 
+        # Prepare field for serializer
+        self.context = {'serializers': dict()}
+
         # Use default_fields when exists
         existing = set(self.fields.keys())
-
-        if not fields:
-            try:
-                fields_class = None
-
-                if kind == 'basic' and self.Meta.__dict__.get('basic_fields'):
-                    fields_class = self.Meta.basic_fields
-                elif kind == 'details' and self.Meta.__dict__.get('details_fields'):
-                    fields_class = self.Meta.details_fields
-                elif self.Meta.__dict__.get('default_fields'):
-                    fields_class = self.Meta.default_fields
-                else:
-                    fields_class = self.Meta.fields
-
-                all_fields = fields_class + include
-                filtred_fields = [self.get_main_key(field, kind)[0]
-                                  for field in all_fields]
-            except:
-                pass
 
         if filtred_fields:
             # Drop any fields that are not specified in the `fields` argument.
@@ -73,14 +99,6 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     self.fields.pop(field_name)
                 except:
                     pass
-
-        # Prepare field for serializer
-        self.context = {'serializers': dict()}
-
-        try:
-            self.mapping = self.get_serializers() or dict()
-        except:
-            self.mapping = dict()
 
         for field in all_fields:
 
@@ -120,6 +138,48 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     fd_key: field_filtered
                 })
 
+    # def recur(self, serializer, field, kind, queryset):
+    # import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint
+    # 62be846e //
+
+    #     try:
+    #         more = True
+    #         filtred_field, other_fields = self.get_main_key(field, kind)
+
+    #         key = serializer.get_serializers().get(field, {})
+
+    #         # one result?
+    #         if key.get('kwargs', {}).get('many', False) is False:
+    #             eager_loading = key.get('eager_loading', {})
+    #             if eager_loading:
+    #                 queryset = eager_loading(queryset)
+
+    #             if more:
+    #                 fields_class = None
+
+    #                 if kind == 'basic' and serializer.Meta.__dict__.get('basic_fields'):
+    #                     fields_class = serializer.Meta.basic_fields
+    #                 elif kind == 'details' and serializer.Meta.__dict__.get('details_fields'):
+    #                     fields_class = serializer.Meta.details_fields
+    #                 elif serializer.Meta.__dict__.get('default_fields'):
+    #                     fields_class = serializer.Meta.default_fields
+    #                 else:
+    #                     fields_class = serializer.Meta.fields
+
+    #                 all_fields = fields_class + (filtred_field,)
+
+    #             for f in all_fields:
+    #                 if key.get('serializer', {}):
+    #                     queryset = self.recur(key.get('serializer'), f, kind, queryset)
+
+    #             if key.get('serializer', {}):
+
+    #                 queryset = self.recur(key.get('serializer'), other_fields, kind, queryset)
+    #     except:
+    #         pass
+
+    #     return queryset
+
     def extends_serializer(self, obj, default_field):
 
         key = self.context.get('serializers').get(default_field, default_field)
@@ -141,6 +201,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         # obj costum
 
         if obj and slr_model.get('obj'):
+
             obj = obj.__getattribute__(slr_model.get('obj'))
 
         if not obj:
@@ -194,21 +255,22 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
         return key, fields_aux
 
-    def exec_eager_loading(self, filted_fields, args):
+    def exec_eager_loading(self, filted_fields, queryset):
         try:
-            queryset = args[0]
+
             # get fields with prefetch_related
             mapping = self.get_serializers()
 
             # For each field
             for key in filted_fields:
                 # if has key
-                if mapping.get(key, dict()).get('eager_loading'):
-                    queryset = mapping[key](queryset)
-            args = (queryset,)
-        except:
+                eager_loading = mapping.get(key, {}).get('eager_loading')
+                if eager_loading:
+                    queryset = eager_loading(queryset)
+        except Exception, e:
+            log.info(e)
             pass
-        return args
+        return queryset
 
     @classmethod
     def get_serializers(cls):

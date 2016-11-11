@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+log = logging.getLogger(__name__)
 
 
 class NetworkTypeV3Serializer(DynamicFieldsModelSerializer):
@@ -86,6 +90,8 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_net_type(queryset):
         """Eager loading of network type vip for related NetworkIPv6."""
+
+        log.info('Using setup_eager_loading_net_type')
         queryset = queryset.select_related(
             'network_type',
         )
@@ -94,6 +100,8 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_vlan(queryset):
         """Eager loading of vlan vip for related NetworkIPv6."""
+
+        log.info('Using setup_eager_loading_vlan')
         queryset = queryset.select_related(
             'vlan',
         )
@@ -102,6 +110,8 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_envvip(queryset):
         """Eager loading of environment vip for related NetworkIPv6."""
+
+        log.info('Using setup_eager_loading_envvip')
         queryset = queryset.select_related(
             'ambient_vip',
         )
@@ -229,6 +239,8 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_net_type(queryset):
         """Eager loading of network type vip for related NetworkIPv6."""
+
+        log.info('Using setup_eager_loading_net_type')
         queryset = queryset.select_related(
             'network_type',
         )
@@ -237,6 +249,8 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_vlan(queryset):
         """Eager loading of vlan vip for related NetworkIPv6."""
+
+        log.info('Using setup_eager_loading_vlan')
         queryset = queryset.select_related(
             'vlan',
         )
@@ -245,6 +259,8 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_envvip(queryset):
         """Eager loading of environment vip for related NetworkIPv6."""
+
+        log.info('Using setup_eager_loading_envvip')
         queryset = queryset.select_related(
             'ambient_vip',
         )

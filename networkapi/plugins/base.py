@@ -25,6 +25,7 @@ from . import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.settings import TFTP_SERVER_ADDR
+from networkapi.util.decorators import mock_return
 
 
 log = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class BasePlugin(object):
         """
         raise NotImplementedError()
 
+    @mock_return('')
     def connect(self):
         """Connects to equipment via ssh using paramiko.SSHClient  and
             sets channel variable with invoked shell object
@@ -112,6 +114,7 @@ class BasePlugin(object):
         """
         raise NotImplementedError()
 
+    @mock_return('')
     def close(self):
         self.channel.close()
 
@@ -121,6 +124,7 @@ class BasePlugin(object):
         """
         raise NotImplementedError()
 
+    @mock_return('')
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
         """
         Send single command to equipment and than closes connection channel

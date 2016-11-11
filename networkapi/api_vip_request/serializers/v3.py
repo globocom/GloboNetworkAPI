@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+log = logging.getLogger(__name__)
 
 
 class VipRequestPortPoolV3Serializer(DynamicFieldsModelSerializer):
@@ -394,6 +398,8 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_environmentvip(queryset):
+
+        log.info('Using setup_eager_loading_environmentvip')
         queryset = queryset.select_related(
             'environmentvip',
         )
@@ -401,6 +407,8 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_ipv4(queryset):
+
+        log.info('Using setup_eager_loading_ipv4')
         queryset = queryset.select_related(
             'ipv4',
         )
@@ -408,6 +416,8 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_ipv6(queryset):
+
+        log.info('Using setup_eager_loading_ipv6')
         queryset = queryset.select_related(
             'ipv6',
         )

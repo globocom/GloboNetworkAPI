@@ -31,7 +31,7 @@ class IOS(BasePlugin):
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes copied in'
 
-    @mock_return
+    @mock_return('')
     def create_svi(self, svi_number, svi_description='no description'):
         """
         Create SVI in switch
@@ -43,7 +43,7 @@ class IOS(BasePlugin):
 
         return recv
 
-    @mock_return
+    @mock_return('')
     def copyScriptFileToConfig(self, filename, use_vrf=None, destination='running-config'):
         """
         Copy file from TFTP server to destination
@@ -62,7 +62,7 @@ class IOS(BasePlugin):
 
         return recv
 
-    @mock_return
+    @mock_return('')
     def ensure_privilege_level(self, privilege_level=None):
 
         if privilege_level is None:
@@ -82,7 +82,7 @@ class IOS(BasePlugin):
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
             recv = self.waitString('#')
 
-    @mock_return
+    @mock_return('')
     def remove_svi(self, svi_number):
         """
         Delete SVI from switch

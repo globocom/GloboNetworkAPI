@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `variables` (`name`, `value`, `description`) VALUES ('mock_return', '0', 'mock_return');
+
+"""
+
+SQL_DOWN = u"""
+DELETE FROM `variables` WHERE `name`='mock_return' AND `value`='0' AND `description`='mock_return';
+
+"""

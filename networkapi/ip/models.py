@@ -764,7 +764,7 @@ class NetworkIPv4(BaseModel):
         """
             Send activate notication of network v4 for queue of ACL
                 configuration system.
-            Update status column  to 'active = 0'.
+            Update status column  to 'active = 1'.
 
             @raise NetworkIPv4Error: Error activating a NetworkIPv4.
         """
@@ -772,21 +772,25 @@ class NetworkIPv4(BaseModel):
         try:
             net_slz = get_app('api_network', 'serializers.v3')
             self.active = 1
-            # Send to Queue
-            queue_manager = QueueManager()
+
             serializer = net_slz.NetworkIPv4V3Serializer(
                 self,
-                include=('vlan__details',))
+                include=('vlan__details__environment__basic',))
+
             data_to_queue = serializer.data
             data_to_queue.update({
                 'description': queue_keys.NETWORKv4_ACTIVATE
             })
+
+            # Send to Queue
+            queue_manager = QueueManager()
             queue_manager.append({
                 'action': queue_keys.NETWORKv4_ACTIVATE,
                 'kind': queue_keys.NETWORKv4_KEY,
                 'data': data_to_queue
             })
             queue_manager.send()
+
             self.save()
 
         except Exception, e:
@@ -806,19 +810,25 @@ class NetworkIPv4(BaseModel):
 
             net_slz = get_app('api_network', 'serializers.v3')
             self.active = 0
-            # Send to Queue
-            queue_manager = QueueManager()
-            serializer = net_slz.NetworkIPv4V3Serializer(self)
+
+            serializer = net_slz.NetworkIPv4V3Serializer(
+                self,
+                include=('vlan__details__environment__basic',))
+
             data_to_queue = serializer.data
             data_to_queue.update({
                 'description': queue_keys.NETWORKv4_DEACTIVATE
             })
+
+            # Send to Queue
+            queue_manager = QueueManager()
             queue_manager.append({
                 'action': queue_keys.NETWORKv4_DEACTIVATE,
                 'kind': queue_keys.NETWORKv4_KEY,
                 'data': data_to_queue
             })
             queue_manager.send()
+
             self.save()
 
         except Exception, e:
@@ -1615,6 +1625,100 @@ class Ip(BaseModel):
         except IpCantBeRemovedFromVip, e:
             raise IpCantBeRemovedFromVip(e.cause, e.message)
 
+    # def create_v3(self, authenticated_user, equipment_id, id, new):
+    #     """Persist an IPv4 and associate it to an equipment.
+    #         If equipment was not related with VLAN environment, this makes the relationship
+    #         @return: Nothing
+    #         @raise NetworkIPv6NotFoundError: NetworkIPv6 does not exist.
+    #         @raise NetworkIPv6Error: Error finding NetworkIPv6.
+    #         @raise EquipamentoNotFoundError: Equipment does not exist.
+    #         @raise EquipamentoError: Error finding Equipment.
+    #         @raise IpNotAvailableError: No IP available to VLAN.
+    #         @raise IpError: Error persisting in database.
+    #     """
+
+    #     if new is False:
+    #         # Search vlan by id
+    #         vlan = Vlan().get_by_pk(id)
+
+    #         # Get first networkipv4 related to vlan
+    #         try:
+    #             self.networkipv4 = vlan.networkipv4_set.order_by('id')[0]
+    #         except IndexError, e:
+    #             self.log.error(
+    #                 u'Error finding the first networkipv4 from vlan.')
+    #             raise NetworkIPv4NotFoundError(
+    #                 e, u'Error finding the first networkipv4 from vlan.')
+    #     else:
+    #         self.networkipv4 = NetworkIPv4().get_by_pk(id)
+
+    #     # Cast to API
+    #     net4 = IPNetwork(self.networkipv4.networkv4)
+
+    #     # Find all ips ralated to network
+    #     ips = networkipv4.ip_set.all()
+
+    #     # Cast all to API class
+    #     ipsv4 = set([(IPv4Address(ip.ip_formated) for ip in ips])
+
+    #     # Get configuration
+    #     conf=Configuration.get()
+
+    #     selected_ip=None
+
+    #     # For each ip generated
+    #     i=0
+    #     for ip in net4.iterhosts():
+
+    #         # Do not use some range of IPs (config)
+    #         # IPv4_MIN = Firsts
+    #         # IPv4_MAX = Number minimum of Ip reserveds
+    #         # First IP and 2 last I
+    #         i=i + 1
+    #         if i >= conf.IPv4_MIN and i < (net4.numhosts - conf.IPv4_MAX):
+
+    #             # If IP generated was not used
+    #             if ip not in ipsv4:
+
+    #                 # Use it
+    #                 selected_ip=ip
+
+    #                 # Stop generation
+    #                 break
+
+    #     if selected_ip is None:
+    #         raise IpNotAvailableError(
+    # None, u'No IP available to VLAN %s.' % self.networkipv4.vlan.num_vlan)
+
+    #     self.oct1, self.oct2, self.oct3, self.oct4=str(
+    #         selected_ip).split('.')
+
+    #     equipment=Equipamento().get_by_pk(equipment_id)
+
+    #     try:
+    #         self.save()
+
+    #         ip_equipment=IpEquipamento()
+    #         ip_equipment.ip=self
+    #         ip_equipment.equipamento=equipment
+
+    #         ip_equipment.save(authenticated_user)
+
+    #         try:
+    #             equipment_environment=EquipamentoAmbiente().get_by_equipment_environment(equipment_id,
+    #                                                                                        self.networkipv4.vlan.ambiente_id)
+    #         except EquipamentoAmbienteNotFoundError:
+    #             equipment_environment=EquipamentoAmbiente()
+    #             equipment_environment.equipamento=equipment
+    #             equipment_environment.ambiente=self.networkipv4.vlan.ambiente
+    #             equipment_environment.save(authenticated_user)
+
+    #     except Exception, e:
+    #         self.log.error(
+    #             u'Error adding new IP or relationship ip-equipment.')
+    #         raise IpError(
+    #             e, u'Error adding new IP or relationship ip-equipment.')
+
 
 class IpEquipamento(BaseModel):
     id = models.AutoField(
@@ -1997,7 +2101,9 @@ class NetworkIPv6(BaseModel):
 
     def _get_formated_ip(self):
         """Returns formated ip."""
-        return '%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.block)
+        return '%s:%s:%s:%s:%s:%s:%s:%s/%s' % (self.block1, self.block2, self.block3,
+                                               self.block4, self.block5, self.block6,
+                                               self.block7, self.block8, self.block)
 
     networkv6 = property(_get_formated_ip)
 
@@ -2434,7 +2540,7 @@ class NetworkIPv6(BaseModel):
         """
             Send activate info of network v6 for queue of ACL configuration
                 system.
-            Update status column  to 'active = 0'.
+            Update status column  to 'active = 1'.
 
             @raise NetworkIPv6Error: Error activating a NetworkIPv6.
         """
@@ -2442,19 +2548,25 @@ class NetworkIPv6(BaseModel):
         try:
             net_slz = get_app('api_network', 'serializers.v3')
             self.active = 1
-            # Send to Queue
-            queue_manager = QueueManager()
-            serializer = net_slz.NetworkIPv6V3Serializer(self)
+
+            serializer = net_slz.NetworkIPv6V3Serializer(
+                self,
+                include=('vlan__details__environment__basic',))
+
             data_to_queue = serializer.data
             data_to_queue.update({
                 'description': queue_keys.NETWORKv6_ACTIVATE
             })
+
+            # Send to Queue
+            queue_manager = QueueManager()
             queue_manager.append({
                 'action': queue_keys.NETWORKv6_ACTIVATE,
                 'kind': queue_keys.NETWORKv6_KEY,
                 'data': data_to_queue
             })
             queue_manager.send()
+
             self.save()
 
         except Exception, e:
@@ -2474,19 +2586,25 @@ class NetworkIPv6(BaseModel):
 
             net_slz = get_app('api_network', 'serializers.v3')
             self.active = 0
-            # Send to Queue
-            queue_manager = QueueManager()
-            serializer = net_slz.NetworkIPv6V3Serializer(self)
+
+            serializer = net_slz.NetworkIPv6V3Serializer(
+                self,
+                include=('vlan__details__environment__basic',))
+
             data_to_queue = serializer.data
             data_to_queue.update({
                 'description': queue_keys.NETWORKv6_DEACTIVATE
             })
+
+            # Send to Queue
+            queue_manager = QueueManager()
             queue_manager.append({
                 'action': queue_keys.NETWORKv6_DEACTIVATE,
                 'kind': queue_keys.NETWORKv6_KEY,
                 'data': data_to_queue
             })
             queue_manager.send()
+
             self.save()
 
         except Exception, e:

@@ -65,6 +65,7 @@ def _applyconfig(equipment, filename, equipment_access=None, source_server=None,
 
     # TODO: Handle exceptions from the following methods and generate response
     # for the caller
+
     equip_plugin = PluginFactory.factory(equipment)
     equip_plugin.connect()
     equip_plugin.ensure_privilege_level()

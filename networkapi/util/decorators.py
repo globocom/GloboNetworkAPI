@@ -155,14 +155,18 @@ def prepare_search(func):
     return inner
 
 
-def mock_return(mock):
+def mock_return(mock_value=None):
+
     def outer(func):
         @functools.wraps(func)
-        def inner(self, request, *args, **kwargs):
+        def inner(*args, **kwargs):
             if get_variable('mock_return', '0') == '0':
-                return func(self, request, *args, **kwargs)
+                return func(*args, **kwargs)
 
-            return mock
+            def mock():
+                return mock_value
+
+            return mock()
 
         return inner
     return outer

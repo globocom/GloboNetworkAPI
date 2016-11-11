@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+log = logging.getLogger(__name__)
 
 
 class IpConfigV3Serializer(DynamicFieldsModelSerializer):
@@ -63,7 +67,7 @@ class DivisaoDcV3Serializer(DynamicFieldsModelSerializer):
 
 
 class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
-    name = serializers.RelatedField(source='name')
+
     configs = IpConfigV3Serializer(source='configs', many=True)
 
     father_environment = serializers.SerializerMethodField(
@@ -75,6 +79,10 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     filter = serializers.SerializerMethodField('get_filter')
     default_vrf = serializers.SerializerMethodField('get_default_vrf')
     routers = serializers.SerializerMethodField('get_routers')
+    name = serializers.SerializerMethodField('get_name')
+
+    def get_name(self, obj):
+        return self.extends_serializer(obj, 'name')
 
     def get_default_vrf(self, obj):
         return self.extends_serializer(obj, 'default_vrf')
@@ -162,13 +170,18 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
         if not cls.mapping:
             cls.mapping = {
+                'name': {
+                    'obj': 'name',
+                    'eager_loading': cls.setup_eager_loading_name
+                },
                 'grupo_l3': {
                     'obj': 'grupo_l3_id'
                 },
                 'grupo_l3__details': {
                     'serializer': GrupoL3Serializer,
                     'kwargs': {},
-                    'obj': 'grupo_l3'
+                    'obj': 'grupo_l3',
+                    'eager_loading': cls.setup_eager_loading_grupo_l3
                 },
                 'ambiente_logico': {
                     'obj': 'ambiente_logico_id'
@@ -176,7 +189,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 'ambiente_logico__details': {
                     'serializer': AmbienteLogicoV3Serializer,
                     'kwargs': {},
-                    'obj': 'ambiente_logico'
+                    'obj': 'ambiente_logico',
+                    'eager_loading': cls.setup_eager_loading_ambiente_logico
                 },
                 'divisao_dc': {
                     'obj': 'divisao_dc_id'
@@ -184,7 +198,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 'divisao_dc__details': {
                     'serializer': DivisaoDcV3Serializer,
                     'kwargs': {},
-                    'obj': 'divisao_dc'
+                    'obj': 'divisao_dc',
+                    'eager_loading': cls.setup_eager_loading_grupo_l3
                 },
                 'filter': {
                     'obj': 'filter_id'
@@ -192,7 +207,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 'filter__details': {
                     'serializer': filter_slz.FilterV3Serializer,
                     'kwargs': {},
-                    'obj': 'filter'
+                    'obj': 'filter',
+                    'eager_loading': cls.setup_eager_loading_filter
                 },
                 'default_vrf': {
                     'obj': 'default_vrf_id'
@@ -206,7 +222,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         ),
                         'kind': 'basic'
                     },
-                    'obj': 'default_vrf'
+                    'obj': 'default_vrf',
+                    'eager_loading': cls.setup_eager_loading_default_vrf
                 },
                 'default_vrf__details': {
                     'serializer': vrf_slz.VrfV3Serializer,
@@ -217,7 +234,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                             'internal_name'
                         )
                     },
-                    'obj': 'default_vrf'
+                    'obj': 'default_vrf',
+                    'eager_loading': cls.setup_eager_loading_default_vrf
                 },
 
                 'father_environment': {
@@ -232,7 +250,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                             'father_environment__basic',
                         )
                     },
-                    'obj': 'father_environment'
+                    'obj': 'father_environment',
+                    'eager_loading': cls.setup_eager_loading_father
                 },
                 'father_environment__details': {
                     'serializer': EnvironmentV3Serializer,
@@ -241,7 +260,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                             'father_environment__details',
                         )
                     },
-                    'obj': 'father_environment'
+                    'obj': 'father_environment',
+                    'eager_loading': cls.setup_eager_loading_father
                 },
                 'children': {
                     'serializer': EnvironmentV3Serializer,
@@ -293,8 +313,59 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_father(queryset):
+        log.info('Using setup_eager_loading_father')
         queryset = queryset.prefetch_related(
             'father_environment_set',
             'father_environment_set__environment',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_name(queryset):
+        log.info('Using setup_eager_loading_name')
+        queryset = queryset.select_related(
+            'ambiente_logico',
+            'grupo_l3',
+            'divisao_dc',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_ambiente_logico(queryset):
+        log.info('Using setup_eager_loading_ambiente_logico')
+        queryset = queryset.select_related(
+            'ambiente_logico',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_grupo_l3(queryset):
+        log.info('Using setup_eager_loading_grupo_l3')
+        queryset = queryset.select_related(
+            'grupo_l3',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_divisao_dc(queryset):
+        log.info('Using setup_eager_loading_divisao_dc')
+        queryset = queryset.select_related(
+            'divisao_dc',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_filter(queryset):
+        log.info('Using setup_eager_loading_filter')
+        queryset = queryset.select_related(
+            'filter',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_default_vrf(queryset):
+        log.info('Using setup_eager_loading_default_vrf')
+        queryset = queryset.select_related(
+            'default_vrf',
         )
         return queryset

@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
 from settings import AMBLOG_MGMT
@@ -52,6 +54,7 @@ from settings import LOG_LEVEL
 from settings import LOG_SHOW_SQL
 from settings import LOG_SHOW_TRACEBACK
 from settings import LOG_USE_STDOUT
+from settings import LOGGING
 from settings import MANAGERS
 from settings import MAX_OCT4
 from settings import MAX_VLAN_NUMBER_01
@@ -177,3 +180,12 @@ INSTALLED_APPS = (
 )
 
 INSTALLED_APPS += PROJECT_APPS
+
+LOGGING['loggers']['default']['level'] = logging.DEBUG
+LOGGING['loggers']['django']['level'] = logging.DEBUG
+LOGGING['loggers']['django.request']['level'] = logging.DEBUG
+LOGGING['loggers']['bigsuds']['level'] = logging.INFO
+LOGGING['loggers']['suds']['level'] = logging.INFO
+LOGGING['loggers']['django.db.backends']['level'] = logging.DEBUG
+LOGGING['handlers']['log_file']['level'] = logging.DEBUG
+LOGGING['handlers']['console']['level'] = logging.DEBUG

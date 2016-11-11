@@ -17,6 +17,7 @@ from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.semaforo.model import Semaforo
 from networkapi.util import clone
 from networkapi.util.decorators import cached_property
+from networkapi.util.geral import get_app
 
 
 class VlanError(Exception):
@@ -208,14 +209,14 @@ class Vlan(BaseModel):
 
     def _get_networks_ipv4(self):
         """Returns networks v4."""
-        networkipv4 = self.networkipv4_set.all().select_related()
+        networkipv4 = self.networkipv4_set.all()
         return networkipv4
 
     networks_ipv4 = property(_get_networks_ipv4)
 
     def _get_networks_ipv6(self):
         """Returns networks v6."""
-        networkipv6 = self.networkipv6_set.all().select_related()
+        networkipv6 = self.networkipv6_set.all()
         return networkipv6
 
     networks_ipv6 = property(_get_networks_ipv6)
@@ -928,6 +929,84 @@ class Vlan(BaseModel):
         self.validate_v3()
 
         self.save()
+
+    def activate_v3(self):
+        """ Set column ativada = 1"""
+
+        """
+            Send activate notication of network for queue of ACL
+                configuration system.
+            Update status column  to 'ativada = 1'.
+
+            @raise NetworkIPv4Error: Error activating a Vlan.
+        """
+
+        try:
+
+            vlan_slz = get_app('api_vlan', 'serializers')
+            self.ativada = 1
+
+            serializer = vlan_slz.VlanV3Serializer(
+                self,
+                include=('environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.VLAN_ACTIVATE
+            })
+
+            # Send to Queue
+            queue_manager = QueueManager()
+            queue_manager.append({
+                'action': queue_keys.VLAN_ACTIVATE,
+                'kind': queue_keys.VLAN_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Error activating Vlan.')
+            raise VlanError(e, u'Error activating Vlan.')
+
+    def deactivate_v3(self):
+        """
+            Send activate notication of vlan for queue of ACL
+                configuration system.
+            Update status column  to 'ativada = 0'.
+
+            @raise NetworkIPv4Error: Error disabling a Vlan.
+        """
+
+        try:
+
+            vlan_slz = get_app('api_vlan', 'serializers')
+            self.ativada = 0
+
+            serializer = vlan_slz.VlanV3Serializer(
+                self,
+                include=('environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.VLAN_DEACTIVATE
+            })
+
+            # Send to Queue
+            queue_manager = QueueManager()
+            queue_manager.append({
+                'action': queue_keys.VLAN_DEACTIVATE,
+                'kind': queue_keys.VLAN_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Error disabling Vlan.')
+            raise VlanError(e, u'Error disabling Vlan.')
 
     def get_environment_related(self):
 

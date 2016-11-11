@@ -122,7 +122,7 @@ class VlanDBView(APIView):
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
-        Deletes list of vip request
+        Deletes list of vlans
         """
 
         obj_ids = kwargs['obj_ids'].split(';')

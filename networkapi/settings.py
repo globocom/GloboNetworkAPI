@@ -39,7 +39,7 @@ DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 LOG_DAYS = 10
-LOG_SHOW_SQL = False
+LOG_SHOW_SQL = os.getenv('NETWORKAPI_LOG_SHOW_SQL', '0') == '1'
 LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
 LOG_USE_STDOUT = False
 LOG_SHOW_TRACEBACK = True

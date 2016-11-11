@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+log = logging.getLogger(__name__)
 
 
 class Ipv4V3Serializer(DynamicFieldsModelSerializer):
@@ -151,6 +155,8 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_networkipv4(queryset):
+
+        log.info('Using setup_eager_loading_networkipv4')
         queryset = queryset.select_related(
             'networkipv4',
         )
@@ -301,6 +307,8 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def setup_eager_loading_networkipv6(queryset):
+
+        log.info('Using setup_eager_loading_networkipv6')
         queryset = queryset.select_related(
             'networkipv6',
         )

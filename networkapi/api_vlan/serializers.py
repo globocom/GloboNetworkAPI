@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
+
+log = logging.getLogger(__name__)
 
 
 class VlanV3Serializer(DynamicFieldsModelSerializer):
@@ -98,6 +102,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
                 'environment__details': {
                     'serializer': env_slz.EnvironmentV3Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'ambiente',
                     'eager_loading': cls.setup_eager_loading_environment
@@ -125,6 +130,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'networks_ipv4',
+                    'eager_loading': cls.setup_eager_loading_networks_ipv4
                 },
                 'networks_ipv6__details': {
                     'serializer': ip_slz.NetworkIPv6V3Serializer,
@@ -133,6 +139,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'networks_ipv6',
+                    'eager_loading': cls.setup_eager_loading_networks_ipv6
                 },
                 'vrfs': {
                     'serializer': vrf_slz.VrfV3Serializer,
@@ -156,7 +163,29 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
     @staticmethod
     def setup_eager_loading_environment(queryset):
         """Eager loading of environment for related Vlan."""
+
+        log.info('Using setup_eager_loading_environment')
         queryset = queryset.select_related(
             'environment',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_networks_ipv4(queryset):
+        """Eager loading of environment for related Networks Ipv4."""
+
+        log.info('Using setup_eager_loading_networks_ipv4')
+        queryset = queryset.select_related(
+            'networkipv4_set',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_networks_ipv6(queryset):
+        """Eager loading of environment for related Networks Ipv6."""
+
+        log.info('Using setup_eager_loading_networks_ipv6')
+        queryset = queryset.select_related(
+            'networkipv6_set',
         )
         return queryset

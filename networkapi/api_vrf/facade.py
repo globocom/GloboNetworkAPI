@@ -47,10 +47,12 @@ def get_vrfs_by_ids(vrfs_ids):
     :param vrfs_ids: ids list
     """
 
-    vrfs = list()
+    vrfs_ids = list()
     for vrf_id in vrfs_ids:
-        vrf = get_vrf_by_id(vrf_id)
-        vrfs.append(vrf)
+        vrf = get_vrf_by_id(vrf_id).id
+        vrfs_ids.append(vrf)
+
+    vrfs = Vrf.objects.filter(id__in=vrfs_ids)
 
     return vrfs
 
