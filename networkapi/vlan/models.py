@@ -15,6 +15,10 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.queue_tools import queue_keys
 from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.semaforo.model import Semaforo
+from networkapi.settings import MAX_VLAN_NUMBER_01
+from networkapi.settings import MAX_VLAN_NUMBER_02
+from networkapi.settings import MIN_VLAN_NUMBER_01
+from networkapi.settings import MIN_VLAN_NUMBER_02
 from networkapi.util import clone
 from networkapi.util.decorators import cached_property
 from networkapi.util.geral import get_app
@@ -333,7 +337,12 @@ class Vlan(BaseModel):
 
     def search_vlan_numbers(self, environment_id, min_num, max_num):
         try:
-            return Vlan.objects.filter(num_vlan__range=(min_num, max_num), ambiente__id=environment_id).values_list('num_vlan', flat=True).distinct().order_by('num_vlan')
+            return Vlan.objects.filter(
+                num_vlan__range=(min_num, max_num),
+                ambiente__id=environment_id
+            ).values_list(
+                'num_vlan', flat=True
+            ).distinct().order_by('num_vlan')
         except Exception, e:
             self.log.error(u'Failure to search the Vlans.')
             raise VlanError(e, u'Failure to search the Vlans.')
@@ -840,11 +849,11 @@ class Vlan(BaseModel):
 
     def get_eqpt(self):
         # get all eqpts of environment
-        eqpts = self.ambiente.equipamentoambiente_set.all().exclude(
-            equipamento__tipo_equipamento__filterequiptype__filter=self.ambiente.filter
-        ).distinct().values_list('equipamento')
-
-        eqpts = [equip[0] for equip in eqpts]
+        eqpts = self.ambiente.eqpts.exclude(
+            equipamento__in=self.ambiente.eqpts.filter(
+                equipamento__tipo_equipamento__filterequiptype__filter=self.ambiente.filter
+            )
+        )
 
         return eqpts
 
@@ -893,6 +902,10 @@ class Vlan(BaseModel):
             raise Exception(
                 'Name VLAN can not be duplicated in the environment.')
 
+        if not self.num_vlan:
+            raise Exception(
+                'Number VLAN can not be empty.')
+
         # update
         if self.id:
             old_env = self.get_by_pk(self.id)
@@ -917,14 +930,88 @@ class Vlan(BaseModel):
 
         self.validate_num_vlan_v3()
 
-    def create_v3(self):
+    def create_v3(self, vlan):
         """Create new vlan."""
+
+        env_model = get_model('ambiente', 'Ambiente')
+
+        env = env_model.get_by_pk(vlan.get('environment'))
+
+        self.ambiente = env
+        self.nome = vlan.get('name').upper()
+        self.num_vlan = vlan.get('num_vlan')
+        self.descricao = vlan.get('description')
+        self.acl_file_name = vlan.get('acl_file_name')
+        self.acl_valida = vlan.get('acl_valida', False)
+        self.acl_file_name_v6 = vlan.get('acl_file_name_v6')
+        self.acl_valida_v6 = vlan.get('acl_valida_v6', False)
+        self.ativada = vlan.get('active', False)
+        self.vrf = vlan.get('vrf')
+        self.acl_draft = vlan.get('acl_draft')
+        self.acl_draft_v6 = vlan.get('acl_draft_v6')
+
+        # Allocates 1 number of vlan automatically
+        if not self.num_vlan:
+            self.allocate_vlan()
+
         self.validate_v3()
 
         self.save()
 
-    def update_v3(self):
+        # Allocates networkv4
+        netv4 = vlan.get('create_networkv4')
+        if netv4:
+            network_type = vlan.get('create_networkv4').get(
+                'network_type', None)
+            prefix = vlan.get('create_networkv4').get('prefix', None)
+            environmentvip = vlan.get('create_networkv4').get(
+                'environmentvip', None)
+            dict_net = {
+                'network_type': network_type,
+                'prefix': prefix,
+                'vlan': self.id,
+                'environmentvip': environmentvip,
+            }
+            net4_model = get_model('ip', 'NetworkIPv4')
+            netv4_obj = net4_model()
+            netv4_obj.create_v3(dict_net)
+
+        # Allocates networkv6
+        if vlan.get('create_networkv6'):
+            network_type = vlan.get('create_networkv6').get(
+                'network_type', None)
+            prefix = vlan.get('create_networkv6').get('prefix', None)
+            environmentvip = vlan.get('create_networkv6').get(
+                'environmentvip', None)
+            dict_net = {
+                'network_type': network_type,
+                'prefix': prefix,
+                'vlan': self.id,
+                'environmentvip': environmentvip,
+            }
+            net6_model = get_model('ip', 'NetworkIPv6')
+            netv6_obj = net6_model()
+            netv6_obj.create_v3(dict_net)
+
+    def update_v3(self, vlan):
         """Update vlan."""
+
+        env_model = get_model('ambiente', 'Ambiente')
+
+        env = env_model.get_by_pk(vlan.get('environment'))
+
+        self.ambiente = env
+        self.nome = vlan.get('name')
+        self.num_vlan = vlan.get('num_vlan')
+        self.descricao = vlan.get('description')
+        self.acl_file_name = vlan.get('acl_file_name')
+        self.acl_valida = vlan.get('acl_valida', False)
+        self.acl_file_name_v6 = vlan.get('acl_file_name_v6')
+        self.acl_valida_v6 = vlan.get('acl_valida_v6', False)
+        self.ativada = vlan.get('active', False)
+        self.vrf = vlan.get('vrf')
+        self.acl_draft = vlan.get('acl_draft')
+        self.acl_draft_v6 = vlan.get('acl_draft_v6')
 
         self.validate_v3()
 
@@ -1072,24 +1159,16 @@ class Vlan(BaseModel):
 
         netv4, netv6 = self.get_networks_related()
 
-        netv4_env, netv6_env = self.prepare_networks(
-            netv4,
-            netv6
-        )
+        netv4_env_format = [IPNetwork(net.networkv4) for net in netv4]
+        netv6_env_format = [IPNetwork(net.networkv6) for net in netv6]
 
-        netv4, netv6 = self.prepare_networks(
-            self.networkipv4_set.all(),
-            self.networkipv6_set.all()
-        )
+        netv4_format = [IPNetwork(net.networkv4)
+                        for net in self.networkipv4_set.all()]
+        netv6_format = [IPNetwork(net.networkv6)
+                        for net in self.networkipv6_set.all()]
 
-        v4_interset = self.verify_networks(netv4, netv4_env)
-        v6_interset = self.verify_networks(netv6, netv6_env)
-
-        if v4_interset[0] or v6_interset[0]:
-            raise Exception(
-                'Um dos equipamentos associados com o ambiente desta Vlan '
-                'também está associado com outro ambiente que tem uma rede '
-                'com a mesma faixa, adicione filtros nos ambientes se necessário.')
+        self.verify_networks(netv4_format, netv4_env_format)
+        self.verify_networks(netv6_format, netv6_env_format)
 
     def allow_networks_environment(self, configs, netv4, netv6):
         """
@@ -1099,15 +1178,14 @@ class Vlan(BaseModel):
 
         for net in netv4:
             configsv4 = configs.filter(
-                ip_config__type='v4',
-                ip_config__network_type=net.network_type
+                ip_config__type='v4'
             )
 
             nts = [IPNetwork(config.ip_config.subnet) for config in configsv4]
 
             net_ip = [IPNetwork(net.networkv4)]
 
-            if not self.verify_intersect(nts, net.block, net_ip)[0]:
+            if not self.verify_intersect(nts, net_ip)[0]:
                 raise Exception(
                     'Network can not inserted in environment %s because '
                     'network %s are in out of the range of allowed networks ' %
@@ -1116,15 +1194,14 @@ class Vlan(BaseModel):
 
         for net in netv6:
             configsv6 = configs.filter(
-                ip_config__type='v6',
-                ip_config__network_type=net.network_type
+                ip_config__type='v6'
             )
 
             nts = [IPNetwork(config.ip_config.subnet) for config in configsv6]
 
             net_ip = [IPNetwork(net.networkv6)]
 
-            if not self.verify_intersect(nts, net.block, net_ip)[0]:
+            if not self.verify_intersect(nts, net_ip)[0]:
                 raise Exception(
                     'Network can not inserted in environment %s because '
                     'network %s are in out of the range of allowed networks ' %
@@ -1157,59 +1234,132 @@ class Vlan(BaseModel):
 
         return netv4_dict, netv6_dict
 
-    def verify_networks(self, nets1, nets2):
+    def verify_networks(self, subnets, supernets):
         """
             Verify a list of networks has make intersect with a second list
             and contrariwise.
         """
 
-        vl_net1 = reduce(list.__add__, nets1.values(), [])
-        vl_net2 = reduce(list.__add__, nets2.values(), [])
+        subnet, supernet = self.verify_intersect(supernets, subnets)
+        if subnet or supernet:
+            raise Exception(
+                'One of the equipment associated with the environment '
+                'of this Vlan is also associated with other environment '
+                'that has a network with the same track, add filters in '
+                'environments if necessary. Your Network: %s, Network'
+                'already created: %s' % (subnet, supernet))
 
-        # has network conflict with same networks
-        intersect = list(set(vl_net1) & set(vl_net2))
-        if intersect:
-            self.log.info('Same network - intersect:%s' % intersect)
-            return intersect, intersect
+        subnet, supernet = self.verify_intersect(subnets, supernets)
+        if subnet or supernet:
+            raise Exception(
+                'One of the equipment associated with the environment '
+                'of this Vlan is also associated with other environment '
+                'that has a network with the same track, add filters in '
+                'environments if necessary. Your Network: %s, Network'
+                'already created: %s' % (supernet, subnet))
 
-        for block1 in nets1.keys():
-
-            for block2 in nets2.keys():
-
-                # network1 < network2 of environment
-                # Example: /23 < /24 = /24 is subnet
-                if block1 < block2:
-                    # get subnet of network1
-                    ret = self.verify_intersect(nets1[block1], block2, vl_net2)
-
-                # network1 >= network2 of environment
-                # Example: /24 >= /23 = /24 is subnet
-                else:
-                    # get subnet of network2
-                    ret = self.verify_intersect(nets2[block2], block1, vl_net1)
-
-                if ret[0]:
-                    return ret
-
-        return [], []
-
-    def verify_intersect(self, nets, new_prefix, nets2):
+    def verify_intersect(self, supernets, subnets):
         """
             Verify if a item of a list of networks has make intersect
             with a second list.
         """
 
-        for net in nets:
+        for supernet in supernets:
             try:
-                subnets = list(net.subnet(new_prefix=new_prefix))
-                # has network conflict with subnet of network1
-
-                intersect = list(set(subnets) & set(nets2))
-                if intersect:
-                    self.log.info(
-                        'Subnet intersect:%s, supernet:%s' % (intersect, net))
-                    return intersect, net
+                # has subnet is inside of supernet
+                for subnet in subnets:
+                    if subnet in supernet:
+                        self.log.debug(
+                            'Subnet %s is inside of supernet: %s' %
+                            (subnet, supernet))
+                        return subnet, supernet
             except:
                 pass
 
-        return [], []
+        return None, None
+
+    def allocate_vlan(self):
+        """
+        Create a Vlan with the new Model
+
+        The fields num_vlan, acl_file_name, acl_valida and ativada will be generated automatically
+
+        @return: nothing
+        """
+
+        if (self.ambiente.min_num_vlan_1 and self.ambiente.max_num_vlan_1) or \
+                (self.ambiente.min_num_vlan_2 and self.ambiente.max_num_vlan_2):
+
+            min_num_01 = self.ambiente.min_num_vlan_1 \
+                if self.ambiente.min_num_vlan_1 and self.ambiente.max_num_vlan_1 \
+                else self.ambiente.min_num_vlan_2
+
+            max_num_01 = self.ambiente.max_num_vlan_1 \
+                if self.ambiente.min_num_vlan_1 and self.ambiente.max_num_vlan_1 \
+                else self.ambiente.max_num_vlan_2
+
+            min_num_02 = self.ambiente.min_num_vlan_2 \
+                if self.ambiente.min_num_vlan_2 and self.ambiente.max_num_vlan_2 \
+                else self.ambiente.min_num_vlan_1
+
+            max_num_02 = self.ambiente.max_num_vlan_2 \
+                if self.ambiente.min_num_vlan_2 and self.ambiente.max_num_vlan_2 \
+                else self.ambiente.max_num_vlan_1
+        else:
+            min_num_01 = MIN_VLAN_NUMBER_01
+            max_num_01 = MAX_VLAN_NUMBER_01
+            min_num_02 = MIN_VLAN_NUMBER_02
+            max_num_02 = MAX_VLAN_NUMBER_02
+
+        # Calculate Number VLAN
+        self.num_vlan = self.calculate_vlan_number_v3(min_num_01, max_num_01)
+        if self.num_vlan is None:
+            self.num_vlan = self.calculate_vlan_number_v3(
+                min_num_02, max_num_02)
+            if self.num_vlan is None:
+                raise VlanNumberNotAvailableError(
+                    None, u'Number VLAN unavailable for environment %d.' % self.ambiente.id)
+
+    def calculate_vlan_number_v3(self, min_num, max_num, list_available=False):
+        """
+            Caculate if has a number available in range (min_num/max_num) to specified environment
+
+            @param min_num: Minimum number that the vlan can be created.
+            @param max_num: Maximum number that the vlan can be created.
+            @param list_available: If = True, return the list of numbers availables
+
+            @return: None when hasn't a number available | num_vlan when found a number available
+        """
+
+        interval = range(min_num, max_num + 1)
+
+        # Vlan numbers in interval in the same environment
+        vlan_numbers_in_interval = self.search_vlan_numbers(
+            self.ambiente_id, min_num, max_num)
+
+        # Find equipment's ids from environmnet that is 'switches',
+        # 'roteadores' or 'balanceadores'
+        id_equipamentos = self.get_eqpt()
+
+        # Vlan numbers in others environment but in environment that has equipments
+        # found in before filter ('switches', 'roteadores' or 'balanceadores')
+        vlans_others_environments = Vlan.objects.exclude(ambiente__id=self.ambiente_id) \
+            .filter(ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos) \
+            .values_list('num_vlan', flat=True)
+
+        # Clean duplicates numbers and update merge 'vlan_numbers_in_interval'
+        # with 'vlans_others_environments'
+        vlan_numbers_in_interval = set(vlan_numbers_in_interval)
+        vlan_numbers_in_interval.update(vlans_others_environments)
+
+        self.log.info('Interval: %s.', interval)
+        self.log.info('VLANs in interval: %s.', vlan_numbers_in_interval)
+
+        diff_set = set(interval) - set(vlan_numbers_in_interval)
+        self.log.info('Difference in the lists: %s.', diff_set)
+
+        if list_available:
+            return diff_set
+        for num_vlan in diff_set:
+            return num_vlan
+        return None

@@ -49,21 +49,39 @@
           },
           "acl_draft_v6": {
             "type": ["string","null"]
+          },
+          "create_networkv4": {
+            "type": ["object","null"],
+            "properties": {
+              "network_type": {
+                "type": ["integer","null"]
+              },
+              "environmentvip": {
+                "type": ["integer","null"]
+              },
+              "prefix": {
+                "type": ["integer","null"]
+              }
+            }
+          },
+          "create_networkv6": {
+            "type": ["object","null"],
+            "properties": {
+              "network_type": {
+                "type": ["integer","null"]
+              },
+              "environmentvip": {
+                "type": ["integer","null"]
+              },
+              "prefix": {
+                "type": ["integer","null"]
+              }
+            }
           }
         },
         "required": [
           "name",
-          "num_vlan",
-          "environment",
-          "description",
-          "acl_file_name",
-          "acl_valida",
-          "acl_file_name_v6",
-          "acl_valida_v6",
-          "active",
-          "vrf",
-          "acl_draft",
-          "acl_draft_v6"
+          "environment"
         ]
       }
     }

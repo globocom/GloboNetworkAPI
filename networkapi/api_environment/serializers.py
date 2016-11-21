@@ -315,8 +315,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     def setup_eager_loading_father(queryset):
         log.info('Using setup_eager_loading_father')
         queryset = queryset.prefetch_related(
-            'father_environment_set',
-            'father_environment_set__environment',
+            'father_environment__environment',
         )
         return queryset
 

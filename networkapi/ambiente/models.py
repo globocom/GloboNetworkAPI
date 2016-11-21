@@ -775,14 +775,22 @@ class Ambiente(BaseModel):
 
     def _get_routers(self):
         """Returns routers of environment."""
-        equips_amb = self.equipamentoambiente_set.select_related(
-            'equipamento').filter(is_router=True)
 
-        routers = [equip_amb.equipamento for equip_amb in equips_amb]
+        routers = self._get_eqpt().filter(is_router=True)
 
         return routers
 
     routers = property(_get_routers)
+
+    def _get_eqpt(self):
+        """Returns eqpts of environment."""
+
+        eqpts = self.equipamentoambiente_set.select_related(
+            'equipamento').distinct().values_list('equipamento', flat=True)
+
+        return eqpts
+
+    eqpts = property(_get_eqpt)
 
     @classmethod
     def get_by_pk(cls, id):

@@ -23,7 +23,7 @@
           "oct4": {
             "type": "integer"
           },
-          "block": {
+          "prefix": {
             "type": "integer"
           },
           "mask_oct1": {

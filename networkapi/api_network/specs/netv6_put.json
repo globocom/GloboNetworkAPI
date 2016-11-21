@@ -38,7 +38,7 @@
           "block8": {
             "type": "string"
           },
-          "block": {
+          "prefix": {
             "type": "integer"
           },
           "mask1": {

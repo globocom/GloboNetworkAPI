@@ -29,6 +29,7 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
 
     """Serilizes NetworkIPv4 Model."""
 
+    prefix = serializers.Field(source='block')
     networkv4 = serializers.Field(source='networkv4')
     mask_formated = serializers.Field(source='mask_formated')
     dhcprelay = serializers.Field(source='dhcprelay')
@@ -126,7 +127,7 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
             'oct2',
             'oct3',
             'oct4',
-            'block',
+            'prefix',
             'mask_oct1',
             'mask_oct2',
             'mask_oct3',
@@ -145,7 +146,7 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
             'oct2',
             'oct3',
             'oct4',
-            'block',
+            'prefix',
             'networkv4',
             'mask_oct1',
             'mask_oct2',
@@ -178,6 +179,7 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
 
     """Serilizes NetworkIPv6 Model."""
 
+    prefix = serializers.Field(source='block')
     networkv6 = serializers.Field(source='networkv6')
     mask_formated = serializers.Field(source='mask_formated')
     dhcprelay = serializers.Field(source='dhcprelay')
@@ -279,7 +281,7 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
             'block6',
             'block7',
             'block8',
-            'block',
+            'prefix',
             'mask1',
             'mask2',
             'mask3',
@@ -304,7 +306,7 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
             'block6',
             'block7',
             'block8',
-            'block',
+            'prefix',
             'networkv6',
             'mask1',
             'mask2',
