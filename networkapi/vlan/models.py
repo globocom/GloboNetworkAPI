@@ -849,12 +849,14 @@ class Vlan(BaseModel):
 
     def get_eqpt(self):
         # get all eqpts of environment
-        eqpts = self.ambiente.eqpts.exclude(
-            equipamento__in=self.ambiente.eqpts.filter(
-                equipamento__tipo_equipamento__filterequiptype__filter=self.ambiente.filter
+        eqpts = self.ambiente.eqpts
+        if self.ambiente.filter:
+            eqpts = eqpts.exclude(
+                equipamento__in=self.ambiente.eqpts.filter(
+                    equipamento__tipo_equipamento__filterequiptype__filter=self.ambiente.filter
+                )
             )
-        )
-
+        self.log.debug(eqpts)
         return eqpts
 
     def get_vrf(self):
