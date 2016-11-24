@@ -1126,7 +1126,7 @@ class Vlan(BaseModel):
             Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
             # get vlans using vrf of environment
             Q(ambiente__default_vrf__in=self.get_vrf())
-        )
+        ).distinct()
 
         if exclude_current:
             vlans_env_eqpt = vlans_env_eqpt.exclude(
