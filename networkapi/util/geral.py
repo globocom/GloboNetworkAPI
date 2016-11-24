@@ -21,8 +21,11 @@ class CustomResponse(Response):
             headers_default = {'X_REQUEST_ID': get_context(request)}
             headers = headers.update(headers) if headers else headers_default
 
-        return super(CustomResponse, self).__init__(data, status=None, template_name=None,
-                                                    headers=None, content_type=None)
+        return super(CustomResponse, self).__init__(data,
+                                                    status=status,
+                                                    template_name=template_name,
+                                                    headers=headers,
+                                                    content_type=content_type)
 
 
 def create_lock(objects, lock_name):

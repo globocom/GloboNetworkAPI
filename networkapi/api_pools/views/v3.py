@@ -304,7 +304,7 @@ class PoolDBView(APIView):
             pl = facade.create_pool(pool, request.user)
             response.append({'id': pl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_pool_permission])
