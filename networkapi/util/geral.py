@@ -8,7 +8,7 @@ from django.db.models.loading import module_has_submodule
 from rest_framework.response import Response
 
 from networkapi.distributedlock import distributedlock
-from networkapi.extra_logging.middleware import get_context
+from networkapi.extra_logging import local
 
 
 class CustomResponse(Response):
@@ -18,7 +18,10 @@ class CustomResponse(Response):
         headers_default = None
 
         if request:
-            headers_default = {'X_REQUEST_ID': get_context(request)}
+            headers_default = {
+                'X_REQUEST_ID': local.request_id,
+                'X_REQUEST_CONTEXT': local.request_context
+            }
             headers = headers.update(headers) if headers else headers_default
 
         return super(CustomResponse, self).__init__(data,

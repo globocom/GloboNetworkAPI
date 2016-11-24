@@ -43,7 +43,7 @@ def get_identity(request):
 
 def get_context(request):
 
-    context_key = 'HTTP_REQUEST_CONTEXT'
+    context_key = 'HTTP_X_REQUEST_CONTEXT'
     context = NO_REQUEST_CONTEXT
 
     if context_key in request.META:
