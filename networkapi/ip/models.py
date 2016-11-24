@@ -2061,6 +2061,40 @@ class IpEquipamento(BaseModel):
         if self.ip.ipequipamento_set.count() == 0:
             self.ip.delete_v3()
 
+    def create_v3(self, ip_equipment):
+        """Inserts a relationship between IP e Equipment.
+        @return: Nothing.
+        @raise IpError: Failure to insert.
+        @raise EquipamentoNotFoundError: Equipment do not registered.
+        @raise IpNotFoundError: Ip do not registered.
+        @raise IpEquipamentoDuplicatedError: IP already registered for the equipment.
+        @raise EquipamentoError: Failure to search equipment.
+        """
+        self.equipamento = Equipamento().get_by_pk(ip_equipment.get('equipment'))
+        self.ip = Ip().get_by_pk(ip_equipment.get('ip'))
+
+        # Validate the ip
+        self.__validate_ip()
+
+        try:
+
+            # All equipments related with environment of IP
+            eqpts = self.ip.networkipv4.vlan.ambiente\
+                .equipamentoambiente_set.all()\
+                .values_list('equipamento', flat=True)
+
+            if ip_equipment.get('equipment') not in eqpts:
+                ea = EquipamentoAmbiente(
+                    ambiente=self.ip.networkipv4.vlan.ambiente,
+                    equipamento=self.equipamento
+                )
+                ea.save()
+
+            self.save()
+        except Exception, e:
+            self.log.error(u'Failure to insert an ip_equipamento.')
+            raise IpError(e, u'Failure to insert an ip_equipamento.')
+
     def remove(self, authenticated_user, ip_id, equip_id):
         """Search and remove relationship between IP and equipment.
         @return: Nothing
@@ -2890,7 +2924,8 @@ class Ipv6(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5, block6=block6, block7=block7, block8=block8, ipv6equipament__equipamento__id=equip_id)
+            return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5,
+                                    block6=block6, block7=block7, block8=block8, ipv6equipament__equipamento__id=equip_id)
         except ObjectDoesNotExist, e:
             raise IpNotFoundError(e, u'There is no IP %s:%s:%s:%s:%s:%s:%s:%s of the equipament %s.' % (
                 block1, block2, block3, block4, block5, block6, block7, block8, equip_id))
@@ -3886,6 +3921,40 @@ class Ipv6Equipament(BaseModel):
         # If ip has no other equipment, than he will be removed to
         if self.ip.ipv6equipament_set.count() == 0:
             self.ip.delete_v3()
+
+    def create_v3(self, ip_equipment):
+        """Inserts a relationship between IP e Equipment.
+        @return: Nothing.
+        @raise IpError: Failure to insert.
+        @raise EquipamentoNotFoundError: Equipment do not registered.
+        @raise IpNotFoundError: Ip do not registered.
+        @raise IpEquipamentoDuplicatedError: IP already registered for the equipment.
+        @raise EquipamentoError: Failure to search equipment.
+        """
+        self.equipamento = Equipamento().get_by_pk(ip_equipment.get('equipment'))
+        self.ip = Ipv6().get_by_pk(ip_equipment.get('ip'))
+
+        # Validate the ip
+        self.__validate_ip()
+
+        try:
+
+            # All equipments related with environment of IP
+            eqpts = self.ip.networkipv6.vlan.ambiente\
+                .equipamentoambiente_set.all()\
+                .values_list('equipamento', flat=True)
+
+            if ip_equipment.get('equipment') not in eqpts:
+                ea = EquipamentoAmbiente(
+                    ambiente=self.ip.networkipv6.vlan.ambiente,
+                    equipamento=self.equipamento
+                )
+                ea.save()
+
+            self.save()
+        except Exception, e:
+            self.log.error(u'Failure to insert an ip_equipamento.')
+            raise IpError(e, u'Failure to insert an ip_equipamento.')
 
 
 def network_in_range(vlan, network, version):

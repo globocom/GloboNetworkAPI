@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,13 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import threading
 
 local = threading.local()
 
 
-REQUEST_ID_HEADER = "HTTP_X_REQUEST_ID"  # Use in settings.py if using X_REQUEST_ID
-NO_REQUEST_ID = "NoRequestId"  # Used if no request ID is available
-NO_REQUEST_USER = "NoRequestUser"  # Avoid if no User
-NO_REQUEST_PATH = "NoRequestPath"
+# Use in settings.py if using X_REQUEST_ID
+REQUEST_ID_HEADER = 'HTTP_X_REQUEST_ID'
+NO_REQUEST_ID = 'NoRequestId'  # Used if no request ID is available
+NO_REQUEST_USER = 'NoRequestUser'  # Avoid if no User
+NO_REQUEST_PATH = 'NoRequestPath'
+NO_REQUEST_CONTEXT = 'NoRequestContext'

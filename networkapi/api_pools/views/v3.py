@@ -5,7 +5,6 @@ from datetime import datetime
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from networkapi.api_pools.facade.v3 import base as facade
@@ -20,17 +19,20 @@ from networkapi.api_pools.permissions import Write
 from networkapi.api_pools.permissions import write_pool_permission
 from networkapi.api_pools.serializers import v3 as serializers
 from networkapi.api_rest import exceptions as rest_exceptions
+from networkapi.distributedlock import LOCK_POOL
 from networkapi.requisicaovips import models as models_vips
 from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import CustomResponse
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.json_validate import verify_ports
-
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +53,7 @@ class PoolMemberStateView(APIView):
             response = facade_pool_deploy.set_poolmember_state(
                 pools, request.user)
 
-            return Response(response)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -68,7 +70,7 @@ class PoolMemberStateView(APIView):
             pool_ids = kwargs.get('pool_ids').split(';')
             checkstatus = request.GET.get('checkstatus') or '0'
 
-            data = dict()
+            response = dict()
 
             server_pools = models_vips.ServerPool.objects.filter(
                 id__in=pool_ids)
@@ -106,8 +108,8 @@ class PoolMemberStateView(APIView):
                 many=True
             )
 
-            data['server_pools'] = serializer_server_pool.data
-            return Response(data)
+            response['server_pools'] = serializer_server_pool.data
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)
@@ -127,7 +129,7 @@ class PoolDeployView(APIView):
         pool_ids = kwargs['pool_ids'].split(';')
         pools = facade.get_pool_by_ids(pool_ids)
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
-        locks_list = facade.create_lock(pool_serializer.data)
+        locks_list = create_lock(pool_serializer.data, LOCK_POOL)
         try:
             response = facade_pool_deploy.create_real_pool(
                 pool_serializer.data, request.user)
@@ -135,9 +137,9 @@ class PoolDeployView(APIView):
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
+            destroy_lock(locks_list)
 
-        return Response(response)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -151,7 +153,7 @@ class PoolDeployView(APIView):
         server_pools = request.DATA
         json_validate(SPECS.get('pool_put')).validate(server_pools)
         verify_ports(server_pools)
-        locks_list = facade.create_lock(server_pools.get('server_pools'))
+        locks_list = create_lock(server_pools.get('server_pools'), LOCK_POOL)
         try:
             response = facade_pool_deploy.update_real_pool(
                 server_pools, request.user)
@@ -159,8 +161,8 @@ class PoolDeployView(APIView):
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
-        return Response(response)
+            destroy_lock(locks_list)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -175,7 +177,7 @@ class PoolDeployView(APIView):
         pool_ids = kwargs['pool_ids'].split(';')
         pools = facade.get_pool_by_ids(pool_ids)
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
-        locks_list = facade.create_lock(pool_serializer.data)
+        locks_list = create_lock(pool_serializer.data, LOCK_POOL)
         try:
             response = facade_pool_deploy.delete_real_pool(
                 pool_serializer.data, request.user)
@@ -183,8 +185,8 @@ class PoolDeployView(APIView):
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
-        return Response(response)
+            destroy_lock(locks_list)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
 
 class PoolDBDetailsView(APIView):
@@ -224,7 +226,7 @@ class PoolDBDetailsView(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 pool_serializer,
                 main_property='server_pools',
                 obj_model=obj_model,
@@ -232,7 +234,7 @@ class PoolDBDetailsView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.exception(exception)
@@ -270,7 +272,7 @@ class PoolDBView(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 pool_serializer,
                 main_property='server_pools',
                 obj_model=obj_model,
@@ -278,7 +280,7 @@ class PoolDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.exception(exception)
@@ -302,7 +304,7 @@ class PoolDBView(APIView):
             pl = facade.create_pool(pool, request.user)
             response.append({'id': pl.id})
 
-        return Response(response, status=status.HTTP_201_CREATED)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_pool_permission])
@@ -325,7 +327,7 @@ class PoolDBView(APIView):
             # pl = facade.update_pool(pool)
             # response.append({'id': pl.id})
 
-        return Response(response, status.HTTP_200_OK)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([delete_pool_permission])
@@ -342,7 +344,7 @@ class PoolDBView(APIView):
         response = {}
         facade.delete_pool(pool_ids)
 
-        return Response(response, status.HTTP_200_OK)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
 
 class PoolEnvironmentVip(APIView):
@@ -370,7 +372,7 @@ class PoolEnvironmentVip(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 pool_serializer,
                 main_property='server_pools',
                 obj_model=pools,
@@ -378,7 +380,7 @@ class PoolEnvironmentVip(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
         except Exception, exception:
             log.exception(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -416,13 +418,13 @@ class OptionPoolEnvironmentView(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 options_pool_serializer,
                 main_property='options_pool',
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
         except Exception, exception:
             log.exception(exception)
             raise rest_exceptions.NetworkAPIException(exception)

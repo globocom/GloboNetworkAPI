@@ -13,5 +13,5 @@ urlpatterns = patterns(
     url(r'^equipment/get_routers_by_environment/(?P<env_id>\d+)/$',
         v1.EquipmentRoutersView.as_view()),
 
-    url(r'^v3/equipment/$', v3.EquipmentView.as_view()),  # GET
+    url(r'^v3/equipment/((?P<obj_id>[;\w]+)/)?$', v3.EquipmentView.as_view()),
 )

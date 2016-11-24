@@ -4,7 +4,6 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from networkapi.api_environment import facade
@@ -16,6 +15,7 @@ from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -63,7 +63,7 @@ class EnvironmentDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)
@@ -85,7 +85,7 @@ class EnvironmentDBView(APIView):
             env = facade.create_environment(pool)
             response.append({'id': env.id})
 
-        return Response(response, status=status.HTTP_201_CREATED)
+        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -105,7 +105,7 @@ class EnvironmentDBView(APIView):
                 'id': env.id
             })
 
-        return Response(response, status=status.HTTP_200_OK)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -118,7 +118,7 @@ class EnvironmentDBView(APIView):
         response = {}
         facade.delete_environment(env_ids)
 
-        return Response(response, status.HTTP_200_OK)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
 
 class EnvEnvVipRelatedView(APIView):
@@ -157,7 +157,7 @@ class EnvEnvVipRelatedView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)

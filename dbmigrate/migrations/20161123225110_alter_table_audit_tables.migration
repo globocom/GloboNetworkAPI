@@ -1,0 +1,33 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `audit_request` 
+ADD COLUMN `request_context` VARCHAR(255) NULL COMMENT '' AFTER `user_id`;
+
+
+ALTER TABLE `event_log` 
+ADD COLUMN `id_audit_request` INT NULL COMMENT '' AFTER `id_objeto`,
+ADD INDEX `fk_event_log_audit_request_idx` (`id_audit_request` ASC)  COMMENT '';
+ALTER TABLE `event_log` 
+ADD CONSTRAINT `fk_event_log_audit_request`
+  FOREIGN KEY (`id_audit_request`)
+  REFERENCES `audit_request` (`id`)
+  ON DELETE RESTRICT
+  ON UPDATE RESTRICT;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `event_log` 
+DROP FOREIGN KEY `fk_event_log_audit_request`;
+ALTER TABLE `event_log` 
+DROP COLUMN `id_audit_request`,
+DROP INDEX `fk_event_log_audit_request_idx` ;
+
+
+
+ALTER TABLE `audit_request` 
+DROP COLUMN `request_context`;
+
+"""

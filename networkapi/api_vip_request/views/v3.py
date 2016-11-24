@@ -4,7 +4,6 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from networkapi.api_rest import exceptions as api_exceptions
@@ -18,11 +17,15 @@ from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
 from networkapi.api_vip_request.permissions import write_vip_permission
 from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
+from networkapi.distributedlock import LOCK_VIP
 from networkapi.settings import SPECS
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import CustomResponse
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -49,7 +52,7 @@ class VipRequestDeployView(APIView):
         vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestV3Serializer(vips, many=True)
 
-        locks_list = facade.create_lock(vip_serializer.data)
+        locks_list = create_lock(vip_serializer.data, LOCK_VIP)
         try:
             response = facade.create_real_vip_request(
                 vip_serializer.data, request.user)
@@ -57,9 +60,9 @@ class VipRequestDeployView(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
+            destroy_lock(locks_list)
 
-        return Response(response)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
     @permission_obj_apiview([deploy_vip_permission])
@@ -75,7 +78,7 @@ class VipRequestDeployView(APIView):
         vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestV3Serializer(vips, many=True)
 
-        locks_list = facade.create_lock(vip_serializer.data)
+        locks_list = create_lock(vip_serializer.data, LOCK_VIP)
         try:
             response = facade.delete_real_vip_request(
                 vip_serializer.data, request.user)
@@ -83,9 +86,9 @@ class VipRequestDeployView(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
+            destroy_lock(locks_list)
 
-        return Response(response)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
     @permission_obj_apiview([deploy_vip_permission])
@@ -99,7 +102,7 @@ class VipRequestDeployView(APIView):
 
         vips = request.DATA
         json_validate(SPECS.get('vip_request_put')).validate(vips)
-        locks_list = facade.create_lock(vips.get('vips'))
+        locks_list = create_lock(vips.get('vips'), LOCK_VIP)
         verify_ports_vip(vips)
         try:
             response = facade.update_real_vip_request(
@@ -108,9 +111,9 @@ class VipRequestDeployView(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
+            destroy_lock(locks_list)
 
-        return Response(response)
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
 
 class VipRequestDBView(APIView):
@@ -147,7 +150,7 @@ class VipRequestDBView(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 serializer_vips,
                 main_property='vips',
                 obj_model=obj_model,
@@ -155,7 +158,7 @@ class VipRequestDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)
@@ -181,7 +184,7 @@ class VipRequestDBView(APIView):
             vp = facade.create_vip_request(vip, request.user)
             response.append({'id': vp.id})
 
-        return Response(response, status.HTTP_201_CREATED)
+        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_vip_permission])
@@ -196,7 +199,7 @@ class VipRequestDBView(APIView):
 
         json_validate(SPECS.get('vip_request_put')).validate(data)
 
-        locks_list = facade.create_lock(data['vips'])
+        locks_list = create_lock(data['vips'], LOCK_VIP)
         try:
             verify_ports_vip(data)
             for vip in data['vips']:
@@ -206,9 +209,9 @@ class VipRequestDBView(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
+            destroy_lock(locks_list)
 
-        return Response({})
+        return CustomResponse({}, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([delete_vip_permission])
@@ -219,7 +222,7 @@ class VipRequestDBView(APIView):
         """
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
-        locks_list = facade.create_lock(vip_request_ids)
+        locks_list = create_lock(vip_request_ids, LOCK_VIP)
         keepip = request.GET.get('keepip') or '0'
         try:
             facade.delete_vip_request(
@@ -228,9 +231,9 @@ class VipRequestDBView(APIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
         finally:
-            facade.destroy_lock(locks_list)
+            destroy_lock(locks_list)
 
-        return Response({})
+        return CustomResponse({}, status=status.HTTP_200_OK, request=request)
 
 
 class VipRequestDBDetailsView(APIView):
@@ -266,7 +269,7 @@ class VipRequestDBDetailsView(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 serializer_vips,
                 main_property='vips',
                 obj_model=obj_model,
@@ -274,7 +277,7 @@ class VipRequestDBDetailsView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)
@@ -316,7 +319,7 @@ class VipRequestPoolView(APIView):
             )
 
             # prepare serializer with customized properties
-            data = render_to_json(
+            response = render_to_json(
                 serializer_vips,
                 main_property='vips',
                 obj_model=vips_requests,
@@ -324,7 +327,7 @@ class VipRequestPoolView(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)

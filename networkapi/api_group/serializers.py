@@ -16,3 +16,16 @@ class UserGroupV3Serializer(DynamicFieldsModelSerializer):
             'id',
             'name'
         )
+
+
+class EquipmentGroupV3Serializer(DynamicFieldsModelSerializer):
+
+    name = serializers.Field(source='nome')
+
+    class Meta:
+        UGrupo = get_model('grupo', 'EGrupo')
+        model = UGrupo
+        fields = (
+            'id',
+            'name'
+        )

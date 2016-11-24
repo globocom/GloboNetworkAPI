@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,17 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import uuid
 import base64
+import logging
+import uuid
 
 from django.conf import settings
 
-import logging
-from networkapi.extra_logging import local, REQUEST_ID_HEADER, NO_REQUEST_ID, NO_REQUEST_USER
+from networkapi.extra_logging import local
+from networkapi.extra_logging import NO_REQUEST_CONTEXT
+from networkapi.extra_logging import NO_REQUEST_ID
+from networkapi.extra_logging import NO_REQUEST_USER
+from networkapi.extra_logging import REQUEST_ID_HEADER
 from networkapi.util import search_hide_password
 
 logger = logging.getLogger(__name__)
+
 
 def get_identity(request):
     x_request_id = getattr(settings, REQUEST_ID_HEADER, None)
@@ -38,10 +41,20 @@ def get_identity(request):
     return safe_id.upper()
 
 
+def get_context(request):
+
+    context_key = 'HTTP_REQUEST_CONTEXT'
+    context = NO_REQUEST_CONTEXT
+
+    if context_key in request.META:
+        context = request.META.get(context_key)
+    return context
+
+
 def get_username(request):
 
-    user_key = "HTTP_NETWORKAPI_USERNAME"
-    auth_key = "HTTP_AUTHORIZATION"
+    user_key = 'HTTP_NETWORKAPI_USERNAME'
+    auth_key = 'HTTP_AUTHORIZATION'
     encoding = 'iso-8859-1'
     username = NO_REQUEST_USER
 
@@ -68,16 +81,18 @@ class ExtraLoggingMiddleware(object):
         local.request_id = identity
         local.request_user = username
         local.request_path = request.get_full_path()
+        local.request_context = get_context(request)
         request.id = identity
 
-        msg = u'INICIO da requisição %s. Data: [%s].' % (request.method, request.raw_post_data)
+        msg = u'INICIO da requisição %s. Data: [%s].' % (
+            request.method, request.raw_post_data)
         logger.debug(search_hide_password(msg))
 
     def process_response(self, request, response):
 
         if 399 < response.status_code < 600:
-            #logger.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
-            logger.warning(u'Requisição concluída com falha. Conteúdo: [].' )
+            # logger.debug(u'Requisição concluída com falha. Conteúdo: [%s].' % response.content)
+            logger.warning(u'Requisição concluída com falha. Conteúdo: [].')
         else:
             logger.debug(u'Requisição concluída com sucesso.')
 
@@ -88,7 +103,3 @@ class ExtraLoggingMiddleware(object):
     def process_exception(self, request, exception):
 
         logger.error(u'Erro não esperado.')
-
-
-
-

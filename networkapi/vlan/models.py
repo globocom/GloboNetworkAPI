@@ -1025,7 +1025,7 @@ class Vlan(BaseModel):
                 configuration system.
             Update status column  to 'ativada = 1'.
 
-            @raise NetworkIPv4Error: Error activating a Vlan.
+            @raise VlanError: Error activating a Vlan.
         """
 
         try:
@@ -1063,7 +1063,7 @@ class Vlan(BaseModel):
                 configuration system.
             Update status column  to 'ativada = 0'.
 
-            @raise NetworkIPv4Error: Error disabling a Vlan.
+            @raise VlanError: Error disabling a Vlan.
         """
 
         try:

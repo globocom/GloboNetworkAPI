@@ -17,8 +17,6 @@ from networkapi.api_usuario import facade as facade_usr
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import models
 from networkapi.api_vip_request import syncs
-from networkapi.distributedlock import distributedlock
-from networkapi.distributedlock import LOCK_VIP
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
@@ -775,30 +773,6 @@ def delete_real_vip_request(vip_requests, user):
 #############
 # helpers
 #############
-def create_lock(vip_requests):
-    """
-    Create locks to vips list
-    """
-    locks_list = list()
-    for vip_request in vip_requests:
-        if isinstance(vip_request, dict):
-            lock = distributedlock(LOCK_VIP % vip_request['id'])
-        else:
-            lock = distributedlock(LOCK_VIP % vip_request)
-        lock.__enter__()
-        locks_list.append(lock)
-
-    return locks_list
-
-
-def destroy_lock(locks_list):
-    """
-    Destroy locks by vips list
-    """
-    for lock in locks_list:
-        lock.__exit__('', '', '')
-
-
 def validate_save(vip_request, permit_created=False):
 
     has_identifier = models.VipRequest.objects.filter(

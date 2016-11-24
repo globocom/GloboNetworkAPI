@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 
 from networkapi.api_equipment import facade
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.equipamento.models import Equipamento
+from networkapi.util.geral import CustomResponse
 # from django.db.transaction import commit_on_success
 
 
@@ -30,30 +31,32 @@ log = logging.getLogger(__name__)
 
 class EquipmentRoutersView(APIView):
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
 
-            env_id = kwargs.get("env_id")
+            env_id = kwargs.get('env_id')
 
             data = dict()
 
             if env_id:
-                log.info("Get Routers by environment.")
+                log.info('Get Routers by environment.')
 
                 routers_list = []
-                rot_do_ambiente = facade.get_routers_by_environment(int(env_id))
+                rot_do_ambiente = facade.get_routers_by_environment(
+                    int(env_id))
                 for r in rot_do_ambiente:
                     router_id = r.equipamento.id
                     router = Equipamento().get_by_pk(router_id)
                     routers_list.append(facade.get_equipment_map(router))
 
-                data["routers"] = routers_list
+                data['routers'] = routers_list
 
-            return Response(data)
+            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
 
         except ObjectDoesNotExist, exception:
             log.error(exception)
-            raise api_exceptions.ObjectDoesNotExistException('Equipment Does Not Exist')
+            raise api_exceptions.ObjectDoesNotExistException(
+                'Equipment Does Not Exist')
 
         except Exception, exception:
             log.exception(exception)

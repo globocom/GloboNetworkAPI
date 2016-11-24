@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,10 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import logging
-from networkapi.extra_logging import local, NO_REQUEST_ID, NO_REQUEST_USER, NO_REQUEST_PATH
+
+from networkapi.extra_logging import local
+from networkapi.extra_logging import NO_REQUEST_CONTEXT
+from networkapi.extra_logging import NO_REQUEST_ID
+from networkapi.extra_logging import NO_REQUEST_PATH
+from networkapi.extra_logging import NO_REQUEST_USER
 
 
 class ExtraLoggingFilter(logging.Filter):
@@ -27,4 +29,6 @@ class ExtraLoggingFilter(logging.Filter):
         record.request_id = getattr(local, 'request_id', NO_REQUEST_ID)
         record.request_path = getattr(local, 'request_path', NO_REQUEST_PATH)
         record.request_user = getattr(local, 'request_user', NO_REQUEST_USER)
+        record.request_context = getattr(
+            local, 'request_context', NO_REQUEST_CONTEXT)
         return True

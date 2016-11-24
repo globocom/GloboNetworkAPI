@@ -4,7 +4,6 @@ import logging
 from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from networkapi.api_ip import facade
@@ -15,6 +14,7 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 
 log = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class IPv4View(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)
@@ -113,7 +113,7 @@ class IPv6View(APIView):
                 only_main_property=only_main_property
             )
 
-            return Response(data, status.HTTP_200_OK)
+            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.error(exception)

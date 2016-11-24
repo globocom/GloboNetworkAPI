@@ -11,8 +11,6 @@ from networkapi.api_pools import exceptions
 from networkapi.api_pools import models
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_usuario import facade as facade_usr
-from networkapi.distributedlock import distributedlock
-from networkapi.distributedlock import LOCK_POOL
 from networkapi.healthcheckexpect.models import Healthcheck
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.ip.models import Ip
@@ -370,27 +368,6 @@ def _get_healthcheck(healthcheck_obj):
         hc.save()
 
     return hc
-
-
-def create_lock(pools):
-    """
-    Create locks to pools list
-    """
-    locks_list = list()
-    for pool in pools:
-        lock = distributedlock(LOCK_POOL % pool['id'])
-        lock.__enter__()
-        locks_list.append(lock)
-
-    return locks_list
-
-
-def destroy_lock(locks_list):
-    """
-    Destroy locks by pools list
-    """
-    for lock in locks_list:
-        lock.__exit__('', '', '')
 
 
 def reserve_name_healthcheck(pool_name):

@@ -79,6 +79,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     filter = serializers.SerializerMethodField('get_filter')
     default_vrf = serializers.SerializerMethodField('get_default_vrf')
     routers = serializers.SerializerMethodField('get_routers')
+    equipments = serializers.SerializerMethodField('get_equipments')
     name = serializers.SerializerMethodField('get_name')
 
     def get_name(self, obj):
@@ -108,6 +109,9 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     def get_routers(self, obj):
         return self.extends_serializer(obj, 'routers')
 
+    def get_equipments(self, obj):
+        return self.extends_serializer(obj, 'equipments')
+
     class Meta:
         Ambiente = get_model('ambiente', 'Ambiente')
         depth = 1
@@ -133,6 +137,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'children',
             'configs',
             'routers',
+            'equipments',
         )
         default_fields = (
             'id',
@@ -307,6 +312,24 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'routers'
                 },
+                'equipments': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'id',
+                        )
+                    },
+                    'obj': 'equipments'
+                },
+                'equipments__details': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
+                    },
+                    'obj': 'equipments'
+                },
             }
 
         return cls.mapping
@@ -315,7 +338,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     def setup_eager_loading_father(queryset):
         log.info('Using setup_eager_loading_father')
         queryset = queryset.prefetch_related(
-            'father_environment__environment',
+            'father_environment',
         )
         return queryset
 

@@ -10,6 +10,67 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 log = logging.getLogger(__name__)
 
 
+class EquipmentEnvironmentV3Serializer(DynamicFieldsModelSerializer):
+
+    environment = serializers.SerializerMethodField('get_environment')
+    equipment = serializers.SerializerMethodField('get_equipment')
+
+    class Meta:
+        EquipamentoAmbiente = get_model('equipamento', 'EquipamentoAmbiente')
+        model = EquipamentoAmbiente
+        fields = (
+            'is_router',
+            'environment',
+            'equipment',
+        )
+
+    def get_environment(self, obj):
+        return self.extends_serializer(obj, 'environment')
+
+    def get_equipment(self, obj):
+        return self.extends_serializer(obj, 'equipment')
+
+    @classmethod
+    def get_serializers(cls):
+        # serializers
+        eqpt_slz = get_app('api_equipment', module_label='serializers')
+        env_slz = get_app('api_environment', module_label='serializers')
+
+        if not cls.mapping:
+            cls.mapping = {
+                'environment': {
+                    'obj': 'ambiente_id'
+                },
+                'environment__details': {
+                    'serializer': env_slz.EnvironmentV3Serializer,
+                    'kwargs': {
+                    },
+                    'obj': 'ambiente'
+                },
+                'equipment': {
+                    'obj': 'equipamento_id'
+                },
+                'equipment__details': {
+                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'equipamento'
+                }
+            }
+
+        return cls.mapping
+
+    @staticmethod
+    def setup_eager_loading_networkipv4(queryset):
+
+        log.info('Using setup_eager_loading_networkipv4')
+        queryset = queryset.select_related(
+            'networkipv4',
+        )
+        return queryset
+
+
 class BrandV3Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
@@ -82,15 +143,13 @@ class EquipmentTypeV3Serializer(DynamicFieldsModelSerializer):
 
 class EquipmentV3Serializer(DynamicFieldsModelSerializer):
 
-    ipv4 = serializers.SerializerMethodField('get_ipv4')
-
-    ipv6 = serializers.SerializerMethodField('get_ipv6')
-
-    equipment_type = serializers.SerializerMethodField('get_equipment_type')
-
-    model = serializers.SerializerMethodField('get_model')
-
     name = serializers.Field(source='nome')
+    ipv4 = serializers.SerializerMethodField('get_ipv4')
+    ipv6 = serializers.SerializerMethodField('get_ipv6')
+    equipment_type = serializers.SerializerMethodField('get_equipment_type')
+    model = serializers.SerializerMethodField('get_model')
+    environments = serializers.SerializerMethodField('get_environments')
+    groups = serializers.SerializerMethodField('get_groups')
 
     class Meta:
         Equipamento = get_model('equipamento', 'Equipamento')
@@ -102,60 +161,68 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
             'equipment_type',
             'model',
             'ipv4',
-            'ipv6'
+            'ipv6',
+            'environments',
+            'groups',
         )
 
-        default_fields = (
+        basic_fields = (
             'id',
             'name'
         )
 
-    def get_model(self, obj):
+        default_fields = (
+            'id',
+            'name',
+            'maintenance',
+            'equipment_type',
+            'model',
+        )
 
-        return self.extends_serializer(obj.modelo, 'model')
+        details_fields = fields
+
+    def get_model(self, obj):
+        return self.extends_serializer(obj, 'model')
 
     def get_equipment_type(self, obj):
+        return self.extends_serializer(obj, 'equipment_type')
 
-        return self.extends_serializer(obj.tipo_equipamento, 'equipment_type')
+    def get_groups(self, obj):
+        return self.extends_serializer(obj, 'groups')
+
+    def get_environments(self, obj):
+        return self.extends_serializer(obj, 'environments')
 
     def get_ipv4(self, obj):
-        ips = obj.ipequipamento_set.all()
-        ips = [ip.ip for ip in ips]
-
-        return self.extends_serializer(ips, 'ipv4')
+        return self.extends_serializer(obj, 'ipv4')
 
     def get_ipv6(self, obj):
-        ips = obj.ipv6equipament_set.all()
-        ips = [ip.ip for ip in ips]
-
-        return self.extends_serializer(ips, 'ipv6')
-
-    @staticmethod
-    def get_mapping_eager_loading(self):
-        mapping = {
-            'ipv4': self.setup_eager_loading_ipv4,
-            'ipv6': self.setup_eager_loading_ipv6
-        }
-
-        return mapping
+        return self.extends_serializer(obj, 'ipv6')
 
     @classmethod
     def get_serializers(cls):
         ip_slz = get_app('api_ip', module_label='serializers')
+        grp_slz = get_app('api_group', module_label='serializers')
 
         if not cls.mapping:
             cls.mapping = {
                 'model': {
+                    'obj': 'modelo_id'
+                },
+                'model__details': {
                     'serializer': ModelV3Serializer,
                     'kwargs': {
-                        'source': 'id'
-                    }
+                    },
+                    'obj': 'modelo'
                 },
                 'equipment_type': {
+                    'obj': 'tipo_equipamento_id'
+                },
+                'equipment_type__details': {
                     'serializer': EquipmentTypeV3Serializer,
                     'kwargs': {
-                        'source': 'id'
-                    }
+                    },
+                    'obj': 'tipo_equipamento'
                 },
                 'ipv4': {
                     'serializer': ip_slz.Ipv4V3Serializer,
@@ -163,10 +230,33 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'many': True,
                         'fields': (
                             'id',
+                        )
+                    },
+                    'obj': 'ipv4'
+                },
+                'ipv4__basic': {
+                    'serializer': ip_slz.Ipv4V3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'id',
                             'ip_formated',
                             'description',
-                        )
-                    }
+                        ),
+                        'exclude': ('equipments',),
+                    },
+                    'obj': 'ipv4',
+                    'eager_loading': cls.setup_eager_loading_ipv4
+                },
+                'ipv4__details': {
+                    'serializer': ip_slz.Ipv4V3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'include': ('networkipv4',),
+                        'exclude': ('equipments',),
+                    },
+                    'obj': 'ipv4',
+                    'eager_loading': cls.setup_eager_loading_ipv4
                 },
                 'ipv6': {
                     'serializer': ip_slz.Ipv6V3Serializer,
@@ -174,35 +264,72 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'many': True,
                         'fields': (
                             'id',
-                            'ip_formated',
-                            'description',
                         )
-                    }
+                    },
+                    'obj': 'ipv6'
                 },
-                'ipv4__details': {
-                    'serializer': ip_slz.Ipv4V3Serializer,
+                'ipv6__basic': {
+                    'serializer': ip_slz.Ipv6V3Serializer,
                     'kwargs': {
                         'many': True,
-                        'include': ('networkipv4',)
-                    }
+                        'fields': (
+                            'id',
+                            'ip_formated',
+                            'description',
+                        ),
+                        'exclude': ('equipments',),
+                    },
+                    'obj': 'ipv6',
+                    'eager_loading': cls.setup_eager_loading_ipv6
                 },
                 'ipv6__details': {
                     'serializer': ip_slz.Ipv6V3Serializer,
                     'kwargs': {
                         'many': True,
-                        'include': ('networkipv6',)
-                    }
+                        'include': ('networkipv6',),
+                        'exclude': ('equipments',),
+                    },
+                    'obj': 'ipv6',
+                    'eager_loading': cls.setup_eager_loading_ipv6
                 },
-                'equipment_type__details': {
-                    'serializer': EquipmentTypeV3Serializer,
+                'groups': {
+                    'serializer': grp_slz.EquipmentGroupV3Serializer,
                     'kwargs': {
-                    }
+                        'many': True,
+                        'fields': (
+                            'id',
+                        )
+                    },
+                    'obj': 'groups'
                 },
-                'model__details': {
-                    'serializer': ModelV3Serializer,
+                'groups__details': {
+                    'serializer': grp_slz.EquipmentGroupV3Serializer,
                     'kwargs': {
-
-                    }
+                        'many': True,
+                    },
+                    'obj': 'groups'
+                },
+                'environments': {
+                    'serializer': EquipmentEnvironmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'is_router',
+                            'environment',
+                        )
+                    },
+                    'obj': 'environments'
+                },
+                'environments__details': {
+                    'serializer': EquipmentEnvironmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'is_router',
+                            'environment__details',
+                        ),
+                    },
+                    'obj': 'environments'
                 }
             }
 

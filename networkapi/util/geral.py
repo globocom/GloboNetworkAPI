@@ -5,6 +5,46 @@ import urllib
 from django.db.models.loading import AppCache
 from django.db.models.loading import import_module
 from django.db.models.loading import module_has_submodule
+from rest_framework.response import Response
+
+from networkapi.distributedlock import distributedlock
+from networkapi.extra_logging.middleware import get_context
+
+
+class CustomResponse(Response):
+
+    def __init__(self, data, status=None, template_name=None,
+                 headers=None, content_type=None, request=None):
+        headers_default = None
+
+        if request:
+            headers_default = {'X_REQUEST_ID': get_context(request)}
+            headers = headers.update(headers) if headers else headers_default
+
+        return super(CustomResponse, self).__init__(data, status=None, template_name=None,
+                                                    headers=None, content_type=None)
+
+
+def create_lock(objects, lock_name):
+    """Create locks for list of objects"""
+
+    locks_list = list()
+    for obj in objects:
+        if isinstance(obj, dict):
+            lock = distributedlock(lock_name % obj['id'])
+        else:
+            lock = distributedlock(lock_name % obj)
+        lock.__enter__()
+        locks_list.append(lock)
+
+    return locks_list
+
+
+def destroy_lock(locks_list):
+    """Destroy locks by list of objects"""
+
+    for lock in locks_list:
+        lock.__exit__('', '', '')
 
 
 def url_search(obj_model, property_search, request):

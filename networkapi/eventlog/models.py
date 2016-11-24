@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
-import uuid
 import threading
-from django.db import models
 from datetime import datetime
 
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 LOG = logging.getLogger(__name__)
+
 
 class EventLogError(Exception):
 
@@ -45,7 +43,12 @@ class EventLog(models.Model):
     DELETE = 2
 
     id = models.AutoField(primary_key=True, db_column='id_evento')
-    usuario = models.ForeignKey('usuario.Usuario', db_column='id_user', blank=True, null=True)
+    usuario = models.ForeignKey(
+        'usuario.Usuario',
+        db_column='id_user',
+        blank=True,
+        null=True
+    )
     hora_evento = models.DateTimeField()
     acao = models.TextField()
     funcionalidade = models.TextField()
@@ -54,6 +57,12 @@ class EventLog(models.Model):
     evento = models.TextField()
     resultado = models.IntegerField()
     id_objeto = models.IntegerField()
+    audit_request = models.ForeignKey(
+        'eventlog.AuditRequest',
+        db_column='id_audit_request',
+        blank=True,
+        null=True
+    )
 
     logger = logging.getLogger('EventLog')
 
@@ -89,6 +98,7 @@ class EventLog(models.Model):
             event_log.parametro_anterior = evento['parametro_anterior']
             event_log.parametro_atual = evento['parametro_atual']
             event_log.id_objeto = evento['id_objeto']
+            event_log.audit_request = evento['audit_request']
             event_log.evento = ''
             event_log.resultado = 0
             event_log.save()
@@ -100,6 +110,7 @@ class EventLog(models.Model):
 
 
 class AuditRequest(models.Model):
+
     """
     copied from https://github.com/leandrosouza/django-simple-audit
     """
@@ -107,16 +118,17 @@ class AuditRequest(models.Model):
     THREAD_LOCAL = threading.local()
 
     request_id = models.CharField(max_length=255)
+    request_context = models.CharField(max_length=255)
     ip = models.IPAddressField()
     path = models.CharField(max_length=1024)
-    date = models.DateTimeField(auto_now_add=True, verbose_name=_("Date"))
+    date = models.DateTimeField(auto_now_add=True, verbose_name=_('Date'))
     user = models.ForeignKey('usuario.Usuario')
 
     class Meta:
         db_table = u'audit_request'
 
     @staticmethod
-    def new_request(path, user, ip):
+    def new_request(path, user, ip, identity, context):
         """
         Create a new request from a path, user and ip and put it on thread context.
         The new request should not be saved until first use or calling method current_request(True)
@@ -125,35 +137,36 @@ class AuditRequest(models.Model):
 
         if not isinstance(user, Usuario):
 
-
             # try to find a Usuario with the same email
-            # Need to do this because we are using django 1.4 and we cannot change the user model
-            usuario, created = Usuario.objects.get_or_create(user=user.username,
-                                                          defaults={'ativo': user.is_active,
-                                                                    'nome' : user.get_full_name(),
-                                                                    'email': user.email,
-                                                                    'user' : user.username})
+            # Need to do this because we are using django 1.4 and we cannot
+            # change the user model
+            usuario, created = Usuario.objects.get_or_create(
+                user=user.username,
+                defaults={'ativo': user.is_active,
+                          'nome': user.get_full_name(),
+                          'email': user.email,
+                          'user': user.username})
 
         else:
             usuario = user
-
-
 
         audit_request = AuditRequest()
         audit_request.ip = ip
         audit_request.user = usuario
         audit_request.path = path
-        audit_request.request_id = uuid.uuid4().hex
-        while AuditRequest.objects.filter(request_id=audit_request.request_id).exists():
-            audit_request.request_id = uuid.uuid4().hex
+        audit_request.request_id = identity
+        audit_request.request_context = context
 
         AuditRequest.THREAD_LOCAL.current = audit_request
         return audit_request
 
     @staticmethod
     def set_request_from_id(request_id):
-        """ Load an old request from database and put it again in thread context. If request_id doesn't
-        exist, thread context will be cleared """
+        """
+        Load an old request from database and put it again in thread context.
+        If request_id doesn'texist, thread context will be cleared
+        """
+
         audit_request = None
         if request_id is not None:
             try:
@@ -165,9 +178,12 @@ class AuditRequest(models.Model):
 
     @staticmethod
     def current_request(force_save=False):
-        """ Get current request from thread context (or None doesn't exist). If you specify force_save,
-        current request will be saved on database first.
         """
+        Get current request from thread context (or None doesn't exist).
+
+        If you specify force_save,current request will be saved on database first.
+        """
+
         audit_request = getattr(AuditRequest.THREAD_LOCAL, 'current', None)
         if force_save and audit_request is not None and audit_request.pk is None:
             audit_request.save()
@@ -179,6 +195,7 @@ class AuditRequest(models.Model):
         Remove audit request from thread context
         """
         AuditRequest.THREAD_LOCAL.current = None
+
 
 class Functionality(models.Model):
     nome = models.CharField(

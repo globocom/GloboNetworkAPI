@@ -775,17 +775,26 @@ class Ambiente(BaseModel):
 
     def _get_routers(self):
         """Returns routers of environment."""
-
-        routers = self._get_eqpt().filter(is_router=True)
+        routers = self.equipamentoambiente_set.prefetch_related('equipamento')\
+            .filter(is_router=True)
 
         return routers
 
     routers = property(_get_routers)
 
+    def _get_equipment(self):
+        """Returns eqpts of environment."""
+        eqpts = self.equipamentoambiente_set.prefetch_related('equipamento')
+        eqpts = [eqpt.equipamento for eqpt in eqpts]
+
+        return eqpts
+
+    equipments = property(_get_equipment)
+
     def _get_eqpt(self):
         """Returns eqpts of environment."""
 
-        eqpts = self.equipamentoambiente_set.select_related(
+        eqpts = self.equipamentoambiente_set.prefetch_related(
             'equipamento').distinct().values_list('equipamento', flat=True)
 
         return eqpts

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,13 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import logging
-from django.conf import settings
 
 from networkapi.api_rest.authentication import BasicAuthentication
+from networkapi.extra_logging.middleware import get_context
+from networkapi.extra_logging.middleware import get_identity
 from networkapi.rest import RestResource
+# from django.conf import settings
+
 
 class SQLLogMiddleware(object):
 
@@ -35,9 +35,14 @@ class SQLLogMiddleware(object):
                 u'Query: %s, Time spent: %s', q['sql'], q['time'])
         return response
 
+
 class TrackingRequestOnThreadLocalMiddleware(object):
-    """Middleware that gets various objects from the
-    request object and saves them in thread local storage."""
+
+    """
+    Middleware that gets various objects from the request
+    object and saves them in thread local storage.
+
+    """
 
     def _get_ip(self, request):
         # get real ip
@@ -47,27 +52,35 @@ class TrackingRequestOnThreadLocalMiddleware(object):
             ip = request.META['Client-IP']
         else:
             ip = request.META['REMOTE_ADDR']
-        ip = ip.split(",")[0]
+        ip = ip.split(',')[0]
         return ip
 
     def process_request(self, request):
+
         from networkapi.eventlog.models import AuditRequest
         if not request.user.is_anonymous():
             ip = self._get_ip(request)
-            AuditRequest.new_request(request.get_full_path(), request.user, ip)
+            context = get_context(request)
+            identity = get_identity(request)
+            AuditRequest.new_request(request.get_full_path(), request.user,
+                                     ip, identity, context)
         else:
             user_auth_tuple = BasicAuthentication().authenticate(request)
 
             if user_auth_tuple is not None:
                 user, token = user_auth_tuple
-            else: # keeps compatibility with old authentication method
+            else:  # keeps compatibility with old authentication method
                 user = RestResource.authenticate_user(request)
 
             if user is not None:
                 ip = self._get_ip(request)
-                AuditRequest.new_request(request.get_full_path(), user, ip)
+                context = get_context(request)
+                identity = get_identity(request)
+                AuditRequest.new_request(request.get_full_path(), user,
+                                         ip, identity, context)
 
     def process_response(self, request, response):
         from networkapi.eventlog.models import AuditRequest
         AuditRequest.cleanup_request()
+
         return response

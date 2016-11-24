@@ -125,7 +125,7 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': '[%(levelname)s] %(asctime)s - U:%(request_user)-6s, '
-                      'P:%(request_path)-8s, N:%(name)s:%(lineno)s , '
+                      'P:%(request_path)-8s, C:%(request_context)-6s, N:%(name)s:%(lineno)s , '
                       'T:%(request_id)-6s, MSG:%(message)s',
             'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
@@ -391,6 +391,8 @@ SPECS = {
     'networkv6_post': 'networkapi/api_network/specs/netv6_post.json',
     'vrf_post': 'networkapi/api_vrf/specs/vrf_post.json',
     'vrf_put': 'networkapi/api_vrf/specs/vrf_put.json',
+    'equipment_post': 'networkapi/api_equipment/specs/equipment_post.json',
+    'equipment_put': 'networkapi/api_equipment/specs/equipment_put.json',
 }
 
 ##########

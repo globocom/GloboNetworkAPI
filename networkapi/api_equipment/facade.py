@@ -15,6 +15,26 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 log = logging.getLogger(__name__)
 
 
+def get_equipment_by_id(equipment_id):
+    """Get equipment by id"""
+
+    equipment = Equipamento().get_by_pk(equipment_id)
+
+    return equipment
+
+
+def get_equipment_by_ids(equipment_ids):
+    """Get equipment by ids"""
+
+    eqpt_ids = list()
+    for equipment_id in equipment_ids:
+        eqpt_ids.append(get_equipment_by_id(equipment_id).id)
+
+    equipments = Equipamento.objects.filter(id__in=eqpt_ids)
+
+    return equipments
+
+
 def all_equipments_are_in_maintenance(equipment_list):
 
     all_equips_in_maintenance = True
@@ -142,3 +162,31 @@ def all_equipments_can_update_config(equipment_list, user):
     #         AdminPermission.EQUIP_UPDATE_CONFIG_OPERATION
     #     )
     # return all_equipments_have_permission
+
+
+def update_equipment(equipment, user):
+    """Update equipment"""
+
+    equipment_obj = get_equipment_by_id(equipment.get('id'))
+
+    equipment_obj.update_v3(equipment)
+
+    return equipment_obj
+
+
+def create_equipment(equipment, user):
+    """Create equipment"""
+
+    equipment_obj = Equipamento()
+
+    equipment_obj.create_v3(equipment)
+
+    return equipment_obj
+
+
+def delete_equipment(equipments):
+    """Delete equipment by ids"""
+
+    for equipment in equipments:
+        equipment_obj = get_equipment_by_id(equipment)
+        equipment_obj.delete_v3()
