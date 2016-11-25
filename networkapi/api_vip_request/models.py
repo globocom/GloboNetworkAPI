@@ -171,7 +171,8 @@ class VipRequest(BaseModel):
         if sync:
             syncs.delete_old(id_vip)
 
-    def _is_ipv4_in_use(self, ipv4):
+    def _is_ipv4_in_use(self, ipv4, id_vip=None):
+        id_vip = id_vip if id_vip else self.id
         spm_model = get_model('requisicaovips', 'ServerPoolMember')
         vp_model = get_model('api_vip_request', 'VipRequest')
 
@@ -183,15 +184,15 @@ class VipRequest(BaseModel):
 
         vip_count = vp_model.objects.filter(
             ipv4=ipv4
-        ).exclude(pk=self.id).count()
+        ).exclude(pk=id_vip).count()
 
         if vip_count == 0 and pm_count == 0:
             is_in_use = False
 
         return is_in_use
 
-    def _is_ipv6_in_use(self, ipv6):
-
+    def _is_ipv6_in_use(self, ipv6, id_vip=None):
+        id_vip = id_vip if id_vip else self.id
         spm_model = get_model('requisicaovips', 'ServerPoolMember')
         vp_model = get_model('api_vip_request', 'VipRequest')
 
@@ -203,7 +204,7 @@ class VipRequest(BaseModel):
 
         vip_count = vp_model.objects.filter(
             ipv6=ipv6
-        ).exclude(pk=self.id).count()
+        ).exclude(pk=id_vip).count()
 
         if vip_count == 0 and pm_count == 0:
             is_in_use = False

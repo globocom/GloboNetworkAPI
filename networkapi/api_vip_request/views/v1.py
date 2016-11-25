@@ -30,6 +30,7 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request import exceptions
 from networkapi.api_vip_request import syncs
 from networkapi.api_vip_request.facade import v1 as facade
+from networkapi.api_vip_request.facade import v3 as facade_v3
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
 from networkapi.api_vip_request.serializers.v1 import EnvironmentOptionsSerializer
@@ -190,7 +191,7 @@ def save(request, pk=None):
 
             data = facade.save(request)
 
-            facade.create_groups_permissions(
+            facade_v3.create_groups_permissions(
                 '', data['id'], request.user)
 
             return Response(data=data, status=status.HTTP_201_CREATED)
