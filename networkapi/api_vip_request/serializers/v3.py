@@ -386,7 +386,10 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                     'kwargs': {
                         'many': True,
                         'kind': 'details',
-                        'include': (
+                        'fields': (
+                            'id',
+                            'name',
+                            'maintenance',
                             'equipment_type',
                             'model',
                         )
