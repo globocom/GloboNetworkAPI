@@ -19,8 +19,8 @@ class CustomResponse(Response):
 
         if request:
             headers_default = {
-                'X_REQUEST_ID': local.request_id,
-                'X_REQUEST_CONTEXT': local.request_context
+                'X-Request-Id': local.request_id,
+                'X-Request-Context': local.request_context
             }
             headers = headers.update(headers) if headers else headers_default
 
