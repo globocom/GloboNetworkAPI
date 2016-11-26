@@ -72,14 +72,26 @@ def get_type_option_vip_by_environment_vip_ids(environment_vip_ids):
 
 def get_environmentvip_by_ids(environment_vip_ids):
 
-    environmentvips = EnvironmentVip.objects.filter(id__in=environment_vip_ids)
+    envvip_ids = list()
+    for environment_vip_id in environment_vip_ids:
+        envvip = get_environmentvip_by_id(environment_vip_id).id
+        envvip_ids.append(envvip)
 
-    return environmentvips
+    envvips = EnvironmentVip.objects.filter(id__in=envvip_ids)
+
+    return envvips
+
+
+def get_environmentvip_by_id(environment_vip_id):
+
+    environmentvip = EnvironmentVip.get_by_pk(environment_vip_id)
+
+    return environmentvip
 
 
 def update_environment_vip(environment_vip):
 
-    env = EnvironmentVip.objects.get(id=environment_vip.get('id'))
+    env = get_environmentvip_by_id(environment_vip.get('id'))
     env.conf = environment_vip.get('conf')
     env.save()
 

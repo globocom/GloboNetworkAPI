@@ -62,6 +62,8 @@ class OptionVipV3Serializer(DynamicFieldsModelSerializer):
             'tipo_opcao'
         )
 
+        details_fields = fields
+
     @classmethod
     def get_serializers(cls):
         """Returns the mapping of serializers."""

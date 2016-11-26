@@ -61,6 +61,17 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
             'description',
         )
 
+        details_fields = (
+            'id',
+            'oct4',
+            'oct3',
+            'oct2',
+            'oct1',
+            'ip_formated',
+            'networkipv4',
+            'description'
+        )
+
     def get_networkipv4(self, obj):
         return self.extends_serializer(obj, 'networkipv4')
 
@@ -89,6 +100,15 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
                 'networkipv4__details': {
                     'serializer': net_slz.NetworkIPv4V3Serializer,
                     'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'networkipv4',
+                    'eager_loading': cls.setup_eager_loading_networkipv4
+                },
+                'networkipv4__basic': {
+                    'serializer': net_slz.NetworkIPv4V3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'networkipv4',
                     'eager_loading': cls.setup_eager_loading_networkipv4
@@ -221,7 +241,16 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
             'description',
         )
 
-        details_fields = fields
+        details_fields = (
+            'id',
+            'oct4',
+            'oct3',
+            'oct2',
+            'oct1',
+            'ip_formated',
+            'networkipv4',
+            'description'
+        )
 
     def get_networkipv6(self, obj):
         return self.extends_serializer(obj, 'networkipv6')
@@ -251,6 +280,15 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
                 'networkipv6__details': {
                     'serializer': net_slz.NetworkIPv6V3Serializer,
                     'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'networkipv6',
+                    'eager_loading': cls.setup_eager_loading_networkipv6
+                },
+                'networkipv6__basic': {
+                    'serializer': net_slz.NetworkIPv6V3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'networkipv6',
                     'eager_loading': cls.setup_eager_loading_networkipv6

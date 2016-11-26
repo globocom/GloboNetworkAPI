@@ -98,9 +98,9 @@ class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
         }
         for option in options:
             if option.optionvip.tipo_opcao == 'l4_protocol':
-                opt['l7_protocol'] = option
-            elif option.optionvip.tipo_opcao == 'l7_protocol':
                 opt['l4_protocol'] = option
+            elif option.optionvip.tipo_opcao == 'l7_protocol':
+                opt['l7_protocol'] = option
 
         return self.extends_serializer(opt, 'options')
 

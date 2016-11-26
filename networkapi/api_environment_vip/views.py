@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.api_environment_vip import exceptions
 from networkapi.api_environment_vip import facade
 from networkapi.api_environment_vip import serializers
 from networkapi.api_environment_vip.permissions import Read
@@ -19,6 +18,7 @@ from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import CustomResponse
+from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
@@ -131,23 +131,27 @@ class EnvironmentVipView(APIView):
 
                 environments_vip = facade.get_environmentvip_by_ids(
                     environment_vip_ids)
+                only_main_property = True
 
-                if environments_vip:
-                    environmentvip_serializer = serializers.EnvironmentVipV3Serializer(
-                        environments_vip,
-                        many=True,
-                        fields=self.fields,
-                        include=self.include,
-                        exclude=self.exclude,
-                        kind=self.kind
-                    )
-                    data = {
-                        'environments_vip': environmentvip_serializer.data
-                    }
-                else:
-                    raise exceptions.EnvironmentVipDoesNotExistException()
+            environmentvip_serializer = serializers.EnvironmentVipV3Serializer(
+                environments_vip,
+                many=True,
+                fields=self.fields,
+                include=self.include,
+                exclude=self.exclude,
+                kind=self.kind
+            )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            # prepare serializer with customized properties
+            response = render_to_json(
+                environmentvip_serializer,
+                main_property='environments_vip',
+                obj_model=environments_vip,
+                request=request,
+                only_main_property=only_main_property
+            )
+
+            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
         except Exception, exception:
             log.exception(exception)

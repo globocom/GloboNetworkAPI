@@ -82,18 +82,18 @@ class PoolMemberStateView(APIView):
                     many=True
                 )
 
-                status = facade_pool_deploy.get_poolmember_state(
+                mbr_state = facade_pool_deploy.get_poolmember_state(
                     serializer_server_pool.data)
 
                 for server_pool in server_pools:
 
-                    if status.get(server_pool.id):
+                    if mbr_state.get(server_pool.id):
                         query_pools = models_vips.ServerPoolMember.objects.filter(
                             server_pool=server_pool)
 
                         for pm in query_pools:
 
-                            member_checked_status = status[
+                            member_checked_status = mbr_state[
                                 server_pool.id][pm.id]
                             pm.member_status = member_checked_status
                             pm.last_status_update = datetime.now()
@@ -162,7 +162,8 @@ class PoolDeployView(APIView):
             raise rest_exceptions.NetworkAPIException(exception)
         finally:
             destroy_lock(locks_list)
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -365,7 +366,7 @@ class PoolEnvironmentVip(APIView):
             pool_serializer = serializers.PoolV3Serializer(
                 pools,
                 many=True,
-                fields=self.fields,
+                fields=('id', 'identifier', ) + self.fields,
                 include=self.include,
                 exclude=self.exclude,
                 kind=self.kind

@@ -261,6 +261,8 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
     vips = serializers.SerializerMethodField('get_vips')
     groups_permissions = serializers.SerializerMethodField(
         'get_groups_permissions')
+    environment = serializers.SerializerMethodField(
+        'get_environment')
 
     def get_healthcheck(self, obj):
         return self.extends_serializer(obj, 'healthcheck')
@@ -276,6 +278,9 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
 
     def get_groups_permissions(self, obj):
         return self.extends_serializer(obj, 'groups_permissions')
+
+    def get_environment(self, obj):
+        return self.extends_serializer(obj, 'environment')
 
     class Meta:
         ServerPool = get_model('requisicaovips', 'ServerPool')
@@ -357,6 +362,7 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                 'environment__details': {
                     'serializer': env_slz.EnvironmentV3Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'environment',
                 },
