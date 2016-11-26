@@ -2271,15 +2271,15 @@ class ServerPool(BaseModel):
 
     @cached_property
     def vips(self):
-        ports_assoc = self.viprequestportpool_set.all()
+        ports_assoc = self.viprequestportpool_set.select_related('vip_request')
         vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
         return vips
 
     @cached_property
     def dscp(self):
-        ports_assoc = self.viprequestportpool_set.select_related()
+        ports_assoc = self.viprequestportpool_set.select_related('vip_request')
         for poolport in ports_assoc:
-            dscp = poolport.vip_request_port.vip_request.viprequestdscp_set.select_related()
+            dscp = poolport.vip_request_port.vip_request.viprequestdscp_set.all()
             if dscp:
                 return dscp.uniqueResult()
         return None
@@ -2370,11 +2370,12 @@ class ServerPoolMember(BaseModel):
 
         ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
 
-        for ipequip in ip_equipment_set.select_related():
+        for ipequip in ip_equipment_set.select_related('equipamento'):
             if ipequip.equipamento.nome == self.identifier:
                 return ipequip.equipamento
 
-        ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+        ip_equipment_obj = ip_equipment_set.select_related(
+            'equipamento').uniqueResult()
         equipamento = ip_equipment_obj.equipamento
 
         return equipamento

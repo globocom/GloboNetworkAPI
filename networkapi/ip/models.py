@@ -353,7 +353,7 @@ class NetworkIPv4(BaseModel):
     wildcard = property(_get_wildcard)
 
     def _get_dhcprelay(self):
-        dhcprelay = self.dhcprelayipv4_set.select_related()
+        dhcprelay = self.dhcprelayipv4_set.all()
         return dhcprelay
 
     dhcprelay = property(_get_dhcprelay)
@@ -2241,7 +2241,7 @@ class NetworkIPv6(BaseModel):
 
     @cached_property
     def dhcprelay(self):
-        dhcprelay = self.dhcprelayipv6_set.select_related()
+        dhcprelay = self.dhcprelayipv6_set.all()
         return dhcprelay
 
     @classmethod
