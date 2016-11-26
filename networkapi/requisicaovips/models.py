@@ -2267,11 +2267,11 @@ class ServerPool(BaseModel):
 
     @cached_property
     def vip_ports(self):
-        return self.vipporttopool_set.all().select_related()
+        return self.vipporttopool_set.all()
 
     @cached_property
     def vips(self):
-        ports_assoc = self.viprequestportpool_set.all().select_related()
+        ports_assoc = self.viprequestportpool_set.all()
         vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
         return vips
 
@@ -2286,12 +2286,12 @@ class ServerPool(BaseModel):
 
     @cached_property
     def server_pool_members(self):
-        members = self.serverpoolmember_set.all().select_related()
+        members = self.serverpoolmember_set.all()
         return members
 
     @cached_property
     def groups_permissions(self):
-        perms = self.serverpoolgrouppermission_set.all().select_related()
+        perms = self.serverpoolgrouppermission_set.all()
         return perms
 
 

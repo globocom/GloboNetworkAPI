@@ -88,17 +88,17 @@ class VipRequest(BaseModel):
 
     @cached_property
     def ports(self):
-        ports = self.viprequestport_set.all().select_related()
+        ports = self.viprequestport_set.all()
         return ports
 
     @cached_property
     def options(self):
-        options = self.viprequestoptionvip_set.all().select_related()
+        options = self.viprequestoptionvip_set.all()
         return options
 
     @cached_property
     def groups_permissions(self):
-        perms = self.viprequestgrouppermission_set.all().select_related()
+        perms = self.viprequestgrouppermission_set.all()
         return perms
 
     @classmethod
@@ -363,12 +363,12 @@ class VipRequestPort(BaseModel):
 
     @cached_property
     def pools(self):
-        pools = self.viprequestportpool_set.all().select_related()
+        pools = self.viprequestportpool_set.all()
         return pools
 
     @cached_property
     def options(self):
-        options = self.viprequestportoptionvip_set.all().select_related()
+        options = self.viprequestportoptionvip_set.all()
         return options
 
     class Meta(BaseModel.Meta):
