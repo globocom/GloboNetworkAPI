@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import copy
 import logging
 
@@ -22,7 +22,8 @@ class Generic(BasePlugin):
         if pool.get('healthcheck'):
             if action == 'create' or pool['healthcheck'].get('new'):
                 healthcheck = pool['healthcheck']
-                hr = self._prepare_healthcheck(healthcheck['healthcheck_request'])
+                hr = self._prepare_healthcheck(
+                    healthcheck['healthcheck_request'])
                 mb['healthcheck'] = {
                     'type': healthcheck['healthcheck_type'],
                     'url_health': hr
@@ -33,9 +34,10 @@ class Generic(BasePlugin):
             vpc = copy.deepcopy(vip)
             ports = vpc.get('ports')
 
-            address = vpc['ipv4']['ip_formated'] if vpc['ipv4'] else vpc['ipv6']['ip_formated']
+            address = vpc['ipv4']['ip_formated'] if vpc[
+                'ipv4'] else vpc['ipv6']['ip_formated']
             vp = dict()
-            vp['name'] = 'VIP_{}'.format(vpc['id'])
+            vp['name'] = ports[0]['identifier']
             vp['address'] = address
 
             for port in ports:
@@ -95,7 +97,7 @@ class Generic(BasePlugin):
                     healthcheck = '0'
                     user_up_down = '0'
                 session = user_up_down
-                log.info("member: {} - state: {}".format(mb, state))
+                log.info('member: {} - state: {}'.format(mb, state))
                 status.append(int(healthcheck + session + user_up_down, 2))
 
             status_pools.append(status)
@@ -148,10 +150,7 @@ class Generic(BasePlugin):
     #######################################
     @util.logger
     def get_name_eqpt(self, obj, port):
-        address = obj.ipv4.ip_formated \
-            if obj.ipv4 else obj.ipv6.ip_formated
-
-        name_vip = 'VIP%s_%s' % (obj.id, address)
+        name_vip = 'VIP_%s' % (obj.id)
 
         return name_vip
 
@@ -224,7 +223,8 @@ class Generic(BasePlugin):
 
                         # pool to delete
                         vpd = copy.deepcopy(vp)
-                        vpd['members'] = copy.deepcopy(vpd.get('members_delete'))
+                        vpd['members'] = copy.deepcopy(
+                            vpd.get('members_delete'))
                         pools_del = self._delete_vip_members(vpd)
 
         pools_ins = list(set(pools_ins))
@@ -272,7 +272,8 @@ class Generic(BasePlugin):
             'persistence': None
         }
         if vip_request.get('conf'):
-            conf = vip_request.get('conf').get('conf').get('optionsvip_extended')
+            conf = vip_request.get('conf').get(
+                'conf').get('optionsvip_extended')
             if conf:
                 requiments = conf.get('requiments')
                 if requiments:
@@ -287,7 +288,8 @@ class Generic(BasePlugin):
                                 if validation.get('type') == 'optionvip':
                                     validated &= valid_expression(
                                         validation.get('operator'),
-                                        int(vip_request['options'][validation.get('variable')]['id']),
+                                        int(vip_request['options'][
+                                            validation.get('variable')]['id']),
                                         int(validation.get('value'))
                                     )
 
@@ -333,10 +335,11 @@ class Generic(BasePlugin):
         vpc = copy.deepcopy(vip.get('vip_request'))
 
         ports = vpc.get('ports')
-        address = vpc['ipv4']['ip_formated'] if vpc['ipv4'] else vpc['ipv6']['ip_formated']
+        address = vpc['ipv4']['ip_formated'] if vpc[
+            'ipv4'] else vpc['ipv6']['ip_formated']
         values = self.trata_extends(vpc)
 
-        vp['name'] = 'VIP_{}'.format(vpc['id'])
+        vp['name'] = ports[0]['identifier']
         vp['address'] = address
         vp['description'] = vpc['name']
         vp['timeout'] = vpc['options']['timeout']['nome_opcao_txt']
@@ -376,7 +379,8 @@ class Generic(BasePlugin):
 
                     if pool['server_pool'].get('healthcheck'):
                         healthcheck = pool['server_pool']['healthcheck']
-                        hr = self._prepare_healthcheck(healthcheck['healthcheck_request'])
+                        hr = self._prepare_healthcheck(
+                            healthcheck['healthcheck_request'])
                         mb['healthcheck'] = {
                             'type': healthcheck['healthcheck_type'],
                             'url_health': hr

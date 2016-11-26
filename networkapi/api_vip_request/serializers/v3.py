@@ -112,6 +112,14 @@ class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
             'port',
             'options',
             'pools',
+            'identifier',
+        )
+
+        default_fields = (
+            'id',
+            'port',
+            'options',
+            'pools',
         )
 
     @classmethod

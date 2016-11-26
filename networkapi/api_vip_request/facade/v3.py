@@ -108,7 +108,7 @@ def create_vip_request(vip_request, user):
                      for key in vip_request['options']]
     vip.save()
 
-    _create_port(vip_request['ports'], vip.id)
+    _create_port(vip_request['ports'], vip)
     _create_option(option_create, vip.id)
 
     # perms
@@ -149,7 +149,7 @@ def update_vip_request(vip_request, user):
 
     vip.save()
 
-    _update_port(vip_request['ports'], vip.id)
+    _update_port(vip_request['ports'], vip)
 
     _create_option(option_create, vip.id)
     _delete_option(option_remove, vip.id)
@@ -184,14 +184,21 @@ def delete_vip_request(vip_request_ids, keep_ip='0'):
         vp.delete_v3(bypass_ipv4=bypass_ip, bypass_ipv6=bypass_ip)
 
 
-def _create_port(ports, vip_request_id):
+def _create_port(ports, vip_request):
     """Create ports"""
 
     for port in ports:
         # save port
         pt = models.VipRequestPort()
-        pt.vip_request_id = vip_request_id
+        pt.vip_request_id = vip_request.id
         pt.port = port['port']
+
+        eqpts = facade_eqpt.get_eqpt_by_envvip(vip_request.environmentvip.id)
+        if eqpts:
+            plugin = PluginFactory.factory(eqpts[0])
+            identifier = plugin.get_name_eqpt(vip_request, port['port'])
+            pt.identifier = identifier
+
         pt.save()
 
         # save port option l7_protocol
@@ -217,20 +224,30 @@ def _create_port(ports, vip_request_id):
             pl.save()
 
 
-def _update_port(ports, vip_request_id):
+def _update_port(ports, vip_request):
     """Update ports"""
 
     for port in ports:
         # save port
         try:
             pt = models.VipRequestPort.objects.get(
-                vip_request_id=vip_request_id,
+                vip_request_id=vip_request.id,
                 port=port['port'])
         except:
             pt = models.VipRequestPort()
-            pt.vip_request_id = vip_request_id
+            pt.vip_request_id = vip_request.id
             pt.port = port['port']
             pt.save()
+
+        if not pt.identifier or pt.port != port['port']:
+            eqpts = facade_eqpt.get_eqpt_by_envvip(
+                vip_request.environmentvip.id)
+            if eqpts:
+                plugin = PluginFactory.factory(eqpts[0])
+                identifier = plugin.get_name_eqpt(vip_request, port['port'])
+                pt.identifier = identifier
+
+        pt.save()
 
         # save port option l4_protocol
         try:
@@ -297,7 +314,7 @@ def _update_port(ports, vip_request_id):
     # delete port
     ports_ids = [port.get('port') for port in ports]
     models.VipRequestPort.objects.filter(
-        vip_request_id=vip_request_id
+        vip_request_id=vip_request.id
     ).exclude(
         port__in=ports_ids
     ).delete()
@@ -619,17 +636,27 @@ def update_real_vip_request(vip_requests, user):
     keys = list()
     for vip in vip_requests:
 
-        vip_request = copy.deepcopy(vip)
-
+        # old VIP
         vip_old = models.VipRequest.get_by_pk(vip.get('id'))
         serializer_vips = vip_slz.VipRequestV3Serializer(
             vip_old,
-            many=False
+            many=False,
+            include=('ports__identifier',)
         )
         serializer_vips_data = copy.deepcopy(serializer_vips.data)
 
+        # validate and save
         validate_save(vip, True)
         update_vip_request(vip, user)
+
+        # new VIP
+        vip_new = models.VipRequest.get_by_pk(vip.get('id'))
+        serializer_vips = vip_slz.VipRequestV3Serializer(
+            vip_new,
+            many=False,
+            include=('ports__identifier',)
+        )
+        vip_request = copy.deepcopy(serializer_vips.data)
 
         ids_port_old = [port.get('id')
                         for port in serializer_vips_data.get('ports')]
@@ -1071,17 +1098,7 @@ def _validate_vip_to_apply(vip_request, update=False, user=None):
     if not update and vip.created:
         raise exceptions.VipRequestAlreadyCreated(vip.id)
 
-    equips = Equipamento.objects.filter(
-        equipamentoambiente__ambiente__vlan__networkipv4__ambient_vip__id=vip_request[
-            'environmentvip'],
-        maintenance=0,
-        tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
-
-    # does not implemented yet
-    # equips = Equipamento.objects.filter(
-    #     equipamentoambiente__ambiente__vlan__networkipv6__ambient_vip__id=vip_request['environmentvip'],
-    #     maintenance=0,
-    #     tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
+    equips = facade_eqpt.get_eqpt_by_envvip(vip_request['environmentvip'])
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 

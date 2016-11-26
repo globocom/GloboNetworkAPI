@@ -50,7 +50,8 @@ class VipRequestDeployView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         vips = facade.get_vip_request_by_ids(vip_request_ids)
-        vip_serializer = VipRequestV3Serializer(vips, many=True)
+        vip_serializer = VipRequestV3Serializer(
+            vips, many=True, include=('ports__identifier',))
 
         locks_list = create_lock(vip_serializer.data, LOCK_VIP)
         try:
@@ -76,7 +77,8 @@ class VipRequestDeployView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         vips = facade.get_vip_request_by_ids(vip_request_ids)
-        vip_serializer = VipRequestV3Serializer(vips, many=True)
+        vip_serializer = VipRequestV3Serializer(
+            vips, many=True, include=('ports__identifier',))
 
         locks_list = create_lock(vip_serializer.data, LOCK_VIP)
         try:

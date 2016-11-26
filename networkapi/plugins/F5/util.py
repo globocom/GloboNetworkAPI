@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import copy
 import logging
 from functools import wraps
@@ -17,7 +17,8 @@ log = logging.getLogger(__name__)
 def logger(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
-        log.info('%s.%s: %s,%s' % (self.__class__.__name__, func.__name__, args, kwargs))
+        log.info('%s.%s: %s,%s' %
+                 (self.__class__.__name__, func.__name__, args, kwargs))
         return func(self, *args, **kwargs)
 
     return inner
@@ -41,7 +42,7 @@ def transation(func):
                 log.error(e)
                 raise base_exceptions.CommandErrorException(e)
             except Exception, e:
-                log.error("Error  %s" % e)
+                log.error('Error  %s' % e)
                 raise base_exceptions.CommandErrorException(e)
         else:
             return func(self, *args, **kwargs)
@@ -52,7 +53,8 @@ def connection(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
         try:
-            access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+            access = args[0].get('access').filter(
+                tipo_acesso__protocolo='https').uniqueResult()
             self._lb = lb.Lb(access.fqdn, access.user, access.password)
             self._lb._channel.System.Session.set_transaction_timeout(60)
             return func(self, *args, **kwargs)
@@ -66,7 +68,8 @@ def connection_simple(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
         try:
-            access = args[0].get('access').filter(tipo_acesso__protocolo='https').uniqueResult()
+            access = args[0].get('access').filter(
+                tipo_acesso__protocolo='https').uniqueResult()
             self._lb = lb.Lb(access.fqdn, access.user, access.password, False)
             return func(self, *args, **kwargs)
         except bigsuds.OperationFailed, e:
@@ -139,7 +142,8 @@ def trata_param_pool(pools):
                 pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):
-            pls['pools_actions'].append(get_service_down_action_name(p['action']))
+            pls['pools_actions'].append(
+                get_service_down_action_name(p['action']))
 
         member_status_monitor = []
         member_status_session = []
@@ -169,7 +173,8 @@ def trata_param_pool(pools):
 
                     idx = pls['pools_confirm']['pools_names'].index(p['nome'])
                     pls['pools_confirm']['members'][idx].append(node_port)
-                    pls['pools_confirm']['monitor'][idx].append(status_confirm['monitor'])
+                    pls['pools_confirm']['monitor'][
+                        idx].append(status_confirm['monitor'])
 
             if pool_member.get('member_status') is not None:
                 status = get_status_name(state)
@@ -249,17 +254,20 @@ def trata_param_vip(vips):
             address = vip_request['ipv4']['ip_formated'] \
                 if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
-            vip_filter['name'] = 'VIP%s_%s_%s' % (vip_request['id'], address, port['port'])
+            vip_filter['name'] = port['identifier']
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
             vip_filter['optionsvip'] = vip_request['options']
-            vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
-            vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+            vip_filter['optionsvip']['l7_protocol'] = port[
+                'options']['l7_protocol']
+            vip_filter['optionsvip']['l4_protocol'] = port[
+                'options']['l4_protocol']
 
             try:
                 cluster_unit = None
                 for keys in conf['keys']:
-                    cluster_unit = keys.get(vip_request['options']['cluster_unit'])
+                    cluster_unit = keys.get(
+                        vip_request['options']['cluster_unit'])
 
                     # traffic-group-1 is default, so must be ignored
                     if cluster_unit == 'traffic-group-1':
@@ -284,7 +292,8 @@ def trata_param_vip(vips):
                 pool_delete = False
 
                 # Flag to delete port or pool in port
-                # Pool to delete in put request of vip(when delete pool or port)
+                # Pool to delete in put request of vip(when delete pool or
+                # port)
                 if pl.get('delete') or pt.get('delete'):
 
                     pool_delete = True
@@ -313,7 +322,7 @@ def trata_param_vip(vips):
                 #         pool_filter_to_insert.append(server_pool)
 
                 #     # Pool already created in equipment, but was added in new port
-                #     elif server_pool.get('id') not in ids_pool_filter_created:
+                # elif server_pool.get('id') not in ids_pool_filter_created:
 
                 #         log.info('Pool already created in equipment: %s'
                 #                  ', but to need associate with vip '
@@ -365,7 +374,7 @@ def trata_param_vip(vips):
                     # Default of l7 rule
                     else:
                         if pool.get('l7_rule') == 'default_glob':
-                            default_l7 = "            default {{ pool {0} }}\n".format(
+                            default_l7 = '            default {{ pool {0} }}\n'.format(
                                 name_pool)
                         # l7 rule
                         elif pool.get('l7_rule') == 'glob':
@@ -381,19 +390,19 @@ def trata_param_vip(vips):
 
             # rules to create
             if rules:
-                rule_l7_ln = "\n            ".join([
-                    "{0} {{\n                pool {1}\n            }}".format(
-                        " -\n            ".join(rules[idx]['rule']),
+                rule_l7_ln = '\n            '.join([
+                    '{0} {{\n                pool {1}\n            }}'.format(
+                        ' -\n            '.join(rules[idx]['rule']),
                         rules[idx]['pool']
                     ) for idx in sorted(rules)
                 ])
 
                 rule_l7 = \
-                    "when HTTP_REQUEST {{\n" + \
-                    "        switch -glob [HTTP::uri] {{\n" + \
-                    "            {0}\n{1}" + \
-                    "        }}\n" + \
-                    "    }}"
+                    'when HTTP_REQUEST {{\n' + \
+                    '        switch -glob [HTTP::uri] {{\n' + \
+                    '            {0}\n{1}' + \
+                    '        }}\n' + \
+                    '    }}'
                 rule_l7 = rule_l7.format(rule_l7_ln, default_l7)
 
                 vip_filter['pool_l7'] = rule_l7
@@ -413,8 +422,10 @@ def trata_param_vip(vips):
     if vips.get('layers'):
         for vip_id in vips.get('layers'):
             for id_layer in vips.get('layers').get(vip_id):
-                definitions = vips.get('layers').get(vip_id).get(id_layer).get('definitions')
-                vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
+                definitions = vips.get('layers').get(
+                    vip_id).get(id_layer).get('definitions')
+                vip_request = vips.get('layers').get(
+                    vip_id).get(id_layer).get('vip_request')
                 ports = vip_request.get('ports')
                 for port in ports:
                     vip_cache_filter = dict()
@@ -423,8 +434,7 @@ def trata_param_vip(vips):
                         if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
                     vip_cache_filter['pool'] = None
-                    vip_cache_filter['name'] = 'VIP%s_%s_%s' % \
-                        (vip_request['id'], address, port['port'])
+                    vip_cache_filter['name'] = port['identifier']
                     vip_cache_filter['address'] = address
                     vip_cache_filter['port'] = port['port']
 
@@ -438,13 +448,14 @@ def trata_param_vip(vips):
                             vip_cache_filter['pool'] = definition.get('value')
                         if definition.get('type') == 'rule':
                             if definition.get('value'):
-                                vip_cache_filter['rules'] = [definition.get('value')]
+                                vip_cache_filter['rules'] = [
+                                    definition.get('value')]
                         if definition.get('type') == 'profile':
                             vip_cache_filter['optionsvip_extended'] = {
-                                "requiments": [{
-                                    "condicionals": [{
-                                        "validations": [],
-                                        "use":[
+                                'requiments': [{
+                                    'condicionals': [{
+                                        'validations': [],
+                                        'use':[
                                             definition
                                         ]
                                     }]
@@ -452,7 +463,8 @@ def trata_param_vip(vips):
                             }
                         if definition.get('type') == 'traffic_group':
                             if definition.get('value') == 'traffic-group-1':
-                                vip_cache_filter['optionsvip']['traffic_group'] = None
+                                vip_cache_filter['optionsvip'][
+                                    'traffic_group'] = None
                             else:
                                 vip_cache_filter['optionsvip']['traffic_group'] = \
                                     definition.get('value')

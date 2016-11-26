@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 log = logging.getLogger(__name__)
@@ -18,13 +18,15 @@ def old_to_new(vip_request):
     try:
 
         try:
-            ev = EnvironmentVip().get_by_values(mp['finalidade'], mp['cliente'], mp['ambiente'])
+            ev = EnvironmentVip().get_by_values(
+                mp['finalidade'], mp['cliente'], mp['ambiente'])
         except:
             ev = EnvironmentVip()
             ev.finalidade_txt = mp['finalidade']
             ev.cliente_txt = mp['cliente']
             ev.ambiente_p44_txt = mp['ambiente']
-            ev.description = '%s - %s - %s' % (mp['finalidade'], mp['cliente'], mp['ambiente'])
+            ev.description = '%s - %s - %s' % (
+                mp['finalidade'], mp['cliente'], mp['ambiente'])
             ev.save()
         finally:
 
@@ -32,8 +34,10 @@ def old_to_new(vip_request):
             vp.environmentvip = ev
             vp.id = vip_request.id
             vp.name = mp['host'] if mp.get('host') else None
-            vp.business = mp['areanegocio'] if mp.get('areanegocio') else vp.name
-            vp.service = mp['nome_servico'] if mp.get('nome_servico') else vp.name
+            vp.business = mp['areanegocio'] if mp.get(
+                'areanegocio') else vp.name
+            vp.service = mp['nome_servico'] if mp.get(
+                'nome_servico') else vp.name
             vp.ipv4 = vip_request.ip if vip_request.ip else None
             vp.ipv6 = vip_request.ipv6 if vip_request.ipv6 else None
             vp.created = vip_request.vip_criado
@@ -243,6 +247,19 @@ def old_to_new(vip_request):
                 vrp.id = pool.id
                 vrp.vip_request = vp
                 vrp.port = pool.port_vip
+
+                if not pool.identifier:
+                    from networkapi.api_equipment import facade as facade_eqpt
+                    from networkapi.plugins.factory import PluginFactory
+
+                    eqpts = facade_eqpt.get_eqpt_by_envvip(ev.id)
+                    if eqpts:
+                        plugin = PluginFactory.factory(eqpts[0])
+                        vrp.identifier = plugin.get_name_eqpt(
+                            vp, pool.port_vip)
+                        pool.identifier = vrp.identifier
+                        pool.save()
+
                 vrp.save()
 
                 # descobre protocolo l7 e l4
@@ -274,9 +291,11 @@ def old_to_new(vip_request):
 
                 # l4_protocol
                 try:
-                    op_l4 = OptionVip.objects.filter(tipo_opcao='l4_protocol', nome_opcao_txt=l4_protocol)[0]
+                    op_l4 = OptionVip.objects.filter(
+                        tipo_opcao='l4_protocol', nome_opcao_txt=l4_protocol)[0]
                     try:
-                        opv = OptionVipEnvironmentVip.objects.get(option=op_l4, environment=ev)
+                        opv = OptionVipEnvironmentVip.objects.get(
+                            option=op_l4, environment=ev)
                     except:
                         opv = OptionVipEnvironmentVip()
                         opv.option = op_l4
@@ -293,7 +312,8 @@ def old_to_new(vip_request):
                     opv.save()
                 finally:
                     try:
-                        vro = VipRequestPortOptionVip.objects.filter(optionvip=op_l4, vip_request_port=vrp)[0]
+                        vro = VipRequestPortOptionVip.objects.filter(
+                            optionvip=op_l4, vip_request_port=vrp)[0]
                     except:
                         vro = VipRequestPortOptionVip()
                         vro.optionvip = op_l4
@@ -302,9 +322,11 @@ def old_to_new(vip_request):
 
                 # l7_protocol
                 try:
-                    op_l7 = OptionVip.objects.filter(tipo_opcao='l7_protocol', nome_opcao_txt=l7_protocol)[0]
+                    op_l7 = OptionVip.objects.filter(
+                        tipo_opcao='l7_protocol', nome_opcao_txt=l7_protocol)[0]
                     try:
-                        opv = OptionVipEnvironmentVip.objects.get(option=op_l7, environment=ev)
+                        opv = OptionVipEnvironmentVip.objects.get(
+                            option=op_l7, environment=ev)
                     except:
                         opv = OptionVipEnvironmentVip()
                         opv.option = op_l7
@@ -321,7 +343,8 @@ def old_to_new(vip_request):
                     opv.save()
                 finally:
                     try:
-                        vro = VipRequestPortOptionVip.objects.filter(optionvip=op_l7, vip_request_port=vrp)[0]
+                        vro = VipRequestPortOptionVip.objects.filter(
+                            optionvip=op_l7, vip_request_port=vrp)[0]
                     except:
                         vro = VipRequestPortOptionVip()
                         vro.optionvip = op_l7
@@ -429,7 +452,8 @@ def new_to_old(vp):
                         'id': port.id,
                         'requisicao_vip': vip,
                         'server_pool': pool.server_pool,
-                        'port_vip': port.port
+                        'port_vip': port.port,
+                        'identifier': port.identifier,
                     }
                     vip_map['vip_ports_to_pools'].append(vip_port)
 

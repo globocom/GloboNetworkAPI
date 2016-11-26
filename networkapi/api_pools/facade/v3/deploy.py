@@ -63,7 +63,8 @@ def _prepare_apply(pools, user):
             serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
                 many=True,
-                kind='details'
+                kind='details',
+                include=('ports__identifier',)
             )
 
             load_balance[eqpt_id]['pools'].append({
@@ -259,7 +260,8 @@ def update_real_pool(pools, user):
             serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
                 many=True,
-                kind='details'
+                kind='details',
+                include=('ports__identifier',)
             )
 
             load_balance[eqpt_id]['pools'].append({

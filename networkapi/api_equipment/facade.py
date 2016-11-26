@@ -190,3 +190,21 @@ def delete_equipment(equipments):
     for equipment in equipments:
         equipment_obj = get_equipment_by_id(equipment)
         equipment_obj.delete_v3()
+
+
+def get_eqpt_by_envvip(environmentvip):
+    """Get equipments by environment vip"""
+
+    equips = Equipamento.objects.filter(
+        equipamentoambiente__ambiente__vlan__networkipv4__ambient_vip__id=environmentvip,
+        maintenance=0,
+        tipo_equipamento__tipo_equipamento=u'Balanceador'
+    ).distinct()
+
+    # does not implemented yet
+    # equips = Equipamento.objects.filter(
+    #     equipamentoambiente__ambiente__vlan__networkipv6__ambient_vip__id=vip_request['environmentvip'],
+    #     maintenance=0,
+    #     tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
+
+    return equips
