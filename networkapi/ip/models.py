@@ -633,11 +633,11 @@ class NetworkIPv4(BaseModel):
         self.cluster_unit = networkv4.get('cluster_unit')
 
         validate_network = True
-        if not self.oct1 and not self.oct2 and not self.oct3 and not self.oct4:
+        if self.oct1 is None and self.oct2 is None and self.oct3 is None and self.oct4 is None:
             self.allocate_network(networkv4.get(
                 'vlan'), networkv4.get('prefix'))
             validate_network = False
-        elif self.block and self.oct1 and self.oct2 and self.oct3 and self.oct4:
+        elif self.block is not None and self.oct1 is not None and self.oct2 is not None and self.oct3 is not None and self.oct4 is not None:
             ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
             self.broadcast = ip.broadcast.compressed
             mask = ip.netmask.exploded.split('.')
@@ -645,7 +645,7 @@ class NetworkIPv4(BaseModel):
             self.mask_oct2 = mask[1]
             self.mask_oct3 = mask[2]
             self.mask_oct4 = mask[3]
-        elif self.mask_oct1 and self.mask_oct2 and self.mask_oct3 and self.mask_oct4:
+        elif self.mask_oct1 is not None and self.mask_oct2 is not None and self.mask_oct3 is not None and self.mask_oct4 is not None:
             ip = IPNetwork('%s/%s' % (self.formated_octs, self.mask_formated))
             self.block = ip.prefixlen
         else:
