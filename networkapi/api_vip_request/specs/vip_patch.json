@@ -1,0 +1,30 @@
+{
+  "title": "Vip Patch",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vips"
+  ],
+  "properties": {
+    "vips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "persistence": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

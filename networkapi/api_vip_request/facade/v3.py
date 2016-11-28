@@ -760,6 +760,45 @@ def update_real_vip_request(vip_requests, user):
 
 
 @commit_on_success
+def patch_real_vip_request(vip_requests, user):
+
+    load_balance = dict()
+    keys = list()
+    for vip in vip_requests:
+
+        vip_old = models.VipRequest.get_by_pk(vip.get('id'))
+        serializer_vips = vip_slz.VipRequestV3Serializer(
+            vip_old,
+            many=False,
+            include=('ports__identifier',)
+        )
+
+        vip_dict = serializer_vips.data
+
+        # validate and save
+        vip_dict['options']['persistence'] = vip['options']['persistence']
+
+        validate_save(vip_dict, True)
+        update_vip_request(vip_dict, user)
+
+        load_balance = prepare_apply(
+            load_balance, vip_dict, created=True, user=user)
+
+        keys.append(sorted([str(key) for key in load_balance.keys()]))
+
+    # vips are in differents load balancers
+    keys = [','.join(key) for key in keys]
+    if len(list(set(keys))) > 1:
+        raise Exception('Vips Request are in differents load balancers')
+
+    for lb in load_balance:
+        inst = copy.deepcopy(load_balance.get(lb))
+        log.info('started call:%s' % lb)
+        inst.get('plugin').partial_update_vip(inst)
+        log.info('ended call')
+
+
+@commit_on_success
 def delete_real_vip_request(vip_requests, user):
     load_balance = dict()
 

@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import itertools
 import logging
 
@@ -99,7 +99,8 @@ class Generic(BasePlugin):
         # vip create
         if tratado.get('pool'):
             self.__create_pool({'pools': tratado.get('pool')})
-            pools_ins = [server_pool.get('id') for server_pool in tratado.get('pool')]
+            pools_ins = [server_pool.get('id')
+                         for server_pool in tratado.get('pool')]
         try:
             if tratado.get('vips'):
                 vts.create(vips=tratado.get('vips'))
@@ -227,18 +228,45 @@ class Generic(BasePlugin):
         return pools_ins, pools_del
 
     @logger
+    @util.connection
+    def partial_update_vip(self, vips):
+
+        tratado = util.trata_param_vip(vips)
+        vts = virtualserver.VirtualServer(self._lb)
+        try:
+
+            log.info('try update vips')
+            if tratado.get('vips_filter'):
+                vts.partial_update(vips=tratado.get('vips_filter'))
+        except Exception, e:
+
+            log.info('error update vips')
+            log.error(e)
+
+            raise base_exceptions.CommandErrorException(e)
+
+        else:
+
+            log.info('update vips with success')
+
+        return [], []
+
+    @logger
     def _delete_pool_by_pass(self, server_pool):
         try:
             self.__delete_pool({'pools': [server_pool]})
         except Exception, e:
             if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
-                log.warning('Pool cannot be deleted because it is in use by a Virtual Server')
+                log.warning(
+                    'Pool cannot be deleted because it is in use by a Virtual Server')
                 pass
             elif 'is referenced by one or more virtual servers' in str(e.message):
-                log.warning('Pool cannot be deleted because it is referenced by one or more virtual servers')
+                log.warning(
+                    'Pool cannot be deleted because it is referenced by one or more virtual servers')
                 pass
             elif 'is referenced by one or more rules' in str(e.message):
-                log.warning('Pool cannot be deleted because is referenced by one or more rules')
+                log.warning(
+                    'Pool cannot be deleted because is referenced by one or more rules')
                 pass
             else:
                 raise e
@@ -353,7 +381,8 @@ class Generic(BasePlugin):
                 lbmethod=pls['pools_lbmethod'],
                 members=pls['pools_members']['members'])
 
-            pl.set_monitor_association(monitor_associations=monitor_associations)
+            pl.set_monitor_association(
+                monitor_associations=monitor_associations)
 
             pl.set_service_down_action(
                 names=pls['pools_names'],
@@ -385,7 +414,8 @@ class Generic(BasePlugin):
         except Exception, e:
             log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
-            template_names = [m for m in list(itertools.chain(*[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+            template_names = [m for m in list(itertools.chain(
+                *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
             if template_names != []:
                 mon.delete_template(
                     template_names=template_names
@@ -397,7 +427,8 @@ class Generic(BasePlugin):
             try:
                 if monitor_associations_nodes.get('nodes'):
                     nd = node.Node(self._lb)
-                    nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+                    nd.set_monitor_rule(
+                        monitor_associations=monitor_associations_nodes)
             except bigsuds.OperationFailed:
                 pass
 
@@ -415,7 +446,8 @@ class Generic(BasePlugin):
         mon = monitor.Monitor(self._lb)
 
         # get template currents
-        monitor_associations_old = pl.get_monitor_association(names=pls['pools_names'])
+        monitor_associations_old = pl.get_monitor_association(
+            names=pls['pools_names'])
 
         # creates templates
         monitor_associations, monitor_associations_nodes, templates_extra = mon.prepare_template(
@@ -429,7 +461,8 @@ class Generic(BasePlugin):
         try:
             self._lb._channel.System.Session.start_transaction()
 
-            pl.set_monitor_association(monitor_associations=monitor_associations)
+            pl.set_monitor_association(
+                monitor_associations=monitor_associations)
 
             pl.set_lb_method(
                 names=pls['pools_names'],
@@ -493,7 +526,8 @@ class Generic(BasePlugin):
 
                 if monitor_associations_nodes.get('nodes'):
                     nd = node.Node(self._lb)
-                    nd.set_monitor_rule(monitor_associations=monitor_associations_nodes)
+                    nd.set_monitor_rule(
+                        monitor_associations=monitor_associations_nodes)
 
                 if pls['pools_confirm']['pools_names']:
                     plm.set_member_monitor_state(
@@ -527,7 +561,8 @@ class Generic(BasePlugin):
 
         try:
             self._lb._channel.System.Session.start_transaction()
-            monitor_associations = pl.get_monitor_association(names=pls['pools_names'])
+            monitor_associations = pl.get_monitor_association(
+                names=pls['pools_names'])
             pl.remove_monitor_association(names=pls['pools_names'])
         except Exception, e:
             log.error(e)
@@ -542,7 +577,8 @@ class Generic(BasePlugin):
             except Exception, e:
                 log.error(e)
                 self._lb._channel.System.Session.rollback_transaction()
-                pl.set_monitor_association(monitor_associations=monitor_associations)
+                pl.set_monitor_association(
+                    monitor_associations=monitor_associations)
                 raise base_exceptions.CommandErrorException(e)
             else:
                 self._lb._channel.System.Session.submit_transaction()

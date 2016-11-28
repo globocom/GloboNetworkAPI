@@ -218,3 +218,9 @@ class BasePlugin(object):
         Remove poolmember
         """
         raise NotImplementedError()
+
+    def partial_update_vip(self, **kwargs):
+        """
+        Partial Update of VIP
+        """
+        raise NotImplementedError()

@@ -117,6 +117,29 @@ class VipRequestDeployView(APIView):
 
         return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
+    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
+    @permission_obj_apiview([deploy_vip_permission])
+    @raise_json_validate('vip_request_patch')
+    @logs_method_apiview
+    def patch(self, request, *args, **kwargs):
+        """
+        Updates list of vip request in equipments
+
+        """
+        vips = request.DATA
+        json_validate(SPECS.get('vip_request_patch')).validate(vips)
+        locks_list = create_lock(vips.get('vips'), LOCK_VIP)
+        try:
+            response = facade.patch_real_vip_request(
+                vips['vips'], request.user)
+        except Exception, exception:
+            log.error(exception)
+            raise api_exceptions.NetworkAPIException(exception)
+        finally:
+            destroy_lock(locks_list)
+
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+
 
 class VipRequestDBView(APIView):
 
