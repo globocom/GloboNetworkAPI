@@ -132,7 +132,7 @@ class VlanDBView(APIView):
         """
 
         obj_ids = kwargs['obj_ids'].split(';')
-        locks_list = facade.create_lock(obj_ids, LOCK_VLAN)
+        locks_list = create_lock(obj_ids, LOCK_VLAN)
         try:
             facade.delete_vlan(
                 obj_ids
