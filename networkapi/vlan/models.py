@@ -406,18 +406,29 @@ class Vlan(BaseModel):
 
     def activate(self, authenticated_user):
         """ Set column ativada = 1"""
-        from networkapi.vlan.serializers import VlanSerializer
 
         try:
             self.ativada = 1
             self.save()
+
+            vlan_slz = get_app('api_vlan', 'serializers')
+
+            serializer = vlan_slz.VlanV3Serializer(
+                self,
+                include=('environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.VLAN_ACTIVATE
+            })
+
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = VlanSerializer(self)
-            data_to_queue = serializer.data
-            data_to_queue.update({'description': queue_keys.VLAN_ACTIVATE})
-            queue_manager.append({'action': queue_keys.VLAN_ACTIVATE,
-                                  'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
+            queue_manager.append({
+                'action': queue_keys.VLAN_ACTIVATE,
+                'kind': queue_keys.VLAN_KEY,
+                'data': data_to_queue
+            })
             queue_manager.send()
 
         except Exception, e:
@@ -432,19 +443,29 @@ class Vlan(BaseModel):
 
             @raise VlanError: Exception
         """
-        from networkapi.vlan.serializers import VlanSerializer
-
         try:
 
             self.ativada = 0
             self.save()
+
+            vlan_slz = get_app('api_vlan', 'serializers')
+
+            serializer = vlan_slz.VlanV3Serializer(
+                self,
+                include=('environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.VLAN_DEACTIVATE
+            })
+
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = VlanSerializer(self)
-            data_to_queue = serializer.data
-            data_to_queue.update({'description': queue_keys.VLAN_DEACTIVATE})
-            queue_manager.append({'action': queue_keys.VLAN_DEACTIVATE,
-                                  'kind': queue_keys.VLAN_KEY, 'data': data_to_queue})
+            queue_manager.append({
+                'action': queue_keys.VLAN_DEACTIVATE,
+                'kind': queue_keys.VLAN_KEY,
+                'data': data_to_queue
+            })
             queue_manager.send()
 
         except Exception, e:

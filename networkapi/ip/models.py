@@ -381,20 +381,28 @@ class NetworkIPv4(BaseModel):
 
     def activate(self, authenticated_user):
 
-        from networkapi.api_network.serializers.v1 import NetworkIPv4Serializer
-
         try:
             self.active = 1
+            self.save()
+
+            net_slz = get_app('api_network', 'serializers.v3')
+            serializer = net_slz.NetworkIPv4V3Serializer(
+                self,
+                include=('vlan__details__environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv4_ACTIVATE
+            })
+
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = NetworkIPv4Serializer(self)
-            data_to_queue = serializer.data
-            data_to_queue.update(
-                {'description': queue_keys.NETWORKv4_ACTIVATE})
-            queue_manager.append({'action': queue_keys.NETWORKv4_ACTIVATE,
-                                  'kind': queue_keys.NETWORKv4_KEY, 'data': data_to_queue})
+            queue_manager.append({
+                'action': queue_keys.NETWORKv4_ACTIVATE,
+                'kind': queue_keys.NETWORKv4_KEY,
+                'data': data_to_queue
+            })
             queue_manager.send()
-            self.save()
 
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv4.')
@@ -780,9 +788,10 @@ class NetworkIPv4(BaseModel):
         """
 
         try:
-            net_slz = get_app('api_network', 'serializers.v3')
             self.active = 1
+            self.save()
 
+            net_slz = get_app('api_network', 'serializers.v3')
             serializer = net_slz.NetworkIPv4V3Serializer(
                 self,
                 include=('vlan__details__environment__basic',))
@@ -800,8 +809,6 @@ class NetworkIPv4(BaseModel):
                 'data': data_to_queue
             })
             queue_manager.send()
-
-            self.save()
 
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv4.')
@@ -1638,18 +1645,21 @@ class Ip(BaseModel):
 
                 ie.delete()
 
-            from networkapi.api_network.serializers.v1 import Ipv4Serializer
-            serializer = Ipv4Serializer(self)
+            ip_slz = get_app('api_ip', module_label='serializers')
+            serializer = ip_slz.Ipv4V3Serializer(self)
             data_to_queue = serializer.data
 
+            # Deletes Obj IP
             super(Ip, self).delete()
 
             # Sends to Queue
             queue_manager = QueueManager()
             data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
-            queue_manager.append(
-                {'action': queue_keys.IPv4_REMOVE, 'kind': queue_keys.IPv4_KEY, 'data': data_to_queue})
-            queue_manager.send()
+            queue_manager.append({
+                'action': queue_keys.IPv4_REMOVE,
+                'kind': queue_keys.IPv4_KEY,
+                'data': data_to_queue
+            })
 
         except EquipamentoAmbienteNotFoundError, e:
             raise EquipamentoAmbienteNotFoundError(None, e.message)
@@ -2268,20 +2278,30 @@ class NetworkIPv6(BaseModel):
 
     def activate(self, authenticated_user):
 
-        from networkapi.api_network.serializers.v1 import NetworkIPv6Serializer
-
         try:
             self.active = 1
             self.save()
+
+            net_slz = get_app('api_network', 'serializers.v3')
+
+            serializer = net_slz.NetworkIPv6V3Serializer(
+                self,
+                include=('vlan__details__environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv6_ACTIVATE
+            })
+
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = NetworkIPv6Serializer(self)
-            data_to_queue = serializer.data
-            data_to_queue.update(
-                {'description': queue_keys.NETWORKv6_ACTIVATE})
-            queue_manager.append({'action': queue_keys.NETWORKv6_ACTIVATE,
-                                  'kind': queue_keys.NETWORKv6_KEY, 'data': data_to_queue})
+            queue_manager.append({
+                'action': queue_keys.NETWORKv6_ACTIVATE,
+                'kind': queue_keys.NETWORKv6_KEY,
+                'data': data_to_queue
+            })
             queue_manager.send()
+
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv6.')
             raise NetworkIPv4Error(e, u'Error activating NetworkIPv6.')
@@ -2293,20 +2313,29 @@ class NetworkIPv6(BaseModel):
             @raise NetworkIPv6Error: Error disabling NetworkIPv6.
         """
 
-        from networkapi.api_network.serializers.v1 import NetworkIPv6Serializer
-
         try:
 
             self.active = 0
             self.save(authenticated_user, commit=commit)
+
+            net_slz = get_app('api_network', 'serializers.v3')
+
+            serializer = net_slz.NetworkIPv6V3Serializer(
+                self,
+                include=('vlan__details__environment__basic',))
+
+            data_to_queue = serializer.data
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv6_DEACTIVATE
+            })
+
             # Send to Queue
             queue_manager = QueueManager()
-            serializer = NetworkIPv6Serializer(self)
-            data_to_queue = serializer.data
-            data_to_queue.update(
-                {'description': queue_keys.NETWORKv6_DEACTIVATE})
-            queue_manager.append({'action': queue_keys.NETWORKv6_DEACTIVATE,
-                                  'kind': queue_keys.NETWORKv6_KEY, 'data': data_to_queue})
+            queue_manager.append({
+                'action': queue_keys.NETWORKv6_DEACTIVATE,
+                'kind': queue_keys.NETWORKv6_KEY,
+                'data': data_to_queue
+            })
             queue_manager.send()
         except Exception, e:
             self.log.error(u'Error disabling NetworkIPv6.')
@@ -2710,9 +2739,10 @@ class NetworkIPv6(BaseModel):
         """
 
         try:
-            net_slz = get_app('api_network', 'serializers.v3')
             self.active = 1
+            self.save()
 
+            net_slz = get_app('api_network', 'serializers.v3')
             serializer = net_slz.NetworkIPv6V3Serializer(
                 self,
                 include=('vlan__details__environment__basic',))
@@ -2730,8 +2760,6 @@ class NetworkIPv6(BaseModel):
                 'data': data_to_queue
             })
             queue_manager.send()
-
-            self.save()
 
         except Exception, e:
             self.log.error(u'Error activating NetworkIPv6.')
@@ -3593,17 +3621,22 @@ class Ipv6(BaseModel):
 
                 ie.delete()
 
-            from networkapi.api_network.serializers.v1 import Ipv6Serializer
-            serializer = Ipv6Serializer(self)
+            # Serializes obj
+            ip_slz = get_app('api_ip', module_label='serializers')
+            serializer = ip_slz.Ipv6V3Serializer(self)
             data_to_queue = serializer.data
 
-            super(Ipv6, self).delete()
+            # Deletes Obj IP
+            super(Ip, self).delete()
 
-            # Send to Queue
+            # Sends to Queue
             queue_manager = QueueManager()
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
-            queue_manager.append(
-                {'action': queue_keys.IPv6_REMOVE, 'kind': queue_keys.IPv6_KEY, 'data': data_to_queue})
+            queue_manager.append({
+                'action': queue_keys.IPv6_REMOVE,
+                'kind': queue_keys.IPv6_KEY,
+                'data': data_to_queue
+            })
             queue_manager.send()
 
         except EquipamentoAmbienteNotFoundError, e:
