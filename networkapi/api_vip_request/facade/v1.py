@@ -78,7 +78,8 @@ def get_by_pk(pk):
             ipv4 = pool_member.ip
             ipv6 = pool_member.ipv6
             ip_equipment_set = ipv4 and ipv4.ipequipamento_set or ipv6 and ipv6.ipv6equipament_set
-            ip_equipment_obj = ip_equipment_set.select_related().uniqueResult()
+            ip_equipment_obj = ip_equipment_set.select_related(
+                'ip').uniqueResult()
             healthcheck_type = pool_member.healthcheck and pool_member.healthcheck.healthcheck_type or ''
             pools_member_raw['healthcheck'] = {
                 'healthcheck_type': healthcheck_type}
