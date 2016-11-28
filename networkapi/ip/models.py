@@ -1667,8 +1667,9 @@ class Ip(BaseModel):
         @raise IpCantBeRemovedFromVip: Ip is associated with created
                                        Vip Request.
         """
+
         try:
-            for vip in self.viprequest.all():
+            for vip in self.viprequest_set.all():
                 id_vip = vip.id
                 with distributedlock(LOCK_VIP % id_vip):
                     if vip.created:
@@ -1999,7 +2000,7 @@ class IpEquipamento(BaseModel):
 
         if self.equipamento.tipo_equipamento == type_eqpt:
 
-            for vip in self.ip.viprequest.all():
+            for vip in self.ip.viprequest_set.all():
 
                 # Filter equipments to find another balancer
                 another_balancer = self.ip.ipequipamento_set.exclude(
@@ -3622,7 +3623,7 @@ class Ipv6(BaseModel):
                                        Vip Request.
         """
         try:
-            for vip in self.viprequest.all():
+            for vip in self.viprequest_set.all():
                 id_vip = vip.id
                 with distributedlock(LOCK_VIP % id_vip):
                     if vip.created:
@@ -3901,7 +3902,7 @@ class Ipv6Equipament(BaseModel):
 
         if self.equipamento.tipo_equipamento == type_eqpt:
 
-            for vip in self.ip.viprequest.all():
+            for vip in self.ip.viprequest_set.all():
 
                 # Filter equipments to find another balancer
                 another_balancer = self.ip.ipv6equipament_set.exclude(

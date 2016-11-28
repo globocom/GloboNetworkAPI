@@ -145,7 +145,7 @@ class VipRequest(BaseModel):
         if self.ipv4 and bypass_ipv4:
             if not self._is_ipv4_in_use(id_ipv4, id_vip):
                 try:
-                    self.ipv4.delete_v3(bypass_vip=True)
+                    self.ipv4.delete_v3()
                 except IpCantBeRemovedFromVip:
                     self.log.info(
                         'Tried to delete Ipv4, because assoc with in more Vips.')
@@ -158,7 +158,7 @@ class VipRequest(BaseModel):
         if self.ipv6 and bypass_ipv6 == '0':
             if not self._is_ipv6_in_use(id_ipv6, id_vip):
                 try:
-                    self.ipv6.delete_v3(bypass_vip=True)
+                    self.ipv6.delete_v3()
                 except IpCantBeRemovedFromVip:
                     self.log.info(
                         'Tried to delete Ipv6, because assoc with in more Vips.')
