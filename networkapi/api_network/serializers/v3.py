@@ -67,6 +67,14 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
                 'vlan': {
                     'obj': 'vlan_id'
                 },
+                'vlan__basic': {
+                    'serializer': vlan_slz.VlanV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'vlan',
+                    'eager_loading': cls.setup_eager_loading_vlan
+                },
                 'vlan__details': {
                     'serializer': vlan_slz.VlanV3Serializer,
                     'kwargs': {
@@ -216,6 +224,14 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
                 },
                 'vlan': {
                     'obj': 'vlan_id'
+                },
+                'vlan__basic': {
+                    'serializer': vlan_slz.VlanV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'vlan',
+                    'eager_loading': cls.setup_eager_loading_vlan
                 },
                 'vlan__details': {
                     'serializer': vlan_slz.VlanV3Serializer,

@@ -777,6 +777,7 @@ class Ambiente(BaseModel):
         """Returns routers of environment."""
         routers = self.equipamentoambiente_set.prefetch_related('equipamento')\
             .filter(is_router=True)
+        routers = [eqpt.equipamento for eqpt in routers]
 
         return routers
 

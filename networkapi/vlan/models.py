@@ -415,7 +415,16 @@ class Vlan(BaseModel):
 
             serializer = vlan_slz.VlanV3Serializer(
                 self,
-                include=('environment__basic',))
+                include=('environment__basic',),
+                exclude=(
+                    'acl_draft',
+                    'acl_draft_v6',
+                    'acl_valida_v6',
+                    'acl_file_name_v6',
+                    'acl_valida',
+                    'acl_file_name',
+                )
+            )
 
             data_to_queue = serializer.data
             data_to_queue.update({
@@ -452,7 +461,16 @@ class Vlan(BaseModel):
 
             serializer = vlan_slz.VlanV3Serializer(
                 self,
-                include=('environment__basic',))
+                include=('environment__basic',),
+                exclude=(
+                    'acl_draft',
+                    'acl_draft_v6',
+                    'acl_valida_v6',
+                    'acl_file_name_v6',
+                    'acl_valida',
+                    'acl_file_name',
+                )
+            )
 
             data_to_queue = serializer.data
             data_to_queue.update({
@@ -1058,7 +1076,16 @@ class Vlan(BaseModel):
 
             serializer = vlan_slz.VlanV3Serializer(
                 self,
-                include=('environment__basic',))
+                include=('environment__basic',),
+                exclude=(
+                    'acl_draft',
+                    'acl_draft_v6',
+                    'acl_valida_v6',
+                    'acl_file_name_v6',
+                    'acl_valida',
+                    'acl_file_name',
+                )
+            )
 
             data_to_queue = serializer.data
             data_to_queue.update({
@@ -1096,7 +1123,16 @@ class Vlan(BaseModel):
 
             serializer = vlan_slz.VlanV3Serializer(
                 self,
-                include=('environment__basic',))
+                include=('environment__basic',),
+                exclude=(
+                    'acl_draft',
+                    'acl_draft_v6',
+                    'acl_valida_v6',
+                    'acl_file_name_v6',
+                    'acl_valida',
+                    'acl_file_name',
+                )
+            )
 
             data_to_queue = serializer.data
             data_to_queue.update({
