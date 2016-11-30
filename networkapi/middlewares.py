@@ -16,8 +16,7 @@
 import logging
 
 from networkapi.api_rest.authentication import BasicAuthentication
-from networkapi.extra_logging.middleware import get_context
-from networkapi.extra_logging.middleware import get_identity
+from networkapi.extra_logging import local
 from networkapi.rest import RestResource
 # from django.conf import settings
 
@@ -60,8 +59,9 @@ class TrackingRequestOnThreadLocalMiddleware(object):
         from networkapi.eventlog.models import AuditRequest
         if not request.user.is_anonymous():
             ip = self._get_ip(request)
-            context = get_context(request)
-            identity = get_identity(request)
+            context = local.request_id
+            identity = local.request_context
+
             AuditRequest.new_request(request.get_full_path(), request.user,
                                      ip, identity, context)
         else:
@@ -74,8 +74,8 @@ class TrackingRequestOnThreadLocalMiddleware(object):
 
             if user is not None:
                 ip = self._get_ip(request)
-                context = get_context(request)
-                identity = get_identity(request)
+                context = local.request_id
+                identity = local.request_context
                 AuditRequest.new_request(request.get_full_path(), user,
                                          ip, identity, context)
 
