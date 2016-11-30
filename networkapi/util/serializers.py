@@ -138,48 +138,6 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     fd_key: field_filtered
                 })
 
-    # def recur(self, serializer, field, kind, queryset):
-    # import pdb; pdb.Pdb(skip=['django.*']).set_trace()  # breakpoint
-    # 62be846e //
-
-    #     try:
-    #         more = True
-    #         filtred_field, other_fields = self.get_main_key(field, kind)
-
-    #         key = serializer.get_serializers().get(field, {})
-
-    #         # one result?
-    #         if key.get('kwargs', {}).get('many', False) is False:
-    #             eager_loading = key.get('eager_loading', {})
-    #             if eager_loading:
-    #                 queryset = eager_loading(queryset)
-
-    #             if more:
-    #                 fields_class = None
-
-    #                 if kind == 'basic' and serializer.Meta.__dict__.get('basic_fields'):
-    #                     fields_class = serializer.Meta.basic_fields
-    #                 elif kind == 'details' and serializer.Meta.__dict__.get('details_fields'):
-    #                     fields_class = serializer.Meta.details_fields
-    #                 elif serializer.Meta.__dict__.get('default_fields'):
-    #                     fields_class = serializer.Meta.default_fields
-    #                 else:
-    #                     fields_class = serializer.Meta.fields
-
-    #                 all_fields = fields_class + (filtred_field,)
-
-    #             for f in all_fields:
-    #                 if key.get('serializer', {}):
-    #                     queryset = self.recur(key.get('serializer'), f, kind, queryset)
-
-    #             if key.get('serializer', {}):
-
-    #                 queryset = self.recur(key.get('serializer'), other_fields, kind, queryset)
-    #     except:
-    #         pass
-
-    #     return queryset
-
     def extends_serializer(self, obj, default_field):
 
         key = self.context.get('serializers').get(default_field, default_field)

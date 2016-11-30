@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -156,7 +156,7 @@ class NetworkAddResource(RestResource):
             blocks, network, version = break_network(network)
 
             expl = split(
-                net.network.exploded, "." if version == IP_VERSION.IPv4[0] else ":")
+                net.network.exploded, '.' if version == IP_VERSION.IPv4[0] else ':')
             expl.append(str(net.prefixlen))
 
             if blocks != expl:
@@ -167,7 +167,7 @@ class NetworkAddResource(RestResource):
             if version == IP_VERSION.IPv4[0]:
 
                 # Find all networks related to environment
-                nets = NetworkIPv4.objects.select_related().filter(
+                nets = NetworkIPv4.objects.filter(
                     vlan__ambiente__id=vlan.ambiente.id)
 
                 # Cast to API class
@@ -177,14 +177,15 @@ class NetworkAddResource(RestResource):
                 # If network selected not in use
                 for network_aux in networks:
                     if net in network_aux or network_aux in net:
-                        self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
+                        self.log.debug(
+                            'Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
                         raise NetworkIPv4AddressNotAvailableError(
                             None, u'Network cannot be allocated. %s already in use in this environment.' % network_aux)
 
                 if env_vip is not None:
 
                     # Find all networks related to environment vip
-                    nets = NetworkIPv4.objects.select_related().filter(
+                    nets = NetworkIPv4.objects.filter(
                         ambient_vip__id=env_vip.id)
 
                     # Cast to API class
@@ -195,7 +196,8 @@ class NetworkAddResource(RestResource):
                     # related the environment  vip
                     for network_aux in networks:
                         if net in network_aux or network_aux in net:
-                            self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
+                            self.log.debug(
+                                'Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
                             raise NetworkIPv4AddressNotAvailableError(
                                 None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network_aux)
 
@@ -264,7 +266,7 @@ class NetworkAddResource(RestResource):
 
             else:
                 # Find all networks ralated to environment
-                nets = NetworkIPv6.objects.select_related().filter(
+                nets = NetworkIPv6.objects.filter(
                     vlan__ambiente__id=vlan.ambiente.id)
 
                 # Cast to API class
@@ -274,14 +276,15 @@ class NetworkAddResource(RestResource):
                 # If network selected not in use
                 for network_aux in networks:
                     if net in network_aux or network_aux in net:
-                        self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
+                        self.log.debug(
+                            'Network %s cannot be allocated. It conflicts with %s already in use in this environment.' % (net, network))
                         raise NetworkIPv4AddressNotAvailableError(
                             None, u'Network cannot be allocated. %s already in use in this environment.' % network_aux)
 
                 if env_vip is not None:
 
                     # Find all networks related to environment vip
-                    nets = NetworkIPv6.objects.select_related().filter(
+                    nets = NetworkIPv6.objects.filter(
                         ambient_vip__id=env_vip.id)
 
                     # Cast to API class
@@ -292,7 +295,8 @@ class NetworkAddResource(RestResource):
                     # related the environment  vip
                     for network_aux in networks:
                         if net in network_aux or network_aux in net:
-                            self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
+                            self.log.debug(
+                                'Network %s cannot be allocated. It conflicts with %s already in use in this environment VIP.' % (net, network))
                             raise NetworkIPv4AddressNotAvailableError(
                                 None, u'Network cannot be allocated. %s already in use in this environment VIP.' % network_aux)
 
@@ -364,7 +368,8 @@ class NetworkAddResource(RestResource):
             equips = list()
             envs = list()
 
-            # equips = all equipments from the environment which this network is about to be allocated on
+            # equips = all equipments from the environment which this network
+            # is about to be allocated on
             for env in ambiente.equipamentoambiente_set.all():
                 equips.append(env.equipamento)
 
@@ -445,7 +450,8 @@ class NetworkAddResource(RestResource):
                                     user, ip_model.id, equip.equipamento.id)
 
                                 if multiple_ips:
-                                    router_ip = Ip.get_first_available_ip(network_ip.id, True)
+                                    router_ip = Ip.get_first_available_ip(
+                                        network_ip.id, True)
                                     router_ip = str(router_ip).split('.')
                                     ip_model2 = Ip()
                                     ip_model2.oct1 = router_ip[0]
@@ -489,7 +495,8 @@ class NetworkAddResource(RestResource):
                                     user, ipv6_model.id, equip.equipamento.id)
 
                                 if multiple_ips:
-                                    router_ip = Ipv6.get_first_available_ip6(network_ip.id, True)
+                                    router_ip = Ipv6.get_first_available_ip6(
+                                        network_ip.id, True)
                                     router_ip = str(router_ip).split(':')
                                     ipv6_model2 = Ipv6()
                                     ipv6_model2.block1 = router_ip[0]
@@ -561,10 +568,10 @@ def verify_subnet(vlan, network_ip, version):
     for net in vlan_net:
 
         if version == IP_VERSION.IPv4[0]:
-            ip = "%s.%s.%s.%s/%s" % (net.oct1,
+            ip = '%s.%s.%s.%s/%s' % (net.oct1,
                                      net.oct2, net.oct3, net.oct4, net.block)
         else:
-            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+            ip = '%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net.block1, net.block2, net.block3,
                                                  net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
 
         ip_net = IPNetwork(ip)
