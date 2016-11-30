@@ -54,8 +54,8 @@ class DHCPRelayIPv4(BaseModel):
         unique_together = ('ipv4', 'networkipv4')
 
     def create(self, ipv4_id, networkipv4_id):
-        ipv4_model = get_model('ip', 'Ipv6')
-        networkipv4_model = get_model('ip', 'NetworkIPv6')
+        ipv4_model = get_model('ip', 'Ip')
+        networkipv4_model = get_model('ip', 'NetworkIPv4')
 
         ipv4 = ipv4_model.get_by_pk(ipv4_id)
         networkipv4 = networkipv4_model.get_by_pk(networkipv4_id)

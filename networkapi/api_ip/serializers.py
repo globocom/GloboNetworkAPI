@@ -69,7 +69,7 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
             'oct1',
             'ip_formated',
             'networkipv4',
-            'description'
+            'description',
         )
 
     def get_networkipv4(self, obj):
@@ -243,13 +243,17 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
 
         details_fields = (
             'id',
-            'oct4',
-            'oct3',
-            'oct2',
-            'oct1',
+            'block1',
+            'block2',
+            'block3',
+            'block4',
+            'block5',
+            'block6',
+            'block7',
+            'block8',
             'ip_formated',
-            'networkipv4',
-            'description'
+            'networkipv6',
+            'description',
         )
 
     def get_networkipv6(self, obj):
