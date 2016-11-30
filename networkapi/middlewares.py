@@ -59,8 +59,8 @@ class TrackingRequestOnThreadLocalMiddleware(object):
         from networkapi.eventlog.models import AuditRequest
         if not request.user.is_anonymous():
             ip = self._get_ip(request)
-            context = local.request_id
-            identity = local.request_context
+            context = local.request_context
+            identity = local.request_id
 
             AuditRequest.new_request(request.get_full_path(), request.user,
                                      ip, identity, context)
@@ -74,8 +74,8 @@ class TrackingRequestOnThreadLocalMiddleware(object):
 
             if user is not None:
                 ip = self._get_ip(request)
-                context = local.request_id
-                identity = local.request_context
+                context = local.request_context
+                identity = local.request_id
                 AuditRequest.new_request(request.get_full_path(), user,
                                          ip, identity, context)
 
