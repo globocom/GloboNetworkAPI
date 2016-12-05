@@ -139,6 +139,8 @@ class VipRequest(BaseModel):
         if self.created:
             raise exceptions.VipConstraintCreated(id_vip)
 
+        self.delete_pools_related()
+
         self.delete()
 
         # delete Ipv4
@@ -219,7 +221,7 @@ class VipRequest(BaseModel):
 
         return pools
 
-    def remove(self):
+    def delete_pools_related(self):
         # Pools related with vip and was not created
         pools = self.get_pool_related(
             self.id
@@ -232,8 +234,6 @@ class VipRequest(BaseModel):
         for pool in pools:
             if pool not in pools_assoc:
                 pool.delete()
-
-        self.delete()
 
 
 class VipRequestOptionVip(BaseModel):
