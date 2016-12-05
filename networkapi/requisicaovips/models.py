@@ -507,6 +507,7 @@ class OptionVip(BaseModel):
 
 
 class RequisicaoVips(BaseModel):
+
     id = models.AutoField(
         primary_key=True,
         db_column='id_requisicao_vips'
@@ -1736,6 +1737,8 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def valid_real_server(cls, ip, equip, evip, valid=True):
+
+
         """Validation real server
 
         @param ip:     IPv4 or Ipv6. 'xxx.xxx.xxx.xxx or xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx'
@@ -1748,6 +1751,11 @@ class RequisicaoVips(BaseModel):
         @raise IpNotFoundError: IP is not registered.
         @raise IpError: Failed to search for the IP.
         """
+
+        Ip = get_model('ip', 'Ip')
+        IpNotFoundByEquipAndVipError = get_model('ip', 'IpNotFoundByEquipAndVipError')
+        Ipv6 = get_model('ip', 'Ipv6')
+
         if is_valid_ipv4(ip):
 
             ip_list = ip.split('.')

@@ -16,6 +16,7 @@ ServerPool = get_model('ServerPool', 'ServerPool')
 
 
 class VipRequest(BaseModel):
+
     log = logging.getLogger('VipRequest')
 
     id = models.AutoField(
@@ -238,6 +239,8 @@ class VipRequest(BaseModel):
 
 class VipRequestOptionVip(BaseModel):
 
+    log = logging.getLogger('VipRequestOptionVip')
+
     id = models.AutoField(
         primary_key=True,
         db_column='id'
@@ -340,6 +343,8 @@ class VipRequestOptionVip(BaseModel):
 
 class VipRequestPort(BaseModel):
 
+    log = logging.getLogger('VipRequestPort')
+
     id = models.AutoField(
         primary_key=True,
         db_column='id'
@@ -402,6 +407,8 @@ class VipRequestPort(BaseModel):
 
 class VipRequestPortOptionVip(BaseModel):
 
+    log = logging.getLogger('VipRequestPortOptionVip')
+
     id = models.AutoField(
         primary_key=True,
         db_column='id'
@@ -448,6 +455,8 @@ class VipRequestPortOptionVip(BaseModel):
 
 
 class VipRequestPortPool(BaseModel):
+
+    log = logging.getLogger('VipRequestPortPool')
 
     id = models.AutoField(
         primary_key=True,
@@ -515,6 +524,8 @@ class VipRequestPortPool(BaseModel):
 
 class VipRequestDSCP(BaseModel):
 
+    log = logging.getLogger('VipRequestDSCP')
+
     id = models.AutoField(
         primary_key=True,
         db_column='id'
@@ -560,6 +571,9 @@ class VipRequestDSCP(BaseModel):
 
 
 class VipRequestGroupPermission(BaseModel):
+
+    log = logging.getLogger('VipRequestGroupPermission')
+    
     id = models.AutoField(
         primary_key=True,
         db_column='id'
