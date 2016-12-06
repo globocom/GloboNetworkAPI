@@ -11,9 +11,6 @@ from networkapi.api_vip_request import syncs
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.decorators import cached_property
 
-IpCantBeRemovedFromVip = get_model('ip', 'IpCantBeRemovedFromVip')
-ServerPool = get_model('ServerPool', 'ServerPool')
-
 
 class VipRequest(BaseModel):
 
@@ -133,6 +130,8 @@ class VipRequest(BaseModel):
         @raise VipConstraintCreated: Vip request can not be deleted
                                      because it is created in equipment.
         """
+        ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
+
         id_vip = self.id
         id_ipv4 = self.ipv4
         id_ipv6 = self.ipv6
@@ -145,11 +144,12 @@ class VipRequest(BaseModel):
         self.delete()
 
         # delete Ipv4
-        if self.ipv4 and bypass_ipv4:
+        if self.ipv4 and bypass_ipv4 is False:
+
             if not self._is_ipv4_in_use(id_ipv4, id_vip):
                 try:
                     self.ipv4.delete_v3()
-                except IpCantBeRemovedFromVip:
+                except ipcantberemovedfromvip:
                     self.log.info(
                         'Tried to delete Ipv4, because assoc with in more Vips.')
                     pass
@@ -158,11 +158,11 @@ class VipRequest(BaseModel):
                     raise Exception('Error to delete Ipv4: %s.', e)
 
         # delete Ipv6
-        if self.ipv6 and bypass_ipv6 == '0':
+        if self.ipv6 and bypass_ipv6 is False:
             if not self._is_ipv6_in_use(id_ipv6, id_vip):
                 try:
                     self.ipv6.delete_v3()
-                except IpCantBeRemovedFromVip:
+                except ipcantberemovedfromvip:
                     self.log.info(
                         'Tried to delete Ipv6, because assoc with in more Vips.')
                     pass
@@ -216,13 +216,16 @@ class VipRequest(BaseModel):
 
     @classmethod
     def get_pool_related(cls, id_vip):
-        pools = ServerPool.objects.filter(
+        sp_model = get_model('requisicaovips', 'ServerPool')
+
+        pools = sp_model.objects.filter(
             viprequestportpool__vip_request_port__vip_request__id=id_vip
         ).distinct()
 
         return pools
 
     def delete_pools_related(self):
+
         # Pools related with vip and was not created
         pools = self.get_pool_related(
             self.id
@@ -573,7 +576,7 @@ class VipRequestDSCP(BaseModel):
 class VipRequestGroupPermission(BaseModel):
 
     log = logging.getLogger('VipRequestGroupPermission')
-    
+
     id = models.AutoField(
         primary_key=True,
         db_column='id'
