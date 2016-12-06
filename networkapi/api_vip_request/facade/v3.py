@@ -180,7 +180,7 @@ def delete_vip_request(vip_request_ids, keep_ip='0'):
 
     for vip_request_id in vip_request_ids:
         vp = models.VipRequest.get_by_pk(vip_request_id)
-        bypass_ip = True if keep_ip == '0' else False
+        bypass_ip = True if keep_ip == '1' else False
         vp.delete_v3(bypass_ipv4=bypass_ip, bypass_ipv6=bypass_ip)
 
 
