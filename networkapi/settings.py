@@ -43,6 +43,7 @@ LOG_SHOW_SQL = os.getenv('NETWORKAPI_LOG_SHOW_SQL', '0') == '1'
 LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
 LOG_USE_STDOUT = False
 LOG_SHOW_TRACEBACK = True
+RQ_SHOW_ADMIN_LINK = True
 
 # Inicialização do log
 # O primeiro parâmetro informa o nome do arquivo de log a ser gerado.
@@ -93,6 +94,27 @@ CACHES = {
     }
 }
 
+
+NETWORKAPI_RQ_QUEUES_HOST = os.getenv('NETWORKAPI_RQ_QUEUES_HOST', 'localhost')
+NETWORKAPI_RQ_QUEUES_PORT = os.getenv('NETWORKAPI_RQ_QUEUES_PORT', '6379')
+NETWORKAPI_RQ_QUEUES_DB = os.getenv('NETWORKAPI_RQ_QUEUES_DB', '0')
+NETWORKAPI_RQ_QUEUES_PASSWORD = os.getenv('NETWORKAPI_RQ_QUEUES_PASSWORD', '')
+NETWORKAPI_RQ_QUEUES_TIMEOUT = os.getenv('NETWORKAPI_RQ_QUEUES_TIMEOUT', '360')
+
+# # Use the same redis as with caches for RQ
+RQ_QUEUES = {
+    'default': {
+        'HOST': NETWORKAPI_RQ_QUEUES_HOST,
+        'PORT': NETWORKAPI_RQ_QUEUES_PORT,
+        'DB': NETWORKAPI_RQ_QUEUES_DB,
+        'PASSWORD': NETWORKAPI_RQ_QUEUES_PASSWORD,
+        'DEFAULT_TIMEOUT': NETWORKAPI_RQ_QUEUES_TIMEOUT,
+    },
+
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
 
 # Diretório dos arquivos dos scripts
 # SCRIPTS_DIR = os.path.abspath(os.path.join(__file__, '../../scripts'))
@@ -183,6 +205,11 @@ LOGGING = {
         'django.db.backends': {
             'level': LOG_DB_LEVEL,
             'propagate': False,
+            'handlers': ['log_file'],
+        },
+        'rq.worker': {
+            'level': LOG_LEVEL,
+            'propagate': True,
             'handlers': ['log_file'],
         },
     },
@@ -325,6 +352,7 @@ PROJECT_APPS = (
     'networkapi.tipoacesso',
     'networkapi.usuario',
     'networkapi.vlan',
+    'django_rq',
 )
 
 # Third party apps
@@ -375,25 +403,30 @@ MAX_OCT4 = 250
 # SPECS #
 #########
 SPECS = {
-    'pool_post': 'networkapi/api_pools/specs/pool_post.json',
-    'pool_put': 'networkapi/api_pools/specs/pool_put.json',
-    'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json',
-    'vip_request_post': 'networkapi/api_vip_request/specs/vip_post.json',
-    'vip_request_put': 'networkapi/api_vip_request/specs/vip_put.json',
-    'vip_request_patch': 'networkapi/api_vip_request/specs/vip_patch.json',
     'environment_post': 'networkapi/api_environment/specs/env_post.json',
     'environment_put': 'networkapi/api_environment/specs/env_put.json',
+    'environment_vip_post': 'networkapi/api_environment_vip/specs/env_post.json',
     'environment_vip_put': 'networkapi/api_environment_vip/specs/env_put.json',
-    'vlan_put': 'networkapi/api_vlan/specs/vlan_put.json',
-    'vlan_post': 'networkapi/api_vlan/specs/vlan_post.json',
-    'networkv4_put': 'networkapi/api_network/specs/netv4_put.json',
-    'networkv4_post': 'networkapi/api_network/specs/netv4_post.json',
-    'networkv6_put': 'networkapi/api_network/specs/netv6_put.json',
-    'networkv6_post': 'networkapi/api_network/specs/netv6_post.json',
-    'vrf_post': 'networkapi/api_vrf/specs/vrf_post.json',
-    'vrf_put': 'networkapi/api_vrf/specs/vrf_put.json',
     'equipment_post': 'networkapi/api_equipment/specs/equipment_post.json',
     'equipment_put': 'networkapi/api_equipment/specs/equipment_put.json',
+    'ipv4_post': 'networkapi/api_ip/specs/ipv4_post.json',
+    'ipv4_put': 'networkapi/api_ip/specs/ipv4_put.json',
+    'ipv6_post': 'networkapi/api_ip/specs/ipv6_post.json',
+    'ipv6_put': 'networkapi/api_ip/specs/ipv6_put.json',
+    'networkv4_post': 'networkapi/api_network/specs/netv4_post.json',
+    'networkv4_put': 'networkapi/api_network/specs/netv4_put.json',
+    'networkv6_post': 'networkapi/api_network/specs/netv6_post.json',
+    'networkv6_put': 'networkapi/api_network/specs/netv6_put.json',
+    'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json',
+    'pool_post': 'networkapi/api_pools/specs/pool_post.json',
+    'pool_put': 'networkapi/api_pools/specs/pool_put.json',
+    'vip_request_patch': 'networkapi/api_vip_request/specs/vip_patch.json',
+    'vip_request_post': 'networkapi/api_vip_request/specs/vip_post.json',
+    'vip_request_put': 'networkapi/api_vip_request/specs/vip_put.json',
+    'vlan_post': 'networkapi/api_vlan/specs/vlan_post.json',
+    'vlan_put': 'networkapi/api_vlan/specs/vlan_put.json',
+    'vrf_post': 'networkapi/api_vrf/specs/vrf_post.json',
+    'vrf_put': 'networkapi/api_vrf/specs/vrf_put.json',
 }
 
 ##########

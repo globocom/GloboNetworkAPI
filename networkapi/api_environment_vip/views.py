@@ -37,6 +37,7 @@ class OptionVipEnvironmentVipOneView(APIView):
         Return option vip object list
         """
         try:
+
             environment_vip_id = kwargs['environment_vip_id']
 
             options_vip = facade.get_option_vip_by_environment_vip_ids(
@@ -45,6 +46,7 @@ class OptionVipEnvironmentVipOneView(APIView):
             if options_vip:
                 options_vip = options_vip[0]
 
+            self.include += ('option_details',)
             serializer_options = serializers.OptionVipEnvironmentVipV3Serializer(
                 options_vip,
                 many=True,
@@ -78,6 +80,7 @@ class EnvironmentVipStepOneView(APIView):
         """
 
         try:
+
             data = request.GET
 
             finality = data.get('finality', '')
@@ -121,17 +124,18 @@ class EnvironmentVipView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Method to return environment vip list.
-        Param environment_vip_ids: environment_vip_ids
+        Param obj_ids: obj_ids
         """
         try:
-            if not kwargs.get('environment_vip_ids'):
-                raise NotImplemented()
+            if not kwargs.get('obj_id'):
+                obj_model = facade.get_environmentvip_by_search(self.search)
+                environments_vip = obj_model['query_set']
+                only_main_property = False
             else:
-                environment_vip_ids = kwargs['environment_vip_ids'].split(';')
-
-                environments_vip = facade.get_environmentvip_by_ids(
-                    environment_vip_ids)
+                obj_ids = kwargs['obj_id'].split(';')
+                environments_vip = facade.get_environmentvip_by_ids(obj_ids)
                 only_main_property = True
+                obj_model = None
 
             environmentvip_serializer = serializers.EnvironmentVipV3Serializer(
                 environments_vip,
@@ -146,7 +150,7 @@ class EnvironmentVipView(APIView):
             response = render_to_json(
                 environmentvip_serializer,
                 main_property='environments_vip',
-                obj_model=environments_vip,
+                obj_model=obj_model,
                 request=request,
                 only_main_property=only_main_property
             )
@@ -173,6 +177,35 @@ class EnvironmentVipView(APIView):
                 'id': ret.id,
                 'msg': 'success'
             })
+
+        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('environment_vip_post')
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+
+        envs = request.DATA
+        json_validate(SPECS.get('environment_vip_post')).validate(envs)
+        response = list()
+        for env in envs['environments_vip']:
+
+            ret = facade.create_environment_vip(env)
+            response.append({
+                'id': ret.id
+            })
+
+        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+
+        response = {}
+        obj_ids = kwargs['obj_id'].split(';')
+        facade.delete_environment_vip(obj_ids)
 
         return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 

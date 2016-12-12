@@ -28,5 +28,6 @@ python manage.py clean_pyc --path /vagrant/networkapi/
 
 echo "starting gunicorn"
 /usr/local/bin/gunicorn  -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
-
+killall rqworker.sh
+#./rqworker.sh &
 tail -f /tmp/networkapi.log

@@ -60,16 +60,17 @@ def _prepare_apply(pools, user):
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
-            if 'Brocade' in plugin.__module__:
-                serializer_vips = serializers_vip.VipRequestV3Serializer(
-                    vips_requests,
-                    many=True,
-                    kind='details',
-                    include=('ports__identifier',)
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
+                vips_requests,
+                many=True,
+                include=(
+                    'ipv4__details',
+                    'ipv6__details',
+                    'ports__identifier',
+                    'ports__pools__server_pool__basic__lb_method',
                 )
-                vips = serializer_vips.data
-            else:
-                vips = []
+            )
+            vips = serializer_vips.data
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -261,16 +262,17 @@ def update_real_pool(pools, user):
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
-            if 'Brocade' in plugin.__module__:
-                serializer_vips = serializers_vip.VipRequestV3Serializer(
-                    vips_requests,
-                    many=True,
-                    kind='details',
-                    include=('ports__identifier',)
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
+                vips_requests,
+                many=True,
+                include=(
+                    'ipv4__details',
+                    'ipv6__details',
+                    'ports__identifier',
+                    'ports__pools__server_pool__basic__lb_method',
                 )
-                vips = serializer_vips.data
-            else:
-                vips = []
+            )
+            vips = serializer_vips.data
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],

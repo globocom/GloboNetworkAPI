@@ -11,9 +11,6 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer"
-          },
           "finalidade_txt": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9\\-_ ]*$",
@@ -65,7 +62,6 @@
           }
         },
         "required": [
-          "id",
           "finalidade_txt",
           "cliente_txt",
           "ambiente_p44_txt",

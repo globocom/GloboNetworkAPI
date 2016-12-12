@@ -18,6 +18,7 @@ api_prefix = r'^api/'
 
 urlpatterns = patterns(
     '',
+    url(r'^django-rq/', include('django_rq.urls')),
     # new API URL patterns are all prefixed with '/api/'
     url(api_prefix, include('networkapi.api_deploy.urls')),
     url(api_prefix, include('networkapi.api_environment.urls')),

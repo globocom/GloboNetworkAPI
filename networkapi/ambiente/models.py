@@ -24,6 +24,7 @@ from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 
+from networkapi.api_pools import exceptions
 from networkapi.api_vrf.models import Vrf
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
@@ -409,6 +410,18 @@ class EnvironmentVip(BaseModel):
 
     name = property(_get_name)
 
+    def _get_environments(self):
+        """Returns list of EnvironmentEnvironmentvip."""
+        return self.environmentenvironmentvip_set.all()
+
+    environments = property(_get_environments)
+
+    def _get_environments_vip(self):
+        """Returns list of OptionvipEnvironmentvip."""
+        return self.optionvipenvironmentvip_set.all()
+
+    optionsvip = property(_get_environments_vip)
+
     @classmethod
     def get_by_pk(cls, id):
         """"Get  Environment Vip by id.
@@ -602,6 +615,105 @@ class EnvironmentVip(BaseModel):
             option_environment.delete()
 
         super(EnvironmentVip, self).delete()
+
+    def delete_v3(self):
+        # Deletes options related
+        self.optionvipenvironmentvip_set\
+            .filter(environment_id=self.id).delete()
+
+        # Deletes environment related
+        self.environmentenvironmentvip_set\
+            .filter(environment_vip_id=self.id).delete()
+
+        self.delete()
+
+    def create_v3(self, env_map):
+        optionvip_model = get_model('requisicaovips', 'OptionVip')
+        optionvipenvvip_model = get_model(
+            'requisicaovips', 'OptionVipEnvironmentVip')
+
+        default_conf = '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+        self.conf = env_map.get('conf', default_conf)
+
+        optionsvip = env_map.get('optionsvip', None)
+        environments = env_map.get('environments', None)
+
+        self.save()
+
+        if optionsvip is not None:
+            optionsvip = [opt.get('option') for opt in optionsvip]
+            for optionvip in optionsvip:
+                option = optionvip_model.get_by_pk(optionvip)
+                optenv_obj = optionvipenvvip_model()
+                optenv_obj.option = option
+                optenv_obj.environment = self
+                optenv_obj.save()
+
+        if environments is not None:
+            environments = [opt.get('environment') for opt in environments]
+            for environment in environments:
+                env = Ambiente.get_by_pk(environment)
+                envenv_obj = EnvironmentEnvironmentVip()
+                envenv_obj.environment = env
+                envenv_obj.environment_vip = self
+                envenv_obj.validate()
+                envenv_obj.save()
+
+    def update_v3(self, env_map):
+        optionvip_model = get_model('requisicaovips', 'OptionVip')
+        optionvipenvvip_model = get_model(
+            'requisicaovips', 'OptionVipEnvironmentVip')
+        self.valid_environment_vip(env_map)
+
+        conf = env_map.get('conf', None)
+        if conf is not None:
+            self.conf = conf
+
+        optionsvip = env_map.get('optionsvip', None)
+        environments = env_map.get('environments', None)
+
+        self.save()
+
+        if optionsvip is not None:
+            optionsvip = [opt.get('option') for opt in optionsvip]
+
+            # Deletes old relationships
+            self.optionvipenvironmentvip_set\
+                .exclude(option__in=optionsvip).delete()
+
+            options_rel = self.optionvipenvironmentvip_set\
+                .filter(option__in=optionsvip).values_list('option', flat=True)
+
+            # Creates new relationships
+            optionsvip_filter = list(set(optionsvip) - set(options_rel))
+            for optionvip in optionsvip_filter:
+                option = optionvip_model.get_by_pk(optionvip)
+                optenv_obj = optionvipenvvip_model()
+                optenv_obj.option = option
+                optenv_obj.environment = self
+                optenv_obj.save()
+
+        if environments is not None:
+            environments = [env_dict.get('environment')
+                            for env_dict in environments]
+
+            # Deletes old relationships
+            self.environmentenvironmentvip_set\
+                .exclude(environment__in=environments).delete()
+
+            envs_rel = self.environmentenvironmentvip_set\
+                .filter(environment__in=environments)\
+                .values_list('environment', flat=True)
+
+            # Creates new relationships
+            environments_filter = list(set(environments) - set(envs_rel))
+            for environment in environments_filter:
+                env = Ambiente.get_by_pk(environment)
+                envenv_obj = EnvironmentEnvironmentVip()
+                envenv_obj.environment = env
+                envenv_obj.environment_vip = self
+                envenv_obj.validate()
+                envenv_obj.save()
 
     def show_environment_vip(self):
         return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
@@ -1078,6 +1190,155 @@ class Ambiente(BaseModel):
         )
 
         return envvip_model
+
+    def create_v3(self, env_map):
+        self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
+        self.ambiente_logico = AmbienteLogico\
+            .get_by_pk(env_map.get('ambiente_logico'))
+        self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
+
+        if env_map.get('filter', None):
+            self.filter = Filter.get_by_pk(env_map.get('filter'))
+        else:
+            self.filter = None
+
+        if env_map.get('father_environment'):
+            self.father_environment = Ambiente\
+                .get_by_pk(env_map.get('father_environment'))
+        else:
+            self.father_environment = None
+
+        self.acl_path = env_map.get('acl_path')
+        self.ipv4_template = env_map.get('ipv4_template')
+        self.ipv6_template = env_map.get('ipv6_template')
+        self.link = env_map.get('link')
+        self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
+        self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
+        self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
+        self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
+        self.vrf = env_map.get('vrf')
+        self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+        self.validate_v3()
+        self.save()
+
+        # save configs
+        for config in env_map.get('configs'):
+            IPConfig.create(self.id, config)
+
+    def update_v3(self, env_map):
+        self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
+        self.ambiente_logico = AmbienteLogico\
+            .get_by_pk(env_map.get('ambiente_logico'))
+        self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
+
+        if env_map.get('filter', None):
+            self.filter = Filter.get_by_pk(env_map.get('filter'))
+        else:
+            self.filter = None
+
+        if env_map.get('father_environment'):
+            self.father_environment = Ambiente\
+                .get_by_pk(env_map.get('father_environment'))
+        else:
+            self.father_environment = None
+
+        self.acl_path = env_map.get('acl_path')
+        self.ipv4_template = env_map.get('ipv4_template')
+        self.ipv6_template = env_map.get('ipv6_template')
+        self.link = env_map.get('link')
+        self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
+        self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
+        self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
+        self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
+        self.vrf = env_map.get('vrf')
+        self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+        self.validate_v3()
+
+        self.save()
+
+        configs = env_map.get('configs')
+        if configs is not None:
+            ips_by_env = IPConfig.get_by_environment(None, self.id)
+            ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+
+            # configs with ids
+            ids_conf_receive = [cfg.get('id') for cfg in configs
+                                if cfg.get('id')]
+
+            # configs to update: configs with id
+            cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                       cfg.get('id') in ids_conf_current]
+
+            # configs to create: configs without id
+            cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+
+            # configs to delete: configs not received
+            cfg_del = [id_conf for id_conf in ids_conf_current
+                       if id_conf not in ids_conf_receive]
+
+            self.update_configs(cfg_upt, self.id)
+            self.create_configs(cfg_ins, self.id)
+            self.delete_configs(cfg_del, self.id)
+
+    def validate_v3(self):
+
+        try:
+            Ambiente.objects.filter(
+                grupo_l3=self.grupo_l3,
+                ambiente_logico=self.ambiente_logico,
+                divisao_dc=self.divisao_dc
+            ).exclude(id=self.id).uniqueResult()
+        except ObjectDoesNotExist:
+            pass
+        except Exception, e:
+            raise AmbienteError(e, u'Failed to search Environment.')
+        else:
+            raise AmbienteDuplicatedError(None, u'Duplicate Environment.')
+
+    def update_configs(self, configs, env_id):
+        """
+        Update configs of environment
+
+        :param configs: Configs of environment
+        :param env: Id of environment
+        """
+        for config in configs:
+            try:
+                ip_config = IPConfig.objects.get(
+                    id=config.get('id'),
+                    configenvironment__environment=env_id
+                )
+            except ObjectDoesNotExist:
+                raise exceptions.ConfigIpDoesNotExistException()
+
+            ip_config.subnet = config.get('subnet')
+            ip_config.new_prefix = config.get('new_prefix')
+            ip_config.type = config.get('type')
+            ip_config.network_type_id = config.get('network_type')
+
+            ip_config.save()
+
+    def create_configs(self, configs, env_id):
+        """
+        Create configs of environment
+
+        :param configs: Configs of environment
+        :param env: Id of environment
+        """
+
+        for config in configs:
+            IPConfig.create(env_id, config)
+
+    def delete_configs(self, configs_ids, env_id):
+        """
+        Delete configs of environment
+
+        :param configs_ids: Id of Configs of environment
+        :param env: Id of environment
+        """
+
+        for config_id in configs_ids:
+            IPConfig.remove(None, None, env_id, config_id)
 
 
 class IP_VERSION:

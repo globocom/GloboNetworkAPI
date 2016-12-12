@@ -20,6 +20,7 @@ from networkapi.settings import MAX_VLAN_NUMBER_02
 from networkapi.settings import MIN_VLAN_NUMBER_01
 from networkapi.settings import MIN_VLAN_NUMBER_02
 from networkapi.util import clone
+from networkapi.util import network
 from networkapi.util.decorators import cached_property
 from networkapi.util.geral import get_app
 
@@ -1154,7 +1155,7 @@ class Vlan(BaseModel):
             self.log.error(u'Error disabling Vlan.')
             raise VlanError(e, u'Error disabling Vlan.')
 
-    def get_environment_related(self):
+    def get_environment_related(self, use_vrf=True):
 
         env_model = get_model('ambiente', 'Ambiente')
 
@@ -1162,12 +1163,17 @@ class Vlan(BaseModel):
             # get environment or environment assoc with equipments
             # of current vlan
             equipamentoambiente__equipamento__in=self.get_eqpt()
-        ).filter(
-            # get vlans with customized vrfs of current vlan
-            Q(vlan__vrfvlanequipment__vrf__in=self.get_vrf()) |
-            # get environments using vrfs of current vlan
-            Q(default_vrf__in=self.get_vrf())
-        ).distinct()
+        )
+
+        if use_vrf is True:
+            envs = envs.filter(
+                # get vlans with customized vrfs of current vlan
+                Q(vlan__vrfvlanequipment__vrf__in=self.get_vrf()) |
+                # get environments using vrfs of current vlan
+                Q(default_vrf__in=self.get_vrf())
+            )
+
+        envs = envs.distinct()
 
         return envs
 
@@ -1226,8 +1232,8 @@ class Vlan(BaseModel):
         netv6_format = [IPNetwork(net.networkv6)
                         for net in self.networkipv6_set.all()]
 
-        self.verify_networks(netv4_format, netv4_env_format)
-        self.verify_networks(netv6_format, netv6_env_format)
+        network.verify_networks(netv4_format, netv4_env_format)
+        network.verify_networks(netv6_format, netv6_env_format)
 
     def allow_networks_environment(self, configs, netv4, netv6):
         """
@@ -1244,7 +1250,7 @@ class Vlan(BaseModel):
 
             net_ip = [IPNetwork(net.networkv4)]
 
-            if not self.verify_intersect(nts, net_ip)[0]:
+            if not network.verify_intersect(nts, net_ip)[0]:
                 raise Exception(
                     'Network can not inserted in environment %s because '
                     'network %s are in out of the range of allowed networks ' %
@@ -1260,82 +1266,38 @@ class Vlan(BaseModel):
 
             net_ip = [IPNetwork(net.networkv6)]
 
-            if not self.verify_intersect(nts, net_ip)[0]:
+            if not network.verify_intersect(nts, net_ip)[0]:
                 raise Exception(
                     'Network can not inserted in environment %s because '
                     'network %s are in out of the range of allowed networks ' %
                     (self.ambiente.name, net.networkv6)
                 )
 
-    def prepare_networks(self, netv4, netv6):
-        """
-            Make a dict where key is block of network and value is a list
-            network with block.
-        """
+    # def prepare_networks(self, netv4, netv6):
+    #     """
+    #         Make a dict where key is block of network and value is a list
+    #         network with block.
+    #     """
 
-        netv4_dict = dict()
-        for net in netv4:
-            if not netv4_dict.get(net.block):
-                netv4_dict.update({
-                    net.block: list()
-                })
-            nt = IPNetwork(net.networkv4)
-            netv4_dict[net.block].append(nt)
+    #     netv4_dict = dict()
+    #     for net in netv4:
+    #         if not netv4_dict.get(net.block):
+    #             netv4_dict.update({
+    #                 net.block: list()
+    #             })
+    #         nt = IPNetwork(net.networkv4)
+    #         netv4_dict[net.block].append(nt)
 
-        netv6_dict = dict()
-        for net in netv6:
-            if not netv6_dict.get(net.block):
-                netv6_dict.update({
-                    net.block: list()
-                })
-            nt = IPNetwork(net.networkv6)
-            netv6_dict[net.block].append(nt)
+    #     netv6_dict = dict()
+    #     for net in netv6:
+    #         if not netv6_dict.get(net.block):
+    #             netv6_dict.update({
+    #                 net.block: list()
+    #             })
+    #         nt = IPNetwork(net.networkv6)
+    #         netv6_dict[net.block].append(nt)
 
-        return netv4_dict, netv6_dict
-
-    def verify_networks(self, subnets, supernets):
-        """
-            Verify a list of networks has make intersect with a second list
-            and contrariwise.
-        """
-
-        subnet, supernet = self.verify_intersect(supernets, subnets)
-        if subnet or supernet:
-            raise Exception(
-                'One of the equipment associated with the environment '
-                'of this Vlan is also associated with other environment '
-                'that has a network with the same track, add filters in '
-                'environments if necessary. Your Network: %s, Network'
-                'already created: %s' % (subnet, supernet))
-
-        subnet, supernet = self.verify_intersect(subnets, supernets)
-        if subnet or supernet:
-            raise Exception(
-                'One of the equipment associated with the environment '
-                'of this Vlan is also associated with other environment '
-                'that has a network with the same track, add filters in '
-                'environments if necessary. Your Network: %s, Network'
-                'already created: %s' % (supernet, subnet))
-
-    def verify_intersect(self, supernets, subnets):
-        """
-            Verify if a item of a list of networks has make intersect
-            with a second list.
-        """
-
-        for supernet in supernets:
-            try:
-                # has subnet is inside of supernet
-                for subnet in subnets:
-                    if subnet in supernet:
-                        self.log.debug(
-                            'Subnet %s is inside of supernet: %s' %
-                            (subnet, supernet))
-                        return subnet, supernet
-            except:
-                pass
-
-        return None, None
+    #     return netv4_dict, netv6_dict
 
     def allocate_vlan(self):
         """

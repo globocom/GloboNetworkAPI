@@ -151,6 +151,7 @@ class VipRequestDBView(APIView):
         Returns a list of vip request by ids ou dict
         """
         try:
+
             if not kwargs.get('vip_request_ids'):
 
                 obj_model = facade.get_vip_request_by_search(self.search)
@@ -249,7 +250,7 @@ class VipRequestDBView(APIView):
 
         vip_request_ids = kwargs['vip_request_ids'].split(';')
         locks_list = create_lock(vip_request_ids, LOCK_VIP)
-        keepip = request.GET.get('keepip') or '0'
+        keepip = request.GET.get('keepip', '0')
         try:
             facade.delete_vip_request(
                 vip_request_ids, keepip)
