@@ -25,4 +25,4 @@ class FilterV3Serializer(DynamicFieldsModelSerializer):
     @classmethod
     def get_serializers(cls):
         """Returns the mapping of serializers."""
-        pass
+        return {}

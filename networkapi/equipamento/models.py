@@ -26,8 +26,6 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.roteiro.models import Roteiro
 from networkapi.tipoacesso.models import TipoAcesso
 
-IpCantBeRemovedFromVip = get_model('ip', 'IpCantBeRemovedFromVip')
-
 
 class EquipamentoError(Exception):
 
@@ -1066,6 +1064,44 @@ class EquipamentoAmbiente(BaseModel):
     def get_routers_by_environment(cls, environment_id):
         return EquipamentoAmbiente.objects.select_related('equipamento')\
             .filter(ambiente=environment_id, is_router=True)
+
+    def create_v3(self, eqpt_env_map):
+        """
+        Insert a new relashionship between an equipment and an environment.
+
+        @return: Nothing
+
+        @raise AmbienteNotFoundError: Environment not registered.
+        @raise EquipamentoAmbienteDuplicatedError: Equipment already
+                                                   registered in
+                                                   environment.
+        @raise EquipamentoError: Failure to insert the relashionship
+                                 between equipment and environment.
+        """
+
+        self.ambiente = Ambiente()\
+            .get_by_pk(eqpt_env_map.get('environment'))
+        self.equipamento = Equipamento()\
+            .get_by_pk(eqpt_env_map.get('equipment'))
+
+        try:
+            EquipamentoAmbiente().get_by_equipment_environment(
+                self.equipamento.id, self.ambiente.id)
+            raise EquipamentoAmbienteDuplicatedError(
+                None, u'Equipment already registered in environment.')
+        except EquipamentoAmbienteNotFoundError:
+            pass
+
+        try:
+            self.save()
+        except Exception, e:
+            msg = u'Failure to insert the relashionship between ' \
+                'equipment and environment. %s/%s.' % \
+                (self.equipamento.id, self.ambiente.id)
+
+            self.log.error(msg)
+
+            raise EquipamentoError(e, msg)
 
 
 class EquipamentoGrupo(BaseModel):

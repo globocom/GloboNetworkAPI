@@ -15,8 +15,8 @@ pip install gunicorn
 # mysql -uroot -hlocalhost -e 'GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '' WITH GRANT OPTION; FLUSH PRIVILEGES;'
 # vim /etc/mysql/my.cnf
 # change bind-address		= 127.0.0.1 to bind-address		= 0.0.0.0
-mysql -uroot -hlocalhost -e 'drop database if exists networkapi;'
-mysql -uroot -hlocalhost -e 'create database networkapi;'
+mysql -u root -h localhost -e 'drop database if exists networkapi;'
+mysql -u root -h localhost -e 'create database networkapi;'
 cd /vagrant/dbmigrate; db-migrate --show-sql
 #mysql -u root -h localhost < /vagrant/dev/database_configuration.sql
 mysql -u root -h localhost networkapi < /vagrant/dev/load_example_environment.sql

@@ -2,10 +2,23 @@
 import logging
 
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.requisicaovips.models import OptionVip
 from networkapi.requisicaovips.models import OptionVipEnvironmentVip
 
 log = logging.getLogger(__name__)
+
+
+def get_environmentvip_by_search(search=dict()):
+    """Return a list of environments vip by dict.
+
+    :param search: dict
+    """
+
+    env_vips = EnvironmentVip.objects.all()
+    env_map = build_query_to_datatable_v3(env_vips, search)
+
+    return env_map
 
 
 def get_option_vip_by_environment_vip_ids(environment_vip_ids):
@@ -92,7 +105,22 @@ def get_environmentvip_by_id(environment_vip_id):
 def update_environment_vip(environment_vip):
 
     env = get_environmentvip_by_id(environment_vip.get('id'))
-    env.conf = environment_vip.get('conf')
-    env.save()
+    env.update_v3(environment_vip)
 
     return env
+
+
+def create_environment_vip(environment_vip):
+
+    env = EnvironmentVip()
+    env.create_v3(environment_vip)
+
+    return env
+
+
+def delete_environment_vip(envvip_ids):
+
+    for envvip_id in envvip_ids:
+        envvip_obj = get_environmentvip_by_id(envvip_id)
+
+        envvip_obj.delete_v3()

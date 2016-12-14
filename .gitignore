@@ -21,3 +21,4 @@ build
 sqldump_vm_teste.sql
 sitestatic/
 config_templates/
+networkapi/generated_config/network/network_equip*

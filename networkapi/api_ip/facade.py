@@ -28,7 +28,7 @@ def delete_ipv6_list(ipv6_list):
         ipv6_obj.delete_v3()
 
 
-def create_networkipv4(ipv4, user):
+def create_ipv4(ipv4, user):
     """Creates a Ipv4."""
 
     ipv4_obj = Ip()
@@ -37,7 +37,7 @@ def create_networkipv4(ipv4, user):
     return ipv4_obj
 
 
-def update_networkipv4(ipv4, user):
+def update_ipv4(ipv4, user):
     """Updates a Ipv4."""
 
     netv4_obj = get_ipv4_by_id(ipv4.get('id'))

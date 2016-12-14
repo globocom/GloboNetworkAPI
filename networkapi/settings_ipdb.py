@@ -114,6 +114,8 @@ from settings import REL_PATH_TO_ADD_CONFIG
 from settings import REL_PATH_TO_CONFIG
 from settings import REST_FRAMEWORK
 from settings import ROOT_URLCONF
+from settings import RQ_QUEUES
+from settings import RQ_SHOW_ADMIN_LINK
 from settings import SCRIPTS_DIR
 from settings import SECRET_KEY
 from settings import SITE_ID
