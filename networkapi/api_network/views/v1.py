@@ -357,15 +357,21 @@ def networkIPv4_deploy(request, network_id):
     if all_equipments_are_in_maintenance(equipment_list):
         raise AllEquipmentsAreInMaintenanceException()
 
-    # deploy network configuration
-    if request.method == 'POST':
-        returned_data = facade.deploy_networkIPv4_configuration(
-            request.user, networkipv4, equipment_list)
-    elif request.method == 'DELETE':
-        returned_data = facade.remove_deploy_networkIPv4_configuration(
-            request.user, networkipv4, equipment_list)
+    try:
 
-    return Response(returned_data)
+        # deploy network configuration
+        if request.method == 'POST':
+            returned_data = facade.deploy_networkIPv4_configuration(
+                request.user, networkipv4, equipment_list)
+        elif request.method == 'DELETE':
+            returned_data = facade.remove_deploy_networkIPv4_configuration(
+                request.user, networkipv4, equipment_list)
+
+        return Response(returned_data)
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
 
 
 @api_view(['GET'])
@@ -489,12 +495,17 @@ def networkIPv6_deploy(request, network_id):
     if all_equipments_are_in_maintenance(equipment_list):
         raise AllEquipmentsAreInMaintenanceException()
 
-    # deploy network configuration
-    if request.method == 'POST':
-        returned_data = facade.deploy_networkIPv6_configuration(
-            request.user, networkipv6, equipment_list)
-    elif request.method == 'DELETE':
-        returned_data = facade.remove_deploy_networkIPv6_configuration(
-            request.user, networkipv6, equipment_list)
+    try:
+        # deploy network configuration
+        if request.method == 'POST':
+            returned_data = facade.deploy_networkIPv6_configuration(
+                request.user, networkipv6, equipment_list)
+        elif request.method == 'DELETE':
+            returned_data = facade.remove_deploy_networkIPv6_configuration(
+                request.user, networkipv6, equipment_list)
 
-    return Response(returned_data)
+        return Response(returned_data)
+
+    except Exception, exception:
+        log.error(exception)
+        raise api_exceptions.NetworkAPIException()
