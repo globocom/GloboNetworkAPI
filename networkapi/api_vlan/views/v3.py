@@ -108,18 +108,10 @@ class VlanDBView(APIView):
 
         json_validate(SPECS.get('vlan_put')).validate(data)
 
-        locks_list = create_lock(data['vlans'], LOCK_VLAN)
-
         response = list()
-        try:
-            for vlan in data['vlans']:
-                vl = facade.update_vlan(vlan, request.user)
-                response.append({'id': vl.id})
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-        finally:
-            destroy_lock(locks_list)
+        for vlan in data['vlans']:
+            vl = facade.update_vlan(vlan, request.user)
+            response.append({'id': vl.id})
 
         return CustomResponse(response, status=status.HTTP_200_OK, request=request)
 
