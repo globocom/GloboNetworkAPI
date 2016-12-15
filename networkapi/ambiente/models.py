@@ -26,6 +26,8 @@ from django.forms.models import model_to_dict
 
 from networkapi.api_pools import exceptions
 from networkapi.api_vrf.models import Vrf
+from networkapi.distributedlock import LOCK_ENVIRONMENT
+from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
@@ -39,6 +41,8 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
 from networkapi.util import is_valid_text
+from networkapi.util.geral import create_lock_with_blocking
+from networkapi.util.geral import destroy_lock
 
 
 class AmbienteError(Exception):
@@ -52,6 +56,15 @@ class AmbienteError(Exception):
     def __str__(self):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
+
+class EnvironmentErrorV3(Exception):
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return self.cause
 
 
 class AmbienteNotFoundError(AmbienteError):
@@ -1192,93 +1205,129 @@ class Ambiente(BaseModel):
         return envvip_model
 
     def create_v3(self, env_map):
-        self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
-        self.ambiente_logico = AmbienteLogico\
-            .get_by_pk(env_map.get('ambiente_logico'))
-        self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
 
-        if env_map.get('filter', None):
-            self.filter = Filter.get_by_pk(env_map.get('filter'))
-        else:
-            self.filter = None
+        try:
+            self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
+            self.ambiente_logico = AmbienteLogico\
+                .get_by_pk(env_map.get('ambiente_logico'))
+            self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
 
-        if env_map.get('father_environment'):
-            self.father_environment = Ambiente\
-                .get_by_pk(env_map.get('father_environment'))
-        else:
-            self.father_environment = None
+            if env_map.get('filter', None):
+                self.filter = Filter.get_by_pk(env_map.get('filter'))
+            else:
+                self.filter = None
 
-        self.acl_path = env_map.get('acl_path')
-        self.ipv4_template = env_map.get('ipv4_template')
-        self.ipv6_template = env_map.get('ipv6_template')
-        self.link = env_map.get('link')
-        self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
-        self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
-        self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
-        self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
-        self.vrf = env_map.get('vrf')
-        self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
-        self.validate_v3()
-        self.save()
+            if env_map.get('father_environment'):
+                self.father_environment = Ambiente\
+                    .get_by_pk(env_map.get('father_environment'))
+            else:
+                self.father_environment = None
 
-        # save configs
-        for config in env_map.get('configs'):
-            IPConfig.create(self.id, config)
+            self.acl_path = env_map.get('acl_path')
+            self.ipv4_template = env_map.get('ipv4_template')
+            self.ipv6_template = env_map.get('ipv6_template')
+            self.link = env_map.get('link')
+            self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
+            self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
+            self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
+            self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
+            self.vrf = env_map.get('vrf')
+            self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+            self.validate_v3()
+            self.save()
+
+            # save configs
+            for config in env_map.get('configs'):
+                IPConfig.create(self.id, config)
+
+        except Exception, e:
+            raise EnvironmentErrorV3(e)
 
     def update_v3(self, env_map):
-        self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
-        self.ambiente_logico = AmbienteLogico\
-            .get_by_pk(env_map.get('ambiente_logico'))
-        self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
 
-        if env_map.get('filter', None):
-            self.filter = Filter.get_by_pk(env_map.get('filter'))
+        try:
+            self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
+
+            self.ambiente_logico = AmbienteLogico\
+                .get_by_pk(env_map.get('ambiente_logico'))
+
+            self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
+
+            if env_map.get('filter', None):
+                self.filter = Filter.get_by_pk(env_map.get('filter'))
+            else:
+                self.filter = None
+
+            if env_map.get('father_environment'):
+                self.father_environment = Ambiente\
+                    .get_by_pk(env_map.get('father_environment'))
+            else:
+                self.father_environment = None
+
+            self.acl_path = env_map.get('acl_path')
+            self.ipv4_template = env_map.get('ipv4_template')
+            self.ipv6_template = env_map.get('ipv6_template')
+            self.link = env_map.get('link')
+            self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
+            self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
+            self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
+            self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
+            self.vrf = env_map.get('vrf')
+            self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+
+        except Exception, e:
+            raise EnvironmentErrorV3(e)
         else:
-            self.filter = None
+            # Prepate lock for environment
+            locks_name = [LOCK_ENVIRONMENT % self.id]
 
-        if env_map.get('father_environment'):
-            self.father_environment = Ambiente\
-                .get_by_pk(env_map.get('father_environment'))
-        else:
-            self.father_environment = None
+        configs = env_map.get('configs', None)
 
-        self.acl_path = env_map.get('acl_path')
-        self.ipv4_template = env_map.get('ipv4_template')
-        self.ipv6_template = env_map.get('ipv6_template')
-        self.link = env_map.get('link')
-        self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
-        self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
-        self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
-        self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
-        self.vrf = env_map.get('vrf')
-        self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
-        self.validate_v3()
-
-        self.save()
-
-        configs = env_map.get('configs')
         if configs is not None:
-            ips_by_env = IPConfig.get_by_environment(None, self.id)
-            ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+            # Prepate lock for allocates inside environment
+            locks_name += [LOCK_ENVIRONMENT_ALLOCATES % self.id]
 
-            # configs with ids
-            ids_conf_receive = [cfg.get('id') for cfg in configs
-                                if cfg.get('id')]
+        # Creates locks
+        locks_list = create_lock_with_blocking(locks_name)
 
-            # configs to update: configs with id
-            cfg_upt = [cfg for cfg in configs if cfg.get('id') and
-                       cfg.get('id') in ids_conf_current]
+        try:
 
-            # configs to create: configs without id
-            cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+            # Validate request
+            self.validate_v3()
 
-            # configs to delete: configs not received
-            cfg_del = [id_conf for id_conf in ids_conf_current
-                       if id_conf not in ids_conf_receive]
+            self.save()
 
-            self.update_configs(cfg_upt, self.id)
-            self.create_configs(cfg_ins, self.id)
-            self.delete_configs(cfg_del, self.id)
+            # If have changes in configs
+            if configs is not None:
+                ips_by_env = IPConfig.get_by_environment(None, self.id)
+                ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+
+                # Configs with ids
+                ids_conf_receive = [cfg.get('id') for cfg in configs
+                                    if cfg.get('id')]
+
+                # Configs to update: configs with id
+                cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                           cfg.get('id') in ids_conf_current]
+
+                # Configs to create: configs without id
+                cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+
+                # Configs to delete: configs not received
+                cfg_del = [id_conf for id_conf in ids_conf_current
+                           if id_conf not in ids_conf_receive]
+
+                # Updates configs
+                self.update_configs(cfg_upt, self.id)
+                # Creates configs
+                self.create_configs(cfg_ins, self.id)
+                # Deletes configs
+                self.delete_configs(cfg_del, self.id)
+        except Exception, e:
+            raise EnvironmentErrorV3(e)
+
+        finally:
+            destroy_lock(locks_list)
 
     def validate_v3(self):
 

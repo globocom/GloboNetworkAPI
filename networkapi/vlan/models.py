@@ -10,7 +10,7 @@ from django.db.models import get_model
 from django.db.models import Q
 
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
-from networkapi.distributedlock import LOCK_VLAN_ALLOCATES
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.filter.models import verify_subnet_and_equip
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.models.BaseModel import BaseModel
@@ -1093,7 +1093,7 @@ class Vlan(BaseModel):
 
         else:
             # Prepare locks for vlan
-            locks_name = [LOCK_VLAN_ALLOCATES % self.id]
+            locks_name = [LOCK_VLAN % self.id]
 
             # If the environment was changed, create lock to validate
             if old_vlan.ambiente != self.ambiente:
@@ -1172,7 +1172,7 @@ class Vlan(BaseModel):
         """
 
         # Prepare locks for vlan
-        locks_name = LOCK_VLAN_ALLOCATES % self.id
+        locks_name = [LOCK_VLAN % self.id]
 
         # Create locks for environment and vlan
         locks_list = create_lock_with_blocking(locks_name)
@@ -1229,7 +1229,7 @@ class Vlan(BaseModel):
         """
 
         # Prepare locks for vlan
-        locks_name = LOCK_VLAN_ALLOCATES % self.id
+        locks_name = [LOCK_VLAN % self.id]
 
         # Create locks for environment and vlan
         locks_list = create_lock_with_blocking(locks_name)
