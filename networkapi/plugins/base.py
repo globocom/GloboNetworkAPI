@@ -224,3 +224,9 @@ class BasePlugin(object):
         Partial Update of VIP
         """
         raise NotImplementedError()
+
+    def get_name_eqpt(self, **kwargs):
+        """
+        Generate name of VIP
+        """
+        raise NotImplementedError()

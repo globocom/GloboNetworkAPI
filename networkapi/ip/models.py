@@ -26,6 +26,9 @@ from networkapi.ambiente.models import IP_VERSION
 from networkapi.api_vip_request import syncs
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_ENVIRONMENT
+from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
+from networkapi.distributedlock import LOCK_NETWORK_IPV4
+from networkapi.distributedlock import LOCK_NETWORK_IPV6
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.equipamento.models import EquipamentoAmbienteDuplicatedError
 from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
@@ -44,17 +47,9 @@ from networkapi.util import mount_ipv4_string
 from networkapi.util import mount_ipv6_string
 from networkapi.util import network
 from networkapi.util.decorators import cached_property
+from networkapi.util.geral import create_lock_with_blocking
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
-
-
-Ambiente = get_model('ambiente', 'Ambiente')
-ConfigEnvironment = get_model('ambiente', 'ConfigEnvironment')
-EnvironmentVip = get_model('ambiente', 'EnvironmentVip')
-
-# TipoRede = get_model('vlan', 'TipoRede')
-Vlan = get_model('vlan', 'Vlan')
-
-FilterEquipType = get_model('filterequiptype', 'FilterEquipType')
 
 
 class NetworkIPv4Error(Exception):
@@ -68,6 +63,28 @@ class NetworkIPv4Error(Exception):
     def __str__(self):
         msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
+
+class NetworkIPv4ErrorV3(Exception):
+
+    """Generic exception for everything related to NetworkIPv4."""
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return self.cause
+
+
+class NetworkIPv6ErrorV3(Exception):
+
+    """Generic exception for everything related to NetworkIPv6."""
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return self.cause
 
 
 class NetworkIPv6Error(Exception):
@@ -451,8 +468,9 @@ class NetworkIPv4(BaseModel):
             @raise Invalid: Unavailable address to create a NetworkIPv4.
             @raise InvalidValueError: Network type does not exist.
         """
-
-        self.vlan = Vlan().get_by_pk(id_vlan)
+        configenvironment = get_model('ambiente', 'ConfigEnvironment')
+        vlan_model = get_model('vlan', 'Vlan')
+        self.vlan = vlan_model().get_by_pk(id_vlan)
 
         network_found = None
         stop = False
@@ -462,7 +480,7 @@ class NetworkIPv4(BaseModel):
         try:
 
             # Find all configs type v4 in environment
-            configs = ConfigEnvironment.get_by_environment(
+            configs = configenvironment.get_by_environment(
                 self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv4[0])
 
             # If not found, an exception is thrown
@@ -618,89 +636,146 @@ class NetworkIPv4(BaseModel):
             raise IpCantBeRemovedFromVip(
                 cause, 'Esta Rede possui um Vip apontando para ela, e não pode ser excluída')
 
-    def create_v3(self, networkv4):
+    def create_v3(self, networkv4, use_lock=True):
         """
         Create new networkIPv4.
         """
 
-        self.oct1 = networkv4.get('oct1')
-        self.oct2 = networkv4.get('oct2')
-        self.oct3 = networkv4.get('oct3')
-        self.oct4 = networkv4.get('oct4')
-        self.block = networkv4.get('prefix')
-        self.mask_oct1 = networkv4.get('mask_oct1')
-        self.mask_oct2 = networkv4.get('mask_oct2')
-        self.mask_oct3 = networkv4.get('mask_oct3')
-        self.mask_oct4 = networkv4.get('mask_oct4')
+        try:
+            self.oct1 = networkv4.get('oct1')
+            self.oct2 = networkv4.get('oct2')
+            self.oct3 = networkv4.get('oct3')
+            self.oct4 = networkv4.get('oct4')
+            self.block = networkv4.get('prefix')
+            self.mask_oct1 = networkv4.get('mask_oct1')
+            self.mask_oct2 = networkv4.get('mask_oct2')
+            self.mask_oct3 = networkv4.get('mask_oct3')
+            self.mask_oct4 = networkv4.get('mask_oct4')
+            self.cluster_unit = networkv4.get('cluster_unit')
 
-        self.cluster_unit = networkv4.get('cluster_unit')
+            # Vlan
+            vlan_model = get_model('vlan', 'Vlan')
+            self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
 
-        valid_network = True
-        if self.oct1 is None and self.oct2 is None and self.oct3 is None and self.oct4 is None:
-            self.allocate_network(networkv4.get(
-                'vlan'), networkv4.get('prefix'))
-            valid_network = False
-        elif self.block is not None and self.oct1 is not None and self.oct2 is not None and self.oct3 is not None and self.oct4 is not None:
-            ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
-            self.broadcast = ip.broadcast.compressed
-            mask = ip.netmask.exploded.split('.')
-            self.mask_oct1 = mask[0]
-            self.mask_oct2 = mask[1]
-            self.mask_oct3 = mask[2]
-            self.mask_oct4 = mask[3]
-        elif self.mask_oct1 is not None and self.mask_oct2 is not None and self.mask_oct3 is not None and self.mask_oct4 is not None:
-            ip = IPNetwork('%s/%s' % (self.formated_octs, self.mask_formated))
-            self.block = ip.prefixlen
+            # Network Type
+            tiporede_model = get_model('vlan', 'TipoRede')
+            self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
+
+            # Environment vip
+            if networkv4.get('environmentvip'):
+                environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+                self.environmentvip = environmentvip_model().get_by_pk(
+                    networkv4.get('environmentvip'))
+
+            # Get environments related
+            envs = self.vlan.get_environment_related(use_vrf=True)\
+                .values_list('id', flat=True)
+
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
         else:
-            raise Exception('Is need to send block ou mask.')
 
-        vlan_model = get_model('vlan', 'Vlan')
-        self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
+            if use_lock:
+                # Create locks for environment
+                locks_name = [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+                locks_list = create_lock_with_blocking(locks_name)
 
-        tiporede_model = get_model('vlan', 'TipoRede')
-        self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
+        try:
 
-        # has environmentvip
-        if networkv4.get('environmentvip'):
-            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-            self.environmentvip = environmentvip_model().get_by_pk(
-                networkv4.get('environmentvip'))
+            valid_network = True
 
-        self.validate_v3()
+            # Allocate network for vlan with prefix(optional)
+            if self.oct1 is None and self.oct2 is None and self.oct3 is None \
+                    and self.oct4 is None:
 
-        if valid_network:
+                self.allocate_network(
+                    networkv4.get('vlan'), networkv4.get('prefix'))
+                valid_network = False
 
-            envs = self.vlan.get_environment_related()
-            net_ip = [IPNetwork(self.networkv4)]
+            # Was not send correctly
+            else:
+                raise NetworkIPv4ErrorV3(
+                    'There is need to send block ou mask.')
 
-            network.validate_network(envs, net_ip, IP_VERSION.IPv4[0])
+            self.validate_v3()
 
-        self.save()
+            # Validate network when not allocate
+            if valid_network:
+
+                envs = self.vlan.get_environment_related()
+                net_ip = [IPNetwork(self.networkv4)]
+                network.validate_network(envs, net_ip, IP_VERSION.IPv4[0])
+
+            self.save()
+
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        finally:
+            if use_lock:
+                destroy_lock(locks_list)
 
     def update_v3(self, networkv4):
         """
         Update new networkIPv4.
         """
 
-        self.cluster_unit = networkv4.get('cluster_unit')
+        try:
+            self.cluster_unit = networkv4.get('cluster_unit')
 
-        # vlan_model = get_model('vlan', 'Vlan')
-        tiporede_model = get_model('vlan', 'TipoRede')
+            # vlan_model = get_model('vlan', 'Vlan')
+            tiporede_model = get_model('vlan', 'TipoRede')
 
-        # self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
-        self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
+            # self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
+            self.network_type = tiporede_model().get_by_pk(networkv4.get('network_type'))
 
-        # has environmentvip
-        if networkv4.get('environmentvip'):
-            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-            self.environmentvip = environmentvip_model().get_by_pk(
-                networkv4.get('environmentvip'))
+            # has environmentvip
+            if networkv4.get('environmentvip'):
+                environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+                self.environmentvip = environmentvip_model().get_by_pk(
+                    networkv4.get('environmentvip'))
 
-        self.validate_v3()
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
 
-        self.save()
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
 
-    def delete_v3(self):
+        else:
+
+            # Create locks for environment
+            locks_name = [LOCK_NETWORK_IPV4 % self.id]
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            self.validate_v3()
+
+            self.save()
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        finally:
+            destroy_lock(locks_list)
+
+    def delete_v3(self, use_lock=True):
         """
         Method V3 to remove NetworkIPv4.
         Before removing the NetworkIPv4 removes all your Ipv4
@@ -708,6 +783,17 @@ class NetworkIPv4(BaseModel):
         @raise IpCantBeRemovedFromVip: Ip is associated with created
                                        Vip Request.
         """
+
+        if use_lock:
+
+            # Get environments related
+            envs = self.vlan.get_environment_related(use_vrf=True)\
+                .values_list('id', flat=True)
+
+            # Create locks for environment and vlan
+            locks_name = [LOCK_NETWORK_IPV4 % self.id]
+            locks_name += [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+            locks_list = create_lock_with_blocking(locks_name)
 
         try:
 
@@ -717,10 +803,15 @@ class NetworkIPv4(BaseModel):
             super(NetworkIPv4, self).delete()
 
         except IpCantBeRemovedFromVip, e:
+            msg = 'This network has a VIP pointing to it, and can not be deleted. ' \
+                'Network:%s, Vip Request: %s' % (self.mask_formated, e.cause)
+            self.log.error(msg)
             # Network id and Vip Request id
-            raise Exception(
-                'This network has a VIP pointing to it, and can not be deleted. '
-                'Network:%s, Vip Request: %s' % (self.mask_formated, e.cause))
+            raise NetworkIPv4ErrorV3(msg)
+
+        finally:
+            if use_lock:
+                destroy_lock(locks_list)
 
     def validate_v3(self):
         """
@@ -806,12 +897,16 @@ class NetworkIPv4(BaseModel):
             raise NetworkIPv4Error(e, u'Error disabling NetworkIPv4.')
 
     def allocate_network(self, id_vlan, prefix=None):
-        """Allocate new NetworkIPv4
+        """
+            Allocate new NetworkIPv4.
             @raise VlanNotFoundError: Vlan is not registered.
             @raise VlanError: Failed to search for the Vlan
-            @raise ConfigEnvironmentInvalidError: Invalid Environment Configuration or not registered
+            @raise ConfigEnvironmentInvalidError: Invalid Environment
+                                                  Configuration or not
+                                                  registered
             @raise NetworkIPv4Error: Error persisting a NetworkIPv4.
-            @raise NetworkIPv4AddressNotAvailableError: Unavailable address to create a NetworkIPv4.
+            @raise NetworkIPv4AddressNotAvailableError: Unavailable address to
+                                                        create a NetworkIPv4.
             @raise Invalid: Unavailable address to create a NetworkIPv4.
             @raise InvalidValueError: Network type does not exist.
         """
@@ -868,11 +963,13 @@ class NetworkIPv4(BaseModel):
 
             # Checks if found any available network
             if network_found is None:
+                self.log.error(u'Unavailable address to create a NetworkIPv4.')
                 # If not found, an exception is thrown
                 raise NetworkIPv4AddressNotAvailableError(
                     None, u'Unavailable address to create a NetworkIPv4.')
 
         except (ValueError, TypeError, AddressValueError), e:
+            self.log.error(u'Invalid Configuration')
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
 
 
@@ -962,7 +1059,9 @@ class Ip(BaseModel):
         """
 
         try:
-            return Ip.objects.filter(networkipv4__vlan__ambiente__id=id_ambiente, ipequipamento__equipamento__id=id_equipment)
+            return Ip.objects.filter(
+                networkipv4__vlan__ambiente__id=id_ambiente,
+                ipequipamento__equipamento__id=id_equipment)
         except ObjectDoesNotExist, e:
             raise IpNotFoundError(
                 e, u'There is no IP with network_id = %s.' % id)
@@ -1018,7 +1117,8 @@ class Ip(BaseModel):
 
         # Cast to API
         net4 = IPv4Network('%d.%d.%d.%d/%d' % (networkipv4.oct1, networkipv4.oct2,
-                                               networkipv4.oct3, networkipv4.oct4, networkipv4.block))
+                                               networkipv4.oct3, networkipv4.oct4,
+                                               networkipv4.block))
 
         # Find all ips ralated to network
         ips = Ip.objects.filter(networkipv4__id=networkipv4.id)
@@ -1139,7 +1239,8 @@ class Ip(BaseModel):
 
             # Cast to API
             net4 = IPv4Network('%d.%d.%d.%d/%d' % (self.networkipv4.oct1, self.networkipv4.oct2,
-                                                   self.networkipv4.oct3, self.networkipv4.oct4, self.networkipv4.block))
+                                                   self.networkipv4.oct3, self.networkipv4.oct4,
+                                                   self.networkipv4.block))
 
             # Find all ips ralated to network
             ips = Ip.objects.filter(networkipv4__id=self.networkipv4.id)
@@ -1201,6 +1302,7 @@ class Ip(BaseModel):
     def save_ipv4(self, equipment_id, user, net):
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
         equipamento = get_model('equipamento', 'TipoEquipamento')
+        filterequiptype = get_model('filterequiptype', 'FilterEquipType')
         try:
 
             already_ip = False
@@ -1285,11 +1387,11 @@ class Ip(BaseModel):
                         else:
                             # Test both environment's filters
                             tp_equip_list_one = list()
-                            for fet in FilterEquipType.objects.filter(filter=self.networkipv4.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(filter=self.networkipv4.vlan.ambiente.filter.id):
                                 tp_equip_list_one.append(fet.equiptype)
 
                             tp_equip_list_two = list()
-                            for fet in FilterEquipType.objects.filter(filter=ip_test.networkipv4.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(filter=ip_test.networkipv4.vlan.ambiente.filter.id):
                                 tp_equip_list_two.append(fet.equiptype)
 
                             if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
@@ -1344,9 +1446,10 @@ class Ip(BaseModel):
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
         equipamento = get_model('equipamento', 'Equipamento')
         configuration = get_model('config', 'Configuration')
+        vlan_model = get_model('vlan', 'Vlan')
         if new is False:
             # Search vlan by id
-            vlan = Vlan().get_by_pk(id)
+            vlan = vlan_model().get_by_pk(id)
 
             # Get first networkipv4 related to vlan
             try:
@@ -1361,7 +1464,8 @@ class Ip(BaseModel):
 
         # Cast to API
         net4 = IPv4Network('%d.%d.%d.%d/%d' % (self.networkipv4.oct1, self.networkipv4.oct2,
-                                               self.networkipv4.oct3, self.networkipv4.oct4, self.networkipv4.block))
+                                               self.networkipv4.oct3, self.networkipv4.oct4,
+                                               self.networkipv4.block))
 
         # Find all ips ralated to network
         ips = Ip.objects.filter(networkipv4__id=self.networkipv4.id)
@@ -1467,6 +1571,8 @@ class Ip(BaseModel):
             @raise IpNotFoundError: IP is not registered.
             @raise IpError: Failed to search for the IP.
         """
+        environmentvip = get_model('ambiente', 'EnvironmentVip')
+        ambiente_model = get_model('ambiente', 'Ambiente')
         try:
             ips = Ip.objects.filter(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4)
             if ips.count() == 0:
@@ -1481,7 +1587,7 @@ class Ip(BaseModel):
                         if ip.networkipv4.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(
+                        environments = ambiente_model.objects.filter(
                             vlan__networkipv4__ambient_vip__id=id_evip)
                         for env in environments:
                             if ip.networkipv4.vlan.ambiente.divisao_dc.id == env.divisao_dc.id \
@@ -1489,7 +1595,7 @@ class Ip(BaseModel):
                                 return ip
                 raise ObjectDoesNotExist()
         except ObjectDoesNotExist, e:
-            evip = EnvironmentVip.get_by_pk(id_evip)
+            evip = environmentvip.get_by_pk(id_evip)
             msg = u'Ipv4 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip()
             cls.log.error(msg)
             raise IpNotFoundByEquipAndVipError(e, msg)
@@ -1653,7 +1759,7 @@ class Ip(BaseModel):
 
             # Deletes Related Equipment
             for ip_eqpt in self.ipequipamento_set.all():
-                ip_eqpt.delete_v3()
+                ip_eqpt.delete_v3(bypass_ip=True)
 
             # Serializes obj
             ip_slz = get_app('api_ip', module_label='serializers')
@@ -2138,7 +2244,7 @@ class IpEquipamento(BaseModel):
         if self.ip.ipequipamento_set.count() == 0:
             self.ip.delete()
 
-    def delete_v3(self):
+    def delete_v3(self, bypass_ip=False):
         """
         Method V3 to remove Ip and Equipment relationship.
         If Ip from this Ip-Equipment is associated with created Vip Request,
@@ -2217,7 +2323,7 @@ class IpEquipamento(BaseModel):
         super(IpEquipamento, self).delete()
 
         # If IP is not related to any other equipments, its removed
-        if self.ip.ipequipamento_set.count() == 0:
+        if self.ip.ipequipamento_set.count() == 0 and not bypass_ip:
             self.ip.delete_v3()
 
     def create_v3(self, ip_equipment):
@@ -2513,8 +2619,9 @@ class NetworkIPv6(BaseModel):
         @raise NetworkIPv6AddressNotAvailableError: Unavailable address to create a NetworkIPv6.
         @raise InvalidValueError: Network type does not exist.
         """
-
-        self.vlan = Vlan().get_by_pk(id_vlan)
+        configenvironment = get_model('ambiente', 'ConfigEnvironment')
+        vlan_model = get_model('vlan', 'Vlan')
+        self.vlan = vlan_model().get_by_pk(id_vlan)
 
         network_found = None
         stop = False
@@ -2524,7 +2631,7 @@ class NetworkIPv6(BaseModel):
         try:
 
             # Find all configs type v6 in environment
-            configs = ConfigEnvironment.get_by_environment(
+            configs = configenvironment.get_by_environment(
                 self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv6[0])
 
             # If not found, an exception is thrown
@@ -2683,103 +2790,178 @@ class NetworkIPv6(BaseModel):
             raise IpCantBeRemovedFromVip(
                 cause, 'Esta Rede possui um Vip apontando para ela, e não pode ser excluída')
 
-    def create_v3(self, networkv6):
-        """
-        Create new networkIPv6.
-        """
+    def create_v3(self, networkv6, use_lock=True):
+        """Create new networkIPv6."""
 
-        self.block1 = networkv6.get('block1')
-        self.block2 = networkv6.get('block2')
-        self.block3 = networkv6.get('block3')
-        self.block4 = networkv6.get('block4')
-        self.block5 = networkv6.get('block5')
-        self.block6 = networkv6.get('block6')
-        self.block7 = networkv6.get('block7')
-        self.block8 = networkv6.get('block8')
-        self.block = networkv6.get('prefix')
-        self.mask1 = networkv6.get('mask1')
-        self.mask2 = networkv6.get('mask2')
-        self.mask3 = networkv6.get('mask3')
-        self.mask4 = networkv6.get('mask4')
-        self.mask5 = networkv6.get('mask5')
-        self.mask6 = networkv6.get('mask6')
-        self.mask7 = networkv6.get('mask7')
-        self.mask8 = networkv6.get('mask8')
+        try:
+            self.block1 = networkv6.get('block1')
+            self.block2 = networkv6.get('block2')
+            self.block3 = networkv6.get('block3')
+            self.block4 = networkv6.get('block4')
+            self.block5 = networkv6.get('block5')
+            self.block6 = networkv6.get('block6')
+            self.block7 = networkv6.get('block7')
+            self.block8 = networkv6.get('block8')
+            self.block = networkv6.get('prefix')
+            self.mask1 = networkv6.get('mask1')
+            self.mask2 = networkv6.get('mask2')
+            self.mask3 = networkv6.get('mask3')
+            self.mask4 = networkv6.get('mask4')
+            self.mask5 = networkv6.get('mask5')
+            self.mask6 = networkv6.get('mask6')
+            self.mask7 = networkv6.get('mask7')
+            self.mask8 = networkv6.get('mask8')
 
-        self.cluster_unit = networkv6.get('cluster_unit')
+            self.cluster_unit = networkv6.get('cluster_unit')
 
-        valid_network = True
-        if not self.block1 and not self.block2 and not self.block3 and \
-                not self.block4 and not self.block5 and not self.block6 and \
-                not self.block7 and not self.block8:
-            self.allocate_network(networkv6.get(
-                'vlan'), networkv6.get('prefix'))
-            valid_network = False
+            # Vlan
+            vlan_model = get_model('vlan', 'Vlan')
+            self.vlan = vlan_model().get_by_pk(networkv6.get('vlan'))
 
-        if self.block and self.block1 and self.block2 and self.block3 and \
-                self.block4 and self.block5 and self.block6 and \
-                self.block7 and self.block8:
-            ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
-            mask = ip.netmask.exploded.split(':')
-            self.mask1 = mask[0]
-            self.mask2 = mask[1]
-            self.mask3 = mask[2]
-            self.mask4 = mask[3]
-            self.mask5 = mask[4]
-            self.mask6 = mask[5]
-            self.mask7 = mask[6]
-            self.mask8 = mask[7]
-        elif self.mask1 and self.mask2 and self.mask3 and self.mask4 and \
-                self.mask5 and self.mask6 and self.mask7 and self.mask8:
-            ip = IPNetwork('%s/%s' % (self.formated_octs, self.mask_formated))
-            self.block = ip.prefixlen
+            # Type of Network
+            tiporede_model = get_model('vlan', 'TipoRede')
+            self.network_type = tiporede_model().get_by_pk(networkv6.get('network_type'))
+
+            # has environmentvip
+            if networkv6.get('environmentvip'):
+                environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+                self.environmentvip = environmentvip_model().get_by_pk(
+                    networkv6.get('environmentvip'))
+
+            # Get environments related
+            envs = self.vlan.get_environment_related(use_vrf=True)\
+                .values_list('id', flat=True)
+
+        except NetworkIPv6ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv6ErrorV3(e)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv6ErrorV3(e)
+
         else:
-            raise Exception('Is need to send block ou mask.')
+            if use_lock:
+                # Create locks for environment
+                locks_name = [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+                locks_list = create_lock_with_blocking(locks_name)
 
-        vlan_model = get_model('vlan', 'Vlan')
-        self.vlan = vlan_model().get_by_pk(networkv6.get('vlan'))
+        try:
 
-        tiporede_model = get_model('vlan', 'TipoRede')
-        self.network_type = tiporede_model().get_by_pk(networkv6.get('network_type'))
+            valid_network = True
 
-        # has environmentvip
-        if networkv6.get('environmentvip'):
-            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-            self.environmentvip = environmentvip_model().get_by_pk(
-                networkv6.get('environmentvip'))
+            # Allocate network for vlan with prefix(optional)
+            if not self.block1 and not self.block2 and not self.block3 and \
+                    not self.block4 and not self.block5 and not self.block6 and \
+                    not self.block7 and not self.block8:
 
-        self.validate_v3()
+                self.allocate_network(networkv6.get(
+                    'vlan'), networkv6.get('prefix'))
+                valid_network = False
 
-        if valid_network:
+            # Was send prefix and octs
+            if self.block and self.block1 and self.block2 and self.block3 and \
+                    self.block4 and self.block5 and self.block6 and \
+                    self.block7 and self.block8:
 
-            envs = self.vlan.get_environment_related()
-            net_ip = [IPNetwork(self.networkv6)]
+                ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
 
-            network.validate_network(envs, net_ip, IP_VERSION.IPv6[0])
+                mask = ip.netmask.exploded.split(':')
+                self.mask1 = mask[0]
+                self.mask2 = mask[1]
+                self.mask3 = mask[2]
+                self.mask4 = mask[3]
+                self.mask5 = mask[4]
+                self.mask6 = mask[5]
+                self.mask7 = mask[6]
+                self.mask8 = mask[7]
 
-        self.save()
+            # Was send octs of mask
+            elif self.mask1 and self.mask2 and self.mask3 and self.mask4 and \
+                    self.mask5 and self.mask6 and self.mask7 and self.mask8:
+
+                ip = IPNetwork('%s/%s' %
+                               (self.formated_octs, self.mask_formated))
+                self.block = ip.prefixlen
+
+            # Was not send correctly
+            else:
+                self.log.error('There is need to send block ou mask.')
+                raise NetworkIPv6ErrorV3(
+                    'There is need to send block ou mask.')
+
+            self.validate_v3()
+
+            # Validate network when not allocate
+            if valid_network:
+
+                envs = self.vlan.get_environment_related()
+                net_ip = [IPNetwork(self.networkv6)]
+                network.validate_network(envs, net_ip, IP_VERSION.IPv6[0])
+
+            self.save()
+
+        except NetworkIPv6ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv6ErrorV3(e)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv6ErrorV3(e)
+
+        finally:
+            if use_lock:
+                destroy_lock(locks_list)
 
     def update_v3(self, networkv6):
         """
         Update new networkIPv6.
         """
 
-        self.cluster_unit = networkv6.get('cluster_unit')
+        try:
 
-        tiporede_model = get_model('vlan', 'TipoRede')
-        self.network_type = tiporede_model().get_by_pk(networkv6.get('network_type'))
+            self.cluster_unit = networkv6.get('cluster_unit')
 
-        # has environmentvip
-        if networkv6.get('environmentvip'):
-            environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-            self.environmentvip = environmentvip_model().get_by_pk(
-                networkv6.get('environmentvip'))
+            # Type of Network
+            tiporede_model = get_model('vlan', 'TipoRede')
+            self.network_type = tiporede_model().get_by_pk(networkv6.get('network_type'))
 
-        self.validate_v3()
+            # has environmentvip
+            if networkv6.get('environmentvip'):
+                environmentvip_model = get_model('ambiente', 'EnvironmentVip')
+                self.environmentvip = environmentvip_model().get_by_pk(
+                    networkv6.get('environmentvip'))
 
-        self.save()
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
 
-    def delete_v3(self):
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        else:
+
+            # Create locks for environment and network
+            locks_name = [LOCK_NETWORK_IPV6 % self.id]
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            self.validate_v3()
+
+            self.save()
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        finally:
+            destroy_lock(locks_list)
+
+    def delete_v3(self, use_lock=True):
         """
         Method V3 to remove networkIPv6.
         Before removing the networkIPv6 removes all your Ipv4
@@ -2788,7 +2970,19 @@ class NetworkIPv6(BaseModel):
                                        Vip Request.
         """
 
+        if use_lock:
+
+            # Get environments related
+            envs = self.vlan.get_environment_related(use_vrf=True)\
+                .values_list('id', flat=True)
+
+            # Create locks for environment and vlan
+            locks_name = [LOCK_NETWORK_IPV6 % self.id]
+            locks_name += [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+            locks_list = create_lock_with_blocking(locks_name)
+
         try:
+
             for ip in self.ipv6_set.all():
                 ip.delete_v3()
 
@@ -2796,9 +2990,14 @@ class NetworkIPv6(BaseModel):
 
         except IpCantBeRemovedFromVip, e:
             # Network id and Vip Request id
-            raise Exception(
-                'This network has a VIP pointing to it, and can not be deleted. '
-                'Network:%s, Vip Request: %s' % (self.mask_formated, e.cause))
+            msg = 'This network has a VIP pointing to it, and can not be deleted. ' \
+                'Network:%s, Vip Request: %s' % (self.mask_formated, e.cause)
+            self.log.error(msg)
+            raise Exception(msg)
+
+        finally:
+            if use_lock:
+                destroy_lock(locks_list)
 
     def validate_v3(self):
         """
@@ -3322,6 +3521,7 @@ class Ipv6(BaseModel):
     def save_ipv6(self, equipment_id, user, net):
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
         equipamento = get_model('equipamento', 'Equipamento')
+        filterequiptype = get_model('filterequiptype', 'FilterEquipType')
         try:
 
             already_ip = False
@@ -3423,11 +3623,11 @@ class Ipv6(BaseModel):
                         else:
                             # Test both environment's filters
                             tp_equip_list_one = list()
-                            for fet in FilterEquipType.objects.filter(filter=self.networkipv6.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(filter=self.networkipv6.vlan.ambiente.filter.id):
                                 tp_equip_list_one.append(fet.equiptype)
 
                             tp_equip_list_two = list()
-                            for fet in FilterEquipType.objects.filter(filter=ip_test.networkipv6.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(filter=ip_test.networkipv6.vlan.ambiente.filter.id):
                                 tp_equip_list_two.append(fet.equiptype)
 
                             if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
@@ -3593,11 +3793,14 @@ class Ipv6(BaseModel):
     @classmethod
     def get_by_octs_and_environment_vip(cls, block1, block2, block3, block4, block5,
                                         block6, block7, block8, id_evip, valid=True):
-        """Get Ipv6 by blocks and environment vip.
+        """
+        Get Ipv6 by blocks and environment vip.
         @return: Ipv6.
         @raise IpNotFoundError: Ipv6 is not registered.
         @raise IpError: Failed to search for the Ipv6.
         """
+        environmentvip = get_model('ambiente', 'EnvironmentVip')
+        ambiente_model = get_model('ambiente', 'Ambiente')
         try:
             ips = Ipv6.objects.filter(
                 block1=block1, block2=block2, block3=block3,
@@ -3615,7 +3818,7 @@ class Ipv6(BaseModel):
                         if ip.networkipv6.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(
+                        environments = ambiente_model.objects.filter(
                             vlan__networkipv6__ambient_vip__id=id_evip)
                         for env in environments:
                             if ip.networkipv6.vlan.ambiente.divisao_dc.id == env.divisao_dc.id \
@@ -3624,7 +3827,7 @@ class Ipv6(BaseModel):
                 raise ObjectDoesNotExist()
 
         except ObjectDoesNotExist, e:
-            evip = EnvironmentVip.get_by_pk(id_evip)
+            evip = environmentvip.get_by_pk(id_evip)
             msg = u'Ipv6 não está relacionado ao Ambiente Vip: %s.' % evip.show_environment_vip()
             cls.log.error(msg)
             raise IpNotFoundByEquipAndVipError(e, msg)
@@ -3712,7 +3915,7 @@ class Ipv6(BaseModel):
             data_to_queue = serializer.data
 
             # Deletes Obj IP
-            super(Ip, self).delete()
+            super(Ipv6, self).delete()
 
             # Sends to Queue
             queue_manager = QueueManager()
@@ -3755,7 +3958,7 @@ class Ipv6(BaseModel):
 
             # Deletes Related Equipment
             for ip_eqpt in self.ipv6equipament_set.all():
-                ip_eqpt.delete_v3()
+                ip_eqpt.delete_v3(bypass_ip=True)
 
             # Serializes obj
             ip_slz = get_app('api_ip', module_label='serializers')
@@ -3763,7 +3966,7 @@ class Ipv6(BaseModel):
             data_to_queue = serializer.data
 
             # Deletes Obj IP
-            super(Ip, self).delete()
+            super(Ipv6, self).delete()
 
             # Sends to Queue
             queue_manager = QueueManager()
@@ -4004,7 +4207,7 @@ class Ipv6Equipament(BaseModel):
         if self.ip.ipv6equipament_set.count() == 0:
             self.ip.delete()
 
-    def delete_v3(self):
+    def delete_v3(self, bypass_ip=False):
         """
         Method V3 to remove Ipv6 and Equipment relationship.
         If Ipv6 from this Ipv6-Equipment is associated with created Vip
@@ -4084,7 +4287,7 @@ class Ipv6Equipament(BaseModel):
         super(Ipv6Equipament, self).delete()
 
         # If ip has no other equipment, than he will be removed to
-        if self.ip.ipv6equipament_set.count() == 0:
+        if self.ip.ipv6equipament_set.count() == 0 and not bypass_ip:
             self.ip.delete_v3()
 
     def create_v3(self, ip_equipment):

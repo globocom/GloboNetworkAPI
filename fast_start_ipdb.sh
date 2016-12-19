@@ -4,7 +4,7 @@ source ipdb_env/bin/activate
 # pip install -r requirements.txt
 # pip install -r requirements_debug.txt
 echo "exporting NETWORKAPI_DEBUG"
-export NETWORKAPI_DEBUG=0
+export NETWORKAPI_DEBUG=1
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ipdb'

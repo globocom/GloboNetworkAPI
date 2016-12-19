@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.db.models import get_model
-
 from networkapi.infrastructure.ipaddr import IPNetwork
+from networkapi.util.geral import get_app
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +57,8 @@ def validate_network(envs, net_ip, version):
     """
     Verify if network make conflict in environment or environment related.
     """
-    ip_version = get_model('ambiente', 'IP_VERSION')
+
+    models = get_app('ambiente', 'models')
 
     # Filter network_ipv4 where environment has config permiting to insert
     # current network.
@@ -74,7 +74,7 @@ def validate_network(envs, net_ip, version):
             log.info('Environment %s has config(%s) permiting to insert '
                      'in this network %s' % (env.name, nts, net_ip))
 
-            if version == ip_version.IPv4[0]:
+            if version == models.IP_VERSION.IPv4[0]:
                 for vlan in env.vlans:
                     for network_ipv4 in vlan.networks_ipv4:
                         nets_envs.append(IPNetwork(network_ipv4.networkv4))
