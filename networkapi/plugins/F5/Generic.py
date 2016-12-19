@@ -388,6 +388,9 @@ class Generic(BasePlugin):
                 names=pls['pools_names'],
                 actions=pls['pools_actions'])
 
+            pl.set_minimum_active_member(
+                names=pls['pools_names'])
+
             plm = poolmember.PoolMember(self._lb)
 
             plm.set_connection_limit(

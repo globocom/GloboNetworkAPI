@@ -26,8 +26,6 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.roteiro.models import Roteiro
 from networkapi.tipoacesso.models import TipoAcesso
 
-IpCantBeRemovedFromVip = get_model('ip', 'IpCantBeRemovedFromVip')
-
 
 class EquipamentoError(Exception):
 
