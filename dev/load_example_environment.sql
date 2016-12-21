@@ -26,7 +26,12 @@ INSERT INTO `filter` VALUES (1,'Servidores','Servidores');
 
 
 -- Dumping data for table `ambiente`
-INSERT INTO `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao, link, acl_path, ipv4_template, ipv6_template, id_filter, min_num_vlan_1, max_num_vlan_1) VALUES (1,31,11,21,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Red',NULL,NULL,NULL,11,20,NULL,NULL),(2,32,12,22,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Blue',NULL,NULL,NULL,21,30,NULL,NULL),(3,33,13,23,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Green',NULL,NULL,NULL,31,31,NULL,NULL),(4,34,14,24,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Yellow',NULL,NULL,NULL,20,20,NULL,NULL),(5,35,15,25,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19,21,40);
+INSERT INTO `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao, link, acl_path, ipv4_template, ipv6_template, id_filter, min_num_vlan_1, max_num_vlan_1) VALUES 
+    (1,31,11,21,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Red',NULL,NULL,NULL,11,20),
+    (2,32,12,22,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Blue',NULL,NULL,NULL,21,30),
+    (3,33,13,23,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Green',NULL,NULL,NULL,31,31),
+    (4,34,14,24,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Yellow',NULL,NULL,NULL,20,20),
+    (5,35,15,25,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19);
 
 
 -- Dumping data for table `marcas`
@@ -50,19 +55,54 @@ INSERT INTO `ip_config` VALUES (1,'172.16.0.5/24','24','v4',2),(2,'10.0.0.5/24',
 
 
 -- Dumping data for table `vlans`
-INSERT INTO `vlans` VALUES (1,'Vlan 31',31,3,'','',1,1,NULL,0),(2,'Vlan 20',20,4,'','',1,1,NULL,0),(3,'Vlan 11',11,1,'','',1,1,NULL,0),(4,'Vlan 21',21,2,'','',1,1,NULL,0),(5,'Vlan 22',22,2,'','',1,1,NULL,0),(6,'Vlan 21',21,5,'','',1,1,NULL,0),(7,'Vlan 15',15,5,'','',1,1,NULL,0);
+INSERT INTO `vlans` VALUES
+(1,'Vlan 31',31,3,'','',1,1,NULL,0, 1, NULL, NULL),
+(2,'Vlan 20',20,4,'','',1,1,NULL,0, 1, NULL, NULL),
+(3,'Vlan 11',11,1,'','',1,1,NULL,0, 1, NULL, NULL),
+(4,'Vlan 21',21,2,'','',1,1,NULL,0, 1, NULL, NULL),
+(5,'Vlan 22',22,2,'','',1,1,NULL,0, 1, NULL, NULL),
+(6,'Vlan 21',21,5,'','',1,1,NULL,0, 1, NULL, NULL),
+(7,'Vlan 15',15,5,'','',1,1,NULL,0, 1, NULL, NULL);
 
 
 -- Dumping data for table `equipamentos`
-INSERT INTO `equipamentos` VALUES (1,1,1,'Switch R1'),(2,1,1,'Switch R2'),(3,1,1,'Switch R3'),(4,1,1,'Switch B1'),(5,1,1,'Switch B2'),(6,1,1,'Switch B3'),(7,1,1,'Switch 01'),(8,1,1,'Switch 02'),(9,1,1,'Switch 03'),(10,3,1,'SR1'),(11,3,1,'SR2'),(12,3,1,'Router'),(13,2,1,'Server S1');
+INSERT INTO `equipamentos` VALUES 
+(1,1,1,'Switch R1', 0),
+(2,1,1,'Switch R2', 0),
+(3,1,1,'Switch R3', 0),
+(4,1,1,'Switch B1', 0),
+(5,1,1,'Switch B2', 0),
+(6,1,1,'Switch B3', 0),
+(7,1,1,'Switch 01', 0),
+(8,1,1,'Switch 02', 0),
+(9,1,1,'Switch 03', 0),
+(10,3,1,'SR1', 0),
+(11,3,1,'SR2', 0),
+(12,3,1,'Router', 0),
+(13,2,1,'Server S1', 0);
 
 
 -- Dumping data for table `ambientevip`
-INSERT INTO `ambientevip` VALUES (1,'Red','Red','Red'),(2,'Red','Blue','red'),(3,'Red','Green','Red'),(4,'Red','Yellow','Red'),(5,'Red','Orange','Red'),(6,'Blue','Red','Red'),(7,'Blue','Blue','Red'),(8,'Blue','Blue','Blue'),(9,'Green','Green','Green'),(10,'Yellow','Yellow','Yellow'),(11,'Orange','Orange','Orange');
+INSERT INTO `ambientevip` VALUES
+(1,'Red','Red','Red', 'Red', NULL),
+(2,'Red','Blue','red', 'red', NULL),
+(3,'Red','Green','Red', 'Red', NULL),
+(4,'Red','Yellow','Red', 'Red', NULL),
+(5,'Red','Orange','Red', 'Red', NULL),
+(6,'Blue','Red','Red', 'Red', NULL),
+(7,'Blue','Blue','Red', 'Red', NULL),
+(8,'Blue','Blue','Blue', 'Blue', NULL),
+(9,'Green','Green','Green', 'Green', NULL),
+(10,'Yellow','Yellow','Yellow', 'Yellow', NULL),
+(11,'Orange','Orange','Orange', 'Orange', NULL);
 
 
 -- Dumping data for table `redeipv4`
-INSERT INTO `redeipv4` VALUES (1,1,192,168,0,0,30,255,255,255,0,2,'192.168.0.3',NULL,0),(2,2,192,168,1,0,30,255,255,255,0,2,'192.168.1.3',NULL,0),(3,4,172,16,0,5,24,255,255,255,0,2,'172.16.0.255',NULL,0),(4,7,10,0,0,5,30,255,255,255,0,2,'10.0.0.255',NULL,0);
+INSERT INTO `redeipv4` VALUES
+(1,1,192,168,0,0,30,255,255,255,0,2,'192.168.0.3',NULL,0, NULL),
+(2,2,192,168,1,0,30,255,255,255,0,2,'192.168.1.3',NULL,0, NULL),
+(3,4,172,16,0,5,24,255,255,255,0,2,'172.16.0.255',NULL,0, NULL),
+(4,7,10,0,0,5,30,255,255,255,0,2,'10.0.0.255',NULL,0, NULL);
 
 
 -- Dumping data for table `ips`
