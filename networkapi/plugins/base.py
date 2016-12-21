@@ -47,6 +47,7 @@ class BasePlugin(object):
     GUEST_PRIVILEGES = 'not defined'
 
     connect_port = 22
+    connect_max_retries = 3
     equipment = None
     equipment_access = None
     channel = None
@@ -98,9 +99,23 @@ class BasePlugin(object):
         self.remote_conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
-            self.remote_conn.connect(
-                device, port=self.connect_port, username=username, password=password)
-            self.channel = self.remote_conn.invoke_shell()
+            retries = 0
+            connected = 0
+            while(not connected and retries < self.connect_max_retries): 
+                try:
+                    self.remote_conn.connect(
+                        device, port=self.connect_port, username=username, password=password)
+                    self.channel = self.remote_conn.invoke_shell()
+                    connected = 1
+                except Exception, e:
+                    retries += 1
+                    # not capable of connecting after max retries
+                    if retries is self.connect_max_retries:
+                        raise Exception(e) 
+                    log.error('Try %s/%s - Error connecting to host %s: %s' % (retries, self.connect_max_retries, device, e))
+                    sleep(1)
+
+
         except IOError, e:
             log.error('Could not connect to host %s: %s' % (device, e))
             raise exceptions.ConnectionException(device)
