@@ -165,3 +165,17 @@ INSERT INTO `grupos` (id, nome, leitura, escrita, edicao, exclusao) VALUES
 INSERT INTO `usuarios_do_grupo`
     (id_usuarios_do_grupo, id_user, id_grupo) VALUES
     (1, 1, 1);
+
+-- Dumping data for table `permissions`
+INSERT INTO `permissions` (id_permission, function) VALUES
+    (1, 'administracao_usuarios'),
+    (2, 'administrativa'),
+    (3, 'cadastro_de_vlans');
+
+-- Dumping data for table `permissoes_administrativas`
+INSERT INTO `permissoes_administrativas`
+    (id_permissoes_administrativas, leitura, escrita, grupos_id,
+     permission_id) VALUES
+    (1, 1, 1, 1, 1),
+    (2, 1, 1, 1, 2),
+    (3, 1, 1, 1, 3);
