@@ -4,7 +4,7 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vlan import serializers
@@ -15,12 +15,12 @@ from networkapi.api_vlan.permissions import Write
 from networkapi.api_vlan.permissions import write_obj_permission
 from networkapi.distributedlock import LOCK_VLAN
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import create_lock
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
@@ -28,7 +28,7 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
-class VlanDBView(APIView):
+class VlanDBView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -69,7 +69,7 @@ class VlanDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
@@ -93,7 +93,7 @@ class VlanDBView(APIView):
             vl = facade.create_vlan(vlan, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_obj_permission])
@@ -113,7 +113,7 @@ class VlanDBView(APIView):
             vl = facade.update_vlan(vlan, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([delete_obj_permission])
@@ -135,4 +135,4 @@ class VlanDBView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse({}, status=status.HTTP_200_OK, request=request)
+        return Response({}, status=status.HTTP_200_OK)

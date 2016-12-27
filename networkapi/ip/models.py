@@ -27,6 +27,8 @@ from networkapi.api_vip_request import syncs
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
+from networkapi.distributedlock import LOCK_IP_EQUIPMENT
+from networkapi.distributedlock import LOCK_IP_EQUIPMENT_ONE
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
 from networkapi.distributedlock import LOCK_NETWORK_IPV6
 from networkapi.distributedlock import LOCK_VIP
@@ -124,6 +126,17 @@ class NetworkIPRangeEnvError(NetworkIPvXError):
     def __str__(self):
         msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
+
+class IpErrorV3(Exception):
+
+    """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return self.cause
 
 
 class IpError(Exception):
@@ -697,7 +710,17 @@ class NetworkIPv4(BaseModel):
                 self.allocate_network(
                     networkv4.get('vlan'), networkv4.get('prefix'))
                 valid_network = False
-
+            # Was send prefix and octs
+            elif self.block is not None and self.oct1 is not None and \
+                self.oct2 is not None and self.oct3 is not None and \
+                    self.oct4 is not None:
+                ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
+                self.broadcast = ip.broadcast.compressed
+                mask = ip.netmask.exploded.split('.')
+                self.mask_oct1 = mask[0]
+                self.mask_oct2 = mask[1]
+                self.mask_oct3 = mask[2]
+                self.mask_oct4 = mask[3]
             # Was not send correctly
             else:
                 raise NetworkIPv4ErrorV3(
@@ -708,7 +731,7 @@ class NetworkIPv4(BaseModel):
             # Validate network when not allocate
             if valid_network:
 
-                envs = self.vlan.get_environment_related()
+                envs = self.vlan.get_environment_related(use_vrf=True)
                 net_ip = [IPNetwork(self.networkv4)]
                 network.validate_network(envs, net_ip, IP_VERSION.IPv4[0])
 
@@ -914,8 +937,11 @@ class NetworkIPv4(BaseModel):
         vlan_model = get_model('vlan', 'Vlan')
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
-        nets_envs, netv6 = self.vlan.get_networks_related(
-            has_netv6=False, exclude_current=False)
+        nets_envs, netv6 = network.get_networks_related(
+            vrfs=self.vlan.get_vrf(),
+            eqpts=self.vlan.get_eqpt(),
+            has_netv6=False
+        )
         nets_envs = [IPNetwork(net.networkv4) for net in nets_envs]
         network_found = None
 
@@ -1782,223 +1808,184 @@ class Ip(BaseModel):
         except IpCantBeRemovedFromVip, e:
             raise IpCantBeRemovedFromVip(e.cause, e.message)
 
-    def validate_v3(self):
-        Equipamento = get_model('equipamento', 'Equipamento')
+    def validate_v3(self, equipments):
 
-# Criar ip
-#     - tem eqpts?
-#         - lock para associar EQPT_IP=com id do eqpt
-#             - eqpts=eqpts do requrst
-#     - para cada eqpts do requrst
-#         - pega ambientes associados
-#             - para cada ambiente
-#                 - o eqpt ta no filtro(para ignorar)?
-#                     sim:
-#                         ignora
-#                     não
-#                         - pegar "redes do eqpt" dentro da mesma vrf da rede do request, excluindo a usada no request
-#                         - verifica se a rede não é subnet ou supernet de alguma dessas redes
-
-
-# # LOCK_IP_EQUIPMENT_TWO
-#         for equipment in ip_map.get('equipments'):
-
-#             eqpt = Equipamento.get_by_pk(equipment.get('id'))
-
-#             env_filter = eqpt.environments.filter(
-#                 Q(ambiente__filter__filterequiptype__equiptype=eqpt.tipo_equipamento)
-#             )
-#             envs = eqpt.environments.exclude(ambiente__in=env_filter)
-# envs = envs.select_related('ambiente').values_list('ambiente',
-# flat=True))
-
-#             net_current = IPv4Network(self.networkipv4.networkv4)
-#             validate_network(envs, net_current)
-
-#             verify_networks
-
-
-#             for environment in env_no_filter:
-
-
-#                     # net_current in
-#                     # for vlanenvironment.vlans
-
-#             # Saving relationship with IP
-#             try:
-#                 ip_equipment = IpEquipamento()
-#                 ip_eqpt = {
-#                     'equipment': equipment.get('id'),
-#                     'ip': self.id
-#                 }
-#                 ip_equipment.create_v3(ip_eqpt)
-#             except Exception, e:
-#                 msg = u'Error adding new relationship ' \
-#                       'ip-equipment: %s' % ip_eqpt
-#                 self.log.error(msg)
-#                 raise IpError(e, msg)
-
-#             # Saving relationship with environment
-#             try:
-#                 equipment_environment = EquipamentoAmbiente()
-#                 eqpt_env = {
-#                     'equipment': equipment.get('id'),
-#                     'environment': self.networkipv4.vlan.ambiente_id
-#                 }
-#                 equipment_environment.create_v3(eqpt_env)
-
-#             except EquipamentoAmbienteDuplicatedError:
-#                 pass
-#             except Exception, e:
-#                 msg = u'Error adding new IP or relationship' \
-#                       ' environment-equipment: %s' % eqpt_env
-#                 self.log.error(msg)
-#                 raise IpError(
-#                     e, msg)
+        env_ip = self.networkipv4.vlan.ambiente
+        network.validate_conflict_join_envs(env_ip, equipments)
 
     def create_v3(self, ip_map):
+        """
+        Method V3 to create Ip.
+        """
 
-        # if ip_map.get('equipments'):
-        #     locks_list = create_lock(ip_map.get('equipments'), LOCK_IP_EQUIPMENT_ONE)
-
-        # destroy_lock(locks_list)
-
-        # already_ip = False
-
-        # self.networkipv4 = NetworkIPv4().get_by_pk(ip_map.get('networkipv4'))
-
-        # net4 = IPv4Network(self.networkipv4.networkv4)
-
-        # # Find all ips ralated to network
-        # ips = Ip.objects.filter(networkipv4=self.networkipv4)
-
-        # ip4_object = IPv4Address(self.ip_formated)
-
-        # # Cast all to API class
-        # ipsv4 = set([IPv4Address(self.ip_formated) for ip in ips])
-
-        # flag = False
-
-        # if ip4_object not in ipsv4:
-
-        #     if ip4_object in net4:
-
-        #         first_ip_network = int(net4.network)
-        #         bcast_ip_network = int(net4.broadcast)
-
-        #         ipv4_network = int(ip4_object)
-
-        #         if ipv4_network >= (first_ip_network) and ipv4_network < (bcast_ip_network):
-        #             flag = True
-
-        #         else:
-        #             raise IpNotAvailableError(
-        #                 None,
-        #                 u'Ip %s not available for network %s.' %
-        #                 (self.ip_formated, self.networkipv4.id))
-        # else:
-
-        #     # ip_aux = self.get_by_octs_and_net(
-        #     #     self.oct1, self.oct2, self.oct3, self.oct4, net.id)
-        #     # try:
-        #     #     IpEquipamento.get_by_ip(ip_aux.id)
-        #     #     raise IpEquipmentAlreadyAssociation(None,
-        #     #         u'Ip %s.%s.%s.%s already has association with an Equipament. '
-        #     #         'Try using the association screen for this Ip.' % (
-        #     #         self.ip_formated))
-        #     # except IpEquipmentNotFoundError, e:
-        #     #     flag = True
-        #         already_ip = True
-
-        # if flag:
-        #     equipment = Equipamento().get_by_pk(equipment_id)
-        #     ip_equipment = IpEquipamento()
-        #     if not already_ip:
-        #         self.networkipv4_id = net.id
-        #         self.save()
-        #         ip_equipment.ip = self
-
-        #     else:
-        #         ip_equipment.ip = ip_aux
-        #         if self.descricao is not None and len(self.descricao) > 0:
-        #             ip_aux.descricao = self.descricao
-        #             ip_aux.save()
-
-        #     ip_equipment.equipamento = equipment
-
-        #     # # Filter case 2 - Adding new IpEquip for a equip that already have ip in other network with the same range ##
-
-        #     # Get all IpEquipamento related to this equipment
-        #     ip_equips = IpEquipamento.objects.filter(
-        #         equipamento=equipment_id)
-
-        #     for ip_test in [ip_equip.ip for ip_equip in ip_equips]:
-        #         if ip_test.networkipv4.oct1 == self.networkipv4.oct1 and \
-        #                 ip_test.networkipv4.oct2 == self.networkipv4.oct2 and \
-        #                 ip_test.networkipv4.oct3 == self.networkipv4.oct3 and \
-        #                 ip_test.networkipv4.oct4 == self.networkipv4.oct4 and \
-        #                 ip_test.networkipv4.block == self.networkipv4.block and \
-        #                 ip_test.networkipv4 != self.networkipv4:
-
-        #             # Filter testing
-        #             if ip_test.networkipv4.vlan.ambiente.filter is None or self.networkipv4.vlan.ambiente.filter is None:
-        #                 raise IpRangeAlreadyAssociation(
-        #                     None, u'Eqm the same ip range.')
-        #             else:
-        #                 # Test both environment's filters
-        #                 tp_equip_list_one = list()
-        #                 for fet in FilterEquipType.objects.filter(filter=self.networkipv4.vlan.ambiente.filter.id):
-        #                     tp_equip_list_one.append(fet.equiptype)
-
-        #                 tp_equip_list_two = list()
-        #                 for fet in FilterEquipType.objects.filter(filter=ip_test.networkipv4.vlan.ambiente.filter.id):
-        #                     tp_equip_list_two.append(fet.equiptype)
-
-        #                 if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
-        #                     raise IpRangeAlreadyAssociation(
-        # None, u'Equipment is already associated with another ip with the same
-        # ip range.')
-
-        #     # # Filter case 2 - end ##
-
-        #     ip_equipment.save()
-
-        #     # Makes Environment Equipment association
-        #     try:
-        #         equipment_environment = EquipamentoAmbiente()
-        #         equipment_environment.equipamento = equipment
-        #         equipment_environment.ambiente = net.vlan.ambiente
-        #         equipment_environment.create(user)
-        #     except EquipamentoAmbienteDuplicatedError, e:
-        #         # If already exists, OK !
-        #         pass
-
-        # else:
-        #     raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (
-        #         self.oct1, self.oct2, self.oct3, self.oct4, net.id))
-
-        # except IpRangeAlreadyAssociation, e:
-        #     raise IpRangeAlreadyAssociation(None, e.message)
-        # except IpEquipmentAlreadyAssociation, e:
-        #     raise IpEquipmentAlreadyAssociation(None, e.message)
-        # except AddressValueError:
-        #     raise InvalidValueError(
-        #         None, 'ip', u'%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4))
-        # except IpNotAvailableError, e:
-        #     raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (
-        #         self.oct1, self.oct2, self.oct3, self.oct4, net.id))
-        # except (IpError, EquipamentoError), e:
-        #     self.log.error(
-        #         u'Error adding new IP or relationship ip-equipment.')
-        #     raise IpError(
-        #         e, u'Error adding new IP or relationship ip-equipment.')
+        models = get_app('equipamento', 'models')
 
         try:
-            self.save()
+
+            self.networkipv4 = NetworkIPv4().get_by_pk(ip_map.get('networkipv4'))
+            self.oct1 = ip_map.get('oct1')
+            self.oct2 = ip_map.get('oct2')
+            self.oct3 = ip_map.get('oct3')
+            self.oct4 = ip_map.get('oct4')
+            self.descricao = ip_map.get('description')
+
+            # Get environments related
+            envs = self.networkipv4.vlan.get_environment_related(use_vrf=True)\
+                .values_list('id', flat=True)
+
+            # Get objects of equipments
+            eqpts = models.Equipamento.objects.filter(id__in=[
+                eqpt.get('id') for eqpt in ip_map.get('equipments', [])]
+            )
         except Exception, e:
-            msg = u'Error save new IP.'
+            raise IpErrorV3(e)
+
+        else:
+
+            # Prepare locks for environment
+            locks_name = [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+
+            # Prepare locks for environments related with equipaments
+            for eqpt_obj in eqpts:
+                # Prepare locks for ips-equipments
+                locks_name.append(LOCK_IP_EQUIPMENT_ONE % eqpt_obj.id)
+                for env in eqpt_obj.environments:
+                    locks_name.append(LOCK_ENVIRONMENT_ALLOCATES %
+                                      env.ambiente_id)
+
+            # Create Locks
+            locks_name = list(set(locks_name))
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            net4 = IPv4Network(self.networkipv4.networkv4)
+
+            # Find all ips ralated to network
+            ips = Ip.objects.filter(networkipv4=self.networkipv4)
+
+            ip4_object = IPv4Address(self.ip_formated)
+
+            # Cast all to API class
+            ipsv4 = set([IPv4Address(ip.ip_formated) for ip in ips])
+
+            flag = False
+
+            if ip4_object not in ipsv4:
+
+                if ip4_object in net4:
+
+                    first_ip_network = int(net4.network)
+                    bcast_ip_network = int(net4.broadcast)
+
+                    ipv4_network = int(ip4_object)
+
+                    # First and last ip are reserved in network
+                    if ipv4_network >= (first_ip_network) and \
+                            ipv4_network < (bcast_ip_network):
+                        flag = True
+
+            if flag is False:
+                raise IpNotAvailableError(
+                    None,
+                    u'Ip %s not available for network %s.' %
+                    (self.ip_formated, self.networkipv4.id))
+
+            self.validate_v3(eqpts)
+
+            self.save()
+
+            for eqpt in ip_map.get('equipments', []):
+                ip_equipment = IpEquipamento()
+                ip_equipment.create_v3({
+                    'ip': self.id,
+                    'equipment': eqpt.get('id')
+                })
+
+        except IpErrorV3, e:
+            self.log.error(e)
+            raise IpErrorV3(e)
+        except Exception, e:
+            msg = u'Error save new IP.: %s' % e
             self.log.error(msg)
-            raise IpError(e, msg)
+            raise IpErrorV3(msg)
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+    def update_v3(self, ip_map):
+        """
+        Method V3 to create Ip.
+        """
+
+        models = get_app('equipamento', 'models')
+
+        try:
+            self.descricao = ip_map.get('description')
+
+            # Get environments related
+            envs = self.networkipv4.vlan.get_environment_related(use_vrf=True)\
+                .values_list('id', flat=True)
+
+            # Get objects of equipments
+            eqpts = models.Equipamento.objects.filter(id__in=[
+                eqpt.get('id') for eqpt in ip_map.get('equipments', [])]
+            )
+        except Exception, e:
+            raise IpErrorV3(e)
+
+        else:
+
+            # Prepare locks for environment
+            locks_name = [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+
+            # Prepare locks for environments related with equipaments
+            for eqpt_obj in eqpts:
+                # Prepare locks for ips-equipments
+                locks_name.append(LOCK_IP_EQUIPMENT %
+                                  (self.id, eqpt_obj.id))
+                for env in eqpt_obj.environments:
+                    locks_name.append(LOCK_ENVIRONMENT_ALLOCATES %
+                                      env.ambiente_id)
+
+            # Create Locks
+            locks_name = list(set(locks_name))
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+
+            self.validate_v3(eqpts)
+
+            self.save()
+
+            # Get current associates
+            current = self.ipequipamento_set\
+                .filter(equipamento__in=eqpts)\
+                .values_list('equipamento', flat=True)
+
+            # Creates new associate
+            for eqpt in eqpts:
+                if eqpt not in current:
+                    ip_equipment = IpEquipamento()
+                    ip_equipment.create_v3({
+                        'ip': self.id,
+                        'equipment': eqpt.id
+                    })
+
+            # Removes old associates
+            for ip_eqpt in self.ipequipamento_set\
+                    .exclude(equipamento__in=eqpts):
+                ip_eqpt.delete_v3()
+
+        except IpErrorV3, e:
+            self.log.error(e)
+            raise IpErrorV3(e)
+        except Exception, e:
+            msg = u'Error edit IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
 
     def allocate_v3(self, ip_map):
         """Persist an IPv4 and associate it to an equipment.
@@ -2259,6 +2246,7 @@ class IpEquipamento(BaseModel):
                                              pointing to ip.
         """
         tipoequipamento = get_model('equipamento', 'TipoEquipamento')
+        equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
 
         type_eqpt = tipoequipamento.get_tipo_balanceador()
 
@@ -2322,6 +2310,15 @@ class IpEquipamento(BaseModel):
 
         super(IpEquipamento, self).delete()
 
+        # # Get others Ipv4s related with the equipment
+        # ipsv4 = self.equipamento.ipequipamento_set.exclude(ip=self.ip)
+        # # Get Ipv6s related with the equipment
+        # ipsv6 = self.equipamento.ipv6equipament_set.all()
+
+        # # Deletes associate when has no more ips related
+        # if not ipsv4 and not ipsv6:
+        #     equipamentoambiente.get_by_equipment(self.equipamento)
+
         # If IP is not related to any other equipments, its removed
         if self.ip.ipequipamento_set.count() == 0 and not bypass_ip:
             self.ip.delete_v3()
@@ -2346,17 +2343,15 @@ class IpEquipamento(BaseModel):
 
         try:
 
-            # All equipments related with environment of IP
-            eqpts = self.ip.networkipv4.vlan.ambiente\
-                .equipamentoambiente_set.all()\
-                .values_list('equipamento', flat=True)
-
-            if ip_equipment.get('equipment') not in eqpts:
-                ea = equipamentoambiente(
-                    ambiente=self.ip.networkipv4.vlan.ambiente,
-                    equipamento=self.equipamento
-                )
-                ea.save()
+            try:
+                equipment_environment = equipamentoambiente()
+                equipment_environment.create_v3({
+                    'equipment': self.equipamento_id,
+                    'environment': self.ip.networkipv4.vlan.ambiente_id
+                })
+            except EquipamentoAmbienteDuplicatedError, e:
+                # If already exists, OK !
+                pass
 
             self.save()
         except Exception, e:
@@ -2875,15 +2870,6 @@ class NetworkIPv6(BaseModel):
                 self.mask6 = mask[5]
                 self.mask7 = mask[6]
                 self.mask8 = mask[7]
-
-            # Was send octs of mask
-            elif self.mask1 and self.mask2 and self.mask3 and self.mask4 and \
-                    self.mask5 and self.mask6 and self.mask7 and self.mask8:
-
-                ip = IPNetwork('%s/%s' %
-                               (self.formated_octs, self.mask_formated))
-                self.block = ip.prefixlen
-
             # Was not send correctly
             else:
                 self.log.error('There is need to send block ou mask.')
@@ -3096,8 +3082,11 @@ class NetworkIPv6(BaseModel):
         vlan_model = get_model('vlan', 'Vlan')
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
-        netv4, nets_envs = self.vlan.get_networks_related(
-            has_netv4=False, exclude_current=False)
+        netv4, nets_envs = network.get_networks_related(
+            vrfs=self.vlan.get_vrf(),
+            eqpts=self.vlan.get_eqpt(),
+            has_netv4=False
+        )
         nets_envs = [IPNetwork(net.networkv6) for net in nets_envs]
         network_found = None
 

@@ -26,6 +26,7 @@ from networkapi.api_rest.authentication import BasicAuthentication
 from networkapi.auth import authenticate
 from networkapi.distributedlock import LockNotAcquiredError
 from networkapi.error_message_utils import error_dumps
+from networkapi.extra_logging import local
 from networkapi.infrastructure.xml_utils import XMLError
 # from networkapi.usuario.models import UsuarioError
 
@@ -158,37 +159,63 @@ class RestResource(object):
         return user
 
     def not_authenticated(self):
-        return HttpResponse(
+        http_res = HttpResponse(
             u'401 - Usuário não autenticado. Usuário e/ou senha incorretos.',
             status=401,
             content_type='text/plain')
 
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
+
     def not_authorized(self):
-        return HttpResponse(
+        http_res = HttpResponse(
             u'402 - Usuário não autorizado para executar a operação.',
             status=402,
             content_type='text/plain')
 
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
+
     def not_implemented(self):
         """Cria um HttpResponse com o código HTTP 501 - Not implemented."""
-        return HttpResponse(
+        http_res = HttpResponse(
             u'501 - Chamada não implementada.',
             status=501,
             content_type='text/plain')
 
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
+
     def response_error(self, code, *args):
         """Cria um HttpResponse com o XML de erro."""
-        return HttpResponse(
+        http_res = HttpResponse(
             error_dumps(code, *args),
             status=500,
             content_type='text/plain')
 
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
+
     def response(self, content, status=200, content_type='text/plain'):
         """Cria um HttpResponse com os dados informados"""
-        return HttpResponse(
+
+        http_res = HttpResponse(
             content,
             status=status,
             content_type=content_type)
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
 
 
 class RestResponse:

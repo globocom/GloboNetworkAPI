@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.db.models import get_model
-
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-
-Ip = get_model('ip', 'Ip')
-Ipv6 = get_model('ip', 'Ipv6')
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpErrorV3
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import OperationalError
 
 log = logging.getLogger(__name__)
 
@@ -15,43 +19,76 @@ log = logging.getLogger(__name__)
 def delete_ipv4_list(ipv4_list):
     """Delete Ipv4."""
 
-    for ipv4 in ipv4_list:
-        ipv4_obj = get_ipv4_by_id(ipv4)
-        ipv4_obj.delete_v3()
+    try:
+        for ipv4 in ipv4_list:
+            ipv4_obj = get_ipv4_by_id(ipv4)
+            ipv4_obj.delete_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e)
+    except (IpError, IpErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(e)
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(e)
 
 
 def delete_ipv6_list(ipv6_list):
     """Delete Ipv6."""
 
-    for ipv6 in ipv6_list:
-        ipv6_obj = get_ipv6_by_id(ipv6)
-        ipv6_obj.delete_v3()
+    try:
+        for ipv6 in ipv6_list:
+            ipv6_obj = get_ipv6_by_id(ipv6)
+            ipv6_obj.delete_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e)
+    except (IpError, IpErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(e)
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(e)
 
 
 def create_ipv4(ipv4, user):
     """Creates a Ipv4."""
 
-    ipv4_obj = Ip()
-    ipv4_obj.create_v3(ipv4)
-
-    return ipv4_obj
+    try:
+        ipv4_obj = Ip()
+        ipv4_obj.create_v3(ipv4)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e)
+    except (IpError, IpErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(e)
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(e)
+    else:
+        return ipv4_obj
 
 
 def update_ipv4(ipv4, user):
     """Updates a Ipv4."""
 
-    netv4_obj = get_ipv4_by_id(ipv4.get('id'))
-    netv4_obj.update_v3(ipv4)
-
-    return netv4_obj
+    try:
+        ipv4_obj = get_ipv4_by_id(ipv4.get('id'))
+        ipv4_obj.update_v3(ipv4)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e)
+    except (IpError, IpErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(e)
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(e)
+    else:
+        return ipv4_obj
 
 
 def get_ipv4_by_id(ip_id):
     """Get Ipv4."""
 
-    network = Ip.get_by_pk(ip_id)
-
-    return network
+    try:
+        network = Ip.get_by_pk(ip_id)
+    except IpNotFoundError, e:
+        raise ObjectDoesNotExistException(e)
+    except (Exception, OperationalError), e:
+        raise NetworkAPIException(e)
+    else:
+        return network
 
 
 def get_ipv4_by_ids(ip_ids):
@@ -76,9 +113,14 @@ def get_ipv4_by_search(search=dict()):
 def get_ipv6_by_id(ip_id):
     """Get Ipv6."""
 
-    network = Ipv6.get_by_pk(ip_id)
-
-    return network
+    try:
+        network = Ipv6.get_by_pk(ip_id)
+    except IpNotFoundError, e:
+        raise ObjectDoesNotExistException(e)
+    except (Exception, OperationalError), e:
+        raise NetworkAPIException(e)
+    else:
+        return network
 
 
 def get_ipv6_by_ids(ip_ids):

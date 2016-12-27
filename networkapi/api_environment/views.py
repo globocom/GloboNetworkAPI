@@ -74,16 +74,15 @@ class EnvironmentDBView(APIView):
     @raise_json_validate('environment_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """
-        Create new environment
-        """
+        """Create new environment."""
+
         envs = request.DATA
         json_validate(SPECS.get('environment_post')).validate(envs)
         response = list()
-        for pool in envs['environments']:
+        for env in envs['environments']:
 
-            env = facade.create_environment(pool)
-            response.append({'id': env.id})
+            env_obj = facade.create_environment(env)
+            response.append({'id': env_obj.id})
 
         return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
 
@@ -92,17 +91,16 @@ class EnvironmentDBView(APIView):
     @raise_json_validate('environment_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """
-        Update environment
-        """
+        """Update environment."""
+
         envs = request.DATA
         json_validate(SPECS.get('environment_put')).validate(envs)
         response = list()
         for env in envs['environments']:
 
-            env = facade.update_environment(env)
+            env_obj = facade.update_environment(env)
             response.append({
-                'id': env.id
+                'id': env_obj.id
             })
 
         return CustomResponse(response, status=status.HTTP_200_OK, request=request)
@@ -111,9 +109,8 @@ class EnvironmentDBView(APIView):
     @logs_method_apiview
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """
-        Delete environment
-        """
+        """Delete environment."""
+
         env_ids = kwargs['environment_ids'].split(';')
         response = {}
         facade.delete_environment(env_ids)
@@ -127,9 +124,8 @@ class EnvEnvVipRelatedView(APIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """
-        Returns a list of environment by ids ou dict
-        """
+        """Returns a list of environment by ids ou dict."""
+
         try:
             only_main_property = True
             if not kwargs.get('environment_vip_id'):

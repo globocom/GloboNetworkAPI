@@ -12,31 +12,58 @@
         "type": "object",
         "properties": {
           "block1": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block2": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block3": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block4": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block5": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block6": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block7": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "block8": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "prefix": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "mask1": {
             "type": "string"

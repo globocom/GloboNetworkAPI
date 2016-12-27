@@ -1021,6 +1021,18 @@ class EquipamentoAmbiente(BaseModel):
             raise EquipamentoError(
                 e, u'Falha ao pesquisar o equipamento-ambiente.')
 
+    def get_by_environment(self, environment_id):
+        try:
+            return EquipamentoAmbiente.objects.get(ambiente__id=environment_id)
+        except ObjectDoesNotExist, e:
+            raise EquipamentoAmbienteNotFoundError(
+                e, u'Não existe um equipamento_ambiente com o ambiente = %s.' %
+                (environment_id))
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar o equipamento-ambiente.')
+            raise EquipamentoError(
+                e, u'Falha ao pesquisar o equipamento-ambiente.')
+
     @classmethod
     def get_by_equipment(cls, equipment_id):
         try:

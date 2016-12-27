@@ -933,29 +933,6 @@ class Vlan(BaseModel):
 
         return vrfs
 
-    def validate_num_vlan_v3(self):
-        """
-        Validate if number of vlan is duplicated in environment or
-        environment assoc with eqpt.
-        """
-
-        equips = self.get_eqpt()
-        vlan_model = get_model('vlan', 'Vlan')
-
-        # get vlans with same num_vlan
-        vlan = vlan_model.objects.filter(
-            ambiente__equipamentoambiente__equipamento__in=equips,
-            num_vlan=self.num_vlan
-        ).exclude(
-            id=self.id
-        )
-
-        if vlan:
-            msg = 'There is a registered VLAN with the number in ' \
-                'equipments of environment'
-            self.log.error(msg)
-            raise VlanErrorV3(msg)
-
     def validate_v3(self):
         """Make validations in values inputted."""
 
@@ -974,7 +951,9 @@ class Vlan(BaseModel):
             self.log.error(msg)
             raise VlanErrorV3(msg)
 
-        self.validate_num_vlan_v3()
+        # Validate Number of vlan in environment related
+        equips = self.get_eqpt()
+        network.validate_vlan_conflict(equips, self.num_vlan, self.id)
 
     def create_v3(self, vlan):
         """Create new vlan."""
@@ -1298,13 +1277,17 @@ class Vlan(BaseModel):
 
         return envs
 
-    def get_networks_related(self, has_netv4=True, has_netv6=True, exclude_current=True):
+    def get_networks_related(self, eqpts=None, has_netv4=True, has_netv6=True,
+                             exclude_current=True):
+
+        if not eqpts:
+            eqpts = self.get_eqpt()
 
         vlan_model = get_model('vlan', 'Vlan')
 
         vlans_env_eqpt = vlan_model.objects.filter(
             # get vlans of environment or environment assoc
-            ambiente__equipamentoambiente__equipamento__in=self.get_eqpt()
+            ambiente__equipamentoambiente__equipamento__in=eqpts
         ).filter(
             # get vlans with customized vrfs
             Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
@@ -1343,7 +1326,8 @@ class Vlan(BaseModel):
 
         self.allow_networks_environment(configs, netv4, netv6)
 
-        netv4, netv6 = self.get_networks_related()
+        netv4, netv6 = network.get_networks_related(
+            vrfs=self.get_vrf(), eqpts=self.eqpts, exclude=self.id)
 
         netv4_env_format = [IPNetwork(net.networkv4) for net in netv4]
         netv6_env_format = [IPNetwork(net.networkv6) for net in netv6]

@@ -641,6 +641,7 @@ class EnvironmentVip(BaseModel):
         self.delete()
 
     def create_v3(self, env_map):
+
         optionvip_model = get_model('requisicaovips', 'OptionVip')
         optionvipenvvip_model = get_model(
             'requisicaovips', 'OptionVipEnvironmentVip')
@@ -926,6 +927,22 @@ class Ambiente(BaseModel):
         return eqpts
 
     eqpts = property(_get_eqpt)
+
+    def _get_filtered_eqpt(self):
+        """Returns filtered eqpts of environment."""
+
+        eqpts = self.equipamentoambiente_set.all()
+
+        eqpts = eqpts.filter(
+            equipamento__in=eqpts.filter(
+                equipamento__tipo_equipamento__filterequiptype__filter=self.filter
+            )
+        ).prefetch_related('equipamento').distinct().values_list(
+            'equipamento', flat=True
+        )
+        return eqpts
+
+    filtered_eqpts = property(_get_filtered_eqpt)
 
     @classmethod
     def get_by_pk(cls, id):
@@ -1232,7 +1249,7 @@ class Ambiente(BaseModel):
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.vrf = env_map.get('vrf')
-            self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+            self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.validate_v3()
             self.save()
 

@@ -4,7 +4,7 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_equipment import permissions as perm_eqpt
 from networkapi.api_network.facade import v3 as facade
@@ -13,17 +13,17 @@ from networkapi.api_network.permissions import Write
 from networkapi.api_network.serializers import v3 as serializers
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
-class NetworkIPv4View(APIView):
+class NetworkIPv4View(CustomAPIView):
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
@@ -63,7 +63,7 @@ class NetworkIPv4View(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            return Response(data, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
@@ -87,7 +87,7 @@ class NetworkIPv4View(APIView):
             vl = facade.create_networkipv4(networkv4, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -101,7 +101,7 @@ class NetworkIPv4View(APIView):
         obj_ids = kwargs['obj_id'].split(';')
         facade.delete_networkipv4(obj_ids, request.user)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -121,10 +121,10 @@ class NetworkIPv4View(APIView):
             vl = facade.update_networkipv4(networkv4, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class NetworkIPv6View(APIView):
+class NetworkIPv6View(CustomAPIView):
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
@@ -165,7 +165,7 @@ class NetworkIPv6View(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            return Response(data, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
@@ -189,7 +189,7 @@ class NetworkIPv6View(APIView):
             vl = facade.create_networkipv6(networkv6, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -209,7 +209,7 @@ class NetworkIPv6View(APIView):
             vl = facade.update_networkipv6(networkv6, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -223,10 +223,10 @@ class NetworkIPv6View(APIView):
         obj_ids = kwargs['obj_id'].split(';')
         facade.delete_networkipv6(obj_ids, request.user)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class NetworkIPv4DeployView(APIView):
+class NetworkIPv4DeployView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
@@ -243,7 +243,7 @@ class NetworkIPv4DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
@@ -260,10 +260,10 @@ class NetworkIPv4DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class NetworkIPv6DeployView(APIView):
+class NetworkIPv6DeployView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
@@ -280,7 +280,7 @@ class NetworkIPv6DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
@@ -297,4 +297,4 @@ class NetworkIPv6DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)

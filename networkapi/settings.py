@@ -35,6 +35,8 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
+ALLOWED_HOSTS = ['*']
+
 # Configuração do arquivo de log do projeto.
 LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
