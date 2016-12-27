@@ -209,11 +209,6 @@ LOGGING = {
             'propagate': False,
             'handlers': ['log_file'],
         },
-        'rq.worker': {
-            'level': LOG_LEVEL,
-            'propagate': True,
-            'handlers': ['log_file'],
-        },
     },
     'root': {
         'level': LOG_LEVEL,
@@ -354,7 +349,6 @@ PROJECT_APPS = (
     'networkapi.tipoacesso',
     'networkapi.usuario',
     'networkapi.vlan',
-    'django_rq',
 )
 
 # Third party apps
