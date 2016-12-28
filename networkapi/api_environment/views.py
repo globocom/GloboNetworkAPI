@@ -4,7 +4,7 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_environment import facade
 from networkapi.api_environment import serializers
@@ -12,10 +12,10 @@ from networkapi.api_environment.permissions import Read
 from networkapi.api_environment.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -23,7 +23,7 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
-class EnvironmentDBView(APIView):
+class EnvironmentDBView(CustomAPIView):
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
@@ -63,7 +63,7 @@ class EnvironmentDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            return Response(data, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
@@ -84,7 +84,7 @@ class EnvironmentDBView(APIView):
             env_obj = facade.create_environment(env)
             response.append({'id': env_obj.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -103,7 +103,7 @@ class EnvironmentDBView(APIView):
                 'id': env_obj.id
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -115,10 +115,10 @@ class EnvironmentDBView(APIView):
         response = {}
         facade.delete_environment(env_ids)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class EnvEnvVipRelatedView(APIView):
+class EnvEnvVipRelatedView(CustomAPIView):
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
@@ -153,7 +153,7 @@ class EnvEnvVipRelatedView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            return Response(data, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)

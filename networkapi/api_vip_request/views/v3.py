@@ -4,7 +4,7 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request.facade import v3 as facade
@@ -19,12 +19,12 @@ from networkapi.api_vip_request.permissions import write_vip_permission
 from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import create_lock
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
@@ -36,7 +36,7 @@ from networkapi.util.json_validate import verify_ports_vip
 log = logging.getLogger(__name__)
 
 
-class VipRequestDeployView(APIView):
+class VipRequestDeployView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
     @permission_obj_apiview([deploy_vip_permission])
@@ -63,7 +63,7 @@ class VipRequestDeployView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
     @permission_obj_apiview([deploy_vip_permission])
@@ -90,7 +90,7 @@ class VipRequestDeployView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
     @permission_obj_apiview([deploy_vip_permission])
@@ -115,7 +115,7 @@ class VipRequestDeployView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
     @permission_obj_apiview([deploy_vip_permission])
@@ -138,10 +138,10 @@ class VipRequestDeployView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class VipRequestDBView(APIView):
+class VipRequestDBView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -184,7 +184,7 @@ class VipRequestDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
@@ -211,7 +211,7 @@ class VipRequestDBView(APIView):
             vp = facade.create_vip_request(vip, request.user)
             response.append({'id': vp.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_vip_permission])
@@ -238,7 +238,7 @@ class VipRequestDBView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse({}, status=status.HTTP_200_OK, request=request)
+        return Response({}, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([delete_vip_permission])
@@ -260,10 +260,10 @@ class VipRequestDBView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse({}, status=status.HTTP_200_OK, request=request)
+        return Response({}, status=status.HTTP_200_OK)
 
 
-class VipRequestDBDetailsView(APIView):
+class VipRequestDBDetailsView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -304,14 +304,14 @@ class VipRequestDBDetailsView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
 
 
-class VipRequestPoolView(APIView):
+class VipRequestPoolView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -354,7 +354,7 @@ class VipRequestPoolView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)

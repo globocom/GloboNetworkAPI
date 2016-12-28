@@ -18,7 +18,7 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_equipment import facade
 from networkapi.api_equipment.permissions import Read
@@ -26,11 +26,11 @@ from networkapi.api_equipment.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import LOCK_EQUIPMENT
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import create_lock
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 from networkapi.util.geral import render_to_json
@@ -43,7 +43,7 @@ serializers = get_app('api_equipment', module_label='serializers')
 log = logging.getLogger(__name__)
 
 
-class EquipmentView(APIView):
+class EquipmentView(CustomAPIView):
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
@@ -110,7 +110,7 @@ class EquipmentView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            return Response(data, status=status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()
@@ -133,7 +133,7 @@ class EquipmentView(APIView):
             eqpt = facade.create_equipment(equipment, request.user)
             response.append({'id': eqpt.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     # @permission_obj_apiview([write_obj_permission])
@@ -160,7 +160,7 @@ class EquipmentView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     # @permission_obj_apiview([delete_obj_permission])
@@ -180,4 +180,4 @@ class EquipmentView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse({}, status=status.HTTP_200_OK, request=request)
+        return Response({}, status=status.HTTP_200_OK)

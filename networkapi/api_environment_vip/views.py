@@ -5,7 +5,7 @@ import urllib
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_environment_vip import facade
@@ -14,10 +14,10 @@ from networkapi.api_environment_vip.permissions import Read
 from networkapi.api_environment_vip.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -25,7 +25,7 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
-class OptionVipEnvironmentVipOneView(APIView):
+class OptionVipEnvironmentVipOneView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -55,14 +55,13 @@ class OptionVipEnvironmentVipOneView(APIView):
                 exclude=self.exclude,
                 kind=self.kind
             )
-            return CustomResponse(serializer_options.data,
-                                  status=status.HTTP_200_OK, request=request)
+            return Response(serializer_options.data, status=status.HTTP_200_OK)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException()
 
 
-class EnvironmentVipStepOneView(APIView):
+class EnvironmentVipStepOneView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -110,13 +109,13 @@ class EnvironmentVipStepOneView(APIView):
             else:
                 evip_values = EnvironmentVip().list_all_finalitys()
 
-            return CustomResponse(evip_values, status=status.HTTP_200_OK, request=request)
+            return Response(evip_values, status=status.HTTP_200_OK)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException()
 
 
-class EnvironmentVipView(APIView):
+class EnvironmentVipView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -155,7 +154,7 @@ class EnvironmentVipView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.exception(exception)
@@ -178,7 +177,7 @@ class EnvironmentVipView(APIView):
                 'msg': 'success'
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -196,7 +195,7 @@ class EnvironmentVipView(APIView):
                 'id': ret.id
             })
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -207,10 +206,10 @@ class EnvironmentVipView(APIView):
         obj_ids = kwargs['obj_id'].split(';')
         facade.delete_environment_vip(obj_ids)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class OptionVipEnvironmentTypeVipView(APIView):
+class OptionVipEnvironmentTypeVipView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -249,14 +248,14 @@ class OptionVipEnvironmentTypeVipView(APIView):
                 )
                 data['optionsvip'].append(serializer_options.data)
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+            return Response(data, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException()
 
 
-class TypeOptionEnvironmentVipView(APIView):
+class TypeOptionEnvironmentVipView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -272,7 +271,7 @@ class TypeOptionEnvironmentVipView(APIView):
             type_option_vip = facade.get_type_option_vip_by_environment_vip_ids(
                 environment_vip_ids)
 
-            return CustomResponse(type_option_vip, status=status.HTTP_200_OK, request=request)
+            return Response(type_option_vip, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)

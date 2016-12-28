@@ -5,7 +5,7 @@ from datetime import datetime
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_pools.facade.v3 import base as facade
 from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
@@ -22,12 +22,12 @@ from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.distributedlock import LOCK_POOL
 from networkapi.requisicaovips import models as models_vips
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import create_lock
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
@@ -37,7 +37,7 @@ from networkapi.util.json_validate import verify_ports
 log = logging.getLogger(__name__)
 
 
-class PoolMemberStateView(APIView):
+class PoolMemberStateView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -53,7 +53,7 @@ class PoolMemberStateView(APIView):
             response = facade_pool_deploy.set_poolmember_state(
                 pools, request.user)
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -109,14 +109,14 @@ class PoolMemberStateView(APIView):
             )
 
             response['server_pools'] = serializer_server_pool.data
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
 
 
-class PoolDeployView(APIView):
+class PoolDeployView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -139,7 +139,7 @@ class PoolDeployView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -163,7 +163,7 @@ class PoolDeployView(APIView):
         finally:
             destroy_lock(locks_list)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
     @permission_obj_apiview([deploy_pool_permission])
@@ -187,10 +187,10 @@ class PoolDeployView(APIView):
             raise rest_exceptions.NetworkAPIException(exception)
         finally:
             destroy_lock(locks_list)
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class PoolDBDetailsView(APIView):
+class PoolDBDetailsView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -235,14 +235,14 @@ class PoolDBDetailsView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.exception(exception)
             raise rest_exceptions.NetworkAPIException(exception)
 
 
-class PoolDBView(APIView):
+class PoolDBView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -281,7 +281,7 @@ class PoolDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.exception(exception)
@@ -305,7 +305,7 @@ class PoolDBView(APIView):
             pl = facade.create_pool(pool, request.user)
             response.append({'id': pl.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_pool_permission])
@@ -328,7 +328,7 @@ class PoolDBView(APIView):
             # pl = facade.update_pool(pool)
             # response.append({'id': pl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([delete_pool_permission])
@@ -345,10 +345,10 @@ class PoolDBView(APIView):
         response = {}
         facade.delete_pool(pool_ids)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class PoolEnvironmentVip(APIView):
+class PoolEnvironmentVip(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -381,13 +381,13 @@ class PoolEnvironmentVip(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)
             raise rest_exceptions.NetworkAPIException(exception)
 
 
-class OptionPoolEnvironmentView(APIView):
+class OptionPoolEnvironmentView(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
@@ -425,7 +425,7 @@ class OptionPoolEnvironmentView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
         except Exception, exception:
             log.exception(exception)
             raise rest_exceptions.NetworkAPIException(exception)

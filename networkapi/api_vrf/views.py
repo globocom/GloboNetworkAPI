@@ -4,17 +4,17 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_environment.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vrf import facade
 from networkapi.api_vrf import serializers
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -22,7 +22,7 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
-class VrfDBView(APIView):
+class VrfDBView(CustomAPIView):
 
     @logs_method_apiview
     @prepare_search
@@ -63,7 +63,7 @@ class VrfDBView(APIView):
                 only_main_property=only_main_property
             )
 
-            return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception, exception:
             log.error(exception)
@@ -84,7 +84,7 @@ class VrfDBView(APIView):
             vrf = facade.create_vrf(vrf)
             response.append({'id': vrf.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -103,7 +103,7 @@ class VrfDBView(APIView):
                 'id': vrf.id
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -118,4 +118,4 @@ class VrfDBView(APIView):
             pass  # TODO When key is related to other tables, Django removes tuples of these tables
             # facade.delete_vrf(id)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
