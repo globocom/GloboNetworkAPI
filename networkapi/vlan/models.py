@@ -1088,23 +1088,23 @@ class Vlan(BaseModel):
             locks_list = create_lock_with_blocking(locks_name)
 
         try:
+            # Activate vlan can not be changed of environment
+            if old_vlan.ativada:
+
+                if old_vlan.ambiente != self.ambiente:
+
+                    msg = 'Environment can not be changed in vlan actived'
+                    self.log.error(msg)
+                    raise VlanErrorV3(None, msg)
+
+                if old_vlan.num_vlan != self.num_vlan:
+
+                    msg = 'Number Vlan can not be changed in vlan actived'
+                    self.log.error(msg)
+                    raise VlanErrorV3(None, msg)
+
             # If the environment was changed, create lock to validate
             if old_vlan.ambiente != self.ambiente:
-
-                # Activate vlan can not be changed of environment
-                if old_vlan.ativada:
-
-                    if old_vlan.ambiente != self.ambiente:
-
-                        msg = 'Environment can not be changed in vlan actived'
-                        self.log.error(msg)
-                        raise VlanErrorV3(None, msg)
-
-                    if old_vlan.num_vlan != self.num_vlan:
-
-                        msg = 'Number Vlan can not be changed in vlan actived'
-                        self.log.error(msg)
-                        raise VlanErrorV3(None, msg)
 
                 # If vlan has networks of environment, can not be changed
                 # of environment
@@ -1128,7 +1128,7 @@ class Vlan(BaseModel):
                 # Validate name and number
                 self.validate_v3()
 
-                self.save()
+            self.save()
 
         except Exception, e:
             raise VlanErrorV3(e)
