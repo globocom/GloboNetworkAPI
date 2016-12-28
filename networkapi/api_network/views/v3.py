@@ -11,7 +11,6 @@ from networkapi.api_network.facade import v3 as facade
 from networkapi.api_network.permissions import Read
 from networkapi.api_network.permissions import Write
 from networkapi.api_network.serializers import v3 as serializers
-from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
@@ -25,53 +24,47 @@ log = logging.getLogger(__name__)
 
 class NetworkIPv4View(CustomAPIView):
 
+    @raise_json_validate()
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """
-        Returns a list of networkv4 by ids ou dict
-        """
-        try:
+        """Returns a list of networkv4 by ids ou dict."""
 
-            if not kwargs.get('obj_id'):
-                obj_model = facade.get_networkipv4_by_search(self.search)
-                networks = obj_model['query_set']
-                only_main_property = False
-            else:
-                obj_ids = kwargs.get('obj_id').split(';')
-                networks = facade.get_networkipv4_by_ids(obj_ids)
-                only_main_property = True
-                obj_model = None
+        if not kwargs.get('obj_id'):
+            obj_model = facade.get_networkipv4_by_search(self.search)
+            networks = obj_model['query_set']
+            only_main_property = False
+        else:
+            obj_ids = kwargs.get('obj_id').split(';')
+            networks = facade.get_networkipv4_by_ids(obj_ids)
+            only_main_property = True
+            obj_model = None
 
-            # serializer networks
-            serializer_net = serializers.NetworkIPv4V3Serializer(
-                networks,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        # serializer networks
+        serializer_net = serializers.NetworkIPv4V3Serializer(
+            networks,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # prepare serializer with customized properties
-            data = render_to_json(
-                serializer_net,
-                main_property='networks',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
+        # prepare serializer with customized properties
+        data = render_to_json(
+            serializer_net,
+            main_property='networks',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            return Response(data, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-
+    @raise_json_validate('networkv4_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('networkv4_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -89,6 +82,7 @@ class NetworkIPv4View(CustomAPIView):
 
         return Response(response, status=status.HTTP_201_CREATED)
 
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @commit_on_success
@@ -103,9 +97,9 @@ class NetworkIPv4View(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
+    @raise_json_validate('networkv4_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('networkv4_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -126,54 +120,47 @@ class NetworkIPv4View(CustomAPIView):
 
 class NetworkIPv6View(CustomAPIView):
 
+    @raise_json_validate()
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """
-        Returns a list of networkv6 by ids ou dict
-        """
+        """Returns a list of networkv6 by ids ou dict."""
 
-        try:
+        if not kwargs.get('obj_id'):
+            obj_model = facade.get_networkipv6_by_search(self.search)
+            networks = obj_model['query_set']
+            only_main_property = False
+        else:
+            obj_ids = kwargs.get('obj_id').split(';')
+            networks = facade.get_networkipv6_by_ids(obj_ids)
+            only_main_property = True
+            obj_model = None
 
-            if not kwargs.get('obj_id'):
-                obj_model = facade.get_networkipv6_by_search(self.search)
-                networks = obj_model['query_set']
-                only_main_property = False
-            else:
-                obj_ids = kwargs.get('obj_id').split(';')
-                networks = facade.get_networkipv6_by_ids(obj_ids)
-                only_main_property = True
-                obj_model = None
+        # serializer networks
+        serializer_net = serializers.NetworkIPv6V3Serializer(
+            networks,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # serializer networks
-            serializer_net = serializers.NetworkIPv6V3Serializer(
-                networks,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        # prepare serializer with customized properties
+        data = render_to_json(
+            serializer_net,
+            main_property='networks',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            # prepare serializer with customized properties
-            data = render_to_json(
-                serializer_net,
-                main_property='networks',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
+        return Response(data, status=status.HTTP_200_OK)
 
-            return Response(data, status=status.HTTP_200_OK)
-
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-
+    @raise_json_validate('networkv6_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('networkv6_post')
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -191,9 +178,9 @@ class NetworkIPv6View(CustomAPIView):
 
         return Response(response, status=status.HTTP_201_CREATED)
 
+    @raise_json_validate('networkv6_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('networkv6_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -211,6 +198,7 @@ class NetworkIPv6View(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @commit_on_success
@@ -228,6 +216,7 @@ class NetworkIPv6View(CustomAPIView):
 
 class NetworkIPv4DeployView(CustomAPIView):
 
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
     @commit_on_success
@@ -245,6 +234,7 @@ class NetworkIPv4DeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
     @commit_on_success
@@ -265,6 +255,7 @@ class NetworkIPv4DeployView(CustomAPIView):
 
 class NetworkIPv6DeployView(CustomAPIView):
 
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
     @commit_on_success
@@ -282,6 +273,7 @@ class NetworkIPv6DeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
     @commit_on_success

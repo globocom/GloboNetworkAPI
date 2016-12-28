@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import json
 import logging
 from functools import wraps
@@ -19,9 +19,11 @@ def verify_ports(pools):
         v6 = list()
         for member in pool['server_pool_members']:
             if member['ip']:
-                ips.append((resolve(member, '#/ip/id'), resolve(member, '#/port_real')))
+                ips.append((resolve(member, '#/ip/id'),
+                            resolve(member, '#/port_real')))
             if member['ipv6']:
-                v6.append((resolve(member, '#/ipv6/id'), resolve(member, '#/port_real')))
+                v6.append((resolve(member, '#/ipv6/id'),
+                           resolve(member, '#/port_real')))
 
         if len(ips) != len(list(set(ips))):
             raise ValidationError(
@@ -68,7 +70,8 @@ def raise_json_validate(info=None):
 
                 if error.flatten():
                     for pointer, reasons in error.flatten().items():
-                        valor = resolve(error[1], pointer) if pointer != '#/' else ''
+                        valor = resolve(
+                            error[1], pointer) if pointer != '#/' else ''
                         msg.append({
                             'error_pointer': pointer,
                             'received_value': valor,
@@ -85,16 +88,40 @@ def raise_json_validate(info=None):
                 }
                 if info:
                     protocol = 'https' if request.is_secure() else 'http'
-                    res['spec'] = '%s://%s/api/v3/help/%s/' % (protocol, request.get_host(), info)
+                    res['spec'] = '%s://%s/api/v3/help/%s/' % (
+                        protocol, request.get_host(), info)
                 log.error(res)
                 raise rest_exceptions.ValidationExceptionJson(res)
-            except (exceptions_api.APIException, exceptions_api.AuthenticationFailed,
-                    exceptions_api.MethodNotAllowed, exceptions_api.NotAcceptable,
-                    exceptions_api.NotAuthenticated, exceptions_api.ParseError,
-                    exceptions_api.PermissionDenied, exceptions_api.Throttled,
-                    exceptions_api.UnsupportedMediaType, rest_exceptions.ValidationAPIException), error:
-                log.error(error)
-                raise error
+            except exceptions_api.APIException, error:
+                log.exception(error)
+                raise exceptions_api.APIException(error)
+            except exceptions_api.AuthenticationFailed, error:
+                log.exception(error)
+                raise exceptions_api.AuthenticationFailed(error)
+            except exceptions_api.MethodNotAllowed, error:
+                log.exception(error)
+                raise exceptions_api.MethodNotAllowed(error)
+            except exceptions_api.NotAcceptable, error:
+                log.exception(error)
+                raise exceptions_api.NotAcceptable(error)
+            except exceptions_api.NotAuthenticated, error:
+                log.exception(error)
+                raise exceptions_api.NotAuthenticated(error)
+            except exceptions_api.ParseError, error:
+                log.exception(error)
+                raise exceptions_api.ParseError(error)
+            except exceptions_api.PermissionDenied, error:
+                log.exception(error)
+                raise exceptions_api.PermissionDenied(error)
+            except exceptions_api.Throttled, error:
+                log.exception(error)
+                raise exceptions_api.Throttled(error)
+            except exceptions_api.UnsupportedMediaType, error:
+                log.exception(error)
+                raise exceptions_api.UnsupportedMediaType(error)
+            except rest_exceptions.ValidationAPIException, error:
+                log.exception(error)
+                raise rest_exceptions.ValidationAPIException(error)
             except Exception, error:
                 log.error(error)
                 raise rest_exceptions.NetworkAPIException(error)
