@@ -8,7 +8,7 @@ CREATE TABLE `vrf_eqpt` (
   `id_vrf` INT UNSIGNED NOT NULL COMMENT '',
   `id_equipment` INT UNSIGNED NOT NULL COMMENT '',
   `internal_name` VARCHAR(45) NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
+  PRIMARY KEY (`id`),
   INDEX `fk_vrf_eqpt_id_vrf_idx` (`id_vrf` ASC)  COMMENT '',
   INDEX `fk_vrf_eqpt_id_eqpt_idx` (`id_equipment` ASC)  COMMENT '',
   UNIQUE INDEX `uq_vrf_eqpt_2` (`id_vrf` ASC, `id_equipment` ASC)  COMMENT '',
