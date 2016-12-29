@@ -9,9 +9,9 @@ CREATE TABLE `vrf_eqpt` (
   `id_equipment` INT UNSIGNED NOT NULL COMMENT '',
   `internal_name` VARCHAR(45) NULL COMMENT '',
   PRIMARY KEY (`id`),
-  INDEX `fk_vrf_eqpt_id_vrf_idx` (`id_vrf` ASC)  COMMENT '',
-  INDEX `fk_vrf_eqpt_id_eqpt_idx` (`id_equipment` ASC)  COMMENT '',
-  UNIQUE INDEX `uq_vrf_eqpt_2` (`id_vrf` ASC, `id_equipment` ASC)  COMMENT '',
+  INDEX `fk_vrf_eqpt_id_vrf_idx` (`id_vrf` ASC),
+  INDEX `fk_vrf_eqpt_id_eqpt_idx` (`id_equipment` ASC),
+  UNIQUE INDEX `uq_vrf_eqpt_2` (`id_vrf` ASC, `id_equipment` ASC),
   CONSTRAINT `fk_vrf_eqpt_id_vrf`
     FOREIGN KEY (`id_vrf`)
     REFERENCES `vrf` (`id`)
@@ -25,7 +25,7 @@ CREATE TABLE `vrf_eqpt` (
 
 ALTER TABLE `ambiente`
 ADD COLUMN `id_vrf` INT UNSIGNED NULL COMMENT '' AFTER `id_father_environment`,
-ADD INDEX `fk_ambiente_id_vrf_idx` (`id_vrf` ASC)  COMMENT '';
+ADD INDEX `fk_ambiente_id_vrf_idx` (`id_vrf` ASC);
 
 ALTER TABLE `ambiente`
 ADD CONSTRAINT `fk_ambiente_default_vrf`

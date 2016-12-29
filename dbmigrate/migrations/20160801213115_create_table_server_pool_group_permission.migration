@@ -9,8 +9,8 @@ CREATE TABLE `server_pool_group_permission` (
   `change_config` CHAR(1) NOT NULL COMMENT '',
   `delete` CHAR(1) NOT NULL COMMENT '',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uniq_user_group_server_pool` (`id_user_group` ASC, `id_server_pool` ASC)  COMMENT '',
-  INDEX `fk_server_pool_group_permission_id_server_pool_idx` (`id_server_pool` ASC)  COMMENT '',
+  UNIQUE INDEX `uniq_user_group_server_pool` (`id_user_group` ASC, `id_server_pool` ASC),
+  INDEX `fk_server_pool_group_permission_id_server_pool_idx` (`id_server_pool` ASC),
   CONSTRAINT `fk_server_pool_group_permission_id_server_pool`
     FOREIGN KEY (`id_server_pool`)
     REFERENCES `server_pool` (`id_server_pool`)
@@ -31,8 +31,8 @@ CREATE TABLE `vip_request_group_permission` (
   `change_config` CHAR(1) NOT NULL COMMENT '',
   `delete` CHAR(1) NOT NULL COMMENT '',
   PRIMARY KEY (`id`),
-  INDEX `uniq_user_group_vip_request` (`id_user_group` ASC, `id_vip_request` ASC)  COMMENT '',
-  INDEX `fk_vip_request_gp_id_vip_request_idx` (`id_vip_request` ASC)  COMMENT '',
+  INDEX `uniq_user_group_vip_request` (`id_user_group` ASC, `id_vip_request` ASC),
+  INDEX `fk_vip_request_gp_id_vip_request_idx` (`id_vip_request` ASC),
   CONSTRAINT `fk_vip_request_gp_id_vip_request`
     FOREIGN KEY (`id_vip_request`)
     REFERENCES `vip_request` (`id`)

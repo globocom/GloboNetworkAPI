@@ -5,8 +5,8 @@ CREATE TABLE `vip_request_dscp` (
   `id_vip_request` INT(11) UNSIGNED NOT NULL COMMENT '',
   `dscp` INT(2) UNSIGNED NOT NULL COMMENT '',
   PRIMARY KEY (`id`),
-  INDEX `fk_vip_request_dscp_id_vip_request_idx` (`id_vip_request` ASC)  COMMENT '',
-  INDEX `vip_request_dscp_idx` (`dscp` ASC)  COMMENT '',
+  INDEX `fk_vip_request_dscp_id_vip_request_idx` (`id_vip_request` ASC),
+  INDEX `vip_request_dscp_idx` (`dscp` ASC),
   CONSTRAINT `fk_ vip_request_dscp_id_vip_request`
     FOREIGN KEY (`id_vip_request`)
     REFERENCES `networkapi`.`vip_request` (`id`)
