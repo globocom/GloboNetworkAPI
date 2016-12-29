@@ -113,7 +113,12 @@ class EnvironmentDBView(CustomAPIView):
 
         env_ids = kwargs['environment_ids'].split(';')
         response = {}
-        facade.delete_environment(env_ids)
+
+        try:
+            facade.delete_environment(env_ids)
+        except Exception as e:
+            log.error(e)
+            raise api_exceptions.NetworkAPIException(e)
 
         return Response(response, status=status.HTTP_200_OK)
 
