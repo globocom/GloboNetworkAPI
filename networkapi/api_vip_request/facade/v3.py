@@ -290,18 +290,16 @@ def _update_port(ports, vip_request):
             except:
                 pl = models.VipRequestPortPool()
                 pl.vip_request_port_id = pt.id
-                pl.server_pool_id = pool.get('server_pool')
             finally:
                 if pl.optionvip_id != pool.get('l7_rule') or \
                         pl.val_optionvip != pool.get('l7_value') or \
                         pl.order != pool.get('order') or \
                         pl.server_pool_id != pool.get('server_pool'):
+                    pl.server_pool_id = pool.get('server_pool')
                     pl.optionvip_id = pool.get('l7_rule')
                     pl.val_optionvip = pool.get('l7_value')
                     pl.order = pool.get('order')
                     pl.save()
-            pools.append(pl.id)
-
             pools.append(pl.id)
 
         # delete pool by port
@@ -643,7 +641,7 @@ def update_real_vip_request(vip_requests, user):
             many=False,
             include=('ports__identifier',)
         )
-        serializer_vips_data = copy.deepcopy(serializer_vips.data)
+        slz_vips_old = copy.deepcopy(serializer_vips.data)
 
         # validate and save
         validate_save(vip, True)
@@ -658,77 +656,98 @@ def update_real_vip_request(vip_requests, user):
         )
         vip_request = copy.deepcopy(serializer_vips.data)
 
+        # Ids of ports of old vip
         ids_port_old = [port.get('id')
-                        for port in serializer_vips_data.get('ports')]
-        ids_port_upt = [port.get('id') for port in vip_request.get(
-            'ports') if port.get('id')]
+                        for port in slz_vips_old.get('ports')]
+
+        # Ids of ports of new vip
+        ids_port_upt = [port.get('id')
+                        for port in vip_request.get('ports')]
+
+        # Ids of ports to delete
         ids_port_to_del = list(set(ids_port_old) - set(ids_port_upt))
 
-        # ports to change and insert
+        # Ports to change or insert
         for idx_port, port in enumerate(vip_request.get('ports')):
-            # change port
-            if port.get('id'):
 
-                # idx port old
-                idx_port_old = ids_port_old.index(port.get('id'))
-                # port old
-                port_old = serializer_vips_data.get('ports')[idx_port_old]
-                # ids pools old
-                ids_pool_old = [pool.get('id')
-                                for pool in port_old.get('pools')]
+            # Port changed
+            if port.get('id') in ids_port_old:
 
-                # ids pools changed
-                ids_pool_cur = [pool.get('id') for pool in port.get('pools')]
+                # Get old port
+                idx_old_port = ids_port_old.index(port.get('id'))
+                old_port = slz_vips_old.get('ports')[idx_old_port]
 
-                # ids to delete
-                ids_pool_to_del = list(set(ids_pool_old) - set(ids_pool_cur))
+                # Ids of old pools
+                ids_old_pool = [pool.get('id')
+                                for pool in old_port.get('pools')]
 
-                # pools to delete in port
+                # Ids of new pools
+                ids_upt_pool = [pool.get('id') for pool in port.get('pools')]
+
+                # Ids of pools to delete
+                ids_pool_to_del = list(set(ids_old_pool) - set(ids_upt_pool))
+
+                # Ids of pools to insert
+                ids_pool_to_ins = list(set(ids_upt_pool) - set(ids_old_pool))
+
+                # Ids of pools with same ids
+                ids_pool_equal = list(set(ids_upt_pool) & set(ids_old_pool))
+
+                # Pools to insert in port
+                for id_pool in ids_pool_to_ins:
+                    idx_pool = ids_upt_pool.index(id_pool)
+                    vip_request['ports'][idx_port][
+                        'pools'][idx_pool]['insert'] = True
+
+                # Pools to delete in port
                 for id_pool in ids_pool_to_del:
-                    # idx pool to delete
-                    idx_pool_del = ids_pool_old.index(id_pool)
 
-                    # pool to delete
-                    pool_del = copy.deepcopy(
-                        port_old.get('pools')[idx_pool_del])
+                    # Indexs pool to delete
+                    idx_pool_del = ids_old_pool.index(id_pool)
+
+                    # Pool to delete
+                    pool_del = copy\
+                        .deepcopy(old_port.get('pools')[idx_pool_del])
                     pool_del['delete'] = True
+
+                    # Addes pool in list pools of port
                     vip_request['ports'][idx_port]['pools'].append(pool_del)
 
                 # pools to delete in port when id of internal controle was not
                 # changed.
                 # Example: OLD - Id: 1, Server_pool: 12, ..
                 #          NEW - Id: 1, Server_pool: 13, ..
+                for id_pool in ids_pool_equal:
 
-                ids_pool_to_del = list(set(ids_pool_cur) & set(ids_pool_old))
-                for id_pool in ids_pool_to_del:
-                    # idx pool to delete
-                    if id_pool:
-                        idx_pool_old = ids_pool_old.index(id_pool)
-                        idx_pool_cur = ids_pool_cur.index(id_pool)
+                    idx_pool_old = ids_old_pool.index(id_pool)
+                    idx_pool_cur = ids_upt_pool.index(id_pool)
 
-                        # server_pool was changed
-                        if port_old.get('pools')[idx_pool_old]['server_pool'] != \
-                                port.get('pools')[idx_pool_cur]['server_pool']:
-                            # pool to delete
-                            pool_del = copy.deepcopy(
-                                port_old.get('pools')[idx_pool_old])
-                            pool_del['delete'] = True
-                            vip_request['ports'][idx_port][
-                                'pools'].append(pool_del)
+                    # server_pool was changed
+                    if old_port.get('pools')[idx_pool_old]['server_pool'] != \
+                            port.get('pools')[idx_pool_cur]['server_pool']:
+                        # pool to delete
+                        pool_del = copy\
+                            .deepcopy(old_port.get('pools')[idx_pool_old])
+                        pool_del['delete'] = True
+                        vip_request['ports'][idx_port]['pools']\
+                            .append(pool_del)
 
-        # ports to delete
+            # New port
+            else:
+                vip_request['ports'][idx_port]['insert'] = True
+
+        # Ports to delete
         for id_port in ids_port_to_del:
             # idx pool to delete
             idx_port_del = ids_port_old.index(id_port)
 
-            # port to delete
-            port_del = copy.deepcopy(
-                serializer_vips_data.get('ports')[idx_port_del])
+            # Port to delete
+            port_del = copy.deepcopy(slz_vips_old.get('ports')[idx_port_del])
             port_del['delete'] = True
             vip_request['ports'].append(port_del)
 
-        load_balance = prepare_apply(
-            load_balance, vip_request, created=True, user=user)
+        load_balance = prepare_apply(load_balance, vip_request,
+                                     created=True, user=user)
 
         keys.append(sorted([str(key) for key in load_balance.keys()]))
 
