@@ -11,7 +11,7 @@ CREATE TABLE `vrf_vlan_eqpt` (
   `id_vrf` INT UNSIGNED NOT NULL COMMENT '',
   `id_vlan` INT UNSIGNED NOT NULL COMMENT '',
   `id_equipment` INT UNSIGNED NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
+  PRIMARY KEY (`id`),
   INDEX `fk_vrf_vlan_eqpt_id_vrf_idx` (`id_vrf` ASC)  COMMENT '',
   INDEX `fk_vrf_vlan_eqpt_id_vlan_idx` (`id_vlan` ASC)  COMMENT '',
   INDEX `fk_vrf_vlan_eqpt_id_eqpt_idx` (`id_equipment` ASC)  COMMENT '',
