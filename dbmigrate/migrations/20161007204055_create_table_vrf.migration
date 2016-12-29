@@ -3,7 +3,7 @@ SQL_UP = u"""
 CREATE TABLE `vrf` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `vrf` VARCHAR(45) NULL COMMENT '',
-  PRIMARY KEY (`id`));
+  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `vrf_vlan_eqpt` (
@@ -36,5 +36,5 @@ CREATE TABLE `vrf_vlan_eqpt` (
 
 SQL_DOWN = u"""
 DROP TABLE `vrf_vlan_eqpt`;
-DROP TABLE `vrf`
+DROP TABLE `vrf`;
 """
