@@ -170,8 +170,8 @@ INSERT INTO `usuarios_do_grupo`
 INSERT INTO `permissions` (id_permission, function) VALUES
     (1, 'administracao_usuarios'),
     (2, 'administrativa'),
-    (3, 'cadastro_de_vlans');
-    (4, 'cadastro_de_ambiente');
+    (3, 'cadastro_de_vlans'),
+    (4, 'cadastro_de_ambiente'),
     (5, 'cadastro_de_equipamentos');
 
 -- Dumping data for table `permissoes_administrativas`
@@ -180,6 +180,9 @@ INSERT INTO `permissoes_administrativas`
      permission_id) VALUES
     (1, 1, 1, 1, 1),
     (2, 1, 1, 1, 2),
-    (3, 1, 1, 1, 3);
-    (4, 1, 1, 1, 4);
+    (3, 1, 1, 1, 3),
+    (4, 1, 1, 1, 4),
     (5, 1, 1, 1, 5);
+
+-- Dumping data for table `vrf`
+INSERT INTO `vrf` (id, internal_name, vrf) values (1, 'default', 'default');
