@@ -1292,7 +1292,7 @@ class Ambiente(BaseModel):
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.vrf = env_map.get('vrf')
-            self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+            self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
