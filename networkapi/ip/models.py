@@ -3627,7 +3627,7 @@ class Ipv6(BaseModel):
             data_to_queue = serializer.data
 
             # Deletes Obj IP
-            super(Ip, self).delete()
+            super(Ipv6, self).delete()
 
             # Sends to Queue
             queue_manager = QueueManager()
