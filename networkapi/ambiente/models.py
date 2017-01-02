@@ -1253,9 +1253,11 @@ class Ambiente(BaseModel):
             self.validate_v3()
             self.save()
 
-            # save configs
-            for config in env_map.get('configs'):
-                IPConfig.create(self.id, config)
+            configs = env_map.get('configs')
+            if configs:
+                # save configs
+                for config in configs:
+                    IPConfig.create(self.id, config)
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
