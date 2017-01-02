@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import random
 import re
 import string
 import unicodedata
@@ -114,7 +115,7 @@ class BasePlugin(object):
                         raise Exception(e)
                     log.error('Try %s/%s - Error connecting to host %s: %s' %
                               (retries, self.connect_max_retries, device, e))
-                    sleep(1)
+                    sleep(random.randint(1, 15))
 
         except IOError, e:
             log.error('Could not connect to host %s: %s' % (device, e))
