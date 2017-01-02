@@ -222,6 +222,8 @@ def trata_param_vip(vips):
     pool_filter = list()
     ids_pool_filter = list()
     vips_cache_filter = list()
+    vips_cache_filter_to_delete = list()
+    vips_cache_filter_to_insert = list()
 
     # when pool already created in eqpt
     pool_filter_created = list()
@@ -448,7 +450,17 @@ def trata_param_vip(vips):
                                 vip_cache_filter['optionsvip'][
                                     'traffic_group'] = definition.get('value')
 
-                    vips_cache_filter.append(vip_cache_filter)
+                    # port(vip_port) to delete in update of vip
+                    if port.get('delete'):
+                        vips_cache_filter_to_delete.append(vip_cache_filter)
+
+                    # port(vip_port) to insert in update of vip
+                    elif port.get('insert'):
+                        vips_cache_filter_to_insert.append(vip_cache_filter)
+
+                    # vips to create/delete/update
+                    else:
+                        vips_cache_filter.append(vip_cache_filter)
 
     # remove pools in both lists(to delete and to insert)
     to_delete = list(
@@ -469,6 +481,8 @@ def trata_param_vip(vips):
         'vips_filter': vips_filter,
         'pool_filter': pool_filter,
         'vips_cache_filter': vips_cache_filter,
+        'vips_cache_filter_to_delete': vips_cache_filter_to_delete,
+        'vips_cache_filter_to_insert': vips_cache_filter_to_insert,
         'pool_filter_created': pool_filter_created,
         # used only in update of vips
         'pool_filter_to_delete': pool_filter_to_delete,
