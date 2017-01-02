@@ -20,6 +20,7 @@ import unicodedata
 from time import sleep
 
 import paramiko
+import random
 
 from . import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
@@ -113,7 +114,7 @@ class BasePlugin(object):
                     if retries is self.connect_max_retries:
                         raise Exception(e) 
                     log.error('Try %s/%s - Error connecting to host %s: %s' % (retries, self.connect_max_retries, device, e))
-                    sleep(1)
+                    sleep(random.randint(1,15))
 
 
         except IOError, e:
