@@ -146,10 +146,12 @@ class Generic(BasePlugin):
         vts = virtualserver.VirtualServer(self._lb)
 
         dict_create_vip = {
+            'vips_cache': tratado.get('vips_cache_filter_to_insert'),
             'vips': tratado.get('vips_filter_to_insert'),
             'pool': tratado.get('pool_filter_to_insert')
         }
         dict_delete_vip = {
+            'vips_cache': tratado.get('vips_cache_filter_to_delete'),
             'vips': tratado.get('vips_filter_to_delete'),
             'pool_created': list()
         }
