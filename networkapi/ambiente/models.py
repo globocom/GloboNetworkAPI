@@ -630,6 +630,14 @@ class EnvironmentVip(BaseModel):
         super(EnvironmentVip, self).delete()
 
     def delete_v3(self):
+
+        from networkapi.ip.models import NetworkIPv4
+
+        entry = NetworkIPv4.objects.filter(ambient_vip=self.id)
+
+        if len(entry) > 0:
+            raise Exception
+
         # Deletes options related
         self.optionvipenvironmentvip_set\
             .filter(environment_id=self.id).delete()
@@ -651,6 +659,11 @@ class EnvironmentVip(BaseModel):
 
         optionsvip = env_map.get('optionsvip', None)
         environments = env_map.get('environments', None)
+
+        self.finalidade_txt = env_map.get('finalidade_txt')
+        self.cliente_txt = env_map.get('cliente_txt')
+        self.ambiente_p44_txt = env_map.get('ambiente_p44_txt')
+        self.description = env_map.get('description')
 
         self.save()
 
