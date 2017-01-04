@@ -1492,14 +1492,14 @@ def _get_available_ips_to_add_server_pool(equip_name, id_ambiente):
 
     # # Get all IPV4's Equipment
     for environment in environment_list_related:
-        for ipequip in equip.ipequipamento_set.select_related().all():
+        for ipequip in equip.ipequipamento_set.select_related('ambiente').all():
             network_ipv4 = ipequip.ip.networkipv4
             if network_ipv4.vlan.ambiente == environment:
                 lista_ips_equip.add(ipequip.ip)
 
     # # Get all IPV6's Equipment
     for environment in environment_list_related:
-        for ipequip in equip.ipv6equipament_set.select_related().all():
+        for ipequip in equip.ipv6equipament_set.select_related('ambiente').all():
             network_ipv6 = ipequip.ip.networkipv6
             if network_ipv6.vlan.ambiente == environment:
                 lista_ipsv6_equip.add(ipequip.ip)

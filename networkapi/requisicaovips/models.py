@@ -369,7 +369,7 @@ class OptionVip(BaseModel):
         """
         try:
 
-            ovips = OptionVip.objects.select_related().all()
+            ovips = OptionVip.objects.all()
             ovips = ovips.filter(tipo_opcao__icontains='timeout')
             ovips = ovips.filter(
                 optionvipenvironmentvip__environment__id=int(id_environment_vip))
@@ -390,7 +390,7 @@ class OptionVip(BaseModel):
         """
         try:
 
-            ovips = OptionVip.objects.select_related().all()
+            ovips = OptionVip.objects.all()
             ovips = ovips.filter(tipo_opcao__icontains='balanceamento')
             ovips = ovips.filter(
                 optionvipenvironmentvip__environment__id=int(id_environment_vip))
@@ -411,7 +411,7 @@ class OptionVip(BaseModel):
         """
         try:
 
-            ovips = OptionVip.objects.select_related().all()
+            ovips = OptionVip.objects.all()
             ovips = ovips.filter(tipo_opcao__icontains='HealthCheck')
             ovips = ovips.filter(
                 optionvipenvironmentvip__environment__id=int(id_environment_vip))
@@ -435,7 +435,7 @@ class OptionVip(BaseModel):
 
         try:
 
-            ovips = OptionVip.objects.select_related().all()
+            ovips = OptionVip.objects.all()
 
             ovips = ovips.filter(tipo_opcao__icontains='trafego')
 
@@ -461,7 +461,7 @@ class OptionVip(BaseModel):
         """
         try:
 
-            ovips = OptionVip.objects.select_related().all()
+            ovips = OptionVip.objects.all()
             ovips = ovips.filter(tipo_opcao__icontains='persistencia')
             ovips = ovips.filter(
                 optionvipenvironmentvip__environment__id=int(id_environment_vip))
@@ -482,7 +482,7 @@ class OptionVip(BaseModel):
         """
         try:
 
-            ovips = OptionVip.objects.select_related().all()
+            ovips = OptionVip.objects.all()
             ovips = ovips.filter(tipo_opcao__icontains='cache')
             ovips = ovips.filter(
                 optionvipenvironmentvip__environment__id=int(id_environment_vip))
@@ -1759,7 +1759,7 @@ class RequisicaoVips(BaseModel):
             lista_amb_div_4 = list()
 
             # GET DIVISAO DC AND AMBIENTE_LOGICO OF NET4
-            for net in evip.networkipv4_set.select_related().all():
+            for net in evip.networkipv4_set.all():
 
                 dict_div_4 = dict()
                 dict_div_4['divisao_dc'] = net.vlan.ambiente.divisao_dc_id
@@ -1770,7 +1770,7 @@ class RequisicaoVips(BaseModel):
                     lista_amb_div_4.append(dict_div_4)
 
             # Get all IPV4's Equipment
-            for ipequip in equip.ipequipamento_set.select_related().all():
+            for ipequip in equip.ipequipamento_set.all():
                 if ipequip.ip not in lista_ips_equip:
                     for dict_div_amb in lista_amb_div_4:
                         if ipequip.ip.networkipv4.ambient_vip is not None and ipequip.ip.networkipv4.ambient_vip.id == evip.id:
@@ -1795,7 +1795,7 @@ class RequisicaoVips(BaseModel):
             lista_ipsv6_equip = list()
 
             # GET DIVISAO DC AND AMBIENTE_LOGICO OF NET6
-            for net in evip.networkipv6_set.select_related().all():
+            for net in evip.networkipv6_set.all():
 
                 dict_div_6 = dict()
                 dict_div_6['divisao_dc'] = net.vlan.ambiente.divisao_dc
@@ -1805,7 +1805,7 @@ class RequisicaoVips(BaseModel):
                     lista_amb_div_6.append(dict_div_6)
 
             # Get all IPV6'S Equipment
-            for ipequip in equip.ipv6equipament_set.select_related().all():
+            for ipequip in equip.ipv6equipament_set.all():
                 if ipequip.ip not in lista_ipsv6_equip:
                     for dict_div_amb in lista_amb_div_6:
                         if ipequip.ip.networkipv6.ambient_vip is not None and ipequip.ip.networkipv6.ambient_vip.id == evip.id:

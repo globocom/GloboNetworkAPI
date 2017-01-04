@@ -60,12 +60,16 @@ def _prepare_apply(pools, user):
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
-            serializer_vips = serializers_vip.VipRequestV3Serializer(
-                vips_requests,
-                many=True,
-                kind='details',
-                include=('ports__identifier',)
-            )
+            if 'Brocade' in plugin.__module__:
+                serializer_vips = serializers_vip.VipRequestV3Serializer(
+                    vips_requests,
+                    many=True,
+                    kind='details',
+                    include=('ports__identifier',)
+                )
+                vips = serializer_vips.data
+            else:
+                vips = []
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -73,7 +77,7 @@ def _prepare_apply(pools, user):
                 'lb_method': pool['lb_method'],
                 'healthcheck': healthcheck,
                 'action': pool['servicedownaction']['name'],
-                'vips': serializer_vips.data,
+                'vips': vips,
                 'pools_members': [{
                     'id': pool_member['id'],
                     'identifier': pool_member['identifier'],
@@ -257,12 +261,16 @@ def update_real_pool(pools, user):
 
             vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
 
-            serializer_vips = serializers_vip.VipRequestV3Serializer(
-                vips_requests,
-                many=True,
-                kind='details',
-                include=('ports__identifier',)
-            )
+            if 'Brocade' in plugin.__module__:
+                serializer_vips = serializers_vip.VipRequestV3Serializer(
+                    vips_requests,
+                    many=True,
+                    kind='details',
+                    include=('ports__identifier',)
+                )
+                vips = serializer_vips.data
+            else:
+                vips = []
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -270,7 +278,7 @@ def update_real_pool(pools, user):
                 'lb_method': pool['lb_method'],
                 'healthcheck': healthcheck,
                 'action': pool['servicedownaction']['name'],
-                'vips': serializer_vips.data,
+                'vips': vips,
                 'pools_members': pools_members
             })
 

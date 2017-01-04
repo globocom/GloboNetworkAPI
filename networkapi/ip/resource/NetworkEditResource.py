@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -64,10 +64,10 @@ class NetworkEditResource(RestResource):
     log = logging.getLogger('NetworkEditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to edit an Network.
+        """Handles POST requests to edit an Network.
 
         URL: network/edit/
-        '''
+        """
 
         self.log.info('Edit an Network')
 
@@ -153,7 +153,7 @@ class NetworkEditResource(RestResource):
                                 '%d.%d.%d.%d/%d' % (net.oct1, net.oct2, net.oct3, net.oct4, net.block))
 
                             # Find all networks related to environment vip
-                            nets = NetworkIPv4.objects.select_related().filter(
+                            nets = NetworkIPv4.objects.filter(
                                 ambient_vip__id=id_env_vip.id)
 
                             # Cast to API class
@@ -166,7 +166,8 @@ class NetworkEditResource(RestResource):
                                 raise NetworkIpAddressNotAvailableError(
                                     None, u'Unavailable address to create a NetworkIPv4.')
 
-                    net.edit_network_ipv4(user, id_net_type, id_env_vip, cluster_unit)
+                    net.edit_network_ipv4(
+                        user, id_net_type, id_env_vip, cluster_unit)
 
             # EDIT NETWORK IP6
             else:
@@ -182,7 +183,7 @@ class NetworkEditResource(RestResource):
                                 net.block1, net.block2, net.block3, net.block4, net.block5, net.block6, net.block7, net.block8, net.block))
 
                             # Find all networks related to environment vip
-                            nets = NetworkIPv6.objects.select_related().filter(
+                            nets = NetworkIPv6.objects.filter(
                                 ambient_vip__id=id_env_vip.id)
 
                             # Cast to API class
@@ -224,10 +225,10 @@ class NetworkEditResource(RestResource):
             return self.response_error(1)
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Handles PUT requests to create Network and Vlan.
+        """Handles PUT requests to create Network and Vlan.
 
         URL: network/create/
-        '''
+        """
 
         try:
 

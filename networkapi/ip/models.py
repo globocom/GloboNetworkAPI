@@ -1009,7 +1009,7 @@ class Ip(BaseModel):
         """
 
         try:
-            return Ip.objects.select_related().filter(networkipv4__vlan__ambiente__id=id_ambiente, ipequipamento__equipamento__id=id_equipment)
+            return Ip.objects.filter(networkipv4__vlan__ambiente__id=id_ambiente, ipequipamento__equipamento__id=id_equipment)
         except ObjectDoesNotExist, e:
             raise IpNotFoundError(
                 e, u'There is no IP with network_id = %s.' % id)
@@ -3035,7 +3035,7 @@ class Ipv6(BaseModel):
         """
 
         try:
-            return Ipv6.objects.select_related().filter(
+            return Ipv6.objects.filter(
                 networkipv6__vlan__ambiente__id=id_ambiente,
                 ipv6equipament__equipamento__id=id_equipment)
         except ObjectDoesNotExist, e:

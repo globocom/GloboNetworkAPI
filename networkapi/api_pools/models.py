@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -19,16 +18,19 @@ from __future__ import with_statement
 import logging
 
 from _mysql_exceptions import OperationalError
-
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.ambiente.models import Ambiente
+from networkapi.exception import InvalidValueError
+from networkapi.exception import OptionPoolEnvironmentDuplicatedError
+from networkapi.exception import OptionPoolEnvironmentError
+from networkapi.exception import OptionPoolEnvironmentNotFoundError
+from networkapi.exception import OptionPoolError
+from networkapi.exception import OptionPoolNotFoundError
 from networkapi.models.BaseModel import BaseModel
-from networkapi.exception import InvalidValueError, OptionPoolEnvironmentDuplicatedError, OptionPoolError, OptionPoolNotFoundError, \
-    OptionPoolEnvironmentNotFoundError, OptionPoolEnvironmentError
-from networkapi.util import is_valid_string_maxsize, is_valid_option
+from networkapi.util import is_valid_option
+from networkapi.util import is_valid_string_maxsize
 
 
 class OpcaoPool(BaseModel):
@@ -43,7 +45,8 @@ class OpcaoPool(BaseModel):
 
 
 class OpcaoPoolAmbiente(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id_opcaopool_ambiente_xref')
+    id = models.AutoField(
+        primary_key=True, db_column='id_opcaopool_ambiente_xref')
     opcao_pool = models.ForeignKey(OpcaoPool, db_column='id_opcaopool')
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
 
@@ -68,12 +71,12 @@ class OptionPool (BaseModel):
         managed = True
 
     def valid_option_pool(self, optionpool_map):
-        '''Validate the values ​​of option pool
+        """Validate the values ​​of option pool
 
         @param optionpool_map: Map with the data of the request.
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Get XML data
         type = optionpool_map.get('type')
@@ -142,22 +145,23 @@ class OptionPool (BaseModel):
         """
         try:
 
-            opools = OptionPool.objects.select_related().all()
+            opools = OptionPool.objects.all()
             opools = opools.filter(type=optiontype)
             opools = opools.filter(
                 optionpoolenvironment__environment__id=int(id_environment))
 
             return opools
         except Exception, e:
-            cls.log.error(u'Failure to list all Option Pool in environment')  # , %(optiontype, id_environment) )
+            # , %(optiontype, id_environment) )
+            cls.log.error(u'Failure to list all Option Pool in environment')
             raise OptionPoolError(
                 e, u'Failure to list all Option Pool in environment id')  # , %(optiontype, id_environment)
 
     def delete(self):
-        '''Override Django's method to remove option vip
+        """Override Django's method to remove option vip
 
         Before removing the option pool removes all relationships with environment vip.
-        '''
+        """
 
         # Remove all related OptionPool environment
         for option_environment in OptionPoolEnvironment.objects.filter(option=self.id):
@@ -168,7 +172,8 @@ class OptionPool (BaseModel):
 
 class OptionPoolEnvironment(BaseModel):
 
-    id = models.AutoField(primary_key=True, db_column='id_optionspool_environment_xref')
+    id = models.AutoField(
+        primary_key=True, db_column='id_optionspool_environment_xref')
     option = models.ForeignKey(OptionPool, db_column='id_optionspool')
     environment = models.ForeignKey(Ambiente, db_column='id_environment')
 

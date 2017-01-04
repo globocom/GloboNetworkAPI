@@ -8,10 +8,6 @@ from networkapi.equipamento.models import EquipamentoAmbiente
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
 
-# from networkapi.admin_permission import AdminPermission
-# from networkapi.auth import has_perm
-
-
 log = logging.getLogger(__name__)
 
 
@@ -36,7 +32,6 @@ def get_equipment_by_ids(equipment_ids):
 
 
 def all_equipments_are_in_maintenance(equipment_list):
-
     all_equips_in_maintenance = True
     for equipment in equipment_list:
         all_equips_in_maintenance &= equipment.maintenance
@@ -50,7 +45,6 @@ def get_routers_by_environment(environment_id):
 
 
 def get_equipment_map(equipment):
-
     equipment_map = dict()
     equipment_map['id'] = equipment.id
     equipment_map['nome'] = equipment.nome
@@ -75,6 +69,18 @@ def get_equipments(**kwargs):
 
     """
     eqpts = Equipamento.objects.all()
+
+    if kwargs.get('name', None) is not None:
+        q_filter_name = {
+            'nome': kwargs.get('name')
+        }
+        eqpts = eqpts.filter(Q(**q_filter_name))
+
+    if kwargs.get('environment', None) is not None:
+        q_filter_environment = {
+            'equipamentoambiente__ambiente': kwargs.get('environment')
+        }
+        eqpts = eqpts.filter(Q(**q_filter_environment))
 
     if kwargs.get('user', None) is not None:
         q_filter_user = {
@@ -101,34 +107,12 @@ def get_equipments(**kwargs):
         }
         eqpts = eqpts.filter(Q(**q_filter_router))
 
-    if kwargs.get('name', None) is not None:
-        q_filter_router = {
-            'nome': kwargs.get('name')
-        }
-        eqpts = eqpts.filter(Q(**q_filter_router))
-
-    if kwargs.get('environment', None) is not None:
-        q_filters = [{
-            'ipequipamento__ip__networkipv4__vlan__ambiente__environmentenvironmentvip'
-            '__environment_vip__networkipv4__vlan__ambiente': kwargs.get('environment')
-        },
-            {
-            'ipv6equipament__ip__networkipv6__vlan__ambiente__environmentenvironmentvip'
-            '__environment_vip__networkipv6__vlan__ambiente': kwargs.get('environment')
-        }]
-
-        eqpts = eqpts.filter(
-            reduce(lambda x, y: x | y, [Q(**q_filter)
-                                        for q_filter in q_filters])
-        )
-
     eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
 
     return eqpts
 
 
 def all_equipments_can_update_config(equipment_list, user):
-
     for equipment in equipment_list:
         q_filter = {
             'equipamentogrupo__egrupo__direitosgrupoequipamento__'
