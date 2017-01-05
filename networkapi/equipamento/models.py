@@ -543,6 +543,9 @@ class Equipamento(BaseModel):
         db_table = u'equipamentos'
         managed = True
 
+    def __str__(self):
+        return self.nome
+
     def _get_groups(self):
         groups = self.grupos.all()
         return groups

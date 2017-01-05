@@ -1016,7 +1016,7 @@ class Vlan(BaseModel):
 
                 netv4_obj = net4_model()
 
-                netv4_obj.create_v3(dict_net, use_lock=False)
+                netv4_obj.create_v3(dict_net, locks_used=locks_name)
 
             # Allocates networkv6
             if vlan.get('create_networkv6'):
@@ -1038,7 +1038,7 @@ class Vlan(BaseModel):
 
                 netv6_obj = net6_model()
 
-                netv6_obj.create_v3(dict_net, use_lock=False)
+                netv6_obj.create_v3(dict_net, locks_used=locks_name)
         except Exception, e:
             raise VlanErrorV3(e)
         finally:
