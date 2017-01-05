@@ -41,12 +41,15 @@ INSERT INTO `filter` VALUES (1,'Servidores','Servidores');
 
 
 -- Dumping data for table `ambiente`
-INSERT INTO `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao, link, acl_path, ipv4_template, ipv6_template, id_filter, min_num_vlan_1, max_num_vlan_1) VALUES
-    (1,31,11,21,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Red',NULL,NULL,NULL,11,20),
-    (2,32,12,22,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Blue',NULL,NULL,NULL,21,30),
-    (3,33,13,23,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Green',NULL,NULL,NULL,31,31),
-    (4,34,14,24,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Yellow',NULL,NULL,NULL,20,20),
-    (5,35,15,25,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19);
+INSERT INTO `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao, link, acl_path, ipv4_template, ipv6_template, id_filter, min_num_vlan_1, max_num_vlan_1, min_num_vlan_2, max_num_vlan_2) VALUES
+    (1,31,11,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Red',NULL,NULL,NULL,11,20,NULL,NULL),
+    (2,32,12,22,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Blue',NULL,NULL,NULL,21,30,NULL,NULL),
+    (3,33,13,23,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Green',NULL,NULL,NULL,31,31,NULL,NULL),
+    (4,34,14,24,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Yellow',NULL,NULL,NULL,20,20,NULL,NULL),
+    (5,35,15,25,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19,NULL,NULL),
+    (6,35,11,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Other Color',NULL,NULL,NULL,1,500,501,1000),
+    (7,32,13,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL),
+    (8,33,14,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL);
 
 
 -- Dumping data for table `marcas`
@@ -71,6 +74,12 @@ INSERT INTO `tipo_rede` VALUES
     (11,'Rede valida VIP');
 
 
+-- Dumping data for table `opcoesvip`
+INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
+    (1, 'Retorno de trafego', 'Normal'),
+    (2, 'cache', 'CACHOS-DEV');
+    
+
 -- Dumping data for table `modelos`
 INSERT INTO `modelos` VALUES (1,'MODELO',1);
 
@@ -80,8 +89,15 @@ INSERT INTO `ip_config` VALUES
     (1,'172.16.0.5/24','24','v4',2),
     (2,'10.0.0.5/24','24','v4',2),
     (3,'192.168.0.0/30','30','v4',2),
-    (4,'192.168.1.0/30','30','v4',2);
+    (4,'192.168.1.0/30','30','v4',2),
+    (5,'10.237.128.0/18','28','v4',2),
+    (6,'fdbe:bebe:bebe:1200:0:0:0:0/57','64','v6',2);
 
+
+-- Dumping data for table `ip_config`
+INSERT INTO `config_do_ambiente` (id_config_do_ambiente, id_ambiente, id_ip_config) VALUES
+    (1,6,5),
+    (2,6,6);
 
 -- Dumping data for table `vlans`
 INSERT INTO `vlans` VALUES
@@ -172,7 +188,8 @@ INSERT INTO `permissions` (id_permission, function) VALUES
     (2, 'administrativa'),
     (3, 'cadastro_de_vlans'),
     (4, 'cadastro_de_ambiente'),
-    (5, 'cadastro_de_equipamentos');
+    (5, 'cadastro_de_equipamentos'),
+    (6, 'opcao_vip');
 
 -- Dumping data for table `permissoes_administrativas`
 INSERT INTO `permissoes_administrativas`
@@ -182,7 +199,9 @@ INSERT INTO `permissoes_administrativas`
     (2, 1, 1, 1, 2),
     (3, 1, 1, 1, 3),
     (4, 1, 1, 1, 4),
-    (5, 1, 1, 1, 5);
+    (5, 1, 1, 1, 5),
+    (6, 1, 1, 1, 6);
+
 
 -- Dumping data for table `vrf`
 INSERT INTO `vrf` (id, internal_name, vrf) values (1, 'default', 'default');
