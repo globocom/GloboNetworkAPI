@@ -681,7 +681,7 @@ class NetworkIPv4(BaseModel):
             # Environment vip
             if networkv4.get('environmentvip'):
                 environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-                self.environmentvip = environmentvip_model().get_by_pk(
+                self.ambient_vip = environmentvip_model().get_by_pk(
                     networkv4.get('environmentvip'))
 
             # Get environments related
@@ -2850,7 +2850,7 @@ class NetworkIPv6(BaseModel):
             # has environmentvip
             if networkv6.get('environmentvip'):
                 environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-                self.environmentvip = environmentvip_model().get_by_pk(
+                self.ambient_vip = environmentvip_model().get_by_pk(
                     networkv6.get('environmentvip'))
 
             # Get environments related

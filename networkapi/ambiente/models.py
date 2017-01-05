@@ -28,6 +28,7 @@ from networkapi.api_pools import exceptions
 from networkapi.api_vrf.models import Vrf
 from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
+from networkapi.exception import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
@@ -630,6 +631,18 @@ class EnvironmentVip(BaseModel):
         super(EnvironmentVip, self).delete()
 
     def delete_v3(self):
+
+        from networkapi.ip.models import NetworkIPv4
+        from networkapi.ip.models import NetworkIPv6
+
+        entry_netipv4 = NetworkIPv4.objects.filter(ambient_vip=self.id)
+        entry_netipv6 = NetworkIPv6.objects.filter(ambient_vip=self.id)
+
+
+        if len(entry_netipv4) > 0 or len(entry_netipv6) > 0:
+            raise EnvironmentVipAssociatedToSomeNetworkError(
+                None, 'Environment Vip is associated to some IPv4 or IPv6 Network and therefore cannot be deleted.')
+
         # Deletes options related
         self.optionvipenvironmentvip_set\
             .filter(environment_id=self.id).delete()
@@ -651,6 +664,11 @@ class EnvironmentVip(BaseModel):
 
         optionsvip = env_map.get('optionsvip', None)
         environments = env_map.get('environments', None)
+
+        self.finalidade_txt = env_map.get('finalidade_txt')
+        self.cliente_txt = env_map.get('cliente_txt')
+        self.ambiente_p44_txt = env_map.get('ambiente_p44_txt')
+        self.description = env_map.get('description')
 
         self.save()
 
@@ -1292,7 +1310,7 @@ class Ambiente(BaseModel):
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.vrf = env_map.get('vrf')
-            self.default_vrf = Vrf.get_by_pk(env_map.get('vrf'))
+            self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
 
         except Exception, e:
             raise EnvironmentErrorV3(e)

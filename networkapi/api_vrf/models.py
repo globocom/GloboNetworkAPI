@@ -42,14 +42,14 @@ class Vrf(BaseModel):
             return Vrf.objects.filter(id=id_vrf).uniqueResult()
         except ObjectDoesNotExist, e:
             raise VrfNotFoundError(
-                e, u'Dont there is a Vrf by pk = %s.' % id_vrf)
+                u'Dont there is a Vrf by pk = %s.' % id_vrf)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
+                u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
             cls.log.error(u'Failure to search the Vrf.')
-            raise VrfError(e, u'Failure to search the Vrf.')
+            raise VrfError(u'Failure to search the Vrf.')
 
     def create(self, authenticated_user):
         """Include new Vrf.
