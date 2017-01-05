@@ -3,7 +3,6 @@ import logging
 
 from django.db.transaction import commit_on_success
 from rest_framework import status
-from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -153,13 +152,37 @@ class IPv6View(CustomAPIView):
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
 
-    @permission_classes((IsAuthenticated, Write))
-    def post(self, *args, **kwargs):
-        pass
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('ipv6_post')
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Save Ipv6."""
 
-    @permission_classes((IsAuthenticated, Write))
-    def put(self, *args, **kwargs):
-        pass
+        ips = request.DATA
+        json_validate(SPECS.get('ipv6_post')).validate(ips)
+        response = list()
+        for ip in ips['ips']:
+            ret = facade.create_ipv6(ip, request.user)
+            response.append({'id': ret.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @logs_method_apiview
+    @raise_json_validate('ipv6_put')
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Edit Ipv6."""
+
+        ips = request.DATA
+        json_validate(SPECS.get('ipv6_put')).validate(ips)
+        response = list()
+        for ip in ips['ips']:
+            ret = facade.update_ipv6(ip, request.user)
+            response.append({'id': ret.id})
+
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
