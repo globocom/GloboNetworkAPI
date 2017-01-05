@@ -76,6 +76,12 @@ class EnvironmentVipNotFoundError(EnvironmentVipError):
     def __init__(self, cause, message=None):
         EnvironmentVipError.__init__(self, cause, message)
 
+class EnvironmentVipAssociatedToSomeNetworkError(EnvironmentVipError):
+
+    """returns exception to environment vip delete when it's associated to some Network """
+
+    def __init__(self, cause, message=None):
+        EnvironmentVipError.__init__(self, cause, message)
 
 class OptionVipError(CustomException):
 

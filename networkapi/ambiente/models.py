@@ -28,6 +28,7 @@ from networkapi.api_pools import exceptions
 from networkapi.api_vrf.models import Vrf
 from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
+from networkapi.exception import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
@@ -632,11 +633,15 @@ class EnvironmentVip(BaseModel):
     def delete_v3(self):
 
         from networkapi.ip.models import NetworkIPv4
+        from networkapi.ip.models import NetworkIPv6
 
-        entry = NetworkIPv4.objects.filter(ambient_vip=self.id)
+        entry_netipv4 = NetworkIPv4.objects.filter(ambient_vip=self.id)
+        entry_netipv6 = NetworkIPv6.objects.filter(ambient_vip=self.id)
 
-        if len(entry) > 0:
-            raise Exception
+
+        if len(entry_netipv4) > 0 or len(entry_netipv6) > 0:
+            raise EnvironmentVipAssociatedToSomeNetworkError(
+                None, 'Environment Vip is associated to some IPv4 or IPv6 Network and therefore cannot be deleted.')
 
         # Deletes options related
         self.optionvipenvironmentvip_set\
