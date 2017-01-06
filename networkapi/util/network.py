@@ -9,6 +9,28 @@ from networkapi.util.geral import get_app
 log = logging.getLogger(__name__)
 
 
+def get_free_space_network(free_nets, used_nets):
+    """Return list of free subnets."""
+
+    for excluded_net in used_nets:
+        temp_net_list = list(free_nets)
+        free_nets = []
+        while temp_net_list:
+            temp_net = temp_net_list.pop()
+            used_nets = []
+            try:
+                used_nets = list(
+                    temp_net.address_exclude(excluded_net))
+            except ValueError:
+                used_nets = [temp_net]
+                pass
+            free_nets.extend(used_nets)
+
+    free_nets.sort()
+
+    return free_nets
+
+
 def verify_networks(subnets, supernets):
     """
         Verify a list of networks has make intersect with a second list

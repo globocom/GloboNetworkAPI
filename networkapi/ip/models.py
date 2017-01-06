@@ -1025,15 +1025,14 @@ class NetworkIPv4(BaseModel):
                 self.log.info(
                     u'Prefix that will be used: %s' % new_prefix)
 
-                subnets = net4.iter_subnets(new_prefix=new_prefix)
+                free_nets = network.get_free_space_network([net4], nets_envs)
 
-                for subnet in subnets:
-
+                for free_net in free_nets:
                     try:
-                        network.verify_networks(nets_envs, [subnet])
-                    except Exception, e:
+                        subnets = free_net.iter_subnets(new_prefix=new_prefix)
+                        subnet = subnets.next()
+                    except Exception:
                         pass
-                        continue
                     else:
                         # Set octs by network generated
                         self.oct1, self.oct2, self.oct3, self.oct4 = str(
@@ -3169,10 +3168,10 @@ class NetworkIPv6(BaseModel):
             @raise ConfigEnvironmentInvalidError: Invalid Environment
                                                   Configuration or not
                                                   registered
-            @raise NetworkIPv4Error: Error persisting a NetworkIPv4.
-            @raise NetworkIPv4AddressNotAvailableError: Unavailable address to
-                                                        create a NetworkIPv4.
-            @raise Invalid: Unavailable address to create a NetworkIPv4.
+            @raise NetworkIPv6Error: Error persisting a NetworkIPv6.
+            @raise NetworkIPv6AddressNotAvailableError: Unavailable address to
+                                                        create a NetworkIPv6.
+            @raise Invalid: Unavailable address to create a NetworkIPv6.
             @raise InvalidValueError: Network type does not exist.
         """
 
@@ -3205,27 +3204,9 @@ class NetworkIPv6(BaseModel):
                 self.log.info(
                     u'Prefix that will be used: %s' % new_prefix)
 
-                routed_net_list = [net6]
-                excluded_net_list = nets_envs
+                free_nets = network.get_free_space_network([net6], nets_envs)
 
-                for excluded_net in excluded_net_list:
-                    temp_net_list = list(routed_net_list)
-                    routed_net_list = []
-                    while temp_net_list:
-                        temp_net = temp_net_list.pop()
-                        excluded_net_list = []
-                        try:
-                            excluded_net_list = list(
-                                temp_net.address_exclude(excluded_net))
-                        except ValueError:
-                            excluded_net_list = [temp_net]
-                            pass
-                        routed_net_list.extend(excluded_net_list)
-
-                routed_net_list.sort()
-
-                # free_nets = list(set(free_sub + free_super))
-                for free_net in routed_net_list:
+                for free_net in free_nets:
                     try:
                         subnets = free_net.iter_subnets(new_prefix=new_prefix)
                         subnet = subnets.next()

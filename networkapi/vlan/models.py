@@ -1103,6 +1103,12 @@ class Vlan(BaseModel):
                     self.log.error(msg)
                     raise VlanErrorV3(None, msg)
 
+                if old_vlan.nome != self.nome:
+
+                    msg = 'Name Vlan can not be changed in vlan actived'
+                    self.log.error(msg)
+                    raise VlanErrorV3(None, msg)
+
             # If the environment was changed, create lock to validate
             if old_vlan.ambiente != self.ambiente:
 
