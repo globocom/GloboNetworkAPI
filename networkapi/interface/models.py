@@ -689,11 +689,11 @@ class Interface(BaseModel):
         '''
         for i in self.interfaces_front.all():
             i.ligacao_front = None
-            i.save(authenticated_user)
+            i.save()
 
         for i in self.interfaces_back.all():
             i.ligacao_back = None
-            i.save(authenticated_user)
+            i.save()
 
         super(Interface, self).delete()
 

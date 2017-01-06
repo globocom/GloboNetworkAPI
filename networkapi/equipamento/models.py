@@ -800,7 +800,7 @@ class Equipamento(BaseModel):
         except IpCantBeRemovedFromVip, e:
             raise e
         except Exception, e:
-            self.log.error(u'Falha ao remover um equipamento.')
+            self.log.error(u'Falha ao remover um equipamento: %s' %e)
             raise EquipamentoError(e, u'Falha ao remover um equipamento.')
 
     def delete_v3(self):
