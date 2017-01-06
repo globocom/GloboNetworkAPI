@@ -4,11 +4,11 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
 from networkapi.api_vrf.exceptions import VrfError
 from networkapi.api_vrf.exceptions import VrfNotFoundError
 from networkapi.filter.models import FilterNotFoundError
 from networkapi.models.BaseModel import BaseModel
+from networkapi.api_vrf.exceptions import VrfRelatedToEnvironment
 
 
 class Vrf(BaseModel):
@@ -99,14 +99,22 @@ class Vrf(BaseModel):
 
         @raise VrfNotFoundError: It doesn' exist Vrf to searched id
 
+        @raise VrfRelated to Environment: At least one Environment is using this Vrf
+
         """
+
+        from networkapi.ambiente.models import Ambiente
+
         vrf = Vrf().get_by_pk(pk)
 
         # Remove the vrf
-        try:
-            vrf.delete()
-        except Exception, e:
+        entry_env = Ambiente.objects.filter(default_vrf=pk)
+
+        if len(entry_env) > 0:
             cls.log.error(u'Fail to remove Vrf.')
+            raise VrfRelatedToEnvironment(u'Vrf with pk = %s is being used at some environment' % pk)
+
+        vrf.delete()
 
     class Meta (BaseModel.Meta):
         managed = True
