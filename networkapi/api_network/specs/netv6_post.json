@@ -113,8 +113,7 @@
         },
         "required": [
             "vlan",
-            "network_type",
-            "environmentvip"
+            "network_type"
         ]
       }
     }

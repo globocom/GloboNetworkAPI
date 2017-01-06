@@ -817,6 +817,8 @@ class NetworkIPv4(BaseModel):
                 environmentvip_model = get_model('ambiente', 'EnvironmentVip')
                 self.environmentvip = environmentvip_model().get_by_pk(
                     networkv4.get('environmentvip'))
+            else:
+                self.environmentvip = None
 
         except NetworkIPv4ErrorV3, e:
             self.log.error(e)
@@ -2997,6 +2999,8 @@ class NetworkIPv6(BaseModel):
                 environmentvip_model = get_model('ambiente', 'EnvironmentVip')
                 self.environmentvip = environmentvip_model().get_by_pk(
                     networkv6.get('environmentvip'))
+            else:
+                self.environmentvip = None
 
         except NetworkIPv4ErrorV3, e:
             self.log.error(e)
