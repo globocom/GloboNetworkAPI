@@ -1482,3 +1482,15 @@ class ModeloRoteiro(BaseModel):
                 u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
             raise EquipamentoError(
                 e, u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
+
+
+class AmbienteController(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id')
+    equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+
+    log = logging.getLogger('AmbienteController')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'controller_environment_xref'
+        managed = True
