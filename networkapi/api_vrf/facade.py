@@ -40,21 +40,17 @@ def get_vrf_by_id(vrf_id):
     return vrf
 
 
-def get_vrfs_by_ids(vrfs_ids):
+def get_vrfs_by_ids(vrf_ids):
     """
     Return vrf list by ids
 
-    :param vrfs_ids: ids list
+    :param vrf_ids: ids list
+
     """
 
-    vrfs_ids = list()
-    for vrf_id in vrfs_ids:
-        vrf = get_vrf_by_id(vrf_id).id
-        vrfs_ids.append(vrf)
+    vl_ids = [get_vrf_by_id(vrf_id).id for vrf_id in vrf_ids]
 
-    vrfs = Vrf.objects.filter(id__in=vrfs_ids)
-
-    return vrfs
+    return Vrf.objects.filter(id__in=vrf_ids)
 
 
 def create_vrf(vrf):
@@ -78,7 +74,7 @@ def update_vrf(vrf):
     """
     Update vrf
 
-    :param env: dict
+    :param vrf: dict
     """
 
     vrf_obj = get_vrf_by_id(vrf.get('id'))
@@ -95,9 +91,10 @@ def update_vrf(vrf):
 
 def delete_vrf(vrf_id):
     """
-    Delete environment
+    Delete vrf
 
-    :param env: dict
+    :param vrf_id: int
     """
 
-    Vrf.remove(None, vrf_id)
+    Vrf.remove(vrf_id)
+

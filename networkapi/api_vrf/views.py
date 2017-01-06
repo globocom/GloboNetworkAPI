@@ -115,7 +115,6 @@ class VrfDBView(CustomAPIView):
         vrf_ids = kwargs['vrf_ids'].split(';')
         response = {}
         for id in vrf_ids:
-            pass  # TODO When key is related to other tables, Django removes tuples of these tables
-            # facade.delete_vrf(id)
+            facade.delete_vrf(id)
 
         return Response(response, status=status.HTTP_200_OK)

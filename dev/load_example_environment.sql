@@ -78,7 +78,7 @@ INSERT INTO `tipo_rede` VALUES
 INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
     (1, 'Retorno de trafego', 'Normal'),
     (2, 'cache', 'CACHOS-DEV');
-    
+
 
 -- Dumping data for table `modelos`
 INSERT INTO `modelos` VALUES (1,'MODELO',1);
@@ -204,4 +204,7 @@ INSERT INTO `permissoes_administrativas`
 
 
 -- Dumping data for table `vrf`
-INSERT INTO `vrf` (id, internal_name, vrf) values (1, 'default', 'default');
+INSERT INTO `vrf` (id, internal_name, vrf) values 
+    (1, 'default', 'default'),
+    (2, 'Vrf-1', 'Vrf-1'),
+    (3, 'Vrf-2', 'Vrf-2');
