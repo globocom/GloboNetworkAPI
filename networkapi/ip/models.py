@@ -674,9 +674,10 @@ class NetworkIPv4(BaseModel):
             self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
 
             # Network Type
-            tiporede_model = get_model('vlan', 'TipoRede')
-            self.network_type = tiporede_model()\
-                .get_by_pk(networkv4.get('network_type'))
+            if networkv4.get('network_type'):
+                tiporede_model = get_model('vlan', 'TipoRede')
+                self.network_type = tiporede_model()\
+                    .get_by_pk(networkv4.get('network_type'))
 
             # Environment vip
             if networkv4.get('environmentvip'):
@@ -805,10 +806,8 @@ class NetworkIPv4(BaseModel):
         try:
             self.cluster_unit = networkv4.get('cluster_unit')
 
-            # vlan_model = get_model('vlan', 'Vlan')
             tiporede_model = get_model('vlan', 'TipoRede')
 
-            # self.vlan = vlan_model().get_by_pk(networkv4.get('vlan'))
             self.network_type = tiporede_model()\
                 .get_by_pk(networkv4.get('network_type'))
 
@@ -1048,6 +1047,10 @@ class NetworkIPv4(BaseModel):
                         self.mask_oct2 = mask[1]
                         self.mask_oct3 = mask[2]
                         self.mask_oct4 = mask[3]
+
+                        if not self.network_type:
+                            self.network_type = config.ip_config.network_type
+
                         return
 
             # Checks if found any available network
@@ -2844,9 +2847,10 @@ class NetworkIPv6(BaseModel):
             self.vlan = vlan_model().get_by_pk(networkv6.get('vlan'))
 
             # Type of Network
-            tiporede_model = get_model('vlan', 'TipoRede')
-            self.network_type = tiporede_model()\
-                .get_by_pk(networkv6.get('network_type'))
+            if networkv6.get('network_type'):
+                tiporede_model = get_model('vlan', 'TipoRede')
+                self.network_type = tiporede_model()\
+                    .get_by_pk(networkv6.get('network_type'))
 
             # has environmentvip
             if networkv6.get('environmentvip'):
@@ -3087,6 +3091,9 @@ class NetworkIPv6(BaseModel):
         Validate NetworkIPv6.
         """
 
+        if not self.network_type:
+            raise NetworkIPv4ErrorV3('Network type can not null')
+
         # validate if network if allow in environment
         configs = self.vlan.ambiente.configs.all()
         self.vlan.allow_networks_environment(configs, [], [self])
@@ -3237,6 +3244,8 @@ class NetworkIPv6(BaseModel):
                         self.mask6 = mask[5]
                         self.mask7 = mask[6]
                         self.mask8 = mask[7]
+                        if not self.network_type:
+                            self.network_type = config.ip_config.network_type
                         return
 
             # Checks if found any available network
@@ -4292,6 +4301,8 @@ class Ipv6(BaseModel):
     def validate_v3(self, equipments):
         """Validate Ip."""
 
+        if not self.network_type:
+            raise NetworkIPv4ErrorV3('Network type can not null')
         env_ip = self.networkipv6.vlan.ambiente
         network.validate_conflict_join_envs(env_ip, equipments)
 

@@ -112,8 +112,7 @@
           }
         },
         "required": [
-            "vlan",
-            "network_type"
+            "vlan"
         ]
       }
     }
