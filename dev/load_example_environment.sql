@@ -203,6 +203,33 @@ INSERT INTO `permissoes_administrativas`
     (6, 1, 1, 1, 6);
 
 
+-- Dumping data for table `grupos_equip`
+INSERT INTO `grupos_equip` (id, nome) VALUES
+    (1, 'Grupo de Equipamento Teste Network API');
+
+
+-- Dumping data for table `equip_do_grupo`
+INSERT INTO `equip_do_grupo` (id_equip_do_grupo, id_egrupo, id_equip) VALUES
+    (1,1,1),
+    (2,1,2),
+    (3,1,3),
+    (4,1,4),
+    (5,1,5),
+    (6,1,6),
+    (7,1,7),
+    (8,1,8),
+    (9,1,9),
+    (10,1,10),
+    (11,1,11),
+    (12,1,12),
+    (13,1,13);
+
+
+-- Dumping data for table `direitos_grupoequip`
+INSERT INTO `direitos_grupoequip` (id_direito, id_ugrupo, id_egrupo, leitura, escrita, alterar_config, exclusao) VALUES
+    (1,1,1,1,1,1,1);
+
+
 -- Dumping data for table `vrf`
 INSERT INTO `vrf` (id, internal_name, vrf) values 
     (1, 'default', 'default'),
