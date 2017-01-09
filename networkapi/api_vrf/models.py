@@ -9,6 +9,7 @@ from networkapi.api_vrf.exceptions import VrfNotFoundError
 from networkapi.filter.models import FilterNotFoundError
 from networkapi.models.BaseModel import BaseModel
 from networkapi.api_vrf.exceptions import VrfRelatedToEnvironment
+from networkapi.api_vrf.exceptions import VrfAssociatedToVlanEquipment
 
 
 class Vrf(BaseModel):
@@ -107,13 +108,22 @@ class Vrf(BaseModel):
 
         vrf = Vrf().get_by_pk(pk)
 
-        # Remove the vrf
         entry_env = Ambiente.objects.filter(default_vrf=pk)
 
         if len(entry_env) > 0:
             cls.log.error(u'Fail to remove Vrf.')
-            raise VrfRelatedToEnvironment(u'Vrf with pk = %s is being used at some environment' % pk)
+            raise VrfRelatedToEnvironment(u'Vrf with pk = %s is being used at some environment.' % pk)
 
+        entry_vlan_eqpt = VrfVlanEquipment.objects.filter(vrf=pk)
+
+        if len(entry_vlan_eqpt) > 0:
+            cls.log.error(u'Fail to remove Vrf.')
+            raise VrfAssociatedToVlanEquipment(u'Vrf with pk = %s is associated to some Vlan and Equipment.' % pk)
+
+        # Remove assoc between Vrf and Equipment
+        VrfEquipment.objects.filter(vrf=pk).delete()
+
+        # Remove Vrf
         vrf.delete()
 
     class Meta (BaseModel.Meta):
