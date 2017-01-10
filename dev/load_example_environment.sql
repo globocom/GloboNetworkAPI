@@ -57,7 +57,8 @@ INSERT INTO `marcas` VALUES (1,'MARCA');
 INSERT INTO `tipo_equipamento` VALUES
     (1,'Switch'),
     (2,'Servidor'),
-    (3,'Roteador');
+    (3,'Roteador'),
+    (5,'Balanceador');
 
 
 -- Dumping data for table `tipo_rede`
