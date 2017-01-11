@@ -2413,7 +2413,7 @@ class ServerPool(BaseModel):
                 ogp = ogp_models.ObjectGroupPermission()
                 ogp.create_v3(perm)
 
-    def update_v3(self, pool, user):
+    def update_v3(self, pool, user, permit_created=False):
 
         pool_models = get_app('api_pools', 'models')
         pool_exceptions = get_app('api_pools', 'models')
@@ -2432,7 +2432,7 @@ class ServerPool(BaseModel):
                 )
 
         # Validate
-        self.validate_v3(pool)
+        self.validate_v3(pool, permit_created)
 
         self.identifier = pool.get('identifier')
         self.default_port = pool.get('default_port')
@@ -2582,7 +2582,7 @@ class ServerPool(BaseModel):
 
     def validate_v3(self, pool, permit_created=False):
 
-        pool_exceptions = get_app('api_pools', 'models')
+        pool_exceptions = get_app('api_pools', 'exceptions')
 
         has_identifier = ServerPool.objects.filter(
             identifier=pool['identifier'],
