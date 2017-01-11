@@ -234,7 +234,8 @@ INSERT INTO `permissions` (id_permission, function) VALUES
     (7, 'cadastro_de_pool'),
     (8, 'script_alterar_pool'),
     (9, 'script_criacao_pool'),
-    (10, 'script_remover_pool');
+    (10, 'script_remover_pool'),
+    (11, 'ips');
 
 
 -- Dumping data for table `permissoes_administrativas`
@@ -250,7 +251,8 @@ INSERT INTO `permissoes_administrativas`
     (7, 1, 1, 1, 7),
     (8, 1, 1, 1, 8),
     (9, 1, 1, 1, 9),
-    (10, 1, 1, 1, 10);
+    (10, 1, 1, 1, 10),
+    (11, 1, 1, 1, 11);
 
 
 -- Dumping data for table `grupos_equip`
@@ -315,4 +317,8 @@ INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
     (1, 'Retorno de trafego', 'Normal'),
     (2, 'cache', 'CACHOS-DEV');
 
+
+-- Dumping data for table `config`
+INSERT INTO `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max) VALUES
+    (1, 2, 3, 0, 0);
 
