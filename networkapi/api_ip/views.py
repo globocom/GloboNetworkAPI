@@ -186,7 +186,7 @@ class IPv6View(CustomAPIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate
+    @raise_json_validate()
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """Edit Ipv6"""
