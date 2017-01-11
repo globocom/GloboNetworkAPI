@@ -42,18 +42,16 @@ INSERT INTO `filter` VALUES (1,'Servidores','Servidores');
 
 -- Dumping data for table `ambiente`
 INSERT INTO `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao, link, acl_path, ipv4_template, ipv6_template, id_filter, min_num_vlan_1, max_num_vlan_1, min_num_vlan_2, max_num_vlan_2) VALUES
-    (1,31,11,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Red',NULL,NULL,NULL,11,20,NULL,NULL),
-    (2,32,12,22,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Blue',NULL,NULL,NULL,21,30,NULL,NULL),
-    (3,33,13,23,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Green',NULL,NULL,NULL,31,31,NULL,NULL),
-    (4,34,14,24,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Yellow',NULL,NULL,NULL,20,20,NULL,NULL),
-    (5,35,15,25,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19,NULL,NULL),
+    (1,31,11,21,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Red',NULL,NULL,NULL,11,20, NULL, NULL),
+    (2,32,12,22,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Blue',NULL,NULL,NULL,21,30, NULL, NULL),
+    (3,33,13,23,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Green',NULL,NULL,NULL,31,31, NULL, NULL),
+    (4,34,14,24,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Yellow',NULL,NULL,NULL,20,20, NULL, NULL),
+    (5,35,15,25,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19, NULL, NULL),
     (6,35,11,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Other Color',NULL,NULL,NULL,1,500,501,1000),
     (7,32,13,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL),
     (8,33,14,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL),
     (9,33,11,21,'Equipment Environment Test','NULL',NULL,NULL,NULL,1,500,501,1000),
     (10,33,12,21,'Pool Environment Test','NULL',NULL,NULL,NULL,1,500,501,1000);
-
-
 
 
 -- Dumping data for table `marcas`
@@ -79,12 +77,6 @@ INSERT INTO `tipo_rede` VALUES
     (11,'Rede valida VIP');
 
 
--- Dumping data for table `opcoesvip`
-INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
-    (1, 'Retorno de trafego', 'Normal'),
-    (2, 'cache', 'CACHOS-DEV');
-
-
 -- Dumping data for table `modelos`
 INSERT INTO `modelos` VALUES (1,'MODELO',1);
 
@@ -95,20 +87,23 @@ INSERT INTO `ip_config` VALUES
     (2,'10.0.0.5/24','24','v4',2),
     (3,'192.168.0.0/30','30','v4',2),
     (4,'192.168.1.0/30','30','v4',2),
-    (5,'10.237.128.0/18','28','v4',2),
-    (6,'fdbe:bebe:bebe:1200:0:0:0:0/57','64','v6',2),
-    (7,'192.168.104.0/22','27','v4',2),
-    (8,'fdbe:bebe:bebe:11c0:0000:0000:0000:0000/58',64,'v6',2 );
+    (5,'10.0.1.0/28','28','v4',2),
+
+    (6,'10.237.128.0/18','28','v4',2),
+    (7,'fdbe:bebe:bebe:1200:0:0:0:0/57','64','v6',2),
+    (8,'192.168.104.0/22','27','v4',2),
+    (9,'fdbe:bebe:bebe:11c0:0000:0000:0000:0000/58',64,'v6',2 );
 
 
 -- Dumping data for table `ip_config`
 INSERT INTO `config_do_ambiente` (id_config_do_ambiente, id_ambiente, id_ip_config) VALUES
-    (1,6,5),
-    (2,6,6),
-    (3,9,5),
-    (4,9,6),
-    (5,10,7),
-    (6,10,8);
+    (1,6,6),
+    (2,6,7),
+    (3,9,6),
+    (4,9,7),
+    (5,10,8),
+    (6,10,9);
+
 
 -- Dumping data for table `vlans`
 INSERT INTO `vlans` VALUES
@@ -255,7 +250,7 @@ INSERT INTO `permissoes_administrativas`
     (7, 1, 1, 1, 7),
     (8, 1, 1, 1, 8),
     (9, 1, 1, 1, 9),
-    (19, 1, 1, 1, 10);
+    (10, 1, 1, 1, 10);
 
 
 -- Dumping data for table `grupos_equip`
@@ -314,4 +309,10 @@ INSERT INTO `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is
 -- Dumping data for table `environment_environment_vip`
 INSERT INTO `environment_environment_vip` (id, environment_id, environment_vip_id) VALUES
     (1, 9, 12);
+
+-- Dumping data for table `opcoesvip`
+INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
+    (1, 'Retorno de trafego', 'Normal'),
+    (2, 'cache', 'CACHOS-DEV');
+
 

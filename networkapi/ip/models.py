@@ -54,6 +54,7 @@ from networkapi.util.decorators import cached_property
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
+from networkapi.exception import NetworkActiveError
 
 
 class NetworkIPv4Error(Exception):
@@ -881,6 +882,9 @@ class NetworkIPv4(BaseModel):
         # Create locks for environment and vlan
         locks_list = create_lock_with_blocking(locks_name)
 
+        if self.active:
+            raise NetworkActiveError(None,
+                "Network is active. Try to set it inactive before removing it")
         try:
 
             for ip in self.ip_set.all():
