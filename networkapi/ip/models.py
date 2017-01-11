@@ -882,11 +882,11 @@ class NetworkIPv4(BaseModel):
         # Create locks for environment and vlan
         locks_list = create_lock_with_blocking(locks_name)
 
-        if self.active:
-            raise NetworkActiveError(None,
-                "Network is active. Try to set it inactive before removing it")
         try:
 
+            if self.active:
+                raise NetworkActiveError(None,
+                    "Try to set it inactive before removing it")
             for ip in self.ip_set.all():
                 ip.delete_v3()
 
