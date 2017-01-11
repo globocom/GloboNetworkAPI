@@ -64,7 +64,7 @@ urlpatterns = patterns(
     url(r'^v3/pool/details/((?P<pool_ids>[;\w]+)/)?$',
         views_v3.PoolDBDetailsView.as_view()),  # GET
     # POST, PUT, GET, DELETE
-    url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views_v3.PoolDBView.as_view()),
+    url(r'^v3/pool/((?P<obj_ids>[;\w]+)/)?$', views_v3.PoolDBView.as_view()),
     # GET
     url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$',
         views_v3.PoolEnvironmentVip.as_view()),

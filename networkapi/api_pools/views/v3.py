@@ -252,12 +252,12 @@ class PoolDBView(CustomAPIView):
         Return server pools by ids or dict
         """
         try:
-            if not kwargs.get('pool_ids'):
+            if not kwargs.get('obj_ids'):
                 obj_model = facade.get_pool_by_search(self.search)
                 pools = obj_model['query_set']
                 only_main_property = False
             else:
-                pool_ids = kwargs['pool_ids'].split(';')
+                pool_ids = kwargs['obj_ids'].split(';')
                 pools = facade.get_pool_by_ids(pool_ids)
                 only_main_property = True
                 obj_model = None
@@ -300,8 +300,6 @@ class PoolDBView(CustomAPIView):
         verify_ports(pools)
         response = list()
         for pool in pools['server_pools']:
-            facade.validate_save(pool)
-
             pl = facade.create_pool(pool, request.user)
             response.append({'id': pl.id})
 
@@ -323,7 +321,6 @@ class PoolDBView(CustomAPIView):
         response = dict()
         # response = list()
         for pool in pools['server_pools']:
-            facade.validate_save(pool)
             facade.update_pool(pool, request.user)
             # pl = facade.update_pool(pool)
             # response.append({'id': pl.id})
@@ -341,7 +338,7 @@ class PoolDBView(CustomAPIView):
         :url /api/v3/pool/<pool_ids>/
         :param pool_ids=<pool_ids>
         """
-        pool_ids = kwargs['pool_ids'].split(';')
+        pool_ids = kwargs['obj_ids'].split(';')
         response = {}
         facade.delete_pool(pool_ids)
 

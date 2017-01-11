@@ -145,7 +145,8 @@ def update_real_pool(pools, user):
     keys = list()
 
     for pool in pools['server_pools']:
-        facade_v3.validate_save(pool, permit_created=True)
+        pool_obj = facade_v3.get_pool_by_id(pool['id'])
+        pool_obj.validate_v3(pool, permit_created=True)
 
         member_ids = [spm['id']
                       for spm in pool['server_pool_members'] if spm['id']]

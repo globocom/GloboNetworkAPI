@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,27 +16,24 @@
 import logging
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.api_ogp import models
 from networkapi.api_vip_request.models import VipRequest
 from networkapi.equipamento.models import Equipamento
-from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.grupo.models import DireitosGrupoEquipamento
 from networkapi.grupo.models import EGrupo
-from networkapi.grupo.models import EGrupoNotFoundError
-from networkapi.grupo.models import GrupoError
 from networkapi.grupo.models import PermissaoAdministrativa
 from networkapi.grupo.models import PermissaoAdministrativaNotFoundError
-from networkapi.grupo.models import UGrupo
-from networkapi.requisicaovips.models import ServerPool
 from networkapi.usuario.models import Usuario
 
 log = logging.getLogger(__name__)
 
 
 def authenticate(username, password, user_ldap=None):
-    '''Busca o usuário com ativo com o login e senha informados.
+    """
+    Busca o usuário com ativo com o login e senha informados.
 
     @raise UsuarioError: Falha ao pesquisar o usuário.
-    '''
+    """
     if username is None or password is None:
         return None
 
@@ -47,7 +44,7 @@ def authenticate(username, password, user_ldap=None):
 
 
 def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equip_oper=None):
-    '''
+    """
     @raise EGrupoNotFoundError: Grupo do equipamento nao cadastrado.
 
     @raise EquipamentoNotFoundError: Equipamento nao cadastrado.
@@ -55,7 +52,7 @@ def has_perm(user, perm_function, perm_oper, egroup_id=None, equip_id=None, equi
     @raise GrupoError: Falha ao pesquisar os direitos do grupo-equipamento, ou as permissões administrativas, ou o grupo do equipamento.
 
     @raise EquipamentoError: Falha ao pesquisar o equipamento.
-    '''
+    """
     if user is None:
         return False
 
@@ -92,33 +89,6 @@ def _has_equip_perm(ugroup, egroups, equip_oper):
     return False
 
 
-def validate_pool_perm(pools, user, pool_operation):
-
-    if len(pools) == 0:
-        return False
-
-    server_pools = ServerPool.objects.filter(id__in=pools)
-    for pool in server_pools:
-
-        perms = pool.serverpoolgrouppermission_set.all()
-
-        if not perms:
-            return True
-
-        ugroups = user.grupos.all()
-
-        if perms:
-
-            pool_perm = _validate_obj(perms, ugroups, pool_operation)
-            if not pool_perm:
-                log.warning('User{} does not have permission {} to Pool {}'.format(
-                    user, pool_operation, pool.id
-                ))
-                return False
-
-    return True
-
-
 def validate_vip_perm(vips, user, vip_operation):
 
     if len(vips) == 0:
@@ -146,18 +116,62 @@ def validate_vip_perm(vips, user, vip_operation):
     return True
 
 
-def _validate_obj(perms, ugroups, pool_operation):
+def perm_vip(request, operation, *args, **kwargs):
+
+    vips = kwargs.get('vip_request_ids').split(';')
+    return validate_vip_perm(
+        vips,
+        request.user,
+        operation
+    )
+
+
+def validate_object_perm(objects_id, user, operation, object_type):
+
+    if len(objects_id) == 0:
+        return False
+
+    for object_id in objects_id:
+
+        ugroups = user.grupos.all()
+
+        # general perms
+        perms = models.ObjectGroupPermissionGeneral.objects.filter(
+            object_type__name=object_type
+        )
+        if perms:
+            pool_perm = _validate_obj(perms, ugroups, operation)
+            if pool_perm:
+                return True
+
+        # individuals perms
+        perms = models.ObjectGroupPermission.objects.filter(
+            object_value=object_id,
+            object_type__name=object_type
+        )
+        if perms:
+            pool_perm = _validate_obj(perms, ugroups, operation)
+            if not pool_perm:
+                log.warning('User {} does not have permission {} to Object {}:{}'.format(
+                    user, operation, object_type, object_id
+                ))
+                return False
+
+    return True
+
+
+def _validate_obj(perms, ugroups, operation):
     obj_perm = False
 
     perms = perms.filter(user_group__in=ugroups)
 
-    if pool_operation == AdminPermission.POOL_READ_OPERATION:
+    if operation == AdminPermission.OBJ_READ_OPERATION:
         perms = perms.filter(read=True)
-    elif pool_operation == AdminPermission.POOL_WRITE_OPERATION:
+    elif operation == AdminPermission.OBJ_WRITE_OPERATION:
         perms = perms.filter(write=True)
-    elif pool_operation == AdminPermission.POOL_DELETE_OPERATION:
+    elif operation == AdminPermission.OBJ_DELETE_OPERATION:
         perms = perms.filter(delete=True)
-    elif pool_operation == AdminPermission.POOL_UPDATE_CONFIG_OPERATION:
+    elif operation == AdminPermission.OBJ_UPDATE_CONFIG_OPERATION:
         perms = perms.filter(change_config=True)
 
     if perms:
@@ -166,20 +180,12 @@ def _validate_obj(perms, ugroups, pool_operation):
     return obj_perm
 
 
-def perm_pool(request, operation, *args, **kwargs):
-    pools = kwargs.get('pool_ids').split(';')
-    return validate_pool_perm(
-        pools,
+def perm_obj(request, operation, object_type, *args, **kwargs):
+
+    objs = kwargs.get('obj_ids').split(';')
+    return validate_object_perm(
+        objs,
         request.user,
-        operation
-    )
-
-
-def perm_vip(request, operation, *args, **kwargs):
-
-    vips = kwargs.get('vip_request_ids').split(';')
-    return validate_vip_perm(
-        vips,
-        request.user,
-        operation
+        operation,
+        object_type
     )
