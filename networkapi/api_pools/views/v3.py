@@ -39,89 +39,81 @@ log = logging.getLogger(__name__)
 
 class PoolMemberStateView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
-    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     @raise_json_validate('pool_member_status')
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
+    @permission_obj_apiview([deploy_pool_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """Enable/Disable pool member by list of server pool
-        """
-        try:
-            pools = request.DATA
-            json_validate(SPECS.get('pool_member_status')).validate(pools)
-            response = facade_pool_deploy.set_poolmember_state(
-                pools, request.user)
+        """Enable/Disable pool member by list of server pool."""
 
-            return Response(response, status=status.HTTP_200_OK)
-        except Exception, exception:
-            log.error(exception)
-            raise rest_exceptions.NetworkAPIException(exception)
+        pools = request.DATA
+        json_validate(SPECS.get('pool_member_status')).validate(pools)
+        response = facade_pool_deploy.set_poolmember_state(
+            pools, request.user)
 
-    @commit_on_success
-    @permission_classes_apiview((IsAuthenticated, Read))
+        return Response(response, status=status.HTTP_200_OK)
+
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @commit_on_success
     def get(self, request, *args, **kwargs):
         """
         Returns a list of pools with updated states of members
         """
 
-        try:
-            pool_ids = kwargs.get('obj_ids').split(';')
-            checkstatus = request.GET.get('checkstatus') or '0'
+        pool_ids = kwargs.get('obj_ids').split(';')
+        checkstatus = request.GET.get('checkstatus') or '0'
 
-            response = dict()
+        response = dict()
 
-            server_pools = models_vips.ServerPool.objects.filter(
-                id__in=pool_ids)
+        server_pools = models_vips.ServerPool.objects.filter(
+            id__in=pool_ids)
 
-            if checkstatus == '1':
-
-                serializer_server_pool = serializers.PoolV3Serializer(
-                    server_pools,
-                    many=True
-                )
-
-                mbr_state = facade_pool_deploy.get_poolmember_state(
-                    serializer_server_pool.data)
-
-                for server_pool in server_pools:
-
-                    if mbr_state.get(server_pool.id):
-                        query_pools = models_vips.ServerPoolMember.objects.filter(
-                            server_pool=server_pool)
-
-                        for pm in query_pools:
-
-                            member_checked_status = mbr_state[
-                                server_pool.id][pm.id]
-                            pm.member_status = member_checked_status
-                            pm.last_status_update = datetime.now()
-                            pm.save(request.user)
-
-                # get pools updated
-                server_pools = models_vips.ServerPool.objects.filter(
-                    id__in=pool_ids)
+        if checkstatus == '1':
 
             serializer_server_pool = serializers.PoolV3Serializer(
                 server_pools,
                 many=True
             )
 
-            response['server_pools'] = serializer_server_pool.data
-            return Response(response, status=status.HTTP_200_OK)
+            mbr_state = facade_pool_deploy.get_poolmember_state(
+                serializer_server_pool.data)
 
-        except Exception, exception:
-            log.error(exception)
-            raise rest_exceptions.NetworkAPIException(exception)
+            for server_pool in server_pools:
+
+                if mbr_state.get(server_pool.id):
+                    query_pools = models_vips.ServerPoolMember.objects.filter(
+                        server_pool=server_pool)
+
+                    for pm in query_pools:
+
+                        member_checked_status = mbr_state[
+                            server_pool.id][pm.id]
+                        pm.member_status = member_checked_status
+                        pm.last_status_update = datetime.now()
+                        pm.save(request.user)
+
+            # get pools updated
+            server_pools = models_vips.ServerPool.objects.filter(
+                id__in=pool_ids)
+
+        serializer_server_pool = serializers.PoolV3Serializer(
+            server_pools,
+            many=True
+        )
+
+        response['server_pools'] = serializer_server_pool.data
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class PoolDeployView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
-    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
+    @permission_obj_apiview([deploy_pool_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates pools by list in equipments
@@ -142,10 +134,10 @@ class PoolDeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
-    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     @raise_json_validate('pool_put')
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
+    @permission_obj_apiview([deploy_pool_permission])
     def put(self, request, *args, **kwargs):
         """
         Updates pools by list in equipments
@@ -166,10 +158,10 @@ class PoolDeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
-    @permission_obj_apiview([deploy_pool_permission])
     @logs_method_apiview
     @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
+    @permission_obj_apiview([deploy_pool_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes pools by list in equipments
@@ -194,10 +186,10 @@ class PoolDeployView(CustomAPIView):
 
 class PoolDBDetailsView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
-    @prepare_search
     @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """Return server pools by ids or dict."""
 
@@ -241,10 +233,10 @@ class PoolDBDetailsView(CustomAPIView):
 
 class PoolDBView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
-    @prepare_search
     @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """Return server pools by ids or dict"""
 
@@ -279,9 +271,9 @@ class PoolDBView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('pool_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -298,10 +290,10 @@ class PoolDBView(CustomAPIView):
 
         return Response(response, status=status.HTTP_201_CREATED)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([write_pool_permission])
     @logs_method_apiview
     @raise_json_validate('pool_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_pool_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -320,11 +312,11 @@ class PoolDBView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
+    @logs_method_apiview
+    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([delete_pool_permission])
-    @logs_method_apiview
     @commit_on_success
-    @raise_json_validate('')
     def delete(self, request, *args, **kwargs):
         """
         Delete server pool
@@ -339,10 +331,10 @@ class PoolDBView(CustomAPIView):
 
 class PoolEnvironmentVip(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
-    @prepare_search
     @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns list of pool by environment vip
@@ -376,10 +368,10 @@ class PoolEnvironmentVip(CustomAPIView):
 
 class OptionPoolEnvironmentView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
-    @prepare_search
     @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return option vip list by environment id

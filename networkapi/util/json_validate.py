@@ -64,6 +64,7 @@ def raise_json_validate(info=None):
 
             try:
                 return func(self, request, *args, **kwargs)
+
             except ValidationError, error:
 
                 msg = list()
@@ -92,9 +93,6 @@ def raise_json_validate(info=None):
                         protocol, request.get_host(), info)
                 log.error(res)
                 raise rest_exceptions.ValidationExceptionJson(res)
-            except exceptions_api.APIException, error:
-                log.exception(error)
-                raise exceptions_api.APIException(error)
             except exceptions_api.AuthenticationFailed, error:
                 log.exception(error)
                 raise exceptions_api.AuthenticationFailed(error)
@@ -122,8 +120,15 @@ def raise_json_validate(info=None):
             except rest_exceptions.ValidationAPIException, error:
                 log.exception(error)
                 raise rest_exceptions.ValidationAPIException(error)
+            except rest_exceptions.ObjectDoesNotExistException, error:
+                log.exception(error)
+                raise rest_exceptions.ObjectDoesNotExistException(error)
             except Exception, error:
+
                 log.error(error)
+                raise rest_exceptions.NetworkAPIException(error)
+            except exceptions_api.APIException, error:
+                log.exception(error)
                 raise rest_exceptions.NetworkAPIException(error)
         return inner
     return raise_json_validate_inner

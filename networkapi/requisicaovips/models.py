@@ -2465,29 +2465,27 @@ class ServerPool(BaseModel):
             .get_create_healthcheck(healthcheck)
 
         self.save()
+        # Server Pool Members to delete
+        members_ids = [member['id'] for member in pool['server_pool_members']
+                       if member['id']]
+        for server_pool_member in self.serverpoolmember_set.all():
+            if server_pool_member.id not in members_ids:
+                sp = ServerPoolMember.get_by_pk(server_pool_member.id)
+                sp.delete()
 
         # Server Pool Members to create
         for server_pool_member in pool['server_pool_members']:
             if server_pool_member.get('id', None) is None:
                 server_pool_member['server_pool'] = self.id
-                sp = ServerPoolMember()
-                sp.create_v3(server_pool_member)
+                spm = ServerPoolMember()
+                spm.create_v3(server_pool_member)
 
         # Server Pool Members to update
         for server_pool_member in pool['server_pool_members']:
             if server_pool_member.get('id', None) is not None:
                 server_pool_member['server_pool'] = self.id
-                sp = ServerPoolMember()
-                sp.update_v3(server_pool_member)
-
-        # Server Pool Members to delete
-        members_ids = [member['id'] for member in pool['server_pool_members']
-                       if member['id']]
-        for server_pool_member in self.serverpoolmember_set.all():
-            if member.id not in members_ids:
-                server_pool_member['server_pool'] = self.id
-                sp = ServerPoolMember()
-                sp.update_v3(server_pool_member)
+                spm = ServerPoolMember.get_by_pk(server_pool_member.get('id'))
+                spm.update_v3(server_pool_member)
 
         # Permissions
         groups_perm = pool.get('groups_permissions', [])
@@ -2760,6 +2758,32 @@ class ServerPoolMember(BaseModel):
 
         return formated
 
+    @classmethod
+    def get_by_pk(cls, id):
+        """Get ServerPoolMember by id.
+            @return: ServerPoolMember.
+            @raise PoolMemberDoesNotExistException: ServerPoolMember is not registered.
+            @raise PoolError: Failed to search for the ServerPoolMember.
+            @raise OperationalError: Lock wait timeout exceeded.
+        """
+
+        exceptions = get_app('api_pools', 'exceptions')
+
+        try:
+            return ServerPoolMember.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            cls.log.exception(
+                u'There is no ServerPoolMember with pk = %s.' % id)
+            raise exceptions.PoolMemberDoesNotExistException(id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            cls.log.error(u'Failure to search the ServerPoolMember.')
+            raise exceptions.PoolError(
+                e, u'Failure to search the ServerPoolMember.')
+
     def prepare_and_save(self, server_pool, ip, ip_type, priority,
                          weight, port_real, user, commit=False):
 
@@ -2845,8 +2869,6 @@ class ServerPoolMember(BaseModel):
         self.port_real = member['port_real']
         self.member_status = member['member_status']
         self.limit = member['limit']
-        self.save()
-
         # vip with dsrl3 using pool
         if self.server_pool.dscp:
 
@@ -2878,6 +2900,8 @@ class ServerPoolMember(BaseModel):
                         str(self), str(self.server_pool)
                     )
                 )
+
+        self.save()
 
     def update_v3(self, member):
         """
