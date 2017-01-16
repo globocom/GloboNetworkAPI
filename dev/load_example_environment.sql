@@ -49,9 +49,7 @@ INSERT INTO `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao,
     (5,35,15,25,' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Orange',NULL,NULL,NULL,15,19, NULL, NULL),
     (6,35,11,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','Other Color',NULL,NULL,NULL,1,500,501,1000),
     (7,32,13,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL),
-    (8,33,14,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL),
-    (9,33,11,21,'Equipment Environment Test','NULL',NULL,NULL,NULL,1,500,501,1000),
-    (10,33,12,21,'Pool Environment Test','NULL',NULL,NULL,NULL,1,500,501,1000);
+    (8,33,14,21,'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment','NULL',NULL,NULL,NULL,15,19,NULL,NULL);
 
 
 -- Dumping data for table `marcas`
@@ -99,10 +97,6 @@ INSERT INTO `ip_config` VALUES
 INSERT INTO `config_do_ambiente` (id_config_do_ambiente, id_ambiente, id_ip_config) VALUES
     (1,6,6),
     (2,6,7),
-    (3,9,6),
-    (4,9,7),
-    (5,10,8),
-    (6,10,9),
     (7,1,5),
     (8,1,10);
 
@@ -115,9 +109,7 @@ INSERT INTO `vlans` VALUES
     (4,'Vlan 21',21,2,'','',1,1,NULL,0, 1, NULL, NULL),
     (5,'Vlan 22',22,2,'','',1,1,NULL,0, 1, NULL, NULL),
     (6,'Vlan 21',21,5,'','',1,1,NULL,0, 1, NULL, NULL),
-    (7,'Vlan 15',15,5,'','',1,1,NULL,0, 1, NULL, NULL),
-    (8,'Vlan Environment Equipment Test',1,9,'','',1,0,NULL,0, 1, NULL, NULL),
-    (9,'Vlan Environment Pool Test',1,10,'','',1,0,NULL,0, 1, NULL, NULL);
+    (7,'Vlan 15',15,5,'','',1,1,NULL,0, 1, NULL, NULL);
 
 
 -- Dumping data for table `equipamentos`
@@ -163,15 +155,7 @@ INSERT INTO `redeipv4` VALUES
     (2,2,192,168,1,0,30,255,255,255,0,2,'192.168.1.3',NULL,0, NULL),
     (3,4,172,16,0,5,24,255,255,255,0,2,'172.16.0.255',NULL,0, NULL),
     (4,7,10,0,0,5,30,255,255,255,0,2,'10.0.0.255',NULL,0, NULL),
-    (5,8,10,237,128,0,28,255,255,255,240,2,'10.237.128.15',NULL,0,NULL),
-    (6,9,192,168,104,0,27,255,255,255,224,2,'192.168.104.31', 12,0,NULL),
     (7,3,10,42,0,0,24,255,255,255,0,2,'10.42.0.255',NULL,1,NULL);
-
--- Dumping data for table `redeipv4`
-INSERT INTO `redeipv6` VALUES
-    (1, NULL,8,2,'fdbe','bebe','bebe','1200','0000','0000','0000','0000',64,'ffff','ffff','ffff','ffff','0000','0000','0000','0000',0,NULL),
-    (2, 12 ,9,2,'fdbe','bebe','bebe','11c0','0000','0000','0000','0000',64,'ffff','ffff','ffff','ffff','0000','0000','0000','0000',0,NULL);
-
 
 -- Dumping data for table `ips`
 INSERT INTO `ips` VALUES
@@ -180,11 +164,7 @@ INSERT INTO `ips` VALUES
     (3,1,1,168,192,'Router',2),
     (4,2,1,168,192,'SR2',2),
     (5,6,0,16,172,'Server S1',3),
-    (6,6,0,0,10,'Server S1',4),
-    (7,1,128, 237, 10,'Server P1', 5),
-    (8,2,128, 237, 10,'Server P2', 5),
-    (9,3,128, 237, 10,'Server P3', 5);
-
+    (6,6,0,0,10,'Server S1',4);
 
 -- Dumping data for table `ips_dos_equipamentos`
 INSERT INTO `ips_dos_equipamentos` VALUES
@@ -193,17 +173,7 @@ INSERT INTO `ips_dos_equipamentos` VALUES
     (3,3,12),
     (4,4,11),
     (5,5,13),
-    (6,6,13),
-    (7,7,14),
-    (8,8,15),
-    (9,9,16);
-
-
--- Dumping data for table `ips`
-INSERT INTO `ipsv6` VALUES
-    (1,NULL,1,'fdbe','bebe','bebe','1200','0000','0000','0000','0001'),
-    (2,NULL,1,'fdbe','bebe','bebe','1200','0000','0000','0000','0002'),
-    (3,NULL,1,'fdbe','bebe','bebe','1200','0000','0000','0000','0003');
+    (6,6,13);
 
 
 -- Dumping data for table `ips_dos_equipamentos`
@@ -237,7 +207,8 @@ INSERT INTO `permissions` (id_permission, function) VALUES
     (7, 'cadastro_de_pool'),
     (8, 'script_alterar_pool'),
     (9, 'script_criacao_pool'),
-    (10, 'script_remover_pool');
+    (10, 'script_remover_pool'),
+    (11, 'ips');
 
 
 -- Dumping data for table `permissoes_administrativas`
@@ -253,7 +224,8 @@ INSERT INTO `permissoes_administrativas`
     (7, 1, 1, 1, 7),
     (8, 1, 1, 1, 8),
     (9, 1, 1, 1, 9),
-    (10, 1, 1, 1, 10);
+    (10, 1, 1, 1, 10),
+    (11, 1, 1, 1, 11);
 
 
 -- Dumping data for table `grupos_equip`
@@ -301,17 +273,6 @@ INSERT INTO `optionspool` (id_optionspool, type, description) VALUES
     (7, 'ServiceDownAction', 'reset'),
     (8, 'ServiceDownAction', 'reselect');
 
-
--- Dumping data for table `equip_do_ambiente`
-INSERT INTO `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is_router) VALUES
-    (1, 9, 14, 0),
-    (2, 9, 15, 0),
-    (3, 9, 16, 0),
-    (4, 10, 17, 0);
-
--- Dumping data for table `environment_environment_vip`
-INSERT INTO `environment_environment_vip` (id, environment_id, environment_vip_id) VALUES
-    (1, 9, 12);
 
 -- Dumping data for table `opcoesvip`
 INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
