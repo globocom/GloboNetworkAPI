@@ -56,15 +56,15 @@ urlpatterns = patterns(
     ########################
     # Manage Pool V3
     ########################
-    url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/member/status/$',
+    url(r'^v3/pool/deploy/(?P<obj_ids>[;\w]+)/member/status/$',
         views_v3.PoolMemberStateView.as_view()),  # GET, PUT
     # POST, PUT, DELETE
-    url(r'^v3/pool/deploy/(?P<pool_ids>[;\w]+)/$',
+    url(r'^v3/pool/deploy/(?P<obj_ids>[;\w]+)/$',
         views_v3.PoolDeployView.as_view()),
-    url(r'^v3/pool/details/((?P<pool_ids>[;\w]+)/)?$',
+    url(r'^v3/pool/details/((?P<obj_ids>[;\w]+)/)?$',
         views_v3.PoolDBDetailsView.as_view()),  # GET
     # POST, PUT, GET, DELETE
-    url(r'^v3/pool/((?P<pool_ids>[;\w]+)/)?$', views_v3.PoolDBView.as_view()),
+    url(r'^v3/pool/((?P<obj_ids>[;\w]+)/)?$', views_v3.PoolDBView.as_view()),
     # GET
     url(r'^v3/pool/environment-vip/(?P<environment_vip_id>[^/]+)/$',
         views_v3.PoolEnvironmentVip.as_view()),

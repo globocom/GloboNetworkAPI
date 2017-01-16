@@ -76,8 +76,8 @@ class PoolTestV3Case(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         # test if data were not inserted
-        self.assertEqual(500, response.status_code,
-                         'Status code should be 500 and was %s' % response.status_code)
+        self.assertEqual(404, response.status_code,
+                         'Status code should be 404 and was %s' % response.status_code)
 
     def execute_some_post_verify_success(self, name_file):
         # delete
@@ -92,8 +92,8 @@ class PoolTestV3Case(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         # test if does not exist data inserted
-        self.assertEqual(500, response.status_code,
-                         'Status code should be 500 and was %s' % response.status_code)
+        self.assertEqual(404, response.status_code,
+                         'Status code should be 404 and was %s' % response.status_code)
 
         # insert
         response = self.client.post(

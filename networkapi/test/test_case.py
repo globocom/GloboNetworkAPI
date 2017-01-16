@@ -16,6 +16,7 @@ LOG = logging.getLogger(__name__)
 class NetworkApiTestCase(TestCase):
 
     fixtures = [
+        'initial_objecttype.json',
         'initial_ugrupo.json',
         'initial_equip_grupos.json',
         'initial_permissions.json',

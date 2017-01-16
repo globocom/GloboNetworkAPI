@@ -1,0 +1,16 @@
+[
+  {
+  "pk": 1,
+  "model": "api_ogp.objecttype",
+  "fields": {
+    "name": "ServerPool"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_ogp.objecttype",
+  "fields": {
+    "name": "VipRequest"
+    }
+  }
+]

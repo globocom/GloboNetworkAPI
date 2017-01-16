@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.api_ogp import exceptions
 from networkapi.models.BaseModel import BaseModel
+from networkapi.util.geral import get_app
 
 
 class ObjectType(BaseModel):
@@ -14,9 +17,37 @@ class ObjectType(BaseModel):
         db_column='name'
     )
 
+    log = logging.getLogger('ObjectType')
+
     class Meta(BaseModel.Meta):
         db_table = u'object_type'
         managed = True
+
+    @classmethod
+    def get_by_name(cls, name):
+        """"
+        Get Object Type by id.
+
+        @return: Object Type.
+
+        @raise ObjectTypeNotFoundError: Object Type not registered.
+        @raise ObjectTypeError: Failed to search for the Object Type.
+        @raise OperationalError: Lock wait timeout exceeded.
+        """
+        try:
+            return ObjectType.objects.get(name=name)
+        except ObjectDoesNotExist, e:
+            cls.log.error(
+                u'object type not found. pk {}'.format(id))
+            raise exceptions.ObjectTypeNotFoundError(id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            cls.log.error(u'Failure to search the object type.')
+            raise exceptions.ObjectTypeError(
+                e, u'Failure to search the object type.')
 
 
 class ObjectGroupPermission(BaseModel):
@@ -32,6 +63,8 @@ class ObjectGroupPermission(BaseModel):
     change_config = models.BooleanField()
     delete = models.BooleanField()
 
+    log = logging.getLogger('ObjectGroupPermission')
+
     class Meta(BaseModel.Meta):
         db_table = u'object_group_permission'
         managed = True
@@ -39,7 +72,8 @@ class ObjectGroupPermission(BaseModel):
 
     @classmethod
     def get_by_pk(cls, id):
-        """"Get Object Group Permission by id.
+        """"
+        Get Object Group Permission by id.
 
         @return: Object Group Permission.
 
@@ -64,6 +98,20 @@ class ObjectGroupPermission(BaseModel):
             raise exceptions.ObjectGroupPermissionError(
                 e, u'Failure to search the object group permission.')
 
+    def create_v3(self, perm):
+
+        group_models = get_app('grupo', 'models')
+
+        self.user_group = group_models.UGrupo.get_by_pk(perm.get('user_group'))
+        self.object_type = ObjectType.get_by_name(perm.get('object_type'))
+        self.object_value = perm.get('object_value')
+        self.read = perm.get('read')
+        self.write = perm.get('write')
+        self.change_config = perm.get('change_config')
+        self.delete = perm.get('delete')
+
+        self.save()
+
 
 class ObjectGroupPermissionGeneral(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id')
@@ -76,6 +124,8 @@ class ObjectGroupPermissionGeneral(BaseModel):
     write = models.BooleanField()
     change_config = models.BooleanField()
     delete = models.BooleanField()
+
+    log = logging.getLogger('ObjectGroupPermissionGeneral')
 
     class Meta(BaseModel.Meta):
         db_table = u'object_group_permission_general'
@@ -109,3 +159,17 @@ class ObjectGroupPermissionGeneral(BaseModel):
                 u'Failure to search the object group permission general.')
             raise exceptions.ObjectGroupPermissionGeneralError(
                 e, u'Failure to search the object group permission general.')
+
+    def create_v3(self, perm):
+
+        group_models = get_app('grupo', 'models')
+
+        self.user_group = group_models.UGrupo.get_by_pk(perm.get('user_group'))
+        self.object_type = ObjectType.get_by_name(perm.get('object_type'))
+        self.object_value = perm.get('object_value')
+        self.read = perm.get('read')
+        self.write = perm.get('write')
+        self.change_config = perm.get('change_config')
+        self.delete = perm.get('delete')
+
+        self.save()

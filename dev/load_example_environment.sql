@@ -318,4 +318,10 @@ INSERT INTO `opcoesvip` (id, tipo_opcao, nome_opcao_txt) VALUES
     (1, 'Retorno de trafego', 'Normal'),
     (2, 'cache', 'CACHOS-DEV');
 
+-- Dumping data for table `config`
+INSERT INTO `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max) VALUES
+    (1, 2, 3, 0, 0);
 
+-- Dumping data for table `object_type`
+INSERT INTO `object_type` (id, name) VALUES
+    (1, 'ServerPool');

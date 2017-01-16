@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.ambiente.models import Ambiente
-
-from django.core.exceptions import ObjectDoesNotExist
-
-import logging
-
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -83,7 +78,7 @@ class HealthcheckExpect(BaseModel):
                 e, u'Falha ao pesquisar os healthcheck_expects.')
 
     @classmethod
-    def dissociate_environment_and_delete(self, authenticated_user, environment_id=None):
+    def dissociate_environment_and_delete(cls, authenticated_user, environment_id=None):
         from networkapi.requisicaovips.models import RequisicaoVips
         try:
             healthcheckexpects = HealthcheckExpect.objects.all()
@@ -105,19 +100,19 @@ class HealthcheckExpect(BaseModel):
                         hce.delete()
 
         except Exception, e:
-            self.log.error(u'Falha ao desassociar os healthcheck_expects.')
+            cls.log.error(u'Falha ao desassociar os healthcheck_expects.')
             raise HealthcheckExpectError(
                 e, u'Falha ao desassociar os healthcheck_expects.')
 
     @classmethod
-    def get_by_pk(self, id):
+    def get_by_pk(cls, id):
         try:
             return HealthcheckExpect.objects.get(pk=id)
         except ObjectDoesNotExist, e:
             raise HealthcheckExpectNotFoundError(
                 e, u'Não existe um HealthcheckExpect com a pk = %s.' % id)
         except Exception, e:
-            self.log.error(u'Falha ao pesquisar o healthcheck_expect.')
+            cls.log.error(u'Falha ao pesquisar o healthcheck_expect.')
             raise HealthcheckExpectError(
                 e, u'Falha ao pesquisar o healthcheck_expect.')
 
@@ -149,7 +144,7 @@ class HealthcheckExpect(BaseModel):
                 e, u'Falha ao inserir healthcheck_expect.')
 
     @classmethod
-    def get_expect_strings(self):
+    def get_expect_strings(cls):
         try:
             query = (HealthcheckExpect.objects.values('expect_string')
                      .annotate(id=models.Min('id')))
@@ -157,13 +152,13 @@ class HealthcheckExpect(BaseModel):
             return list(query)
 
         except ObjectDoesNotExist, e:
-            self.log.error(u'Healthchecks Does Not Exists.')
+            cls.log.error(u'Healthchecks Does Not Exists.')
             raise HealthcheckExpectNotFoundError(
                 e, u'Erro ao pequisar Healthcheks_expects'
             )
 
         except Exception, e:
-            self.log.error(u'Falha ao pesquisar o healthcheck_expect.')
+            cls.log.error(u'Falha ao pesquisar o healthcheck_expect.')
             raise HealthcheckExpectError(
                 e, u'Falha ao pesquisar o healthcheck_expect.'
             )
@@ -195,9 +190,17 @@ class Healthcheck(BaseModel):
     healthcheck_expect = models.CharField(max_length=200)
     destination = models.CharField(max_length=45, default='*:*')
 
-
     log = logging.getLogger('Healthcheck')
 
     class Meta(BaseModel.Meta):
         db_table = u'healthcheck'
         managed = True
+
+    def get_create_healthcheck(self, healthcheck):
+        try:
+            hc = Healthcheck.objects.get(**healthcheck)
+        except ObjectDoesNotExist:
+            hc = Healthcheck(**healthcheck)
+            hc.save()
+
+        return hc

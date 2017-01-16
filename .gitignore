@@ -1,3 +1,4 @@
+ipdb_env/
 *.pyc
 *.orig
 *.log
