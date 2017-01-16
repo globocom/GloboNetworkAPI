@@ -18,6 +18,9 @@ export NETWORKAPI_BROKER_DESTINATION='networkapi'
 echo "exporting NETWORKAPI_BROKER_URI"
 export NETWORKAPI_BROKER_URI='tcp://localhost:61613'
 
+echo "Starting ActiveMQ message broker"
+sudo service activemq start
+
 echo "clearing memcached:"
 echo 'flush_all' | nc localhost 11211
 
