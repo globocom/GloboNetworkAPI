@@ -207,7 +207,6 @@ class VipRequestDBView(CustomAPIView):
         verify_ports_vip(data)
         for vip in data['vips']:
 
-            facade.validate_save(vip)
             vp = facade.create_vip_request(vip, request.user)
             response.append({'id': vp.id})
 
@@ -230,7 +229,6 @@ class VipRequestDBView(CustomAPIView):
         try:
             verify_ports_vip(data)
             for vip in data['vips']:
-                facade.validate_save(vip)
                 facade.update_vip_request(vip, request.user)
         except Exception, exception:
             log.error(exception)

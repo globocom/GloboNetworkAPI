@@ -11,7 +11,6 @@ from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.facade.v3 import base as facade_v3
 from networkapi.api_pools.serializers import v3 as serializers
-from networkapi.api_vip_request.facade import v3 as facade_vip
 from networkapi.api_vip_request.serializers import v3 as serializers_vip
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -58,7 +57,7 @@ def _prepare_apply(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+            vips_requests = ServerPool.get_vips_related(pool['id'])
 
             serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
@@ -261,7 +260,7 @@ def update_real_pool(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+            vips_requests = ServerPool.get_vips_related(pool['id'])
 
             serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,

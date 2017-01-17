@@ -2283,8 +2283,8 @@ class ServerPool(BaseModel):
 
     @cached_property
     def vips(self):
-        ports_assoc = self.viprequestportpool_set.select_related('vip_request')
-        vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
+        vips = self.get_vips_related(self.id)
+
         return vips
 
     @cached_property
@@ -2303,8 +2303,19 @@ class ServerPool(BaseModel):
 
     @cached_property
     def groups_permissions(self):
-        perms = self.serverpoolgrouppermission_set.all()
+        ogp_models = get_app('api_ogp', 'models')
+        perms = ogp_models.ObjectGroupPermission\
+            .get_by_object(self.id, 'ServerPool')
         return perms
+
+    def get_vips_related(self, pool_id):
+        vip_model = get_app('api_vip_request', 'models')
+
+        vips = vip_model.VipRequest.objects.filter(
+            viprequestport__viprequestportpool__server_pool__id=pool_id
+        )
+
+        return vips
 
     @classmethod
     def get_by_pk(cls, id):
@@ -2334,8 +2345,6 @@ class ServerPool(BaseModel):
         pool_models = get_app('api_pools', 'models')
         ogp_models = get_app('api_ogp', 'models')
         env_models = get_app('ambiente', 'models')
-        usr_facade = get_app('api_usuario', 'facade')
-        usr_models = get_app('usuario', 'models')
         hc_models = get_app('healthcheckexpect', 'models')
 
         # Validate
@@ -2382,36 +2391,8 @@ class ServerPool(BaseModel):
             sp.create_v3(server_pool_member)
 
         # Permissions
-        groups_perm = pool.get('groups_permissions', [])
-        groups_perm += usr_facade.get_groups(pool.get('users_permissions', []))
-        groups_perm = usr_facade.reduce_groups(groups_perm)
-        if groups_perm:
-            for group_perm in groups_perm:
-                perm = {
-                    'object_type': 'ServerPool',
-                    'user_group': group_perm['group'],
-                    'object_value': self.id,
-                    'read': group_perm['read'],
-                    'write': group_perm['write'],
-                    'delete': group_perm['delete'],
-                    'change_config': group_perm['change_config'],
-                }
-                ogp = ogp_models.ObjectGroupPermission()
-                ogp.create_v3(perm)
-        else:
-
-            for group in usr_models.UsuarioGrupo.list_by_user_id(user.id):
-                perm = {
-                    'object_type': 'ServerPool',
-                    'user_group': group.ugrupo_id,
-                    'object_value': self.id,
-                    'read': True,
-                    'write': True,
-                    'delete': True,
-                    'change_config': True,
-                }
-                ogp = ogp_models.ObjectGroupPermission()
-                ogp.create_v3(perm)
+        perm = ogp_models.ObjectGroupPermission()
+        perm.create_perms(pool, self.id, 'ServerPool', user)
 
     def update_v3(self, pool, user, permit_created=False):
 
@@ -2419,8 +2400,6 @@ class ServerPool(BaseModel):
         pool_exceptions = get_app('api_pools', 'models')
         ogp_models = get_app('api_ogp', 'models')
         env_models = get_app('ambiente', 'models')
-        usr_facade = get_app('api_usuario', 'facade')
-        usr_models = get_app('usuario', 'models')
         hc_models = get_app('healthcheckexpect', 'models')
 
         if self.dscp:
@@ -2465,6 +2444,7 @@ class ServerPool(BaseModel):
             .get_create_healthcheck(healthcheck)
 
         self.save()
+
         # Server Pool Members to delete
         members_ids = [member['id'] for member in pool['server_pool_members']
                        if member['id']]
@@ -2488,74 +2468,8 @@ class ServerPool(BaseModel):
                 spm.update_v3(server_pool_member)
 
         # Permissions
-        groups_perm = pool.get('groups_permissions', [])
-        groups_perm += usr_facade.get_groups(pool.get('users_permissions', []))
-        groups_perm = usr_facade.reduce_groups(groups_perm)
-        perm_replace = pool.get('permissions', {}).get('replace', False)
-
-        groups_perms_db = ogp_models.ObjectGroupPermission.objects.filter(
-            object_type__name='ServerPool',
-            object_value=int(self.id)
-        )
-
-        groups_perm_idx = [gp['group'] for gp in groups_perm]
-
-        # Empty perms in DB
-        if not groups_perms_db:
-            for group in usr_models.UsuarioGrupo.list_by_user_id(user.id):
-                perm = {
-                    'object_type': 'ServerPool',
-                    'user_group': group.ugrupo_id,
-                    'object_value': self.id,
-                    'read': True,
-                    'write': True,
-                    'delete': True,
-                    'change_config': True,
-                }
-                ogp = ogp_models.ObjectGroupPermission()
-                ogp.create_v3(perm)
-        else:
-            for group_perm in groups_perms_db:
-
-                # update perms
-                if group_perm.user_group_id in groups_perm_idx:
-                    idx = groups_perm_idx.index(group_perm.user_group_id)
-                    group_perm.read = perm[idx]['read']
-                    group_perm.write = perm[idx]['write']
-                    group_perm.delete = perm[idx]['delete']
-                    group_perm.change_config = perm[idx]['change_config']
-                    perm = {
-                        'object_type': 'ServerPool',
-                        'user_group': group_perm.user_group_id,
-                        'object_value': self.id,
-                        'read': groups_perm[idx]['read'],
-                        'write': groups_perm[idx]['write'],
-                        'delete': groups_perm[idx]['delete'],
-                        'change_config': groups_perm[idx]['change_config'],
-                    }
-                    ogp = ogp_models.ObjectGroupPermission()
-                    ogp.update_v3(perm)
-
-                # delete perms
-                elif perm_replace is True:
-                    ogp_models.ObjectGroupPermission.objects\
-                        .filter(id=group_perm.id).delete()
-
-            for group_perm in groups_perm:
-                # insert perms
-                if group_perm['group'] not in groups_perm_idx:
-
-                    perm = {
-                        'object_type': 'ServerPool',
-                        'user_group': group_perm['group'],
-                        'object_value': self.id,
-                        'read': group_perm['read'],
-                        'write': group_perm['write'],
-                        'delete': group_perm['delete'],
-                        'change_config': group_perm['change_config'],
-                    }
-                    ogp = ogp_models.ObjectGroupPermission()
-                    ogp.create_v3(perm)
+        perm = ogp_models.ObjectGroupPermission()
+        perm.update_perms(pool, self.id, 'ServerPool', user)
 
     def delete_v3(self):
         ogp_models = get_app('api_ogp', 'models')
