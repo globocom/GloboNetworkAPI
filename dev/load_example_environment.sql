@@ -88,10 +88,6 @@ INSERT INTO `ip_config` (id_ip_config, subnet, new_prefix, type, network_type) V
     (3,'192.168.0.0/30','30','v4',2),
     (4,'192.168.1.0/30','30','v4',2),
     (5,'10.0.1.0/28','28','v4',2),
-    (6,'10.237.128.0/18','28','v4',2),
-    (7,'fdbe:bebe:bebe:1200:0:0:0:0/57','64','v6',2),
-    (8,'192.168.104.0/22','27','v4',2),
-    (9,'fdbe:bebe:bebe:11c0:0000:0000:0000:0000/58',64,'v6',2 ),
     (10,'10.42.0.0/24','24','v4',2),
     (11, '192.168.104.0/22', '27', 'v4', 2),
     (12, 'fdbe:bebe:bebe:11c0:0000:0000:0000:0000/58', '64', 'v6', 2),
@@ -101,8 +97,6 @@ INSERT INTO `ip_config` (id_ip_config, subnet, new_prefix, type, network_type) V
 
 -- Dumping data for table `ip_config`
 INSERT INTO `config_do_ambiente` (id_config_do_ambiente, id_ambiente, id_ip_config) VALUES
-    (1,6,6),
-    (2,6,7),
     (7,1,5),
     (8,1,10),
     (11,9,11),
@@ -233,14 +227,17 @@ INSERT INTO `ipsv6_dos_equipamentos` (id_ipsv6_dos_equipamentos, id_ipv6, id_equ
 INSERT INTO `usuarios` (user, pwd, id_user, nome, ativo, email, user_ldap) VALUES
     ('networkapi', MD5('networkapi'), 1, 'Globo Network API test user', 1, 'networkapi@globo.com', NULL);
 
+
 -- Dumping data for table `grupos`
 INSERT INTO `grupos` (id, nome, leitura, escrita, edicao, exclusao) VALUES
     (1, 'Admin', 'S', 'S', 'S', 'S');
+
 
 -- Dumping data for table `usuarios_do_grupo`
 INSERT INTO `usuarios_do_grupo`
     (id_usuarios_do_grupo, id_user, id_grupo) VALUES
     (1, 1, 1);
+
 
 -- Dumping data for table `permissions`
 INSERT INTO `permissions` (id_permission, function) VALUES
@@ -349,3 +346,4 @@ INSERT INTO `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is
     (4,9,17, 0),
     (5,9,18, 0),
     (6,10,19, 0);
+
