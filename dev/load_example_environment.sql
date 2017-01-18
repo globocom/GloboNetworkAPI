@@ -329,8 +329,10 @@ INSERT INTO `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max) VAL
 
 
 -- Dumping data for table `object_type`
-INSERT INTO `object_type` (id, name) VALUES
-    (1, 'ServerPool');
+INSERT INTO `object_type` (`id`, `name`) VALUES
+(1,'ServerPool'),
+(2,'VipRequest',
+(3,'Vlan');
 
 
 -- Dumping data for table `environment_environment_vip`
@@ -346,4 +348,3 @@ INSERT INTO `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is
     (4,9,17, 0),
     (5,9,18, 0),
     (6,10,19, 0);
-

@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models import Q
 
+from networkapi.admin_permission import AdminPermission
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
 from networkapi.distributedlock import LOCK_VLAN
 from networkapi.filter.models import verify_subnet_and_equip
@@ -247,6 +248,13 @@ class Vlan(BaseModel):
     @cached_property
     def vrfs(self):
         return self.get_vrf().prefetch_related()
+
+    @cached_property
+    def groups_permissions(self):
+        ogp_models = get_app('api_ogp', 'models')
+        perms = ogp_models.ObjectGroupPermission\
+            .get_by_object(self.id, AdminPermission.OBJ_TYPE_VLAN)
+        return perms
 
     def get_by_pk(self, vlan_id):
         """Get Vlan by id.
@@ -955,11 +963,12 @@ class Vlan(BaseModel):
         equips = self.get_eqpt()
         network.validate_vlan_conflict(equips, self.num_vlan, self.id)
 
-    def create_v3(self, vlan):
+    def create_v3(self, vlan, user):
         """Create new vlan."""
 
         try:
             env_model = get_model('ambiente', 'Ambiente')
+            ogp_models = get_app('api_ogp', 'models')
 
             self.ambiente = env_model.get_by_pk(vlan.get('environment'))
             self.nome = vlan.get('name').upper()
@@ -994,6 +1003,11 @@ class Vlan(BaseModel):
             self.validate_v3()
 
             self.save()
+
+            # Permissions
+            perm = ogp_models.ObjectGroupPermission()
+            perm.create_perms(
+                vlan, self.id, AdminPermission.OBJ_TYPE_VLAN, user)
 
             # Allocates networkv4
             netv4 = vlan.get('create_networkv4')
@@ -1045,11 +1059,12 @@ class Vlan(BaseModel):
             # Destroy locks
             destroy_lock(locks_list)
 
-    def update_v3(self, vlan):
+    def update_v3(self, vlan, user):
         """Update vlan."""
 
         try:
             env_model = get_model('ambiente', 'Ambiente')
+            ogp_models = get_app('api_ogp', 'models')
 
             env = env_model.get_by_pk(vlan.get('environment'))
 
@@ -1136,6 +1151,11 @@ class Vlan(BaseModel):
 
             self.save()
 
+            # Permissions
+            perm = ogp_models.ObjectGroupPermission()
+            perm.update_perms(
+                vlan, self.id, AdminPermission.OBJ_TYPE_VLAN, user)
+
         except Exception, e:
             raise VlanErrorV3(e)
 
@@ -1144,6 +1164,17 @@ class Vlan(BaseModel):
             destroy_lock(locks_list)
 
         return self
+
+    def delete_v3(self):
+        ogp_models = get_app('api_ogp', 'models')
+
+        id_vlan = self.id
+
+        # Deletes Permissions
+        ogp_models.ObjectGroupPermission.objects.filter(
+            object_type__name=AdminPermission.OBJ_TYPE_VLAN,
+            object_value=id_vlan
+        ).delete()
 
     def activate_v3(self):
         """ Set column ativada = 1"""

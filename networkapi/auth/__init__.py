@@ -17,7 +17,6 @@ import logging
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_ogp import models
-from networkapi.api_vip_request.models import VipRequest
 from networkapi.equipamento.models import Equipamento
 from networkapi.grupo.models import DireitosGrupoEquipamento
 from networkapi.grupo.models import EGrupo
@@ -87,43 +86,6 @@ def _has_equip_perm(ugroup, egroups, equip_oper):
         if direito.egrupo in egroups:
             return True
     return False
-
-
-def validate_vip_perm(vips, user, vip_operation):
-
-    if len(vips) == 0:
-        return False
-
-    vips_request = VipRequest.objects.filter(id__in=vips)
-    for vip in vips_request:
-
-        perms = vip.viprequestgrouppermission_set.all()
-
-        if not perms:
-            return True
-
-        ugroups = user.grupos.all()
-
-        if perms:
-
-            vip_perm = _validate_obj(perms, ugroups, vip_operation)
-            if not vip_perm:
-                log.warning('User{} does not have permission {} to Vip {}'.format(
-                    user, vip_operation, vip.id
-                ))
-                return False
-
-    return True
-
-
-def perm_vip(request, operation, *args, **kwargs):
-
-    vips = kwargs.get('vip_request_ids').split(';')
-    return validate_vip_perm(
-        vips,
-        request.user,
-        operation
-    )
 
 
 def validate_object_perm(objects_id, user, operation, object_type):

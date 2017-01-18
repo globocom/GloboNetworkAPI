@@ -31,9 +31,9 @@ def get_ipv4_by_id(ip_id):
     try:
         network = Ip.get_by_pk(ip_id)
     except IpNotFoundError, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (Exception, OperationalError), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return network
 
@@ -41,11 +41,13 @@ def get_ipv4_by_id(ip_id):
 def get_ipv4_by_ids(ip_ids):
     """Get Many Ipv4."""
 
-    networks = list()
+    ipv4_ids = list()
     for ip_id in ip_ids:
-        networks.append(get_ipv4_by_id(ip_id))
+        ipv4_ids.append(get_ipv4_by_id(ip_id).id)
 
-    return networks
+    ipv4s = Ip.objects.filter(id__in=ipv4_ids)
+
+    return ipv4s
 
 
 def create_ipv4(ipv4, user):
@@ -55,11 +57,11 @@ def create_ipv4(ipv4, user):
         ipv4_obj = Ip()
         ipv4_obj.create_v3(ipv4)
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (IpError, IpErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return ipv4_obj
 
@@ -71,11 +73,11 @@ def update_ipv4(ipv4, user):
         ipv4_obj = get_ipv4_by_id(ipv4.get('id'))
         ipv4_obj.update_v3(ipv4)
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (IpError, IpErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return ipv4_obj
 
@@ -88,11 +90,11 @@ def delete_ipv4_list(ipv4_list):
             ipv4_obj = get_ipv4_by_id(ipv4)
             ipv4_obj.delete_v3()
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (IpError, IpErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
 
 
 def create_ipv6(ipv6, user):
@@ -102,11 +104,11 @@ def create_ipv6(ipv6, user):
         ipv6_obj = Ipv6()
         ipv6_obj.create_v3(ipv6)
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (IpError, IpErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return ipv6_obj
 
@@ -118,11 +120,11 @@ def update_ipv6(ipv6, user):
         ipv6_obj = get_ipv6_by_id(ipv6.get('id'))
         ipv6_obj.update_v3(ipv6)
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (IpError, IpErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return ipv6_obj
 
@@ -135,11 +137,11 @@ def delete_ipv6_list(ipv6_list):
             ipv6_obj = get_ipv6_by_id(ipv6)
             ipv6_obj.delete_v3()
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (IpError, IpErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
 
 
 def get_ipv6_by_id(ip_id):
@@ -148,21 +150,23 @@ def get_ipv6_by_id(ip_id):
     try:
         network = Ipv6.get_by_pk(ip_id)
     except IpNotFoundError, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (Exception, OperationalError), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return network
 
 
 def get_ipv6_by_ids(ip_ids):
-    """Get Many Ipv6."""
+    """Get Many Ipv4."""
 
-    networks = list()
+    ipv6_ids = list()
     for ip_id in ip_ids:
-        networks.append(get_ipv6_by_id(ip_id))
+        ipv6_ids.append(get_ipv6_by_id(ip_id).id)
 
-    return networks
+    ipv6s = Ipv6.objects.filter(id__in=ipv6_ids)
+
+    return ipv6s
 
 
 def get_ipv6_by_search(search=dict()):
