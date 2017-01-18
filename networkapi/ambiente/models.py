@@ -648,7 +648,7 @@ class EnvironmentVip(BaseModel):
         self.environmentenvironmentvip_set\
             .filter(environment_vip_id=self.id).delete()
 
-        self.delete()
+        super(EnvironmentVip, self).delete()
 
     def create_v3(self, env_map):
 

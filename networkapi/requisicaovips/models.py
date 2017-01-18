@@ -37,7 +37,6 @@ from networkapi.exception import OptionVipEnvironmentVipError
 from networkapi.exception import OptionVipEnvironmentVipNotFoundError
 from networkapi.exception import OptionVipError
 from networkapi.exception import OptionVipNotFoundError
-from networkapi.grupo.models import UGrupo
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_int_greater_equal_zero_param
 from networkapi.util import is_valid_int_greater_zero_param
@@ -2970,19 +2969,3 @@ class DsrL3_to_Vip(BaseModel):
         except Exception, e:
             cls.log.error(u'Failure to list all DsrL3_to_Vip .')
             raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
-
-
-class ServerPoolGroupPermission(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id')
-    user_group = models.ForeignKey(UGrupo, db_column='id_user_group')
-    server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
-    read = models.BooleanField()
-    write = models.BooleanField()
-    change_config = models.BooleanField()
-    delete = models.BooleanField()
-
-    log = logging.getLogger('ServerPoolGroupPermission')
-
-    class Meta(BaseModel.Meta):
-        db_table = u'server_pool_group_permission'
-        managed = True
