@@ -108,11 +108,9 @@ class Vrf(BaseModel):
 
         """
 
-        Ambiente = get_model('ambiente', 'Ambiente')
-
         vrf = Vrf().get_by_pk(pk)
 
-        entry_env = Ambiente.objects.filter(default_vrf=pk)
+        entry_env = vrf.ambiente_set.all()
 
         if len(entry_env) > 0:
             cls.log.error(u'Fail to remove Vrf.')
