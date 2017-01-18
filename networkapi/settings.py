@@ -381,7 +381,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'networkapi.api_rest.authentication.BasicAuthentication',
-    ),
+    )
 }
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication

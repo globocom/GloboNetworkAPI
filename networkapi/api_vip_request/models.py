@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models import Q
 
+from networkapi.admin_permission import AdminPermission
 from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_vip_request import exceptions
@@ -103,7 +104,7 @@ class VipRequest(BaseModel):
     def groups_permissions(self):
         ogp_models = get_app('api_ogp', 'models')
         perms = ogp_models.ObjectGroupPermission\
-            .get_by_object(self.id, 'VipRequest')
+            .get_by_object(self.id, AdminPermission.OBJ_TYPE_VIP)
         return perms
 
     @classmethod
@@ -453,15 +454,15 @@ class VipRequest(BaseModel):
                                 pool['server_pool'], vip_request['name'])
                         )
 
-                    pool_assoc_vip = reqvip_models.ServerPool.get_vips_related(pool[
-                                                                               'server_pool'])
+                    pool_assoc_vip = reqvip_models.ServerPool\
+                        .get_vips_related(pool['server_pool'])
                     if vip_request.get('id'):
                         pool_assoc_vip = pool_assoc_vip.exclude(
                             id=vip_request.get('id'))
 
                     if pool_assoc_vip:
                         raise ValidationAPIException(
-                            u'Pool {} must be associated to a only vip request, \
+                            u'Pool {} must be associated to a only 1 vip request, \
                             when vip request has dslr3 option'.format(
                                 pool['server_pool']))
 
@@ -570,7 +571,7 @@ class VipRequest(BaseModel):
 
         # Permissions
         perm = ogp_models.ObjectGroupPermission()
-        perm.create_perms(vip_map, self.id, 'VipRequest', user)
+        perm.create_perms(vip_map, self.id, AdminPermission.OBJ_TYPE_VIP, user)
 
         # sync with old tables
         syncs.new_to_old(self)
@@ -635,7 +636,7 @@ class VipRequest(BaseModel):
         # Permissions
 
         perm = ogp_models.ObjectGroupPermission()
-        perm.update_perms(vip_map, self.id, 'VipRequest', user)
+        perm.update_perms(vip_map, self.id, AdminPermission.OBJ_TYPE_VIP, user)
 
         # sync with old tables
         syncs.new_to_old(self)
@@ -648,6 +649,7 @@ class VipRequest(BaseModel):
                                      because it is created in equipment.
         """
         ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
+        ogp_models = get_app('api_ogp', 'models')
 
         id_vip = self.id
         id_ipv4 = self.ipv4
@@ -659,6 +661,12 @@ class VipRequest(BaseModel):
         self._delete_pools_related()
 
         self.delete()
+
+        # Deletes Permissions
+        ogp_models.ObjectGroupPermission.objects.filter(
+            object_type__name=AdminPermission.OBJ_TYPE_VIP,
+            object_value=id_vip
+        ).delete()
 
         # delete Ipv4
         if self.ipv4 and bypass_ipv4 is False:

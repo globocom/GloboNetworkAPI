@@ -9,14 +9,14 @@ from rest_framework.response import Response
 
 from networkapi.api_pools.facade.v3 import base as facade
 from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
-from networkapi.api_pools.permissions import delete_pool_permission
-from networkapi.api_pools.permissions import deploy_pool_permission
+from networkapi.api_pools.permissions import delete_obj_permission
+from networkapi.api_pools.permissions import deploy_obj_permission
 from networkapi.api_pools.permissions import Read
 from networkapi.api_pools.permissions import ScriptAlterPermission
 from networkapi.api_pools.permissions import ScriptCreatePermission
 from networkapi.api_pools.permissions import ScriptRemovePermission
 from networkapi.api_pools.permissions import Write
-from networkapi.api_pools.permissions import write_pool_permission
+from networkapi.api_pools.permissions import write_obj_permission
 from networkapi.api_pools.serializers import v3 as serializers
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.distributedlock import LOCK_POOL
@@ -42,7 +42,7 @@ class PoolMemberStateView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('pool_member_status')
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
-    @permission_obj_apiview([deploy_pool_permission])
+    @permission_obj_apiview([deploy_obj_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Enable/Disable pool member by list of server pool."""
@@ -113,7 +113,7 @@ class PoolDeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
-    @permission_obj_apiview([deploy_pool_permission])
+    @permission_obj_apiview([deploy_obj_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates pools by list in equipments
@@ -137,7 +137,7 @@ class PoolDeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('pool_put')
     @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
-    @permission_obj_apiview([deploy_pool_permission])
+    @permission_obj_apiview([deploy_obj_permission])
     def put(self, request, *args, **kwargs):
         """
         Updates pools by list in equipments
@@ -161,7 +161,7 @@ class PoolDeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
-    @permission_obj_apiview([deploy_pool_permission])
+    @permission_obj_apiview([deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes pools by list in equipments
@@ -293,7 +293,7 @@ class PoolDBView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('pool_put')
     @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([write_pool_permission])
+    @permission_obj_apiview([write_obj_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -315,7 +315,7 @@ class PoolDBView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([delete_pool_permission])
+    @permission_obj_apiview([delete_obj_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """

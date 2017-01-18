@@ -24,6 +24,7 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models import Q
 
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.ambiente.models import IP_VERSION
@@ -51,6 +52,7 @@ from networkapi.util import mount_ipv4_string
 from networkapi.util import mount_ipv6_string
 from networkapi.util.decorators import cached_property
 from networkapi.util.geral import get_app
+
 # from networkapi.api_pools.exceptions import PoolError
 
 Ip = get_model('ip', 'Ip')
@@ -2305,7 +2307,7 @@ class ServerPool(BaseModel):
     def groups_permissions(self):
         ogp_models = get_app('api_ogp', 'models')
         perms = ogp_models.ObjectGroupPermission\
-            .get_by_object(self.id, 'ServerPool')
+            .get_by_object(self.id, AdminPermission.OBJ_TYPE_POOL)
         return perms
 
     def get_vips_related(self, pool_id):
@@ -2392,7 +2394,7 @@ class ServerPool(BaseModel):
 
         # Permissions
         perm = ogp_models.ObjectGroupPermission()
-        perm.create_perms(pool, self.id, 'ServerPool', user)
+        perm.create_perms(pool, self.id, AdminPermission.OBJ_TYPE_POOL, user)
 
     def update_v3(self, pool, user, permit_created=False):
 
@@ -2469,11 +2471,13 @@ class ServerPool(BaseModel):
 
         # Permissions
         perm = ogp_models.ObjectGroupPermission()
-        perm.update_perms(pool, self.id, 'ServerPool', user)
+        perm.update_perms(pool, self.id, AdminPermission.OBJ_TYPE_POOL, user)
 
     def delete_v3(self):
         ogp_models = get_app('api_ogp', 'models')
         pools_exceptions = get_app('api_pools', 'exceptions')
+
+        id_pool = self.id
 
         if self.pool_created:
             raise pools_exceptions.PoolConstraintCreatedException()
@@ -2482,15 +2486,15 @@ class ServerPool(BaseModel):
             raise pools_exceptions.PoolError('Pool has related with VIPs')
 
         # Deletes Server Pool Members
-        ServerPoolMember.objects.filter(server_pool=self.id).delete()
+        ServerPoolMember.objects.filter(server_pool=id_pool).delete()
+
+        self.delete()
 
         # Deletes Permissions
         ogp_models.ObjectGroupPermission.objects.filter(
-            object_type__name='ServerPool',
-            object_value=self.id
+            object_type__name=AdminPermission.OBJ_TYPE_POOL,
+            object_value=id_pool
         ).delete()
-
-        self.delete()
 
     def validate_v3(self, pool, permit_created=False):
 

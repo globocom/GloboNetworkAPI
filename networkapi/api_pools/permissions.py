@@ -61,15 +61,15 @@ class ScriptAlterPermission(BasePermission):
         )
 
 
-def deploy_pool_permission(request, *args, **kwargs):
+def deploy_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
             return perm_obj(
                 request,
-                AdminPermission.POOL_UPDATE_CONFIG_OPERATION,
-                'ServerPool',
+                AdminPermission.OBJ_UPDATE_CONFIG_OPERATION,
+                AdminPermission.OBJ_TYPE_POOL,
                 *args,
                 **kwargs
             )
@@ -77,15 +77,15 @@ def deploy_pool_permission(request, *args, **kwargs):
     return Perm
 
 
-def write_pool_permission(request, *args, **kwargs):
+def write_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
             return perm_obj(
                 request,
-                AdminPermission.POOL_WRITE_OPERATION,
-                'ServerPool',
+                AdminPermission.OBJ_WRITE_OPERATION,
+                AdminPermission.OBJ_TYPE_POOL,
                 *args,
                 **kwargs
             )
@@ -93,15 +93,15 @@ def write_pool_permission(request, *args, **kwargs):
     return Perm
 
 
-def delete_pool_permission(request, *args, **kwargs):
+def delete_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
             return perm_obj(
                 request,
-                AdminPermission.POOL_DELETE_OPERATION,
-                'ServerPool',
+                AdminPermission.OBJ_DELETE_OPERATION,
+                AdminPermission.OBJ_TYPE_POOL,
                 *args,
                 **kwargs
             )
@@ -109,15 +109,15 @@ def delete_pool_permission(request, *args, **kwargs):
     return Perm
 
 
-def read_pool_permission(request, *args, **kwargs):
+def read_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
             return perm_obj(
                 request,
-                AdminPermission.POOL_READ_OPERATION,
-                'ServerPool',
+                AdminPermission.OBJ_READ_OPERATION,
+                AdminPermission.OBJ_TYPE_POOL,
                 *args,
                 **kwargs
             )

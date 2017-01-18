@@ -49,7 +49,7 @@ def update_vlan(vlan, user):
 
     try:
         vlan_obj = get_vlan_by_id(vlan.get('id'))
-        vlan_obj.update_v3(vlan)
+        vlan_obj.update_v3(vlan, user)
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e)
     except (VlanError, VlanErrorV3, ValidationAPIException), e:
@@ -65,7 +65,7 @@ def create_vlan(vlan, user):
 
     try:
         vlan_obj = Vlan()
-        vlan_obj.create_v3(vlan)
+        vlan_obj.create_v3(vlan, user)
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e)
     except (VlanError, VlanErrorV3, ValidationAPIException), e:
@@ -82,7 +82,7 @@ def delete_vlan(vlans):
     try:
         for vlan in vlans:
             vlan_obj = get_vlan_by_id(vlan)
-            vlan_obj.delete()
+            vlan_obj.delete_v3()
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e)
     except (VlanError, VlanErrorV3, ValidationAPIException), e:

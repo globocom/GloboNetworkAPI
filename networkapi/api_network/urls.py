@@ -34,12 +34,12 @@ urlpatterns = patterns(
     ########################
     # Network V3
     ########################
-    url(r'^v3/networkv4/deploy/((?P<obj_id>[;\w]+)/)?$',
+    url(r'^v3/networkv4/deploy/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv4DeployView.as_view()),
-    url(r'^v3/networkv6/deploy/((?P<obj_id>[;\w]+)/)?$',
+    url(r'^v3/networkv6/deploy/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv6DeployView.as_view()),
-    url(r'^v3/networkv4/((?P<obj_id>[;\w]+)/)?$',
+    url(r'^v3/networkv4/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv4View.as_view()),
-    url(r'^v3/networkv6/((?P<obj_id>[;\w]+)/)?$',
+    url(r'^v3/networkv6/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv6View.as_view()),
 )
