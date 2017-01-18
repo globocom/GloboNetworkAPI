@@ -331,7 +331,7 @@ INSERT INTO `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max) VAL
 -- Dumping data for table `object_type`
 INSERT INTO `object_type` (`id`, `name`) VALUES
 (1,'ServerPool'),
-(2,'VipRequest',
+(2,'VipRequest'),
 (3,'Vlan');
 
 
