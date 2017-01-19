@@ -49,7 +49,7 @@ class VlanErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class NetworkTypeNotFoundError(VlanError):
@@ -1054,6 +1054,7 @@ class Vlan(BaseModel):
 
                 netv6_obj.create_v3(dict_net, locks_used=locks_name)
         except Exception, e:
+
             raise VlanErrorV3(e)
         finally:
             # Destroy locks
@@ -1169,6 +1170,8 @@ class Vlan(BaseModel):
         ogp_models = get_app('api_ogp', 'models')
 
         id_vlan = self.id
+
+        super(Vlan, self).delete()
 
         # Deletes Permissions
         ogp_models.ObjectGroupPermission.objects.filter(

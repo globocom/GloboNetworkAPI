@@ -65,7 +65,7 @@ class EnvironmentErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class AmbienteNotFoundError(AmbienteError):

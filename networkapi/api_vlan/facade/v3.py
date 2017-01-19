@@ -16,9 +16,9 @@ def get_vlan_by_id(vlan_id):
     try:
         vlan = Vlan().get_by_pk(vlan_id)
     except VlanNotFoundError, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (Exception, OperationalError), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return vlan
 
@@ -51,11 +51,11 @@ def update_vlan(vlan, user):
         vlan_obj = get_vlan_by_id(vlan.get('id'))
         vlan_obj.update_v3(vlan, user)
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (VlanError, VlanErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return vlan_obj
 
@@ -67,11 +67,11 @@ def create_vlan(vlan, user):
         vlan_obj = Vlan()
         vlan_obj.create_v3(vlan, user)
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (VlanError, VlanErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
+        raise NetworkAPIException(str(e))
     else:
         return vlan_obj
 
@@ -84,10 +84,8 @@ def delete_vlan(vlans):
             vlan_obj = get_vlan_by_id(vlan)
             vlan_obj.delete_v3()
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(str(e))
     except (VlanError, VlanErrorV3, ValidationAPIException), e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
-        raise NetworkAPIException(e)
-    else:
-        return vlan_obj
+        raise NetworkAPIException(str(e))
