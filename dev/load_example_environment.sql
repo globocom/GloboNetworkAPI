@@ -290,7 +290,13 @@ INSERT INTO `equip_do_grupo` (id_equip_do_grupo, id_egrupo, id_equip) VALUES
     (10,1,10),
     (11,1,11),
     (12,1,12),
-    (13,1,13);
+    (13,1,13),
+    (14,1,14),
+    (15,1,15),
+    (16,1,16),
+    (17,1,17),
+    (18,1,18),
+    (19,1,19);
 
 
 -- Dumping data for table `direitos_grupoequip`
