@@ -454,7 +454,7 @@ class VipRequest(BaseModel):
                                 pool['server_pool'], vip_request['name'])
                         )
 
-                    pool_assoc_vip = reqvip_models.ServerPool\
+                    pool_assoc_vip = reqvip_models.ServerPool()\
                         .get_vips_related(pool['server_pool'])
                     if vip_request.get('id'):
                         pool_assoc_vip = pool_assoc_vip.exclude(

@@ -57,7 +57,7 @@ def _prepare_apply(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = ServerPool.get_vips_related(pool['id'])
+            vips_requests = ServerPool().get_vips_related(pool['id'])
 
             serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
@@ -260,7 +260,7 @@ def update_real_pool(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = ServerPool.get_vips_related(pool['id'])
+            vips_requests = ServerPool().get_vips_related(pool['id'])
 
             serializer_vips = serializers_vip.VipRequestV3Serializer(
                 vips_requests,
