@@ -97,6 +97,8 @@ class NetworkApiTestCase(TestCase):
 
         # Pools
         'initial_pools.json',
+        # Pool Members
+        'initial_pool_members.json',
 
         # Vips
         'initial_vip_request.json',

@@ -98,5 +98,25 @@
       "modelo": 3,
       "maintenance": false
     }
+  },
+  {
+    "pk": 11,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LB01",
+      "tipo_equipamento": 2,
+      "modelo": 5,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 12,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LB02",
+      "tipo_equipamento": 2,
+      "modelo": 5,
+      "maintenance": false
+    }
   }
 ]

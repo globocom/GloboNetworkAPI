@@ -82,5 +82,19 @@
     "environment": 1,
     "lb_method": "least-conn"
     }
+  },
+  {
+  "pk": 10,
+  "model": "requisicaovips.serverpool",
+  "fields": {
+    "identifier": "test-to-deploy",
+    "healthcheck": 1,
+    "servicedownaction": 5,
+    "default_port": 80,
+    "default_limit": 100,
+    "pool_created": true,
+    "environment": 5,
+    "lb_method": "least-conn"
+    }
   }
 ]

@@ -78,5 +78,21 @@
       "egrupo": 24,
       "equipamento": 10
     }
+  },
+  {
+    "pk": 12,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 11
+    }
+  },
+  {
+    "pk": 13,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 12
+    }
   }
 ]

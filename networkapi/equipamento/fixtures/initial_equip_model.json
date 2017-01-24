@@ -30,5 +30,13 @@
       "marca": 3,
       "nome": "Generic SW"
     }
+  },
+  {
+    "pk": 5,
+    "model": "equipamento.modelo",
+    "fields": {
+      "marca": 3,
+      "nome": "Generic LB"
+    }
   }
 ]
