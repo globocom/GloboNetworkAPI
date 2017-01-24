@@ -30,9 +30,18 @@
   "pk": 4,
   "model": "vlan.vlan",
   "fields": {
-    "ambiente": 2,
-    "nome": "vlan 2 - ambiente 2",
+    "ambiente": 4,
+    "nome": "vlan 1 - environment eqpt",
     "num_vlan": "4"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 5,
+    "nome": "vlan 1 - environment pool",
+    "num_vlan": "5"
     }
   }
 ]

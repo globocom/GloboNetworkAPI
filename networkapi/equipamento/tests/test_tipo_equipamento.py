@@ -34,14 +34,14 @@ class TipoEquipamentoTestCase(NetworkApiTestCase):
 
     def test_create_equipment_type_with_sucess(self):
         # Issue a GET request.
-        data = XML_EQUIPMENT_TYPE % ("teste1")
+        data = XML_EQUIPMENT_TYPE % ('teste1')
         response = self.client.post('/equipmenttype/',
                                     data=data,
                                     content_type='text/xml',
                                     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         LOG.debug(response)
-        expected_response = '<?xml version="1.0" encoding="UTF-8"?><networkapi versao="1.0"><equipment_type><id>3</id></equipment_type></networkapi>'
+        expected_response = '<?xml version="1.0" encoding="UTF-8"?><networkapi versao="1.0"><equipment_type><id>4</id></equipment_type></networkapi>'
         # Check that the response is 200 OK.
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, expected_response)

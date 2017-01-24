@@ -14,5 +14,61 @@
     "ip": 9,
     "equipamento": "5"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 10,
+    "equipamento": 6
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 10,
+    "equipamento": 7
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 11,
+    "equipamento": 8
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 12,
+    "equipamento": 9
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 13,
+    "equipamento": 10
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 14,
+    "equipamento": 6
+    }
+  },
+  {
+  "pk": 9,
+  "model": "ip.ipequipamento",
+  "fields": {
+    "ip": 15,
+    "equipamento": 7
+    }
   }
 ]

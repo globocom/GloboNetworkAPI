@@ -28,5 +28,25 @@
     "divisao_dc": 2,
     "default_vrf": 1
     }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 1,
+    "ambiente_logico": 3,
+    "divisao_dc": 1,
+    "default_vrf": 1
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 1,
+    "ambiente_logico": 4,
+    "divisao_dc": 1,
+    "default_vrf": 1
+    }
   }
 ]

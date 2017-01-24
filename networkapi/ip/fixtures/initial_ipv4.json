@@ -97,5 +97,71 @@
     "oct3": "3",
     "oct4": "2"
     }
+  },
+  {
+  "pk": 10,
+  "model": "ip.ip",
+  "fields": {
+    "networkipv4": 5,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "1"
+    }
+  },
+  {
+  "pk": 11,
+  "model": "ip.ip",
+  "fields": {
+    "networkipv4": 5,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "2"
+    }
+  },
+  {
+  "pk": 12,
+  "model": "ip.ip",
+  "fields": {
+    "networkipv4": 5,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "3"
+    }
+  },
+  {
+  "pk": 13,
+  "model": "ip.ip",
+  "fields": {
+    "networkipv4": 5,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "4"
+    }
+  },
+  {
+  "pk": 14,
+  "model": "ip.ip",
+  "fields": {
+    "networkipv4": 5,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "5"
+    }
+  },
+  {
+  "pk": 15,
+  "model": "ip.ip",
+  "fields": {
+    "networkipv4": 5,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "6"
+    }
   }
 ]
