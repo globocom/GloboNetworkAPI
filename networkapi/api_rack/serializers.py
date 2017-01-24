@@ -22,6 +22,11 @@ from networkapi.rack.models import Rack
 
 class RackSerializer(serializers.ModelSerializer):
 
+
+    id_sw1 = serializers.RelatedField(source='id_sw1.nome')
+    id_sw2 = serializers.RelatedField(source='id_sw2.nome')
+    id_ilo = serializers.RelatedField(source='id_ilo.nome')
+
     class Meta:
         model = Rack
         fields = ('id',
@@ -34,4 +39,6 @@ class RackSerializer(serializers.ModelSerializer):
                   'id_sw2',
                   'id_ilo',
                   'config',
-                  'create_vlan_amb')
+                  'create_vlan_amb'
+                  )
+

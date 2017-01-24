@@ -33,6 +33,8 @@ from networkapi.system.facade import get_value as get_variable
 from django.core.exceptions import ObjectDoesNotExist
 from networkapi.system import exceptions as var_exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
+from networkapi.rack.models import Rack
+
 
 
 log = logging.getLogger(__name__)
@@ -44,35 +46,12 @@ class RackView(APIView):
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
-            log.info("Add Rack")
+            log.info("New Rack")
 
-            data_ = request.DATA
-            if not data_:
+            rack_dict = request.DATA.get('rack')
+
+            if not rack_dict:
                 raise exceptions.InvalidInputException()
-
-            rack_dict = dict()
-
-            try:
-                rack_dict['number'] = int(data_.get('number'))
-            except:
-                raise exceptions.InvalidInputException("O número do Rack não foi informado.")
-            rack_dict['name'] = data_.get('name')
-            rack_dict['sw1_mac'] = data_.get('mac_address_sw1')
-            rack_dict['sw2_mac'] = data_.get('mac_address_sw2')
-            rack_dict['sw3_mac'] = data_.get('mac_address_ilo')
-
-            if not data_.get('id_sw1'):
-                rack_dict['sw1_id'] = None
-            else:
-                rack_dict['sw1_id'] = data_.get('id_sw1')
-            if not data_.get('id_sw2'):
-                rack_dict['sw2_id'] = None
-            else:
-                rack_dict['sw2_id'] = data_.get('id_sw2')
-            if not data_.get('id_ilo'):
-                rack_dict['sw3_id'] = None
-            else:
-                rack_dict['sw3_id'] = data_.get('id_ilo')
 
             rack = facade.save_rack(self.request.user, rack_dict)
 
@@ -89,6 +68,27 @@ class RackView(APIView):
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()
+
+
+    def get(self, user, *args, **kwargs):
+        """Handles GET requests to list all Racks
+        URLs: /api/rack/list/all/
+        """
+
+        try:
+            log.info('List all Racks')
+
+            data = dict()
+            racks = Rack.objects.all().order_by('numero')
+
+            data['racks'] = RackSerializer(racks, many=True).data if racks else []
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
 
 class RackDeployView(APIView):
 
