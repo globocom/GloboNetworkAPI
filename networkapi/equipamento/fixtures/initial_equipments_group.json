@@ -1,0 +1,82 @@
+[
+  {
+    "pk": 1,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "2",
+      "equipamento": "1"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "2",
+      "equipamento": "2"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "2",
+      "equipamento": "3"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "13",
+      "equipamento": "4"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "13",
+      "equipamento": "5"
+    }
+  },
+  {
+    "pk": 7,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 6
+    }
+  },
+  {
+    "pk": 8,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 7
+    }
+  },
+  {
+    "pk": 9,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 8
+    }
+  },
+  {
+    "pk": 10,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 9
+    }
+  },
+  {
+    "pk": 11,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 10
+    }
+  }
+]

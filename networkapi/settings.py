@@ -35,7 +35,8 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('NETWORKAPI_ALLOWED_HOSTS',
+                          '10.0.0.2,localhost,127.0.0.1').split(',')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
@@ -380,7 +381,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'networkapi.api_rest.authentication.BasicAuthentication',
-    ),
+    )
 }
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication

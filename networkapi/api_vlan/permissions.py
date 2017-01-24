@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
 from rest_framework.permissions import BasePermission
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.api_ogp.facade import perm_obj
 from networkapi.auth import has_perm
+from networkapi.auth import perm_obj
 
 
 class Read(BasePermission):

@@ -87,20 +87,6 @@ class VipRequestDSCPError(APIException):
         self.detail = msg
 
 
-class VipRequestGroupPermissionNotFoundError(APIException):
-    status_code = status.HTTP_404_NOT_FOUND
-
-    def __init__(self, msg):
-        self.detail = u'Vips Request Group Permission %s do not exist.' % (msg)
-
-
-class VipRequestGroupPermissionError(APIException):
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-
-    def __init__(self, msg):
-        self.detail = msg
-
-
 class VipRequestDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Vip Request Does Not Exist.'

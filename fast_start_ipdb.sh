@@ -3,11 +3,14 @@
 source ipdb_env/bin/activate
 # pip install -r requirements.txt
 # pip install -r requirements_debug.txt
-echo "exporting NETWORKAPI_DEBUG"
-export NETWORKAPI_DEBUG=1
+echo "exporting NETWORKAPI_DEBUG=0"
+export NETWORKAPI_DEBUG=0
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ipdb'
+
+echo "exporting NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1"
+export NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1
 
 echo "exporting NETWORKAPI_BROKER_DESTINATION"
 export NETWORKAPI_BROKER_DESTINATION='networkapi'

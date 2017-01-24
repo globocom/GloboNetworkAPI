@@ -178,8 +178,8 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
     ipv6 = serializers.SerializerMethodField('get_ipv6')
     ports = serializers.SerializerMethodField('get_ports')
     options = serializers.SerializerMethodField('get_options')
-    groups_permissions = serializers.SerializerMethodField(
-        'get_groups_permissions')
+    groups_permissions = serializers\
+        .SerializerMethodField('get_groups_permissions')
     equipments = serializers.SerializerMethodField('get_equipments')
 
     def get_environmentvip(self, obj):
@@ -268,6 +268,7 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
         envvip_slz = get_app('api_environment_vip', module_label='serializers')
         ip_slz = get_app('api_ip', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
+        ogp_slz = get_app('api_ogp', module_label='serializers')
 
         if not cls.mapping:
             cls.mapping = {
@@ -334,17 +335,26 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ports'
                 },
                 'groups_permissions': {
-                    'serializer': VipRequestPermV3Serializer,
+                    'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'fields': (
+                            'user_group',
+                            'read',
+                            'write',
+                            'change_config',
+                            'delete',
+                        )
                     },
                     'obj': 'groups_permissions',
                 },
                 'groups_permissions__details': {
-                    'serializer': VipRequestPermV3Serializer,
+                    'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
                     'kwargs': {
+                        'include': (
+                            'group__details',
+                        ),
                         'many': True,
-                        'kind': 'details'
                     },
                     'obj': 'groups_permissions',
                 },
@@ -433,43 +443,3 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
             'ipv6',
         )
         return queryset
-
-
-class VipRequestPermV3Serializer(DynamicFieldsModelSerializer):
-
-    group = serializers.SerializerMethodField('get_group')
-
-    def get_group(self, obj):
-        return self.extends_serializer(obj, 'group')
-
-    class Meta:
-        VipRequestGroupPermission = get_model('api_vip_request',
-                                              'VipRequestGroupPermission')
-        model = VipRequestGroupPermission
-        fields = (
-            'group',
-            'read',
-            'write',
-            'change_config',
-            'delete'
-        )
-
-    @classmethod
-    def get_serializers(cls):
-        # serializers
-        group_slz = get_app('api_group', module_label='serializers')
-
-        if not cls.mapping:
-            cls.mapping = {
-                'group': {
-                    'obj': 'user_group_id',
-                },
-                'group__details': {
-                    'serializer': group_slz.UserGroupV3Serializer,
-                    'kwargs': {
-                    },
-                    'obj': 'user_group',
-                },
-            }
-
-        return cls.mapping

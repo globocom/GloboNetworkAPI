@@ -50,43 +50,53 @@
     }
   },
   {
-    "pk": 1,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "2",
-      "equipamento": "1"
-    }
-  },
-  {
-    "pk": 2,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "2",
-      "equipamento": "2"
-    }
-  },
-  {
-    "pk": 3,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "2",
-      "equipamento": "3"
-    }
-  },
-  {
-    "pk": 5,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "13",
-      "equipamento": "4"
-    }
-  },
-  {
     "pk": 6,
-    "model": "equipamento.equipamentogrupo",
+    "model": "equipamento.equipamento",
     "fields": {
-      "egrupo": "13",
-      "equipamento": "5"
+      "nome": "TOR1",
+      "tipo_equipamento": 1,
+      "modelo": 4,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 7,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "TOR2",
+      "tipo_equipamento": 1,
+      "modelo": 4,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 8,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM1",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 9,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM2",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 10,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM3",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
     }
   }
 ]

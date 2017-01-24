@@ -12,5 +12,19 @@
   "fields": {
     "nome": "TESTE2"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TESTE-EQPT"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TESTE-POOL"
+    }
   }
 ]

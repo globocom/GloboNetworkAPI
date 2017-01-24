@@ -38,6 +38,7 @@ from networkapi.equipamento.models import EquipamentoAmbienteDuplicatedError
 from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.exception import InvalidValueError
+from networkapi.exception import NetworkActiveError
 from networkapi.infrastructure.ipaddr import AddressValueError
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.infrastructure.ipaddr import IPv4Address
@@ -54,7 +55,6 @@ from networkapi.util.decorators import cached_property
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
-from networkapi.exception import NetworkActiveError
 
 
 class NetworkIPv4Error(Exception):
@@ -78,7 +78,7 @@ class NetworkIPv4ErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class NetworkIPv6ErrorV3(Exception):
@@ -89,7 +89,7 @@ class NetworkIPv6ErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class NetworkIPv6Error(Exception):
@@ -139,7 +139,7 @@ class IpErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class IpError(Exception):
@@ -882,10 +882,12 @@ class NetworkIPv4(BaseModel):
         # Create locks for environment and vlan
         locks_list = create_lock_with_blocking(locks_name)
 
-        if self.active:
-            raise NetworkActiveError(None,
-                "Network is active. Try to set it inactive before removing it")
         try:
+
+            if self.active:
+                raise NetworkActiveError(
+                    None,
+                    'Try to set it inactive before removing it')
 
             for ip in self.ip_set.all():
                 ip.delete_v3()

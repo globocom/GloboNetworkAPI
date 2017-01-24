@@ -20,5 +20,16 @@
     "description": "teste2",
     "finalidade_txt": "teste2"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.environmentvip",
+  "fields": {
+    "ambiente_p44_txt": "teste3",
+    "cliente_txt": "teste3",
+    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+    "description": "teste3",
+    "finalidade_txt": "teste3"
+    }
   }
 ]
