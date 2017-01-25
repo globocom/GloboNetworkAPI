@@ -1,0 +1,17 @@
+[
+  {
+    "pk": 1,
+    "model": "requisicaovips.serverpoolmember",
+    "fields": {
+      "server_pool": 10,
+      "identifier": "10.0.0.2",
+      "ip": 1,
+      "ipv6": null,
+      "priority": 1,
+      "weight": 1,
+      "limit": 10,
+      "port_real": 8,
+      "member_status": 7
+    }
+  }
+]

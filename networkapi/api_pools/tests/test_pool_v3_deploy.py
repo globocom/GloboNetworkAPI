@@ -190,3 +190,22 @@ class PoolDeployTestV3Case(NetworkApiTestCase):
         log.info(response.data)
         self.assertEqual(200, response.status_code,
                          'Status code should be 200 and was %s' % response.status_code)
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_update_deploy_with_reals_success(self, test_patch):
+        """
+        """
+        mock = MockPlugin()
+        mock.status(True)
+        test_patch.return_value = mock
+
+        # update
+        response = self.client.put(
+            '/api/v3/pool/deploy/10/',
+            data=json.dumps(self.load_json_file(
+                'api_pools/tests/json/test_pool_put_created_with_reals.json')),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        log.info(response.data)
+        self.assertEqual(200, response.status_code,
+                         'Status code should be 200 and was %s' % response.status_code)
