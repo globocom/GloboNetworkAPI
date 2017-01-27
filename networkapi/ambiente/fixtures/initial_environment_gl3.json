@@ -12,5 +12,26 @@
   "fields": {
     "nome": "GRUPO 2"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST POST 1"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST POST 2.1"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST POST 2.2"
+    }
   }
 ]

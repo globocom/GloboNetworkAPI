@@ -374,7 +374,7 @@ class OptionPoolEnvironmentView(CustomAPIView):
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
-        Method to return option vip list by environment id
+        Method to return option pool list by environment id
         Param environment_id: environment id
         Return list of option pool
         """
@@ -406,3 +406,45 @@ class OptionPoolEnvironmentView(CustomAPIView):
         )
 
         return Response(response, status=status.HTTP_200_OK)
+
+
+# class OptionPoolView(CustomAPIView):
+
+#     @logs_method_apiview
+#     @raise_json_validate('')
+#     @permission_classes_apiview((IsAuthenticated, Read))
+#     @prepare_search
+#     def get(self, request, *args, **kwargs):
+#         """
+#         Method to return option pool list
+#         Param obj_ids: environment id
+#         Return list of option pool
+#         """
+
+#         obj_ids = kwargs['obj_ids']
+
+#         options_pool = facade.get_options_pool_list_by_environment(
+#             environment_id)
+
+#         only_main_property = True
+
+#         self.include += ('type',)
+
+#         # serializer pools
+#         options_pool_serializer = serializers.OptionPoolV3Serializer(
+#             options_pool,
+#             many=True,
+#             fields=self.fields,
+#             include=self.include,
+#             exclude=self.exclude,
+#             kind=self.kind
+#         )
+
+#         # prepare serializer with customized properties
+#         response = render_to_json(
+#             options_pool_serializer,
+#             main_property='options_pool',
+#             only_main_property=only_main_property
+#         )
+
+#         return Response(response, status=status.HTTP_200_OK)
