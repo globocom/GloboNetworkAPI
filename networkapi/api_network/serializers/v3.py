@@ -46,14 +46,13 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
     def get_network_type(self, obj):
         return self.extends_serializer(obj, 'network_type')
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
         envvip_slz = get_app('api_environment_vip', module_label='serializers')
         vlan_slz = get_app('api_vlan', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'environmentvip': {
                     'obj': 'ambient_vip_id'
                 },
@@ -62,7 +61,7 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
                     'kwargs': {
                     },
                     'obj': 'ambient_vip',
-                    'eager_loading': cls.setup_eager_loading_envvip
+                    'eager_loading': self.setup_eager_loading_envvip
                 },
                 'vlan': {
                     'obj': 'vlan_id'
@@ -73,14 +72,14 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'basic'
                     },
                     'obj': 'vlan',
-                    'eager_loading': cls.setup_eager_loading_vlan
+                    'eager_loading': self.setup_eager_loading_vlan
                 },
                 'vlan__details': {
                     'serializer': vlan_slz.VlanV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'vlan',
-                    'eager_loading': cls.setup_eager_loading_vlan
+                    'eager_loading': self.setup_eager_loading_vlan
                 },
                 'network_type': {
                     'obj': 'network_type_id'
@@ -90,11 +89,11 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
                     'kwargs': {
                     },
                     'obj': 'network_type',
-                    'eager_loading': cls.setup_eager_loading_net_type
+                    'eager_loading': self.setup_eager_loading_net_type
                 },
             }
 
-        return cls.mapping
+        return self.mapping
 
     @staticmethod
     def setup_eager_loading_net_type(queryset):
@@ -204,14 +203,13 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
     def get_network_type(self, obj):
         return self.extends_serializer(obj, 'network_type')
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
         envvip_slz = get_app('api_environment_vip', module_label='serializers')
         vlan_slz = get_app('api_vlan', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'environmentvip': {
                     'obj': 'ambient_vip_id'
                 },
@@ -220,7 +218,7 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
                     'kwargs': {
                     },
                     'obj': 'ambient_vip',
-                    'eager_loading': cls.setup_eager_loading_envvip
+                    'eager_loading': self.setup_eager_loading_envvip
                 },
                 'vlan': {
                     'obj': 'vlan_id'
@@ -231,14 +229,14 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'basic'
                     },
                     'obj': 'vlan',
-                    'eager_loading': cls.setup_eager_loading_vlan
+                    'eager_loading': self.setup_eager_loading_vlan
                 },
                 'vlan__details': {
                     'serializer': vlan_slz.VlanV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'vlan',
-                    'eager_loading': cls.setup_eager_loading_vlan
+                    'eager_loading': self.setup_eager_loading_vlan
                 },
                 'network_type': {
                     'obj': 'network_type_id'
@@ -248,11 +246,11 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
                     'kwargs': {
                     },
                     'obj': 'network_type',
-                    'eager_loading': cls.setup_eager_loading_net_type
+                    'eager_loading': self.setup_eager_loading_net_type
                 },
             }
 
-        return cls.mapping
+        return self.mapping
 
     @staticmethod
     def setup_eager_loading_net_type(queryset):

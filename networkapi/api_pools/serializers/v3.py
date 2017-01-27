@@ -109,14 +109,13 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
 
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         ip_slz = get_app('api_ip', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'server_pool': {
                     'obj': 'server_pool_id',
                 },
@@ -197,7 +196,7 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
 
             }
 
-        return cls.mapping
+        return self.mapping
 
 
 class PoolV3Serializer(DynamicFieldsModelSerializer):
@@ -272,15 +271,14 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
         )
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         vip_slz = get_app('api_vip_request', module_label='serializers.v3')
         env_slz = get_app('api_environment', module_label='serializers')
         ogp_slz = get_app('api_ogp', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'healthcheck': {
                     'serializer': HealthcheckV3Serializer,
                     'kwargs': {
@@ -384,4 +382,4 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                 }
             }
 
-        return cls.mapping
+        return self.mapping

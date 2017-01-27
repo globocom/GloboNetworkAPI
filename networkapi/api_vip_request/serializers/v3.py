@@ -36,14 +36,13 @@ class VipRequestPortPoolV3Serializer(DynamicFieldsModelSerializer):
             'order'
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
 
         pool_slz = get_app('api_pools', module_label='serializers.v3')
         envvip_slz = get_app('api_environment_vip', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'server_pool': {
                     'obj': 'server_pool_id',
                 },
@@ -78,7 +77,7 @@ class VipRequestPortPoolV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'l7_rule',
                 },
             }
-        return cls.mapping
+        return self.mapping
 
 
 class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
@@ -122,13 +121,12 @@ class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
             'pools',
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
 
         envvip_slz = get_app('api_environment_vip', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'pools': {
                     'serializer': VipRequestPortPoolV3Serializer,
                     'kwargs': {
@@ -165,7 +163,7 @@ class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'optionvip',
                 },
             }
-        return cls.mapping
+        return self.mapping
 
 
 class VipRequestV3Serializer(DynamicFieldsModelSerializer):
@@ -262,16 +260,15 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
 
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
 
         envvip_slz = get_app('api_environment_vip', module_label='serializers')
         ip_slz = get_app('api_ip', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         ogp_slz = get_app('api_ogp', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'environmentvip': {
                     'obj': 'environmentvip_id'
                 },
@@ -287,7 +284,7 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                         )
                     },
                     'obj': 'environmentvip',
-                    'eager_loading': cls.setup_eager_loading_environmentvip
+                    'eager_loading': self.setup_eager_loading_environmentvip
                 },
                 'ipv4': {
                     'obj': 'ipv4_id'
@@ -302,7 +299,7 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                         )
                     },
                     'obj': 'ipv4',
-                    'eager_loading': cls.setup_eager_loading_ipv4
+                    'eager_loading': self.setup_eager_loading_ipv4
                 },
                 'ipv6': {
                     'obj': 'ipv6_id'
@@ -317,7 +314,7 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                         )
                     },
                     'obj': 'ipv6',
-                    'eager_loading': cls.setup_eager_loading_ipv6
+                    'eager_loading': self.setup_eager_loading_ipv6
                 },
                 'ports': {
                     'serializer': VipRequestPortV3Serializer,
@@ -415,7 +412,7 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments',
                 }
             }
-        return cls.mapping
+        return self.mapping
 
     @staticmethod
     def setup_eager_loading_environmentvip(queryset):

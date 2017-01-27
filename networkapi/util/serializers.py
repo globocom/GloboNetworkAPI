@@ -27,7 +27,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         kind = kwargs.pop('kind', None)
 
         try:
-            self.mapping = self.get_serializers() or dict()
+            self.get_serializers()
         except:
             self.mapping = dict()
 
@@ -142,7 +142,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
         key = self.context.get('serializers').get(default_field, default_field)
 
-        slr_model = self.get_serializers().get(key)
+        slr_model = self.mapping.get(key)
 
         # keys
         if slr_model.get('keys'):
@@ -218,7 +218,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         try:
 
             # get fields with prefetch_related
-            mapping = self.get_serializers()
+            mapping = self.mapping
 
             # For each field
             for key in filted_fields:
@@ -230,12 +230,6 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             log.info(e)
             pass
         return queryset
-
-    @classmethod
-    def get_serializers(cls):
-        if not cls.mapping:
-            cls.mapping = dict()
-        return cls.mapping
 
 
 class RecursiveField(serializers.Serializer):
