@@ -150,6 +150,7 @@ class VipRequestDBView(CustomAPIView):
         """
         Returns a list of vip request by ids ou dict
         """
+
         try:
 
             if not kwargs.get('vip_request_ids'):

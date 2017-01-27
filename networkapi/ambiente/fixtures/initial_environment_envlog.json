@@ -26,5 +26,12 @@
   "fields": {
     "nome": "TESTE-POOL"
     }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TEST POST"
+    }
   }
 ]

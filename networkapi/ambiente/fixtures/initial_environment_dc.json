@@ -12,5 +12,12 @@
   "fields": {
     "nome": "FE"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "TEST POST"
+    }
   }
 ]

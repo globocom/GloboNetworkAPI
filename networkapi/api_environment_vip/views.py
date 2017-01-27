@@ -22,6 +22,7 @@ from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
+
 log = logging.getLogger(__name__)
 
 
@@ -117,48 +118,44 @@ class EnvironmentVipStepOneView(CustomAPIView):
 
 class EnvironmentVipView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @raise_json_validate('')
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Method to return environment vip list.
         Param obj_ids: obj_ids
         """
-        try:
-            if not kwargs.get('obj_id'):
-                obj_model = facade.get_environmentvip_by_search(self.search)
-                environments_vip = obj_model['query_set']
-                only_main_property = False
-            else:
-                obj_ids = kwargs['obj_id'].split(';')
-                environments_vip = facade.get_environmentvip_by_ids(obj_ids)
-                only_main_property = True
-                obj_model = None
+        if not kwargs.get('obj_id'):
+            obj_model = facade.get_environmentvip_by_search(self.search)
+            environments_vip = obj_model['query_set']
+            only_main_property = False
+        else:
+            obj_ids = kwargs['obj_id'].split(';')
+            environments_vip = facade.get_environmentvip_by_ids(obj_ids)
+            only_main_property = True
+            obj_model = None
 
-            environmentvip_serializer = serializers.EnvironmentVipV3Serializer(
-                environments_vip,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        environmentvip_serializer = serializers.EnvironmentVipV3Serializer(
+            environments_vip,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # prepare serializer with customized properties
-            response = render_to_json(
-                environmentvip_serializer,
-                main_property='environments_vip',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
+        # prepare serializer with customized properties
+        response = render_to_json(
+            environmentvip_serializer,
+            main_property='environments_vip',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            return Response(response, status=status.HTTP_200_OK)
-
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException(exception)
+        return Response(response, status=status.HTTP_200_OK)
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
@@ -197,8 +194,9 @@ class EnvironmentVipView(CustomAPIView):
 
         return Response(response, status=status.HTTP_201_CREATED)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @raise_json_validate('')
     @commit_on_success
     def delete(self, request, *args, **kwargs):
 

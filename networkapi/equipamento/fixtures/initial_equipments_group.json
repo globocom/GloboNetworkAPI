@@ -94,5 +94,211 @@
       "egrupo": 24,
       "equipamento": 12
     }
+  },
+  {
+    "pk": 31,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 31
+    }
+  },
+  {
+    "pk": 32,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 32
+    }
+  },
+  {
+    "pk": 33,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 33
+    }
+  },{
+    "pk": 34,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 34
+    }
+  },{
+    "pk": 35,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 35
+    }
+  },{
+    "pk": 36,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 36
+    }
+  },{
+    "pk": 37,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 37
+    }
+  },{
+    "pk": 38,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 38
+    }
+  },{
+    "pk": 39,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 39
+    }
+  },{
+    "pk": 40,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 40
+    }
+  },{
+    "pk": 41,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 41
+    }
+  },{
+    "pk": 42,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 42
+    }
+  },{
+    "pk": 43,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 43
+    }
+  },{
+    "pk": 44,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 44
+    }
+  },{
+    "pk": 45,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 45
+    }
+  },{
+    "pk": 46,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 46
+    }
+  },{
+    "pk": 47,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 47
+    }
+  },{
+    "pk": 48,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 48
+    }
+  },{
+    "pk": 49,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 49
+    }
+  },{
+    "pk": 50,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 50
+    }
+  },{
+    "pk": 51,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 51
+    }
+  },{
+    "pk": 52,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 52
+    }
+  },{
+    "pk": 53,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 53
+    }
+  },{
+    "pk": 54,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 54
+    }
+  },{
+    "pk": 55,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 55
+    }
+  },{
+    "pk": 56,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 56
+    }
+  },{
+    "pk": 57,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 57
+    }
+  },{
+    "pk": 58,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 58
+    }
+  },{
+    "pk": 59,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 59
+    }
   }
 ]

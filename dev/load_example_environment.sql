@@ -225,18 +225,22 @@ INSERT INTO `ipsv6_dos_equipamentos` (id_ipsv6_dos_equipamentos, id_ipv6, id_equ
 
 -- Dumping data for table `usuarios`
 INSERT INTO `usuarios` (user, pwd, id_user, nome, ativo, email, user_ldap) VALUES
-    ('networkapi', MD5('networkapi'), 1, 'Globo Network API test user', 1, 'networkapi@globo.com', NULL);
+    ('networkapi', MD5('networkapi'), 1, 'Globo Network API test user', 1, 'networkapi@globo.com', NULL),
+    ('cadvlan', MD5('12345678'), 2, 'Cadvlan - user of authentication', 1, 'suptel@corp.globo.com', NULL);
+
 
 
 -- Dumping data for table `grupos`
 INSERT INTO `grupos` (id, nome, leitura, escrita, edicao, exclusao) VALUES
-    (1, 'Admin', 'S', 'S', 'S', 'S');
+    (1, 'Admin', 'S', 'S', 'S', 'S'),
+    (2,'Cadvlan_adm','N','N','N','N');
 
 
 -- Dumping data for table `usuarios_do_grupo`
 INSERT INTO `usuarios_do_grupo`
     (id_usuarios_do_grupo, id_user, id_grupo) VALUES
-    (1, 1, 1);
+    (1, 1, 1),
+    (2, 2, 2);
 
 
 -- Dumping data for table `permissions`
@@ -251,7 +255,10 @@ INSERT INTO `permissions` (id_permission, function) VALUES
     (8, 'script_alterar_pool'),
     (9, 'script_criacao_pool'),
     (10, 'script_remover_pool'),
-    (11, 'ips');
+    (11, 'ips'),
+    (12,'authenticate'),
+    (13,'cadastro_de_tipo_rede'),
+    (14,'cadastro_de_grupos_equipamentos');
 
 
 -- Dumping data for table `permissoes_administrativas`
@@ -268,7 +275,12 @@ INSERT INTO `permissoes_administrativas`
     (8, 1, 1, 1, 8),
     (9, 1, 1, 1, 9),
     (10, 1, 1, 1, 10),
-    (11, 1, 1, 1, 11);
+    (11, 1, 1, 1, 11),
+    (12, 1, 1, 1, 12),
+    (13, 1, 1, 1, 13),
+    (14, 1, 1, 1, 14),
+    (15, 1, 1, 2, 1),
+    (16, 1, 1, 2, 12);
 
 
 -- Dumping data for table `grupos_equip`

@@ -44,6 +44,7 @@ from networkapi.util import is_valid_string_minsize
 from networkapi.util import is_valid_text
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
+from networkapi.util.geral import get_app
 
 
 class AmbienteError(Exception):
@@ -1362,6 +1363,47 @@ class Ambiente(BaseModel):
 
         finally:
             destroy_lock(locks_list)
+
+    def delete_v3(self):
+        ip_models = get_app('ip', 'models')
+        vlan_models = get_app('vlan', 'models')
+        eqpt_models = get_app('equipamento', 'models')
+
+        # Remove every vlan associated with this environment
+        for vlan in self.vlan_set.all():
+            try:
+                if vlan.ativada:
+                    vlan.deactivate_v3()
+                vlan.delete_v3()
+            except vlan_models.VlanCantDeallocate, e:
+                raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
+            except ip_models.IpCantBeRemovedFromVip, e:
+                raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
+
+        # Remove every association between equipment and this environment
+        for equip_env in self.equipamentoambiente_set.all():
+            try:
+                eqpt_models.EquipamentoAmbiente.remove(
+                    None, equip_env.equipamento_id, equip_env.ambiente_id)
+            except eqpt_models.EquipamentoAmbienteNotFoundError, e:
+                raise AmbienteUsedByEquipmentVlanError(e, e.message)
+            except eqpt_models.EquipamentoError, e:
+                raise AmbienteUsedByEquipmentVlanError(e, e.message)
+
+        # Remove ConfigEnvironments associated with environment
+        try:
+            ConfigEnvironment.remove_by_environment(None, self.id)
+        except (ConfigEnvironmentError, OperationalError,
+                ConfigEnvironmentNotFoundError), e:
+            self.log.error(u'Falha ao remover algum Ambiente Config.')
+            raise AmbienteError(e, u'Falha ao remover algum Ambiente Config.')
+
+        # Remove the environment
+        try:
+            self.delete()
+        except Exception, e:
+            self.log.error(u'Falha ao remover o Ambiente.')
+            raise AmbienteError(e, u'Falha ao remover o Ambiente.')
 
     def validate_v3(self):
 
