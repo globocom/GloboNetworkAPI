@@ -91,11 +91,11 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
         return self.extends_serializer(obj, 'user_group')
 
     class Meta:
-        ObjectGroupPermissionGeneralV3Serializer = get_model(
+        ObjectGroupPermissionGeneral = get_model(
             'api_ogp',
-            'ObjectGroupPermissionGeneralV3Serializer')
+            'ObjectGroupPermissionGeneral')
 
-        model = ObjectGroupPermissionGeneralV3Serializer
+        model = ObjectGroupPermissionGeneral
         fields = (
             'id',
             'user_group',
