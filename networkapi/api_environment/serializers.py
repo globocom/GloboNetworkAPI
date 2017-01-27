@@ -165,19 +165,18 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
 
         filter_slz = get_app('api_filter', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         vrf_slz = get_app('api_vrf', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'name': {
                     'obj': 'name',
-                    'eager_loading': cls.setup_eager_loading_name
+                    'eager_loading': self.setup_eager_loading_name
                 },
                 'grupo_l3': {
                     'obj': 'grupo_l3_id'
@@ -186,7 +185,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': GrupoL3Serializer,
                     'kwargs': {},
                     'obj': 'grupo_l3',
-                    'eager_loading': cls.setup_eager_loading_grupo_l3
+                    'eager_loading': self.setup_eager_loading_grupo_l3
                 },
                 'ambiente_logico': {
                     'obj': 'ambiente_logico_id'
@@ -195,7 +194,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': AmbienteLogicoV3Serializer,
                     'kwargs': {},
                     'obj': 'ambiente_logico',
-                    'eager_loading': cls.setup_eager_loading_ambiente_logico
+                    'eager_loading': self.setup_eager_loading_ambiente_logico
                 },
                 'divisao_dc': {
                     'obj': 'divisao_dc_id'
@@ -204,7 +203,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': DivisaoDcV3Serializer,
                     'kwargs': {},
                     'obj': 'divisao_dc',
-                    'eager_loading': cls.setup_eager_loading_grupo_l3
+                    'eager_loading': self.setup_eager_loading_grupo_l3
                 },
                 'filter': {
                     'obj': 'filter_id'
@@ -213,7 +212,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': filter_slz.FilterV3Serializer,
                     'kwargs': {},
                     'obj': 'filter',
-                    'eager_loading': cls.setup_eager_loading_filter
+                    'eager_loading': self.setup_eager_loading_filter
                 },
                 'default_vrf': {
                     'obj': 'default_vrf_id'
@@ -228,7 +227,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'basic'
                     },
                     'obj': 'default_vrf',
-                    'eager_loading': cls.setup_eager_loading_default_vrf
+                    'eager_loading': self.setup_eager_loading_default_vrf
                 },
                 'default_vrf__details': {
                     'serializer': vrf_slz.VrfV3Serializer,
@@ -240,7 +239,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         )
                     },
                     'obj': 'default_vrf',
-                    'eager_loading': cls.setup_eager_loading_default_vrf
+                    'eager_loading': self.setup_eager_loading_default_vrf
                 },
 
                 'father_environment': {
@@ -256,7 +255,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         )
                     },
                     'obj': 'father_environment',
-                    'eager_loading': cls.setup_eager_loading_father
+                    'eager_loading': self.setup_eager_loading_father
                 },
                 'father_environment__details': {
                     'serializer': EnvironmentV3Serializer,
@@ -266,7 +265,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         )
                     },
                     'obj': 'father_environment',
-                    'eager_loading': cls.setup_eager_loading_father
+                    'eager_loading': self.setup_eager_loading_father
                 },
                 'children': {
                     'serializer': EnvironmentV3Serializer,
@@ -332,7 +331,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return cls.mapping
+        return self.mapping
 
     @staticmethod
     def setup_eager_loading_father(queryset):

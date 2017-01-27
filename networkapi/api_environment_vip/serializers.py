@@ -39,8 +39,7 @@ class EnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
             'name',
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
         pass
 
@@ -64,8 +63,7 @@ class OptionVipV3Serializer(DynamicFieldsModelSerializer):
 
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
         pass
 
@@ -82,7 +80,6 @@ class OptionVipEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
             'option',
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
         pass
