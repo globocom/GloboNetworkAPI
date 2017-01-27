@@ -1,6 +1,7 @@
 #!/bin/bash
 # virtualenv ipdb_env
-source ipdb_env/bin/activate
+source env_teste/bin/activate
+export NETWORKAPI_DATABASE_NAME=networkapi_qa01
 # pip install -r requirements.txt
 # pip install -r requirements_debug.txt
 echo "exporting NETWORKAPI_DEBUG"

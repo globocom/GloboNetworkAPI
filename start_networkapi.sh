@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# export NETWORKAPI_DATABASE_NAME=networkapi
+export NETWORKAPI_DATABASE_NAME=networkapi_qa01
 # export NETWORKAPI_DATABASE_USER=root
 # export NETWORKAPI_DATABASE_PASSWORD=
 # export NETWORKAPI_DATABASE_HOST=localhost
