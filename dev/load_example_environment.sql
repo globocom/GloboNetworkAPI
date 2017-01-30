@@ -7,6 +7,83 @@
 -- Current Database: `networkapi`
 --
 -- ----------------------------------------------------------------------------------
+-- Dumping data for table `config`
+INSERT INTO
+   `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max)
+VALUES
+   (
+      1, 2, 3, 0, 0
+   )
+;
+-- Dumping data for table `object_type`
+INSERT INTO
+   `object_type` (`id`, `name`)
+VALUES
+   (
+      1, 'ServerPool'
+   )
+,
+   (
+      2, 'VipRequest'
+   )
+,
+   (
+      3, 'Vlan'
+   )
+;
+-- Dumping data for table `marcas`
+INSERT INTO
+   `marcas`
+VALUES
+   (
+      1, 'MARCA'
+   )
+;
+-- Dumping data for table `modelos`
+INSERT INTO
+   `modelos`
+VALUES
+   (
+      1, 'MODELO', 1
+   )
+;
+-- Dumping data for table `tipo_equipamento`
+INSERT INTO
+   `tipo_equipamento`
+VALUES
+   (
+      1, 'Switch'
+   )
+,
+   (
+      2, 'Servidor'
+   )
+,
+   (
+      3, 'Roteador'
+   )
+,
+   (
+      5, 'Balanceador'
+   )
+;
+-- Dumping data for table `filter`
+INSERT INTO
+   `filter`
+VALUES
+   (
+      1, 'Servidores', 'Servidores'
+   )
+;
+-- Dumping data for table `filter_equiptype_xref`
+INSERT INTO
+   `filter_equiptype_xref` (`id`, `id_filter`, `id_equiptype`)
+VALUES
+   (
+      '1', '1', '2'
+   )
+;
+
 -- Dumping data for table `ambiente_logico`
 BEGIN;
 
@@ -117,104 +194,349 @@ VALUES
       38, 'GRUPO_L3_SPACE_2'
    )
 ;
--- Dumping data for table `filter`
+
+-- Dumping data for table `vrf`
 INSERT INTO
-   `filter`
+   `vrf` (id, internal_name, vrf)
 VALUES
    (
-      1, 'Servidores', 'Servidores'
-   )
-;
--- Dumping data for table `tipo_equipamento`
-INSERT INTO
-   `tipo_equipamento`
-VALUES
-   (
-      1, 'Switch'
+      1, 'default', 'default'
    )
 ,
    (
-      2, 'Servidor'
+      2, 'Vrf-1', 'Vrf-1'
    )
 ,
    (
-      3, 'Roteador'
-   )
-,
-   (
-      5, 'Balanceador'
-   )
-;
--- Dumping data for table `tipo_rede`
-INSERT INTO
-   `filter_equiptype_xref` (`id`, `id_filter`, `id_equiptype`)
-VALUES
-   (
-      '1', '1', '2'
+      3, 'Vrf-2', 'Vrf-2'
    )
 ;
 -- Dumping data for table `ambiente`
 INSERT INTO
-   `ambiente` (id_ambiente, id_grupo_l3, id_ambiente_logic, id_divisao, link, acl_path, ipv4_template, ipv6_template, id_filter, min_num_vlan_1, max_num_vlan_1, min_num_vlan_2, max_num_vlan_2)
+   `ambiente` (`id_ambiente`, `id_grupo_l3`, `id_ambiente_logic`, `id_divisao`, `link`, `acl_path`, `id_filter`, `min_num_vlan_1`, `max_num_vlan_1`, `min_num_vlan_2`, `max_num_vlan_2`, `id_father_environment`, `id_vrf`)
 VALUES
    (
-      1, 31, 11, 21, ' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Red', NULL, NULL, NULL, 11, 20, NULL, NULL
+      1, 31, 11, 21, ' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Red', '1', '11', '20', '0', '0', NULL, 1
    )
 ,
    (
-      2, 32, 12, 22, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Blue', NULL, NULL, NULL, 21, 30, NULL, NULL
+      2, 32, 12, 22, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Blue', '1', '21', '30', '0', '0', NULL, 1
    )
 ,
    (
-      3, 33, 13, 23, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Green', NULL, NULL, NULL, 31, 31, NULL, NULL
+      3, 33, 13, 23, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Green', '1', '31', '31', '0', '0', NULL, 1
    )
 ,
    (
-      4, 34, 14, 24, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Yellow', NULL, NULL, NULL, 20, 20, NULL, NULL
+      4, 34, 14, 24, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Yellow', '1', '20', '20', '0', '0', NULL, 1
    )
 ,
    (
-      5, 35, 15, 25, ' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Orange', NULL, NULL, NULL, 15, 19, NULL, NULL
+      5, 35, 15, 25, ' http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Orange', '1', '15', '19', '0', '0', NULL, 1
    )
 ,
    (
-      6, 35, 11, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Other Color', NULL, NULL, NULL, 1, 500, 501, 1000
+      6, 35, 11, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'Other Color', '1', '1', '500', '501', '1000', NULL, 1
    )
 ,
    (
-      7, 32, 13, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, NULL, 15, 19, NULL, NULL
+      7, 32, 13, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '15', '19', '0', '0', NULL, 1
    )
 ,
    (
-      8, 33, 14, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, NULL, 15, 19, NULL, NULL
+      8, 33, 14, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '15', '19', '0', '0', NULL, 1
    )
 ,
    (
-      9, 33, 11, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, NULL, 1, 500, 501, 1000
+      9, 33, 11, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '1', '500', '501', '1000', NULL, 1
    )
 ,
    (
-      10, 33, 12, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, NULL, 1, 500, 501, 1000
+      10, 33, 12, 21, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '1', '500', '501', '1000', NULL, 1
    )
 ,
    (
-      11, 36, 16, 26, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, 1, 1, 500, 501, 1000
+      11, 36, 16, 26, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '1', '500', '501', '1000', NULL, 1
    )
 ,
    (
-      12, 37, 17, 27, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, 1, 1, 500, 501, 1000
+      12, 37, 17, 27, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '1', '500', '501', '1000', NULL, 1
    )
 ,
    (
-      13, 38, 18, 28, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', NULL, NULL, 1, 1, 500, 501, 1000
+      13, 38, 18, 28, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '1', '500', '501', '1000', NULL, 1
    )
 ;
--- Dumping data for table `marcas`
+-- Dumping data for table `ambientevip`
 INSERT INTO
-   `marcas`
+   `ambientevip`
 VALUES
    (
-      1, 'MARCA'
+      1, 'Red', 'Red', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      2, 'Red', 'Blue', 'red', 'red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      3, 'Red', 'Green', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      4, 'Red', 'Yellow', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      5, 'Red', 'Orange', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      6, 'Blue', 'Red', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      7, 'Blue', 'Blue', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      8, 'Blue', 'Blue', 'Blue', 'Blue', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      9, 'Green', 'Green', 'Green', 'Green', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      10, 'Yellow', 'Yellow', 'Yellow', 'Yellow', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      11, 'Orange', 'Orange', 'Orange', 'Orange', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      12, 'EnvironmentVIP NetworkAPI Test', 'Test', 'Test', 'Test', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+,
+   (
+      13, 'Fin-Test', 'ClientTxt-Test', 'EnvP44Txt-Test', 'Description-Test', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
+;
+-- Dumping data for table `environment_environment_vip`
+INSERT INTO
+   `environment_environment_vip` (id, environment_id, environment_vip_id)
+VALUES
+   (
+      1, 9, 13
+   )
+;
+-- Dumping data for table `opcoesvip`
+INSERT INTO
+   `opcoesvip` (id, tipo_opcao, nome_opcao_txt)
+VALUES
+   (
+      1, 'Balanceamento', 'least-conn'
+   )
+,
+   (
+      2, 'Balanceamento', 'round-robin'
+   )
+,
+   (
+      3, 'Balanceamento', 'weighted'
+   )
+,
+   (
+      4, 'Balanceamento', 'uri hash'
+   )
+,
+   (
+      5, 'Persistencia', '(nenhum)'
+   )
+,
+   (
+      6, 'Persistencia', 'source-ip'
+   )
+,
+   (
+      7, 'Persistencia', 'source-ip com persist. entre portas'
+   )
+,
+   (
+      8, 'Persistencia', 'cookie'
+   )
+,
+   (
+      9, 'Retorno de trafego', 'Normal'
+   )
+,
+   (
+      10, 'Retorno de trafego', 'DSRL3'
+   )
+,
+   (
+      11, 'timeout', '5'
+   )
+,
+   (
+      12, 'timeout', '10'
+   )
+,
+   (
+      13, 'cache', '(nenhum)'
+   )
+,
+   (
+      14, 'cache', 'cache1'
+   )
+,
+   (
+      15, 'cache', 'cache2'
+   )
+,
+   (
+      16, 'cache', 'cache3'
+   )
+,
+   (
+      17, 'l7_protocol', 'HTTP'
+   )
+,
+   (
+      18, 'l7_protocol', 'FTP'
+   )
+,
+   (
+      19, 'l7_protocol', 'Outros'
+   )
+,
+   (
+      20, 'l4_protocol', 'TCP'
+   )
+,
+   (
+      21, 'l4_protocol', 'UDP'
+   )
+,
+   (
+      22, 'l7_protocol', 'HTTPS'
+   )
+,
+   (
+      23, 'l7_rule', 'default_vip'
+   )
+,
+   (
+      24, 'l7_rule', 'default_glob'
+   )
+,
+   (
+      25, 'l7_rule', 'glob'
+   )
+;
+-- Dumping data for table `opcoesvip_ambiente_xref`
+INSERT INTO
+   `opcoesvip_ambiente_xref` (`id`, `id_ambiente`, `id_opcoesvip`)
+VALUES
+   (
+      '1', '13', '1'
+   )
+,
+   (
+      '2', '13', '2'
+   )
+,
+   (
+      '3', '13', '3'
+   )
+,
+   (
+      '4', '13', '4'
+   )
+,
+   (
+      '5', '13', '5'
+   )
+,
+   (
+      '6', '13', '6'
+   )
+,
+   (
+      '7', '13', '7'
+   )
+,
+   (
+      '8', '13', '8'
+   )
+,
+   (
+      '9', '13', '9'
+   )
+,
+   (
+      '10', '13', '10'
+   )
+,
+   (
+      '11', '13', '11'
+   )
+,
+   (
+      '12', '13', '12'
+   )
+,
+   (
+      '13', '13', '13'
+   )
+,
+   (
+      '14', '13', '14'
+   )
+,
+   (
+      '15', '13', '15'
+   )
+,
+   (
+      '16', '13', '16'
+   )
+,
+   (
+      '17', '13', '17'
+   )
+,
+   (
+      '18', '13', '18'
+   )
+,
+   (
+      '19', '13', '19'
+   )
+,
+   (
+      '20', '13', '20'
+   )
+,
+   (
+      '21', '13', '21'
+   )
+,
+   (
+      '22', '13', '22'
+   )
+,
+   (
+      '23', '13', '23'
+   )
+,
+   (
+      '24', '13', '24'
+   )
+,
+   (
+      '25', '13', '25'
    )
 ;
 -- Dumping data for table `tipo_rede`
@@ -247,14 +569,6 @@ VALUES
 ,
    (
       11, 'Rede valida VIP'
-   )
-;
--- Dumping data for table `modelos`
-INSERT INTO
-   `modelos`
-VALUES
-   (
-      1, 'MODELO', 1
    )
 ;
 -- Dumping data for table `ip_config`
@@ -509,62 +823,59 @@ VALUES
       25, 1, 1, 'TOR 2 Space 2', 0
    )
 ;
--- Dumping data for table `ambientevip`
+-- Dumping data for table `equip_do_ambiente`
 INSERT INTO
-   `ambientevip`
+   `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is_router)
 VALUES
    (
-      1, 'Red', 'Red', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      1, 9, 14, 0
    )
 ,
    (
-      2, 'Red', 'Blue', 'red', 'red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      2, 9, 15, 0
    )
 ,
    (
-      3, 'Red', 'Green', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      3, 9, 16, 0
    )
 ,
    (
-      4, 'Red', 'Yellow', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      4, 9, 17, 0
    )
 ,
    (
-      5, 'Red', 'Orange', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      5, 9, 18, 0
    )
 ,
    (
-      6, 'Blue', 'Red', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      6, 10, 19, 0
    )
 ,
    (
-      7, 'Blue', 'Blue', 'Red', 'Red', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      7, 12, 20, 0
    )
 ,
    (
-      8, 'Blue', 'Blue', 'Blue', 'Blue', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      8, 13, 21, 0
    )
 ,
    (
-      9, 'Green', 'Green', 'Green', 'Green', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      9, 12, 22, 0
    )
 ,
    (
-      10, 'Yellow', 'Yellow', 'Yellow', 'Yellow', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      10, 12, 23, 0
    )
 ,
    (
-      11, 'Orange', 'Orange', 'Orange', 'Orange', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      11, 13, 24, 0
    )
 ,
    (
-      12, 'EnvironmentVIP NetworkAPI Test', 'Test', 'Test', 'Test', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
-   )
-,
-   (
-      13, 'Fin-Test', 'ClientTxt-Test', 'EnvP44Txt-Test', 'Description-Test', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+      12, 13, 25, 0
    )
 ;
+
 -- Dumping data for table `redeipv4`
 INSERT INTO
    `redeipv4` (id, id_vlan, rede_oct1, rede_oct2, rede_oct3, rede_oct4, bloco, masc_oct1, masc_oct2, masc_oct3, masc_oct4, id_tipo_rede, broadcast, id_ambientevip, active, cluster_unit)
@@ -875,7 +1186,7 @@ VALUES
 ;
 -- Dumping data for table `permissions`
 INSERT INTO
-   `permissions` (id_permission, FUNCTION)
+   `permissions` (`id_permission`, `function`)
 VALUES
    (
       1, 'administracao_usuarios'
@@ -886,51 +1197,123 @@ VALUES
    )
 ,
    (
-      3, 'cadastro_de_vlans'
+      3, 'alocar_vlan'
    )
 ,
    (
-      4, 'cadastro_de_ambiente'
+      4, 'ambiente_vip'
    )
 ,
    (
-      5, 'cadastro_de_equipamentos'
+      5, 'authenticate'
    )
 ,
    (
-      6, 'opcao_vip'
+      6, 'cadastro_de_ambiente'
    )
 ,
    (
-      7, 'cadastro_de_pool'
+      7, 'cadastro_de_equipamentos'
    )
 ,
    (
-      8, 'script_alterar_pool'
+      8, 'cadastro_de_grupos_equipamentos'
    )
 ,
    (
-      9, 'script_criacao_pool'
+      9, 'cadastro_de_marca'
    )
 ,
    (
-      10, 'script_remover_pool'
+      10, 'cadastro_de_roteiro'
    )
 ,
    (
-      11, 'ips'
+      11, 'cadastro_de_tipo_acesso'
    )
 ,
    (
-      12, 'authenticate'
+      12, 'cadastro_de_tipo_rede'
    )
 ,
    (
-      13, 'cadastro_de_tipo_rede'
+      13, 'cadastro_de_vlans'
    )
 ,
    (
-      14, 'cadastro_de_grupos_equipamentos'
+      14, 'cadastro_de_vm'
+   )
+,
+   (
+      15, 'healthcheck_expect'
+   )
+,
+   (
+      16, 'ips'
+   )
+,
+   (
+      17, 'opcao_vip'
+   )
+,
+   (
+      18, 'requisicao_vips'
+   )
+,
+   (
+      19, 'script_alterar_vip'
+   )
+,
+   (
+      20, 'script_alterar_vlan'
+   )
+,
+   (
+      21, 'script_criacao_vip'
+   )
+,
+   (
+      22, 'script_criacao_vlan'
+   )
+,
+   (
+      23, 'validar_acl_vlans'
+   )
+,
+   (
+      24, 'validar_vip'
+   )
+,
+   (
+      25, 'administracao_vips'
+   )
+,
+   (
+      26, 'audit_logs'
+   )
+,
+   (
+      27, 'script_remover_vip'
+   )
+,
+   (
+      28, 'aplicar_acl'
+   )
+,
+   (
+      29, 'cadastro_de_pool'
+   )
+,
+   (
+      30, 'script_remover_pool'
+   )
+,
+   (
+      31, 'script_criacao_pool'
+   )
+,
+   (
+      32, 'script_alterar_pool'
    )
 ;
 -- Dumping data for table `permissoes_administrativas`
@@ -994,13 +1377,86 @@ VALUES
    )
 ,
    (
-      15, 1, 1, 2, 1
+      15, 1, 1, 1, 15
    )
 ,
    (
-      16, 1, 1, 2, 12
+      16, 1, 1, 1, 16
+   )
+,
+   (
+      17, 1, 1, 1, 17
+   )
+,
+   (
+      18, 1, 1, 1, 18
+   )
+,
+   (
+      19, 1, 1, 1, 19
+   )
+,
+   (
+      20, 1, 1, 1, 20
+   )
+,
+   (
+      21, 1, 1, 1, 21
+   )
+,
+   (
+      22, 1, 1, 1, 22
+   )
+,
+   (
+      23, 1, 1, 1, 23
+   )
+,
+   (
+      24, 1, 1, 1, 24
+   )
+,
+   (
+      25, 1, 1, 1, 25
+   )
+,
+   (
+      26, 1, 1, 1, 26
+   )
+,
+   (
+      27, 1, 1, 1, 27
+   )
+,
+   (
+      28, 1, 1, 1, 28
+   )
+,
+   (
+      29, 1, 1, 1, 29
+   )
+,
+   (
+      30, 1, 1, 1, 30
+   )
+,
+   (
+      31, 1, 1, 1, 31
+   )
+,
+   (
+      32, 1, 1, 1, 32
+   )
+,
+   (
+      33, 1, 1, 2, 1
+   )
+,
+   (
+      34, 1, 1, 2, 5
    )
 ;
+
 -- Dumping data for table `grupos_equip`
 INSERT INTO
    `grupos_equip` (id, nome)
@@ -1097,22 +1553,6 @@ VALUES
       1, 1, 1, 1, 1, 1, 1
    )
 ;
--- Dumping data for table `vrf`
-INSERT INTO
-   `vrf` (id, internal_name, vrf)
-VALUES
-   (
-      1, 'default', 'default'
-   )
-,
-   (
-      2, 'Vrf-1', 'Vrf-1'
-   )
-,
-   (
-      3, 'Vrf-2', 'Vrf-2'
-   )
-;
 -- Dumping data for table `optionspool`
 INSERT INTO
    `optionspool` (id_optionspool, type, description)
@@ -1149,102 +1589,6 @@ VALUES
       8, 'ServiceDownAction', 'reselect'
    )
 ;
--- Dumping data for table `opcoesvip`
-INSERT INTO
-   `opcoesvip` (id, tipo_opcao, nome_opcao_txt)
-VALUES
-   (
-      1, 'Retorno de trafego', 'Normal'
-   )
-,
-   (
-      2, 'cache', 'CACHOS-DEV'
-   )
-;
--- Dumping data for table `config`
-INSERT INTO
-   `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max)
-VALUES
-   (
-      1, 2, 3, 0, 0
-   )
-;
--- Dumping data for table `object_type`
-INSERT INTO
-   `object_type` (`id`, `name`)
-VALUES
-   (
-      1, 'ServerPool'
-   )
-,
-   (
-      2, 'VipRequest'
-   )
-,
-   (
-      3, 'Vlan'
-   )
-;
--- Dumping data for table `environment_environment_vip`
-INSERT INTO
-   `environment_environment_vip` (id, environment_id, environment_vip_id)
-VALUES
-   (
-      1, 9, 13
-   )
-;
--- Dumping data for table `equip_do_ambiente`
-INSERT INTO
-   `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is_router)
-VALUES
-   (
-      1, 9, 14, 0
-   )
-,
-   (
-      2, 9, 15, 0
-   )
-,
-   (
-      3, 9, 16, 0
-   )
-,
-   (
-      4, 9, 17, 0
-   )
-,
-   (
-      5, 9, 18, 0
-   )
-,
-   (
-      6, 10, 19, 0
-   )
-,
-   (
-      7, 12, 20, 0
-   )
-,
-   (
-      8, 13, 21, 0
-   )
-,
-   (
-      9, 12, 22, 0
-   )
-,
-   (
-      10, 12, 23, 0
-   )
-,
-   (
-      11, 13, 24, 0
-   )
-,
-   (
-      12, 13, 25, 0
-   )
-;
 -- Dumping data for table `healthcheck`
 INSERT INTO
    `healthcheck` (`id_healthcheck`, `identifier`, `healthcheck_type`, `healthcheck_request`, `healthcheck_expect`, `destination`)
@@ -1273,5 +1617,14 @@ VALUES
       2, 1, '10.1.0.2', 19, 0, 1, 1000, 8080, 7
    )
 ;
+
+INSERT INTO
+   `object_group_permission` (`id_user_group`, `id_object_type`, `id_object`, `read`, `write`, `change_config`, `delete`)
+VALUES
+   (
+      1, 1, 1, '1', '1', '1', '1'
+   )
+;
+
 
 COMMIT;
