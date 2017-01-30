@@ -25,9 +25,13 @@ class ObjectTypeV3Serializer(DynamicFieldsModelSerializer):
 class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
 
     user_group = serializers.SerializerMethodField('get_user_group')
+    object_type = serializers.SerializerMethodField('get_object_type')
 
     def get_user_group(self, obj):
         return self.extends_serializer(obj, 'user_group')
+
+    def get_object_type(self, obj):
+        return self.extends_serializer(obj, 'object_type')
 
     class Meta:
         ObjectGroupPermission = get_model('api_ogp',
@@ -86,9 +90,13 @@ class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
 class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
 
     user_group = serializers.SerializerMethodField('get_user_group')
+    object_type = serializers.SerializerMethodField('get_object_type')
 
     def get_user_group(self, obj):
         return self.extends_serializer(obj, 'user_group')
+
+    def get_object_type(self, obj):
+        return self.extends_serializer(obj, 'object_type')
 
     class Meta:
         ObjectGroupPermissionGeneral = get_model(
@@ -106,6 +114,7 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
             'delete'
         )
         default_fields = (
+            'id',
             'user_group',
             'object_type',
             'read',
