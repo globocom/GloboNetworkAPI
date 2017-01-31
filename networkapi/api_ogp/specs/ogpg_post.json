@@ -19,7 +19,7 @@
             "type": "integer"
           },
           "object_type": {
-            "type": ["string","integer"]
+            "type": "integer"
           },
           "read": {
             "type": "boolean"
