@@ -214,16 +214,17 @@ class ObjectGroupPermGeneralView(APIView):
 
     @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
-    @raise_json_validate('ogp_put')
+    @raise_json_validate('ogpg_put')
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
-        Update Object Group Permissions General
+        Update list of Object Group Permissions General
         """
-        ogpgs = request.DATA
-        json_validate(SPECS.get('ogpg_put')).validate(ogpgs)
+
+        data = request.DATA
+        json_validate(SPECS.get('ogpg_put')).validate(data)
         response = list()
-        for ogpg in ogpgs['ogpgs']:
+        for ogpg in data['ogpgs']:
             ogpg = facade_ogpg.update_ogpg(ogpg)
             response.append({
                 'id': ogpg.id

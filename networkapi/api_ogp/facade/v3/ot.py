@@ -36,7 +36,7 @@ def get_ot_by_id(ot_id):
     try:
         return ObjectType.objects.get(id=ot_id)
     except ObjectDoesNotExist:
-        raise exceptions.ObjectTypeNotFoundError()
+        raise exceptions.ObjectTypeNotFoundError(ot_id)
 
 
 def get_ots_by_ids(ot_ids):
