@@ -12,6 +12,9 @@ pip install -r requirements_debug.txt
 echo "exporting NETWORKAPI_DEBUG=0"
 export NETWORKAPI_DEBUG=0
 
+echo "NETWORKAPI_LOG_FILE=/tmp/networkapi.log"
+export NETWORKAPI_LOG_FILE='/tmp/networkapi.log'
+
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ipdb'
 
