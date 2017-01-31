@@ -43,5 +43,14 @@
     "nome": "vlan 1 - environment pool",
     "num_vlan": "5"
     }
+  },
+  {
+  "pk": 6,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 12,
+    "nome": "vlan 1 - environment 3",
+    "num_vlan": "6"
+    }
   }
 ]

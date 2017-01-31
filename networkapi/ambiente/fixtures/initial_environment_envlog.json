@@ -33,5 +33,19 @@
   "fields": {
     "nome": "TEST POST"
     }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TEST PUT"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TEST DELETE"
+    }
   }
 ]

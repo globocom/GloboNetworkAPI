@@ -1,8 +1,14 @@
 #!/bin/bash
-# virtualenv ipdb_env
-source ipdb_env/bin/activate
-# pip install -r requirements.txt
-# pip install -r requirements_debug.txt
+if [ ! -d test_venv ]; then
+    virtualenv test_venv
+fi
+
+source test_venv/bin/activate
+
+pip install -r requirements.txt
+pip install -r requirements_test.txt
+pip install -r requirements_debug.txt
+
 echo "exporting NETWORKAPI_DEBUG=0"
 export NETWORKAPI_DEBUG=0
 

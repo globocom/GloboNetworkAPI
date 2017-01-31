@@ -165,6 +165,10 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
+MIDDLEWARE_CLASSES += (
+    'django_pdb.middleware.PdbMiddleware',
+)
+
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -176,6 +180,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_pdb',
     'rest_framework',
 )
 
@@ -198,7 +203,7 @@ NOSE_ARGS = [
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
-    #     '-s',
+    '-s',
     '--with-fixture-bundling',
 ]
 

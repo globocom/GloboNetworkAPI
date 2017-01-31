@@ -20,6 +20,9 @@ class NetworkApiTestCase(TestCase):
         # Vrfs
         'initial_vrf.json',
 
+        # Vrfs
+        'initial_filter.json',
+
         # Network Type
         'initial_tipo_rede.json',
 

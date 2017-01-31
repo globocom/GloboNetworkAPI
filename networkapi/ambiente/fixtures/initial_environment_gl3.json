@@ -17,7 +17,7 @@
   "pk": 3,
   "model": "ambiente.grupol3",
   "fields": {
-    "nome": "TEST POST 1"
+    "nome": "TEST WITH VLANs"
     }
   },
   {
@@ -32,6 +32,48 @@
   "model": "ambiente.grupol3",
   "fields": {
     "nome": "TEST POST 2.2"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST PUT 1"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST PUT 2.1"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST PUT 2.2"
+    }
+  },
+  {
+  "pk": 9,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST DELETE 1"
+    }
+  },
+  {
+  "pk": 10,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST DELETE 2.1"
+    }
+  },
+  {
+  "pk": 11,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST DELETE 2.2"
     }
   }
 ]
