@@ -36,7 +36,7 @@ def get_ogpg_by_id(ogpg_id):
     try:
         return ObjectGroupPermissionGeneral.objects.get(id=ogpg_id)
     except ObjectDoesNotExist:
-        raise exceptions.ObjectGroupPermissionGeneralNotFoundError()
+        raise exceptions.ObjectGroupPermissionGeneralNotFoundError(ogpg_id)
 
 
 def get_ogpgs_by_ids(ogpg_ids):
