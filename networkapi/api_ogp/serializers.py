@@ -57,13 +57,12 @@ class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
             'delete'
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         group_slz = get_app('api_group', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'user_group': {
                     'obj': 'user_group_id',
                 },
@@ -84,7 +83,7 @@ class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return cls.mapping
+        return self.mapping
 
 
 class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
@@ -123,13 +122,12 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
             'delete'
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         group_slz = get_app('api_group', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'user_group': {
                     'obj': 'user_group_id',
                 },
@@ -150,4 +148,4 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return cls.mapping
+        return self.mapping

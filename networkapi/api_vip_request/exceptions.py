@@ -134,11 +134,11 @@ class ServerPoolMemberDiffEnvironmentVipException(APIException):
 
 class IpNotFoundByEnvironment(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'IP environment is different of environment vip request'
+    default_detail = 'Environment of Ip is different of environment of vip request. Look the association of network of IP with environment vip'
 
     def __init__(self, msg=None):
         if msg:
-            self.detail = u'%s %s' % (self.default_detail, msg)
+            self.detail = u'%s: %s' % (self.default_detail, msg)
         else:
             self.detail = self.default_detail
 
