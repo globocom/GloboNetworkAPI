@@ -72,7 +72,11 @@ class VipRequest(BaseModel):
 
     @cached_property
     def dscp(self):
-        return self.viprequestdscp_set.get().dscp
+        try:
+            dscp = self.viprequestdscp_set.get()
+            return dscp
+        except ObjectDoesNotExist:
+            return None
 
     @cached_property
     def equipments(self):
@@ -244,7 +248,7 @@ class VipRequest(BaseModel):
                 vip_dscp = VipRequestDSCP()
                 dscp_map = {
                     'vip_request': self.id,
-                    'dscp': self.dscp(),
+                    'dscp': self.get_dscp(),
                 }
                 vip_dscp.create_v3(dscp_map)
 

@@ -98,7 +98,7 @@ def create_vip_request(vip_request, user):
         vip = VipRequest()
         vip.create_v3(vip_request, user)
     except ValidationAPIException, e:
-        raise ValidationAPIException(e)
+        raise ValidationAPIException(str(e))
     except Exception, e:
         raise NetworkAPIException(e)
     else:

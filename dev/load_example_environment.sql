@@ -322,6 +322,10 @@ VALUES
    (
       13, 'Fin-Test', 'ClientTxt-Test', 'EnvP44Txt-Test', 'Description-Test', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
    )
+,
+   (
+      14, 'FIN_VIP', 'ClientTxt-VIP', 'EnvP44Txt-VIP', 'Description-VIP', '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
+   )
 ;
 -- Dumping data for table `environment_environment_vip`
 INSERT INTO
@@ -329,6 +333,14 @@ INSERT INTO
 VALUES
    (
       1, 9, 13
+   )
+,
+   (
+      2, 12, 14
+   )
+,
+   (
+      3, 13, 14
    )
 ;
 -- Dumping data for table `opcoesvip`
@@ -440,103 +452,111 @@ INSERT INTO
    `opcoesvip_ambiente_xref` (`id`, `id_ambiente`, `id_opcoesvip`)
 VALUES
    (
-      '1', '13', '1'
+      '1', '14', '1'
    )
 ,
    (
-      '2', '13', '2'
+      '2', '14', '2'
    )
 ,
    (
-      '3', '13', '3'
+      '3', '14', '3'
    )
 ,
    (
-      '4', '13', '4'
+      '4', '14', '4'
    )
 ,
    (
-      '5', '13', '5'
+      '5', '14', '5'
    )
 ,
    (
-      '6', '13', '6'
+      '6', '14', '6'
    )
 ,
    (
-      '7', '13', '7'
+      '7', '14', '7'
    )
 ,
    (
-      '8', '13', '8'
+      '8', '14', '8'
    )
 ,
    (
-      '9', '13', '9'
+      '9', '14', '9'
    )
 ,
    (
-      '10', '13', '10'
+      '10', '14', '10'
    )
 ,
    (
-      '11', '13', '11'
+      '11', '14', '11'
    )
 ,
    (
-      '12', '13', '12'
+      '12', '14', '12'
    )
 ,
    (
-      '13', '13', '13'
+      '13', '14', '13'
    )
 ,
    (
-      '14', '13', '14'
+      '14', '14', '14'
    )
 ,
    (
-      '15', '13', '15'
+      '15', '14', '15'
    )
 ,
    (
-      '16', '13', '16'
+      '16', '14', '16'
    )
 ,
    (
-      '17', '13', '17'
+      '17', '14', '17'
    )
 ,
    (
-      '18', '13', '18'
+      '18', '14', '18'
    )
 ,
    (
-      '19', '13', '19'
+      '19', '14', '19'
    )
 ,
    (
-      '20', '13', '20'
+      '20', '14', '20'
    )
 ,
    (
-      '21', '13', '21'
+      '21', '14', '21'
    )
 ,
    (
-      '22', '13', '22'
+      '22', '14', '22'
    )
 ,
    (
-      '23', '13', '23'
+      '23', '14', '23'
    )
 ,
    (
-      '24', '13', '24'
+      '24', '14', '24'
    )
 ,
    (
-      '25', '13', '25'
+      '25', '14', '25'
+   )
+,
+   (
+      '26', '13', '1'
+   )
+,
+   (
+      '27', '13', '5'
    )
 ;
 -- Dumping data for table `tipo_rede`
@@ -874,6 +894,10 @@ VALUES
    (
       12, 13, 25, 0
    )
+,
+   (
+      13, 11, 19, 0
+   )
 ;
 
 -- Dumping data for table `redeipv4`
@@ -909,7 +933,7 @@ VALUES
    )
 ,
    (
-      8, 11, 10, 16, 0, 0, 24, 255, 255, 255, 0, 2, '10.16.0.255', 13, 1, NULL
+      8, 11, 10, 16, 0, 0, 24, 255, 255, 255, 0, 8, '10.16.0.255', 14, 1, NULL
    )
 ,
    (
@@ -999,6 +1023,10 @@ VALUES
    (
       19, 2, 0, 1, 10, 'IPv4 of Real Server Space 2', 10
    )
+,
+   (
+      20, 2, 0, 16, 10, 'IP of VIP 1', 8
+   )
 ;
 -- Dumping data for table `ips_dos_equipamentos`
 INSERT INTO
@@ -1086,6 +1114,10 @@ VALUES
 ,
    (
       21, 19, 21
+   )
+,
+   (
+      22, 20, 19
    )
 ;
 -- Dumping data for table 'redeipv6'
@@ -1617,12 +1649,58 @@ VALUES
       2, 1, '10.1.0.2', 19, 0, 1, 1000, 8080, 7
    )
 ;
+-- Dumping data for table `vip_request`
+INSERT INTO
+   `vip_request` (`id`, `id_environmentvip`, `id_ipv4`, `name`, `service`, `business`, `created`)
+VALUES
+   (1, 14, 20, 'vip_teste', 'vip_teste', 'vip_teste', '0');
 
+-- Dumping data for table `vip_request_dscp`
+INSERT INTO
+   `vip_request_dscp` (`id`, `id_vip_request`, `dscp`)
+VALUES
+   (1, 1, 3);
+-- Dumping data for table `vip_request_optionsvip`
+INSERT INTO
+   `vip_request_optionsvip` (`id`, `id_vip_request`, `id_opcoesvip`)
+VALUES
+   (1, 1, 13)
+,
+   (2, 1, 10)
+,
+   (3, 1, 11)
+,
+   (4, 1, 7)
+;
+-- Dumping data for table `vip_request_port`
+INSERT INTO
+   `vip_request_port` (`id`, `id_vip_request`, `port`)
+VALUES
+   (1, 1, '8080');
+-- Dumping data for table `vip_request_port_optionsvip`
+INSERT INTO
+   `vip_request_port_optionsvip` (`id`, `id_vip_request_port`, `id_opcoesvip`)
+VALUES
+   (1, 1, 20)
+,
+   (2, 1, 17)
+;
+-- Dumping data for table `vip_request_port_pool`
+INSERT INTO
+   `vip_request_port_pool` (`id`, `id_vip_request_port`, `id_opcoesvip`, `id_server_pool`)
+VALUES
+   (1, 1, 23, 1);
+
+-- Dumping data for table `object_group_permission`
 INSERT INTO
    `object_group_permission` (`id_user_group`, `id_object_type`, `id_object`, `read`, `write`, `change_config`, `delete`)
 VALUES
    (
       1, 1, 1, '1', '1', '1', '1'
+   )
+,
+   (
+      1, 2, 1, '1', '1', '1', '1'
    )
 ;
 

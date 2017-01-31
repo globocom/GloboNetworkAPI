@@ -1357,8 +1357,9 @@ class Ip(BaseModel):
                 e, u'Error adding new IP or relationship ip-equipment.')
 
     def save_ipv4(self, equipment_id, user, net):
+
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
-        equipamento = get_model('equipamento', 'TipoEquipamento')
+        equipamento = get_model('equipamento', 'Equipamento')
         filterequiptype = get_model('filterequiptype', 'FilterEquipType')
         try:
 

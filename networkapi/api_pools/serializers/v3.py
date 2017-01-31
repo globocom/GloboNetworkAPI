@@ -374,7 +374,7 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
                     'kwargs': {
                         'include': (
-                            'group__details',
+                            'user_group__details',
                         ),
                         'many': True,
                     },
