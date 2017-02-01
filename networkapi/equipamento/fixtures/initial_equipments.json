@@ -408,5 +408,25 @@
       "modelo": 3,
       "maintenance": false
     }
+  },
+  {
+    "pk": 60,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Test-PUT-1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 61,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Test-DELETE-1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
   }
 ]
