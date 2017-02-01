@@ -146,5 +146,19 @@
     "min_num_vlan_2": 40,
     "max_num_vlan_2": 60
     }
+  },
+  {
+  "pk": 13,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 12,
+    "ambiente_logico": 8,
+    "divisao_dc": 6,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
   }
 ]

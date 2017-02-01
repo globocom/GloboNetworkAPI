@@ -47,5 +47,12 @@
   "fields": {
     "nome": "TEST DELETE"
     }
+  },
+  {
+  "pk": 8,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "Test used in environment vip"
+    }
   }
 ]

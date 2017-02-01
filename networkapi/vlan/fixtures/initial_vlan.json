@@ -50,7 +50,17 @@
   "fields": {
     "ambiente": 12,
     "nome": "vlan 1 - environment 3",
-    "num_vlan": "6"
+    "num_vlan": "6",
+    "ativada": 1
+    }
+  },
+  {
+  "pk": 7,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 13,
+    "nome": "vlan used in environment vip",
+    "num_vlan": "7"
     }
   }
 ]

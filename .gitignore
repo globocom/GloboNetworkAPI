@@ -1,4 +1,5 @@
-ipdb_env/
+networkapi_venv/
+test_venv/
 *.pyc
 *.orig
 *.log

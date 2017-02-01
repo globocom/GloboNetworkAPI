@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! -d networkapi_venv ]; then
-    virtualenv test_venv
+    virtualenv networkapi_venv
 fi
 
 source networkapi_venv/bin/activate

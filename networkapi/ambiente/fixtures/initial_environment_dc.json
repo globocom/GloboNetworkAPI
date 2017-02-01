@@ -33,5 +33,12 @@
   "fields": {
     "nome": "TEST DELETE"
     }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "Test used in environment vip"
+    }
   }
 ]

@@ -2,10 +2,11 @@
 import logging
 
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.ambiente.models import EnvironmentVipNotFoundError
-from networkapi.api_environment_vip import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.requisicaovips.models import OptionVip
 from networkapi.requisicaovips.models import OptionVipEnvironmentVip
@@ -94,10 +95,10 @@ def get_environmentvip_by_ids(environment_vip_ids):
         try:
             envvip = get_environmentvip_by_id(environment_vip_id).id
             envvips.append(envvip)
-        except exceptions.EnvironmentVipDoesNotExistException, e:
-            raise ObjectDoesNotExistException(e)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(str(e))
         except Exception, e:
-            raise NetworkAPIException(e)
+            raise NetworkAPIException(str(e))
 
     environmentvips = EnvironmentVip.objects.filter(id__in=envvips)
 
@@ -108,24 +109,32 @@ def get_environmentvip_by_id(environment_vip_id):
 
     try:
         environmentvip = EnvironmentVip.get_by_pk(environment_vip_id)
-    except EnvironmentVipNotFoundError:
-        raise exceptions.EnvironmentVipDoesNotExistException()
+    except EnvironmentVipNotFoundError, e:
+        raise ObjectDoesNotExistException(str(e))
     else:
         return environmentvip
 
 
 def update_environment_vip(environment_vip):
 
-    env = get_environmentvip_by_id(environment_vip.get('id'))
-    env.update_v3(environment_vip)
+    try:
+        env = get_environmentvip_by_id(environment_vip.get('id'))
+        env.update_v3(environment_vip)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
     return env
 
 
 def create_environment_vip(environment_vip):
 
-    env = EnvironmentVip()
-    env.create_v3(environment_vip)
+    try:
+        env = EnvironmentVip()
+        env.create_v3(environment_vip)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
     return env
 
@@ -133,6 +142,12 @@ def create_environment_vip(environment_vip):
 def delete_environment_vip(envvip_ids):
 
     for envvip_id in envvip_ids:
-        envvip_obj = get_environmentvip_by_id(envvip_id)
-
-        envvip_obj.delete_v3()
+        try:
+            envvip_obj = get_environmentvip_by_id(envvip_id)
+            envvip_obj.delete_v3()
+        except EnvironmentVipAssociatedToSomeNetworkError, e:
+            raise ValidationAPIException(str(e))
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(str(e))
+        except Exception, e:
+            raise NetworkAPIException(str(e))

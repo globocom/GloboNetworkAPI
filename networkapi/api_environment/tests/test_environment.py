@@ -152,8 +152,6 @@ class EnvironmentTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['name']
-        print json.dumps(self.load_json_file(name_file), sort_keys=True)
-        print json.dumps(data, sort_keys=True)
         # Tests if data was inserted
         self.assertEqual(
             json.dumps(self.load_json_file(name_file), sort_keys=True),
@@ -232,8 +230,6 @@ class EnvironmentTestCase(NetworkApiTestCase):
         # Removes property name
         data = response.data
         del data['environments'][0]['name']
-        print json.dumps(self.load_json_file(name_file), sort_keys=True)
-        print json.dumps(data, sort_keys=True)
 
         # Tests if data was updated
         self.assertEqual(

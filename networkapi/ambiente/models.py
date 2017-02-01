@@ -638,7 +638,7 @@ class EnvironmentVip(BaseModel):
 
         if len(entry_netipv4) > 0 or len(entry_netipv6) > 0:
             raise EnvironmentVipAssociatedToSomeNetworkError(
-                None, 'Environment Vip is associated to some IPv4'
+                None, 'Environment Vip is associated to some IPv4 '
                       'or IPv6 Network and therefore cannot be deleted.')
 
         # Deletes options related

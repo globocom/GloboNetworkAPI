@@ -75,5 +75,12 @@
   "fields": {
     "nome": "TEST DELETE 2.2"
     }
+  },
+  {
+  "pk": 12,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "Test used in environment vip"
+    }
   }
 ]
