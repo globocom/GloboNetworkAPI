@@ -842,7 +842,16 @@ VALUES
    (
       25, 1, 1, 'TOR 2 Space 2', 0
    )
+,
+   (
+      26, 3, 1, 'Fabric router 0', 0
+   )
+,
+   (
+      27, 3, 1, 'Fabric router 1', 0
+   )
 ;
+
 -- Dumping data for table `equip_do_ambiente`
 INSERT INTO
    `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is_router)
@@ -897,6 +906,18 @@ VALUES
 ,
    (
       13, 11, 19, 0
+   )
+,
+   (
+      14, 10, 12, 1
+   )
+,
+   (
+      15, 1, 26, 1
+   )
+,
+   (
+      16, 1, 27, 1
    )
 ;
 
