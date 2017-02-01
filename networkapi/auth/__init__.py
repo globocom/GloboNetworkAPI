@@ -144,7 +144,9 @@ def _validate_obj(perms, ugroups, operation):
 
 def perm_obj(request, operation, object_type, *args, **kwargs):
 
-    objs = kwargs.get('obj_ids').split(';')
+    obj_ids = kwargs.get('obj_ids')
+    objs = obj_ids.split(';') if obj_ids is not None else []
+
     return validate_object_perm(
         objs,
         request.user,
