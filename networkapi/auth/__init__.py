@@ -90,21 +90,21 @@ def _has_equip_perm(ugroup, egroups, equip_oper):
 
 def validate_object_perm(objects_id, user, operation, object_type):
 
+    ugroups = user.grupos.all()
+
+    # general perms
+    perms = models.ObjectGroupPermissionGeneral.objects.filter(
+        object_type__name=object_type
+    )
+    if perms:
+        pool_perm = _validate_obj(perms, ugroups, operation)
+        if pool_perm:
+            return True
+
     if len(objects_id) == 0:
         return False
 
     for object_id in objects_id:
-
-        ugroups = user.grupos.all()
-
-        # general perms
-        perms = models.ObjectGroupPermissionGeneral.objects.filter(
-            object_type__name=object_type
-        )
-        if perms:
-            pool_perm = _validate_obj(perms, ugroups, operation)
-            if pool_perm:
-                return True
 
         # individuals perms
         perms = models.ObjectGroupPermission.objects.filter(

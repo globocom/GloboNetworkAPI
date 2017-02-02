@@ -10,7 +10,6 @@ from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import EnvironmentErrorV3
 from networkapi.ambiente.models import IPConfig
-from networkapi.api_environment_vip.exceptions import EnvironmentVipDoesNotExistException
 from networkapi.api_environment_vip.facade import get_environmentvip_by_id
 from networkapi.api_pools import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
@@ -94,7 +93,7 @@ def list_environment_environment_vip_related(env_id=None):
             'grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter'
         ).distinct()
 
-    except EnvironmentVipDoesNotExistException, e:
+    except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(str(e))
     except Exception, e:
         raise NetworkAPIException(str(e))
