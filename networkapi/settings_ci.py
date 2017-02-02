@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import os
 
 from settings import ADMIN_MEDIA_PREFIX
@@ -234,7 +233,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': logging.INFO,
+            'level': LOG_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
@@ -243,26 +242,26 @@ LOGGING = {
         'default': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.INFO,
+            'level': LOG_LEVEL,
         },
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['console'],
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'django.db.backends': {
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
             'propagate': True,
             'handlers': ['console'],
         },
     },
     'root': {
-        'level': logging.INFO,
+        'level': LOG_LEVEL,
         'propagate': True,
         'handlers': ['console'],
     },
