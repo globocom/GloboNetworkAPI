@@ -7,6 +7,7 @@ apt-get install libmysqlclient-dev -y
 apt-get install python-dev -y
 apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 apt-get install activemq -y
+apt-get install virtualenv
 rm -rf /etc/activemq/instances-enabled
 ln -sf /etc/activemq/instances-available /etc/activemq/instances-enabled
 sed -i 's/512/128/g' /usr/share/activemq/activemq-options
