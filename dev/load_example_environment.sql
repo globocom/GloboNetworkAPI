@@ -1704,5 +1704,20 @@ VALUES
    )
 ;
 
+INSERT INTO
+   `networkapi`.`object_group_permission_general` (`id`, `id_user_group`, `id_object_type`, `read`, `write`, `change_config`, `delete`)
+VALUES
+   (
+      1, 1, 1, '1', '1', '1', '1'
+   )
+,
+   (
+      2, 1, 2, '1', '1', '1', '1'
+   )
+,
+   (
+      3, 1, 3, '1', '1', '1', '1'
+   )
+;
 
 COMMIT;
