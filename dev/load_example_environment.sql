@@ -1726,7 +1726,7 @@ VALUES
 ;
 
 INSERT INTO
-   `networkapi`.`object_group_permission_general` (`id`, `id_user_group`, `id_object_type`, `read`, `write`, `change_config`, `delete`)
+   `object_group_permission_general` (`id`, `id_user_group`, `id_object_type`, `read`, `write`, `change_config`, `delete`)
 VALUES
    (
       1, 1, 1, '1', '1', '1', '1'
