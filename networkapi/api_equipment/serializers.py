@@ -30,14 +30,13 @@ class EquipmentEnvironmentV3Serializer(DynamicFieldsModelSerializer):
     def get_equipment(self, obj):
         return self.extends_serializer(obj, 'equipment')
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         env_slz = get_app('api_environment', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'environment': {
                     'obj': 'ambiente_id'
                 },
@@ -59,7 +58,7 @@ class EquipmentEnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 }
             }
 
-        return cls.mapping
+        return self.mapping
 
     @staticmethod
     def setup_eager_loading_networkipv4(queryset):
@@ -94,10 +93,9 @@ class ModelV3Serializer(DynamicFieldsModelSerializer):
 
         return self.extends_serializer(obj.marca, 'brand')
 
-    @classmethod
-    def get_serializers(cls):
-        if not cls.mapping:
-            cls.mapping = {
+    def get_serializers(self):
+        if not self.mapping:
+            self.mapping = {
                 'brand': {
                     'serializer': BrandV3Serializer,
                     'kwargs': {
@@ -111,7 +109,7 @@ class ModelV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return cls.mapping
+        return self.mapping
 
     class Meta:
         Modelo = get_model('equipamento', 'Modelo')
@@ -199,13 +197,12 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     def get_ipv6(self, obj):
         return self.extends_serializer(obj, 'ipv6')
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         ip_slz = get_app('api_ip', module_label='serializers')
         grp_slz = get_app('api_group', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'model': {
                     'obj': 'modelo_id'
                 },
@@ -246,7 +243,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'exclude': ('equipments',),
                     },
                     'obj': 'ipv4',
-                    'eager_loading': cls.setup_eager_loading_ipv4
+                    'eager_loading': self.setup_eager_loading_ipv4
                 },
                 'ipv4__details': {
                     'serializer': ip_slz.Ipv4V3Serializer,
@@ -256,7 +253,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'exclude': ('equipments',),
                     },
                     'obj': 'ipv4',
-                    'eager_loading': cls.setup_eager_loading_ipv4
+                    'eager_loading': self.setup_eager_loading_ipv4
                 },
                 'ipv6': {
                     'serializer': ip_slz.Ipv6V3Serializer,
@@ -280,7 +277,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'exclude': ('equipments',),
                     },
                     'obj': 'ipv6',
-                    'eager_loading': cls.setup_eager_loading_ipv6
+                    'eager_loading': self.setup_eager_loading_ipv6
                 },
                 'ipv6__details': {
                     'serializer': ip_slz.Ipv6V3Serializer,
@@ -290,7 +287,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'exclude': ('equipments',),
                     },
                     'obj': 'ipv6',
-                    'eager_loading': cls.setup_eager_loading_ipv6
+                    'eager_loading': self.setup_eager_loading_ipv6
                 },
                 'groups': {
                     'serializer': grp_slz.EquipmentGroupV3Serializer,
@@ -333,7 +330,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                 }
             }
 
-        return cls.mapping
+        return self.mapping
 
     @staticmethod
     def setup_eager_loading_ipv4(queryset):
