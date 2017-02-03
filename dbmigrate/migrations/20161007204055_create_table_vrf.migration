@@ -3,7 +3,7 @@ SQL_UP = u"""
 CREATE TABLE `vrf` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `vrf` VARCHAR(45) NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '');
+  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `vrf_vlan_eqpt` (
@@ -11,11 +11,11 @@ CREATE TABLE `vrf_vlan_eqpt` (
   `id_vrf` INT UNSIGNED NOT NULL COMMENT '',
   `id_vlan` INT UNSIGNED NOT NULL COMMENT '',
   `id_equipment` INT UNSIGNED NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_vrf_vlan_eqpt_id_vrf_idx` (`id_vrf` ASC)  COMMENT '',
-  INDEX `fk_vrf_vlan_eqpt_id_vlan_idx` (`id_vlan` ASC)  COMMENT '',
-  INDEX `fk_vrf_vlan_eqpt_id_eqpt_idx` (`id_equipment` ASC)  COMMENT '',
-  UNIQUE INDEX `uq_vrf_vlan_eqpt_1` (`id_vlan` ASC, `id_equipment` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_vrf_vlan_eqpt_id_vrf_idx` (`id_vrf` ASC),
+  INDEX `fk_vrf_vlan_eqpt_id_vlan_idx` (`id_vlan` ASC),
+  INDEX `fk_vrf_vlan_eqpt_id_eqpt_idx` (`id_equipment` ASC),
+  UNIQUE INDEX `uq_vrf_vlan_eqpt_1` (`id_vlan` ASC, `id_equipment` ASC),
   CONSTRAINT `fk_vrf_vlan_eqpt_id_vrf`
     FOREIGN KEY (`id_vrf`)
     REFERENCES `vrf` (`id`)
@@ -36,5 +36,5 @@ CREATE TABLE `vrf_vlan_eqpt` (
 
 SQL_DOWN = u"""
 DROP TABLE `vrf_vlan_eqpt`;
-DROP TABLE `vrf`
+DROP TABLE `vrf`;
 """

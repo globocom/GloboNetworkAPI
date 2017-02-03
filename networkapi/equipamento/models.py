@@ -543,6 +543,9 @@ class Equipamento(BaseModel):
         db_table = u'equipamentos'
         managed = True
 
+    def __str__(self):
+        return self.nome
+
     def _get_groups(self):
         groups = self.grupos.all()
         return groups
@@ -675,7 +678,7 @@ class Equipamento(BaseModel):
                 return query.uniqueResult()
         except ObjectDoesNotExist, e:
             raise EquipamentoNotFoundError(
-                e, u'Dont there is a equipament by pk = %s.' % id)
+                e, u'Dont there is a equipament by pk = %s.' % pk)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -800,7 +803,7 @@ class Equipamento(BaseModel):
         except IpCantBeRemovedFromVip, e:
             raise e
         except Exception, e:
-            self.log.error(u'Falha ao remover um equipamento: %s' %e)
+            self.log.error(u'Falha ao remover um equipamento: %s' % e)
             raise EquipamentoError(e, u'Falha ao remover um equipamento.')
 
     def delete_v3(self):
@@ -1021,6 +1024,18 @@ class EquipamentoAmbiente(BaseModel):
             raise EquipamentoError(
                 e, u'Falha ao pesquisar o equipamento-ambiente.')
 
+    def get_by_environment(self, environment_id):
+        try:
+            return EquipamentoAmbiente.objects.get(ambiente__id=environment_id)
+        except ObjectDoesNotExist, e:
+            raise EquipamentoAmbienteNotFoundError(
+                e, u'Não existe um equipamento_ambiente com o ambiente = %s.' %
+                (environment_id))
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar o equipamento-ambiente.')
+            raise EquipamentoError(
+                e, u'Falha ao pesquisar o equipamento-ambiente.')
+
     @classmethod
     def get_by_equipment(cls, equipment_id):
         try:
@@ -1064,6 +1079,44 @@ class EquipamentoAmbiente(BaseModel):
     def get_routers_by_environment(cls, environment_id):
         return EquipamentoAmbiente.objects.select_related('equipamento')\
             .filter(ambiente=environment_id, is_router=True)
+
+    def create_v3(self, eqpt_env_map):
+        """
+        Insert a new relashionship between an equipment and an environment.
+
+        @return: Nothing
+
+        @raise AmbienteNotFoundError: Environment not registered.
+        @raise EquipamentoAmbienteDuplicatedError: Equipment already
+                                                   registered in
+                                                   environment.
+        @raise EquipamentoError: Failure to insert the relashionship
+                                 between equipment and environment.
+        """
+
+        self.ambiente = Ambiente()\
+            .get_by_pk(eqpt_env_map.get('environment'))
+        self.equipamento = Equipamento()\
+            .get_by_pk(eqpt_env_map.get('equipment'))
+
+        try:
+            EquipamentoAmbiente().get_by_equipment_environment(
+                self.equipamento.id, self.ambiente.id)
+            raise EquipamentoAmbienteDuplicatedError(
+                None, u'Equipment already registered in environment.')
+        except EquipamentoAmbienteNotFoundError:
+            pass
+
+        try:
+            self.save()
+        except Exception, e:
+            msg = u'Failure to insert the relashionship between ' \
+                'equipment and environment. %s/%s.' % \
+                (self.equipamento.id, self.ambiente.id)
+
+            self.log.error(msg)
+
+            raise EquipamentoError(e, msg)
 
 
 class EquipamentoGrupo(BaseModel):

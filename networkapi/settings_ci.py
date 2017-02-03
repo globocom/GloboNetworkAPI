@@ -18,6 +18,7 @@ import os
 
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
+from settings import ALLOWED_HOSTS
 from settings import AMBLOG_MGMT
 from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
@@ -115,6 +116,8 @@ from settings import REL_PATH_TO_ADD_CONFIG
 from settings import REL_PATH_TO_CONFIG
 from settings import REST_FRAMEWORK
 from settings import ROOT_URLCONF
+from settings import RQ_QUEUES
+from settings import RQ_SHOW_ADMIN_LINK
 from settings import SCRIPTS_DIR
 from settings import SECRET_KEY
 from settings import SITE_ID
@@ -162,6 +165,10 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
+MIDDLEWARE_CLASSES += (
+    'django_pdb.middleware.PdbMiddleware',
+)
+
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -173,6 +180,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_pdb',
     'rest_framework',
 )
 
@@ -195,7 +203,7 @@ NOSE_ARGS = [
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
-    #     '-s',
+    '-s',
     '--with-fixture-bundling',
 ]
 

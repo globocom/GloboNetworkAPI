@@ -12,5 +12,33 @@
   "fields": {
     "nome": "FE"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "TEST POST"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "TEST PUT"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "TEST DELETE"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "Test used in environment vip"
+    }
   }
 ]

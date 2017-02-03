@@ -4,11 +4,13 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
+from django.db.models import get_model
 from networkapi.api_vrf.exceptions import VrfError
 from networkapi.api_vrf.exceptions import VrfNotFoundError
 from networkapi.filter.models import FilterNotFoundError
 from networkapi.models.BaseModel import BaseModel
+from networkapi.api_vrf.exceptions import VrfRelatedToEnvironment
+from networkapi.api_vrf.exceptions import VrfAssociatedToVlanEquipment
 
 
 class Vrf(BaseModel):
@@ -40,16 +42,16 @@ class Vrf(BaseModel):
         """
         try:
             return Vrf.objects.filter(id=id_vrf).uniqueResult()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise VrfNotFoundError(
-                e, u'Dont there is a Vrf by pk = %s.' % id_vrf)
-        except OperationalError, e:
+                u'Dont there is a Vrf by pk = %s.' % id_vrf)
+        except OperationalError as e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+                u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception as e:
             cls.log.error(u'Failure to search the Vrf.')
-            raise VrfError(e, u'Failure to search the Vrf.')
+            raise VrfError(u'Failure to search the Vrf.')
 
     def create(self, authenticated_user):
         """Include new Vrf.
@@ -62,7 +64,7 @@ class Vrf(BaseModel):
         try:
             return self.save()
 
-        except FilterNotFoundError, e:
+        except FilterNotFoundError as e:
             raise e
         except Exception:
             self.log.error(u'Fail on inserting Vrf.')
@@ -88,7 +90,7 @@ class Vrf(BaseModel):
             vrf.__dict__.update(kwargs)
             vrf.save(authenticated_user)
 
-        except Exception, e:
+        except Exception as e:
             cls.log.error(u'Fail to change Vrf.')
 
     @classmethod
@@ -99,14 +101,36 @@ class Vrf(BaseModel):
 
         @raise VrfNotFoundError: It doesn' exist Vrf to searched id
 
+        @raise VrfRelatedToEnvironment: At least one Environment is using this Vrf
+
+        @raise VrfAssociatedToVlanEquipment: At least one Vlan and Equipment are
+                                             associated together to this Vrf
+
         """
+
         vrf = Vrf().get_by_pk(pk)
 
-        # Remove the vrf
-        try:
-            vrf.delete()
-        except Exception, e:
+        entry_env = vrf.ambiente_set.all()
+
+        if len(entry_env) > 0:
             cls.log.error(u'Fail to remove Vrf.')
+            raise VrfRelatedToEnvironment(
+                u'Vrf with pk = %s is being used at some environment.' %
+                pk)
+
+        entry_vlan_eqpt = VrfVlanEquipment.objects.filter(vrf=pk)
+
+        if len(entry_vlan_eqpt) > 0:
+            cls.log.error(u'Fail to remove Vrf.')
+            raise VrfAssociatedToVlanEquipment(
+                u'Vrf with pk = %s is associated to some Vlan and Equipment.' %
+                pk)
+
+        # Remove assoc between Vrf and Equipment
+        VrfEquipment.objects.filter(vrf=pk).delete()
+
+        # Remove Vrf
+        vrf.delete()
 
     class Meta (BaseModel.Meta):
         managed = True

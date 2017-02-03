@@ -12,5 +12,75 @@
   "fields": {
     "nome": "GRUPO 2"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST WITH VLANs"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST POST 2.1"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST POST 2.2"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST PUT 1"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST PUT 2.1"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST PUT 2.2"
+    }
+  },
+  {
+  "pk": 9,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST DELETE 1"
+    }
+  },
+  {
+  "pk": 10,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST DELETE 2.1"
+    }
+  },
+  {
+  "pk": 11,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "TEST DELETE 2.2"
+    }
+  },
+  {
+  "pk": 12,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "Test used in environment vip"
+    }
   }
 ]

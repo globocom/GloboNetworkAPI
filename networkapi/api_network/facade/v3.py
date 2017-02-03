@@ -14,27 +14,22 @@ from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRI
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
 from networkapi.distributedlock import LOCK_NETWORK_IPV6
 from networkapi.distributedlock import LOCK_VLAN
+from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.ip import models as ip_models
 from networkapi.plugins.factory import PluginFactory
 from networkapi.settings import NETWORK_CONFIG_FILES_PATH
 from networkapi.settings import NETWORK_CONFIG_TEMPLATE_PATH
 from networkapi.settings import NETWORK_CONFIG_TOAPPLY_REL_PATH
-from networkapi.util.geral import get_app
+
 log = logging.getLogger(__name__)
 
 TEMPLATE_NETWORKv4_ACTIVATE = 'ipv4_activate_network_configuration'
 TEMPLATE_NETWORKv4_DEACTIVATE = 'ipv4_deactivate_network_configuration'
 TEMPLATE_NETWORKv6_ACTIVATE = 'ipv6_activate_network_configuration'
 TEMPLATE_NETWORKv6_DEACTIVATE = 'ipv6_deactivate_network_configuration'
-
-
-######################
-# Models's Instances #
-######################
-ip_models = get_app('ip', 'models')
-eqpt_models = get_app('equipamento', 'models')
 
 
 ###############
@@ -73,7 +68,6 @@ def create_networkipv4(networkv4, user):
     """Creates a NetworkIPv4."""
 
     netv4_obj = ip_models.NetworkIPv4()
-
     netv4_obj.create_v3(networkv4)
 
     return netv4_obj

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
+from httplib import *
+from urllib2 import *
 
+from _mysql_exceptions import OperationalError
 from django.db import transaction
 from django.http import HttpResponse
-from httplib import *
 from rest_framework.exceptions import AuthenticationFailed
+
 from networkapi.api_rest.authentication import BasicAuthentication
 from networkapi.auth import authenticate
-from networkapi.error_message_utils import error_dumps
-from networkapi.usuario.models import UsuarioError
-from urllib2 import *
-from _mysql_exceptions import OperationalError
-from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.distributedlock import LockNotAcquiredError
+from networkapi.error_message_utils import error_dumps
+from networkapi.extra_logging import local
+from networkapi.infrastructure.xml_utils import XMLError
+# from networkapi.usuario.models import UsuarioError
 
 
 class RestError(Exception):
@@ -86,7 +86,7 @@ class RestResource(object):
                         request, user, args, **kwargs)
                 elif request.method == 'PUT':
                     response = self.handle_put(request, user, args, **kwargs)
-        except AuthenticationFailed, ex:
+        except AuthenticationFailed:
             self.log.error(u'Authentication failed.')
             response = self.not_authenticated()
         except (LockNotAcquiredError, OperationalError), e:
@@ -99,8 +99,9 @@ class RestResource(object):
             self.log.exception(u'Erro não esperado.')
             response = self.response_error(1)
         finally:
-            username, password, user_ldap = RestResource.read_user_data(request)
-            password = '****'
+            username, password, user_ldap = RestResource.read_user_data(
+                request)
+            # password = '****'
             if response is not None:
                 if response.status_code == 200:
                     transaction.commit()
@@ -129,14 +130,14 @@ class RestResource(object):
         return self.not_implemented()
 
     @classmethod
-    def read_user_data(self, request):
+    def read_user_data(cls, request):
         username = request.META.get('HTTP_NETWORKAPI_USERNAME')
         password = request.META.get('HTTP_NETWORKAPI_PASSWORD')
         user_ldap = request.META.get('HTTP_NETWORKAPI_USERLDAP')
         return username, password, user_ldap
 
     @classmethod
-    def authenticate_user(self, request):
+    def authenticate_user(cls, request):
         if not request.user.is_anonymous():
             return request.user
 
@@ -158,28 +159,63 @@ class RestResource(object):
         return user
 
     def not_authenticated(self):
-        return HttpResponse(u'401 - Usuário não autenticado. Usuário e/ou senha incorretos.',
-                            status=401,
-                            content_type='text/plain')
+        http_res = HttpResponse(
+            u'401 - Usuário não autenticado. Usuário e/ou senha incorretos.',
+            status=401,
+            content_type='text/plain')
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
 
     def not_authorized(self):
-        return HttpResponse(u'402 - Usuário não autorizado para executar a operação.',
-                            status=402,
-                            content_type='text/plain')
+        http_res = HttpResponse(
+            u'402 - Usuário não autorizado para executar a operação.',
+            status=402,
+            content_type='text/plain')
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
 
     def not_implemented(self):
         """Cria um HttpResponse com o código HTTP 501 - Not implemented."""
-        return HttpResponse(u'501 - Chamada não implementada.', status=501,
-                            content_type='text/plain')
+        http_res = HttpResponse(
+            u'501 - Chamada não implementada.',
+            status=501,
+            content_type='text/plain')
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
 
     def response_error(self, code, *args):
         """Cria um HttpResponse com o XML de erro."""
-        return HttpResponse(error_dumps(code, *args), status=500, content_type='text/plain')
+        http_res = HttpResponse(
+            error_dumps(code, *args),
+            status=500,
+            content_type='text/plain')
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
 
     def response(self, content, status=200, content_type='text/plain'):
         """Cria um HttpResponse com os dados informados"""
-        return HttpResponse(content, status=status,
-                            content_type=content_type)
+
+        http_res = HttpResponse(
+            content,
+            status=status,
+            content_type=content_type)
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
 
 
 class RestResponse:

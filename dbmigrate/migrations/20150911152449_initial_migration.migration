@@ -24,7 +24,7 @@ CREATE TABLE `ambiente` (
   `id_grupo_l3` int(10) unsigned NOT NULL,
   `id_ambiente_logic` int(10) unsigned NOT NULL,
   `id_divisao` int(10) unsigned NOT NULL,
-  `link` varchar(200) CHARACTER SET latin1 DEFAULT 'http://wiki.globoi.com/DataCenter/Telecom',
+  `link` varchar(200) CHARACTER SET latin1 DEFAULT '',
   `acl_path` varchar(250) DEFAULT NULL,
   `ipv4_template` varchar(250) DEFAULT NULL,
   `ipv6_template` varchar(250) DEFAULT NULL,

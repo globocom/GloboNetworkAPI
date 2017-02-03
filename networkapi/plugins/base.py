@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import random
 import re
 import string
 import unicodedata
 from time import sleep
 
 import paramiko
-import random
 
 from . import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
@@ -102,7 +102,7 @@ class BasePlugin(object):
         try:
             retries = 0
             connected = 0
-            while(not connected and retries < self.connect_max_retries): 
+            while(not connected and retries < self.connect_max_retries):
                 try:
                     self.remote_conn.connect(
                         device, port=self.connect_port, username=username, password=password)
@@ -112,10 +112,10 @@ class BasePlugin(object):
                     retries += 1
                     # not capable of connecting after max retries
                     if retries is self.connect_max_retries:
-                        raise Exception(e) 
-                    log.error('Try %s/%s - Error connecting to host %s: %s' % (retries, self.connect_max_retries, device, e))
-                    sleep(random.randint(1,15))
-
+                        raise Exception(e)
+                    log.error('Try %s/%s - Error connecting to host %s: %s' %
+                              (retries, self.connect_max_retries, device, e))
+                    sleep(random.randint(1, 15))
 
         except IOError, e:
             log.error('Could not connect to host %s: %s' % (device, e))
@@ -238,5 +238,11 @@ class BasePlugin(object):
     def partial_update_vip(self, **kwargs):
         """
         Partial Update of VIP
+        """
+        raise NotImplementedError()
+
+    def get_name_eqpt(self, **kwargs):
+        """
+        Generate name of VIP
         """
         raise NotImplementedError()

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,33 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.infrastructure.xml_utils import dumps_networkapi
-
-from networkapi.ip.models import Equipamento, Ipv6, Ipv6Equipament, IpNotFoundError, IpEquipmentNotFoundError, IpEquipamentoDuplicatedError, IpError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
-    IpCantRemoveFromServerPool
-
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
-
-from networkapi.rest import RestResource, UserNotAuthorizedError
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.auth import has_perm
 
 import logging
 
-from networkapi.grupo.models import GrupoError
-
-from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function, mount_ipv6_string
-
-from networkapi.exception import InvalidValueError
-
-from networkapi.distributedlock import distributedlock, LOCK_IPV6
 from django.db.utils import IntegrityError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_IPV6
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import mount_ipv6_string
 
 
 class Ipv6RemoveResource(RestResource):
@@ -48,11 +39,15 @@ class Ipv6RemoveResource(RestResource):
     log = logging.getLogger('Ipv6RemoveResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
-        '''Treat DELETE requests to remove the relationship between IPv6 and equipment.
+        """Treat DELETE requests to remove the relationship between IPv6 and equipment.
 
         URL: ipv6/<id_ipv6>/equipment/<id_equip>/remove/
-        '''
-        self.log.info("Remove an IPv6 to a equipament.")
+        """
+        from networkapi.ip.models import Equipamento, Ipv6, Ipv6Equipament, IpNotFoundError, IpEquipmentNotFoundError, IpEquipamentoDuplicatedError, IpError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
+            IpCantRemoveFromServerPool
+
+        from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
+        self.log.info('Remove an IPv6 to a equipament.')
 
         try:
 
@@ -96,21 +91,23 @@ class Ipv6RemoveResource(RestResource):
                 # Remove Ipv6Equipament
                 ipv6_equipament = Ipv6Equipament()
 
-                server_pool_member_list = ServerPoolMember.objects.filter(ipv6=ip)
+                server_pool_member_list = ServerPoolMember.objects.filter(
+                    ipv6=ip)
 
                 if server_pool_member_list.count() != 0:
                     # IP associated with Server Pool
 
                     server_pool_name_list = set()
                     for member in server_pool_member_list:
-                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        item = '{}: {}'.format(
+                            member.server_pool.id, member.server_pool.identifier)
                         server_pool_name_list.add(item)
 
                     server_pool_name_list = list(server_pool_name_list)
                     server_pool_identifiers = ', '.join(server_pool_name_list)
 
                     raise IpCantRemoveFromServerPool({'ip': mount_ipv6_string(ip), 'equip_name': equipament.nome, 'server_pool_identifiers': server_pool_identifiers},
-                                               "Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (equipament.nome, server_pool_identifiers))
+                                                     'Ipv6 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s' % (equipament.nome, server_pool_identifiers))
 
                 ipv6_equipament.remove(user, ipv6_id, equip_id)
 
@@ -119,7 +116,7 @@ class Ipv6RemoveResource(RestResource):
         except IpCantRemoveFromServerPool, e:
             return self.response_error(385, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('server_pool_identifiers'))
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319, "ip", 'ipv6', ipv6_id)
+            return self.response_error(319, 'ip', 'ipv6', ipv6_id)
         except IpEquipCantDissociateFromVip, e:
             return self.response_error(352, e.cause['ip'], e.cause['equip_name'], e.cause['vip_id'])
         except InvalidValueError, e:

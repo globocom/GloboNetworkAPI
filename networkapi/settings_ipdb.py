@@ -17,6 +17,7 @@ import logging
 
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
+from settings import ALLOWED_HOSTS
 from settings import AMBLOG_MGMT
 from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
@@ -114,6 +115,8 @@ from settings import REL_PATH_TO_ADD_CONFIG
 from settings import REL_PATH_TO_CONFIG
 from settings import REST_FRAMEWORK
 from settings import ROOT_URLCONF
+from settings import RQ_QUEUES
+from settings import RQ_SHOW_ADMIN_LINK
 from settings import SCRIPTS_DIR
 from settings import SECRET_KEY
 from settings import SITE_ID
