@@ -13,11 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import os
 
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
+from settings import ALLOWED_HOSTS
 from settings import AMBLOG_MGMT
 from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
@@ -164,6 +164,10 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
+MIDDLEWARE_CLASSES += (
+    'django_pdb.middleware.PdbMiddleware',
+)
+
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -175,6 +179,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_pdb',
     'rest_framework',
 )
 
@@ -197,7 +202,7 @@ NOSE_ARGS = [
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
-    #     '-s',
+    '-s',
     '--with-fixture-bundling',
 ]
 
@@ -228,7 +233,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': logging.INFO,
+            'level': LOG_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
@@ -237,26 +242,26 @@ LOGGING = {
         'default': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.INFO,
+            'level': LOG_LEVEL,
         },
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['console'],
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'django.db.backends': {
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
             'propagate': True,
             'handlers': ['console'],
         },
     },
     'root': {
-        'level': logging.INFO,
+        'level': LOG_LEVEL,
         'propagate': True,
         'handlers': ['console'],
     },

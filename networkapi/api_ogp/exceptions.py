@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
@@ -27,4 +28,19 @@ class ObjectGroupPermissionGeneralNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'Object Group Permission General %s do not exist.' % (msg)
+        self.detail = u'Object Group Permission General %s do not exist.' % (
+            msg)
+
+
+class ObjectTypeError(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    def __init__(self, msg):
+        self.detail = msg
+
+
+class ObjectTypeNotFoundError(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+
+    def __init__(self, msg):
+        self.detail = u'Object Type %s do not exist.' % (msg)

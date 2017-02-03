@@ -1,0 +1,21 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+SET foreign_key_checks = 0;
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+ADD CONSTRAINT `fk_ipsv6_has_equipamentos_ipsv6`
+FOREIGN KEY (`id_ipv6`)
+REFERENCES ipsv6 (`id_ipv6`);
+
+SET foreign_key_checks = 1;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+DROP FOREIGN KEY `fk_ipsv6_has_equipamentos_ipsv6`;
+
+
+"""

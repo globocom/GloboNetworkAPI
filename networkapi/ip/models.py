@@ -38,6 +38,7 @@ from networkapi.equipamento.models import EquipamentoAmbienteDuplicatedError
 from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.exception import InvalidValueError
+from networkapi.exception import NetworkActiveError
 from networkapi.infrastructure.ipaddr import AddressValueError
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.infrastructure.ipaddr import IPv4Address
@@ -77,7 +78,7 @@ class NetworkIPv4ErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class NetworkIPv6ErrorV3(Exception):
@@ -88,7 +89,7 @@ class NetworkIPv6ErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class NetworkIPv6Error(Exception):
@@ -138,7 +139,7 @@ class IpErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class IpError(Exception):
@@ -883,6 +884,11 @@ class NetworkIPv4(BaseModel):
 
         try:
 
+            if self.active:
+                raise NetworkActiveError(
+                    None,
+                    'Try to set it inactive before removing it')
+
             for ip in self.ip_set.all():
                 ip.delete_v3()
 
@@ -1351,8 +1357,9 @@ class Ip(BaseModel):
                 e, u'Error adding new IP or relationship ip-equipment.')
 
     def save_ipv4(self, equipment_id, user, net):
+
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
-        equipamento = get_model('equipamento', 'TipoEquipamento')
+        equipamento = get_model('equipamento', 'Equipamento')
         filterequiptype = get_model('filterequiptype', 'FilterEquipType')
         try:
 

@@ -4,19 +4,20 @@ import json
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from django.db.transaction import commit_on_success
 
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
-from networkapi.api_pools import exceptions as exceptions_pool
 from networkapi.api_pools.facade.v3.base import get_pool_by_id
 from networkapi.api_pools.facade.v3.base import reserve_name_healthcheck
-from networkapi.api_usuario import facade as facade_usr
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_vip_request import exceptions
-from networkapi.api_vip_request import models
 from networkapi.api_vip_request import syncs
+from networkapi.api_vip_request.models import VipRequest
+from networkapi.api_vip_request.models import VipRequestDSCP
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
@@ -24,10 +25,7 @@ from networkapi.ip.models import Ip
 from networkapi.ip.models import Ipv6
 from networkapi.plugins.factory import PluginFactory
 from networkapi.requisicaovips.models import OptionVip
-from networkapi.requisicaovips.models import RequisicaoVips
 from networkapi.requisicaovips.models import ServerPool
-from networkapi.requisicaovips.models import ServerPoolMember
-from networkapi.usuario.models import UsuarioGrupo
 from networkapi.util import valid_expression
 from networkapi.util.geral import get_app
 
@@ -48,7 +46,7 @@ def get_vip_request_by_ip(ipv4=None, ipv6=None, environment_vip=None):
     :param ipv6: Id of Ipv6
     :param environment_vip: Id of Environment Vip
     """
-    vip_request = models.VipRequest.objects.all()
+    vip_request = VipRequest.objects.all()
 
     if environment_vip:
         vip_request = vip_request.filter(environmentvip=environment_vip)
@@ -63,11 +61,10 @@ def get_vip_request_by_ip(ipv4=None, ipv6=None, environment_vip=None):
 
 
 def get_vip_request_by_id(vip_request_id):
-    """
-    get Vip Request
-    """
+    """Get one Vip Request"""
+
     try:
-        vip_request = models.VipRequest.objects.get(id=vip_request_id)
+        vip_request = VipRequest.objects.get(id=vip_request_id)
     except ObjectDoesNotExist:
         raise exceptions.VipRequestDoesNotExistException()
 
@@ -75,282 +72,80 @@ def get_vip_request_by_id(vip_request_id):
 
 
 def get_vip_request_by_ids(vip_request_ids):
-    """
-    get Vip Request
-    """
-    vip_requests = list()
+    """Get many Vip Request"""
+
+    vps_ids = list()
     for vip_request_id in vip_request_ids:
-        vip_requests.append(get_vip_request_by_id(vip_request_id))
+        try:
+            sp = get_vip_request_by_id(vip_request_id).id
+            vps_ids.append(sp)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e)
+        except exceptions.VipRequestDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e)
+        except Exception, e:
+            raise NetworkAPIException(e)
+
+    vip_requests = VipRequest.objects.filter(id__in=vps_ids)
 
     return vip_requests
 
 
 def create_vip_request(vip_request, user):
-    """
-    Create Vip Request
-    """
-    # Remove when RequisicaoVips is die
-    req = RequisicaoVips()
-    req.save()
+    """Create Vip Request."""
 
-    vip = models.VipRequest()
-    vip.id = req.id
-    vip.name = vip_request['name']
-    vip.service = vip_request['service']
-    vip.business = vip_request['business']
-    vip.environmentvip_id = vip_request['environmentvip']
-    vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']) if vip_request[
-        'ipv4'] else None
-    vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']) if vip_request[
-        'ipv6'] else None
-
-    option_create = [vip_request['options'][key]
-                     for key in vip_request['options']]
-    vip.save()
-
-    _create_port(vip_request['ports'], vip)
-    _create_option(option_create, vip.id)
-
-    # perms
-    groups_perm = vip_request.get('groups_permissions', [])
-    groups_perm += facade_usr.get_groups(
-        vip_request.get('users_permissions', []))
-    groups = facade_usr.reduce_groups(groups_perm)
-    create_groups_permissions(groups, vip.id, user)
-
-    # sync with old tables
-    syncs.new_to_old(vip)
-
-    return vip
+    try:
+        vip = VipRequest()
+        vip.create_v3(vip_request, user)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(e)
+    else:
+        return vip
 
 
-def update_vip_request(vip_request, user):
+def update_vip_request(vip_request, user, permit_created=False):
     """
     update Vip Request
     """
 
-    vip = models.VipRequest.get_by_pk(vip_request['id'])
-
-    vip.name = vip_request['name']
-    vip.service = vip_request['service']
-    vip.business = vip_request['business']
-    vip.environmentvip_id = vip_request['environmentvip']
-    vip.ipv4 = Ip.get_by_pk(vip_request['ipv4']) if vip_request[
-        'ipv4'] else None
-    vip.ipv6 = Ipv6.get_by_pk(vip_request['ipv6']) if vip_request[
-        'ipv6'] else None
-
-    option_ids = [int(option.optionvip.id)
-                  for option in vip.viprequestoptionvip_set.all()]
-    options = [int(vip_request['options'][key])
-               for key in vip_request['options']]
-    option_remove = list(set(option_ids) - set(options))
-    option_create = list(set(options) - set(option_ids))
-
-    vip.save()
-
-    _update_port(vip_request['ports'], vip)
-
-    _create_option(option_create, vip.id)
-    _delete_option(option_remove, vip.id)
-
-    dsrl3 = OptionVip.objects.filter(
-        nome_opcao_txt='DSRL3', tipo_opcao='Retorno de trafego').values('id')
-    if dsrl3:
-        if dsrl3[0]['id'] in option_remove:
-            models.VipRequestDSCP.objects.filter(vip_request=vip.id).delete()
-
-    # perms
-    groups_perm = vip_request.get('groups_permissions', [])
-    groups_perm += facade_usr.get_groups(
-        vip_request.get('users_permissions', []))
-    groups = facade_usr.reduce_groups(groups_perm)
-
-    perm = vip_request.get('permissions')
-    perm_replace = perm.get('replace') if perm else False
-
-    update_groups_permissions(groups, vip.id, user, perm_replace)
-
-    # sync with old tables
-    syncs.new_to_old(vip)
+    try:
+        vip = get_vip_request_by_id(vip_request.get('id'))
+        vip.update_v3(vip_request, user, permit_created)
+    except exceptions.VipRequestDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e)
+    except Exception, e:
+        raise NetworkAPIException(e)
+    else:
+        return vip
 
 
 def delete_vip_request(vip_request_ids, keep_ip='0'):
     """delete vip request"""
 
     for vip_request_id in vip_request_ids:
-        vp = models.VipRequest.get_by_pk(vip_request_id)
-        bypass_ip = True if keep_ip == '1' else False
-        vp.delete_v3(bypass_ipv4=bypass_ip, bypass_ipv6=bypass_ip)
-
-
-def _create_port(ports, vip_request):
-    """Create ports"""
-
-    for port in ports:
-        # save port
-        pt = models.VipRequestPort()
-        pt.vip_request_id = vip_request.id
-        pt.port = port['port']
-
-        eqpts = facade_eqpt.get_eqpt_by_envvip(vip_request.environmentvip.id)
-        if eqpts:
-            plugin = PluginFactory.factory(eqpts[0])
-            identifier = plugin.get_name_eqpt(vip_request, port['port'])
-            pt.identifier = identifier
-
-        pt.save()
-
-        # save port option l7_protocol
-        opt = models.VipRequestPortOptionVip()
-        opt.vip_request_port_id = pt.id
-        opt.optionvip_id = port['options']['l4_protocol']
-        opt.save()
-
-        # save port option l7_protocol
-        opt = models.VipRequestPortOptionVip()
-        opt.vip_request_port_id = pt.id
-        opt.optionvip_id = port['options']['l7_protocol']
-        opt.save()
-
-        # save pool by port
-        for pool in port.get('pools'):
-            pl = models.VipRequestPortPool()
-            pl.vip_request_port_id = pt.id
-            pl.server_pool_id = pool.get('server_pool')
-            pl.optionvip_id = pool.get('l7_rule')
-            pl.val_optionvip = pool.get('l7_value')
-            pl.order = pool.get('order')
-            pl.save()
-
-
-def _update_port(ports, vip_request):
-    """Update ports"""
-
-    for port in ports:
-        # save port
         try:
-            pt = models.VipRequestPort.objects.get(
-                vip_request_id=vip_request.id,
-                port=port['port'])
-        except:
-            pt = models.VipRequestPort()
-            pt.vip_request_id = vip_request.id
-            pt.port = port['port']
-            pt.save()
-
-        if not pt.identifier or pt.port != port['port']:
-            eqpts = facade_eqpt.get_eqpt_by_envvip(
-                vip_request.environmentvip.id)
-            if eqpts:
-                plugin = PluginFactory.factory(eqpts[0])
-                identifier = plugin.get_name_eqpt(vip_request, port['port'])
-                pt.identifier = identifier
-
-        pt.save()
-
-        # save port option l4_protocol
-        try:
-            opt = models.VipRequestPortOptionVip.objects.get(
-                vip_request_port_id=pt.id,
-                optionvip_id=port['options']['l4_protocol'])
-        except:
-            opt = models.VipRequestPortOptionVip()
-            opt.vip_request_port_id = pt.id
-            opt.optionvip_id = port['options']['l4_protocol']
-            opt.save()
-
-        # save port option l7_protocol
-        try:
-            opt = models.VipRequestPortOptionVip.objects.get(
-                vip_request_port_id=pt.id,
-                optionvip_id=port.get('options').get('l7_protocol'))
-        except:
-            opt = models.VipRequestPortOptionVip()
-            opt.vip_request_port_id = pt.id
-            opt.optionvip_id = port.get('options').get('l7_protocol')
-            opt.save()
-
-        # delete option by port
-        models.VipRequestPortOptionVip.objects.filter(
-            vip_request_port_id=pt.id
-        ).exclude(
-            optionvip_id__in=[
-                port.get('options').get('l4_protocol'),
-                port.get('options').get('l7_protocol')]
-        ).delete()
-
-        # save pool by port
-        pools = list()
-        for pool in port.get('pools'):
-            try:
-                pl = models.VipRequestPortPool.objects.get(
-                    vip_request_port=pt.id,
-                    id=pool.get('id'))
-            except:
-                pl = models.VipRequestPortPool()
-                pl.vip_request_port_id = pt.id
-            finally:
-                if pl.optionvip_id != pool.get('l7_rule') or \
-                        pl.val_optionvip != pool.get('l7_value') or \
-                        pl.order != pool.get('order') or \
-                        pl.server_pool_id != pool.get('server_pool'):
-                    pl.server_pool_id = pool.get('server_pool')
-                    pl.optionvip_id = pool.get('l7_rule')
-                    pl.val_optionvip = pool.get('l7_value')
-                    pl.order = pool.get('order')
-                    pl.save()
-            pools.append(pl.id)
-
-        # delete pool by port
-        models.VipRequestPortPool.objects.filter(
-            vip_request_port=pt
-        ).exclude(
-            id__in=pools
-        ).delete()
-
-    # delete port
-    ports_ids = [port.get('port') for port in ports]
-    models.VipRequestPort.objects.filter(
-        vip_request_id=vip_request.id
-    ).exclude(
-        port__in=ports_ids
-    ).delete()
-
-
-def _create_option(options, vip_request_id):
-    """create options"""
-
-    for option in options:
-        opt = models.VipRequestOptionVip()
-        opt.vip_request_id = vip_request_id
-        opt.optionvip_id = option
-        opt.save()
-
-    dsrl3 = OptionVip.objects.filter(
-        nome_opcao_txt='DSRL3',
-        tipo_opcao='Retorno de trafego'
-    ).values('id')
-    if dsrl3:
-        if dsrl3[0]['id'] in options:
-            dscp = _dscp(vip_request_id)
-            vip_dscp = models.VipRequestDSCP()
-            vip_dscp.vip_request_id = vip_request_id
-            vip_dscp.dscp = dscp
-            vip_dscp.save()
-
-
-def _delete_option(options, vip_request_id):
-    """Deletes options"""
-    models.VipRequestOptionVip.objects.filter(
-        vip_request=vip_request_id,
-        optionvip__in=options
-    ).delete()
+            vip = get_vip_request_by_id(vip_request_id)
+            bypass_ip = True if keep_ip == '1' else False
+            vip.delete_v3(bypass_ipv4=bypass_ip, bypass_ipv6=bypass_ip)
+        except exceptions.VipRequestDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e)
+        except exceptions.VipConstraintCreated, e:
+            raise ValidationAPIException(e)
+        except ValidationAPIException, e:
+            raise ValidationAPIException(e)
+        except Exception, e:
+            raise NetworkAPIException(e)
+        else:
+            return vip
 
 
 def get_vip_request_by_search(search=dict()):
 
-    vip_requests = models.VipRequest.objects.filter()
+    vip_requests = VipRequest.objects.filter()
 
     vip_map = build_query_to_datatable_v3(vip_requests, search)
 
@@ -414,7 +209,7 @@ def prepare_apply(load_balance, vip, created=True, user=None):
     vip_request['options']['cluster_unit'] = cluster_unit
 
     try:
-        vip_request['options']['dscp'] = models.VipRequestDSCP.objects.get(
+        vip_request['options']['dscp'] = VipRequestDSCP.objects.get(
             vip_request=vip_request['id']
         ).dscp
     except:
@@ -617,7 +412,7 @@ def create_real_vip_request(vip_requests, user):
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
 
-    vips = models.VipRequest.objects.filter(id__in=ids)
+    vips = VipRequest.objects.filter(id__in=ids)
     vips.update(created=True)
 
     for vip in vips:
@@ -635,7 +430,7 @@ def update_real_vip_request(vip_requests, user):
     for vip in vip_requests:
 
         # old VIP
-        vip_old = models.VipRequest.get_by_pk(vip.get('id'))
+        vip_old = VipRequest.get_by_pk(vip.get('id'))
         serializer_vips = vip_slz.VipRequestV3Serializer(
             vip_old,
             many=False,
@@ -643,12 +438,11 @@ def update_real_vip_request(vip_requests, user):
         )
         slz_vips_old = copy.deepcopy(serializer_vips.data)
 
-        # validate and save
-        validate_save(vip, True)
-        update_vip_request(vip, user)
+        # Save
+        update_vip_request(vip, user, permit_created=True)
 
         # new VIP
-        vip_new = models.VipRequest.get_by_pk(vip.get('id'))
+        vip_new = VipRequest.get_by_pk(vip.get('id'))
         serializer_vips = vip_slz.VipRequestV3Serializer(
             vip_new,
             many=False,
@@ -785,7 +579,7 @@ def patch_real_vip_request(vip_requests, user):
     keys = list()
     for vip in vip_requests:
 
-        vip_old = models.VipRequest.get_by_pk(vip.get('id'))
+        vip_old = VipRequest.get_by_pk(vip.get('id'))
         serializer_vips = vip_slz.VipRequestV3Serializer(
             vip_old,
             many=False,
@@ -797,8 +591,7 @@ def patch_real_vip_request(vip_requests, user):
         # validate and save
         vip_dict['options']['persistence'] = vip['options']['persistence']
 
-        validate_save(vip_dict, True)
-        update_vip_request(vip_dict, user)
+        update_vip_request(vip_dict, user, permit_created=True)
 
         load_balance = prepare_apply(
             load_balance, vip_dict, created=True, user=user)
@@ -844,7 +637,7 @@ def delete_real_vip_request(vip_requests, user):
 
     ids = [vip_id.get('id') for vip_id in vip_requests]
 
-    vips = models.VipRequest.objects.filter(id__in=ids)
+    vips = VipRequest.objects.filter(id__in=ids)
     vips.update(created=False)
 
     for vip in vips:
@@ -853,286 +646,6 @@ def delete_real_vip_request(vip_requests, user):
     if pools_ids:
         pools_ids = list(set(pools_ids))
         ServerPool.objects.filter(id__in=pools_ids).update(pool_created=False)
-
-
-#############
-# helpers
-#############
-def validate_save(vip_request, permit_created=False):
-
-    has_identifier = models.VipRequest.objects.filter(
-        environmentvip=vip_request['environmentvip']
-    )
-
-    # validate ipv4
-    if vip_request['ipv4']:
-        has_identifier = has_identifier.filter(ipv4=vip_request['ipv4'])
-
-        vips = EnvironmentVip.objects.filter(
-            networkipv4__ip=vip_request['ipv4']
-        ).filter(
-            id=vip_request['environmentvip']
-        )
-        if not vips:
-            raise exceptions.IpNotFoundByEnvironment(vip_request['name'])
-
-    # validate ipv6
-    if vip_request['ipv6']:
-        has_identifier = has_identifier.filter(ipv6=vip_request['ipv6'])
-        vips = EnvironmentVip.objects.filter(
-            networkipv6__ipv6=vip_request['ipv6']
-        ).filter(
-            id=vip_request['environmentvip']
-        )
-        if not vips:
-            raise exceptions.IpNotFoundByEnvironment(vip_request['name'])
-
-    # validate change info when vip created
-    if vip_request.get('id'):
-        vip = models.VipRequest.get_by_pk(vip_request.get('id'))
-        if vip.created:
-            if not permit_created:
-                raise exceptions.CreatedVipRequestValuesException()
-
-            if vip.environmentvip_id != vip_request['environmentvip']:
-                raise exceptions.CreatedVipRequestValuesException(
-                    'Environment vip of vip request id: %s' % (vip_request.get('id')))
-
-            # cannot change ip
-            if vip.ipv4:
-                if vip.ipv4.id != vip_request['ipv4']:
-                    raise exceptions.CreatedVipRequestValuesException(
-                        'Ipv4 of vip request id: %s' % (vip_request.get('id')))
-            if vip.ipv6:
-                if vip.ipv6.id != vip_request['ipv6']:
-                    raise exceptions.CreatedVipRequestValuesException(
-                        'Ipv6 of vip request id: %s' % (vip_request.get('id')))
-
-            # change traffic return
-            options = [
-                op.optionvip.id for op in vip.viprequestoptionvip_set.all()]
-            if vip_request['options']['traffic_return'] not in options:
-                raise exceptions.CreatedVipRequestValuesException(
-                    'Traffic Return of vip request id: %s' % (vip_request.get('id')))
-
-            for port in vip_request.get('ports'):
-                if port.get('id'):
-                    # cannot change options of port
-
-                    port_obj = vip.viprequestport_set.get(id=port.get('id'))
-
-                    options_obj_l4 = port_obj.viprequestportoptionvip_set.filter(
-                        optionvip=port.get('options').get('l4_protocol'))
-                    options_obj_l7 = port_obj.viprequestportoptionvip_set.filter(
-                        optionvip=port.get('options').get('l7_protocol'))
-
-                    if not options_obj_l4 or not options_obj_l7:
-                        raise exceptions.CreatedVipRequestValuesException(
-                            'Options of port %s of vip request id: %s' % (port['port'], vip_request.get('id')))
-
-        has_identifier = has_identifier.exclude(id=vip_request.get('id'))
-
-    # has_identifier = has_identifier.distinct()
-    # if has_identifier.count() > 0:
-    #     raise exceptions.AlreadyVipRequestException()
-
-    # validate option vip assoc with environment vip
-    opts = list()
-    for option in vip_request['options']:
-        opt = dict()
-        if option == 'cache_group' and vip_request['options'].get(option) is not None:
-            opt['id'] = vip_request['options'].get(option)
-            opt['tipo_opcao'] = 'cache'
-        elif option == 'persistence' and vip_request['options'].get(option) is not None:
-            opt['id'] = vip_request['options'].get(option)
-            opt['tipo_opcao'] = 'Persistencia'
-        elif option == 'traffic_return' and vip_request['options'].get(option) is not None:
-            opt['id'] = vip_request['options'].get(option)
-            opt['tipo_opcao'] = 'Retorno de trafego'
-        elif option == 'timeout' and vip_request['options'].get(option) is not None:
-            opt['id'] = vip_request['options'].get(option)
-            opt['tipo_opcao'] = 'timeout'
-        if opt:
-            opts.append(opt)
-
-    for opt in opts:
-        try:
-            option = OptionVip.objects.get(
-                Q(**opt),
-                optionvipenvironmentvip__environment__id=vip_request[
-                    'environmentvip']
-            )
-        except:
-            raise Exception(
-                'Invalid option %s:%s,viprequest:%s, \
-                because environmentvip is not associated to options or not exists' % (
-                    opt['tipo_opcao'], opt['id'], vip_request['name'])
-            )
-
-    # validate pools associates
-    for port in vip_request.get('ports'):
-
-        opts = list()
-        for option in port['options']:
-            opt = dict()
-            if option == 'l4_protocol' and port['options'].get(option) is not None:
-                opt['id'] = port['options'].get(option)
-                opt['tipo_opcao'] = 'l4_protocol'
-            elif option == 'l7_protocol' and port['options'].get(option) is not None:
-                opt['id'] = port['options'].get(option)
-                opt['tipo_opcao'] = 'l7_protocol'
-            if opt:
-                opts.append(opt)
-
-        for opt in opts:
-            try:
-                option = OptionVip.objects.get(
-                    Q(**opt),
-                    optionvipenvironmentvip__environment__id=vip_request[
-                        'environmentvip']
-                )
-            except:
-                raise Exception(
-                    u'Invalid option %s:%s,port:%s,viprequest:%s, \
-                    because environmentvip is not associated to options or not exists' % (
-                        opt['tipo_opcao'], opt['id'], port['port'], vip_request['name'])
-                )
-
-        dsrl3 = OptionVip.objects.filter(
-            nome_opcao_txt='DSRL3',
-            tipo_opcao='Retorno de trafego',
-            id=vip_request['options']['traffic_return'],
-        )
-
-        # validate dsrl3: 1 pool by port
-        if dsrl3 and len(port['pools']) > 1:
-            raise Exception(
-                u'Vip %s has DSRL3 and can not to have L7' % (
-                    vip_request['name'])
-            )
-
-        count_l7_opt = 0
-        for pool in port['pools']:
-
-            # validate option vip(l7_rule) assoc with environment vip
-            try:
-                l7_rule_opt = OptionVip.objects.get(
-                    id=pool['l7_rule'],
-                    tipo_opcao='l7_rule',
-                    optionvipenvironmentvip__environment__id=vip_request[
-                        'environmentvip']
-                )
-            except:
-                raise Exception(
-                    u'Invalid option l7_rule:%s,pool:%s,port:%s,viprequest:%s, \
-                    because environmentvip is not associated to options or not exists' % (
-                        pool['l7_rule'], pool['server_pool'], port['port'], vip_request['name'])
-                )
-
-            # control to validate l7_rule "default_vip" in one pool by port
-            if l7_rule_opt.nome_opcao_txt == 'default_vip':
-                count_l7_opt += 1
-
-            # validate dsrl3: pool assoc only vip and no l7 rules
-            if dsrl3:
-                # Vip with dscp(dsrl3) cannot L7 rules
-                if l7_rule_opt.nome_opcao_txt != 'default_vip':
-                    raise Exception(
-                        u'Option Vip of pool {} of Vip Request {} must be default_vip'.format(
-                            pool['server_pool'], vip_request['name'])
-                    )
-
-                pool_assoc_vip = get_vip_request_by_pool(pool['server_pool'])
-                if vip_request.get('id'):
-                    pool_assoc_vip = pool_assoc_vip.exclude(
-                        id=vip_request.get('id'))
-
-                if pool_assoc_vip:
-                    raise Exception(
-                        u'Pool {} must be associated to a only vip request, \
-                        when vip request has dslr3 option'.format(
-                            pool['server_pool']))
-
-            try:
-                sp = ServerPool.objects.get(id=pool['server_pool'])
-            except Exception, e:
-                log.error(e)
-                raise exceptions_pool.PoolDoesNotExistException(
-                    pool['server_pool'])
-
-            # validate dsrl3: Pool must have same port of vip
-            if dsrl3:
-                if int(sp.default_port) != int(port['port']):
-                    raise Exception(
-                        u'Pool {} must have same port of vip {}'.format(
-                            pool['server_pool'], vip_request['name'])
-                    )
-
-            spms = ServerPoolMember.objects.filter(
-                server_pool=pool['server_pool'])
-            for spm in spms:
-                # validate dsrl3: Pool Members must have same port of vip
-                if dsrl3:
-                    if int(spm.port_real) != int(port['port']):
-                        ip_mb = spm.ip if spm.ip else spm.ipv6
-                        raise Exception(
-                            u'Pool Member {} of Pool {} must have same port of vip {}'.format(
-                                ip_mb, pool['server_pool'], vip_request['name'])
-                        )
-
-                if spm.ip:
-
-                    vips = EnvironmentVip.objects.filter(
-                        environmentenvironmentvip__environment__vlan__networkipv4__ip=spm.ip
-                    ).filter(
-                        id=vip_request['environmentvip']
-                    )
-                    if not vips:
-                        raise exceptions.ServerPoolMemberDiffEnvironmentVipException(
-                            spm.identifier)
-                if spm.ipv6:
-
-                    vips = EnvironmentVip.objects.filter(
-                        environmentenvironmentvip__environment__vlan__networkipv6__ipv6=spm.ipv6
-                    ).filter(
-                        id=vip_request['environmentvip']
-                    )
-                    if not vips:
-                        raise exceptions.ServerPoolMemberDiffEnvironmentVipException(
-                            spm.identifier)
-
-        if count_l7_opt < 1:
-            raise Exception(
-                u'Port {} of Vip Request {} must have one pool with l7_rule equal "default_vip"'.format(
-                    port['port'], vip_request['name'])
-            )
-
-        if count_l7_opt > 1:
-            raise Exception(
-                u'Port {} of Vip Request {} must have only pool with l7_rule equal "default_vip"'.format(
-                    port['port'], vip_request['name'])
-            )
-
-
-def _dscp(vip_request_id):
-    members = ServerPoolMember.objects.filter(
-        server_pool__viprequestportpool__vip_request_port__vip_request__id=vip_request_id)
-    eqpts = [member.equipment.id for member in members]
-
-    members = models.VipRequestDSCP.objects.filter(
-        vip_request__viprequestport__viprequestportpool__server_pool__serverpoolmember__in=ServerPoolMember.objects.filter(
-            ip__ipequipamento__equipamento__in=eqpts
-        )
-    ).distinct().values('dscp')
-
-    mb = [i.get('dscp') for i in members]
-    perm = range(3, 64)
-    perm_new = list(set(perm) - set(mb))
-    if perm_new:
-        return perm_new[0]
-    else:
-        raise Exception(
-            'Can\'t use pool because pool members have dscp is sold out')
 
 
 def _validate_vip_to_apply(vip_request, update=False, user=None):
@@ -1173,111 +686,3 @@ def _validate_vip_to_apply(vip_request, update=False, user=None):
     cluster_unit = vip.ipv4.networkipv4.cluster_unit if vip.ipv4 else vip.ipv6.networkipv6.cluster_unit
 
     return equips, conf, cluster_unit
-
-
-# PERMS
-def create_groups_permissions(groups_permissions, vip_id, user):
-    """Creates permissions to access for vips"""
-
-    group_adm = {
-        'group': True,
-        'read': True,
-        'write': True,
-        'delete': True,
-        'change_config': True,
-    }
-    _create_group_permission(group_adm, vip_id)
-
-    if groups_permissions:
-        for group_permission in groups_permissions:
-            if group_permission['group'] != 1:
-                _create_group_permission(group_permission, vip_id)
-    else:
-        for group in UsuarioGrupo.list_by_user_id(user.id):
-            group_id = int(group.ugrupo.id)
-            if group_id != 1:
-                _create_group_permission({
-                    'group': group_id,
-                    'read': True,
-                    'write': True,
-                    'delete': True,
-                    'change_config': True,
-                }, vip_id)
-
-
-def update_groups_permissions(groups_permissions, vip_id, user, replace_permissions=False):
-    """Creates permissions to access for vips"""
-
-    # groups default
-    if not groups_permissions:
-        for group in UsuarioGrupo.list_by_user_id(user.id):
-            group_id = int(group.ugrupo.id)
-            if group_id != 1:
-                groups_permissions.append({
-                    'group': group_id,
-                    'read': True,
-                    'write': True,
-                    'delete': True,
-                    'change_config': True,
-                })
-
-    groups_perms = models.VipRequestGroupPermission.objects.filter(
-        vip_request=vip_id)
-
-    groups_permissions_idx = [gp['group'] for gp in groups_permissions]
-    groups_perm_idx = [gp.user_group_id for gp in groups_perms]
-
-    for group_perm in groups_perms:
-
-        # change or delete group != 1(ADM)
-        if group_perm.user_group_id != 1:
-            # update perms
-            if group_perm.user_group_id in groups_permissions_idx:
-                idx = groups_permissions_idx.index(group_perm.user_group_id)
-                _update_group_permission(
-                    groups_permissions[idx], group_perm.id)
-            # delete perms
-            elif replace_permissions is True:
-
-                models.VipRequestGroupPermission.objects.filter(
-                    id=group_perm.id).delete()
-
-    for group_permission in groups_permissions:
-
-        # change or delete group != 1(ADM)
-        if group_permission['group'] != 1:
-            # insert perms
-            if group_permission['group'] not in groups_perm_idx:
-                _create_group_permission(group_permission, vip_id)
-
-
-def _create_group_permission(group_permission, vip_id):
-    """Creates permissions to access for vips"""
-
-    vip_perm = models.VipRequestGroupPermission()
-    vip_perm.vip_request_id = vip_id
-    vip_perm.user_group_id = group_permission['group']
-    vip_perm.read = group_permission['read']
-    vip_perm.write = group_permission['write']
-    vip_perm.delete = group_permission['delete']
-    vip_perm.change_config = group_permission['change_config']
-    vip_perm.save()
-
-
-def _update_group_permission(group_permission, obj_id):
-    """Updates permissions to access for vips"""
-
-    vip_perm = models.VipRequestGroupPermission.objects.get(id=obj_id)
-    vip_perm.user_group_id = group_permission['group']
-    vip_perm.read = group_permission['read']
-    vip_perm.write = group_permission['write']
-    vip_perm.delete = group_permission['delete']
-    vip_perm.change_config = group_permission['change_config']
-    vip_perm.save()
-
-
-def get_vip_request_by_pool(pool_id):
-    pool_assoc_vip = models.VipRequest.objects.filter(
-        viprequestport__viprequestportpool__server_pool__id=pool_id
-    )
-    return pool_assoc_vip

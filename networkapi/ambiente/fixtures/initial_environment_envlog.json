@@ -12,5 +12,47 @@
   "fields": {
     "nome": "TESTE2"
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TESTE-EQPT"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TESTE-POOL"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TEST POST"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TEST PUT"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "TEST DELETE"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "Test used in environment vip"
+    }
   }
 ]

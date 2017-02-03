@@ -28,10 +28,10 @@ from networkapi.api_pools import exceptions
 from networkapi.api_vrf.models import Vrf
 from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
-from networkapi.exception import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
+from networkapi.exception import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.exception import EnvironmentVipError
 from networkapi.exception import EnvironmentVipNotFoundError
 from networkapi.exception import InvalidValueError
@@ -44,6 +44,7 @@ from networkapi.util import is_valid_string_minsize
 from networkapi.util import is_valid_text
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
+from networkapi.util.geral import get_app
 
 
 class AmbienteError(Exception):
@@ -65,7 +66,7 @@ class EnvironmentErrorV3(Exception):
         self.cause = cause
 
     def __str__(self):
-        return self.cause
+        return str(self.cause)
 
 
 class AmbienteNotFoundError(AmbienteError):
@@ -632,16 +633,13 @@ class EnvironmentVip(BaseModel):
 
     def delete_v3(self):
 
-        from networkapi.ip.models import NetworkIPv4
-        from networkapi.ip.models import NetworkIPv6
-
-        entry_netipv4 = NetworkIPv4.objects.filter(ambient_vip=self.id)
-        entry_netipv6 = NetworkIPv6.objects.filter(ambient_vip=self.id)
-
+        entry_netipv4 = self.networkipv4_set.all()
+        entry_netipv6 = self.networkipv6_set.all()
 
         if len(entry_netipv4) > 0 or len(entry_netipv6) > 0:
             raise EnvironmentVipAssociatedToSomeNetworkError(
-                None, 'Environment Vip is associated to some IPv4 or IPv6 Network and therefore cannot be deleted.')
+                None, 'Environment Vip is associated to some IPv4 '
+                      'or IPv6 Network and therefore cannot be deleted.')
 
         # Deletes options related
         self.optionvipenvironmentvip_set\
@@ -651,7 +649,7 @@ class EnvironmentVip(BaseModel):
         self.environmentenvironmentvip_set\
             .filter(environment_vip_id=self.id).delete()
 
-        self.delete()
+        super(EnvironmentVip, self).delete()
 
     def create_v3(self, env_map):
 
@@ -1365,6 +1363,47 @@ class Ambiente(BaseModel):
 
         finally:
             destroy_lock(locks_list)
+
+    def delete_v3(self):
+        ip_models = get_app('ip', 'models')
+        vlan_models = get_app('vlan', 'models')
+        eqpt_models = get_app('equipamento', 'models')
+
+        # Remove every vlan associated with this environment
+        for vlan in self.vlan_set.all():
+            try:
+                if vlan.ativada:
+                    vlan.deactivate_v3()
+                vlan.delete_v3()
+            except vlan_models.VlanCantDeallocate, e:
+                raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
+            except ip_models.IpCantBeRemovedFromVip, e:
+                raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
+
+        # Remove every association between equipment and this environment
+        for equip_env in self.equipamentoambiente_set.all():
+            try:
+                eqpt_models.EquipamentoAmbiente.remove(
+                    None, equip_env.equipamento_id, equip_env.ambiente_id)
+            except eqpt_models.EquipamentoAmbienteNotFoundError, e:
+                raise AmbienteUsedByEquipmentVlanError(e, e.message)
+            except eqpt_models.EquipamentoError, e:
+                raise AmbienteUsedByEquipmentVlanError(e, e.message)
+
+        # Remove ConfigEnvironments associated with environment
+        try:
+            ConfigEnvironment.remove_by_environment(None, self.id)
+        except (ConfigEnvironmentError, OperationalError,
+                ConfigEnvironmentNotFoundError), e:
+            self.log.error(u'Falha ao remover algum Ambiente Config.')
+            raise AmbienteError(e, u'Falha ao remover algum Ambiente Config.')
+
+        # Remove the environment
+        try:
+            self.delete()
+        except Exception, e:
+            self.log.error(u'Falha ao remover o Ambiente.')
+            raise AmbienteError(e, u'Falha ao remover o Ambiente.')
 
     def validate_v3(self):
 

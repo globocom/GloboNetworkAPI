@@ -8,14 +8,14 @@ from rest_framework.response import Response
 
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request.facade import v3 as facade
-from networkapi.api_vip_request.permissions import delete_vip_permission
-from networkapi.api_vip_request.permissions import deploy_vip_permission
+from networkapi.api_vip_request.permissions import delete_obj_permission
+from networkapi.api_vip_request.permissions import deploy_obj_permission
 from networkapi.api_vip_request.permissions import DeployCreate
 from networkapi.api_vip_request.permissions import DeployDelete
 from networkapi.api_vip_request.permissions import DeployUpdate
 from networkapi.api_vip_request.permissions import Read
 from networkapi.api_vip_request.permissions import Write
-from networkapi.api_vip_request.permissions import write_vip_permission
+from networkapi.api_vip_request.permissions import write_obj_permission
 from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.settings import SPECS
@@ -38,9 +38,10 @@ log = logging.getLogger(__name__)
 
 class VipRequestDeployView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
-    @permission_obj_apiview([deploy_vip_permission])
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
+    @permission_obj_apiview([deploy_obj_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates list of vip request in equipments
@@ -65,9 +66,10 @@ class VipRequestDeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
-    @permission_obj_apiview([deploy_vip_permission])
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
+    @permission_obj_apiview([deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of vip request in equipments
@@ -92,10 +94,10 @@ class VipRequestDeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
-    @permission_obj_apiview([deploy_vip_permission])
-    @raise_json_validate('vip_request_put')
     @logs_method_apiview
+    @raise_json_validate('vip_request_put')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
+    @permission_obj_apiview([deploy_obj_permission])
     def put(self, request, *args, **kwargs):
         """
         Updates list of vip request in equipments
@@ -117,10 +119,10 @@ class VipRequestDeployView(CustomAPIView):
 
         return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
-    @permission_obj_apiview([deploy_vip_permission])
-    @raise_json_validate('vip_request_patch')
     @logs_method_apiview
+    @raise_json_validate('vip_request_patch')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
+    @permission_obj_apiview([deploy_obj_permission])
     def patch(self, request, *args, **kwargs):
         """
         Updates list of vip request in equipments
@@ -143,56 +145,52 @@ class VipRequestDeployView(CustomAPIView):
 
 class VipRequestDBView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns a list of vip request by ids ou dict
         """
-        try:
 
-            if not kwargs.get('vip_request_ids'):
+        if not kwargs.get('vip_request_ids'):
 
-                obj_model = facade.get_vip_request_by_search(self.search)
-                vips_requests = obj_model['query_set']
-                only_main_property = False
+            obj_model = facade.get_vip_request_by_search(self.search)
+            vips_requests = obj_model['query_set']
+            only_main_property = False
 
-            else:
+        else:
 
-                vip_request_ids = kwargs['vip_request_ids'].split(';')
-                vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
-                obj_model = None
-                # serializer vips
-                only_main_property = True
+            vip_request_ids = kwargs['vip_request_ids'].split(';')
+            vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
+            obj_model = None
+            # serializer vips
+            only_main_property = True
 
-            serializer_vips = VipRequestV3Serializer(
-                vips_requests,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        serializer_vips = VipRequestV3Serializer(
+            vips_requests,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # prepare serializer with customized properties
-            response = render_to_json(
-                serializer_vips,
-                main_property='vips',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
+        # prepare serializer with customized properties
+        response = render_to_json(
+            serializer_vips,
+            main_property='vips',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('vip_request_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -207,16 +205,15 @@ class VipRequestDBView(CustomAPIView):
         verify_ports_vip(data)
         for vip in data['vips']:
 
-            facade.validate_save(vip)
             vp = facade.create_vip_request(vip, request.user)
             response.append({'id': vp.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([write_vip_permission])
     @logs_method_apiview
     @raise_json_validate('vip_request_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_obj_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -230,7 +227,6 @@ class VipRequestDBView(CustomAPIView):
         try:
             verify_ports_vip(data)
             for vip in data['vips']:
-                facade.validate_save(vip)
                 facade.update_vip_request(vip, request.user)
         except Exception, exception:
             log.error(exception)
@@ -240,8 +236,10 @@ class VipRequestDBView(CustomAPIView):
 
         return Response({}, status=status.HTTP_200_OK)
 
+    @logs_method_apiview
+    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([delete_vip_permission])
+    @permission_obj_apiview([delete_obj_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
@@ -265,97 +263,88 @@ class VipRequestDBView(CustomAPIView):
 
 class VipRequestDBDetailsView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns a list of vip request with details by ids ou dict
 
         """
-        try:
+        if not kwargs.get('vip_request_ids'):
+            obj_model = facade.get_vip_request_by_search(self.search)
+            vips_requests = obj_model['query_set']
+            only_main_property = False
+        else:
+            vip_request_ids = kwargs['vip_request_ids'].split(';')
+            vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
+            obj_model = None
+            only_main_property = True
 
-            if not kwargs.get('vip_request_ids'):
-                obj_model = facade.get_vip_request_by_search(self.search)
-                vips_requests = obj_model['query_set']
-                only_main_property = False
-            else:
-                vip_request_ids = kwargs['vip_request_ids'].split(';')
-                vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
-                obj_model = None
-                only_main_property = True
+        # serializer vips
+        serializer_vips = VipRequestV3Serializer(
+            vips_requests,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind='details'
+        )
 
-            # serializer vips
-            serializer_vips = VipRequestV3Serializer(
-                vips_requests,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind='details'
-            )
+        # prepare serializer with customized properties
+        response = render_to_json(
+            serializer_vips,
+            main_property='vips',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            # prepare serializer with customized properties
-            response = render_to_json(
-                serializer_vips,
-                main_property='vips',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
-
-            return Response(response, status=status.HTTP_200_OK)
-
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class VipRequestPoolView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Read))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns a list of vip request by pool id
         """
-        try:
 
-            pool_id = int(kwargs['pool_id'])
+        pool_id = int(kwargs['pool_id'])
 
-            extends_search = {
-                'viprequestport__viprequestportpool__server_pool': pool_id
-            }
-            self.search['extends_search'] = \
-                [ex.append(extends_search) for ex in self.search['extends_search']] \
-                if self.search['extends_search'] else [extends_search]
+        extends_search = {
+            'viprequestport__viprequestportpool__server_pool': pool_id
+        }
+        self.search['extends_search'] = \
+            [ex.append(extends_search) for ex in self.search['extends_search']] \
+            if self.search['extends_search'] else [extends_search]
 
-            vips_requests = facade.get_vip_request_by_search(self.search)
+        vips_requests = facade.get_vip_request_by_search(self.search)
 
-            only_main_property = False
+        only_main_property = False
 
-            # serializer vips
-            serializer_vips = VipRequestV3Serializer(
-                vips_requests['query_set'],
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        # serializer vips
+        serializer_vips = VipRequestV3Serializer(
+            vips_requests['query_set'],
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # prepare serializer with customized properties
-            response = render_to_json(
-                serializer_vips,
-                main_property='vips',
-                obj_model=vips_requests,
-                request=request,
-                only_main_property=only_main_property
-            )
+        # prepare serializer with customized properties
+        response = render_to_json(
+            serializer_vips,
+            main_property='vips',
+            obj_model=vips_requests,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            return Response(response, status=status.HTTP_200_OK)
-
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
+        return Response(response, status=status.HTTP_200_OK)

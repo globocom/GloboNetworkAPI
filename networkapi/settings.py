@@ -35,7 +35,8 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('NETWORKAPI_ALLOWED_HOSTS',
+                          '10.0.0.2,localhost,127.0.0.1').split(',')
 
 # Configuração do arquivo de log do projeto.
 LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
@@ -68,7 +69,8 @@ NETWORKAPI_DATABASE_PASSWORD = os.getenv('NETWORKAPI_DATABASE_PASSWORD', '')
 NETWORKAPI_DATABASE_HOST = os.getenv('NETWORKAPI_DATABASE_HOST', 'localhost')
 NETWORKAPI_DATABASE_PORT = os.getenv('NETWORKAPI_DATABASE_PORT', '3306')
 NETWORKAPI_DATABASE_OPTIONS = os.getenv(
-    'NETWORKAPI_DATABASE_OPTIONS', '{"init_command": "SET storage_engine=INNODB"}')
+    'NETWORKAPI_DATABASE_OPTIONS',
+    '{"init_command": "SET storage_engine=INNODB"}')
 
 # Configurações de banco de dados
 DATABASES = {
@@ -103,7 +105,7 @@ NETWORKAPI_RQ_QUEUES_DB = os.getenv('NETWORKAPI_RQ_QUEUES_DB', '0')
 NETWORKAPI_RQ_QUEUES_PASSWORD = os.getenv('NETWORKAPI_RQ_QUEUES_PASSWORD', '')
 NETWORKAPI_RQ_QUEUES_TIMEOUT = os.getenv('NETWORKAPI_RQ_QUEUES_TIMEOUT', '360')
 
-# # Use the same redis as with caches for RQ
+# Use the same redis as with caches for RQ
 RQ_QUEUES = {
     'default': {
         'HOST': NETWORKAPI_RQ_QUEUES_HOST,
@@ -380,7 +382,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'networkapi.api_rest.authentication.BasicAuthentication',
-    ),
+    )
 }
 
 # DJANGO_SIMPLE_AUDIT_REST_FRAMEWORK_AUTHENTICATOR=BasicAuthentication
@@ -423,7 +425,10 @@ SPECS = {
     'vlan_put': 'networkapi/api_vlan/specs/vlan_put.json',
     'vrf_post': 'networkapi/api_vrf/specs/vrf_post.json',
     'vrf_put': 'networkapi/api_vrf/specs/vrf_put.json',
-}
+    'ogp_post': 'networkapi/api_ogp/specs/ogp_post.json',
+    'ogp_put': 'networkapi/api_ogp/specs/ogp_put.json',
+    'ogpg_post': 'networkapi/api_ogp/specs/ogpg_post.json',
+    'ogpg_put': 'networkapi/api_ogp/specs/ogpg_put.json'}
 
 ##########
 # Scripts
@@ -545,7 +550,8 @@ GRPL3_MGMT = 'CORE/DENSIDADE'
 NETWORKAPI_USE_FOREMAN = os.getenv('NETWORKAPI_USE_FOREMAN', '0') == '1'
 NETWORKAPI_FOREMAN_URL = os.getenv(
     'NETWORKAPI_FOREMAN_URL', 'http://foreman_server')
-NETWORKAPI_FOREMAN_USERNAME = os.getenv('NETWORKAPI_FOREMAN_USERNAME', 'admin')
+NETWORKAPI_FOREMAN_USERNAME = os.getenv('NETWORKAPI_FOREMAN_USERNAME',
+                                        'admin')
 NETWORKAPI_FOREMAN_PASSWORD = os.getenv(
     'NETWORKAPI_FOREMAN_PASSWORD', 'password')
 
@@ -563,7 +569,8 @@ NETWORKAPI_TFTP_SERVER_ADDR = os.getenv('NETWORKAPI_TFTP_SERVER_ADDR', '')
 
 TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
 
-TFTPBOOT_FILES_PATH = os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH', '/vagrant/')
+TFTPBOOT_FILES_PATH = os.getenv('NETWORKAPI_TFTPBOOT_FILES_PATH',
+                                '/vagrant/')
 
 CONFIG_TEMPLATE_PATH = os.getenv('NETWORKAPI_CONFIG_TEMPLATE_PATH',
                                  '/vagrant/networkapi/config_templates/')
@@ -584,14 +591,17 @@ CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
 # networkapi/generated_config/user_scripts/
 USER_SCRIPTS_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + USER_SCRIPTS_REL_PATH
 # networkapi/generated_config/network/
-NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + NETWORK_CONFIG_REL_PATH
+NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + \
+    NETWORK_CONFIG_REL_PATH
 # networkapi/generated_config/interface/
-INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + INTERFACE_CONFIG_REL_PATH
+INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + \
+    INTERFACE_CONFIG_REL_PATH
 
 # /vagrant/networkapi/config_templates/network/
 NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + NETWORK_CONFIG_REL_PATH
 # /vagrant/networkapi/config_templates/interface/
-INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + INTERFACE_CONFIG_REL_PATH
+INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + \
+    INTERFACE_CONFIG_REL_PATH
 
 # /vagrant/networkapi/generated_config/interface/
 INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
@@ -599,4 +609,5 @@ INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
 # /vagrant/networkapi/generated_config/user_scripts/
 USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + USER_SCRIPTS_TOAPPLY_REL_PATH
 # /vagrant/networkapi/generated_config/interface/
-NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + NETWORK_CONFIG_TOAPPLY_REL_PATH
+NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
+    NETWORK_CONFIG_TOAPPLY_REL_PATH
