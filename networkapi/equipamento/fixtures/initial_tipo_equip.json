@@ -12,5 +12,12 @@
     "fields": {
       "tipo_equipamento": "Balanceador"
     }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.tipoequipamento",
+    "fields": {
+      "tipo_equipamento": "VM"
+    }
   }
 ]

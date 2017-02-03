@@ -28,5 +28,137 @@
     "divisao_dc": 2,
     "default_vrf": 1
     }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 1,
+    "ambiente_logico": 3,
+    "divisao_dc": 1,
+    "default_vrf": 1
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 1,
+    "ambiente_logico": 4,
+    "divisao_dc": 1,
+    "default_vrf": 1
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 6,
+    "ambiente_logico": 6,
+    "divisao_dc": 4,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 7,
+    "ambiente_logico": 6,
+    "divisao_dc": 4,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 8,
+    "ambiente_logico": 6,
+    "divisao_dc": 4,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 9,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 9,
+    "ambiente_logico": 7,
+    "divisao_dc": 5,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 10,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 10,
+    "ambiente_logico": 7,
+    "divisao_dc": 5,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 11,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 11,
+    "ambiente_logico": 7,
+    "divisao_dc": 5,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 12,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 3,
+    "ambiente_logico": 3,
+    "divisao_dc": 3,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 13,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 12,
+    "ambiente_logico": 8,
+    "divisao_dc": 6,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
   }
 ]

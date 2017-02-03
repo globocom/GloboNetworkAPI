@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 from time import sleep
 
@@ -27,7 +27,7 @@ class Lb(object):
             )
 
         except Exception, e:
-            logging.critical("Unable to connect to BIG-IP. Details: %s" % (e))
+            logging.critical('Unable to connect to BIG-IP. Details: %s' % (e))
             raise base_exceptions.CommandErrorException(e)
         else:
             log.info('Connected in hostname:%s' % hostname)
@@ -42,9 +42,11 @@ class Lb(object):
                         log.info('Try get new session')
                         session_cur = self._channel.System.Session.get_session_timeout()
                         log.info('Session Timeout Current: %s' % session_cur)
-                        session_timeout = get_variable("set_session_timeout_plugin_f5", 60)
-                        if int(session_cur) > session_timeout:
-                            self._channel.System.Session.set_session_timeout(session_timeout)
+                        session_timeout = get_variable(
+                            'set_session_timeout_plugin_f5', '60')
+                        if int(session_cur) > int(session_timeout):
+                            self._channel.System.Session.set_session_timeout(
+                                session_timeout)
                         self._channel = self.get_session()
             except Exception, e:
                 log.error(e)

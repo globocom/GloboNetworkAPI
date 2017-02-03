@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# export NETWORKAPI_DATABASE_NAME=networkapi
-# export NETWORKAPI_DATABASE_USER=root
-# export NETWORKAPI_DATABASE_PASSWORD=
-# export NETWORKAPI_DATABASE_HOST=localhost
-# export NETWORKAPI_DATABASE_PORT=3306
+if [ ! -d networkapi_venv ]; then
+    virtualenv networkapi_venv
+fi
+
+source networkapi_venv/bin/activate
+
+pip install -r requirements.txt
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings'
@@ -12,11 +14,17 @@ export DJANGO_SETTINGS_MODULE='networkapi.settings'
 echo "exporting NETWORKAPI_DEBUG=1"
 export NETWORKAPI_DEBUG=1
 
+echo "exporting NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1"
+export NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1
+
 echo "exporting NETWORKAPI_BROKER_DESTINATION"
 export NETWORKAPI_BROKER_DESTINATION='networkapi'
 
 echo "exporting NETWORKAPI_BROKER_URI"
 export NETWORKAPI_BROKER_URI='tcp://localhost:61613'
+
+echo "Starting ActiveMQ message broker"
+sudo service activemq start
 
 echo "clearing memcached:"
 echo 'flush_all' | nc localhost 11211

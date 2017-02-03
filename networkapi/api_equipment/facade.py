@@ -3,13 +3,13 @@ import logging
 
 from django.db.models import Q
 
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-
-
-# from networkapi.admin_permission import AdminPermission
-# from networkapi.auth import has_perm
 
 
 log = logging.getLogger(__name__)
@@ -18,9 +18,14 @@ log = logging.getLogger(__name__)
 def get_equipment_by_id(equipment_id):
     """Get equipment by id"""
 
-    equipment = Equipamento().get_by_pk(equipment_id)
-
-    return equipment
+    try:
+        equipment = Equipamento().get_by_pk(equipment_id)
+    except EquipamentoNotFoundError, e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+    else:
+        return equipment
 
 
 def get_equipment_by_ids(equipment_ids):
@@ -28,7 +33,14 @@ def get_equipment_by_ids(equipment_ids):
 
     eqpt_ids = list()
     for equipment_id in equipment_ids:
-        eqpt_ids.append(get_equipment_by_id(equipment_id).id)
+        try:
+            equipment = get_equipment_by_id(equipment_id)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(str(e))
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+        else:
+            eqpt_ids.append(equipment.id)
 
     equipments = Equipamento.objects.filter(id__in=eqpt_ids)
 
@@ -166,10 +178,14 @@ def all_equipments_can_update_config(equipment_list, user):
 
 def update_equipment(equipment, user):
     """Update equipment"""
-
-    equipment_obj = get_equipment_by_id(equipment.get('id'))
-
-    equipment_obj.update_v3(equipment)
+    try:
+        equipment_obj = get_equipment_by_id(equipment.get('id'))
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+    else:
+        equipment_obj.update_v3(equipment)
 
     return equipment_obj
 
@@ -177,9 +193,13 @@ def update_equipment(equipment, user):
 def create_equipment(equipment, user):
     """Create equipment"""
 
-    equipment_obj = Equipamento()
-
-    equipment_obj.create_v3(equipment)
+    try:
+        equipment_obj = Equipamento()
+        equipment_obj.create_v3(equipment)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
     return equipment_obj
 
@@ -188,8 +208,14 @@ def delete_equipment(equipments):
     """Delete equipment by ids"""
 
     for equipment in equipments:
-        equipment_obj = get_equipment_by_id(equipment)
-        equipment_obj.delete_v3()
+        try:
+            equipment_obj = get_equipment_by_id(equipment)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(str(e))
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+        else:
+            equipment_obj.delete_v3()
 
 
 def get_eqpt_by_envvip(environmentvip):

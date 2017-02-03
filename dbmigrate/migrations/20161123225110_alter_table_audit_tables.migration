@@ -7,7 +7,7 @@ ADD COLUMN `request_context` VARCHAR(255) NULL COMMENT '' AFTER `user_id`;
 
 ALTER TABLE `event_log` 
 ADD COLUMN `id_audit_request` INT NULL COMMENT '' AFTER `id_objeto`,
-ADD INDEX `fk_event_log_audit_request_idx` (`id_audit_request` ASC)  COMMENT '';
+ADD INDEX `fk_event_log_audit_request_idx` (`id_audit_request` ASC);
 ALTER TABLE `event_log` 
 ADD CONSTRAINT `fk_event_log_audit_request`
   FOREIGN KEY (`id_audit_request`)

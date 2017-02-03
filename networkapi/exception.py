@@ -76,6 +76,12 @@ class EnvironmentVipNotFoundError(EnvironmentVipError):
     def __init__(self, cause, message=None):
         EnvironmentVipError.__init__(self, cause, message)
 
+class EnvironmentVipAssociatedToSomeNetworkError(EnvironmentVipError):
+
+    """returns exception to environment vip delete when it's associated to some Network """
+
+    def __init__(self, cause, message=None):
+        EnvironmentVipError.__init__(self, cause, message)
 
 class OptionVipError(CustomException):
 
@@ -163,7 +169,17 @@ class OptionPoolServiceDownNoneError(CustomException):
     def __init__(self, cause, message=None):
         OptionPoolServiceDownNoneError.__init__(self, cause, message)
 
+class NetworkActiveError(CustomException):
+    """ Exception returned when network is active and someone is trying to
+    remove it """
 
+    DEFAULT_MESSAGE = "Can't remove network bebause it is active"
+
+    def __init__(self, cause=None, message=None):
+        if not cause:
+            cause = self.DEFAULT_MESSAGE
+
+        super(NetworkActiveError, self).__init__(cause, message)
 
 class NetworkInactiveError(CustomException):
 

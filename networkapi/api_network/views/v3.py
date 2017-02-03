@@ -4,74 +4,73 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from networkapi.api_equipment import permissions as perm_eqpt
 from networkapi.api_network.facade import v3 as facade
+from networkapi.api_network.permissions import deploy_objv4_permission
+from networkapi.api_network.permissions import deploy_objv6_permission
 from networkapi.api_network.permissions import Read
 from networkapi.api_network.permissions import Write
+from networkapi.api_network.permissions import write_objv4_permission
+from networkapi.api_network.permissions import write_objv6_permission
 from networkapi.api_network.serializers import v3 as serializers
-from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.settings import SPECS
+from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
+from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import CustomResponse
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
-class NetworkIPv4View(APIView):
+class NetworkIPv4View(CustomAPIView):
 
     @logs_method_apiview
+    @raise_json_validate()
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """
-        Returns a list of networkv4 by ids ou dict
-        """
-        try:
+        """Returns a list of networkv4 by ids ou dict."""
 
-            if not kwargs.get('obj_id'):
-                obj_model = facade.get_networkipv4_by_search(self.search)
-                networks = obj_model['query_set']
-                only_main_property = False
-            else:
-                obj_ids = kwargs.get('obj_id').split(';')
-                networks = facade.get_networkipv4_by_ids(obj_ids)
-                only_main_property = True
-                obj_model = None
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_networkipv4_by_search(self.search)
+            networks = obj_model['query_set']
+            only_main_property = False
+        else:
+            obj_ids = kwargs.get('obj_ids').split(';')
+            networks = facade.get_networkipv4_by_ids(obj_ids)
+            only_main_property = True
+            obj_model = None
 
-            # serializer networks
-            serializer_net = serializers.NetworkIPv4V3Serializer(
-                networks,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        # serializer networks
+        serializer_net = serializers.NetworkIPv4V3Serializer(
+            networks,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # prepare serializer with customized properties
-            data = render_to_json(
-                serializer_net,
-                main_property='networks',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
+        # prepare serializer with customized properties
+        data = render_to_json(
+            serializer_net,
+            main_property='networks',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
+        return Response(data, status=status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('networkv4_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -87,10 +86,12 @@ class NetworkIPv4View(APIView):
             vl = facade.create_networkipv4(networkv4, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
@@ -98,14 +99,15 @@ class NetworkIPv4View(APIView):
         """
 
         response = list()
-        obj_ids = kwargs['obj_id'].split(';')
+        obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_networkipv4(obj_ids, request.user)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('networkv4_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -121,59 +123,53 @@ class NetworkIPv4View(APIView):
             vl = facade.update_networkipv4(networkv4, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class NetworkIPv6View(APIView):
+class NetworkIPv6View(CustomAPIView):
 
     @logs_method_apiview
+    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """
-        Returns a list of networkv6 by ids ou dict
-        """
+        """Returns a list of networkv6 by ids ou dict."""
 
-        try:
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_networkipv6_by_search(self.search)
+            networks = obj_model['query_set']
+            only_main_property = False
+        else:
+            obj_ids = kwargs.get('obj_ids').split(';')
+            networks = facade.get_networkipv6_by_ids(obj_ids)
+            only_main_property = True
+            obj_model = None
 
-            if not kwargs.get('obj_id'):
-                obj_model = facade.get_networkipv6_by_search(self.search)
-                networks = obj_model['query_set']
-                only_main_property = False
-            else:
-                obj_ids = kwargs.get('obj_id').split(';')
-                networks = facade.get_networkipv6_by_ids(obj_ids)
-                only_main_property = True
-                obj_model = None
+        # serializer networks
+        serializer_net = serializers.NetworkIPv6V3Serializer(
+            networks,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
 
-            # serializer networks
-            serializer_net = serializers.NetworkIPv6V3Serializer(
-                networks,
-                many=True,
-                fields=self.fields,
-                include=self.include,
-                exclude=self.exclude,
-                kind=self.kind
-            )
+        # prepare serializer with customized properties
+        data = render_to_json(
+            serializer_net,
+            main_property='networks',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
 
-            # prepare serializer with customized properties
-            data = render_to_json(
-                serializer_net,
-                main_property='networks',
-                obj_model=obj_model,
-                request=request,
-                only_main_property=only_main_property
-            )
+        return Response(data, status=status.HTTP_200_OK)
 
-            return CustomResponse(data, status=status.HTTP_200_OK, request=request)
-
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('networkv6_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -189,11 +185,12 @@ class NetworkIPv6View(APIView):
             vl = facade.create_networkipv6(networkv6, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_201_CREATED, request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
     @raise_json_validate('networkv6_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -209,10 +206,12 @@ class NetworkIPv6View(APIView):
             vl = facade.update_networkipv6(networkv6, request.user)
             response.append({'id': vl.id})
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
@@ -220,21 +219,23 @@ class NetworkIPv6View(APIView):
         """
 
         response = list()
-        obj_ids = kwargs['obj_id'].split(';')
+        obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_networkipv6(obj_ids, request.user)
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class NetworkIPv4DeployView(APIView):
+class NetworkIPv4DeployView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
+    @permission_obj_apiview([deploy_objv4_permission])
     @commit_on_success
     def post(self, request, *args, **kwargs):
 
         response = list()
-        obj_ids = kwargs['obj_id'].split(';')
+        obj_ids = kwargs['obj_ids'].split(';')
         for obj_id in obj_ids:
             # deploy network configuration
             status_deploy = facade.deploy_networkipv4(obj_id, request.user)
@@ -243,15 +244,17 @@ class NetworkIPv4DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
+    @permission_obj_apiview([deploy_objv4_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
 
         response = list()
-        obj_ids = kwargs['obj_id'].split(';')
+        obj_ids = kwargs['obj_ids'].split(';')
         for obj_id in obj_ids:
             # deploy network configuration
             status_deploy = facade.undeploy_networkipv4(obj_id, request.user)
@@ -260,18 +263,20 @@ class NetworkIPv4DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
 
-class NetworkIPv6DeployView(APIView):
+class NetworkIPv6DeployView(CustomAPIView):
 
-    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
+    @permission_obj_apiview([deploy_objv6_permission])
     @commit_on_success
     def post(self, request, *args, **kwargs):
 
         response = list()
-        obj_ids = kwargs['obj_id'].split(';')
+        obj_ids = kwargs['obj_ids'].split(';')
         for obj_id in obj_ids:
             # deploy network configuration
             status_deploy = facade.deploy_networkipv6(obj_id, request.user)
@@ -280,15 +285,17 @@ class NetworkIPv6DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
-    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
     @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, perm_eqpt.Write))
+    @permission_obj_apiview([deploy_objv6_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
 
         response = list()
-        obj_ids = kwargs['obj_id'].split(';')
+        obj_ids = kwargs['obj_ids'].split(';')
         for obj_id in obj_ids:
             # deploy network configuration
             status_deploy = facade.undeploy_networkipv6(obj_id, request.user)
@@ -297,4 +304,4 @@ class NetworkIPv6DeployView(APIView):
                 'id': obj_id,
             })
 
-        return CustomResponse(response, status=status.HTTP_200_OK, request=request)
+        return Response(response, status=status.HTTP_200_OK)

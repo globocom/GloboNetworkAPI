@@ -2,7 +2,7 @@
 SQL_UP = u"""
 
 ALTER TABLE `ambiente` 
-ADD INDEX `fk_ambiente_id_father_environment_idx` (`id_father_environment` ASC)  COMMENT '';
+ADD INDEX `fk_ambiente_id_father_environment_idx` (`id_father_environment` ASC);
 
 ALTER TABLE `ambiente` 
 ADD CONSTRAINT `fk_ambiente_id_vrf`
