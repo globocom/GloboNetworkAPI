@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 import os
 
 from settings import ADMIN_MEDIA_PREFIX
@@ -52,7 +53,6 @@ from settings import local_files
 from settings import LOG_DAYS
 from settings import LOG_DB_LEVEL
 from settings import LOG_FILE
-from settings import LOG_LEVEL
 from settings import LOG_SHOW_SQL
 from settings import LOG_SHOW_TRACEBACK
 from settings import LOG_USE_STDOUT
@@ -164,6 +164,9 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
+NETWORK_DEBUG = os.getenv('NETWORK_DEBUG', 'INFO')
+LOG_LEVEL = getattr(logging, NETWORK_DEBUG.upper())
+
 MIDDLEWARE_CLASSES += (
     'django_pdb.middleware.PdbMiddleware',
 )
@@ -217,7 +220,8 @@ JENKINS_TASKS = (
     'django_jenkins.tasks.run_pep8',
     'django_jenkins.tasks.run_pylint',
     'django_jenkins.tasks.run_pyflakes',
-    # 'django_jenkins.tasks.run_sloccount',
+    'django_jenkins.tasks.run_flake8',
+    'django_jenkins.tasks.run_sloccount',
 )
 
 LOGGING = {
@@ -269,7 +273,7 @@ LOGGING = {
 
 NOSE_ARGS += [
     # '--with-coverage',
-    # '--cover-package=networkapi',
+    # '--cover-package=networkapi/api_environment',
     # '--exclude=.*migrations*',
     '--with-xunit',
     '--xunit-file=reports/junit.xml',

@@ -156,6 +156,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'max_num_vlan_2',
             'vrf',
             'default_vrf',
+            'father_environment',
         )
 
         basic_fields = (
@@ -163,7 +164,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'name',
         )
 
-        details_fields = fields
+        details_fields = default_fields
 
     def get_serializers(self):
         """Returns the mapping of serializers."""
