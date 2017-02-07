@@ -90,10 +90,16 @@ class EnvironmentTestCase(NetworkApiTestCase):
 
         data = response.data['environments'][0]['equipments']
 
+        expected_data = [
+            {'id': 1L},
+            {'id': 4L},
+            {'id': 5L}
+        ]
+
         self.assertEqual(
-            [{'id': 1L}, {'id': 4L}, {'id': 5L}],
+            json.dumps(expected_data, sort_keys=True),
             json.dumps(data, sort_keys=True),
-            'Equipments should be [{\'id\': 1L}] and was %s' % data
+            'Equipments should be %s and was %s' % (expected_data, data)
         )
 
     def test_get_success_one_environment_with_children(self):
