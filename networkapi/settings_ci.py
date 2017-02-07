@@ -238,7 +238,8 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': LOG_LEVEL,
-            'class': 'logging.StreamHandler',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': LOG_FILE,
             'formatter': 'simple'
         },
     },
