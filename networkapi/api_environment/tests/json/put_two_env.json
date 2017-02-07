@@ -15,7 +15,8 @@
       "min_num_vlan_2": 40,
       "max_num_vlan_2": 60,
       "vrf": null,
-      "default_vrf": 1
+      "default_vrf": 1,
+      "father_environment": null
     },
     {
       "id": 8,
@@ -32,7 +33,8 @@
       "min_num_vlan_2": 40,
       "max_num_vlan_2": 60,
       "vrf": null,
-      "default_vrf": 1
+      "default_vrf": 1,
+      "father_environment": null
     }
   ]
 }

@@ -10,7 +10,7 @@ pip install -r requirements_test.txt
 pip install -r requirements_debug.txt
 
 echo "exporting NETWORKAPI_DEBUG"
-export NETWORKAPI_DEBUG=0
+export NETWORKAPI_DEBUG='INFO'
 
 echo "exporting NETWORKAPI_BROKER_URI"
 export NETWORKAPI_BROKER_URI='tcp://localhost:61613'
