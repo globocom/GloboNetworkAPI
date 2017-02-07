@@ -274,7 +274,7 @@ LOGGING = {
 
 NOSE_ARGS += [
     # '--with-coverage',
-    # '--cover-package=networkapi/api_environment',
+    # '--cover-package=networkapi',
     # '--exclude=.*migrations*',
     '--with-xunit',
     '--xunit-file=reports/junit.xml',
