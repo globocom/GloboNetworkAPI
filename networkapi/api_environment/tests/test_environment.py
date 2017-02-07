@@ -91,10 +91,14 @@ class EnvironmentTestCase(NetworkApiTestCase):
         data = response.data['environments'][0]['equipments']
 
         expected_data = [
-            {'id': 1L},
-            {'id': 4L},
-            {'id': 5L}
+            {'id': 1},
+            {'id': 4},
+            {'id': 5}
         ]
+
+        expected_data.sort()
+
+        data.sort()
 
         self.assertEqual(
             json.dumps(expected_data, sort_keys=True),
