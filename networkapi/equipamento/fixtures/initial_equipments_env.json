@@ -79,5 +79,14 @@
     "equipamento": 12,
     "is_router": "False"
     }
+  },
+  {
+  "pk": 10,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 1,
+    "equipamento": 1,
+    "is_router": "True"
+    }
   }
 ]

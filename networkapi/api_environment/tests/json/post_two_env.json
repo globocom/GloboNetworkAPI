@@ -14,7 +14,8 @@
       "min_num_vlan_2": null,
       "max_num_vlan_2": null,
       "vrf": null,
-      "default_vrf": 2
+      "default_vrf": 2,
+      "father_environment": null
     },
     {
       "grupo_l3": 5,
@@ -30,8 +31,8 @@
       "min_num_vlan_2": null,
       "max_num_vlan_2": null,
       "vrf": null,
-      "default_vrf": 2
-
+      "default_vrf": 2,
+      "father_environment": null
     }
   ]
 }
