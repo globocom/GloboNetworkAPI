@@ -204,7 +204,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': DivisaoDcV3Serializer,
                     'kwargs': {},
                     'obj': 'divisao_dc',
-                    'eager_loading': self.setup_eager_loading_grupo_l3
+                    'eager_loading': self.setup_eager_loading_divisao_dc
                 },
                 'filter': {
                     'obj': 'filter_id'
