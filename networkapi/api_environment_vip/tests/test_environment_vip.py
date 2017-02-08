@@ -107,6 +107,44 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
             'Status code should be 200 and was %s' % response.status_code
         )
 
+        # get ambiente_p44_txt
+        url = '{0}&environmentp44={1}'.format(
+            url, response.data[0].get('ambiente_p44_txt')
+        )
+        response = self.client.get(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.assertEqual(
+            200,
+            response.status_code,
+            'Status code should be 200 and was %s' % response.status_code
+        )
+
+    def test_get_success_search_envvip(self):
+        """Test Success of options list by environment vip id."""
+
+        search = {
+            'extends_search': [{'finalidade_txt': 'test'}],
+            'end_record': 50,
+            'start_record': 0,
+            'searchable_columns': [],
+            'asorting_cols': ['-id'],
+            'custom_search': None
+        }
+
+        response = self.client.get(
+            '/api/v3/environment-vip/?search=%s' % search,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.assertEqual(
+            200,
+            response.status_code,
+            'Status code should be 200 and was %s' % response.status_code
+        )
+
     def test_get_success_list_options_by_envvip(self):
         """Test Success of options list by environment vip id."""
 
@@ -122,7 +160,8 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
         )
 
     def test_get_success_list_options_by_envvip_and_type(self):
-        """Test Success of options list by environment vip id and type option."""
+        """Test Success of options list by environment vip id and type option.
+        """
 
         response = self.client.get(
             '/api/v3/type-option/environment-vip/1/',
@@ -249,6 +288,20 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
             404,
             response.status_code,
             'Status code should be 404 and was %s' % response.status_code
+        )
+
+    def test_delete_one_env_inexistent_error(self):
+        """Test success of delete of one environment vip."""
+
+        response = self.client.delete(
+            '/api/v3/environment-vip/1000/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.assertEqual(
+            404,
+            response.status_code,
+            'Status code should be 200 and was %s' % response.status_code
         )
 
     def test_delete_one_env_related_network_error(self):
