@@ -62,5 +62,71 @@
     "optionvip": 14,
     "vip_request": 2
     }
+  },
+
+  {
+  "pk": 9,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 1,
+    "vip_request": 3
+    }
+  },
+  {
+  "pk": 10,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 6,
+    "vip_request": 3
+    }
+  },
+  {
+  "pk": 11,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 10,
+    "vip_request": 3
+    }
+  },
+  {
+  "pk": 12,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 14,
+    "vip_request": 3
+    }
+  },
+
+  {
+  "pk": 13,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 1,
+    "vip_request": 4
+    }
+  },
+  {
+  "pk": 14,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 6,
+    "vip_request": 4
+    }
+  },
+  {
+  "pk": 15,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 10,
+    "vip_request": 4
+    }
+  },
+  {
+  "pk": 16,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 14,
+    "vip_request": 4
+    }
   }
 ]

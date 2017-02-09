@@ -302,5 +302,13 @@
       "ip": 59,
       "equipamento": 59
     }
+  },
+  {
+    "pk": 63,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 63,
+      "equipamento": 63
+    }
   }
 ]
