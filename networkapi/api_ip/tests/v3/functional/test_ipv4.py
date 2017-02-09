@@ -517,23 +517,23 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
     # POST functional tests
 
-    def test_try_create_auto_ip(self):
-        """Tests if NAPI can allocate automatically an IP Address
-        in a Network with available addresses.
-        """
-
-        response = self.client.post(
-            self.url_prefix_gen,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_auto_net_free.json' % os.getcwd())),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        st_code = response.status_code
-
-        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
-                        self.status_code_msg %
-                        (self.first_success_code, self.last_success_code, st_code))
+    # def test_try_create_auto_ip(self):
+    #     """Tests if NAPI can allocate automatically an IP Address
+    #     in a Network with available addresses.
+    #     """
+    #
+    #     response = self.client.post(
+    #         self.url_prefix_gen,
+    #         data=json.dumps(load_json(
+    #             '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_auto_net_free.json' % os.getcwd())),
+    #         content_type='application/json',
+    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+    #
+    #     st_code = response.status_code
+    #
+    #     self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+    #                     self.status_code_msg %
+    #                     (self.first_success_code, self.last_success_code, st_code))
 
     def test_try_create_invalid_ip(self):
         """Tests if NAPI deny manually creation of invalid IP Address
