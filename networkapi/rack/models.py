@@ -97,9 +97,7 @@ class Datacenter(BaseModel):
 
     def get_dc(self, idt=None, dcname=None):
         """"Find Datacenter by id or name.
-
-        @return: Datacenter.
-
+        @return: Datacenter
         @raise : .
         """
         try:
@@ -115,7 +113,7 @@ class Datacenter(BaseModel):
             self.log.error(u'Failure to get datacenter. %s' % e)
             raise Exception(e, u'Failure to get datacenter. %s' % e)
 
-    def add_dc(self):
+    def save_dc(self):
         '''Insert a new Datacenter.
         '''
 
@@ -124,7 +122,7 @@ class Datacenter(BaseModel):
         except Exception, e:
             self.log.error(u'Error trying to insert DatacenterRooms: %s.' %e)
 
-    def remove_dc(self):
+    def del_dc(self):
 
         try:
             self.delete()
@@ -139,7 +137,7 @@ class DatacenterRooms(BaseModel):
 
     id = models.AutoField(primary_key=True, db_column='id_dcroom')
     name = models.CharField(max_length=100, unique=True)
-    id_dc = models.CharField(max_length=100, unique=True)
+    dc = models.ForeignKey(Datacenter, unique=True, db_column='id_dc')
     racks = models.IntegerField(blank=True, null=True)
     spines = models.IntegerField(blank=True, null=True)
     leafs = models.IntegerField(blank=True, null=True)
@@ -151,7 +149,8 @@ class DatacenterRooms(BaseModel):
 
 
     def get_dcrooms(self, idt=None, id_dc=None, name=None):
-        """"Find DatacenterRooms by id, name or datacenter.
+        """
+        Find DatacenterRooms by id, name or datacenter.
 
         @return: DatacenterRooms.
 
@@ -163,7 +162,7 @@ class DatacenterRooms(BaseModel):
             if name:
                 return DatacenterRooms.objects.filter(name=name)
             if id_dc:
-                return DatacenterRooms.objects.filter(id_dc=id_dc)
+                return DatacenterRooms.objects.filter(dc=id_dc)
 
             return DatacenterRooms.objects.all()
         except ObjectDoesNotExist, e:
@@ -172,18 +171,17 @@ class DatacenterRooms(BaseModel):
             self.log.error(u'Failure to get datacenter room. %s' % e)
             raise Exception(u'Failure to get datacenter room. %s' % e)
 
-    def add_dcrooms(self):
+    def save_dcrooms(self):
         '''Insert a new DatacenterRooms.
         '''
 
         try:
-            self.id_dc = Datacenter().get_dc(idt=self.id_dc)
             self.save()
         except Exception, e:
             self.log.error(u'Error trying to insert DatacenterRooms: %s.' %e)
             raise Exception(u'Error trying to insert DatacenterRooms: %s.' %e)
 
-    def remove_dcrooms(self):
+    def del_dcrooms(self):
 
         try:
             self.delete()
@@ -207,12 +205,54 @@ class Rack(BaseModel):
     id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
     config = models.BooleanField(default=False)
     create_vlan_amb = models.BooleanField(default=False)
-    id_dcrooms = models.ForeignKey(DatacenterRooms, null=True, db_column='datacenter_id')
+    dcroom = models.ForeignKey(DatacenterRooms, db_column='id_dcroom', null=True)
 
 
     class Meta(BaseModel.Meta):
         db_table = u'racks'
         managed = True
+
+    def get_rack(cls, idt=None, number=None, name=None, dcroom_id=None, dc_id=None):
+        """"Get  Rack by id, number, name, equipment, room or datacenter.
+            @return: Rack.
+        """
+        try:
+            if idt:
+                return Rack.objects.get(id=idt)
+            if name:
+                return Rack.objects.filter(nome=name)
+            if number:
+                return Rack.objects.filter(numero=number)
+            if dcroom_id:
+                return Rack.objects.filter(dcroom=dcroom_id)
+            if dc_id:
+                return Rack.objects.filter(dcroom__dc__id=dc_id)
+            return Rack.objects.all()
+        except ObjectDoesNotExist, e:
+            raise Exception('Rack does not exist. %s.' % e)
+        except Exception, e:
+            raise Exception('Failure to search the Rack. %s' % e)
+
+
+    def save_rack(self):
+
+        if Rack.objects.filter(numero=self.numero, dcroom=self.dcroom):
+            raise Exception ('Numero de Rack %s ja existe na sala %s.' % (self.numero, self.dcroom.name))
+
+        if Rack.objects.filter(nome=self.nome, dcroom=self.dcroom):
+            raise Exception ('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
+
+        try:
+            return self.save()
+        except Exception, e:
+            raise Exception('Falha ao inserir Rack. %s' % e)
+
+    def del_rack(self):
+
+        try:
+            self.delete()
+        except Exception, e:
+            raise Exception(u'Error trying to remove Rack: %s.' %e)
 
     def get_by_pk(cls, idt):
         """"Get  Rack id.

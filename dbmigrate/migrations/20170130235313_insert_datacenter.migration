@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `datacenter` (`dcname`, `address`) VALUES ('Centro Metropolitano', 'RJ');
+
+"""
+
+SQL_DOWN = u"""
+DELETE FROM `datacenter` WHERE `dcname`='Centro Metropolitano';
+
+"""

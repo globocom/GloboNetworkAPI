@@ -840,6 +840,48 @@ CREATE TABLE `port_channel` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+
+--
+-- Table structure for table `datacenter`
+--
+
+CREATE TABLE `datacenter` (
+  `id_dc` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dcname` varchar(200) NOT NULL,
+  `address` varchar(200),
+  PRIMARY KEY  (`id_dc`),
+  UNIQUE KEY `dcname` (`dcname`)
+)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `datacenterrooms`
+--
+
+CREATE TABLE `datacenterrooms` (
+  `id_dcroom` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(200) NOT NULL,
+  `id_dc` int(10) unsigned NOT NULL,
+  `racks` int(10) unsigned,
+  `spines` int(10) unsigned,
+  `leafs` int(10) unsigned,
+  PRIMARY KEY  (`id_dcroom`),
+  UNIQUE KEY `dcrooms_uni` (`name`,`id_dc`),
+  KEY `fk_datacenterrooms_datacenter` (`id_dc`),
+  CONSTRAINT `fk_datacenterrooms_datacenter`
+    FOREIGN KEY (`id_dc`)
+    REFERENCES `datacenter` (`id_dc`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARSET=utf8;
+
+
 --
 -- Table structure for table `racks`
 --
@@ -859,11 +901,19 @@ CREATE TABLE `racks` (
   `id_equip3` int(11) DEFAULT NULL,
   `config` tinyint(1) NOT NULL,
   `create_vlan_amb` tinyint(1) NOT NULL,
+  `id_dcroom` INT unsigned default NULL,
   PRIMARY KEY (`id_rack`),
   UNIQUE KEY `numero` (`numero`),
-  UNIQUE KEY `nome` (`nome`)
+  UNIQUE KEY `nome` (`nome`),
+  KEY `fk_racks_datacenterrooms` (`id_dcroom`),
+  CONSTRAINT `fk_racks_datacenterrooms`
+    FOREIGN KEY (`id_dcroom`)
+    REFERENCES `datacenterrooms` (`id_dcroom`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `redeipv4`
@@ -1292,6 +1342,8 @@ drop table  ambientevip                    ;
 drop table  block_rules                    ;
 drop table  config                         ;
 drop table  config_do_ambiente             ;
+drop table  datacenter                     ;
+drop table  datacenterrooms                ;
 drop table  direitos_grupoequip            ;
 drop table  divisao_dc                     ;
 drop table  environment_environment_vip    ;
