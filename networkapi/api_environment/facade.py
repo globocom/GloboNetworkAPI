@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from networkapi.ambiente.models import Ambiente
@@ -9,7 +8,6 @@ from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import EnvironmentErrorV3
-from networkapi.ambiente.models import IPConfig
 from networkapi.api_environment_vip.facade import get_environmentvip_by_id
 from networkapi.api_pools import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
@@ -150,22 +148,3 @@ def delete_environment(env_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
-
-
-def get_configs_by_id(config_id, env_id=None):
-    """Get config by id."""
-
-    try:
-
-        ip_config = IPConfig.objects
-        if env_id:
-            ip_config.get(
-                id=config_id,
-                configenvironment__environment=env_id
-            )
-        else:
-            ip_config.get(
-                id=config_id
-            )
-    except ObjectDoesNotExist:
-        raise exceptions.ConfigIpDoesNotExistException()
