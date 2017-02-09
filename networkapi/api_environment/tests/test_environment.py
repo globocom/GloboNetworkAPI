@@ -176,6 +176,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
     def test_post_one_env_success(self):
+        """Test of success for post one environment."""
+
         name_file = 'api_environment/tests/json/post_one_env.json'
 
         # Does post request
@@ -205,6 +207,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_post_two_env_success(self):
+        """Test of success for post two environment."""
+
         name_file = 'api_environment/tests/json/post_two_env.json'
 
         # Does post request
@@ -237,6 +241,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_one_env_success(self):
+        """Test of success for put one environment."""
+
         name_file = 'api_environment/tests/json/put_one_env.json'
 
         # Does put request
@@ -263,6 +269,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_two_env_success(self):
+        """Test of success for put two environments."""
+
         name_file = 'api_environment/tests/json/put_two_env.json'
 
         # Does put request
@@ -288,6 +296,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         del data['environments'][1]['name']
 
     def test_put_one_env_duplicate_error(self):
+        """Test of error for put one duplicated environment."""
+
         name_file = 'api_environment/tests/json/put_one_env_duplicate_error.json'
 
         # Does put request
@@ -300,6 +310,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
     def test_post_one_env_duplicate_error(self):
+        """Test of error for post one duplicated environment."""
+
         name_file = 'api_environment/tests/json/post_one_env_duplicate_error.json'
 
         # Does post request
@@ -312,6 +324,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
     def test_delete_one_env_success(self):
+        """Test of success for delete one environment."""
+
         # Does post request
         response = self.client.delete(
             '/api/v3/environment/9/',
@@ -329,6 +343,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
     def test_delete_two_env_success(self):
+        """Test of success for delete two environments."""
+
         # Does post request
         response = self.client.delete(
             '/api/v3/environment/10;11/',
@@ -346,6 +362,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
     def test_delete_one_env_inexistent_error(self):
+        """Test of error for delete one inexistent environment."""
+
         # Does post request
         response = self.client.delete(
             '/api/v3/environment/1000/',
@@ -356,6 +374,8 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
     def test_delete_two_env_inexistent_error(self):
+        """Test of error for delete two inexistent environments."""
+
         # Does post request
         response = self.client.delete(
             '/api/v3/environment/1000;1001/',
@@ -366,6 +386,7 @@ class EnvironmentTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
     def test_delete_env_with_vlan_success(self):
+        """Test of success for delete one environment with vlans."""
 
         # Does get request
         response = self.client.get(
@@ -401,22 +422,3 @@ class EnvironmentTestCase(NetworkApiTestCase):
 
         # Tests code returned
         self.compare_status(404, response.status_code)
-
-    def compare_json(self, name_file, data):
-        expected_data = json.dumps(
-            self.load_json_file(name_file), sort_keys=True)
-        received_data = json.dumps(data, sort_keys=True)
-        self.assertEqual(
-            expected_data,
-            received_data,
-            'Jsons should be same. Expected %s Received %s' % (
-                expected_data, received_data)
-        )
-
-    def compare_status(self, expected_code, code):
-        self.assertEqual(
-            expected_code,
-            code,
-            'Status code should be %s and was %s' % (
-                expected_code, code)
-        )

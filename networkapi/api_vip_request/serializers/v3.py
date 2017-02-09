@@ -77,7 +77,6 @@ class VipRequestPortPoolV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'l7_rule',
                 },
             }
-        return self.mapping
 
 
 class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
@@ -163,7 +162,6 @@ class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'optionvip',
                 },
             }
-        return self.mapping
 
 
 class VipRequestV3Serializer(DynamicFieldsModelSerializer):
@@ -412,7 +410,6 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments',
                 }
             }
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_environmentvip(queryset):

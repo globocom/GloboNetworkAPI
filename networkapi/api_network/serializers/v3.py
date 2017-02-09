@@ -93,8 +93,6 @@ class NetworkIPv4V3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return self.mapping
-
     @staticmethod
     def setup_eager_loading_net_type(queryset):
         """Eager loading of network type vip for related NetworkIPv6."""
@@ -249,8 +247,6 @@ class NetworkIPv6V3Serializer(DynamicFieldsModelSerializer):
                     'eager_loading': self.setup_eager_loading_net_type
                 },
             }
-
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_net_type(queryset):

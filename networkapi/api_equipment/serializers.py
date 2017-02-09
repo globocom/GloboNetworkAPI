@@ -58,8 +58,6 @@ class EquipmentEnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 }
             }
 
-        return self.mapping
-
     @staticmethod
     def setup_eager_loading_networkipv4(queryset):
 
@@ -108,8 +106,6 @@ class ModelV3Serializer(DynamicFieldsModelSerializer):
                     }
                 },
             }
-
-        return self.mapping
 
     class Meta:
         Modelo = get_model('equipamento', 'Modelo')
@@ -329,8 +325,6 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'environments'
                 }
             }
-
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_ipv4(queryset):
