@@ -113,6 +113,9 @@ class NetworkApiTestCase(TestCase):
         'initial_vip_request_port_pool.json',
         'initial_vip_request_options_vip.json',
         'initial_vip_request_dscp.json',
+
+        # Config
+        'initial_config.json'
     ]
 
     def setUp(self):

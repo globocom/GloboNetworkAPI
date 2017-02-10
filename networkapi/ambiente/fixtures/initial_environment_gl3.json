@@ -82,5 +82,20 @@
   "fields": {
     "nome": "Test used in environment vip"
     }
+  },
+  {
+  "pk": 13,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "L3 Group 1 - IPs Test"
+    }
+  },
+  {
+  "pk": 14,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "L3 Group 2 - IPs Test"
+    }
   }
+
 ]

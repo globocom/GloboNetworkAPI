@@ -18,5 +18,25 @@
     "val_optionvip": null,
     "vip_request_port": 2
     }
+  },
+  {
+  "pk": 3,
+  "model": "api_vip_request.viprequestportpool",
+  "fields": {
+    "optionvip": 64,
+    "server_pool": 100,
+    "val_optionvip": null,
+    "vip_request_port": 3
+    }
+  },
+  {
+  "pk": 4,
+  "model": "api_vip_request.viprequestportpool",
+  "fields": {
+    "optionvip": 64,
+    "server_pool": 101,
+    "val_optionvip": null,
+    "vip_request_port": 4
+    }
   }
 ]

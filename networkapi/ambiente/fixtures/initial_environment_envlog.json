@@ -54,5 +54,19 @@
   "fields": {
     "nome": "Test used in environment vip"
     }
+  },
+  {
+  "pk": 9,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "Logical Env 1 - IPs Test"
+    }
+  },
+  {
+  "pk": 10,
+  "model": "ambiente.ambientelogico",
+  "fields": {
+    "nome": "Logical Env 2 - IPs Test"
+    }
   }
 ]
