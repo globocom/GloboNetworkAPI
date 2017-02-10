@@ -22,5 +22,13 @@
     "environment": 4,
     "environment_vip": 3
     }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.environmentenvironmentvip",
+  "fields": {
+    "environment": 14,
+    "environment_vip": 7
+    }
   }
 ]

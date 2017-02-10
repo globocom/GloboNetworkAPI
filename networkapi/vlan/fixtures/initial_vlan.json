@@ -62,5 +62,23 @@
     "nome": "VLAN USED IN ENVIRONMENT VIP",
     "num_vlan": "7"
     }
+  },
+  {
+  "pk": 8,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 14,
+    "nome": "vlan for eqpt env - IP tests",
+    "num_vlan": "8"
+    }
+  },
+   {
+  "pk": 9,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 15,
+    "nome": "vlan for pool env - IP tests",
+    "num_vlan": "9"
+    }
   }
 ]

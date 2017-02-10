@@ -40,5 +40,20 @@
   "fields": {
     "nome": "Test used in environment vip"
     }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "DC Division 1 - IPs Test"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "DC Division 2 - IPs Test"
+    }
   }
+
 ]

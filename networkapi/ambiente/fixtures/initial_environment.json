@@ -161,5 +161,33 @@
     "min_num_vlan_2": 40,
     "max_num_vlan_2": 60
     }
+  },
+  {
+  "pk": 14,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 13,
+    "ambiente_logico": 9,
+    "divisao_dc": 7,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
+  },
+  {
+  "pk": 15,
+  "model": "ambiente.ambiente",
+  "fields": {
+    "grupo_l3": 14,
+    "ambiente_logico": 10,
+    "divisao_dc": 8,
+    "default_vrf": 1,
+    "min_num_vlan_1": 2,
+    "max_num_vlan_1": 20,
+    "min_num_vlan_2": 40,
+    "max_num_vlan_2": 60
+    }
   }
 ]

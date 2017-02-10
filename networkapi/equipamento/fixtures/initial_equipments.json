@@ -428,5 +428,25 @@
       "modelo": 1,
       "maintenance": false
     }
+  },
+  {
+    "pk": 63,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 99,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 2",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
   }
 ]
