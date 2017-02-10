@@ -561,6 +561,50 @@
     }
   },
   {
+    "pk": 67,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 5,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "0",
+      "oct4": "67"
+    }
+  },
+  {
+    "pk": 90,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 5,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "0",
+      "oct4": "90"
+    }
+  },
+  {
+    "pk": 91,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 5,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "0",
+      "oct4": "91"
+    }
+  },
+  {
+    "pk": 92,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 5,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "0",
+      "oct4": "92"
+    }
+  },
+  {
     "pk": 100,
     "model": "ip.ip",
     "fields": {

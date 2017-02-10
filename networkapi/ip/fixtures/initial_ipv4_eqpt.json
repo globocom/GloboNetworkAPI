@@ -304,6 +304,14 @@
     }
   },
   {
+    "pk": 91,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 91,
+      "equipamento": 91
+    }
+  },
+  {
     "pk": 63,
     "model": "ip.ipequipamento",
     "fields": {

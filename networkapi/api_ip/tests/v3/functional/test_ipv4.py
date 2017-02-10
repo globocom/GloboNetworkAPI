@@ -538,8 +538,6 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         # Get all IP's of Network
 
-        fields = ['ip_formated']
-
         search = {
             'start_record': 0,
             'end_record': 255,
@@ -594,7 +592,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         response = self.client.post(
             self.url_prefix_gen,
             data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_10_0_0_99_net_6_eqpt_99.json' % os.getcwd())),
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_10_0_0_99_net_5_eqpt_99.json' % os.getcwd())),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -635,3 +633,145 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         self.assertTrue(self.first_error_code <= st_code <= self.last_error_code,
                         self.status_code_msg %
                         (self.first_error_code, self.last_error_code, st_code))
+
+    # PUT functional tests
+
+    def test_try_update_ip_associating_to_equipment(self):
+        """Tests if NAPI can update IP associating it to equipment."""
+
+        id = 90
+
+        url = self.url_prefix_ids % id
+        response = self.client.put(
+            url,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_put_90_net_5_eqpt_90.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        # API will return success but network will not be changed
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        url = prepare_url(self.url_prefix_ids % id, fields=['equipments'])
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        eqpts_ipsv4 = response.data[self.ips_key][0]['equipments']
+
+        # Verify if relationship between eqpt 90 and Ip 90 was persisted
+        self.assertIn({'id': 90}, eqpts_ipsv4)
+
+    def test_try_update_ip_disassociating_of_equipment(self):
+        """Tests if NAPI can update IP disassociating it of equipment and
+        remove this IP given it is not used in anymore equipment.
+        """
+
+        id = 91
+
+        url = self.url_prefix_ids % id
+        response = self.client.put(
+            url,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_put_91_net_5_eqpt_none.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        # API will return success but network will not be changed
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        url = prepare_url(self.url_prefix_ids % id, fields=['equipments'])
+
+        try:
+
+            response = self.client.get(
+                url,
+                HTTP_AUTHORIZATION=self.get_http_authorization('test')
+            )
+        except Exception as e:
+            pass
+
+        # TODO Ver Exception
+        self.assertTrue(self.first_error_code <= st_code <= self.last_error_code,
+                        self.status_code_msg %
+                        (self.first_error_code, self.last_error_code_code, st_code))
+
+        self.assertNotIn(self.ips_key, response.data,
+                         self.key_ips_not_be_present_err)
+
+    def test_try_update_ip_disassociating_and_associating_other_equipment(self):
+        """Tests if NAPI can update IP disassociating it of equipment
+        and at same time associating it to other equipment.
+        """
+
+        pass
+
+    def test_try_update_ip_changing_network(self):
+        """Tests if NAPI deny or ignore update of IP Address changing its network."""
+        id = 67
+
+        url = self.url_prefix_ids % id
+        response = self.client.put(
+            url,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_put_67_net_8.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        # API will return success but network will not be changed
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        url = prepare_url(self.url_prefix_ids % id, fields=['networkipv4'])
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        ipsv4 = response.data[self.ips_key]
+
+        # Verify if Network has not changed
+        self.assertIn({'networkipv4': 5}, ipsv4)
+
+    def test_try_update_ip_changing_octets(self):
+        """Tests if NAPI deny or ignore update of IP Address changing its octets."""
+        id = 67
+
+        url = self.url_prefix_ids % id
+        response = self.client.put(
+            url,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_put_67_10_0_0_68_net_5.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        url = prepare_url(self.url_prefix_ids % id, fields=['ip_formated'])
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        ipsv4 = response.data[self.ips_key]
+
+        # Verify if Octets has not changed
+        self.assertIn({'ip_formated': '10.0.0.67'}, ipsv4)

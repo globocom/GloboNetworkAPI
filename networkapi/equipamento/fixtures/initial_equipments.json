@@ -440,10 +440,40 @@
     }
   },
   {
+    "pk": 90,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 90",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 91,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 91",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 92,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 92",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
     "pk": 99,
     "model": "equipamento.equipamento",
     "fields": {
-      "nome": "VM for IPs Test - 2",
+      "nome": "VM for IPs Test - 3",
       "tipo_equipamento": 3,
       "modelo": 1,
       "maintenance": false
