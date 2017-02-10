@@ -332,8 +332,6 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return self.mapping
-
     @staticmethod
     def setup_eager_loading_father(queryset):
         log.info('Using setup_eager_loading_father')

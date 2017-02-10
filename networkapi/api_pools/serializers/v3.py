@@ -196,8 +196,6 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
 
             }
 
-        return self.mapping
-
 
 class PoolV3Serializer(DynamicFieldsModelSerializer):
 
@@ -381,5 +379,3 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'groups_permissions',
                 }
             }
-
-        return self.mapping

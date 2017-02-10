@@ -83,8 +83,6 @@ class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return self.mapping
-
 
 class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
 
@@ -147,5 +145,3 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'object_type',
                 },
             }
-
-        return self.mapping

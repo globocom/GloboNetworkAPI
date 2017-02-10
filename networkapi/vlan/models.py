@@ -211,8 +211,8 @@ class Vlan(BaseModel):
     log = logging.getLogger('Vlan')
 
     id = models.AutoField(primary_key=True, db_column='id_vlan')
-    nome = models.CharField(unique=True, max_length=50)
-    num_vlan = models.IntegerField(unique=True)
+    nome = models.CharField(max_length=50)
+    num_vlan = models.IntegerField()
     ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
     descricao = models.CharField(max_length=200, blank=True)
     acl_file_name = models.CharField(max_length=200, blank=True)
@@ -243,7 +243,10 @@ class Vlan(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
         managed = True
-        unique_together = (('nome', 'ambiente'), ('num_vlan', 'ambiente'))
+        unique_together = (
+            ('nome', 'ambiente'),
+            ('num_vlan', 'ambiente')
+        )
 
     @cached_property
     def vrfs(self):
@@ -400,14 +403,18 @@ class Vlan(BaseModel):
 
         # Find equipment's ids from environmnet that is 'switches',
         # 'roteadores' or 'balanceadores'
-        id_equipamentos = EquipamentoAmbiente.objects.filter(equipamento__tipo_equipamento__id__in=[1, 3, 5],
-                                                             ambiente__id=self.ambiente_id).values_list('equipamento',
-                                                                                                        flat=True)
-        # Vlan numbers in others environment but in environment that has equipments found in before
-        # filter ('switches', 'roteadores' or 'balanceadores')
-        vlans_others_environments = Vlan.objects.exclude(ambiente__id=self.ambiente_id) \
-            .filter(ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos) \
-            .values_list('num_vlan', flat=True)
+        id_equipamentos = EquipamentoAmbiente.objects.filter(
+            equipamento__tipo_equipamento__id__in=[1, 3, 5],
+            ambiente__id=self.ambiente_id
+        ).values_list('equipamento', flat=True)
+        # Vlan numbers in others environment but in environment that has
+        # equipments found in before filter ('switches', 'roteadores' or
+        # 'balanceadores')
+        vlans_others_environments = Vlan.objects.exclude(
+            ambiente__id=self.ambiente_id
+        ).filter(
+            ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos
+        ).values_list('num_vlan', flat=True)
 
         # Clean duplicates numbers and update merge 'vlan_numbers_in_interval'
         # with 'vlans_others_environments'
@@ -516,7 +523,8 @@ class Vlan(BaseModel):
         """
         Create a Vlan with the new Model
 
-        The fields num_vlan, acl_file_name, acl_valida and ativada will be generated automatically
+        The fields num_vlan, acl_file_name, acl_valida and ativada will be
+        generated automatically
 
         @return: nothing
         """
@@ -636,7 +644,8 @@ class Vlan(BaseModel):
         @raise OperationalError: Lock wait timeout exceed
         """
         try:
-            return Vlan.objects.filter(num_vlan=number, ambiente=environment).uniqueResult()
+            return Vlan.objects.filter(
+                num_vlan=number, ambiente=environment).uniqueResult()
         except ObjectDoesNotExist, e:
             raise VlanNotFoundError(
                 e, u'Dont there is a Vlan by number = %s.' % number)
@@ -728,7 +737,8 @@ class Vlan(BaseModel):
         # Get all equipments from the environment being tested
         # that are not supposed to be filtered
         # (not the same type of the equipment type of a filter of the environment)
-        for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types):
+        for env in ambiente.equipamentoambiente_set.all().exclude(
+                equipamento__tipo_equipamento__in=equipment_types):
             equips.append(env.equipamento)
 
         # Get all environment that the equipments above are included
@@ -961,6 +971,7 @@ class Vlan(BaseModel):
 
         # Validate Number of vlan in environment related
         equips = self.get_eqpt()
+
         network.validate_vlan_conflict(equips, self.num_vlan, self.id)
 
     def create_v3(self, vlan, user):
@@ -1419,10 +1430,10 @@ class Vlan(BaseModel):
                 raise VlanErrorV3(msg)
 
     def allocate_vlan(self):
-        """
-        Create a Vlan with the new Model
+        """Create a Vlan with the new Model
 
-        The fields num_vlan, acl_file_name, acl_valida and ativada will be generated automatically
+        The fields num_vlan, acl_file_name, acl_valida and ativada will be
+        generated automatically
 
         @return: nothing
         """
@@ -1458,17 +1469,19 @@ class Vlan(BaseModel):
                 min_num_02, max_num_02)
             if self.num_vlan is None:
                 raise VlanNumberNotAvailableError(
-                    None, u'Number VLAN unavailable for environment %d.' % self.ambiente.id)
+                    None, u'Number VLAN unavailable for environment %d.'
+                    % self.ambiente.id)
 
     def calculate_vlan_number_v3(self, min_num, max_num, list_available=False):
-        """
-            Caculate if has a number available in range (min_num/max_num) to specified environment
+        """Caculate if has a number available in range (min_num/max_num) to
+        specified environment
 
-            @param min_num: Minimum number that the vlan can be created.
-            @param max_num: Maximum number that the vlan can be created.
-            @param list_available: If = True, return the list of numbers availables
+        @param min_num: Minimum number that the vlan can be created.
+        @param max_num: Maximum number that the vlan can be created.
+        @param list_available: If = True, return the list of numbers availables
 
-            @return: None when hasn't a number available | num_vlan when found a number available
+        @return: None when hasn't a number available | num_vlan when found
+                 a number available
         """
 
         interval = range(min_num, max_num + 1)
@@ -1481,11 +1494,14 @@ class Vlan(BaseModel):
         # 'roteadores' or 'balanceadores'
         id_equipamentos = self.get_eqpt()
 
-        # Vlan numbers in others environment but in environment that has equipments
-        # found in before filter ('switches', 'roteadores' or 'balanceadores')
-        vlans_others_environments = Vlan.objects.exclude(ambiente__id=self.ambiente_id) \
-            .filter(ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos) \
-            .values_list('num_vlan', flat=True)
+        # Vlan numbers in others environment but in environment that has
+        # equipments found in before filter ('switches', 'roteadores' or
+        # 'balanceadores')
+        vlans_others_environments = Vlan.objects.exclude(
+            ambiente__id=self.ambiente_id
+        ).filter(
+            ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos
+        ).values_list('num_vlan', flat=True)
 
         # Clean duplicates numbers and update merge 'vlan_numbers_in_interval'
         # with 'vlans_others_environments'
