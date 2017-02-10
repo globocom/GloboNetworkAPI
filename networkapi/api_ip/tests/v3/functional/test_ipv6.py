@@ -25,34 +25,6 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_try_get_existent_ipv6(self):
-        id = 60
+    def test_get_ipv6(self):
 
-        response = self.client.get(
-            self.url_prefix % id,
-            HTTP_AUTHORIZATION=self.get_http_authorization('test')
-        )
-
-        ipv6 = response.data['ips'][0]
-        expect_st_code = 200
-        st_code = response.status_code
-
-        self.assertIn('ips', response.data,
-                      'Key "ips" should be present on response data.')
-
-        self.assertEqual(id, ipv6['id'],
-                         'IPv6 id retrieved should be equals')
-        self.assertEqual(expect_st_code, st_code,
-                         self.status_code_msg % (expect_st_code, st_code))
-
-    def test_try_get_non_existent_ipv6(self):
-        id = 1000
-
-        response = self.client.get(
-            self.url_prefix % id,
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
-            raise_view_exceptions=True
-        )
-
-        self.assertNotIn('ips', response.data,
-                         'Key "ips" should not be present on response data.')
+        pass

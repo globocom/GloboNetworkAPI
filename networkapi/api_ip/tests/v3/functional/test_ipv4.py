@@ -35,6 +35,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         self.first_success_code = 200
         self.last_success_code = 299
         self.ips_key = 'ips'
+        self.equality_ips_at_network_err = 'It should not have two equal IP Addresses on same Network.'
 
     def tearDown(self):
         pass
@@ -517,23 +518,56 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
     # POST functional tests
 
-    # def test_try_create_auto_ip(self):
-    #     """Tests if NAPI can allocate automatically an IP Address
-    #     in a Network with available addresses.
-    #     """
-    #
-    #     response = self.client.post(
-    #         self.url_prefix_gen,
-    #         data=json.dumps(load_json(
-    #             '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_auto_net_free.json' % os.getcwd())),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     st_code = response.status_code
-    #
-    #     self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
-    #                     self.status_code_msg %
-    #                     (self.first_success_code, self.last_success_code, st_code))
+    def test_try_create_auto_ip(self):
+        """Tests if NAPI can allocate automatically an IP Address
+        in a Network with available addresses.
+        """
+
+        response = self.client.post(
+            self.url_prefix_gen,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_auto_net_free.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        # Get all IP's of Network
+
+        fields = ['ip_formated']
+
+        search = {
+            'start_record': 0,
+            'end_record': 255,
+            'asorting_cols': [],
+            'searchable_columns': [],
+            'extends_search': [{
+                'networkipv4': 5
+            }]
+        }
+
+        fields = ['ip_formated']
+
+        url = prepare_url(self.url_prefix_gen,
+                          search=search, fields=fields)
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        ips = response.data[self.ips_key]
+
+        ips = [ip['ip_formated'] for ip in ips]
+
+        # Verify if Network has two equal IP Addresses
+        # If not, auto IP allocation were successfully
+        self.assertEqual(len(ips), len(set(ips)),
+                         self.equality_ips_at_network_err)
 
     def test_try_create_invalid_ip(self):
         """Tests if NAPI deny manually creation of invalid IP Address
