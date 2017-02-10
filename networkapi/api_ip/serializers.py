@@ -170,8 +170,6 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
                 }
             }
 
-        return self.mapping
-
     @staticmethod
     def setup_eager_loading_networkipv4(queryset):
 
@@ -342,8 +340,6 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'server_pool_members'
                 }
             }
-
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_networkipv6(queryset):
