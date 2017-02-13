@@ -2,18 +2,13 @@
 import json
 import logging
 import os
-import urllib
 
 from django.test.client import Client
 
-from networkapi.api_ip import facade
-from networkapi.api_rest.exceptions import ObjectDoesNotExistException
-from networkapi.ip.models import IpNotFoundError
 from networkapi.test import load_json
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
 from networkapi.util.geral import prepare_url
-
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +22,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         self.url_prefix_ids = '/api/v3/ipv4/%s/'
         self.url_prefix_gen = '/api/v3/ipv4/'
         self.status_code_msg = 'Status code should between (%s,%s) and was %s'
-        self.array_len_msg_err = 'Array should contains %s elements'
+        self.array_len_msg_err = 'Array of %s should contains %s elements'
         self.key_ips_be_present_err = 'Key "ips" should be present on response data'
         self.key_ips_not_be_present_err = 'Key "ips" should be present on response data'
         self.first_error_code = 400
@@ -99,7 +94,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         expt_count = 2
         self.assertEqual(len(ipsv4), expt_count,
-                         self.array_len_msg_err % expt_count)
+                         self.array_len_msg_err % ('Ips', expt_count))
 
         for ipv4 in ipsv4:
             self.assertIn(ipv4['id'], ids,
@@ -182,7 +177,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         expt_count = 1
         self.assertEqual(len(ipsv4), expt_count,
-                         self.array_len_msg_err % expt_count)
+                         self.array_len_msg_err % ('Ips', expt_count))
 
         self.assertIn({'ip_formated': '10.0.0.60'}, ipsv4)
 
@@ -232,7 +227,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         expt_count = 2
         self.assertEqual(len(ipsv4), expt_count,
-                         self.array_len_msg_err % expt_count)
+                         self.array_len_msg_err % ('Ips', expt_count))
 
         self.assertIn({'ip_formated': '10.0.0.60'}, ipsv4)
         self.assertIn({'ip_formated': '10.0.0.61'}, ipsv4)
@@ -275,7 +270,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         expt_count = 0
         self.assertEqual(len(ipsv4), expt_count,
-                         self.array_len_msg_err % expt_count)
+                         self.array_len_msg_err % ('Ips', expt_count))
 
     # DELETE functional tests
 
@@ -453,7 +448,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         in a not deployed VIP Request.
         """
 
-        id = 130
+        id = 430
 
         url = self.url_prefix_ids % id
 
@@ -487,7 +482,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         in deployed VIP Request.
         """
 
-        id = 131
+        id = 431
 
         url = self.url_prefix_ids % id
 
@@ -562,7 +557,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         ips = [ip['ip_formated'] for ip in ips]
 
-        # Verify if Network has two equal IP Addresses
+        # Verify if Network has at least two equal IP Addresses
         # If not, auto IP allocation were successfully
         self.assertEqual(len(ips), len(set(ips)),
                          self.equality_ips_at_network_err)
@@ -667,7 +662,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         # Verify if relationship between eqpt 90 and Ip 90 was persisted
         self.assertIn({'id': 90}, eqpts_ipsv4)
 
-    def test_try_update_ip_disassociating_of_equipment(self):
+    def test_try_update_ip_disassociating_it_of_all_equipments(self):
         """Tests if NAPI can update IP disassociating it of equipment and
         remove this IP given it is not used in anymore equipment.
         """
@@ -684,36 +679,125 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         st_code = response.status_code
 
-        # API will return success but network will not be changed
         self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
                         self.status_code_msg %
                         (self.first_success_code, self.last_success_code, st_code))
 
         url = prepare_url(self.url_prefix_ids % id, fields=['equipments'])
 
-        try:
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
 
-            response = self.client.get(
-                url,
-                HTTP_AUTHORIZATION=self.get_http_authorization('test')
-            )
-        except Exception as e:
-            pass
+        st_code = response.status_code
 
-        # TODO Ver Exception
         self.assertTrue(self.first_error_code <= st_code <= self.last_error_code,
                         self.status_code_msg %
-                        (self.first_error_code, self.last_error_code_code, st_code))
+                        (self.first_error_code, self.last_error_code, st_code))
 
         self.assertNotIn(self.ips_key, response.data,
                          self.key_ips_not_be_present_err)
 
-    def test_try_update_ip_disassociating_and_associating_other_equipment(self):
+    def test_try_update_ip_disassociating_it_of_some_equipments(self):
+        """Tests if NAPI can update IP disassociating it of equipment and
+           maintaning this IP in database given it is used in anymore equipment.
+        """
+
+        id = 92
+
+        url = self.url_prefix_ids % id
+        response = self.client.put(
+            url,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_put_92_net_5_eqpt_none.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        url = prepare_url(self.url_prefix_ids % id, fields=['equipments__id'])
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        st_code = response.status_code
+
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        self.assertIn(self.ips_key, response.data,
+                      self.key_ips_be_present_err)
+
+        ipv4_eqpts = response.data[self.ips_key][0]['equipments']
+
+        expt_count = 1
+        self.assertEqual(len(ipv4_eqpts), expt_count,
+                         self.array_len_msg_err % ('Equipments', expt_count))
+
+        self.assertIn({'id': 93}, ipv4_eqpts,
+                      'Equipment with id %s should be associated to this IPv4.')
+        self.assertNotIn({'id': 94}, ipv4_eqpts,
+                         'Equipment with id %s should not be associated to this IPv4.')
+
+    def test_try_update_ip_disassociating_it_of_equipments_and_associating_to_others_after(self):
         """Tests if NAPI can update IP disassociating it of equipment
         and at same time associating it to other equipment.
         """
 
-        pass
+        id = 93
+
+        url = self.url_prefix_ids % id
+        response = self.client.put(
+            url,
+            data=json.dumps(load_json(
+                '%s/networkapi/api_ip/tests/v3/functional/json/ipv4_put_93_net_5_eqpt_none.json' % os.getcwd())),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        st_code = response.status_code
+
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        url = prepare_url(self.url_prefix_ids % id, fields=['equipments__id'])
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        st_code = response.status_code
+
+        self.assertTrue(self.first_success_code <= st_code <= self.last_success_code,
+                        self.status_code_msg %
+                        (self.first_success_code, self.last_success_code, st_code))
+
+        self.assertIn(self.ips_key, response.data,
+                      self.key_ips_be_present_err)
+
+        ipv4_eqpts = response.data[self.ips_key][0]['equipments']
+
+        expt_count = 3
+        self.assertEqual(len(ipv4_eqpts), expt_count,
+                         self.array_len_msg_err % ('Equipments', expt_count))
+
+        self.assertIn({'id': 95}, ipv4_eqpts,
+                      'Equipment with id %s should be associated to this IPv4.')
+        self.assertIn({'id': 97}, ipv4_eqpts,
+                      'Equipment with id %s should be associated to this IPv4.')
+        self.assertIn({'id': 98}, ipv4_eqpts,
+                      'Equipment with id %s should be associated to this IPv4.')
+        self.assertNotIn({'id': 96}, ipv4_eqpts,
+                         'Equipment with id %s should not be associated to this IPv4.')
 
     def test_try_update_ip_changing_network(self):
         """Tests if NAPI deny or ignore update of IP Address changing its network."""

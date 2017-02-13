@@ -304,6 +304,14 @@
     }
   },
   {
+    "pk": 63,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 63,
+      "equipamento": 63
+    }
+  },
+  {
     "pk": 91,
     "model": "ip.ipequipamento",
     "fields": {
@@ -312,11 +320,43 @@
     }
   },
   {
-    "pk": 63,
+    "pk": 92,
     "model": "ip.ipequipamento",
     "fields": {
-      "ip": 63,
-      "equipamento": 63
+      "ip": 91,
+      "equipamento": 92
+    }
+  },
+  {
+    "pk": 93,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 92,
+      "equipamento": 93
+    }
+  },
+  {
+    "pk": 94,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 92,
+      "equipamento": 94
+    }
+  },
+  {
+    "pk": 95,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 93,
+      "equipamento": 95
+    }
+  },
+  {
+    "pk": 96,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 93,
+      "equipamento": 96
     }
   }
 ]
