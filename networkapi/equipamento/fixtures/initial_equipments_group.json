@@ -300,5 +300,61 @@
       "egrupo": 24,
       "equipamento": 59
     }
+  },
+  {
+    "pk": 60,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 60
+    }
+  },
+  {
+    "pk": 61,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 61
+    }
+  },
+  {
+    "pk": 63,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 63
+    }
+  },
+  {
+    "pk": 90,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 90
+    }
+  },
+  {
+    "pk": 91,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 91
+    }
+  },
+  {
+    "pk": 92,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 92
+    }
+  },
+  {
+    "pk": 99,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": 24,
+      "equipamento": 99
+    }
   }
 ]
