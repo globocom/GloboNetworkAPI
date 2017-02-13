@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from django.core.exceptions import FieldError
+
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
@@ -38,10 +40,15 @@ def get_vlan_by_ids(vlan_ids):
 def get_vlan_by_search(search=dict()):
     """Get vlans by search"""
 
-    vlans = Vlan.objects.filter()
-    vlan_map = build_query_to_datatable_v3(vlans, search)
-
-    return vlan_map
+    try:
+        vlans = Vlan.objects.filter()
+        vlan_map = build_query_to_datatable_v3(vlans, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vlan_map
 
 
 def update_vlan(vlan, user):

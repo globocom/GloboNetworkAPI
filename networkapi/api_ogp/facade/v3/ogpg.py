@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 
 from networkapi.api_ogp import exceptions
 from networkapi.api_ogp.models import ObjectGroupPermissionGeneral
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable \
     import build_query_to_datatable_v3
-
 
 log = logging.getLogger(__name__)
 
@@ -19,11 +21,15 @@ def get_ogpgs_by_search(search=dict()):
     :param search: dict
     """
 
-    ogpgs = ObjectGroupPermissionGeneral.objects.filter()
-
-    ogpg_map = build_query_to_datatable_v3(ogpgs, search)
-
-    return ogpg_map
+    try:
+        ogpgs = ObjectGroupPermissionGeneral.objects.filter()
+        ogpg_map = build_query_to_datatable_v3(ogpgs, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return ogpg_map
 
 
 def get_ogpg_by_id(ogpg_id):
