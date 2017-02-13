@@ -1954,7 +1954,7 @@ class Ip(BaseModel):
 
             # Creates new associate
             for eqpt in eqpts:
-                if eqpt not in current:
+                if eqpt.id not in current:
                     ip_equipment = IpEquipamento()
                     ip_equipment.create_v3({
                         'ip': self.id,
