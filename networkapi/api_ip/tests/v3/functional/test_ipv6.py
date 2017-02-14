@@ -5,7 +5,6 @@ import os
 
 from django.test.client import Client
 
-from networkapi.test import load_json
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
 from networkapi.util.geral import prepare_url
@@ -25,14 +24,17 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
         self.status_code_msg = 'Status code should between (%s,%s) and was %s'
         self.array_len_msg_err = 'Array of %s should contains %s elements'
         self.key_ips_be_present_err = 'Key "ips" should be present on response data'
-        self.key_ips_not_be_present_err = 'Key "ips" should be present on response data'
+        self.key_ips_not_be_present_err = \
+            'Key "ips" should be present on response data'
         self.first_error_code = 400
         self.last_error_code = 599
         self.first_success_code = 200
         self.last_success_code = 299
         self.ips_key = 'ips'
-        self.equality_ips_at_network_err = 'It should not have two equal IP Addresses on same Network.'
-        self.not_expect_ip_msg_err = 'IPv6 with id %s retrieved was not expect in response.'
+        self.equality_ips_at_network_err = \
+            'It should not have two equal IP Addresses on same Network.'
+        self.not_expect_ip_msg_err = \
+            'IPv6 with id %s retrieved was not expect in response.'
 
     def tearDown(self):
         pass
@@ -40,7 +42,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
     # GET functional tests
 
     def test_try_get_existent_ipv6_by_id(self):
-        """Tests if NAPI can return an existing IP by id."""
+        """Tests if NAPI can return an existing IPv6 by id."""
 
         id = 60
 
@@ -61,7 +63,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_get_non_existent_ipv6_by_id(self):
         """Tests if NAPI returns error when ask
-        to return not existing IP by id.
+        to return not existing IPv6 by id.
         """
 
         id = 1000
@@ -77,7 +79,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          self.key_ips_not_be_present_err)
 
     def test_try_get_two_existent_ipv6_by_id(self):
-        """Tests if NAPI can return two existent IP's by ids."""
+        """Tests if NAPI can return two existent IPv6's by ids."""
 
         ids = [60, 61]
         ids_str = ';'.join(str(id) for id in ids)
@@ -104,7 +106,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_get_two_non_existent_ipv6_by_id(self):
         """Tests if NAPI returns a error when ask to
-        return two non existing IP's by ids.
+        return two non existing IPv6's by ids.
         """
 
         ids = [1000, 1001]
@@ -122,7 +124,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_get_one_existent_and_non_existent_ipv6_by_id(self):
         """Tests if NAPI returns a error when ask to
-        return a existing and not existing IP's by ids.
+        return a existing and not existing IPv6's by ids.
         """
 
         ids = [60, 1001]
@@ -139,8 +141,8 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          self.key_ips_not_be_present_err)
 
     def test_try_get_one_existent_ipv6_by_search(self):
-        """Tests if NAPI returns a dict with one IP Addresses
-        given a search one existing IP Addresses.
+        """Tests if NAPI returns a dict with one IPv6 Addresses
+        given a search one existing IPv6 Addresses.
         """
 
         search = {
@@ -189,8 +191,8 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
             {'ip_formated': 'fc00:0000:0000:0004:0000:0000:0000:0060'}, ipsv6)
 
     def test_try_get_two_existent_ipv6_by_search(self):
-        """Tests if NAPI returns a dict with two IP Addresses
-        given a search making OR by two IP Addresses.
+        """Tests if NAPI returns a dict with two IPv6 Addresses
+        given a search making OR by two IPv6 Addresses.
         """
 
         search = {
@@ -250,8 +252,8 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
             {'ip_formated': 'fc00:0000:0000:0004:0000:0000:0000:0061'}, ipsv6)
 
     def test_try_get_non_existent_ipv6_by_search(self):
-        """Tests if NAPI returns a dict with zero IP Addresses
-        given a search by not existent IP Address.
+        """Tests if NAPI returns a dict with zero IPv6 Addresses
+        given a search by not existent IPv6 Address.
         """
 
         search = {
@@ -296,7 +298,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
     # DELETE functional tests
 
     def test_try_delete_existent_ipv6(self):
-        """Tests if NAPI can delete a existent IP Address."""
+        """Tests if NAPI can delete a existent IPv6 Address."""
 
         id = 66
 
@@ -329,7 +331,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_delete_non_existent_ipv6(self):
         """Tests if NAPI returns error on deleting
-        a not existing IP Addresses.
+        a not existing IPv6 Addresses.
         """
 
         id = 1000
@@ -349,7 +351,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_delete_two_non_existent_ipv6(self):
         """Tests if NAPI returns error on deleting
-        two not existing IP Addresses.
+        two not existing IPv6 Addresses.
         """
 
         ids = [1000, 1001]
@@ -370,7 +372,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_delete_one_existent_and_non_existent_ipv6(self):
         """Tests if NAPI deny delete at same time an existent
-        and a not existent IP Address.
+        and a not existent IPv6 Address.
         """
 
         existent_ip_id = 62
@@ -402,7 +404,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                       self.key_ips_be_present_err)
 
     def test_try_delete_ipv6_assoc_to_equipment(self):
-        """Tests if NAPI can delete an IP Address associated
+        """Tests if NAPI can delete an IPv6 Address associated
         to some equipment.
         """
 
@@ -437,7 +439,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
     def test_try_delete_two_existent_ipv6(self):
         """Tests of NAPI can delete at same time
-        two existent IP Addresses.
+        two existent IPv6 Addresses.
         """
 
         ids = [64, 65]
@@ -465,7 +467,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          self.key_ips_not_be_present_err)
 
     def test_try_delete_ipv6_used_by_not_created_vip_request(self):
-        """Tests if NAPI can delete an IP Address used
+        """Tests if NAPI can delete an IPv6 Address used
         in a not deployed VIP Request.
         """
 
@@ -499,7 +501,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          self.key_ips_not_be_present_err)
 
     def test_try_delete_ipv6_used_by_created_vip_request(self):
-        """Tests if NAPI deny deleting of IP Address used
+        """Tests if NAPI deny deleting of IPv6 Address used
         in deployed VIP Request.
         """
 
@@ -535,14 +537,16 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
     # POST functional tests
 
     def test_try_create_auto_ip(self):
-        """Tests if NAPI can allocate automatically an IP Address
+        """Tests if NAPI can allocate automatically an IPv6 Address
         in a Network with available addresses.
         """
 
         response = self.client.post(
             self.url_prefix_gen,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_auto_net_free.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_auto_net_free.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -578,20 +582,21 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
 
         ips = [ip['ip_formated'] for ip in ips]
 
-        # Verify if Network has at least two equal IP Addresses
+        # Verify if Network has at least two equal IPv6 Addresses
         # If not, auto IP allocation were successfully
         self.assertEqual(len(ips), len(set(ips)),
                          self.equality_ips_at_network_err)
 
     def test_try_create_invalid_ip(self):
-        """Tests if NAPI deny manually creation of invalid IP Address
+        """Tests if NAPI deny manually creation of invalid IPv6 Address
         (e.g.: fc00:0000:0000:0004:0000:0000:0000:gggg).
         """
 
         response = self.client.post(
             self.url_prefix_gen,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_fc00_0000_0000_0004_0000_0000_0000_gggg_net_5.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_fc00_0000_0000_0004_0000_0000_0000_gggg_net_5.json')),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -602,13 +607,15 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                         (self.first_error_code, self.last_error_code, st_code))
 
     def test_try_create_ip_associating_to_equipment(self):
-        """Tests if NAPI can allocate an IP Address manually and associate it to
+        """Tests if NAPI can allocate an IPv6 Address manually and associate it to
         an equipment in a Network with available addresses.
         """
         response = self.client.post(
             self.url_prefix_gen,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_fc00_0000_0000_0004_0000_0000_0000_0099_net_5_eqpt_99.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_fc00_0000_0000_0004_0000_0000_0000_0099_net_5_eqpt_99'
+                '.json')),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -619,12 +626,14 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                         (self.first_success_code, self.last_success_code, st_code))
 
     def test_try_create_ip_in_full_network(self):
-        """Tests if NAPI deny an IP manually creation in a full network."""
+        """Tests if NAPI deny an IPv6 manually creation in a full network."""
 
         response = self.client.post(
             self.url_prefix_gen,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_fc00_0000_0000_0004_0000_0000_0000_0005_net_8.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_fc00_0000_0000_0004_0000_0000_0000_0005_net_8.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -635,12 +644,15 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                         (self.first_error_code, self.last_error_code, st_code))
 
     def test_try_create_out_of_range_ip_in_network(self):
-        """Tests if NAPI deny out of range network IP manually creation."""
+        """Tests if NAPI deny out of range network IPv6 manually creation."""
 
         response = self.client.post(
             self.url_prefix_gen,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/out_of_range_ipv6_fc00_0000_0000_0005_0000_0000_0000_0005_net_5.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/out_of_range_ipv6_fc00_0000_0000_0005_0000_0000_0000_0005'
+                '_net_5.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -653,15 +665,17 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
     # PUT functional tests
 
     def test_try_update_ip_associating_to_equipment(self):
-        """Tests if NAPI can update IP associating it to equipment."""
+        """Tests if NAPI can update IPv6 associating it to equipment."""
 
         id = 90
 
         url = self.url_prefix_ids % id
         response = self.client.put(
             url,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_put_90_net_5_eqpt_90.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_put_90_net_5_eqpt_90.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -684,8 +698,8 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
         self.assertIn({'id': 90}, eqpts_ipsv6)
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
-        """Tests if NAPI can update IP disassociating it of equipment and
-        remove this IP given it is not used in anymore equipment.
+        """Tests if NAPI can update IPv6 disassociating it of equipment and
+        remove this IPv6 given it is not used in anymore equipment.
         """
 
         id = 91
@@ -693,8 +707,10 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
         url = self.url_prefix_ids % id
         response = self.client.put(
             url,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_put_91_net_5_eqpt_none.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_put_91_net_5_eqpt_none.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -721,8 +737,8 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          self.key_ips_not_be_present_err)
 
     def test_try_update_ip_disassociating_it_of_some_equipments(self):
-        """Tests if NAPI can update IP disassociating it of equipment and
-           maintaning this IP in database given it is used in anymore equipment.
+        """Tests if NAPI can update IPv6 disassociating it of equipment and
+           maintaning this IPv6 in database given it is used in anymore equipment.
         """
 
         id = 92
@@ -730,8 +746,10 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
         url = self.url_prefix_ids % id
         response = self.client.put(
             url,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_put_92_net_5_eqpt_none.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_put_92_net_5_eqpt_none.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -769,7 +787,7 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          'Equipment with id %s should not be associated to this IPv6.')
 
     def test_try_update_ip_disassociating_it_of_equipments_and_associating_to_others_after(self):
-        """Tests if NAPI can update IP disassociating it of equipment
+        """Tests if NAPI can update IPv6 disassociating it of equipment
         and at same time associating it to other equipment.
         """
 
@@ -778,8 +796,10 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
         url = self.url_prefix_ids % id
         response = self.client.put(
             url,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_put_93_net_5_eqpt_none.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_put_93_net_5_eqpt_none.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -821,14 +841,16 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
                          'Equipment with id %s should not be associated to this IPv6.')
 
     def test_try_update_ip_changing_network(self):
-        """Tests if NAPI deny or ignore update of IP Address changing its network."""
+        """Tests if NAPI deny or ignore update of IPv6 Address changing its network."""
         id = 67
 
         url = self.url_prefix_ids % id
         response = self.client.put(
             url,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_put_67_net_8.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_put_67_net_8.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -852,14 +874,17 @@ class IPv6FunctionalTestV3(NetworkApiTestCase):
         self.assertIn({'networkipv6': 5}, ipsv6)
 
     def test_try_update_ip_changing_octets(self):
-        """Tests if NAPI deny or ignore update of IP Address changing its octets."""
+        """Tests if NAPI deny or ignore update of IPv6 Address changing its octets."""
         id = 67
 
         url = self.url_prefix_ids % id
         response = self.client.put(
             url,
-            data=json.dumps(load_json(
-                '%s/networkapi/api_ip/tests/v3/functional/json/ipv6_put_67_fc00_0000_0000_0004_0000_0000_0000_0068_net_5.json' % os.getcwd())),
+            data=json.dumps(self.load_json_file(
+                'api_ip/tests/v3/'
+                'functional/json/ipv6_put_67_fc00_0000_0000_0004_0000_0000_0000_0068'
+                '_net_5.json'
+            )),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
