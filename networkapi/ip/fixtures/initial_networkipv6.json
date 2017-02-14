@@ -1,0 +1,191 @@
+[
+  {
+  "pk": 1,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "1",
+    "ambient_vip": 1,
+    "block": "24",
+    "broadcast": "192.168.2.0",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "0",
+    "network_type": 1,
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "2",
+    "oct4": "0",
+    "vlan": 1
+    }
+  },
+  {
+  "pk": 2,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "1",
+    "ambient_vip": 1,
+    "block": "24",
+    "broadcast": "193.168.3.0",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "0",
+    "network_type": 1,
+    "oct1": "193",
+    "oct2": "168",
+    "oct3": "3",
+    "oct4": "0",
+    "vlan": 1
+    }
+  },
+  {
+  "pk": 3,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "1",
+    "ambient_vip": 2,
+    "block": "24",
+    "broadcast": "195.168.3.1",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "1",
+    "network_type": 1,
+    "oct1": "195",
+    "oct2": "168",
+    "oct3": "3",
+    "oct4": "0",
+    "vlan": 2
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "1",
+    "ambient_vip": null,
+    "block": "24",
+    "broadcast": "10.10.10.1",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "1",
+    "network_type": 2,
+    "oct1": "10",
+    "oct2": "10",
+    "oct3": "10",
+    "oct4": "0",
+    "vlan": 3
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "1",
+    "ambient_vip": null,
+    "block": "24",
+    "broadcast": "10.0.0.1",
+    "cluster_unit": "",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "1",
+    "network_type": 3,
+    "oct1": "10",
+    "oct2": "0",
+    "oct3": "0",
+    "oct4": "0",
+    "vlan": 4
+    }
+  },
+  {
+  "pk": 6,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "1",
+    "ambient_vip": 3,
+    "block": "24",
+    "broadcast": "192.168.0.1",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "1",
+    "network_type": 3,
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "0",
+    "oct4": "0",
+    "vlan": 5
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "0",
+    "ambient_vip": 6,
+    "block": "24",
+    "broadcast": "192.168.1.1",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "1",
+    "network_type": 3,
+    "oct1": "192",
+    "oct2": "168",
+    "oct3": "1",
+    "oct4": "0",
+    "vlan": 7
+    }
+  },
+  {
+  "pk": 8,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "0",
+    "ambient_vip": null,
+    "block": "29",
+    "broadcast": "198.168.1.7",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "248",
+    "network_type": 3,
+    "oct1": "198",
+    "oct2": "168",
+    "oct3": "1",
+    "oct4": "0",
+    "vlan": 8
+    }
+  },
+  {
+  "pk": 9,
+  "model": "ip.networkipv6",
+  "fields": {
+    "active": "0",
+    "ambient_vip": 7,
+    "block": "26",
+    "broadcast": "198.169.1.63",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "255",
+    "mask_oct4": "192",
+    "network_type": 3,
+    "oct1": "198",
+    "oct2": "169",
+    "oct3": "1",
+    "oct4": "0",
+    "vlan": 9
+    }
+  }
+]

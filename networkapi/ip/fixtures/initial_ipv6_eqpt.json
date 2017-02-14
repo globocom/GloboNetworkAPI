@@ -1,0 +1,362 @@
+[
+  {
+    "pk": 1,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 9,
+      "equipamento": "4"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 9,
+      "equipamento": "5"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 10,
+      "equipamento": 6
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 10,
+      "equipamento": 7
+    }
+  },
+  {
+    "pk": 5,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 11,
+      "equipamento": 8
+    }
+  },
+  {
+    "pk": 6,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 12,
+      "equipamento": 9
+    }
+  },
+  {
+    "pk": 7,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 13,
+      "equipamento": 10
+    }
+  },
+  {
+    "pk": 8,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 14,
+      "equipamento": 6
+    }
+  },
+  {
+    "pk": 9,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 15,
+      "equipamento": 7
+    }
+  },
+  {
+    "pk": 31,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 31,
+      "equipamento": 31
+    }
+  },
+  {
+    "pk": 32,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 32,
+      "equipamento": 32
+    }
+  },
+  {
+    "pk": 33,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 33,
+      "equipamento": 33
+    }
+  },
+  {
+    "pk": 34,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 34,
+      "equipamento": 34
+    }
+  },
+  {
+    "pk": 35,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 35,
+      "equipamento": 35
+    }
+  },
+  {
+    "pk": 36,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 36,
+      "equipamento": 36
+    }
+  },
+  {
+    "pk": 37,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 37,
+      "equipamento": 37
+    }
+  },
+  {
+    "pk": 38,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 38,
+      "equipamento": 38
+    }
+  },
+  {
+    "pk": 39,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 39,
+      "equipamento": 39
+    }
+  },
+  {
+    "pk": 40,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 40,
+      "equipamento": 40
+    }
+  },
+  {
+    "pk": 41,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 41,
+      "equipamento": 41
+    }
+  },
+  {
+    "pk": 42,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 42,
+      "equipamento": 42
+    }
+  },
+  {
+    "pk": 43,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 43,
+      "equipamento": 43
+    }
+  },
+  {
+    "pk": 44,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 44,
+      "equipamento": 44
+    }
+  },
+  {
+    "pk": 45,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 45,
+      "equipamento": 45
+    }
+  },
+  {
+    "pk": 46,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 46,
+      "equipamento": 46
+    }
+  },
+  {
+    "pk": 47,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 47,
+      "equipamento": 47
+    }
+  },
+  {
+    "pk": 48,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 48,
+      "equipamento": 48
+    }
+  },
+  {
+    "pk": 49,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 49,
+      "equipamento": 49
+    }
+  },
+  {
+    "pk": 50,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 50,
+      "equipamento": 50
+    }
+  },
+  {
+    "pk": 51,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 51,
+      "equipamento": 51
+    }
+  },
+  {
+    "pk": 52,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 52,
+      "equipamento": 52
+    }
+  },
+  {
+    "pk": 53,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 53,
+      "equipamento": 53
+    }
+  },
+  {
+    "pk": 54,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 54,
+      "equipamento": 54
+    }
+  },
+  {
+    "pk": 55,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 55,
+      "equipamento": 55
+    }
+  },
+  {
+    "pk": 56,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 56,
+      "equipamento": 56
+    }
+  },
+  {
+    "pk": 57,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 57,
+      "equipamento": 57
+    }
+  },
+  {
+    "pk": 58,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 58,
+      "equipamento": 58
+    }
+  },
+  {
+    "pk": 59,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 59,
+      "equipamento": 59
+    }
+  },
+  {
+    "pk": 63,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 63,
+      "equipamento": 63
+    }
+  },
+  {
+    "pk": 91,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 91,
+      "equipamento": 91
+    }
+  },
+  {
+    "pk": 92,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 91,
+      "equipamento": 92
+    }
+  },
+  {
+    "pk": 93,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 92,
+      "equipamento": 93
+    }
+  },
+  {
+    "pk": 94,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 92,
+      "equipamento": 94
+    }
+  },
+  {
+    "pk": 95,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 93,
+      "equipamento": 95
+    }
+  },
+  {
+    "pk": 96,
+    "model": "ip.ipv6equipament",
+    "fields": {
+      "ip": 93,
+      "equipamento": 96
+    }
+  }
+]
