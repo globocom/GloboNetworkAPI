@@ -964,11 +964,6 @@ class Vlan(BaseModel):
             self.log.error(msg)
             raise VlanErrorV3(msg)
 
-        if not self.num_vlan:
-            msg = 'Number VLAN can not be empty.'
-            self.log.error(msg)
-            raise VlanErrorV3(msg)
-
         # Validate Number of vlan in environment related
         equips = self.get_eqpt()
 
@@ -1120,21 +1115,21 @@ class Vlan(BaseModel):
 
                 if old_vlan.ambiente != self.ambiente:
 
-                    msg = 'Environment can not be changed in vlan actived'
+                    msg = 'Environment can not be changed in vlan actived.'
                     self.log.error(msg)
-                    raise VlanErrorV3(None, msg)
+                    raise VlanErrorV3(msg)
 
                 if old_vlan.num_vlan != self.num_vlan:
 
-                    msg = 'Number Vlan can not be changed in vlan actived'
+                    msg = 'Number Vlan can not be changed in vlan actived.'
                     self.log.error(msg)
-                    raise VlanErrorV3(None, msg)
+                    raise VlanErrorV3(msg)
 
                 if old_vlan.nome != self.nome:
 
-                    msg = 'Name Vlan can not be changed in vlan actived'
+                    msg = 'Name Vlan can not be changed in vlan actived.'
                     self.log.error(msg)
-                    raise VlanErrorV3(None, msg)
+                    raise VlanErrorV3(msg)
 
             # If the environment was changed, create lock to validate
             if old_vlan.ambiente != self.ambiente:
@@ -1150,9 +1145,9 @@ class Vlan(BaseModel):
                 if netv4_vip or netv6_vip:
 
                     msg = u'Not change vlan when networks are of' \
-                          ' environment Vip'
+                          ' environment Vip.'
                     self.log.error(msg)
-                    raise VlanErrorV3(None, msg)
+                    raise VlanErrorV3(msg)
 
                 if self.networkipv4_set.all() or self.networkipv6_set.all():
                     # Validate conflicts of network(equal, subnet ou supernet)
@@ -1328,46 +1323,46 @@ class Vlan(BaseModel):
 
         return envs
 
-    def get_networks_related(self, eqpts=None, has_netv4=True, has_netv6=True,
-                             exclude_current=True):
+    # def get_networks_related(self, eqpts=None, has_netv4=True, has_netv6=True,
+    #                          exclude_current=True):
 
-        if not eqpts:
-            eqpts = self.get_eqpt()
+    #     if not eqpts:
+    #         eqpts = self.get_eqpt()
 
-        vlan_model = get_model('vlan', 'Vlan')
+    #     vlan_model = get_model('vlan', 'Vlan')
 
-        vlans_env_eqpt = vlan_model.objects.filter(
-            # get vlans of environment or environment assoc
-            ambiente__equipamentoambiente__equipamento__in=eqpts
-        ).filter(
-            # get vlans with customized vrfs
-            Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
-            # get vlans using vrf of environment
-            Q(ambiente__default_vrf__in=self.get_vrf())
-        ).distinct()
+    #     vlans_env_eqpt = vlan_model.objects.filter(
+    #         # get vlans of environment or environment assoc
+    #         ambiente__equipamentoambiente__equipamento__in=eqpts
+    #     ).filter(
+    #         # get vlans with customized vrfs
+    #         Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
+    #         # get vlans using vrf of environment
+    #         Q(ambiente__default_vrf__in=self.get_vrf())
+    #     ).distinct()
 
-        if exclude_current:
-            vlans_env_eqpt = vlans_env_eqpt.exclude(
-                # exclude current vlan
-                id=self.id
-            )
-        vlans_env_eqpt = vlans_env_eqpt.distinct()
+    #     if exclude_current:
+    #         vlans_env_eqpt = vlans_env_eqpt.exclude(
+    #             # exclude current vlan
+    #             id=self.id
+    #         )
+    #     vlans_env_eqpt = vlans_env_eqpt.distinct()
 
-        self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
+    #     self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
 
-        netv4 = list()
-        if has_netv4:
-            netv4 = reduce(list.__add__, [
-                list(vlan_env.networkipv4_set.all())
-                for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
+    #     netv4 = list()
+    #     if has_netv4:
+    #         netv4 = reduce(list.__add__, [
+    #             list(vlan_env.networkipv4_set.all())
+    # for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
 
-        netv6 = list()
-        if has_netv6:
-            netv6 = reduce(list.__add__, [
-                list(vlan_env.networkipv6_set.all())
-                for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
+    #     netv6 = list()
+    #     if has_netv6:
+    #         netv6 = reduce(list.__add__, [
+    #             list(vlan_env.networkipv6_set.all())
+    # for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
 
-        return netv4, netv6
+    #     return netv4, netv6
 
     def validate_network(self):
 
@@ -1378,7 +1373,7 @@ class Vlan(BaseModel):
         self.allow_networks_environment(configs, netv4, netv6)
 
         netv4, netv6 = network.get_networks_related(
-            vrfs=self.get_vrf(), eqpts=self.eqpts, exclude=self.id)
+            vrfs=self.get_vrf(), eqpts=self.get_eqpt(), exclude=self.id)
 
         netv4_env_format = [IPNetwork(net.networkv4) for net in netv4]
         netv6_env_format = [IPNetwork(net.networkv6) for net in netv6]

@@ -2,6 +2,7 @@
 import logging
 import time
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
@@ -163,11 +164,15 @@ def get_options_pool_list_by_environment(environment_id):
 
 def get_pool_by_search(search=dict()):
 
-    pools = ServerPool.objects.filter()
-
-    pool_map = build_query_to_datatable_v3(pools, search)
-
-    return pool_map
+    try:
+        pools = ServerPool.objects.filter()
+        pool_map = build_query_to_datatable_v3(pools, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return pool_map
 
 
 def reserve_name_healthcheck(pool_name):

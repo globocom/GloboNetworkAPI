@@ -271,12 +271,14 @@ LOGGING = {
     },
 }
 
-NOSE_ARGS += [
-    # '--with-coverage',
-    # '--cover-package=networkapi',
-    # '--exclude=.*migrations*',
-    '--with-xunit',
-    '--xunit-file=reports/junit.xml',
-    # '--cover-xml',
-    # '--cover-xml-file=coverage.xml'
-]
+if INTEGRATION:
+
+    NOSE_ARGS += [
+        # '--with-coverage',
+        # '--cover-package=networkapi',
+        # '--exclude=.*migrations*',
+        '--with-xunit',
+        '--xunit-file=reports/junit.xml',
+        # '--cover-xml',
+        # '--cover-xml-file=coverage.xml'
+    ]

@@ -11,7 +11,7 @@
             "description": "",
             "environment": 1,
             "name": "VLAN 1 - AMBIENTE 1",
-            "num_vlan": 11,
+            "num_vlan": 200,
             "vrf": null
         }
     ]
