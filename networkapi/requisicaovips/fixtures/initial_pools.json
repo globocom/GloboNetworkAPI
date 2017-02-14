@@ -283,7 +283,7 @@
     "pk": 100,
     "model": "requisicaovips.serverpool",
     "fields": {
-      "identifier": "Pool for IPs tests",
+      "identifier": "Pool for IP tests - 1",
       "healthcheck": 1,
       "servicedownaction": 5,
       "default_port": 80,
@@ -297,7 +297,7 @@
     "pk": 101,
     "model": "requisicaovips.serverpool",
     "fields": {
-      "identifier": "Pool for IPs tests",
+      "identifier": "Pool for IP tests - 2",
       "healthcheck": 1,
       "servicedownaction": 5,
       "default_port": 80,

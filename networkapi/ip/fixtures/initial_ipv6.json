@@ -3,616 +3,840 @@
     "pk": 10,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "1"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001"
     }
   },
   {
     "pk": 11,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "2"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0002"
     }
   },
   {
     "pk": 12,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "3"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0003"
     }
   },
   {
     "pk": 13,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "4"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0004"
     }
   },
   {
     "pk": 14,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "5"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0005"
     }
   },
   {
     "pk": 15,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "6"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0006"
     }
   },
   {
     "pk": 31,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "31"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0031"
     }
   },
   {
     "pk": 32,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "32"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0032"
     }
   },
   {
     "pk": 33,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "33"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0033"
     }
   },
   {
     "pk": 34,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "34"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0034"
     }
   },
   {
     "pk": 35,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "35"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0035"
     }
   },
   {
     "pk": 36,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "36"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0036"
     }
   },
   {
     "pk": 37,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "37"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0037"
     }
   },
   {
     "pk": 38,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "38"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0038"
     }
   },
   {
     "pk": 39,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "39"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0039"
     }
   },
   {
     "pk": 40,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "40"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0040"
     }
   },
   {
     "pk": 41,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "41"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0041"
     }
   },
   {
     "pk": 42,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "42"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0042"
     }
   },
   {
     "pk": 43,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "43"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0043"
     }
   },
   {
     "pk": 44,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "44"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0044"
     }
   },
   {
     "pk": 45,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "45"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0045"
     }
   },
   {
     "pk": 46,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "46"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0046"
     }
   },
   {
     "pk": 47,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "47"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0047"
     }
   },
   {
     "pk": 48,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "48"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0048"
     }
   },
   {
     "pk": 49,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "49"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0049"
     }
   },
   {
     "pk": 50,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "50"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0050"
     }
   },
   {
     "pk": 51,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "51"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0051"
     }
   },
   {
     "pk": 52,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "52"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0052"
     }
   },
   {
     "pk": 53,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "53"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0053"
     }
   },
   {
     "pk": 54,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "54"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0054"
     }
   },
   {
     "pk": 55,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "55"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0055"
     }
   },
   {
     "pk": 56,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "56"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0056"
     }
   },
   {
     "pk": 57,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "57"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0057"
     }
   },
   {
     "pk": 58,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "58"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0058"
     }
   },
   {
     "pk": 59,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "59"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0059"
     }
   },
   {
     "pk": 60,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "60"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0060"
     }
   },
   {
     "pk": 61,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "61"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0061"
     }
   },
   {
     "pk": 62,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "62"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0062"
     }
   },
   {
     "pk": 63,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "63"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0063"
     }
   },
   {
     "pk": 64,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "64"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0064"
     }
   },
   {
     "pk": 65,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "65"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0065"
     }
   },
   {
     "pk": 66,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "66"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0066"
     }
   },
   {
     "pk": 67,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "67"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0067"
     }
   },
   {
     "pk": 90,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "90"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0090"
     }
   },
   {
     "pk": 91,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "91"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0091"
     }
   },
   {
     "pk": 92,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "92"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0092"
     }
   },
   {
     "pk": 93,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "93"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0093"
     }
   },
   {
     "pk": 94,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 5,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "94"
+      "networkipv6": 5,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0094"
     }
   },
   {
     "pk": 100,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 8,
-      "oct1": "198",
-      "oct2": "168",
-      "oct3": "1",
-      "oct4": "1"
+      "networkipv6": 8,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001"
     }
   },
   {
     "pk": 101,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 8,
-      "oct1": "198",
-      "oct2": "168",
-      "oct3": "1",
-      "oct4": "2"
+      "networkipv6": 8,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0002"
     }
   },
   {
     "pk": 102,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 8,
-      "oct1": "198",
-      "oct2": "168",
-      "oct3": "1",
-      "oct4": "3"
+      "networkipv6": 8,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0003"
     }
   },
   {
     "pk": 103,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 8,
-      "oct1": "198",
-      "oct2": "168",
-      "oct3": "1",
-      "oct4": "4"
+      "networkipv6": 8,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0004"
     }
   },
   {
     "pk": 104,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 8,
-      "oct1": "198",
-      "oct2": "168",
-      "oct3": "1",
-      "oct4": "5"
+      "networkipv6": 8,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0005"
     }
   },
   {
     "pk": 105,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 8,
-      "oct1": "198",
-      "oct2": "168",
-      "oct3": "1",
-      "oct4": "6"
+      "networkipv6": 8,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0006"
     }
   },
   {
     "pk": 430,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 9,
-      "oct1": "198",
-      "oct2": "169",
-      "oct3": "1",
-      "oct4": "2"
+      "networkipv6": 9,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0008",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0002"
     }
   },
   {
     "pk": 431,
     "model": "ip.ipv6",
     "fields": {
-      "networkipv4": 9,
-      "oct1": "198",
-      "oct2": "169",
-      "oct3": "1",
-      "oct4": "3"
+      "networkipv6": 9,
+      "block1": "fc00" ,
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0008",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0003"
     }
   }
 ]

@@ -31,6 +31,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         self.last_success_code = 299
         self.ips_key = 'ips'
         self.equality_ips_at_network_err = 'It should not have two equal IP Addresses on same Network.'
+        self.not_expect_ip_msg_err = 'IPv4 with id %s retrieved was not expect in response.'
 
     def tearDown(self):
         pass
@@ -98,7 +99,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
 
         for ipv4 in ipsv4:
             self.assertIn(ipv4['id'], ids,
-                          'IPv4 id retrieved should be equals')
+                          self.not_expect_ip_msg_err % ipv4['id'])
 
     def test_try_get_two_non_existent_ipv4_by_id(self):
         """Tests if NAPI returns a error when ask to
@@ -441,7 +442,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
                         (self.first_error_code, self.last_error_code, st_code))
 
         self.assertNotIn(self.ips_key, response.data,
-                         self.key_ips_be_present_err)
+                         self.key_ips_not_be_present_err)
 
     def test_try_delete_ipv4_used_by_not_created_vip_request(self):
         """Tests if NAPI can delete an IP Address used
