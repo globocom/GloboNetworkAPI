@@ -3,6 +3,7 @@ import copy
 import json
 import logging
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import commit_on_success
 
@@ -145,11 +146,15 @@ def delete_vip_request(vip_request_ids, keep_ip='0'):
 
 def get_vip_request_by_search(search=dict()):
 
-    vip_requests = VipRequest.objects.filter()
-
-    vip_map = build_query_to_datatable_v3(vip_requests, search)
-
-    return vip_map
+    try:
+        vip_requests = VipRequest.objects.filter()
+        vip_map = build_query_to_datatable_v3(vip_requests, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vip_map
 
 
 def prepare_apply(load_balance, vip, created=True, user=None):

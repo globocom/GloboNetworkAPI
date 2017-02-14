@@ -25,7 +25,11 @@
                     "name": "BE"
                 },
                 "father_environment": null,
-                "filter": null,
+                "filter": {
+                    "description": "Servidores",
+                    "id": 1,
+                    "name": "Servidores"
+                },
                 "grupo_l3": {
                     "id": 1,
                     "name": "GRUPO 1"

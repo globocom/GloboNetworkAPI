@@ -6,7 +6,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vlan import serializers
 from networkapi.api_vlan.facade import v3 as facade
 from networkapi.api_vlan.permissions import delete_obj_permission
@@ -14,15 +13,12 @@ from networkapi.api_vlan.permissions import Read
 from networkapi.api_vlan.permissions import read_obj_permission
 from networkapi.api_vlan.permissions import Write
 from networkapi.api_vlan.permissions import write_obj_permission
-from networkapi.distributedlock import LOCK_VLAN
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import create_lock
-from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -115,20 +111,11 @@ class VlanDBView(CustomAPIView):
     @permission_obj_apiview([delete_obj_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """
-        Deletes list of vlans
-        """
+        """Deletes list of vlans."""
 
         obj_ids = kwargs['obj_ids'].split(';')
-        locks_list = create_lock(obj_ids, LOCK_VLAN)
-        try:
-            facade.delete_vlan(
-                obj_ids
-            )
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-        finally:
-            destroy_lock(locks_list)
+        facade.delete_vlan(
+            obj_ids
+        )
 
         return Response({}, status=status.HTTP_200_OK)
