@@ -99,6 +99,15 @@ class NetworkApiTestCase(TestCase):
         # Ipv4 related with equipment
         'initial_ipv4_eqpt.json',
 
+        # Networkv6
+        'initial_networkipv6.json',
+
+        # Ipv6
+        'initial_ipv6.json',
+
+        # Ipv6 related with equipment
+        'initial_ipv6_eqpt.json',
+
         # Equipment related with Equipment Group
         'initial_equipments_group.json',
 
