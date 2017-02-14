@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
 from django.db.models import Q
 
 from networkapi.api_rest.exceptions import NetworkAPIException
@@ -86,57 +87,62 @@ def get_equipments(**kwargs):
     :param is_router: Boolean (True|False)(optional)
 
     """
-    eqpts = Equipamento.objects.all()
+    try:
+        eqpts = Equipamento.objects.all()
 
-    if kwargs.get('user', None) is not None:
-        q_filter_user = {
-            'equipamentogrupo__egrupo__direitosgrupoequipamento'
-            '__ugrupo__usuario': kwargs.get('user')
-        }
-        eqpts = eqpts.filter(Q(**q_filter_user))
+        if kwargs.get('user', None) is not None:
+            q_filter_user = {
+                'equipamentogrupo__egrupo__direitosgrupoequipamento'
+                '__ugrupo__usuario': kwargs.get('user')
+            }
+            eqpts = eqpts.filter(Q(**q_filter_user))
 
-    if kwargs.get('rights_write', None) is not None:
-        q_filter_rights = {
-            'equipamentogrupo__egrupo__direitosgrupoequipamento__escrita': 1
-        }
-        eqpts = eqpts.filter(Q(**q_filter_rights))
+        if kwargs.get('rights_write', None) is not None:
+            q_filter_rights = {
+                'equipamentogrupo__egrupo__direitosgrupoequipamento__escrita': 1
+            }
+            eqpts = eqpts.filter(Q(**q_filter_rights))
 
-    if kwargs.get('rights_read', None) is not None:
-        q_filter_rights = {
-            'equipamentogrupo__egrupo__direitosgrupoequipamento__leitura': 1
-        }
-        eqpts = eqpts.filter(Q(**q_filter_rights))
+        if kwargs.get('rights_read', None) is not None:
+            q_filter_rights = {
+                'equipamentogrupo__egrupo__direitosgrupoequipamento__leitura': 1
+            }
+            eqpts = eqpts.filter(Q(**q_filter_rights))
 
-    if kwargs.get('is_router', None) is not None:
-        q_filter_router = {
-            'equipamentoambiente__is_router': kwargs.get('is_router')
-        }
-        eqpts = eqpts.filter(Q(**q_filter_router))
+        if kwargs.get('is_router', None) is not None:
+            q_filter_router = {
+                'equipamentoambiente__is_router': kwargs.get('is_router')
+            }
+            eqpts = eqpts.filter(Q(**q_filter_router))
 
-    if kwargs.get('name', None) is not None:
-        q_filter_router = {
-            'nome': kwargs.get('name')
-        }
-        eqpts = eqpts.filter(Q(**q_filter_router))
+        if kwargs.get('name', None) is not None:
+            q_filter_router = {
+                'nome': kwargs.get('name')
+            }
+            eqpts = eqpts.filter(Q(**q_filter_router))
 
-    if kwargs.get('environment', None) is not None:
-        q_filters = [{
-            'ipequipamento__ip__networkipv4__vlan__ambiente__environmentenvironmentvip'
-            '__environment_vip__networkipv4__vlan__ambiente': kwargs.get('environment')
-        },
-            {
-            'ipv6equipament__ip__networkipv6__vlan__ambiente__environmentenvironmentvip'
-            '__environment_vip__networkipv6__vlan__ambiente': kwargs.get('environment')
-        }]
+        if kwargs.get('environment', None) is not None:
+            q_filters = [{
+                'ipequipamento__ip__networkipv4__vlan__ambiente__environmentenvironmentvip'
+                '__environment_vip__networkipv4__vlan__ambiente': kwargs.get('environment')
+            },
+                {
+                'ipv6equipament__ip__networkipv6__vlan__ambiente__environmentenvironmentvip'
+                '__environment_vip__networkipv6__vlan__ambiente': kwargs.get('environment')
+            }]
 
-        eqpts = eqpts.filter(
-            reduce(lambda x, y: x | y, [Q(**q_filter)
-                                        for q_filter in q_filters])
-        )
+            eqpts = eqpts.filter(
+                reduce(lambda x, y: x | y, [Q(**q_filter)
+                                            for q_filter in q_filters])
+            )
 
-    eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
-
-    return eqpts
+        eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return eqpts
 
 
 def all_equipments_can_update_config(equipment_list, user):
@@ -155,9 +161,10 @@ def all_equipments_can_update_config(equipment_list, user):
         ).distinct()
 
         if not res:
-            log.warning('User{} does not haver permission to Equipment {}'.format(
-                user, equipment.id
-            ))
+            log.warning(
+                'User{} does not haver permission to Equipment {}'.format(
+                    user, equipment.id
+                ))
             return False
 
     return True

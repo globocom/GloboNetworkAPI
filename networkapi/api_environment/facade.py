@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
 from django.db.models import Q
 
 from networkapi.ambiente.models import Ambiente
@@ -15,17 +16,21 @@ from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
-
 log = logging.getLogger(__name__)
 
 
 def get_environment_by_search(search=dict()):
     """Return a list of environments by dict."""
 
-    environments = Ambiente.objects.filter()
-    env_map = build_query_to_datatable_v3(environments, search)
-
-    return env_map
+    try:
+        environments = Ambiente.objects.filter()
+        env_map = build_query_to_datatable_v3(environments, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
 
 
 def get_environment_by_id(environment_id):

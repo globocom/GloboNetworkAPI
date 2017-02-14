@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
+
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi.ambiente.models import EnvironmentVipAssociatedToSomeNetworkError
+from networkapi.ambiente.models \
+    import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.ambiente.models import EnvironmentVipNotFoundError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
@@ -20,10 +23,15 @@ def get_environmentvip_by_search(search=dict()):
     :param search: dict
     """
 
-    env_vips = EnvironmentVip.objects.all()
-    env_map = build_query_to_datatable_v3(env_vips, search)
-
-    return env_map
+    try:
+        env_vips = EnvironmentVip.objects.all()
+        env_map = build_query_to_datatable_v3(env_vips, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
 
 
 def get_option_vip_by_environment_vip_ids(environment_vip_ids):

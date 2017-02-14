@@ -21,8 +21,14 @@ class NetworkApiTestCase(TestCase):
         # Vrfs
         'initial_vrf.json',
 
-        # Vrfs
+        # Filter
         'initial_filter.json',
+
+        # Equipment Types
+        'initial_tipo_equip.json',
+
+        # Filter Equipment Type
+        'initial_filterequiptype.json',
 
         # Network Type
         'initial_tipo_rede.json',
@@ -39,8 +45,6 @@ class NetworkApiTestCase(TestCase):
         # Healthcheck
         'initial_healthcheck.json',
 
-        # Equipment Types
-        'initial_tipo_equip.json',
         # Equipment Brands
         'initial_equip_marca.json',
         # Equipment Models
@@ -74,6 +78,11 @@ class NetworkApiTestCase(TestCase):
         'initial_environment_gl3.json',
         # Environments
         'initial_environment.json',
+
+        # Ip Config
+        'initial_ipconfig.json',
+        # Config Environment
+        'initial_config_environment.json',
 
         # Environment Vip
         'initial_environment_vip.json',
@@ -113,6 +122,9 @@ class NetworkApiTestCase(TestCase):
         'initial_vip_request_port_pool.json',
         'initial_vip_request_options_vip.json',
         'initial_vip_request_dscp.json',
+
+        # Config
+        'initial_config.json'
     ]
 
     def setUp(self):

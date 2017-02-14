@@ -24,5 +24,31 @@
     "name": "name",
     "service": "service"
     }
+  },
+  {
+  "pk": 3,
+  "model": "api_vip_request.viprequest",
+  "fields": {
+    "business": "business",
+    "created": false,
+    "environmentvip": 7,
+    "ipv4": 430,
+    "ipv6": null,
+    "name": "name",
+    "service": "service"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "api_vip_request.viprequest",
+  "fields": {
+    "business": "business",
+    "created": true,
+    "environmentvip": 7,
+    "ipv4": 431,
+    "ipv6": null,
+    "name": "name",
+    "service": "service"
+    }
   }
 ]

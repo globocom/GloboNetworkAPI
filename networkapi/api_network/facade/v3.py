@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 from django.template import Context
 from django.template import Template
@@ -9,6 +10,8 @@ from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_network import exceptions
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
@@ -58,10 +61,15 @@ def get_networkipv4_by_ids(network_ids):
 def get_networkipv4_by_search(search=dict()):
     """Get List of NetworkIPv4 by Search."""
 
-    networks = ip_models.NetworkIPv4.objects.all()
-    net_map = build_query_to_datatable_v3(networks, search)
-
-    return net_map
+    try:
+        networks = ip_models.NetworkIPv4.objects.all()
+        net_map = build_query_to_datatable_v3(networks, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return net_map
 
 
 def create_networkipv4(networkv4, user):
@@ -369,10 +377,15 @@ def get_networkipv6_by_ids(network_ids):
 def get_networkipv6_by_search(search=dict()):
     """Get List of NetworkIPv6 by Search."""
 
-    networks = ip_models.NetworkIPv6.objects.all()
-    net_map = build_query_to_datatable_v3(networks, search)
-
-    return net_map
+    try:
+        networks = ip_models.NetworkIPv6.objects.all()
+        net_map = build_query_to_datatable_v3(networks, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return net_map
 
 
 def create_networkipv6(networkv6, user):

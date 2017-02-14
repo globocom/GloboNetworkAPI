@@ -64,5 +64,16 @@
     "description": "Test to try delete - fail",
     "finalidade_txt": "Test to try delete - fail"
     }
+  },
+  {
+  "pk": 7,
+  "model": "ambiente.environmentvip",
+  "fields": {
+    "ambiente_p44_txt": "VIP for IP tests",
+    "cliente_txt": "VIP for IP tests",
+    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+    "description": "VIP for IP testsl",
+    "finalidade_txt": "VIP for IP tests"
+    }
   }
 ]

@@ -62,5 +62,74 @@
     "nome": "VLAN USED IN ENVIRONMENT VIP",
     "num_vlan": "7"
     }
+  },
+  {
+  "pk": 8,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 14,
+    "nome": "vlan for eqpt env - IP tests",
+    "num_vlan": "8"
+    }
+  },
+  {
+  "pk": 9,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 15,
+    "nome": "vlan for pool env - IP tests",
+    "num_vlan": "9"
+    }
+  },
+  {
+  "pk": 10,
+  "model": "vlan.vlan",
+  "fields": {
+    "acl_draft": null,
+    "acl_draft_v6": null,
+    "acl_file_name": "",
+    "acl_file_name_v6": "",
+    "acl_valida": false,
+    "acl_valida_v6": false,
+    "ativada": true,
+    "descricao": "",
+    "ambiente": 1,
+    "nome": "VLAN 10 - AMBIENTE 1",
+    "num_vlan": 10
+    }
+  },
+  {
+  "pk": 11,
+  "model": "vlan.vlan",
+  "fields": {
+    "acl_draft": null,
+    "acl_draft_v6": null,
+    "acl_file_name": "",
+    "acl_file_name_v6": "",
+    "acl_valida": false,
+    "acl_valida_v6": false,
+    "ativada": false,
+    "descricao": "",
+    "ambiente": 1,
+    "nome": "VLAN 11 - AMBIENTE 1",
+    "num_vlan": 11
+    }
+  },
+  {
+  "pk": 12,
+  "model": "vlan.vlan",
+  "fields": {
+    "acl_draft": null,
+    "acl_draft_v6": null,
+    "acl_file_name": "",
+    "acl_file_name_v6": "",
+    "acl_valida": false,
+    "acl_valida_v6": false,
+    "ativada": false,
+    "descricao": "",
+    "ambiente": 1,
+    "nome": "VLAN 12 - AMBIENTE 1",
+    "num_vlan": 12
+    }
   }
 ]

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
+
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
@@ -19,10 +21,15 @@ log = logging.getLogger(__name__)
 def get_ipv4_by_search(search=dict()):
     """Get List of Ipv4 by Search."""
 
-    networks = Ip.objects.all()
-    net_map = build_query_to_datatable_v3(networks, search)
-
-    return net_map
+    try:
+        networks = Ip.objects.all()
+        net_map = build_query_to_datatable_v3(networks, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return net_map
 
 
 def get_ipv4_by_id(ip_id):
@@ -172,7 +179,12 @@ def get_ipv6_by_ids(ip_ids):
 def get_ipv6_by_search(search=dict()):
     """Get List of Ipv6 by Search."""
 
-    networks = Ipv6.objects.all()
-    net_map = build_query_to_datatable_v3(networks, search)
-
-    return net_map
+    try:
+        networks = Ipv6.objects.all()
+        net_map = build_query_to_datatable_v3(networks, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return net_map

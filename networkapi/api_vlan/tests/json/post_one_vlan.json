@@ -10,8 +10,8 @@
             "active": false,
             "description": "",
             "environment": 1,
-            "name": "VLAN 10 - AMBIENTE 1",
-            "num_vlan": 10,
+            "name": "VLAN 300 - AMBIENTE 1",
+            "num_vlan": 300,
             "vrf": null
         }
     ]
