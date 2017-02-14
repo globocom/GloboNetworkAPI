@@ -343,6 +343,7 @@ class NetworkIPv4(BaseModel):
     )
     cluster_unit = models.CharField(
         max_length=45,
+        null=True,
         db_column='cluster_unit'
     )
     active = models.BooleanField()
@@ -906,9 +907,10 @@ class NetworkIPv4(BaseModel):
             destroy_lock(locks_list)
 
     def validate_v3(self):
-        """
-        Validate networkIPv4.
-        """
+        """Validate networkIPv4."""
+
+        if not self.network_type:
+            raise NetworkIPv4ErrorV3('Network type can not null')
 
         # validate if network if allow in environment
         configs = self.vlan.ambiente.configs.all()
@@ -1083,7 +1085,8 @@ class Ip(BaseModel):
     oct1 = models.IntegerField()
     descricao = models.CharField(
         max_length=100,
-        blank=True
+        blank=True,
+        null=True
     )
     networkipv4 = models.ForeignKey(
         'ip.NetworkIPv4',
@@ -2503,6 +2506,7 @@ class NetworkIPv6(BaseModel):
     )
     cluster_unit = models.CharField(
         max_length=45,
+        null=True,
         db_column='cluster_unit'
     )
     active = models.BooleanField()
@@ -3274,6 +3278,7 @@ class Ipv6(BaseModel):
     description = models.CharField(
         max_length=100,
         blank=True,
+        null=True,
         db_column='descricao'
     )
     networkipv6 = models.ForeignKey(
@@ -4308,8 +4313,6 @@ class Ipv6(BaseModel):
     def validate_v3(self, equipments):
         """Validate Ip."""
 
-        if not self.network_type:
-            raise NetworkIPv4ErrorV3('Network type can not null')
         env_ip = self.networkipv6.vlan.ambiente
         network.validate_conflict_join_envs(env_ip, equipments)
 

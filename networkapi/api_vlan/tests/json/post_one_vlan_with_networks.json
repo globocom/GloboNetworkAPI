@@ -1,0 +1,28 @@
+{
+    "vlans": [
+        {
+            "acl_draft": null,
+            "acl_draft_v6": null,
+            "acl_file_name": "",
+            "acl_file_name_v6": "",
+            "acl_valida": false,
+            "acl_valida_v6": false,
+            "active": false,
+            "description": "",
+            "environment": 1,
+            "name": "VLAN 301 - AMBIENTE 1",
+            "num_vlan": 301,
+            "vrf": null,
+            "create_networkv4": {
+                "network_type": 1,
+                "prefix": 24,
+                "environmentvip": 2
+            },
+            "create_networkv6": {
+                "network_type": 1,
+                "prefix": 64,
+                "environmentvip": 2
+            }
+        }
+    ]
+}

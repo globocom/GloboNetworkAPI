@@ -4,7 +4,10 @@ from django.core.exceptions import FieldError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import destroy_lock
 from networkapi.vlan.models import OperationalError
 from networkapi.vlan.models import Vlan
 from networkapi.vlan.models import VlanError
@@ -13,7 +16,7 @@ from networkapi.vlan.models import VlanNotFoundError
 
 
 def get_vlan_by_id(vlan_id):
-    """Get vlan by id"""
+    """Get vlan by id."""
 
     try:
         vlan = Vlan().get_by_pk(vlan_id)
@@ -26,7 +29,7 @@ def get_vlan_by_id(vlan_id):
 
 
 def get_vlan_by_ids(vlan_ids):
-    """Get vlans by ids"""
+    """Get vlans by ids."""
 
     vl_ids = list()
     for vlan_id in vlan_ids:
@@ -38,7 +41,7 @@ def get_vlan_by_ids(vlan_ids):
 
 
 def get_vlan_by_search(search=dict()):
-    """Get vlans by search"""
+    """Get vlans by search."""
 
     try:
         vlans = Vlan.objects.filter()
@@ -52,7 +55,7 @@ def get_vlan_by_search(search=dict()):
 
 
 def update_vlan(vlan, user):
-    """Update vlan"""
+    """Update vlan."""
 
     try:
         vlan_obj = get_vlan_by_id(vlan.get('id'))
@@ -68,7 +71,7 @@ def update_vlan(vlan, user):
 
 
 def create_vlan(vlan, user):
-    """Create vlan"""
+    """Create vlan."""
 
     try:
         vlan_obj = Vlan()
@@ -84,8 +87,9 @@ def create_vlan(vlan, user):
 
 
 def delete_vlan(vlans):
-    """Delete vlans by ids"""
+    """Delete vlans by ids."""
 
+    locks_list = create_lock(vlans, LOCK_VLAN)
     try:
         for vlan in vlans:
             vlan_obj = get_vlan_by_id(vlan)
@@ -96,3 +100,5 @@ def delete_vlan(vlans):
         raise ValidationAPIException(str(e))
     except (Exception, NetworkAPIException), e:
         raise NetworkAPIException(str(e))
+    finally:
+        destroy_lock(locks_list)

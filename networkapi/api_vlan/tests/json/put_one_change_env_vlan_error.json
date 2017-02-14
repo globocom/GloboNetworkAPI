@@ -1,6 +1,7 @@
 {
     "vlans": [
         {
+            "id": 10,
             "acl_draft": null,
             "acl_draft_v6": null,
             "acl_file_name": "",
@@ -9,9 +10,9 @@
             "acl_valida_v6": false,
             "active": false,
             "description": "",
-            "environment": 1,
-            "name": "VLAN 300 - AMBIENTE 1",
-            "num_vlan": 300,
+            "environment": 2,
+            "name": "VLAN 10 - AMBIENTE 1",
+            "num_vlan": 10,
             "vrf": null
         }
     ]
