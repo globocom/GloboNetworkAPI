@@ -169,6 +169,12 @@ class OptionPool (BaseModel):
 
         super(OptionPool, self).delete()
 
+    def get_option_pool(self, option_name, option_type):
+        try:
+            return OptionPool.objects.get(name=option_name, type=option_type)
+        except:
+            raise OptionPoolNotFoundError()
+
 
 class OptionPoolEnvironment(BaseModel):
 

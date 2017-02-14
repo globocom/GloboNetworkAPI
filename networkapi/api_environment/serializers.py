@@ -156,6 +156,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'max_num_vlan_2',
             'vrf',
             'default_vrf',
+            'father_environment',
         )
 
         basic_fields = (
@@ -163,7 +164,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'name',
         )
 
-        details_fields = fields
+        details_fields = default_fields
 
     def get_serializers(self):
         """Returns the mapping of serializers."""
@@ -203,7 +204,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': DivisaoDcV3Serializer,
                     'kwargs': {},
                     'obj': 'divisao_dc',
-                    'eager_loading': self.setup_eager_loading_grupo_l3
+                    'eager_loading': self.setup_eager_loading_divisao_dc
                 },
                 'filter': {
                     'obj': 'filter_id'
@@ -330,8 +331,6 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments'
                 },
             }
-
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_father(queryset):

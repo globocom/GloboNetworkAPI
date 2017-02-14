@@ -18,6 +18,7 @@ import os
 
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
+from settings import ALLOWED_HOSTS
 from settings import AMBLOG_MGMT
 from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
@@ -52,7 +53,6 @@ from settings import local_files
 from settings import LOG_DAYS
 from settings import LOG_DB_LEVEL
 from settings import LOG_FILE
-from settings import LOG_LEVEL
 from settings import LOG_SHOW_SQL
 from settings import LOG_SHOW_TRACEBACK
 from settings import LOG_USE_STDOUT
@@ -115,6 +115,8 @@ from settings import REL_PATH_TO_ADD_CONFIG
 from settings import REL_PATH_TO_CONFIG
 from settings import REST_FRAMEWORK
 from settings import ROOT_URLCONF
+from settings import RQ_QUEUES
+from settings import RQ_SHOW_ADMIN_LINK
 from settings import SCRIPTS_DIR
 from settings import SECRET_KEY
 from settings import SITE_ID
@@ -162,6 +164,13 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
+NETWORK_DEBUG = os.getenv('NETWORK_DEBUG', 'INFO')
+LOG_LEVEL = getattr(logging, NETWORK_DEBUG.upper())
+
+MIDDLEWARE_CLASSES += (
+    'django_pdb.middleware.PdbMiddleware',
+)
+
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -173,6 +182,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_pdb',
     'rest_framework',
 )
 
@@ -195,7 +205,7 @@ NOSE_ARGS = [
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
-    #     '-s',
+    '-s',
     '--with-fixture-bundling',
 ]
 
@@ -210,7 +220,7 @@ JENKINS_TASKS = (
     'django_jenkins.tasks.run_pep8',
     'django_jenkins.tasks.run_pylint',
     'django_jenkins.tasks.run_pyflakes',
-    # 'django_jenkins.tasks.run_sloccount',
+    'django_jenkins.tasks.run_sloccount',
 )
 
 LOGGING = {
@@ -226,8 +236,9 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': logging.INFO,
-            'class': 'logging.StreamHandler',
+            'level': LOG_LEVEL,
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': LOG_FILE,
             'formatter': 'simple'
         },
     },
@@ -235,26 +246,26 @@ LOGGING = {
         'default': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.INFO,
+            'level': LOG_LEVEL,
         },
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['console'],
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'django.db.backends': {
-            'level': logging.ERROR,
+            'level': LOG_LEVEL,
             'propagate': True,
             'handlers': ['console'],
         },
     },
     'root': {
-        'level': logging.INFO,
+        'level': LOG_LEVEL,
         'propagate': True,
         'handlers': ['console'],
     },

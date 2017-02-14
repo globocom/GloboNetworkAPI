@@ -11,10 +11,10 @@ CREATE TABLE `vip_request` (
   `business` VARCHAR(255) NULL COMMENT '',
   `port` INT(5) UNSIGNED NOT NULL COMMENT '',
   `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_vip_request_id_environment_vip_idx` (`id_environmentvip` ASC)  COMMENT '',
-  INDEX `fk_vip_request_id_ipv4_idx` (`id_ipv4` ASC)  COMMENT '',
-  INDEX `fk_vip_request_id_ipv6_idx` (`id_ipv6` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_vip_request_id_environment_vip_idx` (`id_environmentvip` ASC),
+  INDEX `fk_vip_request_id_ipv4_idx` (`id_ipv4` ASC),
+  INDEX `fk_vip_request_id_ipv6_idx` (`id_ipv6` ASC),
   CONSTRAINT `fk_vip_request_id_environment_vip`
     FOREIGN KEY (`id_environmentvip`)
     REFERENCES `ambientevip` (`id`)
@@ -36,9 +36,9 @@ CREATE TABLE `vip_request_optionsvip` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `id_vip_request` INT(11) UNSIGNED NULL COMMENT '',
   `id_opcoesvip` INT(10) UNSIGNED NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `vip_request_optionsvip_id_vip_request_idx` (`id_vip_request` ASC)  COMMENT '',
-  INDEX `vip_request_optionsvip_id_opcoesvip_idx` (`id_opcoesvip` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `vip_request_optionsvip_id_vip_request_idx` (`id_vip_request` ASC),
+  INDEX `vip_request_optionsvip_id_opcoesvip_idx` (`id_opcoesvip` ASC),
   CONSTRAINT `vip_request_optionsvip_id_vip_request`
     FOREIGN KEY (`id_vip_request`)
     REFERENCES `vip_request` (`id`)
@@ -57,10 +57,10 @@ CREATE TABLE `vip_request_pool` (
   `id_server_pool` INT(11) NULL COMMENT '',
   `val_optionvip` VARCHAR(255) NULL COMMENT '',
   `port` INT(5) UNSIGNED NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_vip_request_pool_id_requisicao_vips_idx` (`id_vip_request` ASC)  COMMENT '',
-  INDEX `fk_vip_request_pool_id_opcoesvip_idx` (`id_opcoesvip` ASC)  COMMENT '',
-  INDEX `fk_vip_request_pool_id_server_pool_idx` (`id_server_pool` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_vip_request_pool_id_requisicao_vips_idx` (`id_vip_request` ASC),
+  INDEX `fk_vip_request_pool_id_opcoesvip_idx` (`id_opcoesvip` ASC),
+  INDEX `fk_vip_request_pool_id_server_pool_idx` (`id_server_pool` ASC),
   CONSTRAINT `fk_vip_request_pool_id_requisicao_vips`
     FOREIGN KEY (`id_vip_request`)
     REFERENCES `vip_request` (`id`)

@@ -4,7 +4,7 @@
   "model": "vlan.vlan",
   "fields": {
     "ambiente": 1,
-    "nome": "vlan 1 - ambiente 1",
+    "nome": "VLAN 1 - AMBIENTE 1",
     "num_vlan": "1"
     }
   },
@@ -13,7 +13,7 @@
   "model": "vlan.vlan",
   "fields": {
     "ambiente": 1,
-    "nome": "vlan 2 - ambiente 1",
+    "nome": "VLAN 2 - AMBIENTE 1",
     "num_vlan": "2"
     }
   },
@@ -22,7 +22,7 @@
   "model": "vlan.vlan",
   "fields": {
     "ambiente": 2,
-    "nome": "vlan 1 - ambiente 2",
+    "nome": "VLAN 1 - AMBIENTE 2",
     "num_vlan": "3"
     }
   },
@@ -30,9 +30,37 @@
   "pk": 4,
   "model": "vlan.vlan",
   "fields": {
-    "ambiente": 2,
-    "nome": "vlan 2 - ambiente 2",
+    "ambiente": 4,
+    "nome": "VLAN 1 - ENVIRONMENT EQPT",
     "num_vlan": "4"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 5,
+    "nome": "VLAN 1 - ENVIRONMENT POOL",
+    "num_vlan": "5"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 12,
+    "nome": "VLAN 1 - ENVIRONMENT 3",
+    "num_vlan": "6",
+    "ativada": 1
+    }
+  },
+  {
+  "pk": 7,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 13,
+    "nome": "VLAN USED IN ENVIRONMENT VIP",
+    "num_vlan": "7"
     }
   }
 ]

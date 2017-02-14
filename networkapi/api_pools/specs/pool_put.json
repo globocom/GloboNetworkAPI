@@ -132,14 +132,6 @@
             "type": "integer",
             "minimum": 0
           },
-          "permissions":{
-            "type": "object",
-            "properties": {
-              "replace": {
-                 "type": "boolean"
-              }
-            }
-          },
           "groups_permissions": {
             "type": [
               "array",
@@ -148,7 +140,7 @@
             "items": {
               "type": "object",
               "properties": {
-                "group": {
+                "user_group": {
                    "type": "integer"
                 },
                 "read": {
@@ -165,7 +157,7 @@
                 }
               },
               "required": [
-                "group",
+                "user_group",
                 "read",
                 "write",
                 "delete",

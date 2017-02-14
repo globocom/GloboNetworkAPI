@@ -141,7 +141,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     def extends_serializer(self, obj, default_field):
 
         key = self.context.get('serializers').get(default_field, default_field)
-        slr_model = self.mapping.get(key)
+
+        slr_model = self.mapping.get(key, {})
 
         # keys
         if slr_model.get('keys'):

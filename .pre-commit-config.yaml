@@ -13,6 +13,7 @@
     -   id: check-yaml
     -   id: debug-statements
     -   id: name-tests-test
+        args: ['--django']
     -   id: fix-encoding-pragma
     -   id: requirements-txt-fixer
     -   id: double-quote-string-fixer

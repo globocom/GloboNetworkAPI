@@ -12,19 +12,34 @@
         "type": "object",
         "properties": {
           "oct1": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "oct2": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "oct3": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "oct4": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "prefix": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "mask_oct1": {
             "type": "integer"
@@ -61,9 +76,7 @@
           }
         },
         "required": [
-            "vlan",
-            "network_type",
-            "environmentvip"
+            "vlan"
         ]
       }
     }

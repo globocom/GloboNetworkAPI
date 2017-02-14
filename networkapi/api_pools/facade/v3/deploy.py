@@ -11,7 +11,6 @@ from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.facade.v3 import base as facade_v3
 from networkapi.api_pools.serializers import v3 as serializers
-from networkapi.api_vip_request.facade import v3 as facade_vip
 from networkapi.api_vip_request.serializers import v3 as serializers_vip
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -58,18 +57,19 @@ def _prepare_apply(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+            vips_requests = ServerPool().get_vips_related(pool['id'])
 
-            if 'Brocade' in plugin.__module__:
-                serializer_vips = serializers_vip.VipRequestV3Serializer(
-                    vips_requests,
-                    many=True,
-                    kind='details',
-                    include=('ports__identifier',)
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
+                vips_requests,
+                many=True,
+                include=(
+                    'ipv4__details',
+                    'ipv6__details',
+                    'ports__identifier',
+                    'ports__pools__server_pool__basic__lb_method',
                 )
-                vips = serializer_vips.data
-            else:
-                vips = []
+            )
+            vips = serializer_vips.data
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -144,7 +144,8 @@ def update_real_pool(pools, user):
     keys = list()
 
     for pool in pools['server_pools']:
-        facade_v3.validate_save(pool, permit_created=True)
+        pool_obj = facade_v3.get_pool_by_id(pool['id'])
+        pool_obj.update_v3(pool, user, permit_created=True)
 
         member_ids = [spm['id']
                       for spm in pool['server_pool_members'] if spm['id']]
@@ -259,18 +260,19 @@ def update_real_pool(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+            vips_requests = ServerPool().get_vips_related(pool['id'])
 
-            if 'Brocade' in plugin.__module__:
-                serializer_vips = serializers_vip.VipRequestV3Serializer(
-                    vips_requests,
-                    many=True,
-                    kind='details',
-                    include=('ports__identifier',)
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
+                vips_requests,
+                many=True,
+                include=(
+                    'ipv4__details',
+                    'ipv6__details',
+                    'ports__identifier',
+                    'ports__pools__server_pool__basic__lb_method',
                 )
-                vips = serializer_vips.data
-            else:
-                vips = []
+            )
+            vips = serializer_vips.data
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -281,8 +283,6 @@ def update_real_pool(pools, user):
                 'vips': vips,
                 'pools_members': pools_members
             })
-
-        facade_v3.update_pool(pool, user)
 
     # pools are in differents load balancers
     keys = [','.join(key) for key in keys]

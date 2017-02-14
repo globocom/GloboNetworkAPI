@@ -1,0 +1,37 @@
+{
+  "title": "Object Group Permission Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ogps"
+  ],
+  "properties": {
+    "ogps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "write": {
+            "type": "boolean"
+          },
+          "change_config": {
+            "type": "boolean"
+          },
+          "delete": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    }
+  }
+}

@@ -1,14 +1,26 @@
 # -*- coding: utf-8 -*-
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.vlan.models import OperationalError
 from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanErrorV3
+from networkapi.vlan.models import VlanNotFoundError
 
 
 def get_vlan_by_id(vlan_id):
     """Get vlan by id"""
 
-    vlan = Vlan().get_by_pk(vlan_id)
-
-    return vlan
+    try:
+        vlan = Vlan().get_by_pk(vlan_id)
+    except VlanNotFoundError, e:
+        raise ObjectDoesNotExistException(str(e))
+    except (Exception, OperationalError), e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vlan
 
 
 def get_vlan_by_ids(vlan_ids):
@@ -27,7 +39,6 @@ def get_vlan_by_search(search=dict()):
     """Get vlans by search"""
 
     vlans = Vlan.objects.filter()
-
     vlan_map = build_query_to_datatable_v3(vlans, search)
 
     return vlan_map
@@ -36,25 +47,45 @@ def get_vlan_by_search(search=dict()):
 def update_vlan(vlan, user):
     """Update vlan"""
 
-    vlan_obj = get_vlan_by_id(vlan.get('id'))
-
-    vlan_obj.update_v3(vlan)
-
-    return vlan_obj
+    try:
+        vlan_obj = get_vlan_by_id(vlan.get('id'))
+        vlan_obj.update_v3(vlan, user)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except (VlanError, VlanErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(str(e))
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vlan_obj
 
 
 def create_vlan(vlan, user):
     """Create vlan"""
-    vlan_obj = Vlan()
 
-    vlan_obj.create_v3(vlan)
-
-    return vlan_obj
+    try:
+        vlan_obj = Vlan()
+        vlan_obj.create_v3(vlan, user)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except (VlanError, VlanErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(str(e))
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vlan_obj
 
 
 def delete_vlan(vlans):
     """Delete vlans by ids"""
 
-    for vlan in vlans:
-        vlan_obj = get_vlan_by_id(vlan)
-        vlan_obj.delete()
+    try:
+        for vlan in vlans:
+            vlan_obj = get_vlan_by_id(vlan)
+            vlan_obj.delete_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except (VlanError, VlanErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(str(e))
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(str(e))

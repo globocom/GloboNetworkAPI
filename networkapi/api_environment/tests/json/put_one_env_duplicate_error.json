@@ -1,0 +1,22 @@
+{
+  "environments": [
+    {
+      "id": 6,
+      "grupo_l3": 7,
+      "ambiente_logico": 6,
+      "divisao_dc": 4,
+      "filter": null,
+      "acl_path": null,
+      "ipv4_template": null,
+      "ipv6_template": null,
+      "link": "",
+      "min_num_vlan_1": 2,
+      "max_num_vlan_1": 20,
+      "min_num_vlan_2": 40,
+      "max_num_vlan_2": 60,
+      "vrf": null,
+      "default_vrf": 1,
+      "father_environment": null
+    }
+  ]
+}

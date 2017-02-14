@@ -258,3 +258,9 @@ class BasePlugin(object):
         Delete of VIP
         """
         raise NotImplementedError()
+
+    def get_name_eqpt(self, **kwargs):
+        """
+        Generate name of VIP
+        """
+        raise NotImplementedError()
