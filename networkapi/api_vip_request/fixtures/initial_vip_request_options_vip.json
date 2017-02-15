@@ -128,5 +128,71 @@
     "optionvip": 14,
     "vip_request": 4
     }
+  },
+
+  {
+  "pk": 17,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 1,
+    "vip_request": 5
+    }
+  },
+  {
+  "pk": 18,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 6,
+    "vip_request": 5
+    }
+  },
+  {
+  "pk": 19,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 10,
+    "vip_request": 5
+    }
+  },
+  {
+  "pk": 20,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 14,
+    "vip_request": 5
+    }
+  },
+
+  {
+  "pk": 21,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 1,
+    "vip_request": 6
+    }
+  },
+  {
+  "pk": 22,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 6,
+    "vip_request": 6
+    }
+  },
+  {
+  "pk": 23,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 10,
+    "vip_request": 6
+    }
+  },
+  {
+  "pk": 24,
+  "model": "api_vip_request.viprequestoptionvip",
+  "fields": {
+    "optionvip": 14,
+    "vip_request": 6
+    }
   }
 ]

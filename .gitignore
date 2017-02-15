@@ -25,3 +25,4 @@ sitestatic/
 config_templates/
 reports/
 networkapi/generated_config/network/network_equip*
+cover/

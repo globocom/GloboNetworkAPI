@@ -51,12 +51,12 @@ def perm_objv4(request, operation, object_type, *args, **kwargs):
 def perm_objv6(request, operation, object_type, *args, **kwargs):
 
     if request.method == 'POST':
-        objs = [net['networkipv4'] for net in request.DATA['ips']]
+        objs = [net['networkipv6'] for net in request.DATA['ips']]
         objs = get_networkipv6_by_ids(objs)\
             .values_list('vlan', flat=True)
     else:
         objs = get_ipv6_by_ids(kwargs.get('obj_ids', []).split(';'))\
-            .values_list('networkipv4__vlan', flat=True)
+            .values_list('networkipv6__vlan', flat=True)
 
     return validate_object_perm(
         objs,
