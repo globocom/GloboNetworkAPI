@@ -30,5 +30,21 @@
         },
         "model": "api_vip_request.viprequestport",
         "pk": 4
+    },
+    {
+        "fields": {
+            "port": 80,
+            "vip_request": 5
+        },
+        "model": "api_vip_request.viprequestport",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "port": 80,
+            "vip_request": 6
+        },
+        "model": "api_vip_request.viprequestport",
+        "pk": 6
     }
 ]
