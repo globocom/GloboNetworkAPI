@@ -88,10 +88,11 @@ class VipRequest(BaseModel):
             eqpts = self.ipv6.ipv6equipament_set.all()\
                 .prefetch_related('equipamento')
         elif self.ipv4 and self.ipv6:
-            eqpts = self.ipv4.ipequipamento_set.all()\
+            eqpts_v4 = self.ipv4.ipequipamento_set.all()\
                 .prefetch_related('equipamento')
-            eqpts |= self.ipv6.ipv6equipament_set.all()\
+            eqpts_v6 = self.ipv6.ipv6equipament_set.all()\
                 .prefetch_related('equipamento')
+            eqpts = list(chain(eqpts_v4, eqpts_v6))
 
         eqpts = [eqpt.equipamento for eqpt in eqpts]
         return eqpts
