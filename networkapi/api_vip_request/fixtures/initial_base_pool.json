@@ -1,0 +1,90 @@
+[
+    {
+        "fields": {
+            "default_limit": 100,
+            "default_port": 80,
+            "environment": 3,
+            "healthcheck": 1,
+            "identifier": "pool-vm-rack1and2",
+            "lb_method": "least-conn",
+            "pool_created": "False",
+            "servicedownaction": 5
+        },
+        "model": "requisicaovips.serverpool",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "identifier": "192.168.1.2",
+            "ip": 7,
+            "ipv6": null,
+            "limit": 10,
+            "member_status": 7,
+            "port_real": 80,
+            "priority": 1,
+            "server_pool": 1,
+            "weight": 1
+        },
+        "model": "requisicaovips.serverpoolmember",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "identifier": "192.168.2.2",
+            "ip": 9,
+            "ipv6": null,
+            "limit": 10,
+            "member_status": 7,
+            "port_real": 80,
+            "priority": 1,
+            "server_pool": 1,
+            "weight": 1
+        },
+        "model": "requisicaovips.serverpoolmember",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "default_limit": 100,
+            "default_port": 80,
+            "environment": 1,
+            "healthcheck": 1,
+            "identifier": "pool-vm-rack1",
+            "lb_method": "least-conn",
+            "pool_created": "False",
+            "servicedownaction": 5
+        },
+        "model": "requisicaovips.serverpool",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "identifier": "192.168.1.2",
+            "ip": 7,
+            "ipv6": null,
+            "limit": 10,
+            "member_status": 7,
+            "port_real": 80,
+            "priority": 1,
+            "server_pool": 1,
+            "weight": 1
+        },
+        "model": "requisicaovips.serverpoolmember",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "identifier": "192.168.1.3",
+            "ip": 8,
+            "ipv6": null,
+            "limit": 10,
+            "member_status": 7,
+            "port_real": 80,
+            "priority": 1,
+            "server_pool": 1,
+            "weight": 1
+        },
+        "model": "requisicaovips.serverpoolmember",
+        "pk": 4
+    }
+]

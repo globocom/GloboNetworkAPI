@@ -28,7 +28,7 @@ if syspath not in sys.path:
 
 
 def local_files(path):
-    return '{}/networkapi/{}'.format(sys.path[0], path)
+    return '{}/networkapi/{}'.format(os.getcwd(), path)
 
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
