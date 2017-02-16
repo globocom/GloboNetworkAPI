@@ -203,12 +203,6 @@ class PoolDBDetailsView(CustomAPIView):
             only_main_property = True
             obj_model = None
 
-        self.include = (
-            'servicedownaction__details',
-            'environment__details',
-            'groups_permissions__details',
-        )
-
         # serializer pools
         pool_serializer = serializers.PoolV3Serializer(
             pools,
@@ -216,7 +210,7 @@ class PoolDBDetailsView(CustomAPIView):
             fields=self.fields,
             include=self.include,
             exclude=self.exclude,
-            kind=self.kind
+            kind='details'
         )
 
         # prepare serializer with customized properties

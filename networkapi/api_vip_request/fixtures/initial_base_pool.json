@@ -47,7 +47,7 @@
         "fields": {
             "default_limit": 100,
             "default_port": 80,
-            "environment": 1,
+            "environment": 3,
             "healthcheck": 1,
             "identifier": "pool-vm-rack1",
             "lb_method": "least-conn",
@@ -66,7 +66,7 @@
             "member_status": 7,
             "port_real": 80,
             "priority": 1,
-            "server_pool": 1,
+            "server_pool": 2,
             "weight": 1
         },
         "model": "requisicaovips.serverpoolmember",
@@ -81,7 +81,7 @@
             "member_status": 7,
             "port_real": 80,
             "priority": 1,
-            "server_pool": 1,
+            "server_pool": 2,
             "weight": 1
         },
         "model": "requisicaovips.serverpoolmember",

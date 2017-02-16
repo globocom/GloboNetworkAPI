@@ -1,0 +1,11 @@
+{
+  "equipments": [
+    {
+      "id": 1,
+      "name": "VM-TEST-PUT-1-UPDATED",
+      "maintenance": true,
+      "equipment_type": 1,
+      "model": 1
+    }
+  ]
+}

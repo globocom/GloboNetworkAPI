@@ -2509,7 +2509,8 @@ class ServerPool(BaseModel):
             if server_pool.pool_created:
                 if not permit_created:
                     raise pool_exceptions\
-                        .CreatedPoolValuesException('Pool: %s' % str(server_pool))
+                        .CreatedPoolValuesException(
+                            'Pool: %s' % str(server_pool))
 
                 # identifier changed
                 if server_pool.identifier != pool['identifier']:
@@ -2522,7 +2523,8 @@ class ServerPool(BaseModel):
                         .PoolEnvironmentChange('Pool: %s' %
                                                str(server_pool))
 
-            # members_db = [spm.id for spm in server_pool.serverpoolmember_set.all()]
+            # members_db = [spm.id for spm in server_pool.serverpoolmember_set.
+            # all()]
             has_identifier = has_identifier.exclude(id=pool['id'])
 
         # Name duplicated
@@ -2531,19 +2533,15 @@ class ServerPool(BaseModel):
 
         for member in pool['server_pool_members']:
 
-            amb = Ambiente.objects.filter(
-                Q(
-                    environmentenvironmentvip__environment_vip__in=EnvironmentVip.
-                    objects.filter(
-                        networkipv4__vlan__ambiente=pool['environment']
-                    )
-                ) |
-                Q(
-                    environmentenvironmentvip__environment_vip__in=EnvironmentVip.
-                    objects.filter(
-                        networkipv6__vlan__ambiente=pool['environment']
-                    )
-                )
+            amb = Ambiente.objects.filter(Q(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.
+                objects.filter(
+                    networkipv4__vlan__ambiente=pool['environment']
+                )) | Q(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.
+                objects.filter(
+                    networkipv6__vlan__ambiente=pool['environment']
+                ))
             ).distinct()
 
             if member.get('ip', None) is not None:
@@ -2552,7 +2550,11 @@ class ServerPool(BaseModel):
                 )
                 # Ip not found environment
                 if not amb:
-                    raise pool_exceptions.IpNotFoundByEnvironment()
+                    raise pool_exceptions.IpNotFoundByEnvironment(
+                        'Environment of IP:%s and different of environment '
+                        'of server pool: %s' %
+                        (member['ip']['id'], pool['identifier'])
+                    )
 
             if member.get('ipv6', None) is not None:
                 amb = amb.filter(
@@ -2561,7 +2563,11 @@ class ServerPool(BaseModel):
 
                 # Ip not found environment
                 if not amb:
-                    raise pool_exceptions.IpNotFoundByEnvironment()
+                    raise pool_exceptions.IpNotFoundByEnvironment(
+                        'Environment of IP:%s and different of environment '
+                        'of server pool: %s' %
+                        (member['ipv6']['id'], pool['identifier'])
+                    )
 
 
 class ServerPoolMember(BaseModel):
@@ -2617,6 +2623,8 @@ class ServerPoolMember(BaseModel):
     last_status_update = models.DateTimeField(
         null=True
     )
+
+    log = logging.getLogger('ServerPoolMember')
 
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
@@ -2947,7 +2955,8 @@ class DsrL3_to_Vip(BaseModel):
             @raise RequisicaoVipsError: Failed to search for VipPortToPool.
         """
         try:
-            return DsrL3_to_Vip.objects.filter(requisicao_vip__id=id_vip).uniqueResult()
+            return DsrL3_to_Vip.objects.filter(
+                requisicao_vip__id=id_vip).uniqueResult()
         except ObjectDoesNotExist, e:
             raise ObjectDoesNotExist(
                 e, u'There is not DSRL3 entry for vip = %s.' % id_vip)

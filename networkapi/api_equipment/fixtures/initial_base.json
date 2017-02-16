@@ -1,0 +1,34 @@
+[
+    {
+        "fields": {
+            "tipo_equipamento": "VM"
+        },
+        "model": "equipamento.tipoequipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "Generic Brand"
+        },
+        "model": "equipamento.marca",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "marca": 1,
+            "nome": "Generic Model"
+        },
+        "model": "equipamento.modelo",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "VM-SANITY-TEST",
+            "tipo_equipamento": 1
+        },
+        "model": "equipamento.equipamento",
+        "pk": 1
+    }
+]

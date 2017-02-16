@@ -67,8 +67,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         url = self.url_prefix_ids % id
 
         response = self.client.get(
-            url,
-            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+            url, HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.assertNotIn(self.ips_key, response.data,
@@ -83,8 +82,7 @@ class IPv4FunctionalTestV3(NetworkApiTestCase):
         url = self.url_prefix_ids % ids_str
 
         response = self.client.get(
-            url,
-            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+            url, HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.assertIn(self.ips_key, response.data,
