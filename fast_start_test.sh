@@ -3,6 +3,12 @@ if [ ! -d test_venv ]; then
     virtualenv test_venv
 fi
 
+# if [ -d cover ]; then
+#    echo "Removing old cover reports"
+#    rm -rf cover/
+# fi
+
+
 source test_venv/bin/activate
 
 pip install -r requirements.txt
@@ -20,5 +26,4 @@ sudo service activemq start
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ci'
-
-python manage.py test -- $1
+python manage.py test "$@"
