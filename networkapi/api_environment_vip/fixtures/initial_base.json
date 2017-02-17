@@ -1,0 +1,297 @@
+[
+    {
+        "fields": {
+            "internal_name": "default",
+            "vrf": "default"
+        },
+        "model": "api_vrf.vrf",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "description": "Servidores",
+            "name": "Servidores"
+        },
+        "model": "filter.filter",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "tipo_equipamento": "VM"
+        },
+        "model": "equipamento.tipoequipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "tipo_rede": "Network VIP"
+        },
+        "model": "vlan.tiporede",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "equiptype": 1,
+            "filter": 1
+        },
+        "model": "filterequiptype.filterequiptype",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "BE"
+        },
+        "model": "ambiente.divisaodc",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "SANITY-TEST-1"
+        },
+        "model": "ambiente.ambientelogico",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "RACK-1"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "BALANCING"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "ambiente_logico": 1,
+            "default_vrf": 1,
+            "divisao_dc": 1,
+            "father_environment": null,
+            "filter": 1,
+            "grupo_l3": 1
+        },
+        "model": "ambiente.ambiente",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "ambiente_logico": 1,
+            "default_vrf": 1,
+            "divisao_dc": 1,
+            "filter": 1,
+            "grupo_l3": 2
+        },
+        "model": "ambiente.ambiente",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "network_type": 1,
+            "new_prefix": 24,
+            "subnet": "192.162.0.0/16",
+            "type": "v4"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "environment": 2,
+            "ip_config": 1
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "ambiente_p44_txt": "Test",
+            "cliente_txt": "Django Test",
+            "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+            "description": "Test",
+            "finalidade_txt": "SANITY-TEST"
+        },
+        "model": "ambiente.environmentvip",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "ambiente_p44_txt": "Test",
+            "cliente_txt": "Django Test",
+            "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+            "description": "Test",
+            "finalidade_txt": "SANITY-TEST-2"
+        },
+        "model": "ambiente.environmentvip",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 1
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 6
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 7
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 8
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 9
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 12
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 14
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 48
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 54
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 55
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 56
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 11
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 57
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 12
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 58
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 13
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 59
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 14
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 64
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 15
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 65
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 16
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "option": 66
+        },
+        "model": "requisicaovips.optionvipenvironmentvip",
+        "pk": 17
+    },
+    {
+        "fields": {
+            "ambiente": 2,
+            "nome": "VLAN 2 - BALACING",
+            "num_vlan": 2
+        },
+        "model": "vlan.vlan",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": 2,
+            "block": "24",
+            "broadcast": "192.162.1.0",
+            "cluster_unit": "cluster-unit-1",
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "0",
+            "network_type": 1,
+            "oct1": "162",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "0",
+            "vlan": 1
+        },
+        "model": "ip.networkipv4",
+        "pk": 1
+    }
+]

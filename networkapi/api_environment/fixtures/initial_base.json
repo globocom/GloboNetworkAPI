@@ -1,0 +1,955 @@
+[
+    {
+        "fields": {
+            "internal_name": "default",
+            "vrf": "default"
+        },
+        "model": "api_vrf.vrf",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "description": "Servidores",
+            "name": "Servidores"
+        },
+        "model": "filter.filter",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "tipo_rede": "Network of Equipments"
+        },
+        "model": "vlan.tiporede",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "tipo_rede": "Network VIP"
+        },
+        "model": "vlan.tiporede",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "tipo_equipamento": "switch"
+        },
+        "model": "equipamento.tipoequipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "tipo_equipamento": "Balanceador"
+        },
+        "model": "equipamento.tipoequipamento",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "tipo_equipamento": "VM"
+        },
+        "model": "equipamento.tipoequipamento",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "equiptype": 3,
+            "filter": 1
+        },
+        "model": "filterequiptype.filterequiptype",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "BE"
+        },
+        "model": "ambiente.divisaodc",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "SANITY-TEST-1"
+        },
+        "model": "ambiente.ambientelogico",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "SANITY-TEST-2"
+        },
+        "model": "ambiente.ambientelogico",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "nome": "RACK-1"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "RACK-2"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "nome": "BALANCING"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "nome": "GENERAL"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "ambiente_logico": 1,
+            "default_vrf": 1,
+            "divisao_dc": 1,
+            "filter": 1,
+            "grupo_l3": 1,
+            "father_environment": 4
+        },
+        "model": "ambiente.ambiente",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "ambiente_logico": 1,
+            "default_vrf": 1,
+            "divisao_dc": 1,
+            "filter": 1,
+            "grupo_l3": 2,
+            "father_environment": 4
+        },
+        "model": "ambiente.ambiente",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "ambiente_logico": 1,
+            "default_vrf": 1,
+            "divisao_dc": 1,
+            "filter": 1,
+            "grupo_l3": 3
+        },
+        "model": "ambiente.ambiente",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "ambiente_logico": 1,
+            "default_vrf": 1,
+            "divisao_dc": 1,
+            "filter": 1,
+            "grupo_l3": 4
+        },
+        "model": "ambiente.ambiente",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "network_type": 1,
+            "new_prefix": 24,
+            "subnet": "192.168.0.0/8",
+            "type": "v4"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "network_type": 1,
+            "new_prefix": 64,
+            "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+            "type": "v6"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "network_type": 1,
+            "new_prefix": 24,
+            "subnet": "192.168.0.0/8",
+            "type": "v4"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "network_type": 1,
+            "new_prefix": 64,
+            "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+            "type": "v6"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "network_type": 2,
+            "new_prefix": 24,
+            "subnet": "192.162.0.0/16",
+            "type": "v4"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "network_type": 2,
+            "new_prefix": 64,
+            "subnet": "fdbe:bebe:bebe:1800:0:0:0:0/58",
+            "type": "v6"
+        },
+        "model": "ambiente.ipconfig",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "ip_config": 1
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "environment": 1,
+            "ip_config": 2
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "environment": 2,
+            "ip_config": 3
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "environment": 2,
+            "ip_config": 4
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "environment": 3,
+            "ip_config": 5
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "environment": 3,
+            "ip_config": 6
+        },
+        "model": "ambiente.configenvironment",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "ambiente_p44_txt": "Test",
+            "cliente_txt": "Django Test",
+            "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+            "description": "Test",
+            "finalidade_txt": "SANITY-TEST"
+        },
+        "model": "ambiente.environmentvip",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "Generic Brand"
+        },
+        "model": "equipamento.marca",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "F5"
+        },
+        "model": "equipamento.marca",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "marca": 1,
+            "nome": "Generic Model"
+        },
+        "model": "equipamento.modelo",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "marca": 2,
+            "nome": "F5 Generic Model"
+        },
+        "model": "equipamento.modelo",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "TOR-1-RACK-1",
+            "tipo_equipamento": 1
+        },
+        "model": "equipamento.equipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "TOR-2-RACK-1",
+            "tipo_equipamento": 1
+        },
+        "model": "equipamento.equipamento",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "TOR-1-RACK-2",
+            "tipo_equipamento": 1
+        },
+        "model": "equipamento.equipamento",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "TOR-2-RACK-2",
+            "tipo_equipamento": 1
+        },
+        "model": "equipamento.equipamento",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 2,
+            "nome": "LB-1-BALACING",
+            "tipo_equipamento": 2
+        },
+        "model": "equipamento.equipamento",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 2,
+            "nome": "LB-2-BALACING",
+            "tipo_equipamento": 2
+        },
+        "model": "equipamento.equipamento",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "VM-1-RACK-1",
+            "tipo_equipamento": 3
+        },
+        "model": "equipamento.equipamento",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "VM-2-RACK-1",
+            "tipo_equipamento": 3
+        },
+        "model": "equipamento.equipamento",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "VM-1-RACK-2",
+            "tipo_equipamento": 3
+        },
+        "model": "equipamento.equipamento",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "maintenance": false,
+            "modelo": 1,
+            "nome": "VM-2-RACK-2",
+            "tipo_equipamento": 3
+        },
+        "model": "equipamento.equipamento",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "nome": "Group of SW"
+        },
+        "model": "grupo.egrupo",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "Group of LB"
+        },
+        "model": "grupo.egrupo",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "nome": "Group of VM"
+        },
+        "model": "grupo.egrupo",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "alterar_config": "1",
+            "egrupo": 1,
+            "escrita": "1",
+            "exclusao": "1",
+            "leitura": "1",
+            "ugrupo": 1
+        },
+        "model": "grupo.direitosgrupoequipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "alterar_config": "1",
+            "egrupo": 2,
+            "escrita": "1",
+            "exclusao": "1",
+            "leitura": "1",
+            "ugrupo": 1
+        },
+        "model": "grupo.direitosgrupoequipamento",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "alterar_config": "1",
+            "egrupo": 3,
+            "escrita": "1",
+            "exclusao": "1",
+            "leitura": "1",
+            "ugrupo": 1
+        },
+        "model": "grupo.direitosgrupoequipamento",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "egrupo": 1,
+            "equipamento": 1
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "egrupo": 1,
+            "equipamento": 2
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "egrupo": 1,
+            "equipamento": 3
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "egrupo": 1,
+            "equipamento": 4
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "egrupo": 2,
+            "equipamento": 5
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "egrupo": 2,
+            "equipamento": 6
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "egrupo": 3,
+            "equipamento": 7
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "egrupo": 3,
+            "equipamento": 8
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "egrupo": 3,
+            "equipamento": 9
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "egrupo": 3,
+            "equipamento": 10
+        },
+        "model": "equipamento.equipamentogrupo",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "ambiente": 1,
+            "equipamento": 1,
+            "is_router": true
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "ambiente": 1,
+            "equipamento": 2,
+            "is_router": true
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "ambiente": 2,
+            "equipamento": 3,
+            "is_router": true
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "ambiente": 2,
+            "equipamento": 4,
+            "is_router": true
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "ambiente": 3,
+            "equipamento": 5,
+            "is_router": false
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "ambiente": 3,
+            "equipamento": 6,
+            "is_router": false
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "ambiente": 1,
+            "equipamento": 7,
+            "is_router": false
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "ambiente": 1,
+            "equipamento": 8,
+            "is_router": false
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "ambiente": 2,
+            "equipamento": 9,
+            "is_router": false
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "ambiente": 2,
+            "equipamento": 10,
+            "is_router": false
+        },
+        "model": "equipamento.equipamentoambiente",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "ambiente": 1,
+            "nome": "VLAN NUM 2 - RACK-1",
+            "num_vlan": 2
+        },
+        "model": "vlan.vlan",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "ambiente": 2,
+            "nome": "VLAN NUM 2 - RACK-1",
+            "num_vlan": 2
+        },
+        "model": "vlan.vlan",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "ambiente": 3,
+            "nome": "VLAN 2 - BALACING",
+            "num_vlan": 2
+        },
+        "model": "vlan.vlan",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": null,
+            "block": "24",
+            "broadcast": "192.168.1.0",
+            "cluster_unit": null,
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "0",
+            "network_type": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "0",
+            "vlan": 1
+        },
+        "model": "ip.networkipv4",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": null,
+            "block": "24",
+            "broadcast": "192.168.2.0",
+            "cluster_unit": null,
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "0",
+            "network_type": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "2",
+            "oct4": "0",
+            "vlan": 2
+        },
+        "model": "ip.networkipv4",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": 1,
+            "block": "24",
+            "broadcast": "192.162.1.0",
+            "cluster_unit": "cluster-unit-1",
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "0",
+            "network_type": 2,
+            "oct1": "162",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "0",
+            "vlan": 3
+        },
+        "model": "ip.networkipv4",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "networkipv4": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "1"
+        },
+        "model": "ip.ip",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "networkipv4": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "254"
+        },
+        "model": "ip.ip",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "networkipv4": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "253"
+        },
+        "model": "ip.ip",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "networkipv4": 2,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "2",
+            "oct4": "1"
+        },
+        "model": "ip.ip",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "networkipv4": 2,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "2",
+            "oct4": "254"
+        },
+        "model": "ip.ip",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "networkipv4": 2,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "2",
+            "oct4": "253"
+        },
+        "model": "ip.ip",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "networkipv4": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "2"
+        },
+        "model": "ip.ip",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "networkipv4": 1,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "1",
+            "oct4": "3"
+        },
+        "model": "ip.ip",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "networkipv4": 2,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "2",
+            "oct4": "2"
+        },
+        "model": "ip.ip",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "networkipv4": 2,
+            "oct1": "192",
+            "oct2": "168",
+            "oct3": "2",
+            "oct4": "3"
+        },
+        "model": "ip.ip",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "networkipv4": 3,
+            "oct1": "192",
+            "oct2": "162",
+            "oct3": "2",
+            "oct4": "1"
+        },
+        "model": "ip.ip",
+        "pk": 11
+    },
+    {
+        "fields": {
+            "equipamento": 1,
+            "ip": 1
+        },
+        "model": "ip.ipequipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "equipamento": 2,
+            "ip": 1
+        },
+        "model": "ip.ipequipamento",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "equipamento": 1,
+            "ip": 2
+        },
+        "model": "ip.ipequipamento",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "equipamento": 2,
+            "ip": 3
+        },
+        "model": "ip.ipequipamento",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "equipamento": 3,
+            "ip": 4
+        },
+        "model": "ip.ipequipamento",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "equipamento": 4,
+            "ip": 4
+        },
+        "model": "ip.ipequipamento",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "equipamento": 3,
+            "ip": 5
+        },
+        "model": "ip.ipequipamento",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "equipamento": 4,
+            "ip": 6
+        },
+        "model": "ip.ipequipamento",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "equipamento": 7,
+            "ip": 7
+        },
+        "model": "ip.ipequipamento",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "equipamento": 8,
+            "ip": 8
+        },
+        "model": "ip.ipequipamento",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "equipamento": 9,
+            "ip": 9
+        },
+        "model": "ip.ipequipamento",
+        "pk": 11
+    },
+    {
+        "fields": {
+            "equipamento": 10,
+            "ip": 10
+        },
+        "model": "ip.ipequipamento",
+        "pk": 12
+    },
+    {
+        "fields": {
+            "equipamento": 5,
+            "ip": 11
+        },
+        "model": "ip.ipequipamento",
+        "pk": 13
+    },
+    {
+        "fields": {
+            "equipamento": 6,
+            "ip": 11
+        },
+        "model": "ip.ipequipamento",
+        "pk": 14
+    }
+]

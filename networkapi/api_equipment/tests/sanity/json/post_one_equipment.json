@@ -1,0 +1,10 @@
+{
+  "equipments": [
+    {
+      "name": "EQUIPAMENT-SANITY-POST",
+      "maintenance": false,
+      "equipment_type": 1,
+      "model": 1
+    }
+  ]
+}
