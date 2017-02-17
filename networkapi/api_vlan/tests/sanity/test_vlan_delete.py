@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -9,9 +8,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class VlanDeleteTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -22,11 +21,7 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/requisicaovips/fixtures/initial_optionsvip.json',
         'networkapi/api_vlan/fixtures/initial_base.json',
-        verbosity=0
-    )
-
-
-class VlanDeleteTestCase(NetworkApiTestCase):
+    ]
 
     def setUp(self):
         self.client = Client()

@@ -46,3 +46,11 @@ class NetworkApiTestCase(TestCase):
             'Status code should be %s and was %s' % (
                 expected_code, code)
         )
+
+    def compare_values(self, expected_data, received_data):
+        self.assertEqual(
+            expected_data,
+            received_data,
+            'Value should be same. Expected %s Received %s' % (
+                expected_data, received_data)
+        )
