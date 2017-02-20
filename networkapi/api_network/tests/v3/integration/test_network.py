@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-import os
 import sys
 from itertools import izip
 from time import time
@@ -20,7 +19,7 @@ log.addHandler(stream_handler)
 
 def setup():
 
-    fixtures_base_path = 'networkapi/api_network/fixtures/%s'
+    fixtures_base_path = 'networkapi/api_network/fixtures/integration/%s'
 
     call_command(
         'loaddata',
@@ -47,7 +46,7 @@ def setup():
     )
 
 
-class NetworksFunctionalTest2V3(NetworkApiTestCase):
+class NetworksFunctionalTestV3(NetworkApiTestCase):
 
     def setUp(self):
 

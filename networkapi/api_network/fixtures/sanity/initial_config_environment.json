@@ -1,0 +1,18 @@
+[
+  {
+  "pk": 1,
+  "model": "ambiente.configenvironment",
+  "fields": {
+    "environment": 1,
+    "ip_config": 1
+    }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.configenvironment",
+  "fields": {
+    "environment": 1,
+    "ip_config": 2
+    }
+  }
+]

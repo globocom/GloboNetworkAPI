@@ -1,0 +1,11 @@
+[
+  {
+  "pk": 1,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 1,
+    "nome": "Vlan with PK 1",
+    "num_vlan": "1"
+    }
+  }
+]

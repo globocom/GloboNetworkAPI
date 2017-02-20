@@ -39,6 +39,16 @@ class NetworkApiTestCase(TestCase):
                 expected_data, received_data)
         )
 
+    def compare_json_lists(self, name_file, data):
+        expected_data = self.load_json_file(name_file)
+        received_data = data
+        self.assertEqual(
+            sorted(expected_data),
+            sorted(received_data),
+            'Jsons should be same. Expected %s Received %s' % (
+                json.dumps(expected_data), json.dumps(received_data))
+        )
+
     def compare_status(self, expected_code, code):
         self.assertEqual(
             expected_code,
