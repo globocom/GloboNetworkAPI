@@ -20,6 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db import transaction
 from django.db.models import get_model
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 
 from networkapi.ambiente.models import ConfigEnvironmentInvalidError
 from networkapi.ambiente.models import IP_VERSION
@@ -55,6 +56,9 @@ from networkapi.util.decorators import cached_property
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
+
+from rest_framework import status
+
 
 
 class NetworkIPv4Error(Exception):
@@ -158,6 +162,8 @@ class IpError(Exception):
 class NetworkIPv4NotFoundError(NetworkIPv4Error):
 
     """Exception to search by primary key."""
+
+    status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, cause, message=None):
         NetworkIPv4Error.__init__(self, cause, message)
@@ -398,8 +404,8 @@ class NetworkIPv4(BaseModel):
         try:
             return NetworkIPv4.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise NetworkIPv4NotFoundError(
-                e, u'There is no NetworkIPv4 with pk = %s.' % id)
+            raise ObjectDoesNotExistException(
+                u'There is no NetworkIPv4 with pk = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -2559,8 +2565,8 @@ class NetworkIPv6(BaseModel):
         try:
             return NetworkIPv6.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise NetworkIPv6NotFoundError(
-                e, u'Can not find a NetworkIPv6 with id = %s.' % id)
+            raise ObjectDoesNotExistException(
+                u'There is no NetworkIPv6 with pk = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
