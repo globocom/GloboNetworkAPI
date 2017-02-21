@@ -1,0 +1,51 @@
+[
+    {
+        "fields": {
+            "nome": "BE"
+        },
+        "model": "ambiente.divisaodc",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "SANITY-TEST-1"
+        },
+        "model": "ambiente.ambientelogico",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "SANITY-TEST-2"
+        },
+        "model": "ambiente.ambientelogico",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "nome": "RACK-1"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "nome": "RACK-2"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "nome": "BALANCING"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "nome": "GENERAL"
+        },
+        "model": "ambiente.grupol3",
+        "pk": 4
+    }
+]

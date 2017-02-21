@@ -1,0 +1,53 @@
+[
+{
+    "fields": {
+        "internal_name": "default",
+        "vrf": "default"
+    },
+    "model": "api_vrf.vrf",
+    "pk": 1
+}, {
+    "fields": {
+        "description": "Servidores",
+        "name": "Servidores"
+    },
+    "model": "filter.filter",
+    "pk": 1
+}, {
+    "fields": {
+        "tipo_rede": "Network of Equipments"
+    },
+    "model": "vlan.tiporede",
+    "pk": 1
+}, {
+    "fields": {
+        "tipo_rede": "Network VIP"
+    },
+    "model": "vlan.tiporede",
+    "pk": 2
+}, {
+    "fields": {
+        "tipo_equipamento": "switch"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 1
+}, {
+    "fields": {
+        "tipo_equipamento": "Balanceador"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 2
+}, {
+    "fields": {
+        "tipo_equipamento": "VM"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 3
+}, {
+    "fields": {
+        "equiptype": 3,
+        "filter": 1
+    },
+    "model": "filterequiptype.filterequiptype",
+    "pk": 1
+}]

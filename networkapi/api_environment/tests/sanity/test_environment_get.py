@@ -21,12 +21,17 @@ def setup():
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
         verbosity=0
     )
 
 
 class EnvironmentGetTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_environment/fixtures/initial_base.json',
+    ]
 
     def setUp(self):
         self.client = Client()

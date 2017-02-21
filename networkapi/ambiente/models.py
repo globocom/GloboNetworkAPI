@@ -974,7 +974,7 @@ class Ambiente(BaseModel):
             return Ambiente.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
             raise AmbienteNotFoundError(
-                e, u'Não existe um ambiente com o id = %s.' % id)
+                e, u'There is no environment with id = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -1264,16 +1264,13 @@ class Ambiente(BaseModel):
             self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
-            self.vrf = env_map.get('vrf')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
+            self.vrf = self.default_vrf.internal_name
             self.validate_v3()
             self.save()
 
-            configs = env_map.get('configs')
-            if configs:
-                # save configs
-                for config in configs:
-                    IPConfig.create(self.id, config)
+            configs = env_map.get('configs', [])
+            self.create_configs(configs, self.id)
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
@@ -1307,8 +1304,8 @@ class Ambiente(BaseModel):
             self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
-            self.vrf = env_map.get('vrf')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
+            self.vrf = self.default_vrf.internal_name
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
