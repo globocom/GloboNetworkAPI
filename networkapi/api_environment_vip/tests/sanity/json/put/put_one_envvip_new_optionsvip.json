@@ -6,7 +6,12 @@
       "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
       "description": "Test",
       "finalidade_txt": "SANITY-TEST-2",
-      "id": 2
+      "id": 2,
+      "optionsvip": [
+        {
+          "option": 6
+        }
+      ]
     }
   ]
 }

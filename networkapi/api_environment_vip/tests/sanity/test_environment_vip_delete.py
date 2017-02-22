@@ -21,12 +21,15 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/requisicaovips/fixtures/initial_optionsvip.json',
-        'networkapi/api_environment_vip/fixtures/initial_base.json',
         verbosity=0
     )
 
 
 class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_environment_vip/fixtures/initial_base.json',
+    ]
 
     def setUp(self):
         self.client = Client()

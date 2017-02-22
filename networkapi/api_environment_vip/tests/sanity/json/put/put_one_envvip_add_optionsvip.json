@@ -1,11 +1,12 @@
 {
   "environments_vip": [
     {
-      "ambiente_p44_txt": "Teste New Environment VIP",
-      "cliente_txt": "Teste New Environment VIP",
+      "ambiente_p44_txt": "Test",
+      "cliente_txt": "Django Test",
       "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
-      "description": "Teste New Environment VIP",
-      "finalidade_txt": "Teste New Environment VIP",
+      "description": "Test",
+      "finalidade_txt": "SANITY-TEST-2",
+      "id": 2,
       "optionsvip": [
         {
           "option": 1

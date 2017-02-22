@@ -57,7 +57,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/environment-vip/%s/' % id_env,
+            '/api/v3/environment-vip/%s/?include=conf' % id_env,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -87,7 +87,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/environment-vip/%s/?include=environments' % id_env,
+            '/api/v3/environment-vip/%s/?include=environments,conf' % id_env,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -117,7 +117,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/environment-vip/%s/?include=optionsvip' % id_env,
+            '/api/v3/environment-vip/%s/?include=optionsvip,conf' % id_env,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 

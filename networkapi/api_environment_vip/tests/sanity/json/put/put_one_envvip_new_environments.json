@@ -5,6 +5,11 @@
       "cliente_txt": "Django Test",
       "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
       "description": "Test",
+      "environments": [
+        {
+          "environment": 2
+        }
+      ],
       "finalidade_txt": "SANITY-TEST-2",
       "id": 2
     }

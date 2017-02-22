@@ -410,7 +410,8 @@ class EnvironmentVip(BaseModel):
 
     conf = models.TextField(
         blank=False,
-        db_column='conf'
+        db_column='conf',
+        default='{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
     )
 
     log = logging.getLogger('EnvironmentVip')
@@ -657,8 +658,7 @@ class EnvironmentVip(BaseModel):
         optionvipenvvip_model = get_model(
             'requisicaovips', 'OptionVipEnvironmentVip')
 
-        default_conf = '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
-        self.conf = env_map.get('conf', default_conf)
+        self.conf = env_map.get('conf')
 
         optionsvip = env_map.get('optionsvip', None)
         environments = env_map.get('environments', None)
@@ -693,7 +693,6 @@ class EnvironmentVip(BaseModel):
         optionvip_model = get_model('requisicaovips', 'OptionVip')
         optionvipenvvip_model = get_model(
             'requisicaovips', 'OptionVipEnvironmentVip')
-        self.valid_environment_vip(env_map)
 
         conf = env_map.get('conf', None)
         if conf is not None:
@@ -701,6 +700,11 @@ class EnvironmentVip(BaseModel):
 
         optionsvip = env_map.get('optionsvip', None)
         environments = env_map.get('environments', None)
+
+        self.finalidade_txt = env_map.get('finalidade_txt')
+        self.cliente_txt = env_map.get('cliente_txt')
+        self.ambiente_p44_txt = env_map.get('ambiente_p44_txt')
+        self.description = env_map.get('description')
 
         self.save()
 
