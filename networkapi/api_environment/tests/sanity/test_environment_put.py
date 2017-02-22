@@ -23,15 +23,18 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
         'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         verbosity=0
     )
 
 
-class EnvironmentPutTestCase(NetworkApiTestCase):
+class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
 
     fixtures = [
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
+
+    json_path = 'api_environment/tests/sanity/json/put/%s'
 
     def setUp(self):
         self.client = Client()
@@ -39,10 +42,10 @@ class EnvironmentPutTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_put_one_env_success(self):
-        """Test of success for put one environment."""
+    def test_put_one_env(self):
+        """Test of success to put 1 environment."""
 
-        name_file = 'api_environment/tests/sanity/json/put_one_env.json'
+        name_file = self.json_path % 'put_one_env.json'
 
         # Does put request
         response = self.client.put(
@@ -67,10 +70,111 @@ class EnvironmentPutTestCase(NetworkApiTestCase):
 
         self.compare_json(name_file, data)
 
-    def test_put_two_env_success(self):
-        """Test of success for put two environments."""
+    def test_put_one_env_new_configs(self):
+        """Test of success to put 1 environment with new configs."""
 
-        name_file = 'api_environment/tests/sanity/json/put_two_env.json'
+        name_file = self.json_path % 'put_one_env_new_configs.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment/1/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment/1/?include=configs',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property name
+        data = response.data
+        del data['environments'][0]['name']
+        del data['environments'][0]['configs'][0]['id']
+
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_add_configs(self):
+        """Test of success to put 1 environment with add configs."""
+
+        name_file = self.json_path % 'put_one_env_add_configs.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment/1/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment/1/?include=configs',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property name
+        data = response.data
+        del data['environments'][0]['name']
+        del data['environments'][0]['configs'][1]['id']
+
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_update_configs(self):
+        """Test of success to put 1 environment with update configs."""
+
+        name_file = self.json_path % 'put_one_env_update_configs.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment/1/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment/1/?include=configs',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property name
+        data = response.data
+        del data['environments'][0]['name']
+
+        self.compare_json(name_file, data)
+
+
+class EnvironmentPutTwoSuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_environment/fixtures/initial_base.json',
+    ]
+
+    json_path = 'api_environment/tests/sanity/json/put/%s'
+
+    def setUp(self):
+        self.client = Client()
+
+    def tearDown(self):
+        pass
+
+    def test_put_two_env(self):
+        """Test of success to put 2 environments."""
+
+        name_file = self.json_path % 'put_two_env.json'
 
         # Does put request
         response = self.client.put(
@@ -94,10 +198,25 @@ class EnvironmentPutTestCase(NetworkApiTestCase):
         del data['environments'][0]['name']
         del data['environments'][1]['name']
 
-    def test_put_one_env_duplicate_error(self):
+
+class EnvironmentPutErrorTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_environment/fixtures/initial_base.json',
+    ]
+
+    json_path = 'api_environment/tests/sanity/json/put/%s'
+
+    def setUp(self):
+        self.client = Client()
+
+    def tearDown(self):
+        pass
+
+    def test_put_one_env_duplicate(self):
         """Test of error for put one duplicated environment."""
 
-        name_file = 'api_environment/tests/sanity/json/put_one_env_duplicate_error.json'
+        name_file = self.json_path % 'put_one_env_duplicate_error.json'
 
         # Does put request
         response = self.client.put(

@@ -22,6 +22,7 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
         'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         verbosity=0
     )
 

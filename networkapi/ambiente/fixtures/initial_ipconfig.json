@@ -1,42 +1,42 @@
 [
   {
-  "pk": 1,
-  "model": "ambiente.ipconfig",
-  "fields": {
-    "subnet": "192.168.0.0/8",
-    "new_prefix": 24,
-    "type": "v4",
-    "network_type": 1
-    }
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 24,
+      "subnet": "192.168.0.0/8",
+      "type": "v4"
+    },
+    "model": "ambiente.ipconfig",
+    "pk": 1
   },
   {
-  "pk": 2,
-  "model": "ambiente.ipconfig",
-  "fields": {
-    "subnet": "192.168.0.0/8",
-    "new_prefix": 24,
-    "type": "v4",
-    "network_type": 1
-    }
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 24,
+      "subnet": "192.168.0.0/8",
+      "type": "v4"
+    },
+    "model": "ambiente.ipconfig",
+    "pk": 2
   },
   {
-  "pk": 3,
-  "model": "ambiente.ipconfig",
-  "fields": {
-    "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
-    "new_prefix": 64,
-    "type": "v6",
-    "network_type": 1
-    }
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 64,
+      "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+      "type": "v6"
+    },
+    "model": "ambiente.ipconfig",
+    "pk": 3
   },
   {
-  "pk": 4,
-  "model": "ambiente.ipconfig",
-  "fields": {
-    "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
-    "new_prefix": 64,
-    "type": "v6",
-    "network_type": 1
-    }
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 64,
+      "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+      "type": "v6"
+    },
+    "model": "ambiente.ipconfig",
+    "pk": 4
   }
 ]

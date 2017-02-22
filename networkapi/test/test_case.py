@@ -29,9 +29,11 @@ class NetworkApiTestCase(TestCase):
         return load_json(local_files(file_name))
 
     def compare_json(self, name_file, data):
-        expected_data = json.dumps(
-            self.load_json_file(name_file), sort_keys=True)
+
+        expected_data = json.dumps(self.load_json_file(name_file),
+                                   sort_keys=True)
         received_data = json.dumps(data, sort_keys=True)
+
         self.assertEqual(
             expected_data,
             received_data,
@@ -40,6 +42,7 @@ class NetworkApiTestCase(TestCase):
         )
 
     def compare_status(self, expected_code, code):
+
         self.assertEqual(
             expected_code,
             code,
@@ -48,6 +51,7 @@ class NetworkApiTestCase(TestCase):
         )
 
     def compare_values(self, expected_data, received_data):
+
         self.assertEqual(
             expected_data,
             received_data,

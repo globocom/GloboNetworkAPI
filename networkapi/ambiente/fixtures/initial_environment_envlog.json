@@ -1,72 +1,72 @@
 [
   {
-  "pk": 1,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TESTE"
-    }
+    "fields": {
+      "nome": "TESTE"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 1
   },
   {
-  "pk": 2,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TESTE2"
-    }
+    "fields": {
+      "nome": "TESTE2"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 2
   },
   {
-  "pk": 3,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TESTE-EQPT"
-    }
+    "fields": {
+      "nome": "TESTE-EQPT"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 3
   },
   {
-  "pk": 4,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TESTE-POOL"
-    }
+    "fields": {
+      "nome": "TESTE-POOL"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 4
   },
   {
-  "pk": 5,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TEST POST"
-    }
+    "fields": {
+      "nome": "TEST POST"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 5
   },
   {
-  "pk": 6,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TEST PUT"
-    }
+    "fields": {
+      "nome": "TEST PUT"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 6
   },
   {
-  "pk": 7,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "TEST DELETE"
-    }
+    "fields": {
+      "nome": "TEST DELETE"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 7
   },
   {
-  "pk": 8,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "Test used in environment vip"
-    }
+    "fields": {
+      "nome": "Test used in environment vip"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 8
   },
   {
-  "pk": 9,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "Logical Env 1 - IPs Test"
-    }
+    "fields": {
+      "nome": "Logical Env 1 - IPs Test"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 9
   },
   {
-  "pk": 10,
-  "model": "ambiente.ambientelogico",
-  "fields": {
-    "nome": "Logical Env 2 - IPs Test"
-    }
+    "fields": {
+      "nome": "Logical Env 2 - IPs Test"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 10
   }
 ]

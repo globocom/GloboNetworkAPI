@@ -30,7 +30,7 @@ def setup():
 
 class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
 
-    json_path = 'api_environment/tests/sanity/json/%s'
+    json_path = 'api_environment/tests/sanity/json/post/%s'
 
     def setUp(self):
         self.client = Client()
@@ -135,7 +135,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
 
 class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
 
-    json_path = 'api_environment/tests/sanity/json/%s'
+    json_path = 'api_environment/tests/sanity/json/post/%s'
 
     def setUp(self):
         self.client = Client()
@@ -255,7 +255,7 @@ class EnvironmentPostErrorTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
-    json_path = 'api_environment/tests/sanity/json/%s'
+    json_path = 'api_environment/tests/sanity/json/post/%s'
 
     def setUp(self):
         self.client = Client()
