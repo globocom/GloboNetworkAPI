@@ -1,0 +1,57 @@
+[
+  {
+    "pk": 1,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 3,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "3",
+      "oct4": "1"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 4,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "4",
+      "oct4": "1"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 6,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "6",
+      "oct4": "1"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 6,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "6",
+      "oct4": "2"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "ip.ip",
+    "fields": {
+      "networkipv4": 1,
+      "oct1": "10",
+      "oct2": "0",
+      "oct3": "1",
+      "oct4": "1"
+    }
+  }
+]

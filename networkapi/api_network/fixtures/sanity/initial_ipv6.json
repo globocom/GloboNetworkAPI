@@ -1,0 +1,62 @@
+[
+  {
+    "pk": 1,
+    "model": "ip.ipv6",
+    "fields": {
+      "networkipv6": 3,
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0002",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ip.ipv6",
+    "fields": {
+      "networkipv6": 4,
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0003",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ip.ipv6",
+    "fields": {
+      "networkipv6": 6,
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0005",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ip.ipv6",
+    "fields": {
+      "networkipv6": 6,
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0005",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0002"
+    }
+  }
+]

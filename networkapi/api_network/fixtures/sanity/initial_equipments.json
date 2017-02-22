@@ -1,0 +1,12 @@
+[
+  {
+    "pk": 1,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "Eqpt-1",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  }
+]

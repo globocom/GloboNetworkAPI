@@ -20,10 +20,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db import transaction
 from django.db.models import get_model
-from networkapi.api_rest.exceptions import ObjectDoesNotExistException
+from rest_framework import status
 
 from networkapi.ambiente.models import ConfigEnvironmentInvalidError
 from networkapi.ambiente.models import IP_VERSION
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_vip_request import syncs
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_ENVIRONMENT
@@ -56,9 +57,6 @@ from networkapi.util.decorators import cached_property
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
-
-from rest_framework import status
-
 
 
 class NetworkIPv4Error(Exception):
@@ -3086,6 +3084,10 @@ class NetworkIPv6(BaseModel):
         locks_list = create_lock_with_blocking(locks_name)
 
         try:
+            if self.active:
+                raise NetworkActiveError(
+                    None,
+                    'Try to set it inactive before removing it')
 
             for ip in self.ipv6_set.all():
                 ip.delete_v3()

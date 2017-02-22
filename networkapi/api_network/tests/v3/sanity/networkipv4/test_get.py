@@ -240,8 +240,8 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
         self.compare_json_lists(name_file, response.data['networks'])
 
-    def test_get_non_existent_netipv4_by_id(self):
-        """Tries to get a non existent Network IPv4 by id."""
+    def test_get_inexistent_netipv4_by_id(self):
+        """Tries to get a inexistent Network IPv4 by id."""
 
         get_url = '/api/v3/networkv4/1000/'
 
@@ -258,8 +258,8 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             response.data['detail']
         )
 
-    def test_get_two_non_existent_netipv4_by_id(self):
-        """Tries to get two non existent Network IPv4 by id."""
+    def test_get_two_inexistent_netipv4_by_id(self):
+        """Tries to get two inexistent Network IPv4 by id."""
 
         get_url = '/api/v3/networkv4/1000;1001/'
 
@@ -276,8 +276,8 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             response.data['detail']
         )
 
-    def test_get_a_existent_and_non_existent_netipv4_by_id(self):
-        """Tries to get a existent and a non existent Network IPv4 by id."""
+    def test_get_a_existent_and_inexistent_netipv4_by_id(self):
+        """Tries to get a existent and a inexistent Network IPv4 by id."""
 
         get_url = '/api/v3/networkv4/1;1000/'
 
@@ -294,8 +294,8 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             response.data['detail']
         )
 
-    def test_get_non_existent_netipv4_by_search(self):
-        """Tries to get a non existent Network IPv4 by search."""
+    def test_get_inexistent_netipv4_by_search(self):
+        """Tries to get a inexistent Network IPv4 by search."""
 
         name_file = 'api_network/tests/v3/sanity/networkipv4/json/get/empty.json'
 

@@ -1,0 +1,13 @@
+[
+  {
+  "pk": 1,
+  "model": "ambiente.environmentvip",
+  "fields": {
+    "ambiente_p44_txt": "test",
+    "cliente_txt": "test",
+    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+    "description": "test",
+    "finalidade_txt": "test"
+    }
+  }
+]
