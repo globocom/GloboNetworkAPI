@@ -42,22 +42,14 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
         response = self.client.get(
             '/api/v3/environment-vip/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            404,
-            response.status_code,
-            'Status code should be 404 and was %s' % response.status_code
-        )
+        self.compare_status(404, response.status_code)
 
     def test_delete_one_env_inexistent_error(self):
         """Test success of delete of one environment vip."""
@@ -67,11 +59,7 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            404,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(404, response.status_code)
 
     def test_delete_one_env_related_network_error(self):
         """Test of error to delete one environment vip related with network
@@ -83,8 +71,4 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            400,
-            response.status_code,
-            'Status code should be 400 and was %s' % response.status_code
-        )
+        self.compare_status(400, response.status_code)

@@ -29,6 +29,8 @@ def setup():
 
 class EnvironmentVipTestCase(NetworkApiTestCase):
 
+    json_path = 'api_environment_vip/tests/sanity/json/put/%s'
+
     def setUp(self):
         self.client = Client()
 
@@ -38,7 +40,7 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
     def test_put_one_env_success(self):
         """Test Success of put of one environment vip."""
 
-        name_file = 'api_environment_vip/tests/sanity/json/put_one_envvip.json'
+        name_file = self.json_path % 'put_one_envvip.json'
 
         # Does put request
         response = self.client.put(
@@ -48,9 +50,7 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         # Tests code returned
-        self.assertEqual(200, response.status_code,
-                         'Status code should be 200 and was %s' %
-                         response.status_code)
+        self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
@@ -59,15 +59,9 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         # Tests code returned
-        self.assertEqual(200, response.status_code,
-                         'Status code should be 200 and was %s' %
-                         response.status_code)
+        self.compare_status(200, response.status_code)
 
         data = response.data
 
         # Tests if data was updated
-        self.assertEqual(
-            json.dumps(self.load_json_file(name_file), sort_keys=True),
-            json.dumps(data, sort_keys=True),
-            'Jsons should be same.'
-        )
+        self.compare_json(name_file, data)

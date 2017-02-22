@@ -42,11 +42,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
     def test_get_success_two_environments_vip(self):
         """Test Success of get two environment vip."""
@@ -56,11 +52,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
     def test_get_success_list_envvip_step(self):
         """Test Success of environment vip by step."""
@@ -72,11 +64,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
         # get clients
         url = '{0}?finality={1}'.format(
@@ -87,11 +75,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
         # get environments
         url = '{0}&client={1}'.format(
@@ -102,11 +86,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
         # get ambiente_p44_txt
         url = '{0}&environmentp44={1}'.format(
@@ -117,11 +97,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
     def test_get_success_search_envvip(self):
         """Test Success of options list by environment vip id."""
@@ -140,11 +116,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
     def test_get_success_list_options_by_envvip(self):
         """Test Success of options list by environment vip id."""
@@ -154,11 +126,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
     def test_get_success_list_options_by_envvip_and_type(self):
         """Test Success of options list by environment vip id and type option.
@@ -169,11 +137,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
 
         response = self.client.get(
             '/api/v3/option-vip/environment-vip/1/type-option/{0}/'.format(
@@ -182,8 +146,4 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.assertEqual(
-            200,
-            response.status_code,
-            'Status code should be 200 and was %s' % response.status_code
-        )
+        self.compare_status(200, response.status_code)
