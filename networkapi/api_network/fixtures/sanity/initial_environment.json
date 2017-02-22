@@ -13,5 +13,20 @@
       "max_num_vlan_2": 1000,
       "filter": 1
     }
+  },
+  {
+    "pk": 2,
+    "model": "ambiente.ambiente",
+    "fields": {
+      "grupo_l3": 1,
+      "ambiente_logico": 1,
+      "divisao_dc": 2,
+      "default_vrf": 1,
+      "min_num_vlan_1": 1,
+      "max_num_vlan_1": 500,
+      "min_num_vlan_2": 501,
+      "max_num_vlan_2": 1000,
+      "filter": 1
+    }
   }
 ]

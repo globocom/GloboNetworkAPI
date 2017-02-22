@@ -35,8 +35,6 @@ def setup():
         'networkapi/filter/fixtures/initial_filter.json',
         'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
         'networkapi/equipamento/fixtures/initial_tipo_equip.json',
-        # 'networkapi/equipamento/fixtures/initial_equip_marca.json',
-        # 'networkapi/equipamento/fixtures/initial_equip_model.json',
 
         'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
         'networkapi/api_network/fixtures/sanity/initial_environment.json',
@@ -217,3 +215,15 @@ class NetworkIPv4DeleteTestCase(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
+
+        url_get = '/api/v3/networkv4/1/?fields=active'
+
+        response = self.client.get(
+            url_get,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        active = response.data['networks'][0]['active']
+        self.compare_values(False, active)

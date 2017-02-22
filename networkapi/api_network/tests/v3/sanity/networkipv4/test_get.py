@@ -102,8 +102,8 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             'searchable_columns': [],
             'extends_search': [{
                 'oct1': 10,
-                'oct2': 0,
-                'oct3': 1,
+                'oct2': 10,
+                'oct3': 0,
                 'oct4': 0
             }]
         }
@@ -131,9 +131,9 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'broadcast': '10.0.1.255'
+                'broadcast': '10.10.0.255'
             }, {
-                'broadcast': '10.0.2.127'
+                'broadcast': '10.10.1.127'
             }]
         }
 
@@ -193,8 +193,8 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             'searchable_columns': [],
             'extends_search': [{
                 'oct1': 10,
-                'oct2': 0,
-                'oct3': 1,
+                'oct2': 10,
+                'oct3': 0,
                 'oct4': 0
             }]
         }
@@ -222,9 +222,9 @@ class NetworkIPv4GetTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'broadcast': '10.0.1.255'
+                'broadcast': '10.10.0.255'
             }, {
-                'broadcast': '10.0.2.127'
+                'broadcast': '10.10.1.127'
             }]
         }
 

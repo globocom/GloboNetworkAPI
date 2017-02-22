@@ -58,5 +58,20 @@
       "block7": "0000",
       "block8": "0002"
     }
+  },
+  {
+    "pk": 5,
+    "model": "ip.ipv6",
+    "fields": {
+      "networkipv6": 1,
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0000",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001"
+    }
   }
 ]

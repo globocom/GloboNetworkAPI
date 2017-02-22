@@ -202,6 +202,8 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
 
 NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-html',
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',

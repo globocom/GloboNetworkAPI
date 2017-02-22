@@ -7,5 +7,14 @@
     "nome": "Vlan with PK 1",
     "num_vlan": "1"
     }
+  },
+  {
+  "pk": 2,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 2,
+    "nome": "Vlan with PK 2",
+    "num_vlan": "2"
+    }
   }
 ]

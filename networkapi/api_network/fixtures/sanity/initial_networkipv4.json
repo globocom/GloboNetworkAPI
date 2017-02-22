@@ -6,7 +6,7 @@
     "active": "1",
     "ambient_vip": null,
     "block": "24",
-    "broadcast": "10.0.1.255",
+    "broadcast": "10.10.0.255",
     "cluster_unit": "cluster-unit-1",
     "mask_oct1": "255",
     "mask_oct2": "255",
@@ -14,8 +14,8 @@
     "mask_oct4": "0",
     "network_type": 1,
     "oct1": "10",
-    "oct2": "0",
-    "oct3": "1",
+    "oct2": "10",
+    "oct3": "0",
     "oct4": "0",
     "vlan": 1
     }
@@ -27,7 +27,7 @@
     "active": "1",
     "ambient_vip": null,
     "block": "25",
-    "broadcast": "10.0.2.127",
+    "broadcast": "10.10.1.127",
     "cluster_unit": "cluster-unit-1",
     "mask_oct1": "255",
     "mask_oct2": "255",
@@ -35,8 +35,8 @@
     "mask_oct4": "128",
     "network_type": 1,
     "oct1": "10",
-    "oct2": "0",
-    "oct3": "2",
+    "oct2": "10",
+    "oct3": "1",
     "oct4": "0",
     "vlan": 1
     }
@@ -48,7 +48,7 @@
     "active": "0",
     "ambient_vip": null,
     "block": "25",
-    "broadcast": "10.0.3.127",
+    "broadcast": "10.10.2.127",
     "cluster_unit": "cluster-unit-1",
     "mask_oct1": "255",
     "mask_oct2": "255",
@@ -56,8 +56,8 @@
     "mask_oct4": "128",
     "network_type": 1,
     "oct1": "10",
-    "oct2": "0",
-    "oct3": "3",
+    "oct2": "10",
+    "oct3": "2",
     "oct4": "0",
     "vlan": 1
     }
@@ -69,7 +69,7 @@
     "active": "0",
     "ambient_vip": null,
     "block": "25",
-    "broadcast": "10.0.4.127",
+    "broadcast": "10.10.3.127",
     "cluster_unit": "cluster-unit-1",
     "mask_oct1": "255",
     "mask_oct2": "255",
@@ -77,8 +77,8 @@
     "mask_oct4": "128",
     "network_type": 1,
     "oct1": "10",
-    "oct2": "0",
-    "oct3": "4",
+    "oct2": "10",
+    "oct3": "3",
     "oct4": "0",
     "vlan": 1
     }
@@ -90,7 +90,7 @@
     "active": "0",
     "ambient_vip": null,
     "block": "25",
-    "broadcast": "10.0.5.127",
+    "broadcast": "10.10.4.127",
     "cluster_unit": "cluster-unit-1",
     "mask_oct1": "255",
     "mask_oct2": "255",
@@ -98,8 +98,8 @@
     "mask_oct4": "128",
     "network_type": 1,
     "oct1": "10",
-    "oct2": "0",
-    "oct3": "5",
+    "oct2": "10",
+    "oct3": "4",
     "oct4": "0",
     "vlan": 1
     }
@@ -111,7 +111,7 @@
     "active": "0",
     "ambient_vip": null,
     "block": "25",
-    "broadcast": "10.0.6.127",
+    "broadcast": "10.10.5.127",
     "cluster_unit": "cluster-unit-1",
     "mask_oct1": "255",
     "mask_oct2": "255",
@@ -119,10 +119,31 @@
     "mask_oct4": "128",
     "network_type": 1,
     "oct1": "10",
-    "oct2": "0",
-    "oct3": "6",
+    "oct2": "10",
+    "oct3": "5",
     "oct4": "0",
     "vlan": 1
+    }
+  },
+  {
+  "pk": 7,
+  "model": "ip.networkipv4",
+  "fields": {
+    "active": "0",
+    "ambient_vip": null,
+    "block": "16",
+    "broadcast": "10.11.255.255",
+    "cluster_unit": "cluster-unit-1",
+    "mask_oct1": "255",
+    "mask_oct2": "255",
+    "mask_oct3": "0",
+    "mask_oct4": "0",
+    "network_type": 1,
+    "oct1": "10",
+    "oct2": "11",
+    "oct3": "0",
+    "oct4": "0",
+    "vlan": 2
     }
   }
 ]

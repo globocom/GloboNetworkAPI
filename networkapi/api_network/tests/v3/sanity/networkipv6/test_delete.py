@@ -7,7 +7,9 @@ from time import time
 
 from django.core.management import call_command
 from django.test.client import Client
+from mock import patch
 
+from networkapi.test.mock import MockPluginNetwork
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import prepare_url
 
@@ -33,8 +35,6 @@ def setup():
         'networkapi/filter/fixtures/initial_filter.json',
         'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
         'networkapi/equipamento/fixtures/initial_tipo_equip.json',
-        'networkapi/equipamento/fixtures/initial_equip_marca.json',
-        'networkapi/equipamento/fixtures/initial_equip_model.json',
 
         'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
         'networkapi/api_network/fixtures/sanity/initial_environment.json',
@@ -49,7 +49,12 @@ def setup():
         'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
         'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
         'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
-
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
         verbosity=1
     )
 
@@ -62,6 +67,8 @@ class NetworkIPv6DeleteTestCase(NetworkApiTestCase):
 
     def tearDown(self):
         pass
+
+    # not deploy tests
 
     def test_try_delete_inactive_netipv6(self):
         """Tries to delete an inactive Network IPv6 without IP Addresses. NAPI should allow this request."""
@@ -190,3 +197,33 @@ class NetworkIPv6DeleteTestCase(NetworkApiTestCase):
             u'There is no NetworkIPv6 with pk = 6.',
             response.data['detail']
         )
+
+    # undeploy tests
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_try_undeploy_netipv6(self, test_patch):
+        """Tries to undeploy a Network IPv6."""
+
+        mock = MockPluginNetwork()
+        mock.status(True)
+        test_patch.return_value = mock
+
+        url_delete = '/api/v3/networkv6/deploy/1/'
+
+        response = self.client.delete(
+            url_delete,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        url_get = '/api/v3/networkv6/1/?fields=active'
+
+        response = self.client.get(
+            url_get,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        active = response.data['networks'][0]['active']
+        self.compare_values(False, active)

@@ -14,5 +14,21 @@
     "environment": 1,
     "ip_config": 2
     }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.configenvironment",
+  "fields": {
+    "environment": 2,
+    "ip_config": 3
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.configenvironment",
+  "fields": {
+    "environment": 2,
+    "ip_config": 4
+    }
   }
 ]

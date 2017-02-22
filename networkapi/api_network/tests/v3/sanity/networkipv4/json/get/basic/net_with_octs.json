@@ -1,9 +1,8 @@
 [
   {
-    "id": 3,
-    "networkv4": "10.10.2.0/25",
+    "networkv4": "10.10.6.0/25",
     "mask_formated": "255.255.255.128",
-    "broadcast": "10.10.2.127",
+    "broadcast": "10.10.6.127",
     "vlan": {
       "id": 1,
       "name": "Vlan with PK 1",
