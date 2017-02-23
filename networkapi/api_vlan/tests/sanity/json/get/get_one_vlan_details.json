@@ -59,8 +59,7 @@
         "max_num_vlan_2": null,
         "min_num_vlan_1": null,
         "min_num_vlan_2": null,
-        "name": "BE - SANITY-TEST-1 - RACK-1",
-        "vrf": ""
+        "name": "BE - SANITY-TEST-1 - RACK-1"
       },
       "id": 1,
       "name": "VLAN NUM 2 - RACK-1",
