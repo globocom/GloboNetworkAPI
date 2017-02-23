@@ -19,12 +19,14 @@ def setup():
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_equipment/fixtures/initial_base.json',
+        'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
         verbosity=0
     )
 
 
-class EquipmentPostTestCase(NetworkApiTestCase):
+class EquipmentPostSuccessTestCase(NetworkApiTestCase):
+
+    json_path = 'api_equipment/tests/sanity/json/post/%s'
 
     def setUp(self):
         self.client = Client()
@@ -32,10 +34,10 @@ class EquipmentPostTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_post_one_equipment_success(self):
-        """Test Success of post of one equipment."""
+    def test_post_one_equipment(self):
+        """Test of success to post one equipment."""
 
-        name_file = 'api_equipment/tests/sanity/json/post_one_equipment.json'
+        name_file = self.json_path % 'post_one_equipment.json'
 
         # Does post request
         response = self.client.post(
@@ -44,10 +46,7 @@ class EquipmentPostTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        # Tests code returned
-        self.assertEqual(201, response.status_code,
-                         'Status code should be 201 and was %s' %
-                         response.status_code)
+        self.compare_status(201, response.status_code)
 
         id_env = response.data[0]['id']
 
@@ -57,19 +56,138 @@ class EquipmentPostTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        # Tests code returned
-        self.assertEqual(200, response.status_code,
-                         'Status code should be 200 and was %s' %
-                         response.status_code)
+        self.compare_status(200, response.status_code)
 
-        # Removes property id
         data = response.data
         del data['equipments'][0]['id']
-        print json.dumps(self.load_json_file(name_file), sort_keys=True)
-        print json.dumps(data, sort_keys=True)
-        # Tests if data was inserted
-        self.assertEqual(
-            json.dumps(self.load_json_file(name_file), sort_keys=True),
-            json.dumps(data, sort_keys=True),
-            'Jsons should be same.'
-        )
+
+        self.compare_json(name_file, data)
+
+    def test_post_one_equipment_with_groups(self):
+        """Test of success to post one equipment with groups."""
+
+        name_file = self.json_path % 'post_one_equipment_with_groups.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_env = response.data[0]['id']
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/equipment/%s/?include=groups' % id_env,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+        del data['equipments'][0]['id']
+
+        self.compare_json(name_file, data)
+
+    def test_post_one_equipment_with_environments(self):
+        """Test of success to post one equipment with environments."""
+
+        name_file = self.json_path % 'post_one_equipment_with_environments.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_env = response.data[0]['id']
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/equipment/%s/?include=environments' % id_env,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+        del data['equipments'][0]['id']
+
+        self.compare_json(name_file, data)
+
+
+class EquipmentPostErrorTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_equipment/fixtures/initial_base.json',
+    ]
+
+    json_path = 'api_equipment/tests/sanity/json/post/%s'
+
+    def setUp(self):
+        self.client = Client()
+
+    def tearDown(self):
+        pass
+
+    def test_post_duplicated_equipment(self):
+        """Test of error to post of one equipment with name already existent."""
+
+        name_file = self.json_path % 'post_one_duplicated_equipment.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            'There is another equipment with same name VM-SANITY-TEST',
+            response.data['detail'])
+
+    def test_post_equipment_invalid_env(self):
+        """Test of error to post of one equipment with environment non existent.
+        """
+
+        name_file = self.json_path % 'post_one_equipment_invalid_env.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            'There is no environment with id = 10.',
+            response.data['detail'])
+
+    def test_post_equipment_invalid_group(self):
+        """Test of error to post of one equipment with group non existent.
+        """
+
+        name_file = self.json_path % 'post_one_equipment_invalid_group.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            'There is no group with a pk = 10.',
+            response.data['detail'])

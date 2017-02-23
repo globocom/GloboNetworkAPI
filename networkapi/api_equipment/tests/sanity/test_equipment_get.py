@@ -18,12 +18,16 @@ def setup():
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_equipment/fixtures/initial_base.json',
+        'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
         verbosity=0
     )
 
 
 class EquipmentGetTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_equipment/fixtures/initial_base.json',
+    ]
 
     def setUp(self):
         self.client = Client()

@@ -23,15 +23,11 @@ from rest_framework.response import Response
 from networkapi.api_equipment import facade
 from networkapi.api_equipment.permissions import Read
 from networkapi.api_equipment.permissions import Write
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.distributedlock import LOCK_EQUIPMENT
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
-from networkapi.util.geral import create_lock
-from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
@@ -116,18 +112,11 @@ class EquipmentView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """
-        Creates list of equipments
-        """
+        """Creates list of equipments."""
 
         data = request.DATA
-
         json_validate(SPECS.get('equipment_post')).validate(data)
-
-        response = list()
-        for equipment in data['equipments']:
-            eqpt = facade.create_equipment(equipment, request.user)
-            response.append({'id': eqpt.id})
+        response = facade.create_equipment(data['equipments'], request.user)
 
         return Response(response, status=status.HTTP_201_CREATED)
 
@@ -136,24 +125,11 @@ class EquipmentView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """
-        Updates list of equipments
-        """
+        """Updates list of equipments."""
+
         data = request.DATA
-
         json_validate(SPECS.get('equipment_put')).validate(data)
-
-        locks_list = create_lock(data['equipments'], LOCK_EQUIPMENT)
-        try:
-            response = list()
-            for equipment in data['equipments']:
-                eqpt = facade.update_equipment(equipment, request.user)
-                response.append({'id': eqpt.id})
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-        finally:
-            destroy_lock(locks_list)
+        response = facade.update_equipment(data['equipments'], request.user)
 
         return Response(response, status=status.HTTP_200_OK)
 
@@ -162,18 +138,9 @@ class EquipmentView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """
-        Deletes list of equipments
-        """
+        """Deletes list of equipments."""
 
         obj_ids = kwargs['obj_id'].split(';')
-        locks_list = create_lock(obj_ids, LOCK_EQUIPMENT)
-        try:
-            facade.delete_equipment(obj_ids)
-        except Exception, exception:
-            log.error(exception)
-            raise api_exceptions.NetworkAPIException(exception)
-        finally:
-            destroy_lock(locks_list)
+        facade.delete_equipment(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)

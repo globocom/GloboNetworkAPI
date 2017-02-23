@@ -4,14 +4,18 @@ import logging
 from django.core.exceptions import FieldError
 from django.db.models import Q
 
+from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.distributedlock import LOCK_EQUIPMENT
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import EquipamentoError
 from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import destroy_lock
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +26,7 @@ def get_equipment_by_id(equipment_id):
     try:
         equipment = Equipamento().get_by_pk(equipment_id)
     except EquipamentoNotFoundError, e:
-        raise ObjectDoesNotExistException(str(e))
+        raise ObjectDoesNotExistException(e.message)
     except Exception, e:
         raise NetworkAPIException(str(e))
     else:
@@ -37,7 +41,7 @@ def get_equipment_by_ids(equipment_ids):
         try:
             equipment = get_equipment_by_id(equipment_id)
         except ObjectDoesNotExistException, e:
-            raise ObjectDoesNotExistException(str(e))
+            raise ObjectDoesNotExistException(e.detail)
         except Exception, e:
             raise NetworkAPIException(str(e))
         else:
@@ -58,8 +62,8 @@ def all_equipments_are_in_maintenance(equipment_list):
 
 
 def get_routers_by_environment(environment_id):
-    return EquipamentoAmbiente.objects.select_related(
-        'equipamento').filter(ambiente=environment_id, is_router=True)
+    return EquipamentoAmbiente.objects.select_related('equipamento')\
+        .filter(ambiente=environment_id, is_router=True)
 
 
 def get_equipment_map(equipment):
@@ -67,8 +71,8 @@ def get_equipment_map(equipment):
     equipment_map = dict()
     equipment_map['id'] = equipment.id
     equipment_map['nome'] = equipment.nome
-    equipment_map[
-        'tipo_equipamento'] = equipment.tipo_equipamento.tipo_equipamento
+    equipment_map['tipo_equipamento'] = equipment.tipo_equipamento.\
+        tipo_equipamento
     equipment_map['modelo'] = equipment.modelo.nome
     equipment_map['marca'] = equipment.modelo.marca.nome
     equipment_map['maintenance'] = equipment.maintenance
@@ -183,61 +187,87 @@ def all_equipments_can_update_config(equipment_list, user):
     # return all_equipments_have_permission
 
 
-def update_equipment(equipment, user):
-    """Update equipment"""
+def update_equipment(equipments, user):
+    """Update equipment."""
+
+    locks_list = create_lock(equipments, LOCK_EQUIPMENT)
+    response = list()
+
     try:
-        equipment_obj = get_equipment_by_id(equipment.get('id'))
+        for equipment in equipments:
+            equipment_obj = get_equipment_by_id(equipment.get('id'))
+            equipment_obj.update_v3(equipment)
+            response.append({'id': equipment_obj.id})
     except ObjectDoesNotExistException, e:
-        raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
-        raise NetworkAPIException(str(e))
-    else:
-        equipment_obj.update_v3(equipment)
-
-    return equipment_obj
-
-
-def create_equipment(equipment, user):
-    """Create equipment"""
-
-    try:
-        equipment_obj = Equipamento()
-        equipment_obj.create_v3(equipment)
+        raise ObjectDoesNotExistException(e.detail)
+    except EquipamentoError, e:
+        raise ValidationAPIException(e.message)
+    except EquipmentInvalidValueException, e:
+        raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
     except Exception, e:
         raise NetworkAPIException(str(e))
+    finally:
+        destroy_lock(locks_list)
 
-    return equipment_obj
+    return response
+
+
+def create_equipment(equipments, user):
+    """Create equipment"""
+
+    response = list()
+
+    try:
+        for equipment in equipments:
+            equipment_obj = Equipamento()
+            equipment_obj.create_v3(equipment)
+            response.append({'id': equipment_obj.id})
+    except EquipamentoError, e:
+        raise ValidationAPIException(e.message)
+    except EquipmentInvalidValueException, e:
+        raise ValidationAPIException(e.detail)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return response
 
 
 def delete_equipment(equipments):
     """Delete equipment by ids"""
 
-    for equipment in equipments:
-        try:
+    locks_list = create_lock(equipments, LOCK_EQUIPMENT)
+
+    try:
+        for equipment in equipments:
             equipment_obj = get_equipment_by_id(equipment)
-        except ObjectDoesNotExistException, e:
-            raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
-            raise NetworkAPIException(str(e))
-        else:
             equipment_obj.delete_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except EquipamentoError, e:
+        raise ValidationAPIException(e.message)
+    except EquipmentInvalidValueException, e:
+        raise ValidationAPIException(e.detail)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+    finally:
+        destroy_lock(locks_list)
 
 
 def get_eqpt_by_envvip(environmentvip):
     """Get equipments by environment vip"""
 
     equips = Equipamento.objects.filter(
-        equipamentoambiente__ambiente__vlan__networkipv4__ambient_vip__id=environmentvip,
         maintenance=0,
         tipo_equipamento__tipo_equipamento=u'Balanceador'
+    ).filter(Q(
+        equipamentoambiente__ambiente__vlan__networkipv4__ambient_vip__id=environmentvip) | Q(
+        equipamentoambiente__ambiente__vlan__networkipv6__ambient_vip__id=environmentvip)
     ).distinct()
-
-    # does not implemented yet
-    # equips = Equipamento.objects.filter(
-    #     equipamentoambiente__ambiente__vlan__networkipv6__ambient_vip__id=vip_request['environmentvip'],
-    #     maintenance=0,
-    #     tipo_equipamento__tipo_equipamento=u'Balanceador').distinct()
 
     return equips
