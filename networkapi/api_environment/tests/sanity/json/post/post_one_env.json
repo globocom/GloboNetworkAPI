@@ -1,21 +1,20 @@
 {
   "environments": [
     {
-      "grupo_l3": 2,
-      "ambiente_logico": 2,
-      "divisao_dc": 1,
-      "filter": 1,
       "acl_path": "",
+      "ambiente_logico": 2,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "father_environment": null,
+      "filter": 1,
+      "grupo_l3": 2,
       "ipv4_template": null,
       "ipv6_template": null,
       "link": "",
-      "min_num_vlan_1": 2,
       "max_num_vlan_1": 20,
-      "min_num_vlan_2": null,
       "max_num_vlan_2": null,
-      "vrf": null,
-      "default_vrf": 1,
-      "father_environment": null
+      "min_num_vlan_1": 2,
+      "min_num_vlan_2": null
     }
   ]
 }

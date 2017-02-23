@@ -2,7 +2,6 @@
 import json
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -10,9 +9,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EnvironmentVipPutSuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -23,11 +22,9 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/requisicaovips/fixtures/initial_optionsvip.json',
         'networkapi/api_environment_vip/fixtures/initial_base.json',
-        verbosity=0
-    )
+    ]
 
-
-class EnvironmentVipTestCase(NetworkApiTestCase):
+    json_path = 'api_environment_vip/tests/sanity/json/put/%s'
 
     def setUp(self):
         self.client = Client()
@@ -35,39 +32,205 @@ class EnvironmentVipTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_put_one_env_success(self):
-        """Test Success of put of one environment vip."""
+    def test_put_one_env(self):
+        """Test of success to put one environment vip."""
 
-        name_file = 'api_environment_vip/tests/sanity/json/put_one_envvip.json'
+        name_file = self.json_path % 'put_one_envvip.json'
 
         # Does put request
         response = self.client.put(
-            '/api/v3/environment-vip/1/',
+            '/api/v3/environment-vip/2/',
             data=json.dumps(self.load_json_file(name_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         # Tests code returned
-        self.assertEqual(200, response.status_code,
-                         'Status code should be 200 and was %s' %
-                         response.status_code)
+        self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
-            '/api/v3/environment-vip/1/',
+            '/api/v3/environment-vip/2/?include=conf',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         # Tests code returned
-        self.assertEqual(200, response.status_code,
-                         'Status code should be 200 and was %s' %
-                         response.status_code)
+        self.compare_status(200, response.status_code)
 
         data = response.data
 
         # Tests if data was updated
-        self.assertEqual(
-            json.dumps(self.load_json_file(name_file), sort_keys=True),
-            json.dumps(data, sort_keys=True),
-            'Jsons should be same.'
-        )
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_add_environments(self):
+        """Test of success to put one environment vip adding environments."""
+
+        name_file = self.json_path % 'put_one_envvip_add_environments.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment-vip/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/2/?include=environments,conf',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+
+        # Tests if data was updated
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_new_environments(self):
+        """Test of success to put one environment vip with new environments."""
+
+        name_file = self.json_path % 'put_one_envvip_new_environments.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment-vip/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/2/?include=environments,conf',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+
+        # Tests if data was updated
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_update_environments(self):
+        """Test of success to put one environment vip updating environments."""
+
+        name_file = self.json_path % 'put_one_envvip_update_environments.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment-vip/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/2/?include=environments,conf',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+
+        # Tests if data was updated
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_add_optionsvip(self):
+        """Test of success to put one environment vip adding options vip."""
+
+        name_file = self.json_path % 'put_one_envvip_add_optionsvip.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment-vip/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/2/?include=optionsvip,conf',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+
+        # Tests if data was updated
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_new_optionsvip(self):
+        """Test of success to put one environment vip with new options vip."""
+
+        name_file = self.json_path % 'put_one_envvip_new_optionsvip.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment-vip/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/2/?include=optionsvip,conf',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+
+        # Tests if data was updated
+        self.compare_json(name_file, data)
+
+    def test_put_one_env_update_optionsvip(self):
+        """Test of success to put one environment vip updating options vip."""
+
+        name_file = self.json_path % 'put_one_envvip_update_optionsvip.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v3/environment-vip/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/2/?include=optionsvip,conf',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+
+        # Tests if data was updated
+        self.compare_json(name_file, data)

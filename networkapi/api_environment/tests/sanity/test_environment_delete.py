@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -9,9 +8,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EnvironmentDeleteTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -20,12 +19,11 @@ def setup():
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
-        verbosity=0
-    )
-
-
-class EnvironmentDeleteTestCase(NetworkApiTestCase):
+    ]
 
     def setUp(self):
         self.client = Client()

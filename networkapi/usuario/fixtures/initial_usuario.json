@@ -4,11 +4,11 @@
     "model": "usuario.usuario",
     "fields": {
       "user_ldap": null,
-      "nome": "Test Admin User",
+      "nome": "Test User - ADM",
       "pwd": "698dc19d489c4e4db73e28a713eab07b",
       "user": "test",
       "ativo": true,
-      "email": "test@test.com"
+      "email": "test@napi.com"
     }
   },
   {
@@ -16,23 +16,11 @@
     "model": "usuario.usuario",
     "fields": {
       "user_ldap": null,
-      "nome": "Test User",
+      "nome": "Test User - Visitor ",
       "pwd": "698dc19d489c4e4db73e28a713eab07b",
       "user": "test2",
       "ativo": true,
-      "email": "test2@test.com"
-    }
-  },
-  {
-    "pk": 3,
-    "model": "usuario.usuario",
-    "fields": {
-      "user_ldap": null,
-      "nome": "Test 123",
-      "pwd": "698dc19d489c4e4db73e28a713eab07b",
-      "user": "test3",
-      "ativo": true,
-      "email": "test3@test.com"
+      "email": "test2@napi.com"
     }
   }
 ]
