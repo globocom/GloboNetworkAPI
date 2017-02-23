@@ -1,0 +1,102 @@
+[
+  {
+    "pk": 1,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "febe:bebe:bebe:8200:0000:0000:0000:0000/57",
+      "new_prefix": "64",
+      "type": "v6",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.10.0.0/16",
+      "new_prefix": "24",
+      "type": "v4",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "fdbe:bebe:bebe:1200:0000:0000:0000:0000/57",
+      "new_prefix": "65",
+      "type": "v6",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.0.0.0/16",
+      "new_prefix": "25",
+      "type": "v4",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 5,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "fdbe:bebe:bebe:1200:0000:0000:0000:0000/57",
+      "new_prefix": "64",
+      "type": "v6",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 6,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.0.0.0/16",
+      "new_prefix": "24",
+      "type": "v4",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 7,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "fdbe:bebe:bebe:1200:0000:0000:0000:0000/57",
+      "new_prefix": "65",
+      "type": "v6",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 8,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.0.0.0/16",
+      "new_prefix": "25",
+      "type": "v4",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 9,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "fdbe:bebe:bebe:1200:0000:0000:0000:0000/57",
+      "new_prefix": "64",
+      "type": "v6",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 10,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.0.0.0/16",
+      "new_prefix": "24",
+      "type": "v4",
+      "network_type": 1
+    }
+  }
+]

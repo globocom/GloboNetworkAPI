@@ -1,0 +1,42 @@
+[
+  {
+    "pk": 1,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.10.0.0/16",
+      "new_prefix": "24",
+      "type": "v4",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "fc00:0000:0000:0000:0000:0000:0000:0000/57",
+      "new_prefix": "64",
+      "type": "v6",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "10.11.0.0/16",
+      "new_prefix": "24",
+      "type": "v4",
+      "network_type": 1
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ambiente.ipconfig",
+    "fields": {
+      "subnet": "fc00:0000:0000:0080:0000:0000:0000:0000/57",
+      "new_prefix": "64",
+      "type": "v6",
+      "network_type": 1
+    }
+  }
+]

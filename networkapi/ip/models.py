@@ -20,9 +20,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db import transaction
 from django.db.models import get_model
+from rest_framework import status
 
 from networkapi.ambiente.models import ConfigEnvironmentInvalidError
 from networkapi.ambiente.models import IP_VERSION
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_vip_request import syncs
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_ENVIRONMENT
@@ -158,6 +160,8 @@ class IpError(Exception):
 class NetworkIPv4NotFoundError(NetworkIPv4Error):
 
     """Exception to search by primary key."""
+
+    status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, cause, message=None):
         NetworkIPv4Error.__init__(self, cause, message)
@@ -398,8 +402,8 @@ class NetworkIPv4(BaseModel):
         try:
             return NetworkIPv4.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise NetworkIPv4NotFoundError(
-                e, u'There is no NetworkIPv4 with pk = %s.' % id)
+            raise ObjectDoesNotExistException(
+                u'There is no NetworkIPv4 with pk = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -2560,8 +2564,8 @@ class NetworkIPv6(BaseModel):
         try:
             return NetworkIPv6.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise NetworkIPv6NotFoundError(
-                e, u'Can not find a NetworkIPv6 with id = %s.' % id)
+            raise ObjectDoesNotExistException(
+                u'There is no NetworkIPv6 with pk = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -3081,6 +3085,10 @@ class NetworkIPv6(BaseModel):
         locks_list = create_lock_with_blocking(locks_name)
 
         try:
+            if self.active:
+                raise NetworkActiveError(
+                    None,
+                    'Try to set it inactive before removing it')
 
             for ip in self.ipv6_set.all():
                 ip.delete_v3()

@@ -1,0 +1,83 @@
+[
+  {
+  "pk": 1,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "2",
+    "equipamento": "1",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "2",
+    "equipamento": "2",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 3,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "2",
+    "equipamento": "3",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "3",
+    "equipamento": "3",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "3",
+    "equipamento": "4",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "3",
+    "equipamento": "5",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "4",
+    "equipamento": "5",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "4",
+    "equipamento": "6",
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 9,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": "5",
+    "equipamento": "7",
+    "is_router": "False"
+    }
+  }
+]
