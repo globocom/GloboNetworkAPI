@@ -2,7 +2,6 @@
 import json
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -10,9 +9,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -24,13 +23,6 @@ def setup():
         'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
         'networkapi/api_environment/fixtures/initial_base_environment.json',
         'networkapi/api_environment/fixtures/initial_environment.json',
-        verbosity=0
-    )
-
-
-class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
-
-    fixtures = [
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
@@ -43,7 +35,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_get_success_one_environment(self):
-        """Test of success for get one environment."""
+        """Test of success to get one environment."""
 
         response = self.client.get(
             '/api/v3/environment/1/',
@@ -53,7 +45,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
     def test_get_success_one_environment_with_details(self):
-        """Test Success of get one environment with details."""
+        """Test of success to get one environment with details."""
 
         name_file = self.json_path % 'get_one_env_details.json'
 
@@ -67,7 +59,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_get_success_one_environment_with_routers(self):
-        """Test Success of get one environment with routers."""
+        """Test of success to get one environment with routers."""
 
         response = self.client.get(
             '/api/v3/environment/1/?include=routers',
@@ -87,7 +79,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         self.compare_values(expected_data, data)
 
     def test_get_success_one_environment_with_equipments(self):
-        """Test Success of get one environment with equipments."""
+        """Test of success to get one environment with equipments."""
 
         response = self.client.get(
             '/api/v3/environment/1/?include=equipments',
@@ -109,7 +101,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         self.compare_values(expected_data, data)
 
     def test_get_success_one_environment_with_children(self):
-        """Test Success of get one environment with children."""
+        """Test of success to get one environment with children."""
 
         response = self.client.get(
             '/api/v3/environment/4/?include=children',
@@ -128,24 +120,21 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         self.compare_values(expected_data, data)
 
-    def test_get_error_one_environment(self):
-        """Test of error for get one environment."""
-
-        response = self.client.get(
-            '/api/v3/environment/1000/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            'Causa: , Mensagem: There is no environment with id = 1000.',
-            response.data['detail'])
-
 
 class EnvironmentGetTwoSuccessTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
@@ -158,7 +147,7 @@ class EnvironmentGetTwoSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_get_success_two_environments(self):
-        """Test of success for get two environment."""
+        """Test of success to get two environment."""
 
         name_file = self.json_path % 'get_two_env.json'
 
@@ -175,6 +164,17 @@ class EnvironmentGetTwoSuccessTestCase(NetworkApiTestCase):
 class EnvironmentGetListSuccessTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
@@ -227,6 +227,17 @@ class EnvironmentGetListSuccessTestCase(NetworkApiTestCase):
 class EnvironmentGetErrorTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
@@ -237,7 +248,7 @@ class EnvironmentGetErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_get_error_one_environment(self):
-        """Test of error for get one environment."""
+        """Test of error to get one environment."""
 
         response = self.client.get(
             '/api/v3/environment/1000/',

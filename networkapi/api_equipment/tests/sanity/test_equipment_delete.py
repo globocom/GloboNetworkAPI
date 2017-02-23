@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -9,9 +8,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EquipmentDeleteTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -19,13 +18,6 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
-        verbosity=0
-    )
-
-
-class EquipmentDeleteTestCase(NetworkApiTestCase):
-
-    fixtures = [
         'networkapi/api_equipment/fixtures/initial_base.json',
     ]
 
@@ -36,7 +28,7 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         pass
 
     def test_delete_one_equipment_success(self):
-        """Test success of delete of one equipment."""
+        """Test of success to delete of one equipment."""
 
         response = self.client.delete(
             '/api/v3/equipment/1/',
@@ -60,6 +52,13 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
 class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
         'networkapi/api_equipment/fixtures/initial_base.json',
     ]
 
@@ -70,7 +69,7 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_delete_one_inexistent_equipment(self):
-        """Test success of delete of one equipment."""
+        """Test of error to delete of one inexistent equipment."""
 
         response = self.client.delete(
             '/api/v3/equipment/10/',

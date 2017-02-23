@@ -2,7 +2,6 @@
 import json
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -10,9 +9,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EquipmentPutTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -20,13 +19,6 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
-        verbosity=0
-    )
-
-
-class EquipmentPutTestCase(NetworkApiTestCase):
-
-    fixtures = [
         'networkapi/api_equipment/fixtures/initial_base.json',
     ]
 
@@ -210,6 +202,13 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 class EquipmentputErrorTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
         'networkapi/api_equipment/fixtures/initial_base.json',
     ]
 

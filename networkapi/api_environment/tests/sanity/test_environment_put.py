@@ -2,7 +2,6 @@
 import json
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -10,9 +9,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -24,13 +23,6 @@ def setup():
         'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
         'networkapi/api_environment/fixtures/initial_base_environment.json',
         'networkapi/api_environment/fixtures/initial_environment.json',
-        verbosity=0
-    )
-
-
-class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
-
-    fixtures = [
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
@@ -160,6 +152,17 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
 class EnvironmentPutTwoSuccessTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 
@@ -202,6 +205,17 @@ class EnvironmentPutTwoSuccessTestCase(NetworkApiTestCase):
 class EnvironmentPutErrorTestCase(NetworkApiTestCase):
 
     fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
     ]
 

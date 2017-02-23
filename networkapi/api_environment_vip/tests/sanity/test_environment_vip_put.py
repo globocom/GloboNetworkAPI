@@ -2,7 +2,6 @@
 import json
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -10,9 +9,9 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EnvironmentVipPutSuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -22,13 +21,6 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/requisicaovips/fixtures/initial_optionsvip.json',
-        verbosity=0
-    )
-
-
-class EnvironmentVipPutSuccessTestCase(NetworkApiTestCase):
-
-    fixtures = [
         'networkapi/api_environment_vip/fixtures/initial_base.json',
     ]
 
@@ -157,7 +149,7 @@ class EnvironmentVipPutSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_one_env_add_optionsvip(self):
-        """Test of success to put one environment vip adding environments."""
+        """Test of success to put one environment vip adding options vip."""
 
         name_file = self.json_path % 'put_one_envvip_add_optionsvip.json'
 
@@ -186,7 +178,7 @@ class EnvironmentVipPutSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_one_env_new_optionsvip(self):
-        """Test of success to put one environment vip with new environments."""
+        """Test of success to put one environment vip with new options vip."""
 
         name_file = self.json_path % 'put_one_envvip_new_optionsvip.json'
 
@@ -215,7 +207,7 @@ class EnvironmentVipPutSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_one_env_update_optionsvip(self):
-        """Test of success to put one environment vip updating environments."""
+        """Test of success to put one environment vip updating options vip."""
 
         name_file = self.json_path % 'put_one_envvip_update_optionsvip.json'
 
