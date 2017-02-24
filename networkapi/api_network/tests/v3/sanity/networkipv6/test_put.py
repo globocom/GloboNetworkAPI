@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import logging
-import sys
-from itertools import izip
-from time import time
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -123,7 +118,7 @@ class NetworkIPv6PutTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file_get, response.data['networks'])
 
     def test_try_update_inactive_netipv6_changing_octets(self):
-        """Tries to update inactive Network IPv6 changing octets. NAPI should deny or allow this request but without change octets."""
+        """Tries to update inactive Network IPv6 changing octets. NAPI should allow this request but without change octets."""
 
         name_file_put = 'api_network/tests/v3/sanity/networkipv6/json/put/net_inactive_changing_octets.json'
 

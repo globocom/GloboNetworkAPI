@@ -847,17 +847,17 @@ class NetworkIPv4(BaseModel):
 
             # has environmentvip
             if networkv4.get('environmentvip'):
-                self.environmentvip = envvip_model.EnvironmentVip()\
+                self.ambient_vip = envvip_model.EnvironmentVip()\
                     .get_by_pk(networkv4.get('environmentvip'))
             else:
-                self.environmentvip = None
+                self.ambient_vip = None
 
         except vlan_model.NetworkTypeNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
         except envvip_model.EnvironmentVipNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
         except NetworkIPv4ErrorV3, e:
             self.log.error(e.message)
             raise NetworkIPv4ErrorV3(e.message)
@@ -3066,30 +3066,34 @@ class NetworkIPv6(BaseModel):
 
     def update_v3(self, networkv6, locks_used=[]):
         """
-        Update new networkIPv6.
+        Update networkIPv6.
         """
 
-        try:
+        vlan_model = get_app('vlan')
+        envvip_model = get_app('ambiente')
 
+        try:
             self.cluster_unit = networkv6.get('cluster_unit')
 
-            # Type of Network
-            tiporede_model = get_model('vlan', 'TipoRede')
-            self.network_type = tiporede_model()\
+            self.network_type = vlan_model.TipoRede() \
                 .get_by_pk(networkv6.get('network_type'))
 
             # has environmentvip
             if networkv6.get('environmentvip'):
-                environmentvip_model = get_model('ambiente', 'EnvironmentVip')
-                self.environmentvip = environmentvip_model().get_by_pk(
-                    networkv6.get('environmentvip'))
+                self.ambient_vip = envvip_model.EnvironmentVip() \
+                    .get_by_pk(networkv6.get('environmentvip'))
             else:
-                self.environmentvip = None
+                self.ambient_vip = None
 
+        except vlan_model.NetworkTypeNotFoundError, e:
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
+        except envvip_model.EnvironmentVipNotFoundError, e:
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
         except NetworkIPv6ErrorV3, e:
-            self.log.error(e)
-            raise NetworkIPv6ErrorV3(e)
-
+            self.log.error(e.message)
+            raise NetworkIPv6ErrorV3(e.message)
         except Exception, e:
             self.log.error(e)
             raise NetworkIPv6ErrorV3(e)
@@ -3106,7 +3110,6 @@ class NetworkIPv6(BaseModel):
 
         try:
             self.validate_v3()
-
             self.save()
         except NetworkIPv6ErrorV3, e:
             self.log.error(e)

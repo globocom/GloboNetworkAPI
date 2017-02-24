@@ -2,8 +2,8 @@
   {
     "active": false,
     "broadcast": "10.10.2.127",
-    "cluster_unit": "cluster-unit-1",
-    "environmentvip": null,
+    "cluster_unit": "cluster-unit-updated",
+    "environmentvip": 1,
     "id": 3,
     "mask_formated": "255.255.255.128",
     "network_type": 1,
