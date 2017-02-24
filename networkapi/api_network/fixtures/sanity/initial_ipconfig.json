@@ -33,7 +33,7 @@
     "fields": {
       "network_type": 1,
       "new_prefix": "64",
-      "subnet": "fc00:0000:0000:0080:0000:0000:0000:0000/57",
+      "subnet": "fc00:0000:0000:0000:0000:0000:0000:0000/57",
       "type": "v6"
     },
     "model": "ambiente.ipconfig",

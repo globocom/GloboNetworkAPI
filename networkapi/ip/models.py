@@ -2993,7 +2993,13 @@ class NetworkIPv6(BaseModel):
                 envs = self.vlan.get_environment_related()
                 net_ip = [IPNetwork(self.networkv6)]
                 network.validate_network(envs, net_ip, IP_VERSION.IPv6[0])
-                self.validate_v3()
+
+                try:
+                    self.validate_v3()
+                except vlan_model.VlanErrorV3, e:
+                    self.log.error(e.message)
+                    raise NetworkIPv6ErrorV3(e.message)
+
             else:
                 # Was not send correctly
                 self.log.error('There is need to send block ou mask.')
@@ -3057,8 +3063,8 @@ class NetworkIPv6(BaseModel):
                             ip_inst.create_v3(ip_map, locks_used=locks)
 
         except NetworkIPv6ErrorV3, e:
-            self.log.error(e)
-            raise NetworkIPv6ErrorV3(e)
+            self.log.error(e.message)
+            raise NetworkIPv6ErrorV3(e.message)
 
         except Exception, e:
             self.log.error(e)
@@ -3091,12 +3097,15 @@ class NetworkIPv6(BaseModel):
         except vlan_model.NetworkTypeNotFoundError, e:
             self.log.error(e.message)
             raise InvalidInputException(e.message)
+
         except envvip_model.EnvironmentVipNotFoundError, e:
             self.log.error(e.message)
             raise InvalidInputException(e.message)
+
         except NetworkIPv6ErrorV3, e:
             self.log.error(e.message)
             raise NetworkIPv6ErrorV3(e.message)
+
         except Exception, e:
             self.log.error(e)
             raise NetworkIPv6ErrorV3(e)
@@ -3114,6 +3123,11 @@ class NetworkIPv6(BaseModel):
         try:
             self.validate_v3()
             self.save()
+
+        except vlan_model.VlanErrorV3, e:
+            self.log.error(e.message)
+            raise NetworkIPv6ErrorV3(e.message)
+
         except NetworkIPv6ErrorV3, e:
             self.log.error(e)
             raise NetworkIPv6ErrorV3(e)
@@ -3193,7 +3207,6 @@ class NetworkIPv6(BaseModel):
 
         if not self.network_type:
             raise NetworkIPv6ErrorV3('Network type can not null')
-
         # validate if network if allow in environment
         configs = self.vlan.ambiente.configs.all()
         self.vlan.allow_networks_environment(configs, [], [self])
