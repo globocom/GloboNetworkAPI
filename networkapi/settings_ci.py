@@ -164,8 +164,8 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
-NETWORK_DEBUG = os.getenv('NETWORK_DEBUG', 'INFO')
-LOG_LEVEL = getattr(logging, NETWORK_DEBUG.upper())
+NETWORKAPI_DEBUG = os.getenv('NETWORKAPI_DEBUG', 'INFO')
+LOG_LEVEL = getattr(logging, NETWORKAPI_DEBUG.upper())
 
 MIDDLEWARE_CLASSES += (
     'django_pdb.middleware.PdbMiddleware',
@@ -202,8 +202,8 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
 
 NOSE_ARGS = [
-    '--with-coverage',
-    '--cover-html',
+    # '--with-coverage',
+    # '--cover-html',
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
@@ -247,28 +247,28 @@ LOGGING = {
     'loggers': {
         'default': {
             'handlers': ['console'],
-            'propagate': True,
+            'propagate': False,
             'level': LOG_LEVEL,
         },
         'django': {
             'handlers': ['console'],
-            'propagate': True,
+            'propagate': False,
             'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['console'],
             'level': LOG_LEVEL,
-            'propagate': True,
+            'propagate': False,
         },
         'django.db.backends': {
             'level': LOG_LEVEL,
-            'propagate': True,
+            'propagate': False,
             'handlers': ['console'],
         },
     },
     'root': {
         'level': LOG_LEVEL,
-        'propagate': True,
+        'propagate': False,
         'handlers': ['console'],
     },
 }

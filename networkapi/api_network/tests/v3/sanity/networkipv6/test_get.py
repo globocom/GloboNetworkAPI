@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
-import logging
-import sys
-
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import prepare_url
 
-log = logging.getLogger()
-log.level = logging.DEBUG
-stream_handler = logging.StreamHandler(sys.stdout)
-log.addHandler(stream_handler)
+# TODO: Lembrar de fazer alguns testes relativos a fields especificos
 
 
-def setup():
-    call_command(
-        'loaddata',
+class NetworkIPv6GetTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -42,13 +35,9 @@ def setup():
         'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
         'networkapi/api_network/fixtures/sanity/initial_vlan.json',
         'networkapi/api_network/fixtures/sanity/initial_vrf.json',
-        verbosity=1
-    )
+    ]
 
-
-# TODO: Lembrar de fazer alguns testes relativos a fields especificos
-
-class NetworkIPv6GetTestCase(NetworkApiTestCase):
+    json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
 
     def setUp(self):
         self.client = Client()
@@ -60,13 +49,11 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_netipv6_by_id_using_basic_kind(self):
         """Tries to get a Network IPv6 by id using 'basic' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/basic/pk_1.json'
-
-        get_url = '/api/v3/networkv6/1/?kind=basic'
+        name_file = self.json_path % 'get/basic/pk_1.json'
 
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1/?kind=basic',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -76,13 +63,11 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_two_netipv6_by_id_using_basic_kind(self):
         """Tries to get two Network IPv6 by id using 'basic' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/basic/pk_1;2.json'
-
-        get_url = '/api/v3/networkv6/1;2/?kind=basic'
+        name_file = self.json_path % 'get/basic/pk_1;2.json'
 
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1;2/?kind=basic',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -92,7 +77,7 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_netipv6_by_search_using_basic_kind(self):
         """Tries to get a Network IPv6 by search using 'basic' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/basic/pk_1.json'
+        name_file = self.json_path % 'get/basic/pk_1.json'
 
         search = {
             'start_record': 0,
@@ -125,7 +110,7 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_two_netipv6_by_search_using_basic_kind(self):
         """Tries to get two Network IPv6 by search using 'basic' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/basic/pk_1;2.json'
+        name_file = self.json_path % 'get/basic/pk_1;2.json'
 
         search = {
             'start_record': 0,
@@ -156,13 +141,11 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_netipv6_by_id_using_details_kind(self):
         """Tries to get a Network IPv6 by id using 'details' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/details/pk_1.json'
-
-        get_url = '/api/v3/networkv6/1/?kind=details'
+        name_file = self.json_path % 'get/details/pk_1.json'
 
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1/?kind=details',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -172,13 +155,11 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_two_netipv6_by_id_using_details_kind(self):
         """Tries to get two Network IPv6 by id using 'details' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/details/pk_1;2.json'
-
-        get_url = '/api/v3/networkv6/1;2/?kind=details'
+        name_file = self.json_path % 'get/details/pk_1;2.json'
 
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1;2/?kind=details',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -188,7 +169,7 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_netipv6_by_search_using_details_kind(self):
         """Tries to get a Network IPv6 by search using 'details' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/details/pk_1.json'
+        name_file = self.json_path % 'get/details/pk_1.json'
 
         search = {
             'start_record': 0,
@@ -219,7 +200,7 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_two_netipv6_by_search_using_details_kind(self):
         """Tries to get two Network IPv6 by search using 'details' kind."""
 
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/details/pk_1;2.json'
+        name_file = self.json_path % 'get/details/pk_1;2.json'
 
         search = {
             'start_record': 0,
@@ -245,16 +226,15 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
         )
 
         self.compare_status(200, response.status_code)
+
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_non_existent_netipv6_by_id(self):
         """Tries to get a non existent Network IPv6 by id."""
 
-        get_url = '/api/v3/networkv6/1000/'
-
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1000/',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -268,11 +248,9 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_two_non_existent_netipv6_by_id(self):
         """Tries to get two non existent Network IPv6 by id."""
 
-        get_url = '/api/v3/networkv6/1000;1001/'
-
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1000;1001/',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -286,11 +264,9 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
     def test_get_a_existent_and_non_existent_netipv6_by_id(self):
         """Tries to get a existent and a non existent Network IPv6 by id."""
 
-        get_url = '/api/v3/networkv6/1;1000/'
-
         # Make a GET request
         response = self.client.get(
-            get_url,
+            '/api/v3/networkv6/1;1000/',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -303,8 +279,6 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
 
     def test_get_non_existent_netipv6_by_search(self):
         """Tries to get a non existent Network IPv6 by search."""
-
-        name_file = 'api_network/tests/v3/sanity/networkipv6/json/get/empty.json'
 
         search = {
             'start_record': 0,
@@ -326,4 +300,4 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        self.compare_json_lists(name_file, response.data['networks'])
+        self.compare_values(0, response.data['total'])

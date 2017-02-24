@@ -9,17 +9,11 @@ from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.util.geral import prepare_url
-
-log = logging.getLogger()
-log.level = logging.DEBUG
-stream_handler = logging.StreamHandler(sys.stdout)
-log.addHandler(stream_handler)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class NetworkIPv6PutTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -53,11 +47,7 @@ def setup():
         'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
         'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
         'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
-        verbosity=1
-    )
-
-
-class NetworkIPv6PutTestCase(NetworkApiTestCase):
+    ]
 
     def setUp(self):
         self.client = Client()

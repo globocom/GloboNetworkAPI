@@ -11,17 +11,11 @@ from mock import patch
 
 from networkapi.test.mock import MockPluginNetwork
 from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.util.geral import prepare_url
-
-log = logging.getLogger()
-log.level = logging.DEBUG
-stream_handler = logging.StreamHandler(sys.stdout)
-log.addHandler(stream_handler)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class NetworkIPv6PostTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -55,12 +49,11 @@ def setup():
         'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
         'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
         'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
-        # 'networkapi/api_network/fixtures/sanity/initial_ogpg.json',
-        verbosity=1
-    )
 
-
-class NetworkIPv6PostTestCase(NetworkApiTestCase):
+        'networkapi/api_network/fixtures/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/initial_environment_gl3.json'
+    ]
 
     def setUp(self):
         self.client = Client()

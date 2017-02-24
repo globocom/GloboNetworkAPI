@@ -11,9 +11,11 @@ from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_network import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import distributedlock
-from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT
+from networkapi.distributedlock import \
+    LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
 from networkapi.distributedlock import LOCK_NETWORK_IPV6
 from networkapi.distributedlock import LOCK_VLAN
@@ -41,7 +43,14 @@ TEMPLATE_NETWORKv6_DEACTIVATE = 'ipv6_deactivate_network_configuration'
 def get_networkipv4_by_id(network_id):
     """Get NetworkIPv4."""
 
-    network = ip_models.NetworkIPv4.get_by_pk(network_id)
+    try:
+        network = ip_models.NetworkIPv4.get_by_pk(network_id)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
     return network
 
@@ -51,7 +60,17 @@ def get_networkipv4_by_ids(network_ids):
 
     net_ids = list()
     for network_id in network_ids:
-        net_ids.append(get_networkipv4_by_id(network_id).id)
+        try:
+            net = get_networkipv4_by_id(network_id)
+
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+
+        else:
+            net_ids.append(net.id)
 
     networks = ip_models.NetworkIPv4.objects.filter(id__in=net_ids)
 
@@ -64,10 +83,13 @@ def get_networkipv4_by_search(search=dict()):
     try:
         networks = ip_models.NetworkIPv4.objects.all()
         net_map = build_query_to_datatable_v3(networks, search)
+
     except FieldError as e:
         raise ValidationAPIException(str(e))
+
     except Exception as e:
         raise NetworkAPIException(str(e))
+
     else:
         return net_map
 
@@ -75,173 +97,268 @@ def get_networkipv4_by_search(search=dict()):
 def create_networkipv4(networkv4, user):
     """Creates a NetworkIPv4."""
 
-    netv4_obj = ip_models.NetworkIPv4()
-    netv4_obj.create_v3(networkv4)
+    try:
+        netv4_obj = ip_models.NetworkIPv4()
+        netv4_obj.create_v3(networkv4)
 
-    return netv4_obj
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.InvalidInputException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        return netv4_obj
 
 
 def update_networkipv4(networkv4, user):
     """Updates a NetworkIPv4."""
-    netv4_obj = get_networkipv4_by_id(networkv4.get('id'))
-    netv4_obj.update_v3(networkv4)
 
-    return netv4_obj
+    try:
+        netv4_obj = get_networkipv4_by_id(networkv4.get('id'))
+        netv4_obj.update_v3(networkv4)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.InvalidInputException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        return netv4_obj
 
 
 def delete_networkipv4(network_ids, user):
     """Deletes a list of NetworkIPv4."""
 
     for network_id in network_ids:
-        netv4_obj = get_networkipv4_by_id(network_id)
+        try:
+            netv4_obj = get_networkipv4_by_id(network_id)
+            netv4_obj.delete_v3()
 
-        netv4_obj.delete_v3()
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+
+        except ip_models.NetworkIPv4ErrorV3, e:
+            raise ValidationAPIException(e.message)
+
+        except ValidationAPIException, e:
+            raise ValidationAPIException(e.detail)
+
+        except Exception, e:
+            raise NetworkAPIException(str(e))
 
 
 def undeploy_networkipv4(network_id, user):
-    """Loads template for removing Network IPv4 equipment configuration, creates file and
-    apply config.
+    """Loads template for removing Network IPv4 equipment configuration,
+    creates file and apply config.
 
     :param network_id: NetworkIPv4 Id
 
     Returns: List with status of equipments output
     """
 
-    netv4_obj = get_networkipv4_by_id(network_id)
+    try:
+        netv4_obj = get_networkipv4_by_id(network_id)
 
-    routers = netv4_obj.vlan.ambiente.routers
+        routers = netv4_obj.vlan.ambiente.routers
 
-    if not routers:
-        raise exceptions.NoEnvironmentRoutersFoundException()
+        if not routers:
+            raise exceptions.NoEnvironmentRoutersFoundException()
 
-    if facade_eqpt.all_equipments_are_in_maintenance(routers):
-        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+        if facade_eqpt.all_equipments_are_in_maintenance(routers):
+            raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
 
-    if user:
-        if not facade_eqpt.all_equipments_can_update_config(routers, user):
-            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
-                'User does not have permission to update conf in eqpt. '
-                'Verify the permissions of user group with equipment group. '
-                'Network:{}'.format(netv4_obj.id))
+        if user:
+            if not facade_eqpt.all_equipments_can_update_config(routers, user):
+                raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                    'User does not have permission to update conf in eqpt. '
+                    'Verify the permissions of user group with equipment group'
+                    '. Network:{}'.format(netv4_obj.id))
 
-    # lock network id to prevent multiple requests to same id
-    with distributedlock(LOCK_NETWORK_IPV4 % netv4_obj.id):
-        with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
-            if netv4_obj.active == 0:
-                return 'Network already not active. Nothing to do.'
+        # lock network id to prevent multiple requests to same id
+        with distributedlock(LOCK_NETWORK_IPV4 % netv4_obj.id):
+            with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
+                if netv4_obj.active == 0:
+                    return 'Network already not active. Nothing to do.'
 
-            # load dict with all equipment attributes
-            dict_ips = get_dict_v4_to_use_in_configuration_deploy(
-                user, netv4_obj, routers)
+                # load dict with all equipment attributes
+                dict_ips = get_dict_v4_to_use_in_configuration_deploy(
+                    user, netv4_obj, routers)
 
-            status_deploy = dict()
+                status_deploy = dict()
 
-            # TODO implement threads
-            for equipment in routers:
+                # TODO implement threads
+                for equipment in routers:
 
-                # generate config file
-                file_to_deploy = _generate_config_file(
-                    dict_ips, equipment, TEMPLATE_NETWORKv4_DEACTIVATE)
+                    # generate config file
+                    file_to_deploy = _generate_config_file(
+                        dict_ips, equipment, TEMPLATE_NETWORKv4_DEACTIVATE)
 
-                lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                    equipment.id)
+                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
+                        equipment.id)
 
-                # deploy config file in equipments
-                status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(
-                    file_to_deploy, equipment, lockvar)
+                    # deploy config file in equipments
+                    status_deploy[equipment.id] = \
+                        deploy_config_in_equipment_synchronous(
+                            file_to_deploy, equipment, lockvar)
 
-            netv4_obj.deactivate_v3()
+                netv4_obj.deactivate_v3()
 
-            # transaction.commit()
-            if netv4_obj.vlan.ativada == 1:
+                # transaction.commit()
+                if netv4_obj.vlan.ativada == 1:
 
-                # if there are no other networks active in vlan, remove int
-                # vlan
-                if not _has_active_network_in_vlan(netv4_obj.vlan):
+                    # if there are no other networks active in vlan, remove int
+                    # vlan
+                    if not _has_active_network_in_vlan(netv4_obj.vlan):
 
-                    # remove int vlan
-                    for equipment in routers:
-                        if equipment.maintenance is not True:
-                            pass
-                            # Delete SVI
-                            status_deploy[equipment.id] += _remove_svi(
-                                equipment, netv4_obj.vlan.num_vlan)
+                        # remove int vlan
+                        for equipment in routers:
+                            if equipment.maintenance is not True:
+                                pass
+                                # Delete SVI
+                                status_deploy[equipment.id] += _remove_svi(
+                                    equipment, netv4_obj.vlan.num_vlan)
 
-                    # Need verify this call
-                    netv4_obj.vlan.deactivate_v3()
+                        # Need verify this call
+                        netv4_obj.vlan.deactivate_v3()
 
-            return status_deploy
+                return status_deploy
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.NoEnvironmentRoutersFoundException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
 
 def deploy_networkipv4(network_id, user):
-    """Loads template for creating Network IPv4 equipment configuration, creates file and
-    apply config.
+    """Loads template for creating Network IPv4 equipment configuration,
+    creates file and apply config.
 
     :param network_id: NetworkIPv4 Id
 
     Returns: List with status of equipments output
     """
-    netv4_obj = get_networkipv4_by_id(network_id)
 
-    routers = netv4_obj.vlan.ambiente.routers
+    try:
+        netv4_obj = get_networkipv4_by_id(network_id)
 
-    if not routers:
-        raise exceptions.NoEnvironmentRoutersFoundException()
+        routers = netv4_obj.vlan.ambiente.routers
 
-    if facade_eqpt.all_equipments_are_in_maintenance(routers):
-        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+        if not routers:
+            raise exceptions.NoEnvironmentRoutersFoundException()
 
-    if user:
-        if not facade_eqpt.all_equipments_can_update_config(routers, user):
-            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
-                'User does not have permission to update conf in eqpt. '
-                'Verify the permissions of user group with equipment group. '
-                'Network:{}'.format(netv4_obj.id))
+        if facade_eqpt.all_equipments_are_in_maintenance(routers):
+            raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
 
-    # lock network id to prevent multiple requests to same id
-    with distributedlock(LOCK_NETWORK_IPV4 % network_id):
-        with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
-            if netv4_obj.active == 1:
-                raise exceptions.NetworkAlreadyActive()
+        if user:
+            if not facade_eqpt.all_equipments_can_update_config(routers, user):
+                raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                    'User does not have permission to update conf in eqpt. '
+                    'Verify the permissions of user group with equipment group'
+                    '.Network:{}'.format(netv4_obj.id))
 
-            # load dict with all equipment attributes
-            dict_ips = get_dict_v4_to_use_in_configuration_deploy(
-                user, netv4_obj, routers)
+        # lock network id to prevent multiple requests to same id
+        with distributedlock(LOCK_NETWORK_IPV4 % network_id):
+            with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
+                if netv4_obj.active == 1:
+                    raise exceptions.NetworkAlreadyActive()
 
-            status_deploy = dict()
+                status_deploy = dict()
 
-            # TODO implement threads
-            for equipment in routers:
+                # TODO implement threads
+                for equipment in routers:
 
-                # generate config file
-                file_to_deploy = _generate_config_file(
-                    dict_ips, equipment, TEMPLATE_NETWORKv4_ACTIVATE)
+                    # generate config file
+                    file_to_deploy = _generate_config_file(
+                        dict_ips, equipment, TEMPLATE_NETWORKv4_ACTIVATE)
 
-                lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                    equipment.id)
+                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
+                        equipment.id)
 
-                # Apply configuration file on equipment
-                status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(
-                    file_to_deploy, equipment, lockvar)
+                    # Apply configuration file on equipment
+                    status_deploy[equipment.id] = \
+                        deploy_config_in_equipment_synchronous(
+                            file_to_deploy, equipment, lockvar)
 
-            netv4_obj.activate_v3()
-            # transaction.commit()
+                netv4_obj.activate_v3()
+                # transaction.commit()
 
-            if netv4_obj.vlan.ativada == 0:
-                # Need verify this call
-                netv4_obj.vlan.activate_v3()
+                if netv4_obj.vlan.ativada == 0:
+                    # Need verify this call
+                    netv4_obj.vlan.activate_v3()
 
-            return status_deploy
+                return status_deploy
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.NoEnvironmentRoutersFoundException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
 
-def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list):
+def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4,
+                                               equipment_list):
     """Generate dictionary with vlan an IP information to be used to generate
     template dict for equipment configuration
 
     Args: networkipv4 NetworkIPv4 object
     equipment_list: Equipamento objects list
 
-    Returns: 2-dimension dictionary with equipments information for template rendering
+    Returns: 2-dimension dictionary with equipments information for template
+             rendering
     """
 
     try:
@@ -356,7 +473,14 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 def get_networkipv6_by_id(network_id):
     """Get NetworkIPv6."""
 
-    network = ip_models.NetworkIPv6.get_by_pk(network_id)
+    try:
+        network = ip_models.NetworkIPv6.get_by_pk(network_id)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
     return network
 
@@ -366,7 +490,17 @@ def get_networkipv6_by_ids(network_ids):
 
     net_ids = list()
     for network_id in network_ids:
-        net_ids.append(get_networkipv6_by_id(network_id).id)
+        try:
+            net = get_networkipv6_by_id(network_id)
+
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+
+        else:
+            net_ids.append(net.id)
 
     networks = ip_models.NetworkIPv6.objects.filter(id__in=net_ids)
 
@@ -379,10 +513,13 @@ def get_networkipv6_by_search(search=dict()):
     try:
         networks = ip_models.NetworkIPv6.objects.all()
         net_map = build_query_to_datatable_v3(networks, search)
+
     except FieldError as e:
         raise ValidationAPIException(str(e))
+
     except Exception as e:
         raise NetworkAPIException(str(e))
+
     else:
         return net_map
 
@@ -390,33 +527,76 @@ def get_networkipv6_by_search(search=dict()):
 def create_networkipv6(networkv6, user):
     """Creates a NetworkIPv6."""
 
-    netv6_obj = ip_models.NetworkIPv6()
-    netv6_obj.create_v3(networkv6)
+    try:
+        netv6_obj = ip_models.NetworkIPv6()
+        netv6_obj.create_v3(networkv6)
 
-    return netv6_obj
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.InvalidInputException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        return netv6_obj
 
 
 def update_networkipv6(networkv6, user):
     """Updates a NetworkIPv6."""
 
-    netv6_obj = get_networkipv6_by_id(networkv6.get('id'))
-    netv6_obj.update_v3(networkv6)
+    try:
+        netv6_obj = get_networkipv6_by_id(networkv6.get('id'))
+        netv6_obj.update_v3(networkv6)
 
-    return netv6_obj
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.InvalidInputException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        return netv6_obj
 
 
 def delete_networkipv6(network_ids, user):
     """Deletes a list of NetworkIPv6."""
 
     for network_id in network_ids:
-        netv6_obj = get_networkipv6_by_id(network_id)
+        try:
+            netv6_obj = get_networkipv6_by_id(network_id)
+            netv6_obj.delete_v3()
 
-        netv6_obj.delete_v3()
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+
+        except ip_models.NetworkIPv6ErrorV3, e:
+            raise ValidationAPIException(e.message)
+
+        except ValidationAPIException, e:
+            raise ValidationAPIException(e.detail)
+
+        except Exception, e:
+            raise NetworkAPIException(str(e))
 
 
 def undeploy_networkipv6(network_id, user):
-    """Loads template for removing Network IPv6 equipment configuration, creates file and
-    apply config.
+    """Loads template for removing Network IPv6 equipment configuration,
+    creates file and apply config.
 
     Args: NetworkIPv6 object
     Equipamento objects list
@@ -424,69 +604,96 @@ def undeploy_networkipv6(network_id, user):
     Returns: List with status of equipments output
     """
 
-    netv6_obj = get_networkipv6_by_id(network_id)
+    try:
+        netv6_obj = get_networkipv6_by_id(network_id)
 
-    routers = netv6_obj.vlan.ambiente.routers
+        routers = netv6_obj.vlan.ambiente.routers
 
-    if not routers:
-        raise exceptions.NoEnvironmentRoutersFoundException()
+        if not routers:
+            raise exceptions.NoEnvironmentRoutersFoundException()
 
-    if facade_eqpt.all_equipments_are_in_maintenance(routers):
-        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+        if facade_eqpt.all_equipments_are_in_maintenance(routers):
+            raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
 
-    if user:
-        if not facade_eqpt.all_equipments_can_update_config(routers, user):
-            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
-                'User does not have permission to update conf in eqpt. '
-                'Verify the permissions of user group with equipment group. '
-                'Network:{}'.format(netv6_obj.id))
+        if user:
+            if not facade_eqpt.all_equipments_can_update_config(routers, user):
+                raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                    'User does not have permission to update conf in eqpt. '
+                    'Verify the permissions of user group with equipment group'
+                    '. Network:{}'.format(netv6_obj.id))
 
-    # lock network id to prevent multiple requests to same id
-    with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
-        with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
-            if netv6_obj.active == 0:
-                return 'Network already not active. Nothing to do.'
+        # lock network id to prevent multiple requests to same id
+        with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
+            with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
+                if netv6_obj.active == 0:
+                    return 'Network already not active. Nothing to do.'
 
-            # load dict with all equipment attributes
-            dict_ips = get_dict_v6_to_use_in_configuration_deploy(
-                user, netv6_obj, routers)
+                # load dict with all equipment attributes
+                dict_ips = get_dict_v6_to_use_in_configuration_deploy(
+                    user, netv6_obj, routers)
 
-            status_deploy = dict()
+                status_deploy = dict()
 
-            # TODO implement threads
-            for equipment in routers:
-                # generate config file
-                file_to_deploy = _generate_config_file(
-                    dict_ips, equipment, TEMPLATE_NETWORKv6_DEACTIVATE)
+                # TODO implement threads
+                for equipment in routers:
+                    # generate config file
+                    file_to_deploy = _generate_config_file(
+                        dict_ips, equipment, TEMPLATE_NETWORKv6_DEACTIVATE)
 
-                lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                    equipment.id)
+                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
+                        equipment.id)
 
-                # deploy config file in equipments
-                status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(
-                    file_to_deploy, equipment, lockvar)
+                    # deploy config file in equipments
+                    status_deploy[equipment.id] = \
+                        deploy_config_in_equipment_synchronous(
+                            file_to_deploy, equipment, lockvar)
 
-            netv6_obj.deactivate_v3()
+                netv6_obj.deactivate_v3()
 
-            # transaction.commit()
+                # transaction.commit()
 
-            if netv6_obj.vlan.ativada == 1:
-                # if there are no other networks active in vlan, remove int
-                # vlan
-                if not _has_active_network_in_vlan(netv6_obj.vlan):
-                    # remove int vlan
-                    for equipment in routers:
-                        if equipment.maintenance is not True:
-                            status_deploy[
-                                equipment.id] += _remove_svi(equipment, netv6_obj.vlan.num_vlan)
-                    netv6_obj.vlan.deactivate_v3()
+                if netv6_obj.vlan.ativada == 1:
+                    # if there are no other networks active in vlan, remove int
+                    # vlan
+                    if not _has_active_network_in_vlan(netv6_obj.vlan):
+                        # remove int vlan
+                        for equipment in routers:
+                            if equipment.maintenance is not True:
+                                status_deploy[
+                                    equipment.id] += _remove_svi(
+                                        equipment, netv6_obj.vlan.num_vlan)
+                        netv6_obj.vlan.deactivate_v3()
 
-            return status_deploy
+                return status_deploy
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.NoEnvironmentRoutersFoundException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
 
 def deploy_networkipv6(network_id, user):
-    """Loads template for creating Network IPv6 equipment configuration, creates file and
-    apply config.
+    """Loads template for creating Network IPv6 equipment configuration,
+    creates file and apply config.
 
     Args: NetworkIPv6 object
     Equipamento objects list
@@ -494,67 +701,96 @@ def deploy_networkipv6(network_id, user):
     Returns: List with status of equipments output
     """
 
-    netv6_obj = get_networkipv6_by_id(network_id)
+    try:
 
-    routers = netv6_obj.vlan.ambiente.routers
+        netv6_obj = get_networkipv6_by_id(network_id)
 
-    if not routers:
-        raise exceptions.NoEnvironmentRoutersFoundException()
+        routers = netv6_obj.vlan.ambiente.routers
 
-    if facade_eqpt.all_equipments_are_in_maintenance(routers):
-        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+        if not routers:
+            raise exceptions.NoEnvironmentRoutersFoundException()
 
-    if user:
-        if not facade_eqpt.all_equipments_can_update_config(routers, user):
-            raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
-                'User does not have permission to update conf in eqpt. '
-                'Verify the permissions of user group with equipment group. '
-                'Network:{}'.format(netv6_obj.id))
+        if facade_eqpt.all_equipments_are_in_maintenance(routers):
+            raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
 
-    # lock network id to prevent multiple requests to same id
-    with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
-        with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
-            if netv6_obj.active == 1:
-                raise exceptions.NetworkAlreadyActive()
+        if user:
+            if not facade_eqpt.all_equipments_can_update_config(routers, user):
+                raise exceptions_eqpt.UserDoesNotHavePermInAllEqptException(
+                    'User does not have permission to update conf in eqpt. '
+                    'Verify the permissions of user group with equipment group'
+                    '. Network:{}'.format(netv6_obj.id))
 
-            # load dict with all equipment attributes
-            dict_ips = get_dict_v6_to_use_in_configuration_deploy(
-                user, netv6_obj, routers)
+        # lock network id to prevent multiple requests to same id
+        with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
+            with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
+                if netv6_obj.active == 1:
+                    raise exceptions.NetworkAlreadyActive()
 
-            status_deploy = dict()
+                # load dict with all equipment attributes
+                dict_ips = get_dict_v6_to_use_in_configuration_deploy(
+                    user, netv6_obj, routers)
 
-            # TODO implement threads
-            for equipment in routers:
+                status_deploy = dict()
 
-                # generate config file
-                file_to_deploy = _generate_config_file(
-                    dict_ips, equipment, TEMPLATE_NETWORKv6_ACTIVATE)
+                # TODO implement threads
+                for equipment in routers:
 
-                # deploy config file in equipments
-                lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                    equipment.id)
+                    # generate config file
+                    file_to_deploy = _generate_config_file(
+                        dict_ips, equipment, TEMPLATE_NETWORKv6_ACTIVATE)
 
-                status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(
-                    file_to_deploy, equipment, lockvar)
+                    # deploy config file in equipments
+                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
+                        equipment.id)
 
-            netv6_obj.activate_v3()
+                    status_deploy[equipment.id] = \
+                        deploy_config_in_equipment_synchronous(
+                            file_to_deploy, equipment, lockvar)
 
-            # transaction.commit()
+                netv6_obj.activate_v3()
 
-            if netv6_obj.vlan.ativada == 0:
-                netv6_obj.vlan.activate_v3()
+                # transaction.commit()
 
-            return status_deploy
+                if netv6_obj.vlan.ativada == 0:
+                    netv6_obj.vlan.activate_v3()
+
+                return status_deploy
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.NoEnvironmentRoutersFoundException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
 
-def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list):
+def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6,
+                                               equipment_list):
     """Generate dictionary with vlan an IP information to be used to generate
     template dict for equipment configuration
 
     Args: networkipv4 NetworkIPv4 object
     equipment_list: Equipamento objects list
 
-    Returns: 2-dimension dictionary with equipments information for template rendering
+    Returns: 2-dimension dictionary with equipments information for template
+             rendering
     """
 
     try:
@@ -674,11 +910,10 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
 # Generic #
 ###########
 def _generate_config_file(dict_ips, equipment, template_type):
-    """
-    Load a template and write a file with the rended output.
+    """Load a template and write a file with the rended output.
 
-    Args: 2-dimension dictionary with equipments information for template rendering
-          equipment to render template to template type to load.
+    Args: 2-dimension dictionary with equipments information for template
+          rendering equipment to render template to template type to load.
 
     Returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
     """
@@ -712,8 +947,7 @@ def _generate_config_file(dict_ips, equipment, template_type):
 
 
 def _load_template_file(equipment, template_type):
-    """
-    Load template file with specific type related to equipment.
+    """Load template file with specific type related to equipment.
 
     Args: equipment: Equipamento object
     template_type: Type of template to be loaded
@@ -748,11 +982,10 @@ def _load_template_file(equipment, template_type):
 
 
 def _has_active_network_in_vlan(vlan):
-    """
-    Check if there are any other active network in the vlan
-    this is used because some equipments remove all the L3 config
-    when applying some commands, so they can only be applyed at the first time
-    or to remove interface vlan configuration
+    """Check if there are any other active network in the vlan this is used
+    because some equipments remove all the L3 config when applying some
+    commands, so they can only be applyed at the first time or to remove
+    interface vlan configuration
 
     :param vlan: vlan object
 
@@ -767,8 +1000,8 @@ def _has_active_network_in_vlan(vlan):
 
 
 def _generate_template_dict(dict_ips, equipment):
-    """
-    Creates a 1-dimension dictionary from a 2 dimension with equipment information.
+    """Creates a 1-dimension dictionary from a 2 dimension with equipment
+    information.
 
     Args: dict_ips dictionary for template rendering
     equipment to create dictionary to
@@ -803,9 +1036,7 @@ def _generate_template_dict(dict_ips, equipment):
 
 
 def _remove_svi(equipment, vlan_num):
-    """
-    Call function "remove_svi" of Plugin for model of equipment.
-    """
+    """Call function "remove_svi" of Plugin for model of equipment."""
 
     equip_plugin = PluginFactory.factory(equipment)
     equip_plugin.connect()

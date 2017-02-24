@@ -65,3 +65,13 @@ class NetworkTemplateException(APIException):
 class NoEnvironmentRoutersFoundException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No environment routers found for network configuration.'
+
+
+class NetworkConflictException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'One of the equipment associated with the environment ' \
+        'of this Vlan is also associated with other environment that has a '\
+        'network with the same track, add filters in environments if necessary.'
+
+    def __init__(self, detail=default_detail):
+        self.detail = detail

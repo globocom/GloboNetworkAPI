@@ -5,7 +5,6 @@ import sys
 from itertools import izip
 from time import time
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -17,12 +16,12 @@ stream_handler = logging.StreamHandler(sys.stdout)
 log.addHandler(stream_handler)
 
 
-def setup():
+fixtures_base_path = 'networkapi/api_network/fixtures/integration/%s'
 
-    fixtures_base_path = 'networkapi/api_network/fixtures/integration/%s'
 
-    call_command(
-        'loaddata',
+class NetworksFunctionalTestV3(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -42,11 +41,7 @@ def setup():
         fixtures_base_path % 'initial_environment_dc.json',
         fixtures_base_path % 'initial_environment_envlog.json',
         fixtures_base_path % 'initial_environment_gl3.json',
-        verbosity=1
-    )
-
-
-class NetworksFunctionalTestV3(NetworkApiTestCase):
+    ]
 
     def setUp(self):
 
