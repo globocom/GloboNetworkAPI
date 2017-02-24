@@ -2345,7 +2345,8 @@ class IpEquipamento(BaseModel):
         If Ip from this Ip-Equipment is associated with created Vip Request,
             and the Equipment is the last balancer associated, the IpEquipment
             association cannot be removed.
-        If Ip has no relationship with other Equipments, then Ip is also removed.
+        If Ip has no relationship with other Equipments, then Ip is also
+            removed.
 
         @raise IpCantRemoveFromServerPool: Ip is associated with associated
                                            Pool Member.

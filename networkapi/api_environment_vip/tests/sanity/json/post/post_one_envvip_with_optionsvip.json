@@ -1,0 +1,19 @@
+{
+  "environments_vip": [
+    {
+      "ambiente_p44_txt": "Teste New Environment VIP",
+      "cliente_txt": "Teste New Environment VIP",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "Teste New Environment VIP",
+      "finalidade_txt": "Teste New Environment VIP",
+      "optionsvip": [
+        {
+          "option": 1
+        },
+        {
+          "option": 6
+        }
+      ]
+    }
+  ]
+}

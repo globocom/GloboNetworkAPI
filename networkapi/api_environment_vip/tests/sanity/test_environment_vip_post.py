@@ -2,7 +2,6 @@
 import json
 import logging
 
-from django.core.management import call_command
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
@@ -10,9 +9,8 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -23,11 +21,9 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/requisicaovips/fixtures/initial_optionsvip.json',
         'networkapi/api_environment_vip/fixtures/initial_base.json',
-        verbosity=0
-    )
+    ]
 
-
-class EnvironmentVipPostTestCase(NetworkApiTestCase):
+    json_path = 'api_environment_vip/tests/sanity/json/post/%s'
 
     def setUp(self):
         self.client = Client()
@@ -35,10 +31,10 @@ class EnvironmentVipPostTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_post_one_env_success(self):
-        """Test Success of post of one environment vip."""
+    def test_post_one_env(self):
+        """Test of success to post one environment vip."""
 
-        name_file = 'api_environment_vip/tests//sanity/json/post_one_envvip.json'
+        name_file = self.json_path % 'post_one_envvip.json'
 
         # Does post request
         response = self.client.post(
@@ -47,31 +43,80 @@ class EnvironmentVipPostTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        # Tests code returned
-        self.assertEqual(201, response.status_code,
-                         'Status code should be 201 and was %s' %
-                         response.status_code)
+        self.compare_status(201, response.status_code)
 
         id_env = response.data[0]['id']
 
         # Does get request
         response = self.client.get(
-            '/api/v3/environment-vip/%s/' % id_env,
+            '/api/v3/environment-vip/%s/?include=conf' % id_env,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        # Tests code returned
-        self.assertEqual(200, response.status_code,
-                         'Status code should be 200 and was %s' %
-                         response.status_code)
+        self.compare_status(200, response.status_code)
 
         # Removes property id
         data = response.data
         del data['environments_vip'][0]['id']
 
-        # Tests if data was inserted
-        self.assertEqual(
-            json.dumps(self.load_json_file(name_file), sort_keys=True),
-            json.dumps(data, sort_keys=True),
-            'Jsons should be same.'
-        )
+        self.compare_json(name_file, data)
+
+    def test_post_one_env_with_environments(self):
+        """Test of success to post one environment vip with environments."""
+
+        name_file = self.json_path % 'post_one_envvip_with_environments.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/environment-vip/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_env = response.data[0]['id']
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/%s/?include=environments,conf' % id_env,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property id
+        data = response.data
+        del data['environments_vip'][0]['id']
+
+        self.compare_json(name_file, data)
+
+    def test_post_one_env_with_optionsvip(self):
+        """Test of success to post one environment vip with options vip."""
+
+        name_file = self.json_path % 'post_one_envvip_with_optionsvip.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/environment-vip/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_env = response.data[0]['id']
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/environment-vip/%s/?include=optionsvip,conf' % id_env,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property id
+        data = response.data
+        del data['environments_vip'][0]['id']
+
+        self.compare_json(name_file, data)

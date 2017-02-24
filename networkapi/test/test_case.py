@@ -29,14 +29,16 @@ class NetworkApiTestCase(TestCase):
         return load_json(local_files(file_name))
 
     def compare_json(self, name_file, data):
-        expected_data = json.dumps(
-            self.load_json_file(name_file), sort_keys=True)
+
+        expected_data = json.dumps(self.load_json_file(name_file),
+                                   sort_keys=True)
         received_data = json.dumps(data, sort_keys=True)
+
+        msg = 'Jsons should be same. Expected: {}, Received: {}'
         self.assertEqual(
             expected_data,
             received_data,
-            'Jsons should be same. Expected %s Received %s' % (
-                expected_data, received_data)
+            msg.format(expected_data, received_data)
         )
 
     def compare_json_lists(self, name_file, data):
@@ -50,17 +52,29 @@ class NetworkApiTestCase(TestCase):
         )
 
     def compare_status(self, expected_code, code):
+
+        msg = 'Status code should be same. Expected: {}, Received: {}'
         self.assertEqual(
             expected_code,
             code,
-            'Status code should be %s and was %s' % (
-                expected_code, code)
+            msg.format(expected_code, code)
+        )
+
+    def contains_values(self, expected_data, received_data):
+
+        msg = 'Expected data should be in received data. Expected: {}, ' \
+            'Received: {}'
+        self.assertContains(
+            expected_data,
+            received_data,
+            msg.format(expected_data, received_data)
         )
 
     def compare_values(self, expected_data, received_data):
+
+        msg = 'Value should be same. Expected: {}, Received: {}'
         self.assertEqual(
             expected_data,
             received_data,
-            'Value should be same. Expected %s Received %s' % (
-                expected_data, received_data)
+            msg.format(expected_data, received_data)
         )

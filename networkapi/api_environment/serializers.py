@@ -154,7 +154,6 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'max_num_vlan_1',
             'min_num_vlan_2',
             'max_num_vlan_2',
-            'vrf',
             'default_vrf',
             'father_environment',
         )
