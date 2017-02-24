@@ -300,6 +300,10 @@ def deploy_networkipv4(network_id, user):
 
                 status_deploy = dict()
 
+                # load dict with all equipment attributes
+                dict_ips = get_dict_v4_to_use_in_configuration_deploy(
+                    user, netv4_obj, routers)
+
                 # TODO implement threads
                 for equipment in routers:
 

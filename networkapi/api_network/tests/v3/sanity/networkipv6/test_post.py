@@ -30,18 +30,18 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
         'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
         'networkapi/equipamento/fixtures/initial_tipo_equip.json',
 
-        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
         'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
         'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
         'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
         'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
-        'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
         'networkapi/api_network/fixtures/sanity/initial_vlan.json',
-        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
         'networkapi/api_network/fixtures/sanity/initial_ipv6.json',
-        'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
         'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
         'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
         'networkapi/api_network/fixtures/sanity/initial_equipments.json',
         'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
@@ -50,9 +50,6 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
         'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
         'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
 
-        'networkapi/api_network/fixtures/initial_environment_dc.json',
-        'networkapi/api_network/fixtures/initial_environment_envlog.json',
-        'networkapi/api_network/fixtures/initial_environment_gl3.json'
     ]
 
     def setUp(self):
@@ -161,7 +158,7 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            'Unavailable address to create a NetworkIPv4.',
+            'Unavailable address to create a NetworkIPv6.',
             response.data['detail'])
 
     def test_try_create_netipv6_with_octs_in_full_env(self):
@@ -192,37 +189,6 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
 
-    # deploy tests
-
-    # @patch('networkapi.plugins.factory.PluginFactory.factory')
-    # def test_try_deploy_inactive_netipv6(self, test_patch):
-    #     """Tries to deploy a inactive NetworkIPv6. NAPI should allow this request."""
-    #
-    #     mock = MockPluginNetwork()
-    #     mock.status(True)
-    #     test_patch.return_value = mock
-    #
-    #     url_post = '/api/v3/networkv6/deploy/3/'
-    #
-    #     response = self.client.post(
-    #         url_post,
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.authorization)
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     url_get = '/api/v3/networkv6/3/?fields=active'
-    #
-    #     response = self.client.get(
-    #         url_get,
-    #         HTTP_AUTHORIZATION=self.authorization
-    #     )
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     active = response.data['networks'][0]['active']
-    #     self.compare_values(True, active)
-
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_deploy_active_netipv6(self, test_patch):
         """Tries to deploy a active NetworkIPv6. NAPI should deny this request."""
@@ -241,6 +207,35 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
         self.compare_status(500, response.status_code)
 
         url_get = '/api/v3/networkv6/1/?fields=active'
+
+        response = self.client.get(
+            url_get,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        active = response.data['networks'][0]['active']
+        self.compare_values(True, active)
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_try_deploy_inactive_netipv6(self, test_patch):
+        """Tries to deploy a inactive NetworkIPv6. NAPI should allow this request."""
+
+        mock = MockPluginNetwork()
+        mock.status(True)
+        test_patch.return_value = mock
+
+        url_post = '/api/v3/networkv6/deploy/3/'
+
+        response = self.client.post(
+            url_post,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        url_get = '/api/v3/networkv6/3/?fields=active'
 
         response = self.client.get(
             url_get,

@@ -56,7 +56,7 @@
   },
   {
     "fields": {
-      "networkipv4": 1,
+      "networkipv4": 7,
       "oct1": "10",
       "oct2": "11",
       "oct3": "6",
