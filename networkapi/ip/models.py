@@ -699,16 +699,16 @@ class NetworkIPv4(BaseModel):
                 .values_list('id', flat=True)
 
         except vlan_model.VlanNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
 
         except vlan_model.NetworkTypeNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
 
         except envvip_model.EnvironmentVipNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
 
         except NetworkIPv4ErrorV3, e:
             self.log.error(e.message)
@@ -853,14 +853,17 @@ class NetworkIPv4(BaseModel):
                 self.environmentvip = None
 
         except vlan_model.NetworkTypeNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
+
         except envvip_model.EnvironmentVipNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
+
         except NetworkIPv4ErrorV3, e:
             self.log.error(e.message)
             raise NetworkIPv4ErrorV3(e.message)
+
         except Exception, e:
             self.log.error(e)
             raise NetworkIPv4ErrorV3(e)
@@ -2927,16 +2930,16 @@ class NetworkIPv6(BaseModel):
                 .values_list('id', flat=True)
 
         except vlan_model.VlanNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
 
         except vlan_model.NetworkTypeNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
 
         except envvip_model.EnvironmentVipNotFoundError, e:
-            self.log.error(e.detail)
-            raise InvalidInputException(e.detail)
+            self.log.error(e.message)
+            raise InvalidInputException(e.message)
 
         except NetworkIPv6ErrorV3, e:
             self.log.error(e.message)
