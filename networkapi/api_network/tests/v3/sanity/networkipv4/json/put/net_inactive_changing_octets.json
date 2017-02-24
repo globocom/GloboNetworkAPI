@@ -8,6 +8,7 @@
       "mask_oct2": 255,
       "mask_oct3": 255,
       "mask_oct4": 0,
+      "network_type": 1,
       "oct1": 10,
       "oct2": 10,
       "oct3": 100,

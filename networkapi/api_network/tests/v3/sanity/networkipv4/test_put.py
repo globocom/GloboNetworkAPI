@@ -67,7 +67,7 @@ class NetworkIPv4PutTestCase(NetworkApiTestCase):
         pass
 
     def test_try_update_inactive_netipv4(self):
-        """Tries to update Network IPv4 changing cluster unit, network type and environment vip. NAPI should allow this request."""
+        """Tries to update inactive Network IPv4 changing cluster unit, network type and environment vip. NAPI should allow this request."""
 
         name_file_put = 'api_network/tests/v3/sanity/networkipv4/json/put/net_inactive.json'
 
@@ -94,7 +94,7 @@ class NetworkIPv4PutTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file_get, response.data['networks'])
 
     def test_try_update_active_netipv4(self):
-        """Tries to update Network IPv4 changing cluster unit, network type and environment vip. NAPI should allow this request."""
+        """Tries to update active Network IPv4 changing cluster unit, network type and environment vip. NAPI should allow this request."""
 
         name_file_put = 'api_network/tests/v3/sanity/networkipv4/json/put/net_active.json'
 
