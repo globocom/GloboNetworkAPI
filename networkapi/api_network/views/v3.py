@@ -73,9 +73,7 @@ class NetworkIPv4View(CustomAPIView):
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """
-        Creates list of networkv4
-        """
+        """Creates list of networkv4."""
 
         data = request.DATA
 
@@ -94,9 +92,7 @@ class NetworkIPv4View(CustomAPIView):
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """
-        Deletes list of networkv4
-        """
+        """Deletes list of networkv4."""
 
         response = list()
         obj_ids = kwargs['obj_ids'].split(';')
@@ -110,9 +106,7 @@ class NetworkIPv4View(CustomAPIView):
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """
-        Updates list of networkv4
-        """
+        """Updates list of networkv4."""
 
         data = request.DATA
 
@@ -172,9 +166,7 @@ class NetworkIPv6View(CustomAPIView):
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """
-        Creates list of networkv6
-        """
+        """Creates list of networkv6."""
 
         data = request.DATA
 
@@ -193,9 +185,7 @@ class NetworkIPv6View(CustomAPIView):
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """
-        Updates list of networkv6
-        """
+        """Updates list of networkv6."""
 
         data = request.DATA
 
@@ -214,9 +204,7 @@ class NetworkIPv6View(CustomAPIView):
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """
-        Deletes list of networkv6
-        """
+        """Deletes list of networkv6."""
 
         response = list()
         obj_ids = kwargs['obj_ids'].split(';')

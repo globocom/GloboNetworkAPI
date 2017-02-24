@@ -4,13 +4,13 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import get_model
+
+from networkapi.api_vrf.exceptions import VrfAssociatedToVlanEquipment
 from networkapi.api_vrf.exceptions import VrfError
 from networkapi.api_vrf.exceptions import VrfNotFoundError
+from networkapi.api_vrf.exceptions import VrfRelatedToEnvironment
 from networkapi.filter.models import FilterNotFoundError
 from networkapi.models.BaseModel import BaseModel
-from networkapi.api_vrf.exceptions import VrfRelatedToEnvironment
-from networkapi.api_vrf.exceptions import VrfAssociatedToVlanEquipment
 
 
 class Vrf(BaseModel):
@@ -50,8 +50,8 @@ class Vrf(BaseModel):
             raise OperationalError(
                 u'Lock wait timeout exceeded; try restarting transaction')
         except Exception as e:
-            cls.log.error(u'Failure to search the Vrf.')
-            raise VrfError(u'Failure to search the Vrf.')
+            cls.log.error(u'Failure to search the Vrf. Error: {}'.format(e))
+            raise VrfError(u'Failure to search the Vrf. Error: {}'.format(e))
 
     def create(self, authenticated_user):
         """Include new Vrf.
@@ -91,7 +91,7 @@ class Vrf(BaseModel):
             vrf.save(authenticated_user)
 
         except Exception as e:
-            cls.log.error(u'Fail to change Vrf.')
+            cls.log.error(u'Fail to change Vrf. Error: {}'.format(e))
 
     @classmethod
     def remove(cls, pk):

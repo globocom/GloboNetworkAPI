@@ -35,13 +35,15 @@ class NetworkFacadeTestCase(unittest.TestCase):
         self.equipment_list = [Equipamento(id=1, nome='router')]
         self.ambiente = Ambiente()
         self.vlan = Vlan(id=1, ambiente=self.ambiente)
-        self.networkv4 = NetworkIPv4(id=1, vlan=self.vlan, oct1=192, oct2=168, oct3=0, oct4=0,
-                                     mask_oct1=255, mask_oct2=255, mask_oct3=255, mask_oct4=0)
+        self.networkv4 = NetworkIPv4(
+            id=1, vlan=self.vlan, oct1=192, oct2=168, oct3=0, oct4=0,
+            mask_oct1=255, mask_oct2=255, mask_oct3=255, mask_oct4=0)
 
-        self.networkv6 = NetworkIPv6(id=1, vlan=self.vlan, block1='fff', block2='fff', block3='fff',
-                                     block4='fff', block5='fff', block6='fff', block7='fff', block8='fff',
-                                     mask1='fff', mask2='fff', mask3='fff', mask4='fff',
-                                     mask5='fff', mask6='fff', mask7='fff', mask8='fff')
+        self.networkv6 = NetworkIPv6(
+            id=1, vlan=self.vlan, block1='fff', block2='fff', block3='fff',
+            block4='fff', block5='fff', block6='fff', block7='fff',
+            block8='fff', mask1='fff', mask2='fff', mask3='fff',
+            mask4='fff', mask5='fff', mask6='fff', mask7='fff', mask8='fff')
 
         self.mock_distributed_lock()
         self.mock_transaction()

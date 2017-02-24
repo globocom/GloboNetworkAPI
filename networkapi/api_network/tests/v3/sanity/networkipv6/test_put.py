@@ -1,24 +1,12 @@
-import json
-import logging
-import sys
-from itertools import izip
-from time import time
-
-from django.core.management import call_command
+# -*- coding: utf-8 -*-
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.util.geral import prepare_url
-
-log = logging.getLogger()
-log.level = logging.DEBUG
-stream_handler = logging.StreamHandler(sys.stdout)
-log.addHandler(stream_handler)
 
 
-def setup():
-    call_command(
-        'loaddata',
+class NetworkIPv6PutTestCase(NetworkApiTestCase):
+
+    fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
@@ -38,11 +26,8 @@ def setup():
         'networkapi/api_network/fixtures/initial_environment_dc.json',
         'networkapi/api_network/fixtures/initial_environment_envlog.json',
         'networkapi/api_network/fixtures/initial_environment_gl3.json',
-        verbosity=1
-    )
+    ]
 
-
-class NetworkIPv6PutTestCase(NetworkApiTestCase):
     def setUp(self):
         self.client = Client()
 

@@ -71,6 +71,9 @@ class VipRequest(BaseModel):
         db_table = u'vip_request'
         managed = True
 
+    def __str__(self):
+        return str(self.id)
+
     @cached_property
     def dscp(self):
         try:
@@ -680,7 +683,7 @@ class VipRequest(BaseModel):
                                      because it is created in equipment.
         """
 
-        ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
+        ip_models = get_app('ip')
         ogp_models = get_app('api_ogp', 'models')
 
         id_vip = self.id
@@ -706,7 +709,7 @@ class VipRequest(BaseModel):
             if not self._is_ipv4_in_use(id_ipv4, id_vip):
                 try:
                     self.ipv4.delete_v3()
-                except ipcantberemovedfromvip:
+                except ip_models.IpCantBeRemovedFromVip:
                     self.log.info(
                         'Tried to delete Ipv4, because assoc with in more Vips.')
                     pass
@@ -719,7 +722,7 @@ class VipRequest(BaseModel):
             if not self._is_ipv6_in_use(id_ipv6, id_vip):
                 try:
                     self.ipv6.delete_v3()
-                except ipcantberemovedfromvip:
+                except ip_models.IpCantBeRemovedFromVip:
                     self.log.info(
                         'Tried to delete Ipv6, because assoc with in more Vips.')
                     pass
