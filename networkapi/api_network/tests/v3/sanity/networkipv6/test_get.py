@@ -89,7 +89,8 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
                     'block1': 'fc00',
                     'block2': '0000',
                     'block3': '0000',
-                    'block4': '0000'
+                    'block4': '0000',
+                    'vlan': 1
                 }
             ]
         }
@@ -117,9 +118,11 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'block4': '0000'
+                'block4': '0000',
+                'vlan': 1
             }, {
-                'block4': '0001'
+                'block4': '0001',
+                'vlan': 1
             }]
         }
 
@@ -177,7 +180,8 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
                 'block1': 'fc00',
                 'block2': '0000',
                 'block3': '0000',
-                'block4': '0000'
+                'block4': '0000',
+                'vlan': 1
             }]
         }
 
@@ -204,9 +208,11 @@ class NetworkIPv6GetTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'block4': '0000'
+                'block4': '0000',
+                'vlan': 1
             }, {
-                'block4': '0001'
+                'block4': '0001',
+                'vlan': 1
             }]
         }
 

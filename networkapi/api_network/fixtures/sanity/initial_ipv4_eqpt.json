@@ -10,7 +10,7 @@
   {
     "fields": {
       "equipamento": "1",
-      "ip": 6
+      "ip": 1
     },
     "model": "ip.ipequipamento",
     "pk": 2

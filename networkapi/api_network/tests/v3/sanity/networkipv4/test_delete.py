@@ -51,6 +51,25 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
+    # not deploy tests
+
+    def test_try_delete_nonexistent_netipv4(self):
+        """Tries to delete nonexistent Network IPv4. NAPI should deny this request."""
+
+        delete_url = '/api/v3/networkv4/1000/'
+
+        response = self.client.delete(
+            delete_url,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv4 with pk = 1000.',
+            response.data['detail']
+        )
+
     def test_try_delete_inactive_netipv4(self):
         """Test of success to delete an inactive Network IPv4 without IP
             Addresses.

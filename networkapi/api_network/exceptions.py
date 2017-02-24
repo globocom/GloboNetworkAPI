@@ -52,6 +52,11 @@ class InvalidNetworkIDException(APIException):
     default_detail = 'Invalid Network ID.'
 
 
+class NetworkAlreadyActive(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Already Active Network. Nothing to do.'
+
+
 class NetworkTemplateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No network configuration templates found for equipments.'
