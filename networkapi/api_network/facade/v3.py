@@ -181,7 +181,6 @@ def deploy_networkipv4(network_id, user):
 
     Returns: List with status of equipments output
     """
-
     netv4_obj = get_networkipv4_by_id(network_id)
 
     routers = netv4_obj.vlan.ambiente.routers
@@ -203,7 +202,7 @@ def deploy_networkipv4(network_id, user):
     with distributedlock(LOCK_NETWORK_IPV4 % network_id):
         with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
             if netv4_obj.active == 1:
-                return 'Network already active. Nothing to do.'
+                raise exceptions.NetworkAlreadyActive()
 
             # load dict with all equipment attributes
             dict_ips = get_dict_v4_to_use_in_configuration_deploy(
@@ -516,7 +515,7 @@ def deploy_networkipv6(network_id, user):
     with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
         with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
             if netv6_obj.active == 1:
-                return 'Network already active. Nothing to do.'
+                raise exceptions.NetworkAlreadyActive()
 
             # load dict with all equipment attributes
             dict_ips = get_dict_v6_to_use_in_configuration_deploy(
