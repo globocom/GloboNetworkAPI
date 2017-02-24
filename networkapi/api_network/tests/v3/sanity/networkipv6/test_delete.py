@@ -70,6 +70,23 @@ class NetworkIPv6DeleteTestCase(NetworkApiTestCase):
 
     # not deploy tests
 
+    def test_try_delete_nonexistent_netipv6(self):
+        """Tries to delete nonexistent Network IPv6. NAPI should deny this request."""
+
+        delete_url = '/api/v3/networkv6/1000/'
+
+        response = self.client.delete(
+            delete_url,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv6 with pk = 1000.',
+            response.data['detail']
+        )
+
     def test_try_delete_inactive_netipv6(self):
         """Tries to delete an inactive Network IPv6 without IP Addresses. NAPI should allow this request."""
 

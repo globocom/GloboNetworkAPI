@@ -193,3 +193,63 @@ class NetworkIPv4PostTestCase(NetworkApiTestCase):
             HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(500, response.status_code)
+
+    # deploy tests
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_try_deploy_inactive_netipv4(self, test_patch):
+        """Tries to deploy a inactive NetworkIPv4. NAPI should allow this request."""
+
+        mock = MockPluginNetwork()
+        mock.status(True)
+        test_patch.return_value = mock
+
+        url_post = '/api/v3/networkv4/deploy/3/'
+
+        response = self.client.post(
+            url_post,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        url_get = '/api/v3/networkv4/3/?fields=active'
+
+        response = self.client.get(
+            url_get,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        active = response.data['networks'][0]['active']
+        self.compare_values(True, active)
+
+    @patch('networkapi.plugins.factory.PluginFactory.factory')
+    def test_try_deploy_active_netipv4(self, test_patch):
+        """Tries to deploy a active NetworkIPv4. NAPI should deny this request."""
+
+        mock = MockPluginNetwork()
+        mock.status(False)
+        test_patch.return_value = mock
+
+        url_post = '/api/v3/networkv4/deploy/1/'
+
+        response = self.client.post(
+            url_post,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(500, response.status_code)
+
+        url_get = '/api/v3/networkv4/1/?fields=active'
+
+        response = self.client.get(
+            url_get,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        active = response.data['networks'][0]['active']
+        self.compare_values(True, active)

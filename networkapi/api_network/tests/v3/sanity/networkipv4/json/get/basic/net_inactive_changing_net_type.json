@@ -1,0 +1,17 @@
+[
+  {
+    "active": false,
+    "broadcast": "10.10.2.127",
+    "cluster_unit": "cluster-unit-1",
+    "environmentvip": null,
+    "id": 3,
+    "mask_formated": "255.255.255.128",
+    "network_type": 1,
+    "networkv4": "10.10.2.0/25",
+    "vlan": {
+      "id": 1,
+      "name": "Vlan with PK 1",
+      "num_vlan": 1
+    }
+  }
+]
