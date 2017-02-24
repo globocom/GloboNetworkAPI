@@ -66,6 +66,19 @@ class NetworkIPv6PutTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
+    def test_try_update_nonexistent_netipv6(self):
+
+        name_file_put = 'api_network/tests/v3/sanity/networkipv6/json/put/net_nonexistent.json'
+
+        # Does PUT request
+        response = self.client.put(
+            '/api/v3/networkv6/1000/',
+            data=json.dumps(self.load_json_file(name_file_put)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(404, response.status_code)
+
     def test_try_update_inactive_netipv6(self):
         """Tries to update inactive Network IPv6 changing cluster unit, network type and environment vip. NAPI should allow this request."""
 
