@@ -158,7 +158,11 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization)
 
-        self.compare_status(500, response.status_code)
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            'Unavailable address to create a NetworkIPv4.',
+            response.data['detail'])
 
     def test_try_create_netipv6_with_octs_in_full_env(self):
         """Tries to create a Network IPv6 with octs in vlan of Environment with not available Network IPv6."""
@@ -172,7 +176,7 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization)
 
-        self.compare_status(500, response.status_code)
+        self.compare_status(400, response.status_code)
 
     def test_try_create_netipv6_out_of_range_with_octs(self):
         """Tries to create a Network IPv6 with octs out of range configuration defined in related Environment."""
@@ -186,7 +190,7 @@ class NetworkIPv6PostTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization)
 
-        self.compare_status(500, response.status_code)
+        self.compare_status(400, response.status_code)
 
     # deploy tests
 

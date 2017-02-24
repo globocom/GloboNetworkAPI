@@ -1406,6 +1406,7 @@ class Vlan(BaseModel):
                     'network {} are in out of the range of allowed networks.'
                 msg = msg.format(self.ambiente.name, net.networkv4)
                 self.log.error(msg)
+
                 raise VlanErrorV3(msg)
 
         for net in netv6:
