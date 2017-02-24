@@ -139,11 +139,11 @@ class IpErrorV3(Exception):
 
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
 
-    def __init__(self, cause):
-        self.cause = cause
+    def __init__(self, message):
+        self.message = message
 
     def __str__(self):
-        return str(self.cause)
+        return str(self.message)
 
 
 class IpError(Exception):
@@ -1937,12 +1937,12 @@ class Ip(BaseModel):
                 })
 
         except IpErrorV3, e:
-            self.log.error(e)
-            raise IpErrorV3(e)
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
 
         except IpNotAvailableError, e:
-            self.log.error(e)
-            raise IpErrorV3(e)
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
 
         except Exception, e:
             msg = u'Error save new IP.: %s' % e
@@ -2023,8 +2023,8 @@ class Ip(BaseModel):
                 ip_eqpt.delete_v3()
 
         except IpErrorV3, e:
-            self.log.error(e)
-            raise IpErrorV3(e)
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
         except Exception, e:
             msg = u'Error edit IP.: %s' % e
             self.log.error(msg)
@@ -4342,8 +4342,8 @@ class Ipv6(BaseModel):
                 ip_eqpt.delete_v3()
 
         except IpErrorV3, e:
-            self.log.error(e)
-            raise IpErrorV3(e)
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
         except Exception, e:
             msg = u'Error edit IP.: %s' % e
             self.log.error(msg)

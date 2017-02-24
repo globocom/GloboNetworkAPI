@@ -53,7 +53,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 1.',
+            u'Dont there is a IP by pk = 1.',
             response.data['detail']
         )
 
@@ -70,7 +70,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 1000.',
+            u'Dont there is a IP by pk = 1000.',
             response.data['detail']
         )
 
@@ -87,7 +87,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 1000.',
+            u'Dont there is a IP by pk = 1000.',
             response.data['detail']
         )
 
@@ -104,7 +104,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 1001.',
+            u'Dont there is a IP by pk = 1001.',
             response.data['detail']
         )
 
@@ -135,7 +135,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 2.',
+            u'Dont there is a IP by pk = 2.',
             response.data['detail']
         )
 
@@ -160,7 +160,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 1.',
+            u'Dont there is a IP by pk = 1.',
             response.data['detail']
         )
 
@@ -185,7 +185,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 4.',
+            u'Dont there is a IP by pk = 4.',
             response.data['detail']
         )
 
@@ -215,7 +215,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            u'Causa: 2, Mensagem: IPv6 can not be removed because it is in use by Vip Request 2',
+            u'IPv6 can not be removed because it is in use by Vip Request 2',
             response.data['detail']
         )
 

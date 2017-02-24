@@ -113,7 +113,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            'Causa: None, Mensagem: Ip fc00:0000:0000:0007:0000:0000:0000:0001 not available for network 8.',
+            'Ip fc00:0000:0000:0007:0000:0000:0000:0001 not available for network 8.',
             response.data['detail'])
 
     def test_try_create_out_of_range_ip_in_network(self):
@@ -128,5 +128,5 @@ class IPv6PostTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            'Causa: None, Mensagem: Ip fc00:0000:0000:0005:0000:0000:0000:0005 not available for network 5.',
+            'Ip fc00:0000:0000:0005:0000:0000:0000:0005 not available for network 5.',
             response.data['detail'])
