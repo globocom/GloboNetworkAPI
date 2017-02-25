@@ -1185,7 +1185,7 @@ class Vlan(BaseModel):
             object_value=id_vlan
         ).delete()
 
-    def activate_v3(self):
+    def activate_v3(self, locks_used):
         """Set column ativada = 1"""
 
         """
@@ -1196,11 +1196,12 @@ class Vlan(BaseModel):
             @raise VlanErrorV3: Error activating a Vlan.
         """
 
+        locks_list = list()
         # Prepare locks for vlan
-        locks_name = [LOCK_VLAN % self.id]
-
-        # Create locks for environment and vlan
-        locks_list = create_lock_with_blocking(locks_name)
+        lock_name = [LOCK_VLAN % self.id]
+        if lock_name not in locks_used:
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking([lock_name])
 
         try:
 
@@ -1241,10 +1242,11 @@ class Vlan(BaseModel):
             raise VlanErrorV3(u'Error activating Vlan.')
 
         finally:
-            # Destroy locks
-            destroy_lock(locks_list)
+            if locks_list:
+                # Destroy locks
+                destroy_lock(locks_list)
 
-    def deactivate_v3(self):
+    def deactivate_v3(self, locks_used):
         """
             Send activate notication of vlan for queue of ACL
                 configuration system.
@@ -1253,11 +1255,12 @@ class Vlan(BaseModel):
             @raise VlanErrorV3: Error disabling a Vlan.
         """
 
+        locks_list = list()
         # Prepare locks for vlan
-        locks_name = [LOCK_VLAN % self.id]
-
-        # Create locks for environment and vlan
-        locks_list = create_lock_with_blocking(locks_name)
+        lock_name = [LOCK_VLAN % self.id]
+        if lock_name not in locks_used:
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking([lock_name])
 
         try:
 
@@ -1298,8 +1301,9 @@ class Vlan(BaseModel):
             raise VlanErrorV3(u'Error disabling Vlan.')
 
         finally:
-            # Destroy locks
-            destroy_lock(locks_list)
+            if locks_list:
+                # Destroy locks
+                destroy_lock(locks_list)
 
     def get_environment_related(self, use_vrf=True):
 

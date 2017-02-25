@@ -52,7 +52,7 @@ class NetworkIPv6DeleteSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_try_delete_nonexistent_netipv6(self):
-        """Tries to delete nonexistent Network IPv6. NAPI should deny this request."""
+        """Test of success to delete nonexistent Network IPv6. NAPI should deny this request."""
 
         delete_url = '/api/v3/networkv6/1000/'
 
@@ -186,7 +186,7 @@ class NetworkIPv6DeleteErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_try_delete_active_netipv6(self):
-        """Tries to delete an active Network IPv6 without IP Addresses."""
+        """Test of error to delete an active Network IPv6 without IP Addresses."""
 
         response = self.client.delete(
             '/api/v3/networkv6/1/',
@@ -212,7 +212,7 @@ class NetworkIPv6DeleteErrorTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data['networks'])
 
     def test_try_delete_inactive_netipv6_with_ip_assoc_to_active_vip(self):
-        """Tries to delete an inactive Network IPv6 with only one IP address
+        """Test of error to delete an inactive Network IPv6 with only one IP address
         associated to an active VIP Request."""
 
         response = self.client.delete(
@@ -285,7 +285,7 @@ class NetworkIPv6UndeploySuccessTestCase(NetworkApiTestCase):
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_undeploy_netipv6(self, test_patch):
-        """Tries to undeploy a Network IPv6."""
+        """Test of success to undeploy a Network IPv6."""
 
         mock = MockPluginNetwork()
         mock.status(True)

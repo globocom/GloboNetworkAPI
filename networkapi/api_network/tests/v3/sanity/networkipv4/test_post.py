@@ -56,7 +56,7 @@ class NetworkIPv4PostSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_try_create_netipv4_with_octs(self):
-        """Tries to create a Network IPv4 with octs."""
+        """Test of success to create a Network IPv4 with octs."""
 
         name_file = self.json_path % 'post/net_with_octs.json'
 
@@ -84,7 +84,9 @@ class NetworkIPv4PostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file_get, response.data['networks'])
 
     def test_try_create_netipv4_with_octs_and_env_vip(self):
-        """Tries to create a Network IPv4 with octs and Environment Vip."""
+        """Test of success to create a Network IPv4 with octs and Environment
+        Vip.
+        """
 
         name_file = self.json_path % 'post/net_with_octs_env_vip.json'
 
@@ -112,7 +114,7 @@ class NetworkIPv4PostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data['networks'])
 
     def test_try_create_netipv4_with_auto_alloc(self):
-        """Tries to create a Network IPv4 without octs."""
+        """Test of success to create a Network IPv4 without octs."""
 
         name_file_post = self.json_path % 'post/net_without_octs.json'
 
@@ -139,27 +141,69 @@ class NetworkIPv4PostSuccessTestCase(NetworkApiTestCase):
         del response.data['networks'][0]['id']
         self.compare_json(name_file, response.data['networks'])
 
+
+class NetworkIPv4DeploySuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/filter/fixtures/initial_filter.json',
+        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
+        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v4.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+    ]
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+
+    def tearDown(self):
+        pass
+
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_deploy_inactive_netipv4(self, test_patch):
-        """Tries to deploy a inactive NetworkIPv4. NAPI should allow this request."""
+        """Test of success to deploy a inactive NetworkIPv4."""
 
         mock = MockPluginNetwork()
         mock.status(True)
         test_patch.return_value = mock
 
-        url_post = '/api/v3/networkv4/deploy/3/'
-
         response = self.client.post(
-            url_post,
+            '/api/v3/networkv4/deploy/3/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
 
-        url_get = '/api/v3/networkv4/3/?fields=active'
-
         response = self.client.get(
-            url_get,
+            '/api/v3/networkv4/3/?fields=active',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -217,8 +261,8 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_try_create_netipv4_with_auto_alloc_in_full_env(self):
-        """Tries to create a Network IPv4 without octs in vlan of Environment
-        with not available Network IPv4."""
+        """Test of error to create a Network IPv4 without octs in vlan of
+        Environment with not available Network IPv4."""
 
         name_file = self.json_path % 'post/net_without_octs_full_env.json'
 
@@ -236,8 +280,8 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_try_create_netipv4_with_octs_in_full_env(self):
-        """Tries to create a Network IPv4 with octs in vlan of Environment
-        with not available Network IPv4."""
+        """Test of error to create a Network IPv4 with octs in vlan of
+        Environment with not available Network IPv4."""
 
         name_file = self.json_path % 'post/net_with_octs_full_env.json'
 
@@ -259,8 +303,8 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
         self.compare_values(msg, response.data['detail'])
 
     def test_try_create_netipv4_out_of_range_with_octs(self):
-        """Tries to create a Network IPv4 with octs out of range configuration
-        defined in related Environment."""
+        """Test of error to create a Network IPv4 with octs out of range
+        configuration defined in related Environment."""
 
         name_file = self.json_path % 'post/net_with_octs_out_of_range.json'
 
@@ -279,9 +323,55 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
 
         self.compare_values(msg, response.data['detail'])
 
+
+class NetworkIPv4DeployErrorTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/filter/fixtures/initial_filter.json',
+        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
+        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v4.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+    ]
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+
+    def tearDown(self):
+        pass
+
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_deploy_active_netipv4(self, test_patch):
-        """Tries to deploy a active NetworkIPv4. NAPI should deny this request."""
+        """Test of error to deploy a active NetworkIPv4."""
 
         mock = MockPluginNetwork()
         mock.status(False)
@@ -294,7 +384,10 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization)
 
-        self.compare_status(500, response.status_code)
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            'Already Active Network. Nothing to do.', response.data['detail'])
 
         url_get = '/api/v3/networkv4/1/?fields=active'
 

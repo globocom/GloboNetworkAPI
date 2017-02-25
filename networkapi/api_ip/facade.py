@@ -39,7 +39,7 @@ def get_ipv4_by_id(ip_id):
     try:
         network = Ip.get_by_pk(ip_id)
     except IpNotFoundError, e:
-        raise ObjectDoesNotExistException(e.detail)
+        raise ObjectDoesNotExistException(e.message)
     except (Exception, OperationalError), e:
         raise NetworkAPIException(str(e))
     else:

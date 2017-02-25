@@ -51,24 +51,7 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    # not deploy tests
-
-    def test_try_delete_nonexistent_netipv4(self):
-        """Tries to delete nonexistent Network IPv4. NAPI should deny this request."""
-
-        delete_url = '/api/v3/networkv4/1000/'
-
-        response = self.client.delete(
-            delete_url,
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            u'There is no NetworkIPv4 with pk = 1000.',
-            response.data['detail']
-        )
+    # not deploy tes
 
     def test_try_delete_inactive_netipv4(self):
         """Test of success to delete an inactive Network IPv4 without IP
@@ -137,6 +120,69 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
 
         self.compare_values(
             u'There is no NetworkIPv4 with pk = 6.',
+            response.data['detail']
+        )
+
+
+class NetworkIPv4DeleteErrorTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/filter/fixtures/initial_filter.json',
+        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
+        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v4.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+    ]
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+
+    def tearDown(self):
+        pass
+
+    def test_try_delete_nonexistent_netipv4(self):
+        """Test of error to delete nonexistent Network IPv4."""
+
+        delete_url = '/api/v3/networkv4/1000/'
+
+        response = self.client.delete(
+            delete_url,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv4 with pk = 1000.',
             response.data['detail']
         )
 
@@ -239,7 +285,7 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data['networks'])
 
 
-class NetworkIPv4UnDeployTestCase(NetworkApiTestCase):
+class NetworkIPv4UnDeploySuccessTestCase(NetworkApiTestCase):
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -286,7 +332,7 @@ class NetworkIPv4UnDeployTestCase(NetworkApiTestCase):
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_undeploy_netipv4(self, test_patch):
-        """Tries to undeploy a Network IPv4."""
+        """Test of success to undeploy a Network IPv4."""
 
         mock = MockPluginNetwork()
         mock.status(True)

@@ -230,7 +230,9 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '[%(levelname)s] %(asctime)s - N:%(name)s:%(lineno)s , '
+                      'MSG:%(message)s',
+            'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
         'simple': {
             'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
@@ -241,7 +243,7 @@ LOGGING = {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
-            'formatter': 'simple'
+            'formatter': 'verbose'
         },
     },
     'loggers': {

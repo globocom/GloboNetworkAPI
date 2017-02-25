@@ -6,14 +6,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.template import Context
 from django.template import Template
 
-from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
+from networkapi.api_deploy.facade import deploy_config_in_equipment
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_network import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
-from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import \
     LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
@@ -28,6 +27,8 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.settings import NETWORK_CONFIG_FILES_PATH
 from networkapi.settings import NETWORK_CONFIG_TEMPLATE_PATH
 from networkapi.settings import NETWORK_CONFIG_TOAPPLY_REL_PATH
+from networkapi.util.geral import create_lock_with_blocking
+from networkapi.util.geral import destroy_lock
 
 log = logging.getLogger(__name__)
 
@@ -191,65 +192,10 @@ def undeploy_networkipv4(network_id, user):
                     'Verify the permissions of user group with equipment group'
                     '. Network:{}'.format(netv4_obj.id))
 
-        # lock network id to prevent multiple requests to same id
-        with distributedlock(LOCK_NETWORK_IPV4 % netv4_obj.id):
-            with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
-                if netv4_obj.active == 0:
-                    return 'Network already not active. Nothing to do.'
-
-                # load dict with all equipment attributes
-                dict_ips = get_dict_v4_to_use_in_configuration_deploy(
-                    user, netv4_obj, routers)
-
-                status_deploy = dict()
-
-                # TODO implement threads
-                for equipment in routers:
-
-                    # generate config file
-                    file_to_deploy = _generate_config_file(
-                        dict_ips, equipment, TEMPLATE_NETWORKv4_DEACTIVATE)
-
-                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                        equipment.id)
-
-                    # deploy config file in equipments
-                    status_deploy[equipment.id] = \
-                        deploy_config_in_equipment_synchronous(
-                            file_to_deploy, equipment, lockvar)
-
-                netv4_obj.deactivate_v3()
-
-                # transaction.commit()
-                if netv4_obj.vlan.ativada == 1:
-
-                    # if there are no other networks active in vlan, remove int
-                    # vlan
-                    if not _has_active_network_in_vlan(netv4_obj.vlan):
-
-                        # remove int vlan
-                        for equipment in routers:
-                            if equipment.maintenance is not True:
-                                pass
-                                # Delete SVI
-                                status_deploy[equipment.id] += _remove_svi(
-                                    equipment, netv4_obj.vlan.num_vlan)
-
-                        # Need verify this call
-                        netv4_obj.vlan.deactivate_v3()
-
-                return status_deploy
-
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
 
-    except ip_models.NetworkIPv4ErrorV3, e:
-        raise ValidationAPIException(e.message)
-
     except exceptions.NoEnvironmentRoutersFoundException, e:
-        raise ValidationAPIException(e.detail)
-
-    except exceptions.IncorrectRedundantGatewayRegistryException, e:
         raise ValidationAPIException(e.detail)
 
     except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
@@ -258,11 +204,90 @@ def undeploy_networkipv4(network_id, user):
     except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
         raise ValidationAPIException(e.detail)
 
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        # lock network id to prevent multiple requests to same id
+        locks_name = list()
+        locks_name.append(LOCK_NETWORK_IPV4 % netv4_obj.id)
+        locks_name.append(LOCK_VLAN % netv4_obj.vlan.id)
+        for equipment in routers:
+            lock_name = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % \
+                (equipment.id)
+            locks_name.append(lock_name)
+
+        locks_list = create_lock_with_blocking(locks_name)
+
+    try:
+        if netv4_obj.active == 0:
+            return 'Network already not active. Nothing to do.'
+
+        # load dict with all equipment attributes
+        dict_ips = get_dict_v4_to_use_in_configuration_deploy(
+            user, netv4_obj, routers)
+
+        status_deploy = dict()
+
+        # TODO implement threads
+        for equipment in routers:
+
+            # generate config file
+            file_to_deploy = _generate_config_file(
+                dict_ips, equipment, TEMPLATE_NETWORKv4_DEACTIVATE)
+
+            # deploy config file in equipments
+            status_deploy[equipment.id] = \
+                deploy_config_in_equipment(file_to_deploy, equipment)
+
+        netv4_obj.deactivate_v3()
+
+        # transaction.commit()
+        if netv4_obj.vlan.ativada == 1:
+
+            # if there are no other networks active in vlan, remove int
+            # vlan
+            if not _has_active_network_in_vlan(netv4_obj.vlan):
+
+                # remove int vlan
+                for equipment in routers:
+                    if equipment.maintenance is not True:
+                        pass
+                        # Delete SVI
+                        status_deploy[equipment.id] += _remove_svi(
+                            equipment, netv4_obj.vlan.num_vlan)
+
+                # Need verify this call
+                netv4_obj.vlan.deactivate_v3(locks_name)
+
+        return status_deploy
+
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
     except ValidationAPIException, e:
         raise ValidationAPIException(e.detail)
 
     except Exception, e:
         raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
 
 
 def deploy_networkipv4(network_id, user):
@@ -292,52 +317,10 @@ def deploy_networkipv4(network_id, user):
                     'Verify the permissions of user group with equipment group'
                     '.Network:{}'.format(netv4_obj.id))
 
-        # lock network id to prevent multiple requests to same id
-        with distributedlock(LOCK_NETWORK_IPV4 % network_id):
-            with distributedlock(LOCK_VLAN % netv4_obj.vlan.id):
-                if netv4_obj.active == 1:
-                    raise exceptions.NetworkAlreadyActive()
-
-                status_deploy = dict()
-
-                # load dict with all equipment attributes
-                dict_ips = get_dict_v4_to_use_in_configuration_deploy(
-                    user, netv4_obj, routers)
-
-                # TODO implement threads
-                for equipment in routers:
-
-                    # generate config file
-                    file_to_deploy = _generate_config_file(
-                        dict_ips, equipment, TEMPLATE_NETWORKv4_ACTIVATE)
-
-                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                        equipment.id)
-
-                    # Apply configuration file on equipment
-                    status_deploy[equipment.id] = \
-                        deploy_config_in_equipment_synchronous(
-                            file_to_deploy, equipment, lockvar)
-
-                netv4_obj.activate_v3()
-                # transaction.commit()
-
-                if netv4_obj.vlan.ativada == 0:
-                    # Need verify this call
-                    netv4_obj.vlan.activate_v3()
-
-                return status_deploy
-
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
 
-    except ip_models.NetworkIPv4ErrorV3, e:
-        raise ValidationAPIException(e.message)
-
     except exceptions.NoEnvironmentRoutersFoundException, e:
-        raise ValidationAPIException(e.detail)
-
-    except exceptions.IncorrectRedundantGatewayRegistryException, e:
         raise ValidationAPIException(e.detail)
 
     except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
@@ -346,11 +329,77 @@ def deploy_networkipv4(network_id, user):
     except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
         raise ValidationAPIException(e.detail)
 
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        # lock network id to prevent multiple requests to same id
+        locks_name = list()
+        locks_name.append(LOCK_NETWORK_IPV4 % network_id)
+        locks_name.append(LOCK_VLAN % netv4_obj.vlan.id)
+        for equipment in routers:
+            lock_name = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % \
+                (equipment.id)
+            locks_name.append(lock_name)
+
+        locks_list = create_lock_with_blocking(locks_name)
+
+    try:
+        if netv4_obj.active == 1:
+            raise exceptions.NetworkAlreadyActive()
+
+        status_deploy = dict()
+
+        # load dict with all equipment attributes
+        dict_ips = get_dict_v4_to_use_in_configuration_deploy(
+            user, netv4_obj, routers)
+
+        # TODO implement threads
+        for equipment in routers:
+
+            # generate config file
+            file_to_deploy = _generate_config_file(
+                dict_ips, equipment, TEMPLATE_NETWORKv4_ACTIVATE)
+
+            # Apply configuration file on equipment
+            status_deploy[equipment.id] = \
+                deploy_config_in_equipment(file_to_deploy, equipment)
+
+        netv4_obj.activate_v3()
+        # transaction.commit()
+
+        if netv4_obj.vlan.ativada == 0:
+            # Need verify this call
+            netv4_obj.vlan.activate_v3(locks_name)
+
+        return status_deploy
+
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
     except ValidationAPIException, e:
         raise ValidationAPIException(e.detail)
 
     except Exception, e:
         raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
 
 
 def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4,
@@ -626,60 +675,10 @@ def undeploy_networkipv6(network_id, user):
                     'Verify the permissions of user group with equipment group'
                     '. Network:{}'.format(netv6_obj.id))
 
-        # lock network id to prevent multiple requests to same id
-        with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
-            with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
-                if netv6_obj.active == 0:
-                    return 'Network already not active. Nothing to do.'
-
-                # load dict with all equipment attributes
-                dict_ips = get_dict_v6_to_use_in_configuration_deploy(
-                    user, netv6_obj, routers)
-
-                status_deploy = dict()
-
-                # TODO implement threads
-                for equipment in routers:
-                    # generate config file
-                    file_to_deploy = _generate_config_file(
-                        dict_ips, equipment, TEMPLATE_NETWORKv6_DEACTIVATE)
-
-                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                        equipment.id)
-
-                    # deploy config file in equipments
-                    status_deploy[equipment.id] = \
-                        deploy_config_in_equipment_synchronous(
-                            file_to_deploy, equipment, lockvar)
-
-                netv6_obj.deactivate_v3()
-
-                # transaction.commit()
-
-                if netv6_obj.vlan.ativada == 1:
-                    # if there are no other networks active in vlan, remove int
-                    # vlan
-                    if not _has_active_network_in_vlan(netv6_obj.vlan):
-                        # remove int vlan
-                        for equipment in routers:
-                            if equipment.maintenance is not True:
-                                status_deploy[
-                                    equipment.id] += _remove_svi(
-                                        equipment, netv6_obj.vlan.num_vlan)
-                        netv6_obj.vlan.deactivate_v3()
-
-                return status_deploy
-
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
 
-    except ip_models.NetworkIPv6ErrorV3, e:
-        raise ValidationAPIException(e.message)
-
     except exceptions.NoEnvironmentRoutersFoundException, e:
-        raise ValidationAPIException(e.detail)
-
-    except exceptions.IncorrectRedundantGatewayRegistryException, e:
         raise ValidationAPIException(e.detail)
 
     except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
@@ -688,11 +687,86 @@ def undeploy_networkipv6(network_id, user):
     except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
         raise ValidationAPIException(e.detail)
 
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        # lock network id to prevent multiple requests to same id
+        locks_name = list()
+        locks_name.append(LOCK_NETWORK_IPV6 % netv6_obj.id)
+        locks_name.append(LOCK_VLAN % netv6_obj.vlan.id)
+        for equipment in routers:
+            lock_name = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % \
+                (equipment.id)
+            locks_name.append(lock_name)
+
+        locks_list = create_lock_with_blocking(locks_name)
+
+    try:
+        if netv6_obj.active == 0:
+            return 'Network already not active. Nothing to do.'
+
+        # load dict with all equipment attributes
+        dict_ips = get_dict_v6_to_use_in_configuration_deploy(
+            user, netv6_obj, routers)
+
+        status_deploy = dict()
+
+        # TODO implement threads
+        for equipment in routers:
+            # generate config file
+            file_to_deploy = _generate_config_file(
+                dict_ips, equipment, TEMPLATE_NETWORKv6_DEACTIVATE)
+
+            # deploy config file in equipments
+            status_deploy[equipment.id] = \
+                deploy_config_in_equipment(file_to_deploy, equipment)
+
+        netv6_obj.deactivate_v3()
+
+        if netv6_obj.vlan.ativada == 1:
+
+            # if there are no other networks active in vlan, remove int
+            # vlan
+            if not _has_active_network_in_vlan(netv6_obj.vlan):
+
+                # remove int vlan
+                for equipment in routers:
+                    if equipment.maintenance is not True:
+                        status_deploy[
+                            equipment.id] += _remove_svi(
+                                equipment, netv6_obj.vlan.num_vlan)
+
+                netv6_obj.vlan.deactivate_v3(locks_name)
+
+        return status_deploy
+
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
     except ValidationAPIException, e:
         raise ValidationAPIException(e.detail)
 
     except Exception, e:
         raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
 
 
 def deploy_networkipv6(network_id, user):
@@ -724,52 +798,10 @@ def deploy_networkipv6(network_id, user):
                     'Verify the permissions of user group with equipment group'
                     '. Network:{}'.format(netv6_obj.id))
 
-        # lock network id to prevent multiple requests to same id
-        with distributedlock(LOCK_NETWORK_IPV6 % netv6_obj.id):
-            with distributedlock(LOCK_VLAN % netv6_obj.vlan.id):
-                if netv6_obj.active == 1:
-                    raise exceptions.NetworkAlreadyActive()
-
-                # load dict with all equipment attributes
-                dict_ips = get_dict_v6_to_use_in_configuration_deploy(
-                    user, netv6_obj, routers)
-
-                status_deploy = dict()
-
-                # TODO implement threads
-                for equipment in routers:
-
-                    # generate config file
-                    file_to_deploy = _generate_config_file(
-                        dict_ips, equipment, TEMPLATE_NETWORKv6_ACTIVATE)
-
-                    # deploy config file in equipments
-                    lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
-                        equipment.id)
-
-                    status_deploy[equipment.id] = \
-                        deploy_config_in_equipment_synchronous(
-                            file_to_deploy, equipment, lockvar)
-
-                netv6_obj.activate_v3()
-
-                # transaction.commit()
-
-                if netv6_obj.vlan.ativada == 0:
-                    netv6_obj.vlan.activate_v3()
-
-                return status_deploy
-
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
 
-    except ip_models.NetworkIPv6ErrorV3, e:
-        raise ValidationAPIException(e.message)
-
     except exceptions.NoEnvironmentRoutersFoundException, e:
-        raise ValidationAPIException(e.detail)
-
-    except exceptions.IncorrectRedundantGatewayRegistryException, e:
         raise ValidationAPIException(e.detail)
 
     except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
@@ -778,11 +810,77 @@ def deploy_networkipv6(network_id, user):
     except exceptions_eqpt.UserDoesNotHavePermInAllEqptException, e:
         raise ValidationAPIException(e.detail)
 
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        # lock network id to prevent multiple requests to same id
+        locks_name = list()
+        locks_name.append(LOCK_NETWORK_IPV6 % netv6_obj.id)
+        locks_name.append(LOCK_VLAN % netv6_obj.vlan.id)
+        for equipment in routers:
+            lock_name = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % \
+                (equipment.id)
+            locks_name.append(lock_name)
+
+        locks_list = create_lock_with_blocking(locks_name)
+
+    try:
+
+        if netv6_obj.active == 1:
+            raise exceptions.NetworkAlreadyActive()
+
+        # load dict with all equipment attributes
+        dict_ips = get_dict_v6_to_use_in_configuration_deploy(
+            user, netv6_obj, routers)
+
+        status_deploy = dict()
+
+        # TODO implement threads
+        for equipment in routers:
+
+            # generate config file
+            file_to_deploy = _generate_config_file(
+                dict_ips, equipment, TEMPLATE_NETWORKv6_ACTIVATE)
+
+            status_deploy[equipment.id] = \
+                deploy_config_in_equipment(file_to_deploy, equipment)
+
+        netv6_obj.activate_v3()
+
+        # transaction.commit()
+
+        if netv6_obj.vlan.ativada == 0:
+            netv6_obj.vlan.activate_v3(locks_name)
+
+        return status_deploy
+
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+        raise ValidationAPIException(e.detail)
+
+    except exceptions.NetworkAlreadyActive, e:
+        raise ValidationAPIException(e.detail)
+
     except ValidationAPIException, e:
         raise ValidationAPIException(e.detail)
 
     except Exception, e:
         raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
 
 
 def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6,

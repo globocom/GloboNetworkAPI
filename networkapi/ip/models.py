@@ -2992,7 +2992,11 @@ class NetworkIPv6(BaseModel):
 
                 envs = self.vlan.get_environment_related()
                 net_ip = [IPNetwork(self.networkv6)]
-                network.validate_network(envs, net_ip, IP_VERSION.IPv6[0])
+                try:
+                    network.validate_network(envs, net_ip, IP_VERSION.IPv6[0])
+                except NetworkConflictException, e:
+                    self.log.error(e.detail)
+                    raise NetworkIPv6ErrorV3(e.detail)
 
                 try:
                     self.validate_v3()
@@ -4269,12 +4273,12 @@ class Ipv6(BaseModel):
                 })
 
         except IpErrorV3, e:
-            self.log.error(e)
-            raise IpErrorV3(e)
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
 
         except IpNotAvailableError, e:
-            self.log.error(e)
-            raise IpErrorV3(e)
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
 
         except Exception, e:
             msg = u'Error save new IPV6.: %s' % e
