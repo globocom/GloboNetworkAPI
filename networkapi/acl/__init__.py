@@ -26,7 +26,7 @@ from networkapi.admin_permission import AdminPermission
 
 
 def authenticate(username, password, user_ldap=None):
-    '''Busca o usuário com ativo com o login e senha informados.
+    '''Busca o usuário ativo com o login e senha informados.
 
     @raise UsuarioError: Falha ao pesquisar o usuário.
     '''
