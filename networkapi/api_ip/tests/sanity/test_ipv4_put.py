@@ -81,7 +81,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
 
-        self.compare_values(u'Causa: , Mensagem: There is no IP with pk = 2.',
+        self.compare_values(u'There is no IP with pk = 2.',
                             response.data['detail'])
 
     def test_try_update_ip_disassociating_it_of_some_equipments(self):

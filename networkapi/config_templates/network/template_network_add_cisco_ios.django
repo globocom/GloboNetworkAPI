@@ -1,0 +1,14 @@
+interface Vlan{{ VLAN_NUMBER }}
+  description {{ VLAN_NAME }}
+  no shutdown
+  {% if FIRST_NETWORK %}
+    {% if VRF %}
+      ip vrf forwarding {{ VRF }}
+    {% endif %}
+  {% endif %}
+  {% if IP_VERSION == "IPV4" %}
+    ip address {{IP}} {{NETWORK_MASK}}
+  {% else %}
+    ipv6 enable
+    ipv6 address {{IP}}/{{CIDR_BLOCK}}
+  {% endif %}

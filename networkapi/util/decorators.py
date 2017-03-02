@@ -6,6 +6,7 @@ import logging
 
 from jsonspec.validators.exceptions import ValidationError
 from rest_framework import exceptions as exceptions_api
+from rest_framework.exceptions import ParseError
 
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.system.facade import get_value as get_variable
@@ -62,6 +63,11 @@ def logs_method_apiview(func):
     def inner(self, request, *args, **kwargs):
 
         log = logging.getLogger(type(self).__name__)
+
+        try:
+            request.DATA
+        except ParseError:
+            pass
 
         log.info(
             'View:%s, method:%s - Data send: %s -  Url params: %s' % (

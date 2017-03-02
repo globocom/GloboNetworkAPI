@@ -6,7 +6,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "NETWORKAPI"
   config.omnibus.chef_version = :latest
   config.vm.provider "virtualbox" do |v|
-    v.memory = 512
+    v.memory = 2048
   end
   config.vm.provision :chef_solo do |chef|
     chef.add_recipe "apt"

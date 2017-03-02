@@ -81,7 +81,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'Causa: , Mensagem: Dont there is a IP by pk = 2.',
+            u'Dont there is a IP by pk = 2.',
             response.data['detail'])
 
     def test_try_update_ip_disassociating_it_of_equipments_and_associating_to_others_after(self):
