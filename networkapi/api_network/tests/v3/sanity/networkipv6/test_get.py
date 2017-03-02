@@ -47,7 +47,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_get_netipv6_by_id_using_basic_kind(self):
-        """Test of success to get a Network IPv6 by id using 'basic' kind."""
+        """Test of success to get a Network IPv6 by id using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1.json'
 
@@ -61,7 +61,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv6_by_id_using_basic_kind(self):
-        """Test of success to get two Network IPv6 by id using 'basic' kind."""
+        """Test of success to get two Network IPv6 by id using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1;2.json'
 
@@ -75,7 +75,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_netipv6_by_search_using_basic_kind(self):
-        """Test of success to get a Network IPv6 by search using 'basic' kind."""
+        """Test of success to get a Network IPv6 by search using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1.json'
 
@@ -108,7 +108,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv6_by_search_using_basic_kind(self):
-        """Test of success to get two Network IPv6 by search using 'basic' kind."""
+        """Test of success to get two Network IPv6 by search using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1;2.json'
 
@@ -139,7 +139,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_netipv6_by_id_using_details_kind(self):
-        """Test of success to get a Network IPv6 by id using 'details' kind."""
+        """Test of success to get a Network IPv6 by id using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1.json'
 
@@ -153,7 +153,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv6_by_id_using_details_kind(self):
-        """Test of success to get two Network IPv6 by id using 'details' kind."""
+        """Test of success to get two Network IPv6 by id using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1;2.json'
 
@@ -167,7 +167,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_netipv6_by_search_using_details_kind(self):
-        """Test of success to get a Network IPv6 by search using 'details' kind."""
+        """Test of success to get a Network IPv6 by search using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1.json'
 
@@ -198,7 +198,7 @@ class NetworkIPv6GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv6_by_search_using_details_kind(self):
-        """Test of success to get two Network IPv6 by search using 'details' kind."""
+        """Test of success to get two Network IPv6 by search using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1;2.json'
 

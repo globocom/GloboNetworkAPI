@@ -51,26 +51,8 @@ class NetworkIPv6DeleteSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_try_delete_nonexistent_netipv6(self):
-        """Test of success to delete nonexistent Network IPv6. NAPI should deny this request."""
-
-        delete_url = '/api/v3/networkv6/1000/'
-
-        response = self.client.delete(
-            delete_url,
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            u'There is no NetworkIPv6 with pk = 1000.',
-            response.data['detail']
-        )
-
     def test_try_delete_inactive_netipv6(self):
-        """Test of success to delete an inactive Network IPv6 without IP
-        Addresses. """
+        """Test of success to delete an inactive Network IPv6 without IP Addresses."""
 
         response = self.client.delete(
             '/api/v3/networkv6/5/',
@@ -93,7 +75,8 @@ class NetworkIPv6DeleteSuccessTestCase(NetworkApiTestCase):
 
     def test_try_delete_inactive_netipv6_with_ip_assoc_to_inactive_vip(self):
         """Test of success to delete an inactive Network IPv6 with only one IP
-        address associated to an active VIP Request."""
+           address associated to an inactive VIP Request.
+        """
 
         response = self.client.delete(
             '/api/v3/networkv6/4/',
@@ -185,6 +168,23 @@ class NetworkIPv6DeleteErrorTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
+    def test_try_delete_nonexistent_netipv6(self):
+        """Test of error to delete nonexistent Network IPv6."""
+
+        delete_url = '/api/v3/networkv6/1000/'
+
+        response = self.client.delete(
+            delete_url,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv6 with pk = 1000.',
+            response.data['detail']
+        )
+
     def test_try_delete_active_netipv6(self):
         """Test of error to delete an active Network IPv6 without IP Addresses."""
 
@@ -213,7 +213,8 @@ class NetworkIPv6DeleteErrorTestCase(NetworkApiTestCase):
 
     def test_try_delete_inactive_netipv6_with_ip_assoc_to_active_vip(self):
         """Test of error to delete an inactive Network IPv6 with only one IP address
-        associated to an active VIP Request."""
+           associated to an active VIP Request.
+        """
 
         response = self.client.delete(
             '/api/v3/networkv6/3/',
