@@ -1,10 +1,221 @@
 GET
 ###
 
-Obtaining list of vip request
+Obtaining list of Vip Request
 *****************************
 
-Obtaining list of vip request through id's
+It is possible to specify in several ways fields desired to be retrieved in Vip Request module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields.
+
+Available fields for Vip Request module::
+
+    * id
+    * name
+    * service
+    * business
+    * environmentvip
+    * ipv4
+    * ipv6
+    * equipments
+    * default_names
+    * dscp
+    * ports
+    * options
+    * groups_permissions
+    * created
+
+If you use the **fields** GET parameter, you can specify fields that is desired to come in response.
+
+Example with field id::
+
+    fields=id
+
+Example with fields id, name and created::
+
+    fields=id,name,created
+
+You can also use the **kind** GET parameter. It accepts only basic or details options and for each option it has a set of default fields. The difference between them is on detailing of each field. For example, the field ipv4 for basic kind will contain only the identifier and for details kind will contain name, the ip formated and description. If **fields** is being used together **kind**, only the required fields will be retrieved instead of default.
+
+Example with basic option::
+
+    kind=basic
+
+Response body with basic kind:
+
+.. code-block:: json
+
+    {
+        "vips": [{
+            "id": <integer>,
+            "name": <string>,
+            "ipv4": <integer>,
+            "ipv6": <integer>
+        }]
+    }
+
+Example with details option::
+
+    kind=details
+
+Response body with details kind:
+
+.. code-block:: json
+
+    {
+        "vips": [{
+            "id": <integer>,
+            "name": <string>,
+            "service": <string>,
+            "business": <string>,
+            "environmentvip": {
+                "id": <integer>,
+                "finalidade_txt": <string>,
+                "cliente_txt": <string>,
+                "ambiente_p44_txt": <string>,
+                "description": <string>
+            },
+            "ipv4": {
+                "id": <integer>,
+                "ip_formated": <string>,
+                "description": <string>
+            },
+            "ipv6": {
+                "id": <integer>,
+                "ip_formated": <string>,
+                "description": <string>
+            },
+            "equipments": [{
+                "id": <integer>,
+                "name": <string>,
+                "maintenance": <boolean>,
+                "equipment_type": {
+                    "id": <integer>,
+                    "equipment_type": <string>
+                },
+                "model": {
+                    "id": <integer>,
+                    "name": <string>
+                }
+            },...],
+            "default_names": [
+                <string>,...
+            ],
+            "dscp": ???,
+            "ports": [{
+                "id": <integer>,
+                "port": <integer>,
+                "options": {
+                    "l4_protocol": {
+                        "id": <integer>,
+                        "tipo_opcao": <string>,
+                        "nome_opcao_txt": <string>
+                    },
+                    "l7_protocol": {
+                        "id": <integer>,
+                        "tipo_opcao": <string>,
+                        "nome_opcao_txt": <string>
+                    }
+                },
+                "pools": [{
+                    "id": <integer>,
+                    "server_pool": {
+                        "id": <integer>,
+                        "identifier": <string>,
+                        "default_port": <integer>,
+                        "environment": {
+                            "id": <integer>,
+                            "name": <string>
+                        },
+                        "servicedownaction": {
+                            "id": <integer>,
+                            "type": <string>,
+                            "name": <string>
+                        },
+                        "lb_method": <string>,
+                        "healthcheck": {
+                            "identifier": <string>,
+                            "healthcheck_type": <string>,
+                            "healthcheck_request": <string>,
+                            "healthcheck_expect": <string>,
+                            "destination": <string>
+                        },
+                        "default_limit": <integer>,
+                        "server_pool_members": [???],
+                        "pool_created": <boolean>
+                    },
+                    "l7_rule": {
+                        "id": <integer>,
+                        "tipo_opcao": <string>,
+                        "nome_opcao_txt": <string>
+                    },
+                    "l7_value": ???,
+                    "order": <integer>
+                }]
+            },...],
+            "options": {
+                "cache_group": {
+                    "id": <integer>,
+                    "tipo_opcao": <string>,
+                    "nome_opcao_txt": <string>
+                },
+                "traffic_return": {
+                    "id": <integer>,
+                    "tipo_opcao": <string>,
+                    "nome_opcao_txt": <string>
+                },
+                "timeout": {
+                    "id": <integer>,
+                    "tipo_opcao": <string>,
+                    "nome_opcao_txt": <string>
+                },
+                "persistence": {
+                    "id": <integer>,
+                    "tipo_opcao": <string>,
+                    "nome_opcao_txt": <string>
+                }
+            },
+            "groups_permissions": [???],
+            "created": <boolean>
+        },...]
+    }
+
+Default response body::
+
+    {
+        "vips": [{
+            "id": <integer>,
+            "name": <string>,
+            "service": <string>,
+            "business": <string>,
+            "environmentvip": <integer>,
+            "ipv4": <integer>,
+            "ipv6": <integer>,
+            "ports": [{
+                "id": <integer>,
+                "port": <integer>,
+                "options": {
+                    "l4_protocol": <integer>,
+                    "l7_protocol": <integer>
+                },
+                "pools": [{
+                    "id": integer,
+                    "server_pool": <integer>,
+                    "l7_rule": <integer>,
+                    "l7_value": ???,
+                    "order": <integer>
+                }, ...]
+            }, ...],
+            "options": {
+                "cache_group": <integer>,
+                "traffic_return": <integer>,
+                "timeout": <integer>,
+                "persistence": <integer>
+            },
+            "created": <boolean>
+        },...]
+    }
+
+
+Obtaining list of Vip Request through id's
 ==========================================
 
 URL::
@@ -67,7 +278,7 @@ Response body:
     * l4_protocol and l7_protocol in options and l7_rule in pools work as well as the values present in **"options"** discussed above.
     * **"server_pool"** is the identifier of the server-pool port associated to the retrieved vip request.
 
-Obtaining list of vip request through extended search
+Obtaining list of Vip Request through extended search
 =====================================================
 
 Extended search permits a search with multiple options, according with user desires. The following two examples are shown to demonstrate how easy is to use this resource. In the first example, **extended-search** attribute receives an array with two dicts where the expected result is a list of vip requests where the ipv4 "192.168.x.x" are created or the ipv4 "x.168.17.x" are not created in each associated server pools. Remember that an OR operation is made to each element in an array and an AND operation is made to each element in a dict. An array can be a value associated to some key into a dict as well as a dict can be an element of an array.
