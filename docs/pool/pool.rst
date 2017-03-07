@@ -1,5 +1,5 @@
-Pool module
-###########
+Server Pool module
+##################
 
 .. toctree::
    url-api-v3-pool
