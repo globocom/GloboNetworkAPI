@@ -136,7 +136,7 @@ Response body with *details* kind:
                 "type": <string>,
                 "name": <string>
             },
-            "lb_method": "least-conn",
+            "lb_method": <string>,
             "healthcheck": {
                 "identifier": <string>,
                 "healthcheck_type": <string>,
@@ -147,7 +147,6 @@ Response body with *details* kind:
             "default_limit": <integer>,
             "server_pool_members": [{
                 "id": <integer>,
-                "server_pool": <integer>,
                 "identifier": <string>,
                 "ip": {
                     "id": <integer>,
@@ -156,7 +155,7 @@ Response body with *details* kind:
                 "ipv6": {
                     "id": <integer>,
                     "ip_formated": <string>
-                },,
+                },
                 "priority": <integer>,
                 "weight": <integer>,
                 "limit": <integer>,
@@ -167,177 +166,9 @@ Response body with *details* kind:
                     "id": <integer>,
                     "name": <string>
                 }
-            },...],
-            "pool_created": <boolean>,
-            "vips": [{
-                "id": <integer>,
-                "name": <string>,
-                "service": <string>,
-                "business": <string>,
-                "environmentvip": {
-                    "id": <integer>,
-                    "finalidade_txt": <string>,
-                    "cliente_txt": <string>,
-                    "ambiente_p44_txt": <string>,
-                    "description": <string>
-                },
-                "ipv4": {
-                    "id": <integer>,
-                    "ip_formated": <string>,
-                    "description": <string>
-                },
-                "ipv6": {
-                    "id": <integer>,
-                    "ip_formated": <string>,
-                    "description": <string>
-                },
-                "equipments": [{
-                    "id": <integer>,
-                    "name": <string>,
-                    "maintenance": <boolean>,
-                    "equipment_type": {
-                        "id": <integer>,
-                        "equipment_type": <string>
-                    },
-                    "model": {
-                        "id": <integer>,
-                        "name": <string>
-                    }
-                },...],
-                "default_names": [
-                    <string>,...
-                ],
-                "dscp": <integer>,
-                "ports": [{
-                    "id": <integer>,
-                    "port": <integer>,
-                    "options": {
-                        "l4_protocol": {
-                            "id": <integer>,
-                            "tipo_opcao": <string>,
-                            "nome_opcao_txt": <string>
-                        },
-                        "l7_protocol": {
-                            "id": <integer>,
-                            "tipo_opcao": <string>,
-                            "nome_opcao_txt": <string>
-                        }
-                    },
-                    "pools": [{
-                        "id": <integer>,
-                        "server_pool": {
-                            "id": <integer>,
-                            "identifier": <string>,
-                            "default_port": <integer>,
-                            "environment": {
-                                "id": <integer>,
-                                "name": <string>
-                            },
-                            "servicedownaction": {
-                                "id": <integer>,
-                                "type": <string>,
-                                "name": <string>
-                            },
-                            "lb_method": <string>,
-                            "healthcheck": {
-                                "identifier": <string>,
-                                "healthcheck_type": <string>,
-                                "healthcheck_request": <string>,
-                                "healthcheck_expect": <string>,
-                                "destination": <string>
-                            },
-                            "default_limit": <integer>,
-                            "server_pool_members": [{
-                                "id": <integer>,
-                                "server_pool": <integer>,
-                                "identifier": <string>,
-                                "ip": {
-                                    "id": <integer>,
-                                    "ip_formated": <string>
-                                },
-                                "ipv6": {
-                                    "id": <integer>,
-                                    "ip_formated": <string>
-                                },
-                                "priority": <integer>,
-                                "weight": <integer>,
-                                "limit": <integer>,
-                                "port_real": <integer>,
-                                "member_status": <integer>,
-                                "last_status_update_formated": <string>,
-                                "equipment": {
-                                    "id": <integer>,
-                                    "name": <string>
-                                }
-                            },...],
-                            "pool_created": <boolean>,
-                            "dscp": <integer>,
-                            "groups_permissions": [{
-                                "group": {
-                                    "id": <integer>,
-                                    "name": <string>
-                                },
-                                "read": <boolean>,
-                                "write": <boolean>,
-                                "change_config": <boolean>,
-                                "delete": <boolean>
-                            },...]
-                        },
-                        "l7_rule": {
-                            "id": <integer>,
-                            "tipo_opcao": <string>,
-                            "nome_opcao_txt": <string>
-                        },
-                        "l7_value": <integer>,
-                        "order": <integer>
-                    },...]
-                },...],
-                "options": {
-                    "cache_group": {
-                        "id": <integer>,
-                        "tipo_opcao": <string>,
-                        "nome_opcao_txt": <string>
-                    },
-                    "traffic_return": {
-                        "id": <integer>,
-                        "tipo_opcao": <string>,
-                        "nome_opcao_txt": <string>
-                    },
-                    "timeout": {
-                        "id": <integer>,
-                        "tipo_opcao": <string>,
-                        "nome_opcao_txt": <string>
-                    },
-                    "persistence": {
-                        "id": <integer>,
-                        "tipo_opcao": <string>,
-                        "nome_opcao_txt": <string>
-                    }
-                },
-                "groups_permissions": [{
-                    "group": {
-                        "id": <integer>,
-                        "name": <string>
-                    },
-                    "read": <boolean>,
-                    "write": <boolean>,
-                    "change_config": <boolean>,
-                    "delete": <boolean>
-                },...],
-                "created": <boolean>
-            },...],
-            "dscp": <integer>,
-            "groups_permissions": [{
-                "group": {
-                    "id": <integer>,
-                    "name": <string>
-                },
-                "read": <boolean>,
-                "write": <boolean>,
-                "change_config": <boolean>,
-                "delete": <boolean>
-            },...]
-        },...]
+            }],
+            "pool_created": <boolean>
+        }]
     }
 
 

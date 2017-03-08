@@ -145,7 +145,7 @@ Response body with *details* kind:
                 "id": <integer>,
                 "name": <string>
             },
-            "filter": <string>,
+            "filter": <integer>,
             "acl_path": <string>,
             "ipv4_template": <string>,
             "ipv6_template": <string>,
@@ -154,177 +154,12 @@ Response body with *details* kind:
             "max_num_vlan_1": <integer>,
             "min_num_vlan_2": <integer>,
             "max_num_vlan_2": <integer>,
-            "vrf": <string>,
             "default_vrf": {
                 "id": <integer>,
                 "internal_name": <string>,
                 "vrf": <string>
             },
-            "father_environment": {
-                "id": <integer>,
-                "name": <string>,
-                "grupo_l3": <integer>,
-                "ambiente_logico": <integer>,
-                "divisao_dc": <integer>,
-                "filter": <string>,
-                "acl_path": <string>,
-                "ipv4_template": <string>,
-                "ipv6_template": <string>,
-                "link": <string>,
-                "min_num_vlan_1": <integer>,
-                "max_num_vlan_1": <integer>,
-                "min_num_vlan_2": <integer>,
-                "max_num_vlan_2": <integer>,
-                "vrf": <string>,
-                "default_vrf": <integer>,
-                "father_environment": <recurrence-to:father_environment>
-            },
-            "children": [{
-                "id": <integer>,
-                "name": <string>,
-                "grupo_l3": <integer>,
-                "ambiente_logico": <integer>,
-                "divisao_dc": <integer>,
-                "filter": <integer>,
-                "acl_path": <string>,
-                "ipv4_template": <string>,
-                "ipv6_template": <string>,
-                "link": <string>,
-                "min_num_vlan_1": <integer>,
-                "max_num_vlan_1": <integer>,
-                "min_num_vlan_2": <integer>,
-                "max_num_vlan_2": <integer>,
-                "vrf": <string>,
-                "default_vrf": <integer>,
-                "children": <recurrence-to:children>
-            },...],
-            "configs": [{
-                "id": <integer>,
-                "subnet": <string>,
-                "new_prefix": <string>,
-                "type": <string>,
-                "network_type": <integer>
-            },...],
-            "routers": [{
-                "id": <integer>,
-                "name": <string>,
-                "maintenance": <boolean>,
-                "equipment_type": {
-                    "id": <integer>,
-                    "equipment_type": <string>
-                },
-                "model": {
-                    "id": <integer>,
-                    "name": <string>
-                },
-                "ipv4": [{
-                    "id": <integer>,
-                    "oct4": <integer>,
-                    "oct3": <integer>,
-                    "oct2": <integer>,
-                    "oct1": <integer>,
-                    "networkipv4": <integer>,
-                    "description": <string>
-                },...],
-                "ipv6": [{
-                    "id": <integer>,
-                    "block1": <string>,
-                    "block2": <string>,
-                    "block3": <string>,
-                    "block4": <string>,
-                    "block5": <string>,
-                    "block6": <string>,
-                    "block7": <string>,
-                    "block8": <string>,
-                    "networkipv6": <integer>,
-                    "description": <string>
-                },...],
-                "environments": [{
-                    "is_router": <boolean>,
-                    "environment": {
-                        "id": <integer>,
-                        "name": <string>,
-                        "grupo_l3": <integer>,
-                        "ambiente_logico": <integer>,
-                        "divisao_dc": <integer>,
-                        "filter": <integer>,
-                        "acl_path": <string>,
-                        "ipv4_template": <string>,
-                        "ipv6_template": <string>,
-                        "link": <string>,
-                        "min_num_vlan_1": <integer>,
-                        "max_num_vlan_1": <integer>,
-                        "min_num_vlan_2": <integer>,
-                        "max_num_vlan_2": <integer>,
-                        "vrf": <string>,
-                        "default_vrf": <integer>
-                    }
-                },...],
-                "groups": [{
-                    "id": <integer>,
-                    "name": <string>
-                },...]
-            },...],
-            "equipments": [{
-                "id": <integer>,
-                "name": <string>,
-                "maintenance": <boolean>,
-                "equipment_type": {
-                    "id": <integer>,
-                    "equipment_type": <string>
-                },
-                "model": {
-                    "id": <integer>,
-                    "name": <string>
-                },
-                "ipv4": [{
-                    "id": <integer>,
-                    "oct4": <integer>,
-                    "oct3": <integer>,
-                    "oct2": <integer>,
-                    "oct1": <integer>,
-                    "networkipv4": <integer>,
-                    "description": <string>
-                },...],
-                "ipv6": [{
-                    "id": <integer>,
-                    "block1": <string>,
-                    "block2": <string>,
-                    "block3": <string>,
-                    "block4": <string>,
-                    "block5": <string>,
-                    "block6": <string>,
-                    "block7": <string>,
-                    "block8": <string>,
-                    "networkipv6": <integer>,
-                    "description": <string>
-                },...],
-                "environments": [{
-                    "is_router": <boolean>,
-                    "environment": {
-                        "id": <integer>,
-                        "name": <string>,
-                        "grupo_l3": <integer>,
-                        "ambiente_logico": <integer>,
-                        "divisao_dc": <integer>,
-                        "filter": <integer>,
-                        "acl_path": <string>,
-                        "ipv4_template": <string>,
-                        "ipv6_template": <string>,
-                        "link": <string>,
-                        "min_num_vlan_1": <integer>,
-                        "max_num_vlan_1": <integer>,
-                        "min_num_vlan_2": <integer>,
-                        "max_num_vlan_2": <integer>,
-                        "vrf": <string>,
-                        "default_vrf": <integer>
-                    }
-                },...],
-                "groups": [{
-                    "id": <integer>,
-                    "name": <string>
-                },...]
-            },...]
+            "father_environment": <recurrence-to:environment>
         }]
     }
 
