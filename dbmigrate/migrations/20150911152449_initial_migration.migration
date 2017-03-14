@@ -864,6 +864,7 @@ DEFAULT CHARSET=utf8;
 CREATE TABLE `datacenterrooms` (
   `id_dcroom` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(200) NOT NULL,
+  `config` varchar(255),
   `id_dc` int(10) unsigned NOT NULL,
   `racks` int(10) unsigned,
   `spines` int(10) unsigned,

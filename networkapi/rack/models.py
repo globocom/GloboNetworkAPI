@@ -104,7 +104,7 @@ class Datacenter(BaseModel):
             if idt:
                 return Datacenter.objects.get(id=idt)
             if dcname:
-                return Datacenter.objects.filter(dcname=dcname)
+                return Datacenter.objects.get(dcname=dcname)
 
             return Datacenter.objects.all()
         except ObjectDoesNotExist, e:
@@ -141,6 +141,7 @@ class DatacenterRooms(BaseModel):
     racks = models.IntegerField(blank=True, null=True)
     spines = models.IntegerField(blank=True, null=True)
     leafs = models.IntegerField(blank=True, null=True)
+    config = models.CharField(max_length=255, unique=True)
 
 
     class Meta(BaseModel.Meta):
@@ -174,7 +175,6 @@ class DatacenterRooms(BaseModel):
     def save_dcrooms(self):
         '''Insert a new DatacenterRooms.
         '''
-
         try:
             self.save()
         except Exception, e:
@@ -243,6 +243,10 @@ class Rack(BaseModel):
             raise Exception ('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
 
         try:
+            self.id_sw1 = Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 else None
+            self.id_sw2 = Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 else None
+            self.id_ilo = Equipamento.get_by_pk(int(id_sw3)) if self.id_ilo else None
+            self.dcroom = DatacenterRoom.get_dcrooms(int(dcroom)) if self.dcroom else None
             return self.save()
         except Exception, e:
             raise Exception('Falha ao inserir Rack. %s' % e)

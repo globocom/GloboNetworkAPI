@@ -30,10 +30,11 @@ from networkapi.api_rack import facade, exceptions
 from networkapi.api_rack.serializers import RackSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.system.facade import get_value as get_variable
+from networkapi.system.facade import save_variable as save_variable
 from django.core.exceptions import ObjectDoesNotExist
 from networkapi.system import exceptions as var_exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
-from networkapi.rack.models import Rack
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
 
 
@@ -48,18 +49,16 @@ class RackView(APIView):
         try:
             log.info("New Rack")
 
-            rack_dict = request.DATA.get('rack')
-
-            if not rack_dict:
+            if not request.DATA.get('rack'):
                 raise exceptions.InvalidInputException()
 
-            rack = facade.save_rack(self.request.user, rack_dict)
+            rack = facade.save_rack_dc(request.DATA.get('rack'))
 
-            datas = dict()
+            data = dict()
             rack_serializer = RackSerializer(rack)
-            datas['rack'] = rack_serializer.data
+            data['rack'] = rack_serializer.data
 
-            return Response(datas, status=status.HTTP_201_CREATED)
+            return Response(data, status=status.HTTP_201_CREATED)
 
         except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
                 exceptions.InvalidInputException) as exception:
@@ -152,3 +151,79 @@ class RackDeployView(APIView):
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException(exception)
+
+
+class DataCenterView(APIView):
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log.info("Datacenter")
+
+            if not request.DATA.get('dc'):
+                raise exceptions.InvalidInputException()
+
+            dc = facade.save_dc(request.DATA.get('dc'))
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
+
+class DataCenterRoomsView(APIView):
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log.info("DatacenterRooms")
+
+            if not request.DATA.get('dcrooms'):
+                raise exceptions.InvalidInputException()
+
+            dcrooms = facade.save_dcrooms(request.DATA.get('dcrooms'))
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        try:
+            log.info("DatacenterRooms")
+
+            if not request.DATA.get('dcroom'):
+                raise exceptions.InvalidInputException()
+            #validar o json
+
+            dcroom_id = kwargs.get('dcroom_id')
+
+            dcroom = facade.edit_dcrooms(dcroom_id, request.DATA.get('dcroom'))
+
+            data = dict()
+            #data['dcroom'] = dcroom
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
