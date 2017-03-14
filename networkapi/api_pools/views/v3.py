@@ -191,14 +191,21 @@ class PoolAsyncDeployView(CustomAPIView):
     @permission_obj_apiview([permissions.deploy_obj_permission])
     def post(self, request, *args, **kwargs):
 
+        response = list()
         pool_ids = kwargs['obj_ids'].split(';')
         user = request.user
-        task_id = tasks.pool_deploy.apply_async(args=[pool_ids, user],
-                                                queue='napi.vip')
 
-        response = {
-            'url': '/api/task/result/{0}'.format(task_id)
-        }
+        for pool_id in pool_ids:
+            task_obj = tasks.pool_deploy.apply_async(args=[pool_id, user],
+                                                     queue='napi.vip')
+
+            task = {
+                'id': pool_id,
+                'task_id': task_obj.id
+            }
+
+            response.append(task)
+
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
@@ -207,14 +214,22 @@ class PoolAsyncDeployView(CustomAPIView):
                                  permissions.ScriptRemovePermission))
     @permission_obj_apiview([permissions.deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
+
+        response = list()
         pool_ids = kwargs.get('obj_ids').split(';')
         user = request.user
-        task_id = tasks.pool_undeploy.apply_async(args=[pool_ids, user],
-                                                  queue='napi.vip')
 
-        response = {
-            'url': '/api/task/result/{0}'.format(task_id)
-        }
+        for pool_id in pool_ids:
+            task_obj = tasks.pool_undeploy.apply_async(args=[pool_id, user],
+                                                       queue='napi.vip')
+
+            task = {
+                'id': pool_id,
+                'task_id': task_obj.id
+            }
+
+            response.append(task)
+
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
@@ -224,14 +239,21 @@ class PoolAsyncDeployView(CustomAPIView):
     @permission_obj_apiview([permissions.deploy_obj_permission])
     def put(self, request, *args, **kwargs):
 
+        response = list()
         pools = request.DATA.get('pools')
         user = request.user
-        task_id = tasks.pool_redeploy.apply_async(args=[pools, user],
-                                                  queue='napi.vip')
 
-        response = {
-            'url': '/api/task/result/{0}'.format(task_id)
-        }
+        for pool in pools:
+            task_obj = tasks.pool_redeploy.apply_async(args=[pool, user],
+                                                       queue='napi.vip')
+
+            task = {
+                'id': pool.get('id'),
+                'task_id': task_obj.id
+            }
+
+            response.append(task)
+
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
 

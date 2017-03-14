@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 ################
 # Apply in eqpt
 ################
-def _prepare_apply(pools, user):
+def _prepare_apply(pools, created=False, user=None):
 
     load_balance = dict()
     keys = list()
@@ -106,7 +106,7 @@ def create_real_pool(pools, user):
         Create real pool in eqpt
     """
 
-    load_balance = _prepare_apply(pools, user)
+    load_balance = _prepare_apply(pools=pools, created=False, user=user)
 
     for lb in load_balance:
         load_balance[lb]['plugin'].create_pool(load_balance[lb])
@@ -123,7 +123,7 @@ def delete_real_pool(pools, user):
     delete real pool in eqpt
     """
 
-    load_balance = _prepare_apply(pools, user)
+    load_balance = _prepare_apply(pools=pools, created=True, user=user)
 
     for lb_id in load_balance:
         load_balance[lb_id]['plugin'].delete_pool(load_balance[lb_id])
