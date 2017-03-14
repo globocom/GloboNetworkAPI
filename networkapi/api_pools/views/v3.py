@@ -7,16 +7,10 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from networkapi.api_pools import permissions
+from networkapi.api_pools import tasks
 from networkapi.api_pools.facade.v3 import base as facade
 from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
-from networkapi.api_pools.permissions import delete_obj_permission
-from networkapi.api_pools.permissions import deploy_obj_permission
-from networkapi.api_pools.permissions import Read
-from networkapi.api_pools.permissions import ScriptAlterPermission
-from networkapi.api_pools.permissions import ScriptCreatePermission
-from networkapi.api_pools.permissions import ScriptRemovePermission
-from networkapi.api_pools.permissions import Write
-from networkapi.api_pools.permissions import write_obj_permission
 from networkapi.api_pools.serializers import v3 as serializers
 from networkapi.api_rest import exceptions as rest_exceptions
 from networkapi.distributedlock import LOCK_POOL
@@ -41,8 +35,9 @@ class PoolMemberStateView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('pool_member_status')
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptAlterPermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Enable/Disable pool member by list of server pool."""
@@ -56,7 +51,7 @@ class PoolMemberStateView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @commit_on_success
     def get(self, request, *args, **kwargs):
         """
@@ -112,8 +107,9 @@ class PoolDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptCreatePermission))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptCreatePermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates pools by list in equipments
@@ -136,8 +132,9 @@ class PoolDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('pool_put')
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptAlterPermission))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptAlterPermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def put(self, request, *args, **kwargs):
         """
         Updates pools by list in equipments
@@ -160,8 +157,9 @@ class PoolDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write, ScriptRemovePermission))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptRemovePermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes pools by list in equipments
@@ -184,11 +182,64 @@ class PoolDeployView(CustomAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
+class PoolAsyncDeployView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptCreatePermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
+    def post(self, request, *args, **kwargs):
+
+        pool_ids = kwargs['obj_ids'].split(';')
+        user = request.user
+        task_id = tasks.pool_deploy.apply_async(args=[pool_ids, user],
+                                                queue='napi.vip')
+
+        response = {
+            'url': '/api/task/result/{0}'.format(task_id)
+        }
+        return Response(response, status=status.HTTP_202_ACCEPTED)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptRemovePermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
+    def delete(self, request, *args, **kwargs):
+        pool_ids = kwargs.get('obj_ids').split(';')
+        user = request.user
+        task_id = tasks.pool_undeploy.apply_async(args=[pool_ids, user],
+                                                  queue='napi.vip')
+
+        response = {
+            'url': '/api/task/result/{0}'.format(task_id)
+        }
+        return Response(response, status=status.HTTP_202_ACCEPTED)
+
+    @logs_method_apiview
+    @raise_json_validate('pool_put')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.ScriptAlterPermission))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
+    def put(self, request, *args, **kwargs):
+
+        pools = request.DATA.get('pools')
+        user = request.user
+        task_id = tasks.pool_redeploy.apply_async(args=[pools, user],
+                                                  queue='napi.vip')
+
+        response = {
+            'url': '/api/task/result/{0}'.format(task_id)
+        }
+        return Response(response, status=status.HTTP_202_ACCEPTED)
+
+
 class PoolDBDetailsView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """Return server pools by ids or dict."""
@@ -229,7 +280,7 @@ class PoolDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """Return server pools by ids or dict"""
@@ -267,7 +318,7 @@ class PoolDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('pool_post')
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -286,8 +337,8 @@ class PoolDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('pool_put')
-    @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([write_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.write_obj_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -308,8 +359,8 @@ class PoolDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([delete_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.delete_obj_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
@@ -327,7 +378,7 @@ class PoolEnvironmentVip(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
@@ -364,7 +415,7 @@ class OptionPoolEnvironmentView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """

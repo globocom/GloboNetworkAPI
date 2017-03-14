@@ -30,6 +30,7 @@ if syspath not in sys.path:
 def local_files(path):
     return '{}/networkapi/{}'.format(os.getcwd(), path)
 
+
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
@@ -98,24 +99,6 @@ CACHES = {
     }
 }
 
-
-NETWORKAPI_RQ_QUEUES_HOST = os.getenv('NETWORKAPI_RQ_QUEUES_HOST', 'localhost')
-NETWORKAPI_RQ_QUEUES_PORT = os.getenv('NETWORKAPI_RQ_QUEUES_PORT', '6379')
-NETWORKAPI_RQ_QUEUES_DB = os.getenv('NETWORKAPI_RQ_QUEUES_DB', '0')
-NETWORKAPI_RQ_QUEUES_PASSWORD = os.getenv('NETWORKAPI_RQ_QUEUES_PASSWORD', '')
-NETWORKAPI_RQ_QUEUES_TIMEOUT = os.getenv('NETWORKAPI_RQ_QUEUES_TIMEOUT', '360')
-
-# Use the same redis as with caches for RQ
-RQ_QUEUES = {
-    'default': {
-        'HOST': NETWORKAPI_RQ_QUEUES_HOST,
-        'PORT': NETWORKAPI_RQ_QUEUES_PORT,
-        'DB': NETWORKAPI_RQ_QUEUES_DB,
-        'PASSWORD': NETWORKAPI_RQ_QUEUES_PASSWORD,
-        'DEFAULT_TIMEOUT': NETWORKAPI_RQ_QUEUES_TIMEOUT,
-    },
-
-}
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
@@ -505,6 +488,34 @@ BROKER_URI = os.getenv(
     u'failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)'
     '?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e'
 )
+
+##################################
+# CELERY SETTINGS
+##################################
+
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_RESULT_EXPIRES = 60  # 5 hours.
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_PERSISTENT = True
+CELERY_QUEUES = {
+    'napi.default': {
+        'exchange': 'napi.default',
+        'binding_key': 'napi.default'},
+    'napi.network': {
+        'exchange': 'napi.network',
+        'binding_key': 'napi.network',
+    },
+    'napi.vip': {
+        'exchange': 'napi.vip',
+        'binding_key': 'napi.vip',
+    }
+}
+CELERY_DEFAULT_QUEUE = 'napi.default'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_DEFAULT_ROUTING_KEY = 'napi.default'
 
 
 ###################################

@@ -7,6 +7,9 @@ apt-get install libmysqlclient-dev -y
 apt-get install python-dev -y
 apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 
+# Redis
+apt-get install redis-server -y
+
 # activemq
 apt-get install activemq -y
 rm -rf /etc/activemq/instances-enabled
@@ -31,7 +34,7 @@ cat > /etc/init.d/gunicorn_networkapi <<- EOM
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application.
+/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
 EOM
 
 chmod 777 /etc/init.d/gunicorn_networkapi
