@@ -144,17 +144,15 @@ def update_real_pool(pools, user):
     keys = list()
 
     for pool in pools['server_pools']:
+
         pool_obj = facade_v3.get_pool_by_id(pool['id'])
-        pool_obj.update_v3(pool, user, permit_created=True)
-
-        member_ids = [spm['id']
-                      for spm in pool['server_pool_members'] if spm['id']]
-
-        db_members = ServerPoolMember.objects.filter(id__in=member_ids)
+        db_members = pool_obj.serverpoolmember_set.all()
+        member_ids = [spm['id'] for spm in pool['server_pool_members']
+                      if spm['id']]
+        db_members_remove = list(db_members.exclude(id__in=member_ids))
         db_members_id = [str(s.id) for s in db_members]
 
-        db_members_remove = ServerPoolMember.objects.filter(
-            server_pool__id=pool['id']).exclude(id__in=member_ids)
+        pool_obj.update_v3(pool, user, permit_created=True)
 
         pools_members = list()
         for pool_member in pool['server_pool_members']:
@@ -162,7 +160,7 @@ def update_real_pool(pools, user):
             ip = pool_member['ip']['ip_formated'] if pool_member[
                 'ip'] else pool_member['ipv6']['ip_formated']
 
-            if pool_member['id']:
+            if pool_member.get('id', None) is not None:
 
                 member = db_members[
                     db_members_id.index(str(pool_member['id']))]
