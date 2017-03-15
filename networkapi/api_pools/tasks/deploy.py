@@ -16,15 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 @celery_app.task
-def deploy(pool_ids, user):
+def deploy(pool_id, user):
 
-    pools = facade.get_pool_by_ids(pool_ids)
-    pool_serializer = serializers.PoolV3Serializer(pools, many=True)
-    locks_list = create_lock(pool_serializer.data, LOCK_POOL)
+    pools = facade.get_pool_by_id(pool_id)
+    pool_serializer = serializers.PoolV3Serializer(pools)
+    locks_list = create_lock([pool_serializer.data], LOCK_POOL)
 
     try:
         response = facade_pool_deploy.create_real_pool(
-            pool_serializer.data, user)
+            [pool_serializer.data], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
@@ -35,14 +35,14 @@ def deploy(pool_ids, user):
 
 
 @celery_app.task
-def redeploy(pools, user):
+def redeploy(pool, user):
 
-    json_validate(SPECS.get('pool_put')).validate(pools)
-    verify_ports(pools)
-    locks_list = create_lock(pools.get('server_pools'), LOCK_POOL)
+    json_validate(SPECS.get('pool_put')).validate(pool)
+    verify_ports(pool)
+    locks_list = create_lock(pool.get('server_pools'), LOCK_POOL)
 
     try:
-        response = facade_pool_deploy.update_real_pool(pools, user)
+        response = facade_pool_deploy.update_real_pool([pool], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
@@ -53,15 +53,17 @@ def redeploy(pools, user):
 
 
 @celery_app.task
-def undeploy(pool_ids, user):
+def undeploy(pool_id, user):
+    from celery.contrib import rdb
+    rdb.set_trace()
 
-    pools = facade.get_pool_by_ids(pool_ids)
-    pool_serializer = serializers.PoolV3Serializer(pools, many=True)
-    locks_list = create_lock(pool_serializer.data, LOCK_POOL)
+    pool = facade.get_pool_by_id(pool_id)
+    pool_serializer = serializers.PoolV3Serializer(pool)
+    locks_list = create_lock([pool_serializer.data], LOCK_POOL)
 
     try:
         response = facade_pool_deploy.delete_real_pool(
-            pool_serializer.data, user)
+            [pool_serializer.data], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)

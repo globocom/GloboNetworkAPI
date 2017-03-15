@@ -119,9 +119,11 @@ def create_real_pool(pools, user):
 
 @commit_on_success
 def delete_real_pool(pools, user):
+    """Delete real pool in eqpt
     """
-    delete real pool in eqpt
-    """
+
+    from celery.contrib import rdb
+    rdb.set_trace()  # <- set breakpoint
 
     load_balance = _prepare_apply(pools=pools, created=True, user=user)
 

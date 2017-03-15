@@ -105,9 +105,9 @@ def get_pool_by_ids(pools_ids):
     """
 
     pls_ids = list()
-    for pools_id in pools_ids:
+    for pool_id in pools_ids:
         try:
-            sp = get_pool_by_id(pools_id).id
+            sp = get_pool_by_id(pool_id).id
             pls_ids.append(sp)
         except ObjectDoesNotExistException, e:
             raise ObjectDoesNotExistException(e)
