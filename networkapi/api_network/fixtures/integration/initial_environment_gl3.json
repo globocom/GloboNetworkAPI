@@ -1,0 +1,37 @@
+[
+  {
+  "pk": 1,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "BALANCEAMENTO-POOL"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "RACK-A"
+    }
+  },
+  {
+  "pk": 3,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "RACK-B"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "RACK-C"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "ambiente.grupol3",
+  "fields": {
+    "nome": "RACK-D"
+    }
+  }
+]

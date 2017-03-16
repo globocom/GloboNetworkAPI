@@ -1,0 +1,17 @@
+{
+  "equipments": [
+    {
+      "environments": [
+        {
+          "environment": 2,
+          "is_router": false
+        }
+      ],
+      "equipment_type": 1,
+      "id": 1,
+      "maintenance": true,
+      "model": 1,
+      "name": "VM-TEST-PUT-1-UPDATED"
+    }
+  ]
+}

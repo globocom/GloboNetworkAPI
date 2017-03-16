@@ -107,7 +107,7 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
             'member_status',
         )
 
-        details_fields = fields
+        details_fields = default_fields
 
     def get_serializers(self):
         # serializers
@@ -132,7 +132,6 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                         'include': (
                             'servicedownaction__details',
                             'environment__details',
-                            'groups_permissions__details',
                         )
                     },
                     'obj': 'server_pool',
@@ -267,7 +266,7 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
             'identifier',
             'pool_created'
         )
-        details_fields = fields
+        details_fields = default_fields
 
     def get_serializers(self):
         # serializers
@@ -324,10 +323,7 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                 'server_pool_members__details': {
                     'serializer': PoolMemberV3Serializer,
                     'kwargs': {
-                        'many': True,
-                        'include': (
-                            'server_pool',
-                        ),
+                        'many': True
                     },
                     'obj': 'server_pool_members',
                 },

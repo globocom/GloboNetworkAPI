@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -48,10 +47,12 @@ class RequestVipsNotBeenCreatedError(CustomException):
 
 
 class AddBlockOverrideNotDefined(CustomException):
+
     """Represents an error occurred when attempting to change a VIP that has not been created."""
 
     def __init__(self, cause, message=None):
         CustomException.__init__(self, cause, message)
+
 
 class EquipmentGroupsNotAuthorizedError(CustomException):
 
@@ -76,12 +77,14 @@ class EnvironmentVipNotFoundError(EnvironmentVipError):
     def __init__(self, cause, message=None):
         EnvironmentVipError.__init__(self, cause, message)
 
+
 class EnvironmentVipAssociatedToSomeNetworkError(EnvironmentVipError):
 
     """returns exception to environment vip delete when it's associated to some Network """
 
     def __init__(self, cause, message=None):
         EnvironmentVipError.__init__(self, cause, message)
+
 
 class OptionVipError(CustomException):
 
@@ -162,6 +165,7 @@ class OptionPoolEnvironmentDuplicatedError(OptionPoolEnvironmentError):
     def __init__(self, cause, message=None):
         OptionPoolEnvironmentError.__init__(self, cause, message)
 
+
 class OptionPoolServiceDownNoneError(CustomException):
 
     """returns exception if OptionPool service-down-action "none" option does not exists."""
@@ -169,11 +173,13 @@ class OptionPoolServiceDownNoneError(CustomException):
     def __init__(self, cause, message=None):
         OptionPoolServiceDownNoneError.__init__(self, cause, message)
 
+
 class NetworkActiveError(CustomException):
+
     """ Exception returned when network is active and someone is trying to
     remove it """
 
-    DEFAULT_MESSAGE = "Can't remove network bebause it is active"
+    DEFAULT_MESSAGE = "Can't remove network because it is active"
 
     def __init__(self, cause=None, message=None):
         if not cause:
@@ -181,12 +187,14 @@ class NetworkActiveError(CustomException):
 
         super(NetworkActiveError, self).__init__(cause, message)
 
+
 class NetworkInactiveError(CustomException):
 
     """Returns exception when trying to disable a network disabled"""
 
     def __init__(self, cause=u'Unable to remove the network because it is inactive.', message=None):
         CustomException.__init__(self, cause, message)
+
 
 class EnvironmentNotFoundError(CustomException):
 

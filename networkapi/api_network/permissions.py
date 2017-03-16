@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework.permissions import BasePermission
 
 from networkapi.admin_permission import AdminPermission
@@ -41,7 +42,11 @@ class DeployConfig(BasePermission):
 def perm_objv4(request, operation, object_type, *args, **kwargs):
 
     if request.method == 'POST':
-        objs = [net['vlan'] for net in request.DATA['networks']]
+        try:
+            objs = [net['vlan'] for net in request.DATA['networks']]
+        except Exception:
+            objs = get_networkipv4_by_ids(kwargs.get('obj_ids', []).split(';')) \
+                .values_list('vlan', flat=True)
     else:
         objs = get_networkipv4_by_ids(kwargs.get('obj_ids', []).split(';'))\
             .values_list('vlan', flat=True)
@@ -57,7 +62,11 @@ def perm_objv4(request, operation, object_type, *args, **kwargs):
 def perm_objv6(request, operation, object_type, *args, **kwargs):
 
     if request.method == 'POST':
-        objs = [net['vlan'] for net in request.DATA['networks']]
+        try:
+            objs = [net['vlan'] for net in request.DATA['networks']]
+        except Exception:
+            objs = get_networkipv6_by_ids(kwargs.get('obj_ids', []).split(';')) \
+                .values_list('vlan', flat=True)
     else:
         objs = get_networkipv6_by_ids(kwargs.get('obj_ids', []).split(';'))\
             .values_list('vlan', flat=True)

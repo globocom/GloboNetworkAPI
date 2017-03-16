@@ -45,11 +45,11 @@ class VlanError(Exception):
 
 class VlanErrorV3(Exception):
 
-    def __init__(self, cause):
-        self.cause = cause
+    def __init__(self, message):
+        self.message = message
 
     def __str__(self):
-        return str(self.cause)
+        return str(self.message)
 
 
 class NetworkTypeNotFoundError(VlanError):
@@ -421,12 +421,12 @@ class Vlan(BaseModel):
         vlan_numbers_in_interval = set(vlan_numbers_in_interval)
         vlan_numbers_in_interval.update(vlans_others_environments)
 
-        self.log.info('Interval: %s.', interval)
-        self.log.info('VLANs in interval: %s.', vlan_numbers_in_interval)
+        self.log.debug('Interval: %s.', interval)
+        self.log.debug('VLANs in interval: %s.', vlan_numbers_in_interval)
 
         # if len(interval) > len(vlan_numbers_in_interval):
         diff_set = set(interval) - set(vlan_numbers_in_interval)
-        self.log.info('Difference in the lists: %s.', diff_set)
+        self.log.debug('Difference in the lists: %s.', diff_set)
         if list_available:
             return diff_set
         for num_vlan in diff_set:
@@ -1217,8 +1217,8 @@ class Vlan(BaseModel):
             object_value=id_vlan
         ).delete()
 
-    def activate_v3(self):
-        """ Set column ativada = 1"""
+    def activate_v3(self, locks_used):
+        """Set column ativada = 1"""
 
         """
             Send activate notication of network for queue of ACL
@@ -1228,11 +1228,12 @@ class Vlan(BaseModel):
             @raise VlanErrorV3: Error activating a Vlan.
         """
 
+        locks_list = list()
         # Prepare locks for vlan
-        locks_name = [LOCK_VLAN % self.id]
-
-        # Create locks for environment and vlan
-        locks_list = create_lock_with_blocking(locks_name)
+        lock_name = [LOCK_VLAN % self.id]
+        if lock_name not in locks_used:
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking([lock_name])
 
         try:
 
@@ -1273,10 +1274,11 @@ class Vlan(BaseModel):
             raise VlanErrorV3(u'Error activating Vlan.')
 
         finally:
-            # Destroy locks
-            destroy_lock(locks_list)
+            if locks_list:
+                # Destroy locks
+                destroy_lock(locks_list)
 
-    def deactivate_v3(self):
+    def deactivate_v3(self, locks_used):
         """
             Send activate notication of vlan for queue of ACL
                 configuration system.
@@ -1285,11 +1287,12 @@ class Vlan(BaseModel):
             @raise VlanErrorV3: Error disabling a Vlan.
         """
 
+        locks_list = list()
         # Prepare locks for vlan
-        locks_name = [LOCK_VLAN % self.id]
-
-        # Create locks for environment and vlan
-        locks_list = create_lock_with_blocking(locks_name)
+        lock_name = [LOCK_VLAN % self.id]
+        if lock_name not in locks_used:
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking([lock_name])
 
         try:
 
@@ -1330,16 +1333,17 @@ class Vlan(BaseModel):
             raise VlanErrorV3(u'Error disabling Vlan.')
 
         finally:
-            # Destroy locks
-            destroy_lock(locks_list)
+            if locks_list:
+                # Destroy locks
+                destroy_lock(locks_list)
 
     def get_environment_related(self, use_vrf=True):
 
         env_model = get_model('ambiente', 'Ambiente')
 
+        # get environment or environment assoc with equipments
+        # of current vlan
         envs = env_model.objects.filter(
-            # get environment or environment assoc with equipments
-            # of current vlan
             equipamentoambiente__equipamento__in=self.get_eqpt()
         )
 
@@ -1434,10 +1438,11 @@ class Vlan(BaseModel):
             net_ip = [IPNetwork(net.networkv4)]
 
             if not network.verify_intersect(nts, net_ip)[0]:
-                msg = 'Network can not inserted in environment %s because ' \
-                    'network %s are in out of the range of allowed networks ' % \
-                    (self.ambiente.name, net.networkv4)
+                msg = 'Network can not inserted in environment {} because ' \
+                    'network {} are in out of the range of allowed networks.'
+                msg = msg.format(self.ambiente.name, net.networkv4)
                 self.log.error(msg)
+
                 raise VlanErrorV3(msg)
 
         for net in netv6:
@@ -1450,9 +1455,9 @@ class Vlan(BaseModel):
             net_ip = [IPNetwork(net.networkv6)]
 
             if not network.verify_intersect(nts, net_ip)[0]:
-                msg = 'Network can not inserted in environment %s because ' \
-                    'network %s are in out of the range of allowed networks ' % \
-                    (self.ambiente.name, net.networkv6)
+                msg = 'Network can not inserted in environment {} because ' \
+                    'network {} are in out of the range of allowed networks.'
+                msg = msg.format(self.ambiente.name, net.networkv6)
                 self.log.error(msg)
                 raise VlanErrorV3(msg)
 
@@ -1535,11 +1540,11 @@ class Vlan(BaseModel):
         vlan_numbers_in_interval = set(vlan_numbers_in_interval)
         vlan_numbers_in_interval.update(vlans_others_environments)
 
-        self.log.info('Interval: %s.', interval)
-        self.log.info('VLANs in interval: %s.', vlan_numbers_in_interval)
+        self.log.debug('Interval: %s.', interval)
+        self.log.debug('VLANs in interval: %s.', vlan_numbers_in_interval)
 
         diff_set = set(interval) - set(vlan_numbers_in_interval)
-        self.log.info('Difference in the lists: %s.', diff_set)
+        self.log.debug('Difference in the lists: %s.', diff_set)
 
         if list_available:
             return diff_set

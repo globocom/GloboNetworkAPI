@@ -1,0 +1,29 @@
+[
+  {
+    "pk": 1,
+    "model": "grupo.egrupo",
+    "fields": {
+      "nome": "Eqpts"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamentogrupo",
+    "fields": {
+      "egrupo": "1",
+      "equipamento": "1"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "grupo.direitosgrupoequipamento",
+    "fields": {
+      "escrita": "1",
+      "ugrupo": 1,
+      "alterar_config": "1",
+      "exclusao": "1",
+      "egrupo": 1,
+      "leitura": "1"
+    }
+  }
+]

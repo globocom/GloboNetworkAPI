@@ -1,0 +1,16 @@
+{
+    "server_pools": [
+        {
+            "id": 2,
+            "identifier": "pool-vm-rack1"
+        },
+        {
+            "id": 3,
+            "identifier": "pool-vm-rack1-deployed"
+        },
+        {
+            "id": 1,
+            "identifier": "pool-vm-rack1and2"
+        }
+    ]
+}

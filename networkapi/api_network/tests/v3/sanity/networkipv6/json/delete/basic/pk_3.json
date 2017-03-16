@@ -1,0 +1,14 @@
+[
+  {
+    "id": 3,
+    "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
+    "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+    "vlan": {
+      "id": 1,
+      "name": "Vlan with PK 1",
+      "num_vlan": 1
+    },
+    "network_type": 1,
+    "environmentvip": null
+  }
+]

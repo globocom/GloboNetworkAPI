@@ -107,9 +107,7 @@ def create_vip_request(vip_request, user):
 
 
 def update_vip_request(vip_request, user, permit_created=False):
-    """
-    update Vip Request
-    """
+    """Update Vip Request."""
 
     try:
         vip = get_vip_request_by_id(vip_request.get('id'))
@@ -125,7 +123,7 @@ def update_vip_request(vip_request, user, permit_created=False):
 
 
 def delete_vip_request(vip_request_ids, keep_ip='0'):
-    """delete vip request"""
+    """Delete vip request."""
 
     for vip_request_id in vip_request_ids:
         try:
