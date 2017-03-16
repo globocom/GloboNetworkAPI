@@ -1174,10 +1174,42 @@ class Vlan(BaseModel):
 
     def delete_v3(self):
         ogp_models = get_app('api_ogp', 'models')
+        ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
 
         id_vlan = self.id
 
-        super(Vlan, self).delete()
+        try:
+
+            if not self.ativada:
+
+                for net4 in self.networkipv4_set.all():
+                    net4.delete_v3()
+
+                for net6 in self.networkipv6_set.all():
+                    net6.delete_v3()
+            else:
+                self.log.error(
+                    'Cant deallocate all relationships between vlan because '
+                    'its active.')
+                raise VlanCantDeallocate(
+                    str(self.nome),
+                    'Cant deallocate all relationships between vlan because '
+                    'its active.')
+
+            super(Vlan, self).delete()
+
+        except ipcantberemovedfromvip, e:
+            cause = e.cause
+            cause['Vlan'] = self.nome
+            self.log.error(
+                'This Vlan has a Network with Vip Request pointing to it, and '
+                'can not be deleted')
+            raise ipcantberemovedfromvip(
+                cause,
+                'This Vlan has a Network with Vip Request pointing to it, and '
+                'can not be deleted')
+        except VlanCantDeallocate, e:
+            raise e
 
         # Deletes Permissions
         ogp_models.ObjectGroupPermission.objects.filter(

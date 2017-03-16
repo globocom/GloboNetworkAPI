@@ -873,7 +873,7 @@ class NetworkIPv4(BaseModel):
             # Create locks for environment
             locks_name = list()
             lock_name = LOCK_NETWORK_IPV4 % self.id
-            if locks_name not in locks_used:
+            if lock_name not in locks_used:
                 locks_name.append(lock_name)
 
             locks_list = create_lock_with_blocking(locks_name)
@@ -911,13 +911,13 @@ class NetworkIPv4(BaseModel):
 
         # Prepares lock for object current network
         lock_name = LOCK_NETWORK_IPV4 % self.id
-        if locks_name not in locks_used:
+        if lock_name not in locks_used:
             locks_name.append(lock_name)
 
         # Prepares lock for environment related
         for env in envs:
             lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
-            if locks_name not in locks_used:
+            if lock_name not in locks_used:
                 locks_name.append(lock_name)
 
         # Create locks for environment and vlan
@@ -3157,13 +3157,13 @@ class NetworkIPv6(BaseModel):
 
         # Prepares lock for object current network
         lock_name = LOCK_NETWORK_IPV6 % self.id
-        if locks_name not in locks_used:
+        if lock_name not in locks_used:
             locks_name.append(lock_name)
 
         # Prepares lock for environment related
         for env in envs:
             lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
-            if locks_name not in locks_used:
+            if lock_name not in locks_used:
                 locks_name.append(lock_name)
 
         # Create locks for environment and vlan
