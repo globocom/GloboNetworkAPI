@@ -102,9 +102,7 @@ def _prepare_apply(pools, created=False, user=None):
 
 @commit_on_success
 def create_real_pool(pools, user):
-    """
-        Create real pool in eqpt
-    """
+    """Create real pool in eqpt."""
 
     load_balance = _prepare_apply(pools=pools, created=False, user=user)
 
@@ -119,11 +117,7 @@ def create_real_pool(pools, user):
 
 @commit_on_success
 def delete_real_pool(pools, user):
-    """Delete real pool in eqpt
-    """
-
-    from celery.contrib import rdb
-    rdb.set_trace()  # <- set breakpoint
+    """Delete real pool in eqpt."""
 
     load_balance = _prepare_apply(pools=pools, created=True, user=user)
 
@@ -138,14 +132,12 @@ def delete_real_pool(pools, user):
 
 @commit_on_success
 def update_real_pool(pools, user):
-    """
-    - update real pool in eqpt
-    - update data pool in db
-    """
+    """Update real pool in Load Balancer and DB."""
+
     load_balance = dict()
     keys = list()
 
-    for pool in pools['server_pools']:
+    for pool in pools:
 
         pool_obj = facade_v3.get_pool_by_id(pool['id'])
         db_members = pool_obj.serverpoolmember_set.all()
@@ -350,10 +342,7 @@ def _prepare_apply_state(pools, user=None):
 
 
 def set_poolmember_state(pools, user):
-    """
-    Set Pool Members state
-
-    """
+    """Set Pool Members state."""
 
     load_balance = _prepare_apply_state(pools['server_pools'], user)
 
@@ -372,9 +361,7 @@ def set_poolmember_state(pools, user):
 
 
 def get_poolmember_state(pools):
-    """
-    Return Pool Members State
-    """
+    """Return Pool Members State."""
 
     load_balance = _prepare_apply_state(pools)
 
@@ -432,6 +419,7 @@ def _validate_pool_members_to_apply(pool, user=None):
 
 
 def _validate_pool_to_apply(pool, update=False, user=None):
+
     server_pool = ServerPool.objects.get(id=pool['id'])
     if not server_pool:
         raise exceptions.PoolNotExist()

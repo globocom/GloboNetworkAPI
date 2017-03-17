@@ -167,7 +167,7 @@ class PoolGetDeployMockTestCase(NetworkApiTestCase):
 
         pool['server_pools'][0]['server_pool_members'] = server_pool_members
 
-        facade_pool_deploy.update_real_pool(pool, self.user)
+        facade_pool_deploy.update_real_pool(pool['server_pools'], self.user)
 
         pool = self.client.get(
             '/api/v3/pool/%s/' % id,
@@ -196,7 +196,7 @@ class PoolGetDeployMockTestCase(NetworkApiTestCase):
 
         pool['server_pools'][0]['server_pool_members'] = []
 
-        facade_pool_deploy.update_real_pool(pool, self.user)
+        facade_pool_deploy.update_real_pool(pool['server_pools'], self.user)
 
         pool = self.client.get(
             '/api/v3/pool/%s/' % id,
@@ -243,7 +243,7 @@ class PoolGetDeployMockTestCase(NetworkApiTestCase):
 
         pool['server_pools'][0]['server_pool_members'] = server_pool_members
 
-        facade_pool_deploy.update_real_pool(pool, self.user)
+        facade_pool_deploy.update_real_pool(pool['server_pools'], self.user)
 
         pool = self.client.get(
             '/api/v3/pool/%s/' % id,
@@ -293,7 +293,7 @@ class PoolGetDeployMockTestCase(NetworkApiTestCase):
 
         pool['server_pools'][0]['server_pool_members'] = server_pool_members
 
-        facade_pool_deploy.update_real_pool(pool, self.user)
+        facade_pool_deploy.update_real_pool(pool['server_pools'], self.user)
 
         pool = self.client.get(
             '/api/v3/pool/%s/' % id,

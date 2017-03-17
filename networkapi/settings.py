@@ -310,6 +310,7 @@ PROJECT_APPS = (
     'networkapi.api_pools',
     'networkapi.api_rack',
     'networkapi.api_rest',
+    'networkapi.api_task',
     'networkapi.api_usuario',
     'networkapi.api_vip_request',
     'networkapi.api_vlan',
@@ -495,9 +496,9 @@ BROKER_URI = os.getenv(
 
 CELERYD_PREFETCH_MULTIPLIER = 1
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_TASK_RESULT_EXPIRES = 60  # 60 seconds.
+CELERY_TASK_RESULT_EXPIRES = 120  # 120 seconds.
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_RESULT_PERSISTENT = True
 CELERY_QUEUES = {

@@ -146,7 +146,7 @@ class PoolDeployView(CustomAPIView):
         locks_list = create_lock(server_pools.get('server_pools'), LOCK_POOL)
         try:
             response = facade_pool_deploy.update_real_pool(
-                server_pools, request.user)
+                server_pools.get('server_pools'), request.user)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)
@@ -196,7 +196,7 @@ class PoolAsyncDeployView(CustomAPIView):
         user = request.user
 
         for pool_id in pool_ids:
-            task_obj = tasks.pool_deploy.apply_async(args=[pool_id, user],
+            task_obj = tasks.pool_deploy.apply_async(args=[pool_id, user.id],
                                                      queue='napi.vip')
 
             task = {
@@ -220,7 +220,7 @@ class PoolAsyncDeployView(CustomAPIView):
         user = request.user
 
         for pool_id in pool_ids:
-            task_obj = tasks.pool_undeploy.apply_async(args=[pool_id, user],
+            task_obj = tasks.pool_undeploy.apply_async(args=[pool_id, user.id],
                                                        queue='napi.vip')
 
             task = {
@@ -240,11 +240,14 @@ class PoolAsyncDeployView(CustomAPIView):
     def put(self, request, *args, **kwargs):
 
         response = list()
-        pools = request.DATA.get('pools')
-        user = request.user
 
-        for pool in pools:
-            task_obj = tasks.pool_redeploy.apply_async(args=[pool, user],
+        pools = request.DATA
+        user = request.user
+        json_validate(SPECS.get('pool_put')).validate(pools)
+        verify_ports(pools)
+
+        for pool in pools.get('server_pools'):
+            task_obj = tasks.pool_redeploy.apply_async(args=[pool, user.id],
                                                        queue='napi.vip')
 
             task = {
