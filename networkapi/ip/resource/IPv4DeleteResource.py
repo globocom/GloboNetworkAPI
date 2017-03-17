@@ -71,9 +71,9 @@ class IPv4DeleteResource(RestResource):
 
             with distributedlock(LOCK_IPV4 % id_ip):
 
+                locks_list = [LOCK_IPV4 % id_ip]
                 # Business Rules
-                ip.delete()
-                # Business Rules
+                ip.delete_v3(locks_list)
 
                 return self.response(dumps_networkapi({}))
 
