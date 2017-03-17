@@ -150,13 +150,21 @@ class VipRequestAsyncDeployView(CustomAPIView):
     @permission_obj_apiview([permissions.deploy_obj_permission])
     def post(self, request, *args, **kwargs):
 
+        response = list()
         vip_ids = kwargs.get('obj_ids').split(',')
-        task_id = tasks.vip_deploy.apply_async(args=[vip_ids, request.user],
-                                               queue='napi.vip')
+        user = request.user
 
-        response = {
-            'url': '/api/task/result/{0}'.format(task_id)
-        }
+        for vip_id in vip_ids:
+            task_obj = tasks.vip_deploy.apply_async(args=[vip_id, user.id],
+                                                    queue='napi.vip')
+
+            task = {
+                'id': vip_id,
+                'task_id': task_obj.id
+            }
+
+        response.append(task)
+
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
@@ -166,13 +174,21 @@ class VipRequestAsyncDeployView(CustomAPIView):
     @permission_obj_apiview([permissions.deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
 
+        response = list()
         vip_ids = kwargs.get('obj_ids').split(',')
-        task_id = tasks.vip_undeploy.apply_async(args=[vip_ids, request.user],
-                                                 queue='napi.vip')
+        user = request.user
 
-        response = {
-            'url': '/api/task/result/{0}'.format(task_id)
-        }
+        for vip_id in vip_ids:
+            task_obj = tasks.vip_undeploy.apply_async(args=[vip_id, user.id],
+                                                      queue='napi.vip')
+
+            task = {
+                'id': vip_id,
+                'task_id': task_obj.id
+            }
+
+        response.append(task)
+
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
@@ -182,13 +198,23 @@ class VipRequestAsyncDeployView(CustomAPIView):
     @permission_obj_apiview([permissions.deploy_obj_permission])
     def put(self, request, *args, **kwargs):
 
-        vips = request.DATA.get('vips')
-        task_id = tasks.vip_redeploy.apply_async(args=[vips, request.user],
-                                                 queue='napi.vip')
+        response = list()
+        vips = request.DATA
+        user = request.user
+        json_validate(SPECS.get('vip_request_put')).validate(vips)
+        verify_ports_vip(vips)
 
-        response = {
-            'url': '/api/task/result/{0}'.format(task_id)
-        }
+        for vip in vips.get('vips'):
+            task_obj = tasks.vip_redeploy.apply_async(args=[vip, user.id],
+                                                      queue='napi.vip')
+
+            task = {
+                'id': vip.get('id'),
+                'task_id': task_obj.id
+            }
+
+        response.append(task)
+
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
 

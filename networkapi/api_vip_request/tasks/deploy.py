@@ -9,67 +9,78 @@ from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_vip_request.facade import v3 as facade
 from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 from networkapi.distributedlock import LOCK_VIP
-from networkapi.settings import SPECS
+from networkapi.usuario.models import Usuario
 from networkapi.util.geral import create_lock
 from networkapi.util.geral import destroy_lock
-from networkapi.util.json_validate import json_validate
-from networkapi.util.json_validate import verify_ports_vip
+
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task
-def deploy(vip_request_ids, user):
+@celery_app.task(bind=True)
+def deploy(self, vip_id, user_id):
 
-    vips = facade.get_vip_request_by_ids(vip_request_ids)
-    vip_serializer = VipRequestV3Serializer(
-        vips, many=True, include=('ports__identifier',))
+    self.update_state(state='PROGRESS')
 
-    locks_list = create_lock(vip_serializer.data, LOCK_VIP)
+    vip = facade.get_vip_request_by_id(vip_id)
+    vip_serializer = VipRequestV3Serializer(vip,
+                                            include=('ports__identifier',))
+    locks_list = create_lock([vip_id], LOCK_VIP)
+
+    user = Usuario.objects.get(id=user_id)
+
     try:
-        response = facade.create_real_vip_request(
-            vip_serializer.data, user)
+        vip = facade.get_vip_request_by_id(vip_id)
+        facade.create_real_vip_request(vip_serializer.data, user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+    else:
+        return 'Vip Request {} was deployed with success.'.format(vip)
     finally:
         destroy_lock(locks_list)
 
-    return response
 
+@celery_app.task(bind=True)
+def undeploy(self, vip_id, user_id):
 
-@celery_app.task
-def undeploy(vip_request_ids, user):
+    self.update_state(state='PROGRESS')
 
-    vips = facade.get_vip_request_by_ids(vip_request_ids)
-    vip_serializer = VipRequestV3Serializer(
-        vips, many=True, include=('ports__identifier',))
+    vip = facade.get_vip_request_by_id(vip_id)
+    vip_serializer = VipRequestV3Serializer(vip,
+                                            include=('ports__identifier',))
+    locks_list = create_lock([vip_id], LOCK_VIP)
 
-    locks_list = create_lock(vip_serializer.data, LOCK_VIP)
+    user = Usuario.objects.get(id=user_id)
+
     try:
-        response = facade.delete_real_vip_request(
-            vip_serializer.data, user)
+        vip = facade.get_vip_request_by_id(vip_id)
+        facade.delete_real_vip_request(vip_serializer.data, user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+    else:
+        return 'Vip Request {} was undeployed with success.'.format(vip)
     finally:
         destroy_lock(locks_list)
 
-    return response
 
+@celery_app.task(bind=True)
+def redeploy(self, vip_dict, user_id):
 
-@celery_app.task
-def redeploy(vips, user):
+    self.update_state(state='PROGRESS')
 
-    json_validate(SPECS.get('vip_request_put')).validate(vips)
-    locks_list = create_lock(vips.get('vips'), LOCK_VIP)
-    verify_ports_vip(vips)
+    vip_id = vip_dict.get('id')
+    locks_list = create_lock([vip_id], LOCK_VIP)
+
+    user = Usuario.objects.get(id=user_id)
+
     try:
-        response = facade.update_real_vip_request(
-            vips['vips'], user)
+        vip = facade.get_vip_request_by_id(vip_id)
+        facade.update_real_vip_request([vip_dict], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+    else:
+        return 'Vip Request {} was redeployed with success.'.format(vip)
     finally:
         destroy_lock(locks_list)
-
-    return response

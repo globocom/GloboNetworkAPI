@@ -34,7 +34,7 @@ def deploy(self, pool_id, user_id):
     finally:
         destroy_lock(locks_list)
 
-    return 'Pool {} was deployed with successs.'.format(pool)
+    return 'Pool {} was deployed with success.'.format(pool)
 
 
 @celery_app.task(bind=True)
@@ -46,6 +46,7 @@ def redeploy(self, pool_dict, user_id):
     locks_list = create_lock([pool_id], LOCK_POOL)
 
     user = Usuario.objects.get(id=user_id)
+
     try:
         pool = facade.get_pool_by_id(pool_id)
         facade_pool_deploy.update_real_pool([pool_dict], user)
@@ -53,7 +54,7 @@ def redeploy(self, pool_dict, user_id):
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
     else:
-        return 'Pool {} was redeployed with successs.'.format(pool)
+        return 'Pool {} was redeployed with success.'.format(pool)
     finally:
         destroy_lock(locks_list)
 
@@ -70,12 +71,11 @@ def undeploy(self, pool_id, user_id):
     user = Usuario.objects.get(id=user_id)
 
     try:
-        facade_pool_deploy.delete_real_pool(
-            [pool_serializer.data], user)
+        facade_pool_deploy.delete_real_pool([pool_serializer.data], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
     finally:
         destroy_lock(locks_list)
 
-    return 'Pool {} was redeployed with successs.'.format(pool)
+    return 'Pool {} was redeployed with success.'.format(pool)
