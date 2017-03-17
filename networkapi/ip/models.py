@@ -33,6 +33,8 @@ from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
 from networkapi.distributedlock import LOCK_IP_EQUIPMENT
 from networkapi.distributedlock import LOCK_IP_EQUIPMENT_ONE
+from networkapi.distributedlock import LOCK_IPV4
+from networkapi.distributedlock import LOCK_IPV6
 from networkapi.distributedlock import LOCK_IPV6_EQUIPMENT
 from networkapi.distributedlock import LOCK_IPV6_EQUIPMENT_ONE
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
@@ -1976,6 +1978,11 @@ class Ip(BaseModel):
 
             locks_name = list()
 
+            # Prepare lock for ip
+            lock_name = LOCK_IPV4 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
             # Prepare locks for environment
             for env in envs:
                 lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
@@ -2025,15 +2032,17 @@ class Ip(BaseModel):
         except IpErrorV3, e:
             self.log.error(e.message)
             raise IpErrorV3(e.message)
+
         except Exception, e:
             msg = u'Error edit IP.: %s' % e
             self.log.error(msg)
             raise IpErrorV3(msg)
+
         finally:
             # Destroy locks
             destroy_lock(locks_list)
 
-    def delete_v3(self):
+    def delete_v3(self, locks_used=[]):
         """
         Method V3 to remove Ip.
         Before removing the IP removes all your requests
@@ -2042,6 +2051,17 @@ class Ip(BaseModel):
         @raise IpCantBeRemovedFromVip: Ip is associated with created
                                        Vip Request.
         """
+
+        locks_name = list()
+
+        # Prepare lock for ip
+        lock_name = LOCK_IPV4 % self.id
+        if lock_name not in locks_used:
+            locks_name.append(lock_name)
+
+        # Create Locks
+        locks_name = list(set(locks_name))
+        locks_list = create_lock_with_blocking(locks_name)
 
         try:
             for vip in self.viprequest_set.all():
@@ -2080,6 +2100,15 @@ class Ip(BaseModel):
 
         except IpCantBeRemovedFromVip, e:
             raise IpCantBeRemovedFromVip(e.cause, e.message)
+
+        except Exception, e:
+            msg = u'Error delete IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
 
     def validate_v3(self, equipments):
         """Validate Ip."""
@@ -4312,6 +4341,11 @@ class Ipv6(BaseModel):
 
             locks_name = list()
 
+            # Prepare lock for ipv6
+            lock_name = LOCK_IPV6 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
             # Prepare locks for environment
             for env in envs:
                 lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
@@ -4361,15 +4395,17 @@ class Ipv6(BaseModel):
         except IpErrorV3, e:
             self.log.error(e.message)
             raise IpErrorV3(e.message)
+
         except Exception, e:
             msg = u'Error edit IP.: %s' % e
             self.log.error(msg)
             raise IpErrorV3(msg)
+
         finally:
             # Destroy locks
             destroy_lock(locks_list)
 
-    def delete_v3(self):
+    def delete_v3(self, locks_used=[]):
         """
         Method V3 to remove Ipv6.
         Before removing the IP removes all your requests
@@ -4378,6 +4414,18 @@ class Ipv6(BaseModel):
         @raise IpCantBeRemovedFromVip: Ipv6 is associated with created
                                        Vip Request.
         """
+
+        locks_name = list()
+
+        # Prepare lock for ipv6
+        lock_name = LOCK_IPV6 % self.id
+        if lock_name not in locks_used:
+            locks_name.append(lock_name)
+
+        # Create Locks
+        locks_name = list(set(locks_name))
+        locks_list = create_lock_with_blocking(locks_name)
+
         try:
             for vip in self.viprequest_set.all():
                 id_vip = vip.id
@@ -4415,6 +4463,15 @@ class Ipv6(BaseModel):
 
         except IpCantBeRemovedFromVip, e:
             raise IpCantBeRemovedFromVip(e.cause, e.message)
+
+        except Exception, e:
+            msg = u'Error edit IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
 
     def validate_v3(self, equipments):
         """Validate Ip."""
