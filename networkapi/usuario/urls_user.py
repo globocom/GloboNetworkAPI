@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns
+from django.conf.urls import url
+
 from networkapi.usuario.resource.UserAddResource import UserAddResource
 from networkapi.usuario.resource.UserAlterRemoveResource import UserAlterRemoveResource
 from networkapi.usuario.resource.UserGetAllResource import UserGetAllResource
@@ -18,7 +20,8 @@ user_get_by_ldap_resource = UserGetByLdapResource()
 user_get_by_group_resource = UserGetByGroupUserResource()
 user_get_by_group_out_group_resource = UserGetByGroupUserOutGroup()
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^$', user_add_resource.handle_request,
         name='user.add'),
     url(r'^all/$', user_get_all_resource.handle_request,

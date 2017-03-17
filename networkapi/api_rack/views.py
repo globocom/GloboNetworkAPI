@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,37 +13,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
+import commands
 import glob
 import logging
-import commands
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import commit_on_success
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from networkapi.api_rack.permissions import Read, Write
-from networkapi.api_rack import facade, exceptions
+
+from networkapi.api_rack import exceptions
+from networkapi.api_rack import facade
+from networkapi.api_rack.permissions import Read
+from networkapi.api_rack.permissions import Write
 from networkapi.api_rack.serializers import RackSerializer
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.system.facade import get_value as get_variable
-from django.core.exceptions import ObjectDoesNotExist
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente
 from networkapi.system import exceptions as var_exceptions
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
+from networkapi.system.facade import get_value as get_variable
 
 
 log = logging.getLogger(__name__)
 
+
 @permission_classes((IsAuthenticated, Write))
 class RackView(APIView):
-
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
-            log.info("Add Rack")
+            log.info('Add Rack')
 
             data_ = request.DATA
             if not data_:
@@ -55,7 +58,8 @@ class RackView(APIView):
             try:
                 rack_dict['number'] = int(data_.get('number'))
             except:
-                raise exceptions.InvalidInputException("O número do Rack não foi informado.")
+                raise exceptions.InvalidInputException(
+                    'O número do Rack não foi informado.')
             rack_dict['name'] = data_.get('name')
             rack_dict['sw1_mac'] = data_.get('mac_address_sw1')
             rack_dict['sw2_mac'] = data_.get('mac_address_sw2')
@@ -90,46 +94,51 @@ class RackView(APIView):
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()
 
+
 class RackDeployView(APIView):
 
     @permission_classes((IsAuthenticated, Write))
     @commit_on_success
     def post(self, *args, **kwargs):
         try:
-            log.info("RACK deploy.")
+            log.info('RACK deploy.')
 
-            rack_id = kwargs.get("rack_id")
+            rack_id = kwargs.get('rack_id')
             rack = facade.get_by_pk(self.request.user, rack_id)
 
             try:
-                PATH_TO_ADD_CONFIG = get_variable("path_to_add_config")
-                REL_PATH_TO_ADD_CONFIG = get_variable("rel_path_to_add_config")
+                PATH_TO_ADD_CONFIG = get_variable('path_to_add_config')
+                REL_PATH_TO_ADD_CONFIG = get_variable('rel_path_to_add_config')
             except ObjectDoesNotExist:
-                raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
+                raise var_exceptions.VariableDoesNotExistException(
+                    'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.')
 
-            path_config = PATH_TO_ADD_CONFIG +'*'+rack.nome+'*'
+            path_config = PATH_TO_ADD_CONFIG + '*' + rack.nome + '*'
             arquivos = glob.glob(path_config)
 
-            #Get all files and search for equipments of the rack
+            # Get all files and search for equipments of the rack
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
-                rel_filename = "../../"+REL_PATH_TO_ADD_CONFIG+filename_equipments
-                #Check if file is config relative to this rack
+                rel_filename = '../../' + REL_PATH_TO_ADD_CONFIG + filename_equipments
+                # Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
-                    #Apply config only in spines. Leaves already have all necessary config in startup
-                    if "ADD" in filename_equipments:
-                        #Check if equipment in under maintenance. If so, does not aplly on it
+                    # Apply config only in spines. Leaves already have all
+                    # necessary config in startup
+                    if 'ADD' in filename_equipments:
+                        # Check if equipment in under maintenance. If so, does
+                        # not aplly on it
                         equipment_name = filename_equipments.split('-ADD-')[0]
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
                             if not equip.maintenance:
-                                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
+                                (erro, result) = commands.getstatusoutput(
+                                    '/usr/bin/backuper -T acl -b %s -e -i %s -w 300' % (rel_filename, equipment_name))
                                 if erro:
                                     raise exceptions.RackAplError()
                         except exceptions.RackAplError, e:
                             raise e
                         except:
-                            #Error equipment not found, do nothing
+                            # Error equipment not found, do nothing
                             pass
 
             datas = dict()
@@ -142,13 +151,15 @@ class RackDeployView(APIView):
 
         except exceptions.RackAplError, exception:
             log.exception(exception)
-            raise exceptions.RackAplError("Falha ao aplicar as configuracoes: %s" %(result))
+            raise exceptions.RackAplError(
+                'Falha ao aplicar as configuracoes: %s' % (result))
         except exceptions.RackNumberNotFoundError, exception:
             log.exception(exception)
             raise exceptions.RackNumberNotFoundError()
         except var_exceptions.VariableDoesNotExistException, exception:
             log.error(exception)
-            raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
+            raise var_exceptions.VariableDoesNotExistException(
+                'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.')
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException(exception)

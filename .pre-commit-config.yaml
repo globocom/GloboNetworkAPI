@@ -26,7 +26,7 @@
     -   id: flake8
         args:
         - '-'
-        - --ignore=E501,E402,F401,F403,F821,F841
+        - --ignore=E501,E402,F401,F403,F405,F821,F841
 -   repo: https://github.com/pre-commit/pre-commit
     sha: 41dcaff3fb53fb7819a1d783d67a9ccb42464c1d
     hooks:

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,22 +13,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_IPV6
+from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
+from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.ip.models import Ipv6, IpError, NetworkIPv4Error,\
-    IpNotFoundError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
-    IpCantRemoveFromServerPool
-import logging
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.ip.models import IpCantRemoveFromServerPool
+from networkapi.ip.models import IpEquipCantDissociateFromVip
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import NetworkIPv4Error
 from networkapi.rest import RestResource
-from networkapi.exception import InvalidValueError
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.distributedlock import distributedlock, LOCK_IPV6
-from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
 
 
 class IPv6DeleteResource(RestResource):
@@ -37,10 +42,10 @@ class IPv6DeleteResource(RestResource):
     log = logging.getLogger('IPv6DeleteResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Handles GET requests for delete an IP6 
+        """Handles GET requests for delete an IP6
 
         URL: ip6/delete/id_ip6
-        '''
+        """
 
         self.log.info('Delete an IP6')
 
@@ -72,7 +77,7 @@ class IPv6DeleteResource(RestResource):
                 return self.response(dumps_networkapi({}))
 
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319, "ip", 'ipv6', id_ip)
+            return self.response_error(319, 'ip', 'ipv6', id_ip)
         except IpCantRemoveFromServerPool, e:
             return self.response_error(385, e.cause.get('ip'), e.cause.get('equip_name'), e.cause.get('server_pool_identifiers'))
         except IpEquipCantDissociateFromVip, e:

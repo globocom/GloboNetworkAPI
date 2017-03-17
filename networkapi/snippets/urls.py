@@ -1,5 +1,7 @@
-from django.conf.urls import patterns, url
+# -*- coding: utf-8 -*-
+from django.conf.urls import patterns
+from django.conf.urls import url
 
 urlpatterns = patterns('networkapi.snippets.views',
-    url(r'^snippets/$', 'snippet_list'),
-)
+                       url(r'^snippets/$', 'snippet_list'),
+                       )

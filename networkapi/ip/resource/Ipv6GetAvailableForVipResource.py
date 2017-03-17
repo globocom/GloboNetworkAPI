@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
+from django.db import transaction
+from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoError, TipoEquipamento
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi,\
-    loads
-from networkapi.ip.models import IpNotAvailableError, IpError, Ipv6, NetworkIPv6Error, NetworkNotInEvip, IpRangeAlreadyAssociation, Ipv6Equipament
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.ambiente.models import EnvironmentVip
-from django.forms.models import model_to_dict
-from networkapi.distributedlock import distributedlock, LOCK_GET_IPV6_AVAILABLE
-from django.db import transaction
-
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_GET_IPV6_AVAILABLE
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import TipoEquipamento
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpRangeAlreadyAssociation
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIPv6Error
+from networkapi.ip.models import NetworkNotInEvip
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class Ipv6GetAvailableForVipResource(RestResource):
@@ -39,17 +48,18 @@ class Ipv6GetAvailableForVipResource(RestResource):
     log = logging.getLogger('Ipv6GetAvailableForVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles GET requests get an IP6 available for vip_request by evip_id.
+        """Handles GET requests get an IP6 available for vip_request by evip_id.
 
         URL: ip/availableip6/vip/id_evip
-        '''
+        """
 
         self.log.info('Get an IP6 available for vip_request')
 
         try:
             # User permission
             if not has_perm(user, AdminPermission.IPS, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 return self.not_authorized()
 
             # Load XML data
@@ -64,7 +74,8 @@ class Ipv6GetAvailableForVipResource(RestResource):
             name = ip_map.get('name')
 
             if not is_valid_int_greater_zero_param(id_evip):
-                self.log.error(u'Parameter id_evip is invalid. Value: %s.', id_evip)
+                self.log.error(
+                    u'Parameter id_evip is invalid. Value: %s.', id_evip)
                 raise InvalidValueError(None, 'id_evip', id_evip)
 
             # Business Rules
@@ -76,7 +87,8 @@ class Ipv6GetAvailableForVipResource(RestResource):
                 len_network = len(evip.networkipv6_set.all())
 
                 if len_network <= 0:
-                    raise NetworkNotInEvip(None, 'Não há rede no ambiente vip fornecido')
+                    raise NetworkNotInEvip(
+                        None, 'Não há rede no ambiente vip fornecido')
 
                 raise_not_found_balanceamento = False
 
@@ -93,7 +105,7 @@ class Ipv6GetAvailableForVipResource(RestResource):
                         ip_available = ipv6.get_available_ip6(net.id)
                         ip_new = Ipv6()
 
-                        ip_available = ip_available.split(":")
+                        ip_available = ip_available.split(':')
                         ip_new.block1 = ip_available[0]
                         ip_new.block2 = ip_available[1]
                         ip_new.block3 = ip_available[2]
@@ -113,7 +125,8 @@ class Ipv6GetAvailableForVipResource(RestResource):
                                     list_ips_equips.append(equipment.id)
 
                                     if ip_new.id is None:
-                                        ip_new.save_ipv6(equipment.id, user, net)
+                                        ip_new.save_ipv6(
+                                            equipment.id, user, net)
                                     else:
                                         new_ip_equip = Ipv6Equipament()
                                         new_ip_equip.ip = ip_new
@@ -130,9 +143,9 @@ class Ipv6GetAvailableForVipResource(RestResource):
 
                         if cont_balanceador_not_found == len_network:
                             raise_not_found_balanceamento = True
-                            raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associadas com o "
-                                                            "Ambiente Vip: %s - %s - %s, pois não existe equipamentos "
-                                                            "do Tipo Balanceador nessas redes."
+                            raise IpNotAvailableError(None, 'Não há ipv6 disponivel para as redes associadas com o '
+                                                            'Ambiente Vip: %s - %s - %s, pois não existe equipamentos '
+                                                            'do Tipo Balanceador nessas redes.'
                                                       % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
                     except (IpNotAvailableError, IpRangeAlreadyAssociation), e:
@@ -140,12 +153,12 @@ class Ipv6GetAvailableForVipResource(RestResource):
                         if raise_not_found_balanceamento:
                             raise IpNotAvailableError(None, e.message)
                         elif len_network == cont_network:
-                            raise IpNotAvailableError(None, "Não há ipv6 disponivel para as redes associdas com o "
-                                                            "Ambiente Vip: %s - %s - %s"
+                            raise IpNotAvailableError(None, 'Não há ipv6 disponivel para as redes associdas com o '
+                                                            'Ambiente Vip: %s - %s - %s'
                                                       % (evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
                 transaction.commit()
-                return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))
+                return self.response(dumps_networkapi({'ip': model_to_dict(ip_new)}))
 
         except NetworkNotInEvip, e:
             return self.response_error(321, 'ipv6')

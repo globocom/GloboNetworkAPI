@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-import factory
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import logging
+
+import factory
 
 LOG = logging.getLogger(__name__)
 
 from networkapi.grupo import models
+
 
 class UGrupoFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.UGrupo

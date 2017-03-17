@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import glob
-import os
 import logging
-import traceback
-from logging.handlers import TimedRotatingFileHandler, codecs
+import os
 import re
-from django.conf import settings
-
-from django.utils.log import AdminEmailHandler
-
 import sys
 import time
+import traceback
+from logging.handlers import codecs
+from logging.handlers import TimedRotatingFileHandler
+
+from django.conf import settings
+from django.utils.log import AdminEmailHandler
+
 from networkapi.extra_logging.filters import ExtraLoggingFilter
 
 LOG = logging.getLogger(__name__)
+
 
 def convert_to_utf8(object):
     """Converte o object informado para uma representação em utf-8"""
@@ -95,13 +94,13 @@ class MultiprocessTimedRotatingFileHandler(TimedRotatingFileHandler):
             # TimeTuple
             t = self.rolloverAt - self.interval
             timeTuple = time.localtime(t)
-            dfn = self.baseFilename + "." + \
+            dfn = self.baseFilename + '.' + \
                 time.strftime(self.suffix, timeTuple)
             if not os.path.exists(dfn):
                 os.rename(self.baseFilename, dfn)
                 if self.backupCount > 0:
                     # find the oldest log file and delete it
-                    s = glob.glob(self.baseFilename + ".20*")
+                    s = glob.glob(self.baseFilename + '.20*')
                     if len(s) > self.backupCount:
                         s.sort()
                         os.remove(s[0])
@@ -122,7 +121,7 @@ class MultiprocessTimedRotatingFileHandler(TimedRotatingFileHandler):
 class Log(object):
 
     """Classe responsável por encapsular a API de logging.
-    Encapsula as funcionalidades da API de logging de forma a adicionar o 
+    Encapsula as funcionalidades da API de logging de forma a adicionar o
     nome do módulo nas mensagens que forem impressas.
     """
 
@@ -143,7 +142,7 @@ class Log(object):
     _MAX_LINE_SIZE = 2048
 
     _PATTERN_XML_PASSWORD = [
-        "<password>(.*?)</password>", "<enable_pass>(.*?)</enable_pass>", "<pass>(.*?)</pass>"]
+        '<password>(.*?)</password>', '<enable_pass>(.*?)</enable_pass>', '<pass>(.*?)</pass>']
 
     def __init__(self, module_name):
         """Cria um logger para o módulo informado."""
@@ -179,8 +178,9 @@ class Log(object):
         self.logger.addFilter(my_filter)
 
         if len(self.logger.handlers) == 0:
-        #if not self.__is_handler_added(self.logger, MultiprocessTimedRotatingFileHandler):
-            #LOG.info("#### initializing handler MultiprocessTimedRotatingFileHandler log...")
+            # if not self.__is_handler_added(self.logger, MultiprocessTimedRotatingFileHandler):
+            # LOG.info("#### initializing handler
+            # MultiprocessTimedRotatingFileHandler log...")
             log_dir = os.path.split(log_file_name)[0]
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir, mode=0755)
@@ -248,7 +248,7 @@ class Log(object):
             get_lock()
             msg = str(msg) % args
 
-            show_traceback = getattr(settings, "LOG_SHOW_TRACEBACK", True)
+            show_traceback = getattr(settings, 'LOG_SHOW_TRACEBACK', True)
 
             self.logger.error(
                 msg, extra={'module_name': self.module_name}, exc_info=show_traceback)
@@ -262,7 +262,7 @@ class Log(object):
             m = r.search(msg)
             if m:
                 password = m.group(1)
-                msg = msg.replace(password, "****")
+                msg = msg.replace(password, '****')
 
         return msg
 
@@ -288,7 +288,7 @@ class CommonAdminEmailHandler(AdminEmailHandler):
             if m:
                 password = m.group(1)
                 msg = re.sub(
-                    password, "****", post_values[values]) if password != '****' else post_values[values]
+                    password, '****', post_values[values]) if password != '****' else post_values[values]
 
             post_values[values] = msg
 

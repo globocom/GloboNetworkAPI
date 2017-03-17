@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+"""
+import logging
 
-"""
-"""
+from django.core.exceptions import ObjectDoesNotExist
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
+from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
+from networkapi.requisicaovips.models import DsrL3_to_Vip
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import ServerPool
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.exception import InvalidValueError
-from networkapi.requisicaovips.models import RequisicaoVips,\
-    RequisicaoVipsNotFoundError, ServerPool, InvalidHealthcheckValueError, DsrL3_to_Vip
-from django.core.exceptions import ObjectDoesNotExist
 from networkapi.util.decorators import deprecated
 
 
@@ -83,15 +85,15 @@ class RequestVipGetByIdResource(RestResource):
             vip_map['validado'] = vip.validado
             vip_map['vip_criado'] = vip.vip_criado
             vip_map['rule_id'] = vip.rule_id
-            vip_map['trafficreturn']=vip.trafficreturn.nome_opcao_txt if vip.trafficreturn else ''
+            vip_map[
+                'trafficreturn'] = vip.trafficreturn.nome_opcao_txt if vip.trafficreturn else ''
             try:
                 dsrl3_to_vip_obj = DsrL3_to_Vip.get_by_vip_id(vip.id)
                 vip_map['dsrl3'] = dsrl3_to_vip_obj.id_dsrl3
             except ObjectDoesNotExist, e:
                 pass
 
-
-            #Maxcon, lbmethod e hc
+            # Maxcon, lbmethod e hc
             vip_map['maxcon'] = 0
             vip_map['metodo_bal'] = ''
             vip_map['healthcheck'] = ''
@@ -100,32 +102,37 @@ class RequestVipGetByIdResource(RestResource):
             pools = []
             pool_to_use = None
 
-            id_pools = vip.vipporttopool_set.values_list('server_pool_id', flat=True)
+            id_pools = vip.vipporttopool_set.values_list(
+                'server_pool_id', flat=True)
             if len(id_pools) > 0:
-                pools = ServerPool.objects.filter(id__in=id_pools).order_by("id")
+                pools = ServerPool.objects.filter(
+                    id__in=id_pools).order_by('id')
                 pool_to_use = pools[0]
                 for pool in pools:
                     if pool.healthcheck:
                         hc = pool.healthcheck.healthcheck_type
-                        if hc == "HTTP":
+                        if hc == 'HTTP':
                             pool_to_use = pool
                             break
 
             if pool_to_use:
                 vip_map['maxcon'] = pool_to_use.default_limit
                 vip_map['metodo_bal'] = pool_to_use.lb_method
-                vip_map['servicedownaction'] = pool_to_use.servicedownaction.name if pool_to_use.servicedownaction else ''
-                vip_map['healthcheck_type'] = pool.healthcheck.healthcheck_type if pool.healthcheck else ''
+                vip_map[
+                    'servicedownaction'] = pool_to_use.servicedownaction.name if pool_to_use.servicedownaction else ''
+                vip_map[
+                    'healthcheck_type'] = pool.healthcheck.healthcheck_type if pool.healthcheck else ''
                 if vip_map['healthcheck_type'] in ('HTTP', 'HTTPS'):
-                    vip_map['healthcheck'] = pool.healthcheck.healthcheck_request if pool.healthcheck else ''
+                    vip_map[
+                        'healthcheck'] = pool.healthcheck.healthcheck_request if pool.healthcheck else ''
 
             if vip.healthcheck_expect is not None:
                 vip_map['id_healthcheck_expect'] = vip.healthcheck_expect.id
                 vip_map['expect_string'] = vip.healthcheck_expect.expect_string
                 vip_map['match_list'] = vip.healthcheck_expect.match_list
             else:
-                vip_map['expect_string'] = ""
-                vip_map['match_list'] = ""
+                vip_map['expect_string'] = ''
+                vip_map['match_list'] = ''
 
             list_equips = []
             list_ips = list()
@@ -136,8 +143,8 @@ class RequestVipGetByIdResource(RestResource):
             if vip.ip is not None:
                 descricao_ipv4 = vip.ip.descricao
                 list_ips.append(
-                    "%s.%s.%s.%s" % (vip.ip.oct1, vip.ip.oct2, vip.ip.oct3, vip.ip.oct4))
-                list_environment.append("%s - %s - %s" % (vip.ip.networkipv4.vlan.ambiente.divisao_dc.nome,
+                    '%s.%s.%s.%s' % (vip.ip.oct1, vip.ip.oct2, vip.ip.oct3, vip.ip.oct4))
+                list_environment.append('%s - %s - %s' % (vip.ip.networkipv4.vlan.ambiente.divisao_dc.nome,
                                                           vip.ip.networkipv4.vlan.ambiente.ambiente_logico.nome, vip.ip.networkipv4.vlan.ambiente.grupo_l3.nome))
                 equips = vip.ip.ipequipamento_set.all()
 
@@ -149,9 +156,9 @@ class RequestVipGetByIdResource(RestResource):
 
             if vip.ipv6 is not None:
                 descricao_ipv6 = vip.ipv6.description
-                list_ips.append("%s:%s:%s:%s:%s:%s:%s:%s" % (vip.ipv6.block1, vip.ipv6.block2, vip.ipv6.block3,
+                list_ips.append('%s:%s:%s:%s:%s:%s:%s:%s' % (vip.ipv6.block1, vip.ipv6.block2, vip.ipv6.block3,
                                                              vip.ipv6.block4, vip.ipv6.block5, vip.ipv6.block6, vip.ipv6.block7, vip.ipv6.block8))
-                list_environment.append("%s - %s - %s" % (vip.ipv6.networkipv6.vlan.ambiente.divisao_dc.nome,
+                list_environment.append('%s - %s - %s' % (vip.ipv6.networkipv6.vlan.ambiente.divisao_dc.nome,
                                                           vip.ipv6.networkipv6.vlan.ambiente.ambiente_logico.nome, vip.ipv6.networkipv6.vlan.ambiente.grupo_l3.nome))
                 equips = vip.ipv6.ipv6equipament_set.all()
 
@@ -178,7 +185,8 @@ class RequestVipGetByIdResource(RestResource):
             self.log.error(e)
             return self.response_error(152)
         except InvalidValueError, e:
-            self.log.error(u'Parameter %s is invalid. Value: %s.', e.param, e.value)
+            self.log.error(
+                u'Parameter %s is invalid. Value: %s.', e.param, e.value)
             return self.response_error(269, e.param, e.value)
         except BaseException, e:
             self.log.error(e)

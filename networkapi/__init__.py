@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from .celery_app import app as celery_app
 
-__all__ = ['celery_app', 'VERSION']
+__all__ = ('celery_app', 'VERSION')
 
 MAJOR_VERSION = '3'
 MINOR_VERSION = '4'

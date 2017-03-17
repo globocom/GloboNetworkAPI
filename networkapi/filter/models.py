@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -97,10 +97,10 @@ class Filter(BaseModel):
             raise FilterError(e, u'Failure to search the filter.')
 
     def delete(self):
-        '''Override Django's method to remove filter
+        """Override Django's method to remove filter
 
         Before removing the filter removes all relationships with equipment type.
-        '''
+        """
 
         # Remove all Filter and TipoEquipamento relations
         for filter_equiptype in self.filterequiptype_set.all():
@@ -109,12 +109,12 @@ class Filter(BaseModel):
         super(Filter, self).delete()
 
     def validate_filter(self, filter_map):
-        '''Validates filter fields before add
+        """Validates filter fields before add
 
         @param filter_map: Map with the data of the request.
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Get XML data
         name = filter_map['name']
@@ -180,7 +180,7 @@ def check_filter_use(new_filter_id, env):
         # Verify subnet ipv4
         for i in range(0, len(nets_ipv4)):
             net = nets_ipv4[i].get('net')
-            ip = "%s.%s.%s.%s/%s" % (net.oct1,
+            ip = '%s.%s.%s.%s/%s' % (net.oct1,
                                      net.oct2, net.oct3, net.oct4, net.block)
             network_ip_verify = IPNetwork(ip)
 
@@ -197,7 +197,7 @@ def check_filter_use(new_filter_id, env):
         # Verify subnet ipv6
         for i in range(0, len(nets_ipv6)):
             net = nets_ipv6[i].get('net')
-            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+            ip = '%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net.block1, net.block2, net.block3,
                                                  net.block4, net.block5, net.block6,
                                                  net.block7, net.block8, net.block)
             network_ip_verify = IPNetwork(ip)
@@ -345,10 +345,10 @@ def verify_subnet_and_equip(vlan_net, network_ip, version, net_obj, env_obj):
         net = net_env.get('net')
         env = net_env.get('vlan_env')
         if version == 'v4':
-            ip = "%s.%s.%s.%s/%s" % (net.oct1, net.oct2, net.oct3,
+            ip = '%s.%s.%s.%s/%s' % (net.oct1, net.oct2, net.oct3,
                                      net.oct4, net.block)
         else:
-            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+            ip = '%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net.block1, net.block2, net.block3,
                                                  net.block4, net.block5, net.block6,
                                                  net.block7, net.block8, net.block)
 

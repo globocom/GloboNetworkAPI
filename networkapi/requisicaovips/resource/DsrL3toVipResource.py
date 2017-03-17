@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,35 +13,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.rest import RestResource, UserNotAuthorizedError
-
-from networkapi.requisicaovips.models import DsrL3_to_Vip
-
-from networkapi.auth import has_perm
-
-from networkapi.infrastructure.xml_utils import dumps_networkapi
 
 import logging
 
-from networkapi.util import is_valid_int_greater_zero_param
-
-from networkapi.exception import InvalidValueError, OptionVipError, OptionVipNotFoundError
-
 from django.core.exceptions import ObjectDoesNotExist
-
 from django.forms.models import model_to_dict
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.exception import InvalidValueError
+from networkapi.exception import OptionVipError
+from networkapi.exception import OptionVipNotFoundError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.requisicaovips.models import DsrL3_to_Vip
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class DsrL3toVipResource(RestResource):
 
-    '''Class that receives requests related to the table 'DsrL3_to_Vip'.'''
+    """Class that receives requests related to the table 'DsrL3_to_Vip'."""
 
     log = logging.getLogger('DsrL3toVipResource')
-
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat requests GET to get Option VIP.
@@ -52,7 +46,7 @@ class DsrL3toVipResource(RestResource):
 
         try:
 
-            self.log.info("Get DSRL3 id from VIP by ID")
+            self.log.info('Get DSRL3 id from VIP by ID')
 
             id_dsrl3_vip = kwargs.get('id_dsrl3_vip')
 

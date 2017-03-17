@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, EquipamentoGrupo, Equipamento, EquipamentoGrupoDuplicatedError, EquipamentoGrupoNotFoundError, EquipmentDontRemoveError
-from networkapi.grupo.models import GrupoError, EGrupo, EGrupoNotFoundError
-from networkapi.infrastructure.xml_utils import loads, XMLError,  dumps_networkapi
-import logging
-from networkapi.rest import RestResource
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_GROUP
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_EQUIPMENT_GROUP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoGrupo
+from networkapi.equipamento.models import EquipamentoGrupoDuplicatedError
+from networkapi.equipamento.models import EquipamentoGrupoNotFoundError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.equipamento.models import EquipmentDontRemoveError
 from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import EGrupo
+from networkapi.grupo.models import EGrupoNotFoundError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 class EquipamentoGrupoResource(RestResource):
 
-    '''Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela equip_do_grupo.'''
+    """Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela equip_do_grupo."""
 
     log = logging.getLogger('EquipamentoGrupoResource')
 

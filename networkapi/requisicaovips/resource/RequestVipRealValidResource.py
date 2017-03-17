@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import IpError, IpNotFoundError, IP_VERSION, IpNotFoundByEquipAndVipError
-from networkapi.equipamento.models import EquipamentoNotFoundError
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_ipv4, is_valid_ipv6, is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_ip_ipaddr, is_valid_regex
-from networkapi.equipamento.models import Equipamento
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.auth import has_perm
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IP_VERSION
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
 from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_ip_ipaddr
+from networkapi.util import is_valid_ipv4
+from networkapi.util import is_valid_ipv6
+from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class RequestVipRealValidResource(RestResource):
@@ -36,10 +48,10 @@ class RequestVipRealValidResource(RestResource):
     log = logging.getLogger('RequestVipRealValidResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to valid Real server.
+        """Handles POST requests to valid Real server.
 
         URL: vip/real/valid/
-        '''
+        """
         self.log.info('Valid Real Server')
 
         try:
@@ -76,7 +88,7 @@ class RequestVipRealValidResource(RestResource):
                 raise InvalidValueError(None, 'ip', ip)
 
             # Valid Name Equipment
-            if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 80) or not is_valid_regex(name, "^[A-Z0-9-_]+$"):
+            if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 80) or not is_valid_regex(name, '^[A-Z0-9-_]+$'):
                 self.log.error(
                     u'Parameter name_equipment is invalid. Value: %s', name)
                 raise InvalidValueError(None, 'name_equipment', name)
@@ -93,7 +105,7 @@ class RequestVipRealValidResource(RestResource):
             # Valid EnvironmentVip
             evip = EnvironmentVip.get_by_pk(id_evip)
 
-            version = ""
+            version = ''
             if is_valid_ipv4(ip):
                 version = IP_VERSION.IPv4[1]
 
@@ -105,11 +117,11 @@ class RequestVipRealValidResource(RestResource):
 
             real_dict = {}
             ip_dict = model_to_dict(ip)
-            ip_dict["version"] = version
+            ip_dict['version'] = version
 
-            real_dict["ip"] = ip_dict
-            real_dict["equipment"] = model_to_dict(equip)
-            real_dict["environmentvip"] = model_to_dict(evip)
+            real_dict['ip'] = ip_dict
+            real_dict['equipment'] = model_to_dict(equip)
+            real_dict['environmentvip'] = model_to_dict(evip)
 
             return self.response(dumps_networkapi({'real': real_dict}))
 
