@@ -25,7 +25,7 @@ urlpatterns = patterns(
         views.VipRequestDeployView.as_view()),
     url(r'^v3/vip-request/async/deploy/((?P<obj_ids>[;\w]+)/)?$',
         views.VipRequestAsyncDeployView.as_view()),
-    url(r'^v3/vip-request/((?P<vip_request_ids>[;\w]+)/)?$',
+    url(r'^v3/vip-request/((?P<obj_ids>[;\w]+)/)?$',
         views.VipRequestDBView.as_view()),
     url(r'^v3/vip-request/pool/(?P<pool_id>[^/]+)/$',
         views.VipRequestPoolView.as_view()),  # GET
