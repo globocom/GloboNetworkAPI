@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
+from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
-from networkapi.exception import InvalidValueError
-from django.forms.models import model_to_dict
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_EQUIPMENT_ACCESS
+from networkapi.equipamento.models import EquipamentoAccessDuplicatedError
+from networkapi.equipamento.models import EquipamentoAccessNotFoundError
 from networkapi.equipamento.models import EquipamentoAcesso
-from networkapi.tipoacesso.models import TipoAcesso, TipoAcessoError
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
 from networkapi.tipoacesso.models import AccessTypeNotFoundError
-from networkapi.equipamento.models import EquipamentoError, EquipamentoAccessDuplicatedError, EquipamentoAccessNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_ACCESS
+from networkapi.tipoacesso.models import TipoAcesso
+from networkapi.tipoacesso.models import TipoAcessoError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class EquipAccessEditResource(RestResource):

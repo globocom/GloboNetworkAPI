@@ -70,7 +70,7 @@ class EquipamentoGrupoResource(RestResource):
 
         self.log.debug('EGROUP_MAP: %s', equipment_group_map)
 
-        #equip_id = equipment_group_map.get('id_equipamento')
+        # equip_id = equipment_group_map.get('id_equipamento')
         # if not is_valid_int_greater_zero_param(equip_id):
         #    self.log.error(u'The equip_id parameter is not a valid value: %s.', equip_id)
         #    raise InvalidValueError(None, 'equip_id', equip_id)
@@ -80,7 +80,7 @@ class EquipamentoGrupoResource(RestResource):
         #    self.log.error(u'Valor do id_equipamento inválido: %s.', equip_id)
         #    return self.response_error(117, equip_id)
         #
-        #group_id = equipment_group_map.get('id_grupo')
+        # group_id = equipment_group_map.get('id_grupo')
         # if not is_valid_int_greater_zero_param(group_id):
         #    self.log.error(u'The group_id parameter is not a valid value: %s.', group_id)
         #    raise InvalidValueError(None, 'group_id', group_id)

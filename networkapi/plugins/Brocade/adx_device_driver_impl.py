@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 #
 # Copyright 2014 Brocade Communication Systems, Inc.  All rights reserved.
@@ -30,28 +30,29 @@ def log(method):
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
         instance = args[0]
-        data = {"class_name": "%s.%s" % (instance.__class__.__module__,
+        data = {'class_name': '%s.%s' % (instance.__class__.__module__,
                                          instance.__class__.__name__),
-                "method_name": method.__name__,
-                "args": args[1:], "kwargs": kwargs}
+                'method_name': method.__name__,
+                'args': args[1:], 'kwargs': kwargs}
         LOG.debug('%(class_name)s method %(method_name)s'
                   ' called with arguments %(args)s %(kwargs)s', data)
         return method(*args, **kwargs)
     return wrapper
+
 
 ADX_STANDARD_PORTS = [21, 22, 23, 25, 53, 69, 80, 109, 110, 119, 123, 143, 161,
                       389, 443, 554, 636, 993, 995, 1645, 1755, 1812,
                       3389, 5060, 5061, 7070]
 
 ADX_PREDICTOR_MAP = {
-    "ROUND_ROBIN": 'ROUND_ROBIN',
-    "LEAST_CONNECTIONS": 'LEAST_CONN'
+    'ROUND_ROBIN': 'ROUND_ROBIN',
+    'LEAST_CONNECTIONS': 'LEAST_CONN'
 }
 
 ADX_PROTOCOL_MAP = {
-    "TCP": 'TCP',
-    "HTTP": 'HTTP',
-    "HTTPS": 'SSL'
+    'TCP': 'TCP',
+    'HTTP': 'HTTP',
+    'HTTPS': 'SSL'
 }
 
 
@@ -68,7 +69,7 @@ class BrocadeAdxDeviceDriverImpl():
         self.net_service = service_clients[2].service
 
     def _adx_server(self, address, name=None):
-        server = self.slb_factory.create("Server")
+        server = self.slb_factory.create('Server')
         server.IP = address
         if name:
             server.Name = name
@@ -109,15 +110,18 @@ class BrocadeAdxDeviceDriverImpl():
                 port_policy = self._create_update_port_policy(healthcheck)
 
                 if port_policy.get('sslPolInfo'):
-                    reply.rsPortConfig.sslPolInfo = port_policy.get('sslPolInfo')
+                    reply.rsPortConfig.sslPolInfo = port_policy.get(
+                        'sslPolInfo')
                 else:
                     reply.rsPortConfig.sslPolInfo = None
 
                 if port_policy.get('l4Check'):
-                    reply.rsPortConfig.enableL4CheckOnly = port_policy.get('l4Check')
+                    reply.rsPortConfig.enableL4CheckOnly = port_policy.get(
+                        'l4Check')
 
                 if port_policy.get('httpPolInfo'):
-                    reply.rsPortConfig.httpPolInfo = port_policy.get('httpPolInfo')
+                    reply.rsPortConfig.httpPolInfo = port_policy.get(
+                        'httpPolInfo')
                 else:
                     reply.rsPortConfig.httpPolInfo = None
 
@@ -161,7 +165,7 @@ class BrocadeAdxDeviceDriverImpl():
                      .getRealServerConfiguration(rs_server))
 
             rs_conf_seq = (self.slb_factory.create
-                           ("ArrayOfRealServerConfigurationSequence"))
+                           ('ArrayOfRealServerConfigurationSequence'))
 
             reply.rsConfig.leastConnectionWeight = new_weight
 
@@ -206,7 +210,8 @@ class BrocadeAdxDeviceDriverImpl():
     def _get_server_port_by_virtual_count(self, server_port):
         start_index = 1
         num_retrieved = 5
-        api_call = (self.slb_service.getAllVirtualServerPortsBoundtoRealServerPort)
+        api_call = (
+            self.slb_service.getAllVirtualServerPortsBoundtoRealServerPort)
         try:
             reply = api_call(server_port, start_index, num_retrieved)
             return reply.genericInfo.totalEntriesAvailable
@@ -223,8 +228,10 @@ class BrocadeAdxDeviceDriverImpl():
         vs_name = vip['name']
 
         try:
-            vs_server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            vs_server_port = self._adx_server_port(
+                vs_ip_address, vs_port, vs_name)
+            rs_server_port = self._adx_server_port(
+                rs_ip_address, rs_port, rs_name)
 
             (self.slb_service
              .bindRealServerPortToVipPort(vs_server_port, rs_server_port))
@@ -243,8 +250,10 @@ class BrocadeAdxDeviceDriverImpl():
         vs_name = vip['name']
 
         try:
-            vs_server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            vs_server_port = self._adx_server_port(
+                vs_ip_address, vs_port, vs_name)
+            rs_server_port = self._adx_server_port(
+                rs_ip_address, rs_port, rs_name)
 
             (self.slb_service
              .unbindRealServerPortFromVipPort(vs_server_port, rs_server_port))
@@ -263,7 +272,8 @@ class BrocadeAdxDeviceDriverImpl():
         rs_run_time_status = 'UNDEFINED'
 
         try:
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            rs_server_port = self._adx_server_port(
+                rs_ip_address, rs_port, rs_name)
 
             real_server_port_config = (self.slb_factory
                                        .create('RealServerPortConfiguration'))
@@ -291,7 +301,8 @@ class BrocadeAdxDeviceDriverImpl():
         rs_run_time_status = 'UNDEFINED'
 
         try:
-            rs_server_port = self._adx_server_port(rs_ip_address, rs_port, rs_name)
+            rs_server_port = self._adx_server_port(
+                rs_ip_address, rs_port, rs_name)
 
             real_server_port_config = (self.slb_factory
                                        .create('RealServerPortConfiguration'))
@@ -349,7 +360,7 @@ class BrocadeAdxDeviceDriverImpl():
                      .getVirtualServerConfiguration(vs_server))
 
             vs_conf_seq = (self.slb_factory.create
-                           ("ArrayOfVirtualServerConfigurationSequence"))
+                           ('ArrayOfVirtualServerConfigurationSequence'))
             if new_description:
                 reply.vipConfig.description = new_description
 
@@ -411,8 +422,8 @@ class BrocadeAdxDeviceDriverImpl():
             (self.slb_service.
              createVirtualServerWithConfiguration(vs_seq))
         except suds.WebFault as e:
-            LOG.error("Exception in create_virtual_server "
-                      "in device driver : %s", e.message)
+            LOG.error('Exception in create_virtual_server '
+                      'in device driver : %s', e.message)
             raise adx_exception.ConfigError(msg=e.message)
 
     @log
@@ -424,7 +435,8 @@ class BrocadeAdxDeviceDriverImpl():
         l4_protocol = vip.get('l4_protocol')
 
         try:
-            server_port = self._adx_server_port(vs_ip_address, vs_port, vs_name)
+            server_port = self._adx_server_port(
+                vs_ip_address, vs_port, vs_name)
             vs_port_seq = (self.slb_factory.create
                            ('ArrayOfVirtualServerPortConfigurationSequence'))
             vs_port_config = (self.slb_factory
@@ -442,7 +454,7 @@ class BrocadeAdxDeviceDriverImpl():
             session_persistence = vip.get('session_persistence')
             if session_persistence:
                 sp_type = session_persistence['type']
-                if sp_type == "SOURCE_IP":
+                if sp_type == 'SOURCE_IP':
                     vs_port_config.enableSticky = True
                 else:
                     error_message = ('Session Persistence of type %s '
@@ -499,7 +511,7 @@ class BrocadeAdxDeviceDriverImpl():
                 raise adx_exception.ConfigError(msg=e.message)
         else:
             type = new_vip['session_persistence']['type']
-            if type == "SOURCE_IP":
+            if type == 'SOURCE_IP':
                 try:
                     (self.slb_service
                      .enableStickyOnVirtualServerPort(vs_server_port))
@@ -552,29 +564,29 @@ class BrocadeAdxDeviceDriverImpl():
 
     @log
     def _validate_delay(self, monitor_type, delay):
-        if monitor_type == "HTTP":
+        if monitor_type == 'HTTP':
             if delay < 1 or delay > 120:
                 raise adx_exception.UnsupportedOption(value=delay,
-                                                      name="delay")
-        elif monitor_type == "HTTPS":
+                                                      name='delay')
+        elif monitor_type == 'HTTPS':
             if delay < 5 or delay > 120:
                 raise adx_exception.UnsupportedOption(value=delay,
-                                                      name="delay")
-        elif monitor_type == "PING":
+                                                      name='delay')
+        elif monitor_type == 'PING':
             if delay < 1 or delay > 10:
                 raise adx_exception.UnsupportedOption(value=delay,
-                                                      name="delay")
+                                                      name='delay')
 
     @log
     def _validate_max_retries(self, monitor_type, max_retries):
-        if monitor_type == "PING":
+        if monitor_type == 'PING':
             if max_retries < 2 or max_retries > 10:
                 raise adx_exception.UnsupportedOption(value=max_retries,
-                                                      name="max_retries")
+                                                      name='max_retries')
         else:
             if max_retries < 1 or max_retries > 5:
                 raise adx_exception.UnsupportedOption(value=max_retries,
-                                                      name="max_retries")
+                                                      name='max_retries')
 
     @log
     def _create_update_port_policy(self, healthmonitor):
@@ -584,11 +596,11 @@ class BrocadeAdxDeviceDriverImpl():
 
         port_policy = dict()
 
-        if monitor_type == "HTTP":
+        if monitor_type == 'HTTP':
             port_policy['l4Check'] = False
-        elif monitor_type == "HTTPS":
+        elif monitor_type == 'HTTPS':
             port_policy['l4Check'] = False
-        elif monitor_type == "TCP":
+        elif monitor_type == 'TCP':
             port_policy['l4Check'] = True
 
         expected_codes = '200'
@@ -610,7 +622,7 @@ class BrocadeAdxDeviceDriverImpl():
                     start_status_codes.append(int(code))
                     end_status_codes.append(int(code))
 
-        if monitor_type == "HTTP":
+        if monitor_type == 'HTTP':
             http_port_policy = (self.slb_factory
                                 .create('HttpPortPolicy'))
             url_health_check = (self.slb_factory
@@ -627,11 +639,11 @@ class BrocadeAdxDeviceDriverImpl():
             url_health_check.statusCodeRangeEnd = end_codes
             http_port_policy.urlStatusCodeInfo = url_health_check
             http_port_policy.healthCheckType = 'SIMPLE'
-            http_port_policy.contentMatch = "WORKING"
+            http_port_policy.contentMatch = 'WORKING'
 
             port_policy['httpPolInfo'] = http_port_policy
 
-        elif monitor_type == "TCP":
+        elif monitor_type == 'TCP':
             http_port_policy = (self.slb_factory
                                 .create('HttpPortPolicy'))
             url_health_check = (self.slb_factory
@@ -641,7 +653,7 @@ class BrocadeAdxDeviceDriverImpl():
 
             port_policy['httpPolInfo'] = http_port_policy
 
-        elif monitor_type == "HTTPS":
+        elif monitor_type == 'HTTPS':
             ssl_port_policy = (self.slb_factory
                                .create('HttpPortPolicy'))
             url_health_check = (self.slb_factory
@@ -657,7 +669,7 @@ class BrocadeAdxDeviceDriverImpl():
 
             ssl_port_policy.urlStatusCodeInfo = url_health_check
             ssl_port_policy.healthCheckType = 'SIMPLE'
-            ssl_port_policy.contentMatch = "WORKING"
+            ssl_port_policy.contentMatch = 'WORKING'
 
             port_policy['sslPolInfo'] = ssl_port_policy
 
@@ -667,9 +679,9 @@ class BrocadeAdxDeviceDriverImpl():
     def set_l2l3l4_health_check(self, new_hm, old_hm=None):
         try:
             delay = new_hm['delay']
-            self._validate_delay("PING", delay)
+            self._validate_delay('PING', delay)
             max_retries = new_hm['max_retries']
-            self._validate_max_retries("PING", max_retries)
+            self._validate_max_retries('PING', max_retries)
 
             l2l3l4_health_check = (self.slb_factory
                                    .create('L2L3L4HealthCheck'))
@@ -686,13 +698,13 @@ class BrocadeAdxDeviceDriverImpl():
 
         # Create Port Policy
         # if the Monitor Type is TCP / HTTP / HTTPS
-        if monitor_type in ["HTTP", "HTTPS", "TCP"]:
+        if monitor_type in ['HTTP', 'HTTPS', 'TCP']:
             if not self._does_port_policy_exist(healthmonitor):
                 self._create_update_port_policy(healthmonitor)
             else:
                 LOG.debug('Port Policy %s already exists on the device',
                           name)
-        elif monitor_type == "PING":
+        elif monitor_type == 'PING':
             m = 'Health Monitor of type PING not supported'
             LOG.error(m)
             raise adx_exception.UnsupportedFeature(msg=m)
@@ -702,7 +714,7 @@ class BrocadeAdxDeviceDriverImpl():
         name = healthmonitor['id']
         monitor_type = healthmonitor['type']
 
-        if monitor_type in ["HTTP", "HTTPS", "TCP"]:
+        if monitor_type in ['HTTP', 'HTTPS', 'TCP']:
             if not self._does_port_policy_exist(healthmonitor):
                 LOG.debug('Health Monitor %s does not '
                           'exist on the device', name)
@@ -714,7 +726,7 @@ class BrocadeAdxDeviceDriverImpl():
                      .deletePortPolicy(name))
                 except suds.WebFault as e:
                     raise adx_exception.ConfigError(msg=e.message)
-        elif monitor_type == "PING":
+        elif monitor_type == 'PING':
             m = 'Delete of PING Monitor not supported'
             LOG.error(m)
             raise adx_exception.UnsupportedFeature(msg=m)
@@ -725,11 +737,11 @@ class BrocadeAdxDeviceDriverImpl():
 
         # Create Port Policy
         # if the Monitor Type is TCP / HTTP / HTTPS
-        if monitor_type in ["HTTP",
-                            "HTTPS",
-                            "TCP"]:
+        if monitor_type in ['HTTP',
+                            'HTTPS',
+                            'TCP']:
             self._create_update_port_policy(new_hm, False)
-        elif monitor_type == "PING":
+        elif monitor_type == 'PING':
             m = 'Health Monitor of type PING not supported'
             LOG.error(m)
             raise adx_exception.UnsupportedFeature(msg=m)
@@ -756,7 +768,8 @@ class BrocadeAdxDeviceDriverImpl():
                 rsconfig.leastConnectionWeight = weight
                 rsconfig.hcTrackingMode = 'NONE'
 
-                rsconfigsequence.RealServerConfigurationSequence.append(rsconfig)
+                rsconfigsequence.RealServerConfigurationSequence.append(
+                    rsconfig)
                 (self.slb_service
                  .createRealServerWithConfiguration(rsconfigsequence))
             except suds.WebFault as e:
@@ -796,7 +809,8 @@ class BrocadeAdxDeviceDriverImpl():
                 if port_policy.get('sslPolInfo'):
                     rs_port_config.sslPolInfo = port_policy.get('sslPolInfo')
                 if port_policy.get('l4Check'):
-                    rs_port_config.enableL4CheckOnly = port_policy.get('l4Check')
+                    rs_port_config.enableL4CheckOnly = port_policy.get(
+                        'l4Check')
                 if port_policy.get('httpPolInfo'):
                     rs_port_config.httpPolInfo = port_policy.get('httpPolInfo')
 
@@ -824,7 +838,8 @@ class BrocadeAdxDeviceDriverImpl():
             rsserverport = self._adx_server_port(member['address'],
                                                  member['protocol_port'])
 
-            rsportbyvirtualcount = self._get_server_port_by_virtual_count(rsserverport)
+            rsportbyvirtualcount = self._get_server_port_by_virtual_count(
+                rsserverport)
             if rsportbyvirtualcount == 0:
                 pool_del = True
                 rsportbyserver = self._is_server_port(rsserverport)
@@ -939,10 +954,10 @@ class BrocadeAdxDeviceDriverImpl():
             except suds.WebFault:
                 pass
 
-        return {"bytes_in": bytes_in,
-                "bytes_out": bytes_out,
-                "active_connections": active_connections,
-                "total_connections": total_connections}
+        return {'bytes_in': bytes_in,
+                'bytes_out': bytes_out,
+                'active_connections': active_connections,
+                'total_connections': total_connections}
 
     @log
     def _create_port_profile(self, port):
@@ -977,8 +992,8 @@ class BrocadeAdxDeviceDriverImpl():
             (network, mask) = cidr.split('/')
 
             ifconfig = self.net_factory.create('InterfaceConfig')
-            ifconfig.id.interfaceType = "ETHERNET"
-            ifconfig.id.portString = "1"
+            ifconfig.id.interfaceType = 'ETHERNET'
+            ifconfig.id.portString = '1'
             ifconfig.isRouteOnly = True
 
             interface_config_seq = self.net_factory.create(
@@ -993,8 +1008,8 @@ class BrocadeAdxDeviceDriverImpl():
                           .create('ArrayOfInterfaceIPAddressSequence'))
             ipaddr = self.net_factory.create('InterfaceIPAddress')
 
-            ifid.portString = "1"
-            ifid.interfaceType = "ETHERNET"
+            ifid.portString = '1'
+            ifid.interfaceType = 'ETHERNET'
             ipaddr.ip = ip_address
             ipaddr.subnetMaskLength = mask
 

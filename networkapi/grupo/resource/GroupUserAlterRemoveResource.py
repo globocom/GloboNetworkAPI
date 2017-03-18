@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.grupo.models import UGrupo, GrupoError, UGrupoNameDuplicatedError, UGrupoNotFoundError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_GROUP_USER
 from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_text, is_valid_yes_no_choice
-from networkapi.distributedlock import distributedlock, LOCK_GROUP_USER
+from networkapi.grupo.models import GrupoError
+from networkapi.grupo.models import UGrupo
+from networkapi.grupo.models import UGrupoNameDuplicatedError
+from networkapi.grupo.models import UGrupoNotFoundError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.util import is_valid_text
+from networkapi.util import is_valid_yes_no_choice
 
 
 class GroupUserAlterRemoveResource(RestResource):
@@ -39,7 +49,7 @@ class GroupUserAlterRemoveResource(RestResource):
         """
         try:
 
-            self.log.info("Edit Group User")
+            self.log.info('Edit Group User')
 
             # User permission
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.WRITE_OPERATION):
@@ -146,7 +156,7 @@ class GroupUserAlterRemoveResource(RestResource):
         """
         try:
 
-            self.log.info("Remove Group User")
+            self.log.info('Remove Group User')
 
             # User permission
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.WRITE_OPERATION):

@@ -9,7 +9,7 @@ from networkapi.usuario.models import UsuarioGrupo
 
 class GruposInline(admin.TabularInline):
     model = UsuarioGrupo
-    #filter_horizontal = ('ugrupo',)
+    # filter_horizontal = ('ugrupo',)
 
 
 class UsuarioAdmin(admin.ModelAdmin):

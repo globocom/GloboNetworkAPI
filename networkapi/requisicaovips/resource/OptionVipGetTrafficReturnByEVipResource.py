@@ -89,5 +89,5 @@ class OptionVipGetTrafficReturnByEVipResource(RestResource):
         except EnvironmentVipNotFoundError:
             return self.response_error(283)
 
-        except OptionVipError, EnvironmentVipError:
+        except (OptionVipError, EnvironmentVipError):
             return self.response_error(1)

@@ -646,7 +646,7 @@ class RackAplicarConfigResource(RestResource):
 
             # Ambientes
 
-            #BE - SPINE - LEAF
+            # BE - SPINE - LEAF
             try:
                 environment_list = ambiente_spn_lf(
                     user, rack, environment_list)
@@ -654,7 +654,7 @@ class RackAplicarConfigResource(RestResource):
                 raise RackAplError(
                     None, rack.nome, 'Erro ao criar os ambientes e alocar as vlans do Spine-leaf.')
 
-            #BE - PRODUCAO
+            # BE - PRODUCAO
             try:
                 environment_list = ambiente_prod(user, rack, environment_list)
             except ObjectDoesNotExist, e:
@@ -663,7 +663,7 @@ class RackAplicarConfigResource(RestResource):
                 raise RackAplError(
                     None, rack.nome, 'Erro ao criar os ambientes de produção.')
 
-            #BE - Hosts - CLOUD
+            # BE - Hosts - CLOUD
             try:
                 environment_list = ambiente_cloud(user, rack, environment_list)
             except:

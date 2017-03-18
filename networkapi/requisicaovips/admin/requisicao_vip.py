@@ -12,7 +12,7 @@ class RequisicaoVipsAdmin(admin.ModelAdmin):
         return u'{} (id {})'.format(obj.ip.ip_formated, obj.ip.id)
 
     get_ip.short_description = 'IP'
-    #get_ip.admin_order_field = 'book__author'
+    # get_ip.admin_order_field = 'book__author'
 
     def get_healthcheck(self, obj):
         return obj.healthcheck_expect.expect_string

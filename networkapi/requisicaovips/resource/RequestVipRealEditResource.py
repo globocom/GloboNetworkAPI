@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -142,7 +142,8 @@ class RequestVipRealEditResource(RestResource):
             # Clone vip
             vip_old = clone(vip)
 
-            server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+            server_pools = ServerPool.objects.filter(
+                vipporttopool__requisicao_vip=vip)
             server_pools_old = []
             server_pools_members_old = []
             for sp in server_pools:

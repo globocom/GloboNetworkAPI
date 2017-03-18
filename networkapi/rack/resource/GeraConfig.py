@@ -171,8 +171,9 @@ def dic_lf_spn(user, rack):
     VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS + rack + BASE_RACK)
     VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS + rack + 2 * BASE_RACK)
     VLANBORDACACHOSLEAF[rack].append(VLANBORDACACHOS + rack + 3 * BASE_RACK)
-
-    ########### BD ############
+    #################
+    # BD            #
+    #################
     vlans = dict()
     vlans['VLANBELEAF'] = VLANBELEAF
     vlans['VLANFELEAF'] = VLANFELEAF
@@ -548,7 +549,7 @@ def dic_fe_prod(rack):
         # CIDR sala 01 => 172.20.0.0/14
         # Sumário do rack => 172.20.0.0/21
         CIDRFEipv4[0] = IPNetwork(get_variable('cidr_fe_v4'))
-        #CIDRFE[1] = IPNetwork('172.20.1.0/14')
+        # CIDRFE[1] = IPNetwork('172.20.1.0/14')
         CIDRFEipv6[0] = IPNetwork(get_variable('cidr_fe_v6'))
     except ObjectDoesNotExist, exception:
         log.error(exception)
@@ -884,7 +885,7 @@ def autoprovision_splf(rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINS
         # CIDR sala 01 => 172.20.0.0/14
         # Sumário do rack => 172.20.0.0/21
         CIDRFEipv4[0] = IPNetwork(get_variable('cidr_fe_v4'))
-        #CIDRFE[1] = IPNetwork('172.20.1.0/14')
+        # CIDRFE[1] = IPNetwork('172.20.1.0/14')
         CIDRFEipv6[0] = IPNetwork(get_variable('cidr_fe_v6'))
     except ObjectDoesNotExist, exception:
         log.error(exception)

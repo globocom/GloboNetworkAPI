@@ -139,7 +139,7 @@ class IPv4SaveResource(RestResource):
                 for oct in ip4:
                     if not is_valid_int_param(oct):
                         raise InvalidValueError(None, 'ip4', ip_error)
-                        #raise IndexError
+                        # raise IndexError
 
                 # Ip passado de forma invalida
                 if len(ip4) is not 4:
@@ -193,7 +193,7 @@ class IPv4SaveResource(RestResource):
                                 if equip.tipo_equipamento not in tp_equip_list_one or equip.tipo_equipamento not in tp_equip_list_two:
                                     flag_vlan_error = True
 
-                            ## Filter case 3 - end ##
+                            # Filter case 3 - end #
 
                             if flag_vlan_error:
                                 ambiente_aux = vlan.ambiente
