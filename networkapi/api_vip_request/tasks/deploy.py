@@ -31,11 +31,19 @@ def deploy(self, vip_id, user_id):
     try:
         vip = facade.get_vip_request_by_id(vip_id)
         facade.create_real_vip_request([vip_serializer.data], user)
+
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+
     else:
-        return 'Vip Request {} was deployed with success.'.format(vip)
+        msg = {
+            'object_type': 'Vip Request',
+            'object_id': vip_id,
+            'message': 'Vip Request {} was deployed with success.'.format(vip)
+        }
+        return msg
+
     finally:
         destroy_lock(locks_list)
 
@@ -55,11 +63,20 @@ def undeploy(self, vip_id, user_id):
     try:
         vip = facade.get_vip_request_by_id(vip_id)
         facade.delete_real_vip_request([vip_serializer.data], user)
+
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+
     else:
-        return 'Vip Request {} was undeployed with success.'.format(vip)
+        msg = {
+            'object_type': 'Vip Request',
+            'object_id': vip_id,
+            'message': 'Vip Request {} was undeployed with success.'.format(
+                vip)
+        }
+        return msg
+
     finally:
         destroy_lock(locks_list)
 
@@ -77,10 +94,19 @@ def redeploy(self, vip_dict, user_id):
     try:
         vip = facade.get_vip_request_by_id(vip_id)
         facade.update_real_vip_request([vip_dict], user)
+
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+
     else:
-        return 'Vip Request {} was redeployed with success.'.format(vip)
+        msg = {
+            'object_type': 'Vip Request',
+            'object_id': vip_id,
+            'message': 'Vip Request {} was redeployed with success.'.format(
+                vip)
+        }
+        return msg
+
     finally:
         destroy_lock(locks_list)

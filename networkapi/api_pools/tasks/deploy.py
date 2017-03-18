@@ -28,13 +28,21 @@ def deploy(self, pool_id, user_id):
     try:
         facade_pool_deploy.create_real_pool(
             [pool_serializer.data], user)
+
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+
+    else:
+        msg = {
+            'object_type': 'Pool',
+            'object_id': pool_id,
+            'message': 'Pool {} was deployed with success.'.format(pool)
+        }
+        return msg
+
     finally:
         destroy_lock(locks_list)
-
-    return 'Pool {} was deployed with success.'.format(pool)
 
 
 @celery_app.task(bind=True)
@@ -50,11 +58,19 @@ def redeploy(self, pool_dict, user_id):
     try:
         pool = facade.get_pool_by_id(pool_id)
         facade_pool_deploy.update_real_pool([pool_dict], user)
+
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+
     else:
-        return 'Pool {} was redeployed with success.'.format(pool)
+        msg = {
+            'object_type': 'Pool',
+            'object_id': pool_id,
+            'message': 'Pool {} was redeployed with success.'.format(pool)
+        }
+        return msg
+
     finally:
         destroy_lock(locks_list)
 
@@ -72,10 +88,18 @@ def undeploy(self, pool_id, user_id):
 
     try:
         facade_pool_deploy.delete_real_pool([pool_serializer.data], user)
+
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
+
+    else:
+        msg = {
+            'object_type': 'Pool',
+            'object_id': pool_id,
+            'message': 'Pool {} was undeployed with success.'.format(pool)
+        }
+        return msg
+
     finally:
         destroy_lock(locks_list)
-
-    return 'Pool {} was redeployed with success.'.format(pool)
