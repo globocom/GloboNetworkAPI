@@ -30,7 +30,7 @@ def deploy(self, vip_id, user_id):
 
     try:
         vip = facade.get_vip_request_by_id(vip_id)
-        facade.create_real_vip_request(vip_serializer.data, user)
+        facade.create_real_vip_request([vip_serializer.data], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
@@ -54,7 +54,7 @@ def undeploy(self, vip_id, user_id):
 
     try:
         vip = facade.get_vip_request_by_id(vip_id)
-        facade.delete_real_vip_request(vip_serializer.data, user)
+        facade.delete_real_vip_request([vip_serializer.data], user)
     except Exception, exception:
         logger.exception(exception)
         raise api_exceptions.NetworkAPIException(exception)
