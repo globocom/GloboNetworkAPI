@@ -58,7 +58,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
         """Tests if NAPI can update IPv4 disassociating it of equipment and
-        remove this IPv4 given it is not used in anymore equipment.
+        keep this IPv4.
         """
 
         name_file = 'api_ip/tests/sanity/json/put/ipv4_put_2_net_5_eqpt_none.json'
@@ -79,10 +79,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(u'There is no IP with pk = 2.',
-                            response.data['detail'])
+        self.compare_status(200, response.status_code)
 
     def test_try_update_ip_disassociating_it_of_some_equipments(self):
         """Tests if NAPI can update IPv4 disassociating it of equipment

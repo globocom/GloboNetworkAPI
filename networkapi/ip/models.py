@@ -2027,7 +2027,7 @@ class Ip(BaseModel):
             # Removes old associates
             for ip_eqpt in self.ipequipamento_set\
                     .exclude(equipamento__in=eqpts):
-                ip_eqpt.delete_v3()
+                ip_eqpt.delete_v3(bypass_ip=True)
 
         except IpErrorV3, e:
             self.log.error(e.message)
@@ -4390,7 +4390,7 @@ class Ipv6(BaseModel):
             # Removes old associates
             for ip_eqpt in self.ipv6equipament_set\
                     .exclude(equipamento__in=eqpts):
-                ip_eqpt.delete_v3()
+                ip_eqpt.delete_v3(bypass_ip=True)
 
         except IpErrorV3, e:
             self.log.error(e.message)

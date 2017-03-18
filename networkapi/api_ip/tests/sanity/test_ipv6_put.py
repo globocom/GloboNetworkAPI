@@ -57,7 +57,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
         """Tests if NAPI can update IPv6 disassociating it of equipment and
-        remove this IPv6 given it is not used in anymore equipment.
+        keep this IPv6.
         """
 
         name_file = 'api_ip/tests/sanity/json/put/ipv6_put_2_net_5_eqpt_none.json'
@@ -78,11 +78,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            u'Dont there is a IP by pk = 2.',
-            response.data['detail'])
+        self.compare_status(200, response.status_code)
 
     def test_try_update_ip_disassociating_it_of_equipments_and_associating_to_others_after(self):
         """Tests if NAPI can update IPv6 disassociating it of equipment

@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
 from settings import ALLOWED_HOSTS
@@ -64,7 +66,7 @@ from settings import LOG_LEVEL
 from settings import LOG_SHOW_SQL
 from settings import LOG_SHOW_TRACEBACK
 from settings import LOG_USE_STDOUT
-from settings import logging
+from settings import LOGGING
 from settings import MANAGERS
 from settings import MAX_OCT4
 from settings import MAX_VLAN_NUMBER_01
