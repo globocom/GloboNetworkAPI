@@ -29,11 +29,13 @@ class TaskView(CustomAPIView):
             payload = dict(task_id=task.id, status=task.state,
                            result=task.result)
         elif task.state == 'PROGRESS':
-            payload = dict(task_id=task.id, status=task.state)
+            payload = dict(task_id=task.id, status=task.state,
+                           result=task.result)
         elif task.state == 'FAILURE':
             payload = dict(task_id=task.id, status=task.state,
-                           result=str(task.result))
+                           result=task.result)
         else:
-            payload = dict(task_id=task.id, status=task.state)
+            payload = dict(task_id=task.id, status=task.state,
+                           result=task.result)
 
         return Response(payload, status=status.HTTP_200_OK)
