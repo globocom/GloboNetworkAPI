@@ -27,7 +27,7 @@ def create_networkv6(self, net_dict, user_id):
         net = facade.create_networkipv6(net_dict, user)
 
     except Exception, exception:
-        msg['message'] = 'NetworkV6 {} was not allocated.'.format(net)
+        msg['message'] = 'NetworkV6 was not allocated.'
         msg['reason'] = str(exception)
         self.update_state(
             state='FAILED',

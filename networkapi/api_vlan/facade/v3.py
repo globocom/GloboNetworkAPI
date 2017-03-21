@@ -86,14 +86,13 @@ def create_vlan(vlan, user):
         return vlan_obj
 
 
-def delete_vlan(vlans):
+def delete_vlan(vlan):
     """Delete vlans by ids."""
 
-    locks_list = create_lock(vlans, LOCK_VLAN)
+    locks_list = create_lock([vlan], LOCK_VLAN)
     try:
-        for vlan in vlans:
-            vlan_obj = get_vlan_by_id(vlan)
-            vlan_obj.delete_v3()
+        vlan_obj = get_vlan_by_id(vlan)
+        vlan_obj.delete_v3()
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(str(e))
     except (VlanError, VlanErrorV3, ValidationAPIException), e:
