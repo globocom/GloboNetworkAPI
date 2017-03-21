@@ -95,7 +95,7 @@ class Datacenter(BaseModel):
         db_table = u'datacenter'
         managed = True
 
-    def get_dc(self, idt=None, dcname=None):
+    def get_dc(self, idt=None, dcname=None, address=None):
         """"Find Datacenter by id or name.
         @return: Datacenter
         @raise : .
@@ -105,7 +105,8 @@ class Datacenter(BaseModel):
                 return Datacenter.objects.get(id=idt)
             if dcname:
                 return Datacenter.objects.get(dcname=dcname)
-
+            if address:
+                return Datacenter.objects.filter(address=address)
             return Datacenter.objects.all()
         except ObjectDoesNotExist, e:
             raise Exception(u'Datacenter doesnt exist. %s'  % e)

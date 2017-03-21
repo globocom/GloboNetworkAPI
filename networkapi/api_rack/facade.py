@@ -42,18 +42,18 @@ def save_dcrooms(dcrooms_dict):
 
     dcrooms = DatacenterRooms()
 
-    dcrooms.dc = Datacenter().get_dc(idt=dcrooms_dict.get('dc')) if type(dcrooms_dict.get('dc'))==int else  Datacenter().get_dc(dcname=dcrooms_dict.get('dc'))
+    dcrooms.dc = Datacenter().get_dc(idt=dcrooms_dict.get('dc'))
     dcrooms.name = dcrooms_dict.get('name')
     dcrooms.racks = dcrooms_dict.get('racks')
     dcrooms.spines = dcrooms_dict.get('spines')
     dcrooms.leafs = dcrooms_dict.get('leafs')
-    dcrooms.config = dcrooms_dict.get('config') if dcrooms_dict.get('config') else None
+    dcrooms.config = dcrooms_dict.get('config') if dcrooms_dict.get('config') else []
 
     dcrooms.save_dcrooms()
     return dcrooms
 
 
-def edit_dcrooms(dcroom_id, dcrooms_dict):
+def edit_dcrooms(dcrooms_dict):
 
     dcrooms = DatacenterRooms().get_dcrooms(idt=dcroom_id)
 
@@ -67,23 +67,7 @@ def edit_dcrooms(dcroom_id, dcrooms_dict):
     if dcrooms_dict.get('leafs'):
         dcrooms.leafs = dcrooms_dict.get('leafs')
     if dcrooms_dict.get('config'):
-        dcrooms.config = dcrooms_dict.get('config')
-
-    dcrooms.save_dcrooms()
-    return dcrooms
-
-
-def save_dcrooms(dcrooms_dict):
-
-    dcrooms = DatacenterRooms()
-
-
-    dcrooms.dc = Datacenter().get_dc(idt=dcrooms_dict.get('dc')) if type(dcrooms_dict.get('dc'))==int else  Datacenter().get_dc(dcname=dcrooms_dict.get('dc'))
-    dcrooms.name = dcrooms_dict.get('name')
-    dcrooms.racks = dcrooms_dict.get('racks')
-    dcrooms.spines = dcrooms_dict.get('spines')
-    dcrooms.leafs = dcrooms_dict.get('leafs')
-    dcrooms.config = dcrooms_dict.get('config') if dcrooms_dict.get('config') else None
+        dcrooms.config = dcrooms.config.append(dcrooms_dict.get('config'))
 
     dcrooms.save_dcrooms()
     return dcrooms

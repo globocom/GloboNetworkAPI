@@ -27,7 +27,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from networkapi.api_rack.permissions import Read, Write
 from networkapi.api_rack import facade, exceptions
-from networkapi.api_rack.serializers import RackSerializer
+from networkapi.api_rack.serializers import RackSerializer, DCSerializer, DCRoomSerializer
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.system.facade import save_variable as save_variable
@@ -164,8 +164,10 @@ class DataCenterView(APIView):
                 raise exceptions.InvalidInputException()
 
             dc = facade.save_dc(request.DATA.get('dc'))
+            dc_serializer = DCSerializer(dc)
 
             data = dict()
+            data['dc'] = dc_serializer.data
 
             return Response(data, status=status.HTTP_201_CREATED)
 
@@ -189,8 +191,10 @@ class DataCenterRoomsView(APIView):
                 raise exceptions.InvalidInputException()
 
             dcrooms = facade.save_dcrooms(request.DATA.get('dcrooms'))
+            dcroom_serializer = DCRoomSerializer(dcrooms)
 
             data = dict()
+            data['dcroom'] = dcroom_serializer.data
 
             return Response(data, status=status.HTTP_201_CREATED)
 

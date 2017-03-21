@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from rest_framework import serializers
-from networkapi.rack.models import Rack
+from networkapi.rack.models import Rack, Datacenter
 
 
 
@@ -42,3 +42,24 @@ class RackSerializer(serializers.ModelSerializer):
                   'create_vlan_amb'
                   )
 
+class DCSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Datacenter
+        fields = ('id',
+                  'dcname',
+                  'address'
+                  )
+
+class DCRoomSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Datacenter
+        fields = ('id',
+                  'name',
+                  'dc',
+                  'racks',
+                  'spines',
+                  'leafs',
+                  'config'
+                  )
