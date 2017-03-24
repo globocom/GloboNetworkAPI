@@ -136,7 +136,7 @@ class VlanAsyncView(CustomAPIView):
 
         for vlan in data['vlans']:
             task_obj = tasks.create_vlan.apply_async(args=[vlan, user.id],
-                                                     queue='napi.vip')
+                                                     queue='napi.network')
 
             task = {
                 'task_id': task_obj.id
@@ -162,7 +162,7 @@ class VlanAsyncView(CustomAPIView):
 
         for vlan in data['vlans']:
             task_obj = tasks.update_vlan.apply_async(args=[vlan, user.id],
-                                                     queue='napi.vip')
+                                                     queue='napi.network')
 
             task = {
                 'task_id': task_obj.id
@@ -185,7 +185,7 @@ class VlanAsyncView(CustomAPIView):
 
         for obj_id in obj_ids:
             task_obj = tasks.delete_vlan.apply_async(args=[obj_id],
-                                                     queue='napi.vip')
+                                                     queue='napi.network')
 
             task = {
                 'task_id': task_obj.id
