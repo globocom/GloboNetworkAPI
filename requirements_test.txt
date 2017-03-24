@@ -30,3 +30,4 @@ sure==1.2.7
 pyflakes==1.2.3
 pycodestyle==2.0.0
 clonedigger==1.1.0
+shortuuid==0.5.0
