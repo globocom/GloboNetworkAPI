@@ -1,8 +1,8 @@
 {
   "ips": [
     {
-      "networkipv4": 6,
-      "description": "Auto IP Alloc"
+      "description": "Auto IP Alloc",
+      "networkipv4": 6
     }
   ]
 }

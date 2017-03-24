@@ -33,7 +33,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
     def test_try_get_existent_ipv4_by_id(self):
         """Tests if NAPI can return an existing IPv4 by id."""
 
-        name_file = 'api_ip/tests/sanity/json/get/ipv4_1_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/get/ipv4_1_net_5.json'
 
         # Does get request
         response = self.client.get(
@@ -65,7 +65,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
     def test_try_get_two_existent_ipv4_by_id(self):
         """Tests if NAPI can return two existent IPv4's by ids."""
 
-        name_file = 'api_ip/tests/sanity/json/get/ipv4_1_2_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/get/ipv4_1_2_net_5.json'
 
         # Does get request
         response = self.client.get(

@@ -34,7 +34,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_associating_to_equipment(self):
         """Tests if NAPI can update IPv4 associating it to equipment."""
 
-        name_file = 'api_ip/tests/sanity/json/put/ipv4_put_1_net_5_eqpt_1.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_1_net_5_eqpt_1.json'
 
         response = self.client.put(
             '/api/v3/ipv4/1/',
@@ -61,7 +61,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         keep this IPv4.
         """
 
-        name_file = 'api_ip/tests/sanity/json/put/ipv4_put_2_net_5_eqpt_none.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_2_net_5_eqpt_none.json'
 
         response = self.client.put(
             '/api/v3/ipv4/2/',
@@ -86,7 +86,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         and at same time associating it to other equipment.
         """
 
-        name_file = 'api_ip/tests/sanity/json/put/ipv4_put_2_net_5_eqpt_2.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_2_net_5_eqpt_2.json'
 
         response = self.client.put(
             '/api/v3/ipv4/2/',
@@ -111,7 +111,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_changing_network(self):
         """Tests if NAPI deny or ignore update of IPv4 Address changing its network."""
 
-        name_file = 'api_ip/tests/sanity/json/put/ipv4_put_1_net_6.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_1_net_6.json'
 
         response = self.client.put(
             '/api/v3/ipv4/1/',
@@ -136,7 +136,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_changing_octets(self):
         """Tests if NAPI deny or ignore update of IPv4 Address changing its octets."""
 
-        name_file = 'api_ip/tests/sanity/json/put/ipv4_put_1_10_0_0_10_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_1_10_0_0_10_net_5.json'
 
         response = self.client.put(
             '/api/v3/ipv4/1/',

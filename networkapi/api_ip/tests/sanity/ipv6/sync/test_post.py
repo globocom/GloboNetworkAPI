@@ -36,7 +36,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
         in a Network with available addresses.
         """
 
-        name_file = 'api_ip/tests/sanity/json/post/ipv6_auto_net_free.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/post/ipv6_auto_net_free.json'
 
         # Does get request
         response = self.client.post(
@@ -64,7 +64,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
         (e.g.: fc00:0000:0000:0004:0000:0000:0000:gggg).
         """
 
-        name_file = 'api_ip/tests/sanity/json/post/ipv6_invalid_ip_manual_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/post/ipv6_invalid_ip_manual_net_5.json'
         response = self.client.post(
             '/api/v3/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -81,7 +81,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
         an equipment in a Network with available addresses.
         """
 
-        name_file = 'api_ip/tests/sanity/json/post/ipv6_new_ip_manual_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/post/ipv6_new_ip_manual_net_5.json'
         response = self.client.post(
             '/api/v3/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -104,7 +104,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
     def test_try_create_ip_in_full_network(self):
         """Tests if NAPI deny an IPv6 manually creation in a full network."""
 
-        name_file = 'api_ip/tests/sanity/json/post/ipv6_new_ip_manual_net_8_full.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/post/ipv6_new_ip_manual_net_8_full.json'
         response = self.client.post(
             '/api/v3/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -119,7 +119,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
     def test_try_create_out_of_range_ip_in_network(self):
         """Tests if NAPI deny out of range network IPv6 manually creation."""
 
-        name_file = 'api_ip/tests/sanity/json/post/out_of_range_ipv6_fc00_0000_0000_0005_0000_0000_0000_0005_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/post/out_of_range_ipv6_fc00_0000_0000_0005_0000_0000_0000_0005_net_5.json'
         response = self.client.post(
             '/api/v3/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),

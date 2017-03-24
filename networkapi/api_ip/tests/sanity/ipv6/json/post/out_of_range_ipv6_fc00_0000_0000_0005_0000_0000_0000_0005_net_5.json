@@ -1,7 +1,7 @@
 {
   "ips": [
     {
-      "block1": "fc00" ,
+      "block1": "fc00",
       "block2": "0000",
       "block3": "0000",
       "block4": "0005",
@@ -9,8 +9,8 @@
       "block6": "0000",
       "block7": "0000",
       "block8": "0005",
-      "networkipv6": 5,
-      "description": "Wrong IP"
+      "description": "Wrong IP",
+      "networkipv6": 5
     }
   ]
 }
