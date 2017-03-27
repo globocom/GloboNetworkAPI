@@ -85,3 +85,33 @@ class MockPluginNetwork(object):
             log.info('Mock Copying script file to config')
         else:
             raise Exception('Error')
+
+
+class MockPluginVip(object):
+
+    _status = True
+
+    @classmethod
+    def status(cls, status=True):
+        cls._status = status
+
+    @classmethod
+    def create_vip(cls, vips):
+        if cls._status:
+            log.info('Mock Create Vip')
+        else:
+            raise Exception('Error')
+
+    @classmethod
+    def update_vip(cls, vips):
+        if cls._status:
+            log.info('Mock Update Vip')
+        else:
+            raise Exception('Error')
+
+    @classmethod
+    def delete_vip(cls, vips):
+        if cls._status:
+            log.info('Mock Delete Vip')
+        else:
+            raise Exception('Error')
