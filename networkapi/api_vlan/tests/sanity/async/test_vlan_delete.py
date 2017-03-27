@@ -41,4 +41,4 @@ class VlanAsyncDeleteTestCase(NetworkApiTestCase):
                                            queue='napi.vip')
 
         id_task = response.id
-        self.compare_values(len(id_task), 36)
+        self.compare_values(36, len(id_task))

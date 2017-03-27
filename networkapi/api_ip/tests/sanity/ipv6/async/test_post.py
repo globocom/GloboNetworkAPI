@@ -47,4 +47,4 @@ class IPv6AsyncPostSuccessTestCase(NetworkApiTestCase):
                                            queue='napi.network')
 
         id_task = response.id
-        self.compare_values(len(id_task), 36)
+        self.compare_values(36, len(id_task))
