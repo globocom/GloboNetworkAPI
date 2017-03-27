@@ -123,7 +123,7 @@ class NetworkIPv4AsyncDeployPostSuccessTestCase(NetworkApiTestCase):
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_task_id_create_in_post_deploy_netipv4_success(self, test_patch):
         """Test success of id task generate for netipv4 post deploy and
-           success for deploy netipv4.
+           success for post deploy netipv4.
         """
 
         mock = MockPluginNetwork()
@@ -190,16 +190,13 @@ class NetworkIPv4AsyncDeployPostErrorTestCase(NetworkApiTestCase):
         self.authorization = self.get_http_authorization('test')
         self.user = Usuario(id=1, nome='test')
 
-        from django.conf import settings
-        settings.CELERY_ALWAYS_EAGER = True
-
     def tearDown(self):
         pass
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_task_id_create_in_post_deploy_netipv4_error(self, test_patch):
         """Test success of id task generate for netipv4 post deploy and
-           error for deploy netipv4.
+           error for post deploy netipv4.
         """
 
         mock = MockPluginNetwork()

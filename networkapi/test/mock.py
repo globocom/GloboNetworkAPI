@@ -45,35 +45,35 @@ class MockPluginNetwork(object):
 
     @classmethod
     def remove_svi(cls, svi_number):
-        if cls.status:
+        if cls._status:
             log.info('Mock Remove Network')
         else:
             raise Exception('Error')
 
     @classmethod
     def create_svi(cls, svi_number, svi_description='no description'):
-        if cls.status:
+        if cls._status:
             log.info('Mock Create Network')
         else:
             raise Exception('Error')
 
     @classmethod
     def connect(cls):
-        if cls.status:
+        if cls._status:
             log.info('Mock Connecting')
         else:
             raise Exception('Error')
 
     @classmethod
     def close(cls):
-        if cls.status:
+        if cls._status:
             log.info('Mock Closing')
         else:
             raise Exception('Error')
 
     @classmethod
     def ensure_privilege_level(cls):
-        if cls.status:
+        if cls._status:
             log.info('Mock Ensuring Privilege Level')
         else:
             raise Exception('Error')
@@ -81,7 +81,7 @@ class MockPluginNetwork(object):
     @classmethod
     def copyScriptFileToConfig(cls, filename, use_vrf=None, destination='running-config'):
 
-        if cls.status:
+        if cls._status:
             log.info('Mock Copying script file to config')
         else:
             raise Exception('Error')
