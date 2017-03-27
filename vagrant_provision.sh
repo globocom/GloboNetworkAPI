@@ -7,8 +7,14 @@ apt-get install libmysqlclient-dev -y
 apt-get install python-dev -y
 apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 
-# Redis
-apt-get install redis-server -y
+# RabbitMQ
+apt-get install rabbitmq-server -y
+rabbitmq-plugins enable rabbitmq_management
+rabbitmq-server restart
+rabbitmqctl add_user test test
+rabbitmqctl set_user_tags test administrator
+rabbitmqctl set_permissions -p / test ".*" ".*" ".*"
+rabbitmqctl change_password test test
 
 # activemq
 apt-get install activemq -y
