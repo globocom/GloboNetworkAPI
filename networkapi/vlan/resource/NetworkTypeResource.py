@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,31 +13,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
-from networkapi.rest import RestResource
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
-from networkapi.grupo.models import GrupoError
-from networkapi.vlan.models import TipoRede, VlanError, NetworkTypeNotFoundError, NetTypeUsedByNetworkError, NetworkTypeNameDuplicatedError
-from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, is_valid_string_maxsize
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_TYPE_NETWORK
 from networkapi.exception import InvalidValueError
-from networkapi.distributedlock import distributedlock, LOCK_TYPE_NETWORK
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.vlan.models import NetTypeUsedByNetworkError
+from networkapi.vlan.models import NetworkTypeNameDuplicatedError
+from networkapi.vlan.models import NetworkTypeNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import VlanError
 
 
 class NetworkTypeResource(RestResource):
 
-    '''Class to treat GET, POST, PUT and DELETE requests to table tipo_rede.'''
+    """Class to treat GET, POST, PUT and DELETE requests to table tipo_rede."""
 
     log = logging.getLogger('NetworkTypeResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """Treat GET requests to get all network types.
 
-        URL: /net_type/ 
+        URL: /net_type/
         """
 
         try:
@@ -67,7 +75,7 @@ class NetworkTypeResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Treat POST requests to add new network types.
 
-        URL: /net_type/ 
+        URL: /net_type/
 
         """
 
@@ -131,7 +139,7 @@ class NetworkTypeResource(RestResource):
     def handle_put(self, request, user, *args, **kwargs):
         """Treat PUT requests to edit network types.
 
-        URL: /net_type/<id_net_type>/ 
+        URL: /net_type/<id_net_type>/
 
         """
 
@@ -207,7 +215,7 @@ class NetworkTypeResource(RestResource):
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat DELETE request to remove network type
 
-        URL: /net_type/<id_net_type>/ 
+        URL: /net_type/<id_net_type>/
 
         """
 

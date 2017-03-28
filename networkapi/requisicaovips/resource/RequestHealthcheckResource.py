@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -240,7 +240,8 @@ class RequestHealthcheckResource(RestResource):
 
                 # Put old call to work with new pool features
                 # This call is deprecated
-                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+                server_pools = ServerPool.objects.filter(
+                    vipporttopool__requisicao_vip=vip)
                 if healthcheck is None:
                     healthcheck = ''
                 if id_healthcheck_expect is None:
@@ -249,7 +250,8 @@ class RequestHealthcheckResource(RestResource):
                     healthcheck_expect = healthcheck_expect.expect_string
                 healthcheck_identifier = ''
                 healthcheck_destination = '*:*'
-                hc = get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
+                hc = get_or_create_healthcheck(
+                    user, healthcheck_expect, healthcheck_type, healthcheck, healthcheck_destination, healthcheck_identifier)
                 # Applies new healthcheck in pool
                 # Todo - new method
                 old_healthchecks = []

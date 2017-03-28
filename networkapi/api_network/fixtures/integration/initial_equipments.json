@@ -1,0 +1,72 @@
+[
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-1",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-2",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-3",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-4",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-5",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-6",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "maintenance": "False",
+      "modelo": "1",
+      "nome": "TESTE-EQUIP-7",
+      "tipo_equipamento": "1"
+    },
+    "model": "equipamento.equipamento",
+    "pk": 7
+  }
+]

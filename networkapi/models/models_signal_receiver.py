@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,19 +15,23 @@
 # limitations under the License.
 import logging
 import re
-from django.utils.translation import ugettext_lazy as _
-from django.core.cache import cache
 
+from django.core.cache import cache
+from django.utils.translation import ugettext_lazy as _
+
+from networkapi.eventlog.models import AuditRequest
+from networkapi.eventlog.models import EventLog
 from networkapi.util import signals_helper as m2m_audit
-from networkapi.eventlog.models import EventLog, AuditRequest
 
 MODEL_LIST = set()
 LOG = logging.getLogger(__name__)
 DEFAULT_CACHE_TIMEOUT = 120
 
-def get_cache_key_for_instance(instance, cache_prefix="networkapi_event_log"):
 
-    return "%s:%s:%s" % (cache_prefix, instance.__class__.__name__, instance.pk)
+def get_cache_key_for_instance(instance, cache_prefix='networkapi_event_log'):
+
+    return '%s:%s:%s' % (cache_prefix, instance.__class__.__name__, instance.pk)
+
 
 def get_value(obj, attr):
     """
@@ -73,13 +76,13 @@ def dict_diff(old, new):
             try:
                 if re.match(key, 'password'):
                     old_value = 'xxxxxxxx'
-                    new_value = "*" * len(new.get(key))
+                    new_value = '*' * len(new.get(key))
                 elif re.match(key, 'pwd'):
                     old_value = 'xxxxxxxx'
-                    new_value = "*" * len(new.get(key))
+                    new_value = '*' * len(new.get(key))
                 elif re.match(key, 'enable_pass'):
                     old_value = 'xxxxxxxx'
-                    new_value = "*" * len(new.get(key))
+                    new_value = '*' * len(new.get(key))
             except:
                 pass
             diff[key] = (old_value, new_value)
@@ -93,6 +96,7 @@ def format_value(v):
     if isinstance(v, basestring):
         return u"'%s'" % v
     return unicode(v)
+
 
 def save_audit(instance, operation, kwargs={}):
     """
@@ -118,17 +122,18 @@ def save_audit(instance, operation, kwargs={}):
         try:
             if operation == EventLog.CHANGE and instance.pk:
                 if not m2m_change:
-                    old_state = to_dict(instance.__class__.objects.get(pk=instance.pk))
+                    old_state = to_dict(
+                        instance.__class__.objects.get(pk=instance.pk))
                 else:
-                    #m2m change
-                    LOG.debug("m2m change detected")
-                    new_state = kwargs.get("new_state", {})
-                    old_state = kwargs.get("old_state", {})
+                    # m2m change
+                    LOG.debug('m2m change detected')
+                    new_state = kwargs.get('new_state', {})
+                    old_state = kwargs.get('old_state', {})
         except:
             pass
 
         if m2m_change:
-            #m2m_change returns a list of changes
+            # m2m_change returns a list of changes
             changed_fields = m2m_audit.m2m_dict_diff(old_state, new_state)
         else:
             changed_fields = dict_diff(old_state, new_state)
@@ -137,62 +142,65 @@ def save_audit(instance, operation, kwargs={}):
         # CHANGE OPERATION
         ########################
         if operation == EventLog.CHANGE:
-            action = "Alterar"
-            #is there any change?
+            action = 'Alterar'
+            # is there any change?
             if not changed_fields:
                 persist_audit = False
 
             if m2m_change:
                 descriptions = []
                 for changed_field in changed_fields:
-                    description = u"\n".join([u"%s %s: %s %s %s %s" %
-                        (
-                            _("field"),
-                            k,
-                            _("was changed from"),
-                            format_value(v[0]),
-                            _("to"),
-                            format_value(v[1]),
-                        ) for k, v in changed_field.items()])
+                    description = u'\n'.join([u'%s %s: %s %s %s %s' %
+                                              (
+                                                  _('field'),
+                                                  k,
+                                                  _('was changed from'),
+                                                  format_value(v[0]),
+                                                  _('to'),
+                                                  format_value(v[1]),
+                                              ) for k, v in changed_field.items()])
                     descriptions.append(description)
             else:
-                description = u"\n".join([u"%s %s: %s %s %s %s" %
-                    (
-                        _("field"),
-                        k,
-                        _("was changed from"),
-                        format_value(v[0]),
-                        _("to"),
-                        format_value(v[1]),
-                    ) for k, v in changed_fields.items()])
+                description = u'\n'.join([u'%s %s: %s %s %s %s' %
+                                          (
+                                              _('field'),
+                                              k,
+                                              _('was changed from'),
+                                              format_value(v[0]),
+                                              _('to'),
+                                              format_value(v[1]),
+                                          ) for k, v in changed_fields.items()])
         elif operation == EventLog.DELETE:
-            action = "Remover"
+            action = 'Remover'
             description = _('Deleted %s') % unicode(instance)
         elif operation == EventLog.ADD:
-            action = "Cadastrar"
+            action = 'Cadastrar'
             description = _('Added %s') % unicode(instance)
 
-        #LOG.debug("called audit with operation=%s instance=%s persist=%s" % (operation, instance, persist_audit))
+        # LOG.debug("called audit with operation=%s instance=%s persist=%s" % (operation, instance, persist_audit))
         if persist_audit:
             if m2m_change:
                 for description in descriptions:
-                    obj_description = (instance and unicode(instance) and '')[:100]
+                    obj_description = (
+                        instance and unicode(instance) and '')[:100]
                     audit_request = AuditRequest.current_request(True)
 
                     changed_field = changed_fields.pop(0)
                     old_value_list = []
                     new_value_list = []
                     for field, (old_value, new_value) in changed_field.items():
-                        old_value_list.append("{0} : {1}".format(field, handle_unicode(old_value)))
-                        new_value_list.append("{0} : {1}".format(field, handle_unicode(new_value)))
+                        old_value_list.append('{0} : {1}'.format(
+                            field, handle_unicode(old_value)))
+                        new_value_list.append('{0} : {1}'.format(
+                            field, handle_unicode(new_value)))
 
-                    event['acao'] = "Alterar" if action is None else action
+                    event['acao'] = 'Alterar' if action is None else action
                     event['funcionalidade'] = instance.__class__.__name__
-                    event['parametro_anterior'] = u"\n".join(old_value_list)
-                    event['parametro_atual'] = u"\n".join(new_value_list)
+                    event['parametro_anterior'] = u'\n'.join(old_value_list)
+                    event['parametro_atual'] = u'\n'.join(new_value_list)
                     event['id_objeto'] = instance.pk
                     event['audit_request'] = audit_request
-                    #save the event log
+                    # save the event log
                     if audit_request:
                         EventLog.log(audit_request.user, event)
                     else:
@@ -205,13 +213,15 @@ def save_audit(instance, operation, kwargs={}):
                 old_value_list = []
                 new_value_list = []
                 for field, (old_value, new_value) in changed_fields.items():
-                    old_value_list.append("{0} : {1}".format(field, handle_unicode(old_value)))
-                    new_value_list.append("{0} : {1}".format(field, handle_unicode(new_value)))
+                    old_value_list.append('{0} : {1}'.format(
+                        field, handle_unicode(old_value)))
+                    new_value_list.append('{0} : {1}'.format(
+                        field, handle_unicode(new_value)))
 
-                event['acao'] = "Alterar" if action is None else action
+                event['acao'] = 'Alterar' if action is None else action
                 event['funcionalidade'] = instance.__class__.__name__
-                event['parametro_anterior'] = u"\n".join(old_value_list)
-                event['parametro_atual'] = u"\n".join(new_value_list)
+                event['parametro_anterior'] = u'\n'.join(old_value_list)
+                event['parametro_atual'] = u'\n'.join(new_value_list)
                 event['id_objeto'] = instance.pk
                 event['audit_request'] = audit_request
                 if audit_request:
@@ -220,15 +230,17 @@ def save_audit(instance, operation, kwargs={}):
                     EventLog.log(None, event)
     except:
         LOG.error(u'Error registering auditing to %s: (%s) %s',
-            repr(instance), type(instance), getattr(instance, '__dict__', None), exc_info=True)
+                  repr(instance), type(instance), getattr(instance, '__dict__', None), exc_info=True)
 
 ###################
-##### SIGNALS #####
+# SIGNALS         #
 ###################
-#@receiver(pre_delete)
+# @receiver(pre_delete)
+
+
 def audit_pre_delete(sender, instance, **kwargs):
 
-    #instance=kwargs.get('instance')
+    # instance=kwargs.get('instance')
     from networkapi.models.BaseModel import BaseModel
 
     if (not issubclass(instance.__class__, BaseModel)):
@@ -236,23 +248,28 @@ def audit_pre_delete(sender, instance, **kwargs):
 
     save_audit(instance, EventLog.DELETE)
 
-#@receiver(pre_save)
+# @receiver(pre_save)
+
+
 def audit_pre_save(sender, instance, **kwargs):
 
-    #instance=kwargs.get('instance')
+    # instance=kwargs.get('instance')
     from networkapi.models.BaseModel import BaseModel
 
     if (not issubclass(instance.__class__, BaseModel)):
         return
 
     if instance.pk:
-        if m2m_audit.get_m2m_fields_for(instance): #has m2m fields?
+        if m2m_audit.get_m2m_fields_for(instance):  # has m2m fields?
             cache_key = get_cache_key_for_instance(instance)
-            dict_ = {"old_state" : {}, "new_state": {}}
-            dict_["old_state"] = m2m_audit.get_m2m_values_for(instance=instance)
+            dict_ = {'old_state': {}, 'new_state': {}}
+            dict_['old_state'] = m2m_audit.get_m2m_values_for(
+                instance=instance)
             cache.set(cache_key, dict_, DEFAULT_CACHE_TIMEOUT)
-            LOG.debug("old_state saved in cache with key %s for m2m auditing" % cache_key)
+            LOG.debug(
+                'old_state saved in cache with key %s for m2m auditing' % cache_key)
         save_audit(instance, EventLog.CHANGE)
+
 
 def audit_post_save(sender, instance, created, **kwargs):
 
@@ -264,6 +281,7 @@ def audit_post_save(sender, instance, created, **kwargs):
     if created:
         save_audit(instance, EventLog.ADD)
 
+
 def handle_unicode(s):
     if isinstance(s, basestring):
         return s.encode('utf-8')
@@ -271,8 +289,8 @@ def handle_unicode(s):
 
 
 # # Registra os processadores de signals post_save e post_delete
-#post_save.connect(networkapi_post_save)
-#post_delete.connect(networkapi_post_delete)
+# post_save.connect(networkapi_post_save)
+# post_delete.connect(networkapi_post_delete)
 
 
 ######

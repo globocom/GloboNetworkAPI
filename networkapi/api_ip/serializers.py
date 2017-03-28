@@ -20,7 +20,6 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
     server_pool_members = serializers.RelatedField(
         source='server_pool_members')
 
-    networkipv6 = serializers.SerializerMethodField('get_networkipv6')
     server_pool_members = serializers.\
         SerializerMethodField('get_server_pool_members')
     vips = serializers.SerializerMethodField('get_vips')
@@ -84,16 +83,15 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
     def get_server_pool_members(self, obj):
         return self.extends_serializer(obj, 'server_pool_members')
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         net_slz = get_app('api_network', module_label='serializers.v3')
         vip_slz = get_app('api_vip_request', module_label='serializers.v3')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         pool_slz = get_app('api_pools', module_label='serializers.v3')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'networkipv4': {
                     'obj': 'networkipv4_id'
                 },
@@ -103,7 +101,7 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'networkipv4',
-                    'eager_loading': cls.setup_eager_loading_networkipv4
+                    'eager_loading': self.setup_eager_loading_networkipv4
                 },
                 'networkipv4__basic': {
                     'serializer': net_slz.NetworkIPv4V3Serializer,
@@ -111,7 +109,7 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'basic'
                     },
                     'obj': 'networkipv4',
-                    'eager_loading': cls.setup_eager_loading_networkipv4
+                    'eager_loading': self.setup_eager_loading_networkipv4
                 },
                 'equipments': {
                     'serializer': eqpt_slz.EquipmentV3Serializer,
@@ -170,8 +168,6 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'server_pool_members'
                 }
             }
-
-        return cls.mapping
 
     @staticmethod
     def setup_eager_loading_networkipv4(queryset):
@@ -268,16 +264,15 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
     def get_server_pool_members(self, obj):
         return self.extends_serializer(obj, 'server_pool_members')
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
 
         net_slz = get_app('api_network', module_label='serializers.v3')
         vip_slz = get_app('api_vip_request', module_label='serializers.v3')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         pool_slz = get_app('api_pools', module_label='serializers.v3')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'networkipv6': {
                     'obj': 'networkipv6_id'
                 },
@@ -287,7 +282,7 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'networkipv6',
-                    'eager_loading': cls.setup_eager_loading_networkipv6
+                    'eager_loading': self.setup_eager_loading_networkipv6
                 },
                 'networkipv6__basic': {
                     'serializer': net_slz.NetworkIPv6V3Serializer,
@@ -295,7 +290,7 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'basic'
                     },
                     'obj': 'networkipv6',
-                    'eager_loading': cls.setup_eager_loading_networkipv6
+                    'eager_loading': self.setup_eager_loading_networkipv6
                 },
                 'equipments': {
                     'serializer': eqpt_slz.EquipmentV3Serializer,
@@ -309,6 +304,7 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
                     'serializer': eqpt_slz.EquipmentV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'equipments'
                 },
@@ -340,12 +336,11 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
                     'serializer': pool_slz.PoolMemberV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'server_pool_members'
                 }
             }
-
-        return cls.mapping
 
     @staticmethod
     def setup_eager_loading_networkipv6(queryset):

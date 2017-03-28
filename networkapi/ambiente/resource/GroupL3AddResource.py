@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,17 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import GroupL3NotFoundError
+from networkapi.ambiente.models import GrupoL3
+from networkapi.ambiente.models import GrupoL3NameDuplicatedError
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import GrupoL3, GrupoL3NameDuplicatedError, AmbienteError, GroupL3NotFoundError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class GroupL3AddResource(RestResource):
@@ -39,7 +45,7 @@ class GroupL3AddResource(RestResource):
 
         try:
 
-            self.log.info("Add Group l3")
+            self.log.info('Add Group l3')
 
             # User permission
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -83,7 +89,7 @@ class GroupL3AddResource(RestResource):
 
             l3_group_map = dict()
             l3_group_map['group_l3'] = model_to_dict(
-                l3_group, exclude=["nome"])
+                l3_group, exclude=['nome'])
 
             return self.response(dumps_networkapi(l3_group_map))
 

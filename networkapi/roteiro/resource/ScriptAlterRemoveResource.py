@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_SCRIPT
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_SCRIPT
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoRoteiro
+from networkapi.equipamento.models import Modelo
+from networkapi.equipamento.models import ModeloRoteiro
 from networkapi.exception import InvalidValueError
-from networkapi.roteiro.models import Roteiro, TipoRoteiro, TipoRoteiroNotFoundError, RoteiroError, RoteiroNotFoundError, \
-                                      RoteiroNameDuplicatedError, RoteiroHasEquipamentoError
-from networkapi.equipamento.models import ModeloRoteiro, Modelo, Equipamento, EquipamentoRoteiro
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.roteiro.models import Roteiro
+from networkapi.roteiro.models import RoteiroError
+from networkapi.roteiro.models import RoteiroHasEquipamentoError
+from networkapi.roteiro.models import RoteiroNameDuplicatedError
+from networkapi.roteiro.models import RoteiroNotFoundError
+from networkapi.roteiro.models import TipoRoteiro
+from networkapi.roteiro.models import TipoRoteiroNotFoundError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class ScriptAlterRemoveResource(RestResource):
@@ -41,11 +53,12 @@ class ScriptAlterRemoveResource(RestResource):
         """
         try:
 
-            self.log.info("Edit Script")
+            self.log.info('Edit Script')
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
-                self.log.error(u'User does not have permission to perform the operation.')
+                self.log.error(
+                    u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
 
             id_script = kwargs.get('id_script')
@@ -70,22 +83,26 @@ class ScriptAlterRemoveResource(RestResource):
 
             # Valid ID Script
             if not is_valid_int_greater_zero_param(id_script):
-                self.log.error(u'The id_script parameter is not a valid value: %s.', id_script)
+                self.log.error(
+                    u'The id_script parameter is not a valid value: %s.', id_script)
                 raise InvalidValueError(None, 'id_script', id_script)
 
             # Valid Script
             if not is_valid_string_minsize(script, 3) or not is_valid_string_maxsize(script, 40):
-                self.log.error(u'Parameter script is invalid. Value: %s', script)
+                self.log.error(
+                    u'Parameter script is invalid. Value: %s', script)
                 raise InvalidValueError(None, 'script', script)
 
             # Valid ID Script Type
             if not is_valid_int_greater_zero_param(id_script_type):
-                self.log.error(u'The id_script_type parameter is not a valid value: %s.', id_script_type)
+                self.log.error(
+                    u'The id_script_type parameter is not a valid value: %s.', id_script_type)
                 raise InvalidValueError(None, 'id_script_type', id_script_type)
 
             # Valid description
             if not is_valid_string_minsize(description, 3) or not is_valid_string_maxsize(description, 100):
-                self.log.error(u'Parameter description is invalid. Value: %s', description)
+                self.log.error(
+                    u'Parameter description is invalid. Value: %s', description)
                 raise InvalidValueError(None, 'description', description)
 
             # Find Script by ID to check if it exist
@@ -100,11 +117,11 @@ class ScriptAlterRemoveResource(RestResource):
                 models_old.append(int(i.modelo.id))
 
             if models is not None and type(models) is not list:
-                var = int (models)
+                var = int(models)
                 models = []
                 models.append(var)
             else:
-                models = [ int(x) for x in models ]
+                models = [int(x) for x in models]
 
             desassociar = set(models_old) - set(models)
             for i in desassociar:
@@ -117,12 +134,14 @@ class ScriptAlterRemoveResource(RestResource):
                 scr_models.modelo = Modelo.get_by_pk(i)
                 scr_models.create(user)
 
-            #verificar se há equipamento daquele modelo que não está associado a um roteiro
+            # verificar se há equipamento daquele modelo que não está associado
+            # a um roteiro
             for ids in models:
                 equipamentos = Equipamento.objects.filter(modelo__id=int(ids))
                 for equip in equipamentos:
                     try:
-                        equip_roteiro = EquipamentoRoteiro.objects.filter(equipamento__id=equip.id, roteiro__tipo_roteiro__id=scr.tipo_roteiro.id).uniqueResult()
+                        equip_roteiro = EquipamentoRoteiro.objects.filter(
+                            equipamento__id=equip.id, roteiro__tipo_roteiro__id=scr.tipo_roteiro.id).uniqueResult()
                         equip_roteiro.id
                     except:
                         equip_rot = EquipamentoRoteiro()
@@ -180,7 +199,7 @@ class ScriptAlterRemoveResource(RestResource):
         """
         try:
 
-            self.log.info("Remove Script")
+            self.log.info('Remove Script')
 
             # User permission
             if not has_perm(user, AdminPermission.SCRIPT_MANAGEMENT, AdminPermission.WRITE_OPERATION):

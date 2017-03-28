@@ -1,6 +1,7 @@
-# -*- coding:utf-8 -*_
+# -*- coding: utf-8 -*-
 from django.contrib import admin
 
+
 class VariableAdmin(admin.ModelAdmin):
-    search_fields = ["id", "name"]
-    list_display = ["id", "name", "value", "description",]
+    search_fields = ['id', 'name']
+    list_display = ['id', 'name', 'value', 'description', ]

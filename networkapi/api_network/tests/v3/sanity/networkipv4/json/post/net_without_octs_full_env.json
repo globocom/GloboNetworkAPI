@@ -1,0 +1,10 @@
+{
+  "networks": [
+    {
+      "vlan": 2,
+      "network_type": 1,
+      "environmentvip": null,
+      "cluster_unit": "cluster-unit-1"
+    }
+  ]
+}

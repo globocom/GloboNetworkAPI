@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
-from networkapi.rest import RestResource, UserNotAuthorizedError
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.auth import has_perm
 
 import logging
 
-from networkapi.equipamento.models import EquipamentoGrupo, Equipamento,\
-    EquipamentoNotFoundError, EquipamentoError, EquipamentoGrupoNotFoundError
-from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_EQUIPMENT_GROUP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoGrupo
+from networkapi.equipamento.models import EquipamentoGrupoNotFoundError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.grupo.models import EGrupo, EGrupoNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_GROUP
+from networkapi.grupo.models import EGrupo
+from networkapi.grupo.models import EGrupoNotFoundError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class GrupoEquipamentoRemoveAssociationEquipResource(RestResource):
@@ -39,10 +42,10 @@ class GrupoEquipamentoRemoveAssociationEquipResource(RestResource):
     log = logging.getLogger('GrupoEquipamentoRemoveAssociationEquipResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Trata as requisições de GET remover a associação entre um grupo de equipamento e um equipamento.
+        """Trata as requisições de GET remover a associação entre um grupo de equipamento e um equipamento.
 
         URL: egrupo/equipamento/id_equip/egrupo/id_egrupo/
-        '''
+        """
         try:
 
             id_equip = kwargs.get('id_equipamento')

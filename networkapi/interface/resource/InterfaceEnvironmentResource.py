@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,19 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.admin_permission import AdminPermission
+
 import logging
-from networkapi.ambiente.models import Ambiente
-from networkapi.interface.models import EnvironmentInterface, Interface, InterfaceError
-from networkapi.exception import InvalidValueError
+
 from django.forms.models import model_to_dict
 
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.auth import has_perm
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.interface.models import EnvironmentInterface
+from networkapi.interface.models import Interface
+from networkapi.interface.models import InterfaceError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 
 
 class InterfaceEnvironmentResource(RestResource):
@@ -39,7 +43,7 @@ class InterfaceEnvironmentResource(RestResource):
         URL: interface/associar-ambiente/
         """
         try:
-            self.log.info("Associa interface aos ambientes")
+            self.log.info('Associa interface aos ambientes')
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -83,7 +87,7 @@ class InterfaceEnvironmentResource(RestResource):
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
         except InterfaceError:
-           return self.response_error(1)
+            return self.response_error(1)
 
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests POST to add Rack.
@@ -91,7 +95,7 @@ class InterfaceEnvironmentResource(RestResource):
         URL: interface/associar-ambiente/
         """
         try:
-            self.log.info("Edita os ambientes associados a uma interface")
+            self.log.info('Edita os ambientes associados a uma interface')
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -115,7 +119,7 @@ class InterfaceEnvironmentResource(RestResource):
             interface = interface_map.get('interface')
             interface = int(interface)
 
-            #deletar associacoes
+            # deletar associacoes
             interface_list = EnvironmentInterface.objects.all().filter(interface__exact=interface)
             for var in interface_list:
                 var.delete()
@@ -128,7 +132,7 @@ class InterfaceEnvironmentResource(RestResource):
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
         except InterfaceError:
-           return self.response_error(1)
+            return self.response_error(1)
 
     def handle_get(self, request, user, *args, **kwargs):
         """Handles GET requests to find EnvironmentInterface.
@@ -140,7 +144,7 @@ class InterfaceEnvironmentResource(RestResource):
         try:
 
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT , AdminPermission.READ_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
                 return self.not_authorized()
@@ -148,12 +152,14 @@ class InterfaceEnvironmentResource(RestResource):
             # Get XML data
             interface = kwargs.get('id_interface')
 
-            int_ambiente = EnvironmentInterface.get_by_interface(int(interface))
+            int_ambiente = EnvironmentInterface.get_by_interface(
+                int(interface))
 
             ambiente_map = []
 
             for ids in int_ambiente:
-                ambiente_map.append(self.get_environment_map(ids.ambiente, ids.vlans))
+                ambiente_map.append(
+                    self.get_environment_map(ids.ambiente, ids.vlans))
 
             return self.response(dumps_networkapi({'ambiente': ambiente_map}))
 
@@ -163,18 +169,20 @@ class InterfaceEnvironmentResource(RestResource):
             self.log.error(u'Erro ao ler o XML da requisição.')
             return self.response_error(3, x)
         except InterfaceError:
-           return self.response_error(1)
+            return self.response_error(1)
 
     def get_environment_map(self, environment, vlans):
         environment_map = dict()
         environment_map['id'] = environment.id
         environment_map['divisao_dc_name'] = environment.divisao_dc.nome
-        environment_map['ambiente_logico_name'] = environment.ambiente_logico.nome
+        environment_map[
+            'ambiente_logico_name'] = environment.ambiente_logico.nome
         environment_map['grupo_l3_name'] = environment.grupo_l3.nome
-        if not environment.min_num_vlan_1==None and not environment.max_num_vlan_2==None:
-            environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_2)
+        if not environment.min_num_vlan_1 is None and not environment.max_num_vlan_2 is None:
+            environment_map['range'] = str(
+                environment.min_num_vlan_1) + ' - ' + str(environment.max_num_vlan_2)
         else:
-            environment_map['range'] = "Nao definido"
+            environment_map['range'] = 'Nao definido'
         environment_map['vlans'] = vlans
 
         return environment_map

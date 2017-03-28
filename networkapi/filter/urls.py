@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns
+from django.conf.urls import url
+
 from networkapi.filter.resource.FilterAddResource import FilterAddResource
 from networkapi.filter.resource.FilterAlterRemoveResource import FilterAlterRemoveResource
 from networkapi.filter.resource.FilterAssociateResource import FilterAssociateResource
@@ -16,10 +18,11 @@ filter_get_by_id = FilterGetByIdResource()
 filter_associate = FilterAssociateResource()
 filter_dissociate_one = FilterDissociateOneResource()
 
-urlpatterns = patterns('',
-    url(r'^all/$',  filter_list_all.handle_request,
+urlpatterns = patterns(
+    '',
+    url(r'^all/$', filter_list_all.handle_request,
         name='filter.list.all'),
-    url(r'^$',  filter_add.handle_request,
+    url(r'^$', filter_add.handle_request,
         name='filter.add'),
     url(r'^(?P<id_filter>[^/]+)/$', filter_alter_remove.handle_request,
         name='filter.alter.remove'),

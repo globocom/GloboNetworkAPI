@@ -16,7 +16,8 @@ class ProfileTCP(F5Base):
 
     @logger
     def create(self, **kwargs):
-        self._lb._channel.LocalLB.ProfileTCP.create(profile_names=kwargs['profile_names'])
+        self._lb._channel.LocalLB.ProfileTCP.create(
+            profile_names=kwargs['profile_names'])
 
     @logger
     def set_idle_timeout(self, **kwargs):
@@ -35,7 +36,8 @@ class ProfileHttp(F5Base):
 
     @logger
     def create(self, **kwargs):
-        self._lb._channel.LocalLB.ProfileHttp.create(profile_names=kwargs['profile_names'])
+        self._lb._channel.LocalLB.ProfileHttp.create(
+            profile_names=kwargs['profile_names'])
 
 
 class ProfileFastL4(F5Base):
@@ -47,7 +49,8 @@ class ProfileFastL4(F5Base):
 
     @logger
     def create(self, **kwargs):
-        self._lb._channel.LocalLB.ProfileFastL4.create(profile_names=kwargs['profile_names'])
+        self._lb._channel.LocalLB.ProfileFastL4.create(
+            profile_names=kwargs['profile_names'])
 
     @logger
     def set_idle_timeout(self, **kwargs):
@@ -73,7 +76,8 @@ class ProfileUDP(F5Base):
 
     @logger
     def create(self, **kwargs):
-        self._lb._channel.LocalLB.ProfileUDP.create(profile_names=kwargs['profile_names'])
+        self._lb._channel.LocalLB.ProfileUDP.create(
+            profile_names=kwargs['profile_names'])
 
     @logger
     def set_idle_timeout(self, **kwargs):

@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -69,6 +69,6 @@ class AdminPermission(object):
     OBJ_DELETE_OPERATION = 'DELETE'
     OBJ_UPDATE_CONFIG_OPERATION = 'UPDATE_CONFIG'
 
-    OBJ_TYPE_VLAN = 'vlan'
-    OBJ_TYPE_POOL = 'pool'
-    OBJ_TYPE_VIP = 'vip_request'
+    OBJ_TYPE_VLAN = 'Vlan'
+    OBJ_TYPE_POOL = 'ServerPool'
+    OBJ_TYPE_VIP = 'VipRequest'

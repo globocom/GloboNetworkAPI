@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.infrastructure.xml_utils import dumps_networkapi
 
-from networkapi.vlan.models import Vlan, VlanError, VlanNotFoundError, VlanCantDeallocate
-from networkapi.ip.models import IpCantBeRemovedFromVip, IpCantRemoveFromServerPool
-from networkapi.rest import RestResource, UserNotAuthorizedError
+import logging
+
+from django.db.utils import IntegrityError
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-import logging
-from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function, mount_ipv4_string, mount_ipv6_string
-from networkapi.exception import InvalidValueError
-from networkapi.distributedlock import distributedlock, LOCK_VLAN
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
-from django.db.utils import IntegrityError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.ip.models import IpCantRemoveFromServerPool
 from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import mount_ipv4_string
+from networkapi.util import mount_ipv6_string
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanCantDeallocate
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class VlanDeallocateResource(RestResource):
@@ -43,7 +51,7 @@ class VlanDeallocateResource(RestResource):
         URL: vlan/<id_vlan>/deallocate/
         """
 
-        self.log.info("Deallocate all relationships between Vlan.")
+        self.log.info('Deallocate all relationships between Vlan.')
 
         try:
 
@@ -74,7 +82,8 @@ class VlanDeallocateResource(RestResource):
             for netv4 in vlan.networkipv4_set.all():
                 for ipv4 in netv4.ip_set.all():
 
-                    server_pool_member_list = ServerPoolMember.objects.filter(ip=ipv4)
+                    server_pool_member_list = ServerPoolMember.objects.filter(
+                        ip=ipv4)
 
                     if server_pool_member_list.count() != 0:
 
@@ -82,20 +91,21 @@ class VlanDeallocateResource(RestResource):
                         server_pool_name_list = set()
 
                         for member in server_pool_member_list:
-                            item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                            item = '{}: {}'.format(
+                                member.server_pool.id, member.server_pool.identifier)
                             server_pool_name_list.add(item)
 
                         server_pool_name_list = list(server_pool_name_list)
-                        server_pool_identifiers = ', '.join(server_pool_name_list)
+                        server_pool_identifiers = ', '.join(
+                            server_pool_name_list)
 
                         ip_formated = mount_ipv4_string(ipv4)
                         vlan_name = vlan.nome
                         network_ip = mount_ipv4_string(netv4)
 
                         raise IpCantRemoveFromServerPool({'ip': ip_formated, 'vlan_name': vlan_name, 'network_ip': network_ip, 'server_pool_identifiers': server_pool_identifiers},
-                            "Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s" %
-                            (vlan_name, network_ip, ip_formated, server_pool_identifiers))
-
+                                                         'Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s' %
+                                                         (vlan_name, network_ip, ip_formated, server_pool_identifiers))
 
                     for ip_equip in ipv4.ipequipamento_set.all():
                         equip_id_list.append(ip_equip.equipamento_id)
@@ -103,7 +113,8 @@ class VlanDeallocateResource(RestResource):
             for netv6 in vlan.networkipv6_set.all():
                 for ip in netv6.ipv6_set.all():
 
-                    server_pool_member_list = ServerPoolMember.objects.filter(ipv6=ip)
+                    server_pool_member_list = ServerPoolMember.objects.filter(
+                        ipv6=ip)
 
                     if server_pool_member_list.count() != 0:
 
@@ -111,19 +122,21 @@ class VlanDeallocateResource(RestResource):
                         server_pool_name_list = set()
 
                         for member in server_pool_member_list:
-                            item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                            item = '{}: {}'.format(
+                                member.server_pool.id, member.server_pool.identifier)
                             server_pool_name_list.add(item)
 
                         server_pool_name_list = list(server_pool_name_list)
-                        server_pool_identifiers = ', '.join(server_pool_name_list)
+                        server_pool_identifiers = ', '.join(
+                            server_pool_name_list)
 
                         ip_formated = mount_ipv6_string(ip)
                         vlan_name = vlan.nome
                         network_ip = mount_ipv6_string(netv6)
 
                         raise IpCantRemoveFromServerPool({'ip': ip_formated, 'vlan_name': vlan_name, 'network_ip': network_ip, 'server_pool_identifiers': server_pool_identifiers},
-                            "Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s" %
-                            (vlan_name, network_ip, ip_formated, server_pool_identifiers))
+                                                         'Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s' %
+                                                         (vlan_name, network_ip, ip_formated, server_pool_identifiers))
 
                     for ip_equip in ip.ipv6equipament_set.all():
                         equip_id_list.append(ip_equip.equipamento_id)
@@ -133,7 +146,7 @@ class VlanDeallocateResource(RestResource):
             with distributedlock(LOCK_VLAN % id_vlan):
 
                 # Remove Vlan
-                vlan.delete()
+                vlan.delete_v3()
 
                 return self.response(dumps_networkapi({}))
 
@@ -148,7 +161,7 @@ class VlanDeallocateResource(RestResource):
         except VlanCantDeallocate, e:
             return self.response_error(293)
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319, "vlan", 'vlan', id_vlan)
+            return self.response_error(319, 'vlan', 'vlan', id_vlan)
         except VlanNotFoundError:
             return self.response_error(116)
         except (VlanError):

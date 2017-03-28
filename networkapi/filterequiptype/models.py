@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,19 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from django.db import models
-
-from django.core.exceptions import ObjectDoesNotExist
-
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
+from networkapi.filter.models import Filter
+from networkapi.filter.models import FilterError
 from networkapi.models.BaseModel import BaseModel
-
-from networkapi.filter.models import Filter, FilterError
-
-from networkapi.equipamento.models import TipoEquipamento
 
 
 class FilterEquipTypeDuplicateError(FilterError):
@@ -48,7 +42,8 @@ class CantDissociateError(FilterError):
 class FilterEquipType(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id')
     filter = models.ForeignKey(Filter, db_column='id_filter')
-    equiptype = models.ForeignKey(TipoEquipamento, db_column='id_equiptype')
+    equiptype = models.ForeignKey(
+        'equipamento.TipoEquipamento', db_column='id_equiptype')
 
     log = logging.getLogger('FilterEquipType')
 

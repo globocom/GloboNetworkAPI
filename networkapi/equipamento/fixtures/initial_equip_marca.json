@@ -12,5 +12,12 @@
     "fields": {
       "nome": "F5"
     }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.marca",
+    "fields": {
+      "nome": "Generic"
+    }
   }
 ]

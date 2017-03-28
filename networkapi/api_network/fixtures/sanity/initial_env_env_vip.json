@@ -1,0 +1,10 @@
+[
+  {
+  "pk": 1,
+  "model": "ambiente.environmentenvironmentvip",
+  "fields": {
+    "environment": 1,
+    "environment_vip": 1
+    }
+  }
+]

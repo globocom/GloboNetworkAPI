@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -63,7 +63,7 @@ class PluginFactory(object):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
 
-        raise NotImplementedError("plugin not implemented")
+        raise NotImplementedError('plugin not implemented')
 
     @classmethod
     def factory(cls, equipment):

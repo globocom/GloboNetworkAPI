@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,34 +13,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironmentInvalidError
-
-from networkapi.auth import has_perm
-
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-
-from networkapi.grupo.models import GrupoError
-
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
-from networkapi.ip.models import NetworkIPv6, NetworkIPv6NotFoundError, IpNotAvailableError, IpError, NetworkIPv6Error, NetworkIPv6AddressNotAvailableError
-
-from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError, VlanError
-
 import logging
 
-from networkapi.rest import RestResource
-
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.ip.models import Ipv6, Ipv6Equipament
-from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.auth import has_perm
 from networkapi.config.models import Configuration
-from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV6,\
-    MAX_IPV6_HOSTS
+from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV6
+from networkapi.infrastructure.ip_subnet_utils import MAX_IPV6_HOSTS
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6AddressNotAvailableError
+from networkapi.ip.models import NetworkIPv6Error
+from networkapi.ip.models import NetworkIPv6NotFoundError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.vlan.models import NetworkTypeNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class NetworkIPv6AddResource(RestResource):
@@ -49,10 +50,10 @@ class NetworkIPv6AddResource(RestResource):
     log = logging.getLogger('NetworkIPv6AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''
+        """
             Treat requests POST to add a network IPv6
             URL: network/ipv6/add/
-        '''
+        """
 
         # Commons Validations
 
@@ -93,10 +94,10 @@ class NetworkIPv6AddResource(RestResource):
         return self.network_ipv6_add(user, vlan_id, network_type, environment_vip, prefix)
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''
+        """
             Treat requests PUT to add a network IPv6
             URL: network/ipv6/add/
-        '''
+        """
 
         # Commons Validations
 
@@ -192,14 +193,16 @@ class NetworkIPv6AddResource(RestResource):
             vlan_map = network_ipv6.add_network_ipv6(
                 user, vlan_id, net, evip, prefix)
 
-            list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(vlan_map['vlan']['id_ambiente'])
+            list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(
+                vlan_map['vlan']['id_ambiente'])
 
             if list_equip_routers_ambient:
 
                 # Add Adds the first available ipv6 on all equipment
                 # that is configured as a router for the environment related to
                 # network
-                ipv6 = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'])
+                ipv6 = Ipv6.get_first_available_ip6(
+                    vlan_map['vlan']['id_network'])
 
                 ipv6 = str(ipv6).split(':')
 
@@ -227,7 +230,8 @@ class NetworkIPv6AddResource(RestResource):
                         user, ipv6_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'], True)
+                        router_ip = Ipv6.get_first_available_ip6(
+                            vlan_map['vlan']['id_network'], True)
                         router_ip = str(router_ip).split(':')
                         ipv6_model2 = Ipv6()
                         ipv6_model2.block1 = router_ip[0]
@@ -238,7 +242,8 @@ class NetworkIPv6AddResource(RestResource):
                         ipv6_model2.block6 = router_ip[5]
                         ipv6_model2.block7 = router_ip[6]
                         ipv6_model2.block8 = router_ip[7]
-                        ipv6_model2.networkipv6_id = vlan_map['vlan']['id_network']
+                        ipv6_model2.networkipv6_id = vlan_map[
+                            'vlan']['id_network']
                         ipv6_model2.save()
                         Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 

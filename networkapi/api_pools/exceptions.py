@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
@@ -165,6 +166,9 @@ class IpNotFoundByEnvironment(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'O ambiente do IP e diferente do ambiente do Server Pool.'
 
+    def __init__(self, msg=default_detail):
+        self.detail = u'%s' % (msg)
+
 
 class InvalidRealPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -313,4 +317,4 @@ class PoolError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, msg=None):
-        self.detail = u' <<%s>>' % (msg)
+        self.detail = u'%s' % (msg)
