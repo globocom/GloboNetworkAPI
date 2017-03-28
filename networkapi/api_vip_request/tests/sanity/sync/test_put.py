@@ -41,7 +41,7 @@ class VipRequestPutTestCase(NetworkApiTestCase):
     def test_put_two_vips_success(self):
         """Test of success to put two vips."""
 
-        name_file = 'api_vip_request/tests/sanity/json/test_vip_request_put.json'
+        name_file = 'api_vip_request/tests/sanity/json/put/test_vip_request_put_two.json'
 
         # Does put request
         response = self.client.put(

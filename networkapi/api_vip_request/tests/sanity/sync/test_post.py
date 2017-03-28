@@ -40,7 +40,7 @@ class VipRequestPostTestCase(NetworkApiTestCase):
     def test_post_two_vips_success(self):
         """Test of success to post one vip."""
 
-        name_file = 'api_vip_request/tests/sanity/json/test_vip_request_post_2_ports.json'
+        name_file = 'api_vip_request/tests/sanity/json/post/test_vip_request_post_2_ports.json'
 
         # Does post request
         response = self.client.post(
