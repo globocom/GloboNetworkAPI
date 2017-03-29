@@ -813,6 +813,7 @@ class Equipamento(BaseModel):
                     environment.get('environment'))
                 eqpt_env.equipamento = self
                 eqpt_env.is_router = environment.get('is_router')
+                eqpt_env.is_controller = environment.get('is_controller')
                 eqpt_env.create()
 
             # ipv4s
@@ -895,11 +896,13 @@ class Equipamento(BaseModel):
                         eqpt_env.ambiente = Ambiente.get_by_pk(env_id)
                         eqpt_env.equipamento = self
                         eqpt_env.is_router = environment.get('is_router')
+                        eqpt_env.is_controller = environment.get('is_controller')
                         eqpt_env.create()
                     else:
                         # update relashionship with enviroment
                         env_current = env_db[env_db_ids.index(env_id)]
                         env_current.is_router = environment.get('is_router')
+                        env_current.is_controller = environment.get('is_controller')
                         env_current.save()
                     env_ids.append(env_id)
 
