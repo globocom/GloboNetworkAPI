@@ -294,7 +294,6 @@ PROJECT_APPS = (
     'networkapi.api_environment_vip',
     'networkapi.api_equipment',
     'networkapi.api_filter',
-#    'networkapi.api_flows',
     'networkapi.api_group',
     'networkapi.api_ip',
     'networkapi.api_network',

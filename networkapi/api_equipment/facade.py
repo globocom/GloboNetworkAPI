@@ -5,6 +5,7 @@ from django.db.models import Q
 
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import AmbienteController
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
 
@@ -108,17 +109,15 @@ def get_equipments(**kwargs):
         }
         eqpts = eqpts.filter(Q(**q_filter_router))
 
-    if kwargs.get('controller_of_environment', None) is not None:
+    if kwargs.get('environment_sdn_controller', None) is not None:
+        #q_filter_controller = {
+        #    'ambientecontroller__ambiente__id': kwargs.get('controller_of_environment')
+        #}
+        #eqpts = eqpts.filter(Q(**q_filter_controller))
         q_filter_controller = {
-            'ambientecontroller__ambiente__id': kwargs.get('controller_of_environment')
+            'equipamentoambiente__is_controller': kwargs.get('environment_sdn_controller')
         }
         eqpts = eqpts.filter(Q(**q_filter_controller))
-
-#    if kwargs.get('is_controller', None) is not None:
-#        q_filter_controller = {
-#            'equipamentoambiente__is_controller': kwargs.get('is_controller')
-#        }
-#        eqpts = eqpts.filter(Q(**q_filter_controller))
 
     eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
 
