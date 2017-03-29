@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 from django.db.transaction import commit_on_success
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from networkapi.interface.models import InterfaceNotFoundError, Interface
-from networkapi.api_interface.permissions import Read, Write, DeployConfig
+from rest_framework.views import APIView
+
 from networkapi.api_interface import exceptions
 from networkapi.api_interface import facade
-from networkapi.distributedlock import distributedlock, LOCK_INTERFACE
+from networkapi.api_interface.permissions import DeployConfig
+from networkapi.api_interface.permissions import Read
+from networkapi.api_interface.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
-from rest_framework.views import APIView
-from rest_framework import status
-import logging
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_INTERFACE
+from networkapi.interface.models import Interface
+from networkapi.interface.models import InterfaceNotFoundError
 
 
 log = logging.getLogger(__name__)
@@ -41,7 +46,8 @@ def deploy_interface_configuration_sync(request, id_interface):
     """
 
     try:
-        data = facade.generate_and_deploy_interface_config_sync(request.user, id_interface)
+        data = facade.generate_and_deploy_interface_config_sync(
+            request.user, id_interface)
 
         return Response(data)
 
@@ -56,6 +62,7 @@ def deploy_interface_configuration_sync(request, id_interface):
     except Exception, exception:
         log.error(exception)
         raise exception
+
 
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, DeployConfig))
@@ -65,7 +72,8 @@ def deploy_channel_configuration_sync(request, id_channel):
     """
 
     try:
-        data = facade.generate_and_deploy_channel_config_sync(request.user, id_channel)
+        data = facade.generate_and_deploy_channel_config_sync(
+            request.user, id_channel)
 
         return Response(data)
 
@@ -81,6 +89,7 @@ def deploy_channel_configuration_sync(request, id_channel):
         log.error(exception)
         raise exception
 
+
 class DisconnectView(APIView):
 
     @permission_classes((IsAuthenticated, Write))
@@ -89,7 +98,7 @@ class DisconnectView(APIView):
         """URL: api/interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/"""
 
         try:
-            log.info("API_Disconnect")
+            log.info('API_Disconnect')
 
             data = dict()
 
@@ -102,7 +111,8 @@ class DisconnectView(APIView):
             with distributedlock(LOCK_INTERFACE % id_interface_1):
 
                 if interface_1.channel or interface_2.channel:
-                    raise exceptions.InterfaceException("Interface está em um Port Channel")
+                    raise exceptions.InterfaceException(
+                        'Interface está em um Port Channel')
 
                 if interface_1.ligacao_front_id == interface_2.id:
                     interface_1.ligacao_front = None
@@ -117,7 +127,8 @@ class DisconnectView(APIView):
                     else:
                         interface_2.ligacao_front = None
                 elif not interface_1.ligacao_front_id and not interface_1.ligacao_back_id:
-                    raise exceptions.InterfaceException("Interface id %s não connectada" % interface_1)
+                    raise exceptions.InterfaceException(
+                        'Interface id %s não connectada' % interface_1)
 
                 interface_1.save()
                 interface_2.save()
@@ -128,7 +139,8 @@ class DisconnectView(APIView):
             raise exception
         except InterfaceNotFoundError, exception:
             log.error(exception)
-            raise api_exceptions.ObjectDoesNotExistException('Interface Does Not Exist. %s' % exception)
+            raise api_exceptions.ObjectDoesNotExistException(
+                'Interface Does Not Exist. %s' % exception)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)

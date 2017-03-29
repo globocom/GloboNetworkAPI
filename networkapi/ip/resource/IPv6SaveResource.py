@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,25 +13,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
+from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
-from networkapi.grupo.models import GrupoError
-from networkapi.filterequiptype.models import FilterEquipType
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import   IpNotAvailableError, IpEquipmentAlreadyAssociation,\
-    NetworkIPv6NotFoundError, Ipv6, NetworkIPv6, IpError, NetworkIPv6Error,\
-    Ipv6Equipament, IpRangeAlreadyAssociation
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_NETWORK_IPV6
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize,\
-    destroy_cache_function
-from django.forms.models import model_to_dict
+from networkapi.filterequiptype.models import FilterEquipType
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpEquipmentAlreadyAssociation
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpRangeAlreadyAssociation
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6Error
+from networkapi.ip.models import NetworkIPv6NotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 from networkapi.vlan.models import VlanNumberNotAvailableError
-from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV6
 
 
 class IPv6SaveResource(RestResource):
@@ -40,10 +55,10 @@ class IPv6SaveResource(RestResource):
     log = logging.getLogger('IPv6SaveResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to add an IP6 and associate it to an equipment.
+        """Handles POST requests to add an IP6 and associate it to an equipment.
 
         URL: ipv6/save/
-        '''
+        """
 
         self.log.info('Add an IP6 and associate it to an equipment')
 
@@ -114,7 +129,7 @@ class IPv6SaveResource(RestResource):
 
                 # Caso haja erro para retornar o ip corretamente
                 ip_error = ip6
-                ip6 = ip6.split(":")
+                ip6 = ip6.split(':')
 
                 # Ip informado de maneira incorreta
                 if len(ip6) is not 8:
@@ -180,13 +195,13 @@ class IPv6SaveResource(RestResource):
 
                                 vlan_aux = vlan
                                 ambiente_aux = vlan.ambiente
-                                nome_ambiente = "%s - %s - %s" % (
+                                nome_ambiente = '%s - %s - %s' % (
                                     vlan.ambiente.divisao_dc.nome, vlan.ambiente.ambiente_logico.nome, vlan.ambiente.grupo_l3.nome)
                                 raise VlanNumberNotAvailableError(None,
-                                                                  '''O ip informado não pode ser cadastrado, pois o equipamento %s, faz parte do ambiente %s (id %s), 
+                                                                  """O ip informado não pode ser cadastrado, pois o equipamento %s, faz parte do ambiente %s (id %s),
                                                                     que possui a Vlan de id %s, que também possui o número %s, e não é permitido que vlans que compartilhem o mesmo ambiente,
                                                                     por meio de equipamentos, possuam o mesmo número, edite o número de uma das Vlans ou adicione um filtro no ambiente para efetuar o cadastro desse IP no Equipamento Informado.
-                                                                    ''' % (equip.nome, nome_ambiente, ambiente_aux.id, vlan_aux.id, vlan_atual.num_vlan))
+                                                                    """ % (equip.nome, nome_ambiente, ambiente_aux.id, vlan_aux.id, vlan_atual.num_vlan))
 
                 ipv6.save_ipv6(equip_id, user, net)
 

@@ -114,13 +114,16 @@ def create_file_from_script(script, prefix_name=''):
 
 
 def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar,
-                                           tftpserver=None, equipment_access=None):
+                                           tftpserver=None,
+                                           equipment_access=None):
     """Apply configuration file on equipment
 
     Args:
-            rel_filename: relative file path from TFTPBOOT_FILES_PATH to apply in equipment
+            rel_filename: relative file path from TFTPBOOT_FILES_PATH to apply
+                          in equipment
             equipment: networkapi.equipamento.Equipamento() or Equipamento().id
-            lockvar: distributed lock variable to use when applying config to equipment
+            lockvar: distributed lock variable to use when applying config to
+                     equipment
             equipment_access: networkapi.equipamento.EquipamentoAcesso() to use
             tftpserver: source TFTP server address
 
@@ -147,4 +150,44 @@ def deploy_config_in_equipment_synchronous(rel_filename, equipment, lockvar,
         raise AllEquipmentsAreInMaintenanceException()
 
     with distributedlock(lockvar):
-        return _applyconfig(equipment, rel_filename, equipment_access, tftpserver)
+        return _applyconfig(
+            equipment, rel_filename, equipment_access, tftpserver)
+
+
+def deploy_config_in_equipment(rel_filename, equipment, tftpserver=None,
+                               equipment_access=None):
+    """Apply configuration file on equipment
+
+    Args:
+            rel_filename: relative file path from TFTPBOOT_FILES_PATH to apply
+                          in equipment
+            equipment: networkapi.equipamento.Equipamento() or Equipamento().id
+            lockvar: distributed lock variable to use when applying config to
+                     equipment
+            equipment_access: networkapi.equipamento.EquipamentoAcesso() to use
+            tftpserver: source TFTP server address
+
+    Returns:
+            equipment output
+
+    Raises:
+    """
+
+    # validate filename
+    path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
+    if not path.startswith(TFTPBOOT_FILES_PATH):
+        raise exceptions.InvalidFilenameException(rel_filename)
+
+    if type(equipment) is int:
+        equipment = Equipamento.get_by_pk(equipment)
+    elif type(equipment) is Equipamento:
+        pass
+    else:
+        log.error('Invalid data for equipment')
+        raise api_exceptions.NetworkAPIException()
+
+    if equipment.maintenance:
+        raise AllEquipmentsAreInMaintenanceException()
+
+    return _applyconfig(
+        equipment, rel_filename, equipment_access, tftpserver)

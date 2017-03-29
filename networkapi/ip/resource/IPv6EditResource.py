@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import   IpNotAvailableError, IpEquipmentAlreadyAssociation,\
-    NetworkIPv6NotFoundError, Ipv6, IpError, NetworkIPv6Error, IpNotFoundError
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_IPV6
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
-from networkapi.distributedlock import distributedlock, LOCK_IPV6
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpEquipmentAlreadyAssociation
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import NetworkIPv6Error
+from networkapi.ip.models import NetworkIPv6NotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class IPv6EditResource(RestResource):
@@ -35,10 +47,10 @@ class IPv6EditResource(RestResource):
     log = logging.getLogger('IPv6EditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to edit an IP6.
+        """Handles POST requests to edit an IP6.
 
         URL: ipv6/edit/
-        '''
+        """
 
         self.log.info('Edit an IP6 and associate it to an equipment')
 
@@ -97,7 +109,7 @@ class IPv6EditResource(RestResource):
             with distributedlock(LOCK_IPV6 % id_ip):
 
                 ip_error = ip6
-                ip6 = ip6.split(":")
+                ip6 = ip6.split(':')
 
                 # Ip informado de maneira incorreta
                 if len(ip6) is not 8:

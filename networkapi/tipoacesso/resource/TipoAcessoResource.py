@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,33 +13,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
-from django.forms.models import model_to_dict
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
-from networkapi.grupo.models import GrupoError
-from networkapi.tipoacesso.models import TipoAcesso, TipoAcessoError, DuplicateProtocolError, AccessTypeUsedByEquipmentError, AccessTypeNotFoundError
+
+from django.forms.models import model_to_dict
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_TYPE_ACCESS
 from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.tipoacesso.models import AccessTypeNotFoundError
+from networkapi.tipoacesso.models import AccessTypeUsedByEquipmentError
+from networkapi.tipoacesso.models import DuplicateProtocolError
+from networkapi.tipoacesso.models import TipoAcesso
+from networkapi.tipoacesso.models import TipoAcessoError
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is_valid_regex
-from networkapi.distributedlock import distributedlock, LOCK_TYPE_ACCESS
+from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class TipoAcessoResource(RestResource):
 
-    '''Class to treat GET, POST, PUT and DELETE requests to tipo_acesso table.'''
+    """Class to treat GET, POST, PUT and DELETE requests to tipo_acesso table."""
 
     log = logging.getLogger('TipoAcessoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         """GET requests to list all TipoAcesso.
 
-        URL: /tipoacesso/ 
+        URL: /tipoacesso/
         """
 
         try:
@@ -200,7 +210,7 @@ class TipoAcessoResource(RestResource):
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat DELETE requests to remove Access Type.
 
-        URL: /tipoacesso/<id_tipo_acesso>/ 
+        URL: /tipoacesso/<id_tipo_acesso>/
 
         """
 

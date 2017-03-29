@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -50,16 +50,16 @@ from networkapi.util import is_valid_string_minsize
 
 class InterfaceResource(RestResource):
 
-    '''Classe responsável por tratar as requisições relacionadas com a tabela "interfaces".'''
+    """Classe responsável por tratar as requisições relacionadas com a tabela "interfaces"."""
 
     log = logging.getLogger('InterfaceResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Método responsável por tratar as requisições GET para consultar as interfaces.
+        """Método responsável por tratar as requisições GET para consultar as interfaces.
 
         URL: /interface/<nome_interface>/equipamento/<id_equipamento>
         URL: /interface/equipamento/<id_equipamento>
-        '''
+        """
 
         # Get url parameters
         equipment_id = kwargs.get('id_equipamento')
@@ -197,7 +197,7 @@ class InterfaceResource(RestResource):
 
             tipo_interface = interface_map.get('tipo')
             if tipo_interface is None:
-                tipo_interface = "Access"
+                tipo_interface = 'Access'
             tipo_interface = TipoInterface.get_by_name(tipo_interface)
 
             vlan = interface_map.get('vlan')
@@ -408,7 +408,7 @@ class InterfaceResource(RestResource):
             return self.response_error(1)
 
     def search_interface_of_equipment(self, equipment_id, is_new):
-        '''Obtém as interfaces do equipamento'''
+        """Obtém as interfaces do equipamento"""
 
         # Efetua a consulta das interfaces do equipamento
         results = Interface.search(equipment_id)
@@ -433,7 +433,7 @@ class InterfaceResource(RestResource):
             return self.response(dumps_networkapi({}))
 
     def search_interface_by_name_and_equipment(self, equipment_id, interface_name, is_new):
-        '''Obtém a interface do equipamento e retorna todas as interfaces ligadas no front e no back. '''
+        """Obtém a interface do equipamento e retorna todas as interfaces ligadas no front e no back. """
 
         interface = Interface.get_by_interface_equipment(
             interface_name, equipment_id)
@@ -452,7 +452,7 @@ class InterfaceResource(RestResource):
             return self.response(dumps_networkapi({'interface': map_list}))
 
     def get_interface_map(self, interface):
-        '''Gera o mapa para renderização do XML com os atributos de uma interface'''
+        """Gera o mapa para renderização do XML com os atributos de uma interface"""
         map = dict()
         map['id'] = interface.id
         map['nome'] = interface.interface
@@ -470,7 +470,8 @@ class InterfaceResource(RestResource):
             map['sw_router'] = True
         elif interface.ligacao_front is not None:
             try:
-                sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
+                sw_router = interface.get_switch_and_router_interface_from_host_interface(
+                    None)
                 if sw_router.channel is not None:
                     map['channel'] = sw_router.channel.nome
                     map['lacp'] = sw_router.channel.lacp
@@ -503,7 +504,8 @@ class InterfaceResource(RestResource):
             int_map['sw_router'] = True
         elif interface.ligacao_front is not None:
             try:
-                sw_router = interface.get_switch_and_router_interface_from_host_interface(None)
+                sw_router = interface.get_switch_and_router_interface_from_host_interface(
+                    None)
                 if sw_router.channel is not None:
                     int_map['channel'] = sw_router.channel.nome
                     int_map['lacp'] = sw_router.channel.lacp

@@ -1,0 +1,19 @@
+{
+    "vlans": [
+        {
+            "acl_draft": null,
+            "acl_draft_v6": null,
+            "acl_file_name": "",
+            "acl_file_name_v6": "",
+            "acl_valida": false,
+            "acl_valida_v6": false,
+            "active": true,
+            "description": "",
+            "environment": 2,
+            "id": 2,
+            "name": "NEW NAME",
+            "num_vlan": 2,
+            "vrf": null
+        }
+    ]
+}

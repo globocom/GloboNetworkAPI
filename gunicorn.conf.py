@@ -41,8 +41,6 @@ loglevel = "debug"
 
 # Choose user/group to run the server if daemon=true
 daemon = True
-# user="www-data"
-# group="www-data"
 
 # IP and Port to listen
 bind = "0.0.0.0:8000"

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,27 +13,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
-from networkapi.equipamento.models import *
-from networkapi.roteiro.models import *
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import *
-from networkapi.ip.models import IpCantBeRemovedFromVip, IpEquipamento, Ipv6Equipament
-from networkapi.grupo.models import EGrupoNotFoundError, GrupoError
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT, LOCK_BRAND, LOCK_MODEL, LOCK_EQUIPMENT_SCRIPT, LOCK_EQUIPMENT_ENVIRONMENT
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize,\
-                            destroy_cache_function, is_valid_boolean_param, convert_string_or_int_to_boolean
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_BRAND
+from networkapi.distributedlock import LOCK_EQUIPMENT
+from networkapi.distributedlock import LOCK_EQUIPMENT_ENVIRONMENT
+from networkapi.distributedlock import LOCK_EQUIPMENT_SCRIPT
+from networkapi.distributedlock import LOCK_MODEL
+from networkapi.equipamento.models import *
 from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import EGrupoNotFoundError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.roteiro.models import *
+from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 def add_script(user, equipamento):
     try:
-        modelo_roteiro = ModeloRoteiro.objects.filter(modelo__id=equipamento.modelo.id)
+        modelo_roteiro = ModeloRoteiro.objects.filter(
+            modelo__id=equipamento.modelo.id)
         for rot in modelo_roteiro:
             equip_roteiro = EquipamentoRoteiro()
             equip_roteiro.roteiro = rot.roteiro
@@ -45,16 +61,16 @@ def add_script(user, equipamento):
 
 
 def remove_equipment(equipment_id, user):
-    '''Remove um equipamento e todos os seus relacionamentos.
+    """Remove um equipamento e todos os seus relacionamentos.
 
     @return: Nothing.
 
     @raise EquipamentoNotFoundError: Equipamento não cadastrado.
 
-    @raise EquipamentoError, GrupoError: Falha no banco de dados.  
+    @raise EquipamentoError, GrupoError: Falha no banco de dados.
 
-    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação. 
-    '''
+    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.
+    """
     if not has_perm(user,
                     AdminPermission.EQUIPMENT_MANAGEMENT,
                     AdminPermission.WRITE_OPERATION,
@@ -69,7 +85,7 @@ def remove_equipment(equipment_id, user):
 
 
 def insert_equipment(equipment_map, user):
-    '''
+    """
     Insere um equipamento e o relacionamento entre equipamento e o grupo.
 
     @param equipment_map: Map com as chaves: id_grupo, id_tipo_equipamento, id_modelo e nome
@@ -80,9 +96,9 @@ def insert_equipment(equipment_map, user):
 
     @raise InvalidGroupToEquipmentTypeError: Equipamento do grupo “Equipamentos Orquestração” somente poderá ser criado com tipo igual a “Servidor Virtual”.
 
-    @raise EGrupoNotFoundError: Grupo não cadastrado. 
+    @raise EGrupoNotFoundError: Grupo não cadastrado.
 
-    @raise GrupoError: Falha ao pesquisar o Grupo. 
+    @raise GrupoError: Falha ao pesquisar o Grupo.
 
     @raise TipoEquipamentoNotFoundError: Tipo de equipamento nao cadastrado.
 
@@ -92,9 +108,9 @@ def insert_equipment(equipment_map, user):
 
     @raise EquipamentoError: Falha ou inserir o equipamento.
 
-    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
+    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.
 
-    '''
+    """
     log = logging.getLogger('insert_equipment')
 
     log.debug('EQUIPAMENTO_MAP: %s', equipment_map)
@@ -143,17 +159,17 @@ def insert_equipment(equipment_map, user):
     else:
         equipment.nome = name
 
-    #maintenance is a new feature. Check existing value if not defined in request
-    #Old calls does not send this field
+    # maintenance is a new feature. Check existing value if not defined in request
+    # Old calls does not send this field
     maintenance = equipment_map.get('maintenance')
     if maintenance is None:
         maintenance = False
     if not is_valid_boolean_param(maintenance):
-        log.error(u'The maintenance parameter is not a valid value: %s.', maintenance)
+        log.error(
+            u'The maintenance parameter is not a valid value: %s.', maintenance)
         raise InvalidValueError(None, 'maintenance', maintenance)
     else:
         equipment.maintenance = convert_string_or_int_to_boolean(maintenance)
-
 
     equipment_group_id = equipment.create(user, group_id)
 
@@ -162,7 +178,7 @@ def insert_equipment(equipment_map, user):
 
 class EquipamentoResource(RestResource):
 
-    '''Classe que trata as requisicoes de PUT,POST,GET e DELETE para a tabela equipamentos.'''
+    """Classe que trata as requisicoes de PUT,POST,GET e DELETE para a tabela equipamentos."""
 
     log = logging.getLogger('EquipamentoResource')
 
@@ -230,7 +246,7 @@ class EquipamentoResource(RestResource):
     def handle_get(self, request, user, *args, **kwargs):
         """Trata requisições GET para consulta de equipamentos.
 
-        Permite a consulta de equipamento filtrado por nome, 
+        Permite a consulta de equipamento filtrado por nome,
         equipamentos filtrados por tipo de equipamento e ambiente
 
         URLs: /equipamento/nome/<nome_equip>/
@@ -333,10 +349,10 @@ class EquipamentoResource(RestResource):
             return self.response_error(1)
 
     def handle_delete(self, request, user, *args, **kwargs):
-        '''Trata requisições de DELETE para remover um equipamento.
+        """Trata requisições de DELETE para remover um equipamento.
 
         URL: /equipamento/id/
-        '''
+        """
 
         try:
 

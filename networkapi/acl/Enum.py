@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,7 +15,6 @@
 # limitations under the License.
 
 
-
 class Enum(set):
 
     def __getattr__(self, name):
@@ -25,4 +23,4 @@ class Enum(set):
         raise AttributeError
 
 
-NETWORK_TYPES = Enum(["v4", "v6"])
+NETWORK_TYPES = Enum(['v4', 'v6'])

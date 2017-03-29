@@ -1,12 +1,12 @@
 [
   {
-  "pk": 1,
-  "model": "equipamento.equipamento",
-  "fields": {
-    "nome": "LF-CM-AA01-1",
-    "tipo_equipamento": "1",
-    "modelo": "1",
-    "maintenance": "False"
+    "pk": 1,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LF-CM-AA01-1",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
     }
   },
   {
@@ -50,43 +50,493 @@
     }
   },
   {
-    "pk": 1,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "2",
-      "equipamento": "1"
-    }
-  },
-  {
-    "pk": 2,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "2",
-      "equipamento": "2"
-    }
-  },
-  {
-    "pk": 3,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "2",
-      "equipamento": "3"
-    }
-  },
-  {
-    "pk": 5,
-    "model": "equipamento.equipamentogrupo",
-    "fields": {
-      "egrupo": "13",
-      "equipamento": "4"
-    }
-  },
-  {
     "pk": 6,
-    "model": "equipamento.equipamentogrupo",
+    "model": "equipamento.equipamento",
     "fields": {
-      "egrupo": "13",
-      "equipamento": "5"
+      "nome": "TOR1",
+      "tipo_equipamento": 1,
+      "modelo": 4,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 7,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "TOR2",
+      "tipo_equipamento": 1,
+      "modelo": 4,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 8,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM1",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 9,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM2",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 10,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM3",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 11,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LB01",
+      "tipo_equipamento": 2,
+      "modelo": 5,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 12,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LB02",
+      "tipo_equipamento": 2,
+      "modelo": 5,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 31,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-1",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 32,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-2",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 33,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-3",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 34,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-4",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 35,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-5",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 36,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-6",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 37,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-7",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 38,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-8",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 39,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-9",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 40,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-10",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 41,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-11",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 42,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-12",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 43,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-13",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 44,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-14",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 45,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-15",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 46,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-16",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 47,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-17",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 48,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-18",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 49,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-19",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 50,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-20",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 51,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-21",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 52,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-22",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 53,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-23",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 54,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-24",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 55,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-25",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 56,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-26",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 57,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-27",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 58,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-28",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 59,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Deploy-Pool-Test-29",
+      "tipo_equipamento": 3,
+      "modelo": 3,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 60,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Test-PUT-1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 61,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Test-DELETE-1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 63,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 90,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 90",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 91,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 91",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 92,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 92",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 93,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 93",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 94,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 94",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 95,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 95",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 96,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 96",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 97,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 97",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 98,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 98",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 99,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 3",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
     }
   }
 ]

@@ -23,7 +23,7 @@ urlpatterns = patterns(
     url(api_prefix, include('networkapi.api_environment.urls')),
     url(api_prefix, include('networkapi.api_environment_vip.urls')),
     url(api_prefix, include('networkapi.api_equipment.urls')),
-    url(api_prefix, include('networkapi.api_healthcheck.urls')),
+    # url(api_prefix, include('networkapi.api_healthcheck.urls')),
     url(api_prefix, include('networkapi.api_interface.urls')),
     url(api_prefix, include('networkapi.api_ip.urls')),
     url(api_prefix, include('networkapi.api_network.urls')),
@@ -31,10 +31,11 @@ urlpatterns = patterns(
     url(api_prefix, include('networkapi.api_pools.urls')),
     url(api_prefix, include('networkapi.api_rack.urls')),
     url(api_prefix, include('networkapi.api_rest.urls')),
+    url(api_prefix, include('networkapi.api_task.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.api_vrf.urls')),
-    url(api_prefix, include('networkapi.snippets.urls')),
+    # url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.system.urls')),
 
     # app healthchecks

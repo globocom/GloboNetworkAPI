@@ -1,0 +1,65 @@
+{
+  "title": "IPv6 Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "ips"
+  ],
+  "properties": {
+    "networks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "block1": {
+            "type": "string"
+          },
+          "block2": {
+            "type": "string"
+          },
+          "block3": {
+            "type": "string"
+          },
+          "block4": {
+            "type": "string"
+          },
+          "block5": {
+            "type": "string"
+          },
+          "block6": {
+            "type": "string"
+          },
+          "block7": {
+            "type": "string"
+          },
+          "block8": {
+            "type": "string"
+          },
+          "networkipv6": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "equipments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    }
+  }
+}

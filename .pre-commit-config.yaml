@@ -1,5 +1,5 @@
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    sha: 4c90c9557da7c0d695d6a729bae8b1de4e496cbf
+    sha: v0.7.1
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -13,7 +13,12 @@
     -   id: check-yaml
     -   id: debug-statements
     -   id: name-tests-test
+        args:
+        - --django
     -   id: fix-encoding-pragma
+    -   id: pretty-format-json
+        args:
+        - --autofix
     -   id: requirements-txt-fixer
     -   id: double-quote-string-fixer
     -   id: check-merge-conflict
@@ -21,32 +26,29 @@
     -   id: flake8
         args:
         - '-'
-        - --ignore=E501,E402,F401,F403,F821,F841
+        - --ignore=E501,E402,F401,F403,F405,F821,F841
 -   repo: https://github.com/pre-commit/pre-commit
-    sha: bbf1f62ed686a3e321280703a227fbd957e76151
+    sha: 41dcaff3fb53fb7819a1d783d67a9ccb42464c1d
     hooks:
     -   id: validate_config
     -   id: validate_manifest
 -   repo: https://github.com/asottile/reorder_python_imports
-    sha: b022734351abe44d0b05a71a4fa1175287c59b49
+    sha: 9aa4d08f9a28d3defc5e4db3c3b77d1a9980fd1a
     hooks:
     -   id: reorder-python-imports
         language_version: python2.7
 -   repo: git://github.com/pre-commit/mirrors-autopep8
-    sha: 575d256007455a3fdf2a6198de7d8168874d89d2
+    sha: 726322761e33581fcc0886d49a693945dece8594
     hooks:
     -   id: autopep8
-# -   repo: git://github.com/pre-commit/mirrors-pylint
-#     sha: 29c787c152552c93bdc59c45c23a155cb0570feb
-#     hooks:
-#     -   id: pylint
-#         args:
-#         - '-'
-#         - --ignore=C0111
 -   repo: git://github.com/FalconSocial/pre-commit-mirrors-pep257
     sha: 149e61b7a717945143fe51f010fe1c576e729a9f
     hooks:
     -   id: pep257
         args:
         - '-'
-        - --ignore=D100,D101,D102,D103,D104,D105,D200,D201,D202,D205,D208,D210,D211,D302,D400,D401
+        - --ignore=D100,D101,D102,D103,D104,D105,D200,D201,D202,D205,D208,D209,D210,D211,D302,D400,D401
+# -   repo: git://github.com/pre-commit/mirrors-pylint
+#     sha: 2df876752b109411416b68489bc26bf52293714e
+#     hooks:
+#     -   id: pylint

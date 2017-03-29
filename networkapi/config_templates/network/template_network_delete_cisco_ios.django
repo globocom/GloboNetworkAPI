@@ -1,0 +1,7 @@
+interface Vlan{{ VLAN_NUMBER }}
+  {% if IP_VERSION == "IPV4" %}
+     no ip address 
+  {% else %}
+    no ipv6 address {{IP}}/{{CIDR_BLOCK}}
+  {% endif %}
+  

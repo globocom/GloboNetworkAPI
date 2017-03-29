@@ -191,9 +191,6 @@ def save(request, pk=None):
 
             data = facade.save(request)
 
-            facade_v3.create_groups_permissions(
-                '', data['id'], request.user)
-
             return Response(data=data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'PUT':

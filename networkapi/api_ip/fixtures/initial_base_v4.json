@@ -1,0 +1,174 @@
+[
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": null,
+            "block": "24",
+            "broadcast": "10.0.0.1",
+            "cluster_unit": "",
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "1",
+            "network_type": 1,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "0",
+            "oct4": "0",
+            "vlan": 4
+        },
+        "model": "ip.networkipv4",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": null,
+            "block": "24",
+            "broadcast": "10.0.1.1",
+            "cluster_unit": "",
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "1",
+            "network_type": 1,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "1",
+            "oct4": "0",
+            "vlan": 4
+        },
+        "model": "ip.networkipv4",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": 1,
+            "block": "24",
+            "broadcast": "10.0.2.1",
+            "cluster_unit": "",
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "1",
+            "network_type": 1,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "2",
+            "oct4": "0",
+            "vlan": 4
+        },
+        "model": "ip.networkipv4",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "active": "1",
+            "ambient_vip": null,
+            "block": "32",
+            "broadcast": "10.0.4.1",
+            "cluster_unit": "",
+            "mask_oct1": "255",
+            "mask_oct2": "255",
+            "mask_oct3": "255",
+            "mask_oct4": "1",
+            "network_type": 1,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "4",
+            "oct4": "1",
+            "vlan": 4
+        },
+        "model": "ip.networkipv4",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "descricao": "IP",
+            "networkipv4": 5,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "0",
+            "oct4": "1"
+        },
+        "model": "ip.ip",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "networkipv4": 5,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "0",
+            "oct4": "2"
+        },
+        "model": "ip.ip",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "networkipv4": 5,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "0",
+            "oct4": "3"
+        },
+        "model": "ip.ip",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "networkipv4": 7,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "2",
+            "oct4": "1"
+        },
+        "model": "ip.ip",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "networkipv4": 7,
+            "oct1": "10",
+            "oct2": "0",
+            "oct3": "2",
+            "oct4": "2"
+        },
+        "model": "ip.ip",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "equipamento": 1,
+            "ip": 2
+        },
+        "model": "ip.ipequipamento",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "equipamento": 3,
+            "ip": 3
+        },
+        "model": "ip.ipequipamento",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "equipamento": 1,
+            "ip": 4
+        },
+        "model": "ip.ipequipamento",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "equipamento": 1,
+            "ip": 5
+        },
+        "model": "ip.ipequipamento",
+        "pk": 4
+    }
+]

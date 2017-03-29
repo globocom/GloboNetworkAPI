@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -17,16 +16,23 @@
 import logging
 
 from django.conf import settings
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_pools import exceptions
-from networkapi.api_pools.models import OptionPool, OptionPoolEnvironment
+from networkapi.api_pools.models import OptionPool
+from networkapi.api_pools.models import OptionPoolEnvironment
 from networkapi.healthcheckexpect.models import Healthcheck
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.ip.models import Ip, Ipv6
-from networkapi.requisicaovips.models import ServerPool, ServerPoolMember
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_list_int_greater_zero_param
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import Ipv6
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_list_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +60,7 @@ def get_or_create_healthcheck(user, healthcheck_expect, healthcheck_type, health
     # Get the fisrt occureny and warn if redundant HCs are present
     except MultipleObjectsReturned:
         log.warning(
-            "Multiple healthcheck entries found for the given parameters")
+            'Multiple healthcheck entries found for the given parameters')
         if identifier == '':
             hc = Healthcheck.objects.filter(healthcheck_expect=healthcheck_expect, healthcheck_type=healthcheck_type,
                                             healthcheck_request=healthcheck_request, destination=healthcheck_destination).order_by('id')[0]
@@ -388,8 +394,8 @@ def manager_pools(request):
     """
 
     try:
-        pool_id = request.DATA.get("server_pool_id")
-        pool_members = request.DATA.get("server_pool_members", [])
+        pool_id = request.DATA.get('server_pool_id')
+        pool_members = request.DATA.get('server_pool_members', [])
 
         # List to validate pool member status
         valid_status = [0, 1, False, True]
@@ -418,8 +424,8 @@ def manager_pools(request):
 
         for member in pool_members:
 
-            member_id = member.get("id")
-            member_status = member.get("status")
+            member_id = member.get('id')
+            member_status = member.get('status')
 
             if member_status not in valid_status:
                 raise exceptions.InvalidStatusPoolMemberException()
@@ -445,7 +451,7 @@ def manager_pools(request):
 
 
 def save_option_pool(user, type, description):
-    '''if id:
+    """if id:
         sp = OptionPool.objects.get(id=id)
 
         sp.type = type
@@ -453,7 +459,7 @@ def save_option_pool(user, type, description):
         sp.save()
 
 
-    else:'''
+    else:"""
 
     sp = OptionPool(type=type, name=description)
     sp.save()

@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -23,12 +23,12 @@ from networkapi.models.BaseManager import BaseManager
 
 class BaseModel(models.Model):
 
-    '''
+    """
     Classe básica para as classes que herdam de "django.db.models.Model".
 
     Deverão herdar desta classe as classes "Model" que necessitam gerar log das
     suas operações de escrita e exclusão de dados no banco de dados.
-    '''
+    """
 
     objects = BaseManager()
 
@@ -37,11 +37,11 @@ class BaseModel(models.Model):
 
     def __unicode__(self):
         if hasattr(self, 'nome'):
-            return u"{0}".format(self.nome)
+            return u'{0}'.format(self.nome)
         elif hasattr(self, 'id'):
-            return u"{0}".format(self.id)
+            return u'{0}'.format(self.id)
         else:
-            return u"{0}".format(self.__str__())
+            return u'{0}'.format(self.__str__())
 
     def set_authenticated_user(self, user):
         self.authenticated_user = user
@@ -54,10 +54,10 @@ class BaseModel(models.Model):
             transaction.commit()
 
     def delete(self, *args, **kwargs):
-        '''
+        """
         Replace  super(BaseModel, self).delete()
         Cause: When delete relationship in cascade  default no have attribute User to Log.
-        '''
+        """
 
         using = router.db_for_write(self.__class__, instance=self)
         assert self._get_pk_val() is not None, "%s object can't be deleted because its %s attribute is set to None." % (

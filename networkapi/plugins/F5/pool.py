@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from networkapi.plugins.F5.f5base import F5Base
@@ -65,7 +65,8 @@ class Pool(F5Base):
             if v == []:
                 return
 
-        self._lb._channel.LocalLB.Pool.remove_monitor_association(pool_names=kwargs['names'])
+        self._lb._channel.LocalLB.Pool.remove_monitor_association(
+            pool_names=kwargs['names'])
 
     @logger
     def get_monitor_association(self, **kwargs):
@@ -88,3 +89,10 @@ class Pool(F5Base):
     def get_list(self):
         list_pool = self._lb._channel.LocalLB.Pool.get_list()
         return list_pool
+
+    @logger
+    def set_minimum_active_member(self, **kwargs):
+        values = [1 for name in kwargs['names']]
+        self._lb._channel.LocalLB.Pool.set_minimum_active_member(
+            pool_names=kwargs['names'],
+            values=values)

@@ -1,0 +1,24 @@
+[
+  {
+    "fields": {
+      "ambiente_p44_txt": "test",
+      "cliente_txt": "test",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "test",
+      "finalidade_txt": "test"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente_p44_txt": "test",
+      "cliente_txt": "test",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "test",
+      "finalidade_txt": "test"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 2
+  }
+]

@@ -222,6 +222,8 @@ def trata_param_vip(vips):
     pool_filter = list()
     ids_pool_filter = list()
     vips_cache_filter = list()
+    vips_cache_filter_to_delete = list()
+    vips_cache_filter_to_insert = list()
 
     # when pool already created in eqpt
     pool_filter_created = list()
@@ -258,28 +260,31 @@ def trata_param_vip(vips):
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
             vip_filter['optionsvip'] = vip_request['options']
-            vip_filter['optionsvip']['l7_protocol'] = port[
-                'options']['l7_protocol']
-            vip_filter['optionsvip']['l4_protocol'] = port[
-                'options']['l4_protocol']
 
+            # TCP or UDP
+            vip_filter['optionsvip']['l4_protocol'] = \
+                port['options']['l4_protocol']
+
+            # Kind Layer of Application: HTTP, HTTPS, SSH, etc
+            vip_filter['optionsvip']['l7_protocol'] = \
+                port['options']['l7_protocol']
+
+            # Value of cluster unit
             try:
-                cluster_unit = None
                 for keys in conf['keys']:
-                    cluster_unit = keys.get(
-                        vip_request['options']['cluster_unit'])
+                    cluster_unit = keys\
+                        .get(vip_request['options']['cluster_unit'], None)
 
                     # traffic-group-1 is default, so must be ignored
-                    if cluster_unit == 'traffic-group-1':
+                    if cluster_unit == 'traffic-group-1' or \
+                            cluster_unit is None:
                         cluster_unit = None
                         break
-
-                    if cluster_unit:
-                        break
-                vip_filter['optionsvip']['traffic_group'] = cluster_unit
             except:
-                vip_filter['optionsvip']['traffic_group'] = None
+                cluster_unit = None
                 pass
+
+            vip_filter['optionsvip']['traffic_group'] = cluster_unit
             vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
 
             pools = port.get('pools')
@@ -306,30 +311,6 @@ def trata_param_vip(vips):
 
                         ids_pool_filter_to_delete.append(server_pool.get('id'))
                         pool_filter_to_delete.append(server_pool)
-
-                # # Pools to insert in put request of vip(update port or insert port)
-                # # when id of internal control was removed in update
-                # elif not pl.get('id'):
-
-                #     # Pools not created yet in equipment
-                #     if server_pool.get('id') not in ids_pool_filter_to_insert and \
-                #             not server_pool.get('pool_created'):
-
-                #         log.info('Pool to create in equipment: %s and'
-                #                  'to need associate with vip' % server_pool)
-
-                #         ids_pool_filter_to_insert.append(server_pool.get('id'))
-                #         pool_filter_to_insert.append(server_pool)
-
-                #     # Pool already created in equipment, but was added in new port
-                # elif server_pool.get('id') not in ids_pool_filter_created:
-
-                #         log.info('Pool already created in equipment: %s'
-                #                  ', but to need associate with vip '
-                #                  % server_pool)
-
-                #         ids_pool_filter_created.append(server_pool.get('id'))
-                #         pool_filter_created.append(server_pool)
 
                 # # Pools to insert or to associate when id of internal control
                 # # was changed. POST and DELETE always use this .
@@ -374,8 +355,8 @@ def trata_param_vip(vips):
                     # Default of l7 rule
                     else:
                         if pool.get('l7_rule') == 'default_glob':
-                            default_l7 = '            default {{ pool {0} }}\n'.format(
-                                name_pool)
+                            default_l7 = '            default {{ pool {0} }}\n'\
+                                .format(name_pool)
                         # l7 rule
                         elif pool.get('l7_rule') == 'glob':
 
@@ -412,7 +393,7 @@ def trata_param_vip(vips):
                 vips_filter_to_delete.append(vip_filter)
 
             # port(vip_port) to insert in update of vip
-            elif not pt.get('id'):
+            elif pt.get('insert'):
                 vips_filter_to_insert.append(vip_filter)
 
             # vips to create/delete/update
@@ -466,10 +447,20 @@ def trata_param_vip(vips):
                                 vip_cache_filter['optionsvip'][
                                     'traffic_group'] = None
                             else:
-                                vip_cache_filter['optionsvip']['traffic_group'] = \
-                                    definition.get('value')
+                                vip_cache_filter['optionsvip'][
+                                    'traffic_group'] = definition.get('value')
 
-                    vips_cache_filter.append(vip_cache_filter)
+                    # port(vip_port) to delete in update of vip
+                    if port.get('delete'):
+                        vips_cache_filter_to_delete.append(vip_cache_filter)
+
+                    # port(vip_port) to insert in update of vip
+                    elif port.get('insert'):
+                        vips_cache_filter_to_insert.append(vip_cache_filter)
+
+                    # vips to create/delete/update
+                    else:
+                        vips_cache_filter.append(vip_cache_filter)
 
     # remove pools in both lists(to delete and to insert)
     to_delete = list(
@@ -490,6 +481,8 @@ def trata_param_vip(vips):
         'vips_filter': vips_filter,
         'pool_filter': pool_filter,
         'vips_cache_filter': vips_cache_filter,
+        'vips_cache_filter_to_delete': vips_cache_filter_to_delete,
+        'vips_cache_filter_to_insert': vips_cache_filter_to_insert,
         'pool_filter_created': pool_filter_created,
         # used only in update of vips
         'pool_filter_to_delete': pool_filter_to_delete,
