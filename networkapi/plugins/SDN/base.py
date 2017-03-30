@@ -22,27 +22,28 @@ from networkapi.equipamento.models import EquipamentoAcesso
 
 log = logging.getLogger(__name__)
 
+
 class BaseSdnPlugin(object):
     """
     Plugin base para interação com controlador SDN
     """
-    protocol='http'
+
+    protocol = 'http'
 
     def __init__(self, **kwargs):
-        #Params and default values
+        # Params and default values
         params = {
-                    'equipment': None,
-                    'equipment_access': None,
-                    'protocol': 'https',
+            'equipment': None,
+            'equipment_access': None,
+            'protocol': 'https',
         }
 
-        #Setting params via kwargs or use the defaults
+        # Setting params via kwargs or use the defaults
         for param in params:
             if param in kwargs:
                 setattr(self, param, kwargs.get(param))
             else:
                 setattr(self, param, params.get(param))
-
 
     def _get_auth(self):
         raise NotImplementedError()
@@ -51,13 +52,15 @@ class BaseSdnPlugin(object):
 
         if not hasattr(self, 'host'):
 
-            if not hasattr(self, 'equipment_access') or self.equipment_access == None:
+            if not hasattr(self, 'equipment_access') \
+               or self.equipment_access is None:
+
                 log.error('No fqdn could be found for equipment %s .' %
                           (self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
 
             self.host = self.equipment_access.fqdn.strip()
-            if self.host.find('://')<0:
+            if self.host.find('://') < 0:
                 self.host = self.protocol + '://' + self.host
 
         return self.host
@@ -65,16 +68,17 @@ class BaseSdnPlugin(object):
     def _get_uri(self, host=None, path=""):
 
         if not hasattr(self, 'uri'):
-            if host==None:
-                host=self._get_host()
+            if host is None:
+                host = self._get_host()
 
             host = host.strip()
             path = path.strip()
 
-            if host[ len(host)-1 ] == '/':
-                host = host[0:len(host)-1]
+            if host[len(host) - 1] == '/':
+                host = host[0:len(host) - 1]
             if path[0] == '/':
                 path = path[1:len(path)]
+
             self.uri = host + '/' + path
 
         return self.uri
@@ -87,5 +91,3 @@ class BaseSdnPlugin(object):
         }
 
         return {'content-type': types[contentType]}
-
-
