@@ -25,6 +25,7 @@ from requests.exceptions import HTTPError
 from networkapi.plugins import exceptions
 from networkapi.plugins.SDN.base import BaseSdnPlugin
 from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.plugins.SDN.ODL.flows.acl import AclFlowBuilder
 
 log = logging.getLogger(__name__)
 
@@ -47,19 +48,20 @@ class ODLPlugin(BaseSdnPlugin):
 
             self.equipment_access = self._get_equipment_access()
 
-    def add_flow(self, data):
+    def add_flow(self, data, flow_type):
         # TODO: como definir o flow id? onde guardar essa info? ou pegar essa info do controller?
         # TODO: como definir o controller id?
         path = "/restconf/config/opendaylight-inventory:nodes/node/openflow:200920773006274/flow-node-inventory:table/0/flow/3"
         uri = self._get_uri(path=path)
 
+        flows = {}
         # Checks which builder should be called
         if flow_type == FlowTypes.ACL:
-            data = ACLFlowBuilder(data)
+            flows = AclFlowBuilder(data)
 
         else raise NotImplementedError("Unknown flow type: %s" % flow_type)
 
-        data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
+        data = flows.dump().strip().replace(' ', '')  # remove qualquer espaço
 
         print data
         raise exceptions.APIException()  # evitando enviar os flows para o controlador por enquanto
