@@ -64,18 +64,17 @@ class BaseSdnPlugin(object):
 
     def _get_uri(self, host=None, path=""):
 
-        if not hasattr(self, 'uri'):
-            if host==None:
-                host=self._get_host()
+        if host==None:
+            host=self._get_host()
 
-            host = host.strip()
-            path = path.strip()
+        host = host.strip()
+        path = path.strip()
 
-            if host[ len(host)-1 ] == '/':
-                host = host[0:len(host)-1]
-            if path[0] == '/':
-                path = path[1:len(path)]
-            self.uri = host + '/' + path
+        if host[ len(host)-1 ] == '/':
+            host = host[0:len(host)-1]
+        if path[0] == '/':
+            path = path[1:len(path)]
+        self.uri = host + '/' + path
 
         return self.uri
 
