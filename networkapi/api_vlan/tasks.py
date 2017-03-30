@@ -82,7 +82,7 @@ def update_vlan(self, vlan_dict, user_id):
 
 
 @celery_app.task(bind=True)
-def delete_vlan(self, vlan_id, user_id):
+def delete_vlan(self, vlan_id):
 
     msg = {
         'object_type': 'vlan',

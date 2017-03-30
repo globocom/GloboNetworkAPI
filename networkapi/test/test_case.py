@@ -47,7 +47,7 @@ class NetworkApiTestCase(TestCase):
         self.assertEqual(
             sorted(expected_data),
             sorted(received_data),
-            'Lists of Jsons should be same. Expected %s Received %s' % (
+            'Lists of Jsons should be same.\n Expected:\n %s \n Received:\n %s\n' % (
                 json.dumps(expected_data), json.dumps(received_data))
         )
 
