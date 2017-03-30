@@ -19,7 +19,7 @@ echo "Starting ActiveMQ message broker"
 sudo service activemq start
 
 echo "Starting RabbitMQ message broker"
-sudo service rabbitmq start
+sudo service rabbitmq-server start
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ci'
