@@ -16,6 +16,7 @@
 
 import logging
 import json
+
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
@@ -26,6 +27,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 
 log = logging.getLogger(__name__)
 
+
 class ODLPlugin(BaseSdnPlugin):
     """
     Plugin base para interação com controlador SDN
@@ -35,28 +37,27 @@ class ODLPlugin(BaseSdnPlugin):
 
         super(ODLPlugin, self).__init__(**kwargs)
 
-        if not hasattr(self, 'equipment_access') or self.equipment_access==None:
+        if not hasattr(self, 'equipment_access') \
+           or self.equipment_access is None:
+
             self.equipment_Access = self._get_equipment_access()
 
-
-
     def add_flow(self, data):
-        #TODO: como definir o flow id? onde guardar essa info? ou pegar essa info do controller?
-        #TODO: como definir o controller id?
-        path="/restconf/config/opendaylight-inventory:nodes/node/openflow:200920773006274/flow-node-inventory:table/0/flow/3"
+        # TODO: como definir o flow id? onde guardar essa info? ou pegar essa info do controller?
+        # TODO: como definir o controller id?
+        path = "/restconf/config/opendaylight-inventory:nodes/node/openflow:200920773006274/flow-node-inventory:table/0/flow/3"
         uri = self._get_uri(path=path)
 
-        data = json.dumps(data).strip().replace(' ','') #remove qualquer espaço
+        data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
 
         print data
-        raise exceptions.APIException() #evitando enviar os flows para o controlador por enquanto
+        raise exceptions.APIException()  # evitando enviar os flows para o controlador por enquanto
 
         return self._request(method=method, uri=uri, data=data, contentType='json')
 
-
-    #TODO: Método abaixo é apenas uma viagem. devo remover.
+    # TODO: Método abaixo é apenas uma viagem. devo remover.
     def act(self, action="", data=None, contentType='json'):
-        actions={
+        actions = {
             'get_nodes': {
                 'path': '/restconf/config/opendaylight-inventory:nodes',
                 'method': 'get',
@@ -72,17 +73,15 @@ class ODLPlugin(BaseSdnPlugin):
         uri = self._get_uri(host=host, path=path)
         method = actions[action]["method"]
 
-        if data!=None:
-            data=json.dump(data)
-            data=data.strip()
+        if data is not None:
+            data = json.dump(data)
+            data = data.strip()
 
         print data
         raise exceptions.APIException()
 
-        return self._request(method=method, uri=uri, data=data, contentType=contentType)
-
-
-
+        return self._request(method=method, uri=uri,
+                             data=data, contentType=contentType)
 
     def _request(self, **kwargs):
         # Params and default values
@@ -97,12 +96,12 @@ class ODLPlugin(BaseSdnPlugin):
         # Setting params via kwargs or use the defaults
         for param in params:
             if param in kwargs:
-                params[param]= kwargs.get(param)
+                params[param] = kwargs.get(param)
 
         headers = self._get_headers(contentType=params["contentType"])
 
         try:
-            func = getattr(requests, params["method"]) #Raises AttributeError if method is not valid
+            func = getattr(requests, params["method"])  # Raises AttributeError if method is not valid
             request = func(
                 params["uri"],
                 auth=self._get_auth(),
@@ -119,14 +118,12 @@ class ODLPlugin(BaseSdnPlugin):
                 return request.text
 
         except AttributeError:
-            self.logger.error('Request method must be valid HTTP request. ie: GET, POST, PUT, DELETE')
+            self.logger.error('Request method must be valid HTTP request.'
+                              ' ie: GET, POST, PUT, DELETE')
         except HTTPError:
             error = self._parse(request.text)
             self.logger.error(error)
             raise exceptions.CommandErrorException()
-
-
-
 
     def _get_auth(self):
         return self._basic_auth()
@@ -140,7 +137,6 @@ class ODLPlugin(BaseSdnPlugin):
     def _o_auth(self):
         pass
 
-
     def _get_headers(self, contentType):
         types = {
             'json': 'application/yang.data+json',
@@ -150,7 +146,6 @@ class ODLPlugin(BaseSdnPlugin):
 
         return {'content-type': types[contentType]}
 
-
     def _get_equipment_access(self):
         try:
             self.equipment_access = EquipamentoAcesso.search(
@@ -159,6 +154,3 @@ class ODLPlugin(BaseSdnPlugin):
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
-
-
-
