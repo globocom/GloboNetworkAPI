@@ -16,6 +16,7 @@
 
 import logging
 import json
+from enum import Enum
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -33,6 +34,10 @@ class ODLPlugin(BaseSdnPlugin):
     Plugin base para interação com controlador SDN
     """
 
+    class FlowTypes(Enum):
+        """ Inner class that holds the Enumeration of flow types """
+        ACL = 0
+
     def __init__(self, **kwargs):
 
         super(ODLPlugin, self).__init__(**kwargs)
@@ -40,13 +45,19 @@ class ODLPlugin(BaseSdnPlugin):
         if not hasattr(self, 'equipment_access') \
            or self.equipment_access is None:
 
-            self.equipment_Access = self._get_equipment_access()
+            self.equipment_access = self._get_equipment_access()
 
     def add_flow(self, data):
         # TODO: como definir o flow id? onde guardar essa info? ou pegar essa info do controller?
         # TODO: como definir o controller id?
         path = "/restconf/config/opendaylight-inventory:nodes/node/openflow:200920773006274/flow-node-inventory:table/0/flow/3"
         uri = self._get_uri(path=path)
+
+        # Checks which builder should be called
+        if flow_type == FlowTypes.ACL:
+            data = ACLFlowBuilder(data)
+
+        else raise NotImplementedError("Unknown flow type: %s" % flow_type)
 
         data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
 
@@ -121,8 +132,7 @@ class ODLPlugin(BaseSdnPlugin):
             self.logger.error('Request method must be valid HTTP request.'
                               ' ie: GET, POST, PUT, DELETE')
         except HTTPError:
-            error = self._parse(request.text)
-            self.logger.error(error)
+            self.logger.error(request.text)
             raise exceptions.CommandErrorException()
 
     def _get_auth(self):
