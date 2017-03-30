@@ -27,7 +27,7 @@ from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.ip.models import NetworkIPv4
 from networkapi.ip.models import NetworkIPv6
 from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools.rabbitmq import QueueManager
 from networkapi.rest import RestResource
 from networkapi.util import get_environment_map
 from networkapi.util import get_vlan_map
@@ -104,7 +104,9 @@ class VlanCreateScriptAclResource(RestResource):
                 acl_name, vlan_formated, environment, network_type, user, template_name)
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
 
             serializer = VlanSerializer(vlan)
             data_to_queue = serializer.data

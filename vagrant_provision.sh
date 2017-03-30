@@ -12,16 +12,10 @@ apt-get install rabbitmq-server -y
 rabbitmq-plugins enable rabbitmq_management
 rabbitmq-server restart
 rabbitmqctl add_user test test
+rabbitmqctl change_password test test
 rabbitmqctl set_user_tags test administrator
 rabbitmqctl set_permissions -p / test ".*" ".*" ".*"
-rabbitmqctl change_password test test
-
-# activemq
-apt-get install activemq -y
-rm -rf /etc/activemq/instances-enabled
-ln -sf /etc/activemq/instances-available /etc/activemq/instances-enabled
-sed -i 's/512/128/g' /usr/share/activemq/activemq-options
-sed -i 's/.*openwire.*/\t\t<transportConnector name="stomp" uri="stomp:\/\/localhost:61613"\/>/g' /etc/activemq/instances-available/main/activemq.xml
+rabbitmqctl set_permissions -p / tasks ".*" ".*" ".*"
 
 pip install gunicorn
 pip install virtualenv virtualenvwrapper

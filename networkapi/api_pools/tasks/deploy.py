@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-from celery.exceptions import Ignore
 from celery.utils.log import get_task_logger
 
 from networkapi import celery_app
 from networkapi.api_pools.facade.v3 import base as facade
 from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
 from networkapi.api_pools.serializers import v3 as serializers
+from networkapi.api_task.classes import BaseTask
 from networkapi.distributedlock import LOCK_POOL
 from networkapi.usuario.models import Usuario
 from networkapi.util.geral import create_lock
 from networkapi.util.geral import destroy_lock
 
+
 logger = get_task_logger(__name__)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def deploy(self, pool_id, user_id):
 
     msg = {
@@ -40,13 +41,8 @@ def deploy(self, pool_id, user_id):
     except Exception, exception:
         msg['message'] = 'Pool {} was not deployed.'.format(pool_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Pool {} was deployed with success.'.format(pool_obj)
@@ -57,7 +53,7 @@ def deploy(self, pool_id, user_id):
         destroy_lock(locks_list)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def redeploy(self, pool_dict, user_id):
 
     pool_id = pool_dict.get('id')
@@ -82,13 +78,8 @@ def redeploy(self, pool_dict, user_id):
     except Exception, exception:
         msg['message'] = 'Pool {} was not redeployed.'.format(pool_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Pool {} was redeployed with success.'.format(
@@ -100,7 +91,7 @@ def redeploy(self, pool_dict, user_id):
         destroy_lock(locks_list)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def undeploy(self, pool_id, user_id):
 
     msg = {
@@ -125,13 +116,8 @@ def undeploy(self, pool_id, user_id):
     except Exception, exception:
         msg['message'] = 'Pool {} was not undeployed.'.format(pool_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Pool {} was undeployed with success.'.format(
