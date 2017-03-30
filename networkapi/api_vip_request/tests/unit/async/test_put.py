@@ -28,15 +28,14 @@ class VipRequestAsyncPutDeploySuccessTestCase(NetworkApiTestCase):
 
         vip = VipRequest(id=1)
 
-        facade.update_real_vip_request = mock.MagicMock(return_value=vip)
-        facade.get_vip_request_by_id = mock.MagicMock(return_value=vip)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        redeploy.update_state = mock.MagicMock()
+        with mock.patch.object(facade, 'update_real_vip_request', return_value=vip) \
+                as mock_deploy:
+            with mock.patch.object(facade, 'get_vip_request_by_id', return_value=vip):
+                with mock.patch.object(Usuario.objects, 'get', return_value=user):
+                    with mock.patch.object(redeploy, 'update_state'):
+                        redeploy({'id': vip.id}, user.id)
 
-        redeploy({'id': vip.id}, user.id)
-
-        facade.update_real_vip_request.assert_called_with(
-            [{'id': vip.id}], user)
+        mock_deploy.assert_called_with([{'id': vip.id}], user)
 
 
 class VipRequestAsyncPutDeployErrorTestCase(NetworkApiTestCase):

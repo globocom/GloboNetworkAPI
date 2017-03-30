@@ -39,15 +39,14 @@ class ServerPoolAsyncPutDeploySuccessTestCase(NetworkApiTestCase):
 
         pool = ServerPool(id=1, identifier='test', environment=ambiente)
 
-        facade_deploy.update_real_pool = mock.MagicMock(return_value=pool)
-        facade_base.get_pool_by_id = mock.MagicMock(return_value=pool)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        redeploy.update_state = mock.MagicMock()
+        with mock.patch.object(facade_deploy, 'update_real_pool', return_value=pool) \
+                as mock_deploy:
+            with mock.patch.object(facade_base, 'get_pool_by_id', return_value=pool):
+                with mock.patch.object(Usuario.objects, 'get', return_value=user):
+                    with mock.patch.object(redeploy, 'update_state'):
+                        redeploy({'id': pool.id}, user.id)
 
-        redeploy({'id': pool.id}, user.id)
-
-        facade_deploy.update_real_pool.assert_called_with(
-            [{'id': pool.id}], user)
+        mock_deploy.assert_called_with([{'id': pool.id}], user)
 
 
 class ServerPoolAsyncPutDeployErrorTestCase(NetworkApiTestCase):

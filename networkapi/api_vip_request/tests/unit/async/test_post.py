@@ -31,15 +31,14 @@ class VipRequestAsyncPostDeploySuccessTestCase(NetworkApiTestCase):
         vip_serializer = VipRequestV3Serializer(
             vip, include=('ports__identifier',))
 
-        facade.create_real_vip_request = mock.MagicMock(return_value=vip)
-        facade.get_vip_request_by_id = mock.MagicMock(return_value=vip)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        deploy.update_state = mock.MagicMock()
+        with mock.patch.object(facade, 'create_real_vip_request', return_value=vip) \
+                as mock_deploy:
+            with mock.patch.object(facade, 'get_vip_request_by_id', return_value=vip):
+                with mock.patch.object(Usuario.objects, 'get', return_value=user):
+                    with mock.patch.object(deploy, 'update_state'):
+                        deploy(vip.id, user.id)
 
-        deploy(vip.id, user.id)
-
-        facade.create_real_vip_request.assert_called_with(
-            [vip_serializer.data], user)
+        mock_deploy.assert_called_with([vip_serializer.data], user)
 
 
 class VipRequestAsyncPostDeployErrorTestCase(NetworkApiTestCase):

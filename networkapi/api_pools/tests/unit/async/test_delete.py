@@ -8,8 +8,8 @@ from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteLogico
 from networkapi.ambiente.models import DivisaoDc
 from networkapi.ambiente.models import GrupoL3
-from networkapi.api_pools.facade.v3 import base as facade
-from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
+from networkapi.api_pools.facade.v3 import base as facade_base
+from networkapi.api_pools.facade.v3 import deploy as facade_deploy
 from networkapi.api_pools.models import OptionPool
 from networkapi.api_pools.serializers import v3 as serializers
 from networkapi.api_pools.tasks.deploy import undeploy
@@ -49,15 +49,14 @@ class ServerPoolAsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
         pool_serializer = serializers.PoolV3Serializer(
             pool)
 
-        facade_pool_deploy.delete_real_pool = mock.MagicMock(return_value=pool)
-        facade.get_pool_by_id = mock.MagicMock(return_value=pool)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        undeploy.update_state = mock.MagicMock()
+        with mock.patch.object(facade_deploy, 'delete_real_pool', return_value=pool) \
+                as mock_deploy:
+            with mock.patch.object(facade_base, 'get_pool_by_id', return_value=pool):
+                with mock.patch.object(Usuario.objects, 'get', return_value=user):
+                    with mock.patch.object(undeploy, 'update_state'):
+                        undeploy(pool.id, user.id)
 
-        undeploy(pool.id, user.id)
-
-        facade_pool_deploy.delete_real_pool.assert_called_with(
-            [pool_serializer.data], user)
+        mock_deploy.assert_called_with([pool_serializer.data], user)
 
 
 class ServerPoolAsyncDeleteDeployErrorTestCase(NetworkApiTestCase):

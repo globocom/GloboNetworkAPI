@@ -47,15 +47,14 @@ class ServerPoolAsyncPostDeploySuccessTestCase(NetworkApiTestCase):
         pool_serializer = serializers.PoolV3Serializer(
             pool)
 
-        facade_deploy.create_real_pool = mock.MagicMock(return_value=pool)
-        facade_base.get_pool_by_id = mock.MagicMock(return_value=pool)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        deploy.update_state = mock.MagicMock()
+        with mock.patch.object(facade_deploy, 'create_real_pool', return_value=pool) \
+                as mock_deploy:
+            with mock.patch.object(facade_base, 'get_pool_by_id', return_value=pool):
+                with mock.patch.object(Usuario.objects, 'get', return_value=user):
+                    with mock.patch.object(deploy, 'update_state'):
+                        deploy(pool.id, user.id)
 
-        deploy(pool.id, user.id)
-
-        facade_deploy.delete_real_pool.assert_called_with(
-            [pool_serializer.data], user)
+        mock_deploy.assert_called_with([pool_serializer.data], user)
 
 
 class ServerPoolAsyncPostDeployErrorTestCase(NetworkApiTestCase):
