@@ -102,8 +102,7 @@ class AclFlowBuilder(object):
 
             self.flows["flow"][0]["match"]["ipv4-destination"] = \
                     rule[Tokens.destination]
-            self.flows["flow"][0]["match"]["ipv4-source"] = \
-                    rule[Tokens.source]
+            self.flows["flow"][0]["match"]["ipv4-source"] = rule[Tokens.source]
 
         else:
             logging.error(self.MALFORMED_MESSAGE % rule)
