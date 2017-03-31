@@ -11,10 +11,15 @@ apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 apt-get install rabbitmq-server -y
 rabbitmq-plugins enable rabbitmq_management
 rabbitmq-server restart
-rabbitmqctl add_user test test
-rabbitmqctl change_password test test
-rabbitmqctl set_user_tags test administrator
-rabbitmqctl set_permissions -p / test ".*" ".*" ".*"
+rabbitmqctl add_user networkapi networkapi
+rabbitmqctl add_vhost tasks
+rabbitmqctl add_user tasks tasks
+rabbitmqctl change_password networkapi networkapi
+rabbitmqctl change_password tasks tasks
+rabbitmqctl set_user_tags networkapi administrator
+rabbitmqctl set_permissions -p / networkapi ".*" ".*" ".*"
+rabbitmqctl set_permissions -p tasks networkapi ".*" ".*" ".*"
+rabbitmqctl set_permissions -p tasks tasks ".*" ".*" ".*"
 
 pip install gunicorn
 pip install virtualenv virtualenvwrapper
