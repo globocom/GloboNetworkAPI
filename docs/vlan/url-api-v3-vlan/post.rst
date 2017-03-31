@@ -68,7 +68,6 @@ Request Example with some more fields:
         }]
     }
 
-
 Through Vlan POST route you can create one or more Vlans. Only "name" and "environment" fields are required. You can specify other fields such as:
 
 * **name** - As said, it will be Vlan name.

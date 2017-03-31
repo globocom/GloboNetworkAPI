@@ -11,3 +11,7 @@ Using GloboNetworkAPI V3
    type-option/type-option
    vip-request/vip-request
    vlan/vlan
+   networkv4/networkv4
+   networkv6/networkv6
+   ipv4/ipv4
+   ipv6/ipv6

@@ -60,7 +60,7 @@ Request Example:
             "vrf": 'VrfBorda',
             "acl_draft": "",
             "acl_draft_v6": ""
-        },..]
+        }]
     }
 
 In Vlan PUT request, you need to specify all fields even you don't want to change some of them.
