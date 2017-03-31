@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 class ODLPlugin(BaseSdnPlugin):
     """
-    Plugin base para interação com controlador SDN
+    Plugin base para interação com controlador ODL
     """
 
     def __init__(self, **kwargs):
@@ -43,21 +43,36 @@ class ODLPlugin(BaseSdnPlugin):
             self.equipment_Access = self._get_equipment_access()
 
 
+    def add_flow(self, data=None, flow_id=0):
+        return self._flow(flow_id=flow_id, method='put', data=data)
 
+    def del_flow(self, flow_id=0):
+        return self._flow(flow_id=flow_id, method='delete')
 
-    def add_flow(self, data, flow_id):
+    def get_flow(self, flow_id=0):
+        return self._flow(flow_id=flow_id, method='get')
+
+    def _flow(self, flow_id=0, method='', data=None):
+        allowed_methods=["get", "put", "delete"]
+        if flow_id<1 or method not in allowed_methods:
+            log.error("Invalid parameters in OLDPlugin flow handler")
+            raise exceptions.ValueInvalid()
 
         nodes_ids = self._get_nodes_ids()
-        #TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
+        # TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
         nodes_ids = ["openflow:134984912119576"]
+        if data:
+            data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
 
         for node_id in nodes_ids:
-            path="/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%d" \
-                    % (node_id, flow_id)
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%d" \
+                   % (node_id, flow_id)
 
-            data = json.dumps(data).strip().replace(' ','') #remove qualquer espaço
+            self._request(method=method, path=path, data=data, contentType='json')
 
-            return self._request(method='post', path=path, data=data, contentType='json')
+        #TODO: definir retorno
+        return "OK"
+
 
 
     def _get_nodes_ids(self):
@@ -87,7 +102,6 @@ class ODLPlugin(BaseSdnPlugin):
             'verify': False
         }
 
-
         # Setting params via kwargs or use the defaults
         for param in params:
             if param in kwargs:
@@ -103,15 +117,15 @@ class ODLPlugin(BaseSdnPlugin):
                 auth=self._get_auth(),
                 headers=headers,
                 verify=params["verify"],
-                json=params["data"]
+                data=params["data"]
             )
 
             request.raise_for_status()
 
-            if params["contentType"] == 'json':
+            try:
                 return json.loads(request.text)
-            else:
-                return request.text
+            except:
+                return
 
         except AttributeError:
             log.error('Request method must be valid HTTP request. ie: GET, POST, PUT, DELETE')
@@ -122,7 +136,7 @@ class ODLPlugin(BaseSdnPlugin):
                     log.error( error["error-message"] )
             except:
                 log.error("Unknown error while making request to ODL Controller")
-            raise exceptions.CommandErrorException()
+            raise exceptions.CommandErrorException(msg=request.status_code)
 
 
 
@@ -138,7 +152,6 @@ class ODLPlugin(BaseSdnPlugin):
 
     def _o_auth(self):
         pass
-
 
     def _get_headers(self, contentType):
         types = {
