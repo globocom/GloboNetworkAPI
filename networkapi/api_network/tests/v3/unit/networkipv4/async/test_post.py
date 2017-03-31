@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import mock
 from django.test.client import Client
+from mock import patch
 
-from networkapi.api_network.facade import v3 as facade
 from networkapi.api_network.tasks import create_networkv4
 from networkapi.api_network.tasks import deploy_networkv4
 from networkapi.ip.models import NetworkIPv4
@@ -22,21 +21,28 @@ class NetworkIPv4AsyncPostSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_task_id_create_in_post_one_netipv4_success(self):
+    @patch('networkapi.api_network.facade.v3.create_networkipv4')
+    @patch('networkapi.api_network.facade.v3.get_networkipv4_by_id')
+    @patch('networkapi.usuario.models.Usuario.objects.get')
+    @patch('networkapi.api_network.tasks.create_networkv4.update_state')
+    def test_task_id_create_in_post_one_netipv4_success(self, *args):
         """Test success of id task generate for netipv4 post success."""
+
+        mock_get_user = args[1]
+        mock_get_netv4 = args[2]
+        mock_create_netv4 = args[3]
 
         user = Usuario(id=1, nome='test')
 
         net = NetworkIPv4(id=1)
 
-        facade.create_networkipv4 = mock.MagicMock(return_value=net)
-        facade.get_networkipv4_by_id = mock.MagicMock(return_value=net)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        create_networkv4.update_state = mock.MagicMock()
+        mock_create_netv4.return_value = net
+        mock_get_netv4.return_value = net
+        mock_get_user.return_value = user
 
         create_networkv4({}, user.id)
 
-        facade.create_networkipv4.assert_called_with({}, user)
+        mock_create_netv4.assert_called_with({}, user)
 
 
 class NetworkIPv4AsyncPostErrorTestCase(NetworkApiTestCase):
@@ -61,21 +67,28 @@ class NetworkIPv4AsyncPostDeploySuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_task_id_create_in_post_deploy_one_netipv4_success(self):
+    @patch('networkapi.api_network.facade.v3.deploy_networkipv4')
+    @patch('networkapi.api_network.facade.v3.get_networkipv4_by_id')
+    @patch('networkapi.usuario.models.Usuario.objects.get')
+    @patch('networkapi.api_network.tasks.deploy_networkv4.update_state')
+    def test_task_id_create_in_post_deploy_one_netipv4_success(self, *args):
         """Test success of id task generate for netipv4 post deploy success."""
+
+        mock_get_user = args[1]
+        mock_get_netv4 = args[2]
+        mock_deploy_netv4 = args[3]
 
         user = Usuario(id=1, nome='test')
 
         net = NetworkIPv4(id=1)
 
-        facade.deploy_networkipv4 = mock.MagicMock(return_value=net)
-        facade.get_networkipv4_by_id = mock.MagicMock(return_value=net)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        deploy_networkv4.update_state = mock.MagicMock()
+        mock_deploy_netv4.return_value = net
+        mock_get_netv4.return_value = net
+        mock_get_user.return_value = user
 
         deploy_networkv4(net.id, user.id)
 
-        facade.deploy_networkipv4.assert_called_with(net.id, user)
+        mock_deploy_netv4.assert_called_with(net.id, user)
 
 
 class NetworkIPv4AsyncPostDeployErrorTestCase(NetworkApiTestCase):

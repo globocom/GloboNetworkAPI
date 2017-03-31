@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import mock
 from django.test.client import Client
+from mock import patch
 
-from networkapi.api_ip import facade
 from networkapi.api_ip.tasks import update_ipv4
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
@@ -21,20 +20,27 @@ class IPv4AsyncPutSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_task_id_create_in_put_one_ipv4_success(self):
+    @patch('networkapi.api_ip.facade.update_ipv4')
+    @patch('networkapi.api_ip.facade.get_ipv4_by_id')
+    @patch('networkapi.usuario.models.Usuario.objects.get')
+    @patch('networkapi.api_ip.tasks.update_ipv4.update_state')
+    def test_task_id_create_in_put_one_ipv4_success(self, *args):
         """Test success of id task generate for ipv4 put success."""
+
+        mock_get_user = args[1]
+        mock_get_ipv4 = args[2]
+        mock_update_ipv4 = args[3]
 
         ipv4 = Ip(id=1)
         user = Usuario(id=1, nome='test')
 
-        facade.update_ipv4 = mock.MagicMock(return_value=ipv4)
-        facade.get_ipv4_by_id = mock.MagicMock(return_value=ipv4)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        update_ipv4.update_state = mock.MagicMock()
+        mock_update_ipv4.return_value = ipv4
+        mock_get_ipv4.return_value = ipv4
+        mock_get_user.return_value = user
 
         update_ipv4({'id': 1}, user.id)
 
-        facade.update_ipv4.assert_called_with({'id': 1}, user)
+        mock_update_ipv4.assert_called_with({'id': 1}, user)
 
 
 class IPv4AsyncPutErrorTestCase(NetworkApiTestCase):

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import mock
 from django.test.client import Client
+from mock import patch
 
-from networkapi.api_ip import facade
 from networkapi.api_ip.tasks import create_ipv6
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
@@ -21,19 +20,24 @@ class IPv6AsyncPostSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_task_id_create_in_post_one_ipv6_success(self):
+    @patch('networkapi.api_ip.facade.create_ipv6')
+    @patch('networkapi.usuario.models.Usuario.objects.get')
+    @patch('networkapi.api_ip.tasks.create_ipv6.update_state')
+    def test_task_id_create_in_post_one_ipv6_success(self, *args):
         """Test success of id task generate for ipv6 post success."""
+
+        mock_get_user = args[1]
+        mock_create_ipv6 = args[2]
 
         ipv6 = Ip(id=1)
         user = Usuario(id=1, nome='test')
 
-        facade.create_ipv6 = mock.MagicMock(return_value=ipv6)
-        Usuario.objects.get = mock.MagicMock(return_value=user)
-        create_ipv6.update_state = mock.MagicMock()
+        mock_create_ipv6.return_value = ipv6
+        mock_get_user.return_value = user
 
         create_ipv6({}, user.id)
 
-        facade.create_ipv6.assert_called_with({}, user)
+        mock_create_ipv6.assert_called_with({}, user)
 
 
 class IPv6AsyncPostErrorTestCase(NetworkApiTestCase):

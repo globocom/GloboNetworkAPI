@@ -37,7 +37,7 @@ class VipRequestDeleteTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_delete_onw_ip_use_vips_success(self):
+    def test_delete_one_ip_use_vips_success(self):
         """Test of success to delete two vips."""
 
         # Does delete request
