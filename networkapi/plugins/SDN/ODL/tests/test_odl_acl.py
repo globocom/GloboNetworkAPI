@@ -54,3 +54,50 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         assert_in("flow-name", acl.flows["flow"][0])
         assert_equal(acl.flows["flow"][0]["flow-name"],
                 data["rules"][0]["description"])
+
+    def test_acl_should_raise_value_error_when_no_destination_is_passed(self):
+        """ Should raise ValueError when no destination is passed """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "description": "simple flow",
+                "source": "10.0.0.1/32",
+            }]
+        }
+
+        acl = AclFlowBuilder(data)
+        assert_raises(ValueError, acl.build)
+
+    def test_acl_should_raise_value_error_when_no_source_is_passed(self):
+        """ Should raise ValueError when no source is passed """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "description": "simple flow",
+                "destination": "10.0.0.2/32",
+            }]
+        }
+
+        acl = AclFlowBuilder(data)
+        assert_raises(ValueError, acl.build)
+
+    def test_acl_should_have_ethernet_type(self):
+        """ Should have ethernet type as match field """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "description": "simple flow",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        acl.build()
+
+        assert_equal(
+            2048,
+            acl.flows["flow"][0]["match"]["ethernet-match"]\
+                    ["ethernet-type"]["type"])
