@@ -9,8 +9,15 @@ from django.conf import settings
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'networkapi.settings')
 
-app = Celery('networkapi', backend='amqp',
-             broker='amqp://test:test@localhost:5672')
+broker = 'amqp://{}:{}@{}:{}/{}'.format(
+    settings.BROKER_USER,
+    settings.BROKER_PASSWORD,
+    settings.BROKER_HOST,
+    settings.BROKER_PORT,
+    settings.BROKER_VHOST,
+)
+
+app = Celery('networkapi', backend='amqp', broker=broker)
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.

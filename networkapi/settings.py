@@ -483,15 +483,12 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 
 BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
 BROKER_DESTINATION = os.getenv('NETWORKAPI_BROKER_DESTINATION', 'tasks')
-BROKER_URI = os.getenv('NETWORKAPI_BROKER_URI',
-                       u'amqp://test2:test2@localhost:5672/')
-BROKER_HOST = os.getenv('NETWORKAPI_BROKER_HOST',
-                        u'localhost:5672')
-BROKER_USERID = os.getenv('NETWORKAPI_BROKER_USERID',
-                          u'test')
-BROKER_PASSWORD = os.getenv('NETWORKAPI_BROKER_PASSWORD',
-                            u'test')
-BROKER_VIRTUAL_HOST = 'tasks'
+BROKER_HOST = os.getenv('NETWORKAPI_BROKER_HOST', u'localhost')
+BROKER_PORT = os.getenv('NETWORKAPI_BROKER_PORT', 5672)
+BROKER_USER = os.getenv('NETWORKAPI_BROKER_USER', u'networkapi')
+BROKER_PASSWORD = os.getenv('NETWORKAPI_BROKER_PASSWORD', u'networkapi')
+BROKER_VHOST = os.getenv('NETWORKAPI_BROKER_VHOST', u'/')
+
 
 ##################################
 # CELERY SETTINGS

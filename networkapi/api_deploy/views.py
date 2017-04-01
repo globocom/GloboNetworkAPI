@@ -53,7 +53,8 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
         lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
         data = dict()
         if request_identifier is not None:
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             data = {'timestamp': int(time.time())}
@@ -66,7 +67,8 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
             script_file, equipment_id, lockvar)
         data['status'] = 'OK'
         if request_identifier is not None:
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             data = {'timestamp': int(time.time()), 'status': 'OK'}

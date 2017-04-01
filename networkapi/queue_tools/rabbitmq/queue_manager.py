@@ -26,8 +26,8 @@ from networkapi.settings import BROKER_CONNECT_TIMEOUT
 from networkapi.settings import BROKER_DESTINATION
 from networkapi.settings import BROKER_HOST
 from networkapi.settings import BROKER_PASSWORD
-from networkapi.settings import BROKER_USERID
-from networkapi.settings import BROKER_VIRTUAL_HOST
+from networkapi.settings import BROKER_USER
+from networkapi.settings import BROKER_VHOST
 
 
 class QueueManager(object):
@@ -36,10 +36,9 @@ class QueueManager(object):
 
     log = logging.getLogger(__name__)
 
-    def __init__(self, broker_uri=None, broker_virtual_host=None,
-                 broker_host=None, broker_userid=None, broker_password=None,
-                 queue_name=None, exchange_name=None, queue_type='direct',
-                 routing_key=None):
+    def __init__(self, broker_vhost=None, broker_host=None, broker_user=None,
+                 broker_password=None, queue_name=None, exchange_name=None,
+                 queue_type='direct', routing_key=None):
         """
             Create a new instance QueueManager and initialize
             with parameters of destination and broker uri
@@ -52,12 +51,12 @@ class QueueManager(object):
 
         self._broker_host = broker_host if \
             broker_host is not None else BROKER_HOST
-        self._broker_userid = broker_userid if \
-            broker_userid is not None else BROKER_USERID
+        self._broker_user = broker_user if \
+            broker_user is not None else BROKER_USER
         self._broker_password = broker_password if \
             broker_password is not None else BROKER_PASSWORD
-        self._broker_virtual_host = broker_virtual_host if \
-            broker_virtual_host is not None else BROKER_VIRTUAL_HOST
+        self._broker_vhost = broker_vhost if \
+            broker_vhost is not None else BROKER_VHOST
         self._queue_name = queue_name if queue_name is not None else \
             BROKER_DESTINATION
         self._exchange_name = exchange_name if exchange_name is not None \
@@ -67,9 +66,9 @@ class QueueManager(object):
         self._queue_type = queue_type
 
         self.log.debug('broker_host:%s', self._broker_host)
-        self.log.debug('broker_userid:%s', self._broker_userid)
+        self.log.debug('broker_user:%s', self._broker_user)
         self.log.debug('broker_password:%s', self._broker_password)
-        self.log.debug('broker_virtual_host:%s', self._broker_virtual_host)
+        self.log.debug('broker_vhost:%s', self._broker_vhost)
         self.log.debug('queue_name:%s', self._queue_name)
         self.log.debug('exchange_name:%s', self._exchange_name)
         self.log.debug('routing_key:%s', self._routing_key)
@@ -106,9 +105,9 @@ class QueueManager(object):
             # Connection
             conn = Connection(
                 host=self._broker_host,
-                userid=self._broker_userid,
+                userid=self._broker_user,
                 password=self._broker_password,
-                virtual_host=self._broker_virtual_host)
+                virtual_host=self._broker_vhost)
 
             # Channel
             channel = conn.channel()

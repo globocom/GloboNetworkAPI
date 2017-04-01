@@ -104,7 +104,8 @@ class VlanCreateScriptAclResource(RestResource):
                 acl_name, vlan_formated, environment, network_type, user, template_name)
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
 

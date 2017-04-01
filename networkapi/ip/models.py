@@ -434,7 +434,8 @@ class NetworkIPv4(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -461,7 +462,8 @@ class NetworkIPv4(BaseModel):
 
             self.active = 0
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             serializer = NetworkIPv4Serializer(self)
@@ -1001,7 +1003,8 @@ class NetworkIPv4(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -1039,7 +1042,8 @@ class NetworkIPv4(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -1827,7 +1831,8 @@ class Ip(BaseModel):
             super(Ip, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
@@ -2101,7 +2106,8 @@ class Ip(BaseModel):
             super(Ip, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
@@ -2686,7 +2692,8 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -2724,7 +2731,8 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -3286,7 +3294,8 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -3324,7 +3333,8 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             queue_manager.append({
@@ -4193,7 +4203,8 @@ class Ipv6(BaseModel):
             super(Ipv6, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
@@ -4476,7 +4487,8 @@ class Ipv6(BaseModel):
             super(Ipv6, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager(queue_name='tasks.aclapi',
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
                                          exchange_name='tasks.aclapi',
                                          routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
