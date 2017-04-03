@@ -112,7 +112,7 @@ class AclFlowBuilder(object):
         if Tokens.destination in rule and Tokens.source in rule:
 
             self.flows["flow"][0]["match"]["ipv4-destination"] = \
-                    rule[Tokens.destination]
+                rule[Tokens.destination]
             self.flows["flow"][0]["match"]["ipv4-source"] = rule[Tokens.source]
 
         else:
@@ -129,7 +129,7 @@ class AclFlowBuilder(object):
 
         else:
             if rule[Tokens.protocol] == "tcp":
-                pass
+                self._build_tcp(rule)
             elif rule[Tokens.protocol] == "udp":
                 pass
             elif rule[Tokens.protocol] == "icmp":
@@ -138,3 +138,27 @@ class AclFlowBuilder(object):
                 message = "Unknown protocol '%s'" % rule[Tokens.protocol]
                 logging.error(self.MALFORMED_MESSAGE % message)
                 raise ValueError(self.MALFORMED_MESSAGE % message)
+
+    def _build_tcp(self, rule):
+        """ Builds a tcp flow based on OpenDayLight json format """
+
+        if Tokens.l4_options in rule:
+            # Checks for destination port
+            if Tokens.dst_port_op in rule[Tokens.l4_options]:
+
+                if rule[Tokens.l4_options][Tokens.dst_port_op] == "eq":
+                    self.flows["flow"][0]["match"]["tcp-destination-port"] = \
+                        rule[Tokens.l4_options][Tokens.dst_port]
+                elif rule[Tokens.l4_options][Tokens.dst_port_op] == "range":
+                    self.flows["flow"][0]["match"]["tcp-destination-port"] = \
+                        rule[Tokens.l4_options][Tokens.dst_port]
+
+            # Checks for source port
+            elif Tokens.src_port_op in rule[Tokens.l4_options]:
+
+                if rule[Tokens.l4_options][Tokens.src_port_op] == "eq":
+                    self.flows["flow"][0]["match"]["tcp-source-port"] = \
+                        rule[Tokens.l4_options][Tokens.src_port]
+                elif rule[Tokens.l4_options][Tokens.src_port_op] == "range":
+                    self.flows["flow"][0]["match"]["tcp-source-port"] = \
+                        rule[Tokens.l4_options][Tokens.src_port]
