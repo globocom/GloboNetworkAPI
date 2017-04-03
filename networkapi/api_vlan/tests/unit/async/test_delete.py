@@ -6,7 +6,9 @@ from mock import patch
 
 from networkapi.api_vlan.tasks import delete_vlan
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
 from networkapi.vlan.models import Vlan
+
 
 log = logging.getLogger(__name__)
 
@@ -29,11 +31,12 @@ class VlanAsyncDeleteSuccessTestCase(NetworkApiTestCase):
         mock_delete_vlan = args[2]
 
         vlan = Vlan(id=1)
+        user = Usuario(id='1', nome='test')
 
         mock_delete_vlan.return_value = vlan
         mock_get_vlan.return_value = vlan
 
-        delete_vlan(1)
+        delete_vlan(1, user.id)
 
         mock_delete_vlan.assert_called_with(1)
 

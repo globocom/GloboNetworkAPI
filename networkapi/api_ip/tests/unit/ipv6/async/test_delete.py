@@ -7,6 +7,7 @@ from mock import patch
 from networkapi.api_ip.tasks import delete_ipv6
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
 
 log = logging.getLogger(__name__)
 
@@ -29,11 +30,12 @@ class IPv6AsyncDeleteSuccessTestCase(NetworkApiTestCase):
         mock_delete_ipv6 = args[2]
 
         ipv6 = Ip(id=1)
+        user = Usuario(id='1', nome='test')
 
         mock_delete_ipv6.return_value = ipv6
         mock_get_ipv6.return_value = ipv6
 
-        delete_ipv6(1)
+        delete_ipv6(1, user.id)
 
         mock_delete_ipv6.assert_called_with(1)
 
