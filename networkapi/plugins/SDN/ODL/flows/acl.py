@@ -27,6 +27,7 @@ class Tokens(object):
     description = "description"
     source = "source"
     destination = "destination"
+    protocol = "protocol"
     l4_options = "l4-options"
 
 
@@ -111,4 +112,19 @@ class AclFlowBuilder(object):
     def build_protocol(self, rule):
         """ Identifies the protocol of the ACL rule """
 
-        pass
+        if Tokens.protocol not in rule:
+            message = "Missing %s field:\n%s" % (Tokens.protocol, rule)
+            logging.error(self.MALFORMED_MESSAGE % message)
+            raise ValueError(self.MALFORMED_MESSAGE % message)
+
+        else:
+            if rule[Tokens.protocol] == "tcp":
+                pass
+            elif rule[Tokens.protocol] == "udp":
+                pass
+            elif rule[Tokens.protocol] == "icmp":
+                pass
+            else:
+                message = "Unknown protocol '%s'" % rule[Tokens.protocol]
+                logging.error(self.MALFORMED_MESSAGE % message)
+                raise ValueError(self.MALFORMED_MESSAGE % message)
