@@ -10,7 +10,7 @@ apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 # RabbitMQ
 apt-get install rabbitmq-server -y
 rabbitmq-plugins enable rabbitmq_management
-rabbitmq-server restart
+rabbitmq-server restart &
 rabbitmqctl add_user networkapi networkapi
 rabbitmqctl add_vhost tasks
 rabbitmqctl add_user tasks tasks

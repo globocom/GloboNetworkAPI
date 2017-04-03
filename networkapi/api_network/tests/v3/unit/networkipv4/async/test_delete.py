@@ -31,11 +31,12 @@ class NetworkIPv4AsyncDeleteSuccessTestCase(NetworkApiTestCase):
         mock_delete_netv4 = args[2]
 
         net = NetworkIPv4(id=1)
+        user = Usuario(id='1', nome='test')
 
         mock_delete_netv4.return_value = net
         mock_get_netv4.return_value = net
 
-        delete_networkv4(1)
+        delete_networkv4(1, user.id)
 
         mock_delete_netv4.assert_called_with(1)
 
