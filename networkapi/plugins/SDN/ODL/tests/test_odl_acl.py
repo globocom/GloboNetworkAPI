@@ -134,3 +134,45 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         }
         acl = AclFlowBuilder(data)
         assert_raises(ValueError, acl.build)
+
+    def test_acl_should_have_tcp_destination_port(self):
+        """ Should have tcp destination port """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "tcp",
+                "description": "simple flow",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "l4-options": {
+                    "dest-port-op": "eq",
+                    "dest-port-start": "26379"
+                }
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        acl.build()
+        assert_equal(acl.flows["flow"][0]["match"]["tcp-destination-port"],
+                data["rules"][0]["l4-options"]["dest-port-start"])
+
+    def test_acl_should_have_tcp_source_port(self):
+        """ Should have tcp source port """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "tcp",
+                "description": "simple flow",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "l4-options": {
+                    "src-port-op": "eq",
+                    "src-port-start": "26379"
+                }
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        acl.build()
+        assert_equal(acl.flows["flow"][0]["match"]["tcp-source-port"],
+                data["rules"][0]["l4-options"]["src-port-start"])
