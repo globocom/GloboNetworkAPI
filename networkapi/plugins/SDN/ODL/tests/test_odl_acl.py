@@ -42,6 +42,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "id": 1,
+                "protocol": "tcp",
                 "description": "simple flow",
                 "source": "10.0.0.1/32",
                 "destination": "10.0.0.2/32",
@@ -61,6 +62,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "id": 1,
+                "protocol": "tcp",
                 "description": "simple flow",
                 "source": "10.0.0.1/32",
             }]
@@ -75,6 +77,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "id": 1,
+                "protocol": "tcp",
                 "description": "simple flow",
                 "destination": "10.0.0.2/32",
             }]
@@ -89,6 +92,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "id": 1,
+                "protocol": "tcp",
                 "description": "simple flow",
                 "source": "10.0.0.1/32",
                 "destination": "10.0.0.2/32",
@@ -101,3 +105,32 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             2048,
             acl.flows["flow"][0]["match"]["ethernet-match"]\
                     ["ethernet-type"]["type"])
+
+    def test_acl_should_raise_exception_when_there_is_no_protocol_field(self):
+        """ Should raise an exception when there is no protocol field """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "description": "simple flow",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        assert_raises(ValueError, acl.build)
+
+    def test_acl_should_raise_exception_when_protocol_is_invalid(self):
+        """ Should raise an exception when there is no protocol field """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "invalid",
+                "description": "simple flow",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        assert_raises(ValueError, acl.build)
