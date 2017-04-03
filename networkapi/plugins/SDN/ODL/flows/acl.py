@@ -33,6 +33,12 @@ class Tokens(object):
     destination = "destination"
     protocol = "protocol"
     l4_options = "l4-options"
+    dst_port_op = "dest-port-op"
+    src_port_op = "src-port-op"
+    dst_port = "dest-port-start"
+    dst_port_end = "dest-port-end"
+    src_port = "src-port-start"
+    src_port_end = "src-port-end"
 
 
 class AclFlowBuilder(object):
