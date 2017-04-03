@@ -19,6 +19,10 @@ import logging
 
 
 class Tokens(object):
+    """ Class that holds all key words from the source json that identifies
+    a valid ACL to be translated to a OpenDayLight json format
+    """
+
     kind = "kind"
     rules = "rules"
 
@@ -65,14 +69,14 @@ class AclFlowBuilder(object):
             logging.info("Building ACL Json: %s", self.raw_data["kind"])
 
             for rule in self.raw_data[Tokens.rules]:
-                self.build_rule(rule)
+                self._build_rule(rule)
 
         else:
             message = "Missing %s or %s fields." % (Tokens.kind, Tokens.rules)
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
-    def build_rule(self, rule):
+    def _build_rule(self, rule):
         """ Build one single ACL rule """
 
         # Assigns the id of the current ACL
@@ -85,10 +89,10 @@ class AclFlowBuilder(object):
         if Tokens.description in rule:
             self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
 
-        self.build_match(rule)
-        self.build_protocol(rule)
+        self._build_match(rule)
+        self._build_protocol(rule)
 
-    def build_match(self, rule):
+    def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
 
         self.flows["flow"][0]["match"] = {
@@ -109,7 +113,7 @@ class AclFlowBuilder(object):
             logging.error(self.MALFORMED_MESSAGE % rule)
             raise ValueError(self.MALFORMED_MESSAGE % rule)
 
-    def build_protocol(self, rule):
+    def _build_protocol(self, rule):
         """ Identifies the protocol of the ACL rule """
 
         if Tokens.protocol not in rule:
