@@ -14,3 +14,25 @@ URL Example::
 
     /api/v3/vlan/async/
 
+Response body:
+
+.. code-block:: json
+
+    [
+        {
+            "task_id": [string with 36 characters]
+        },...
+    ]
+
+Response Example for update of two Vlans:
+
+.. code-block:: json
+
+    [
+        {
+            "task_id": "36dc887e-48bf-4c83-b6f5-281b70976a8f"
+        },
+        {
+            "task_id": "17ebd466-0231-4bd0-8f78-54ed20238fa3"
+        }
+    ]
