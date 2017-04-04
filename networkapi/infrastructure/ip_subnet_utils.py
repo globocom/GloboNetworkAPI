@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,19 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-import re
 import math
+import re
 
 
 def network_mask_from_cidr_mask(cidr_mask):
-    '''Calcula a máscara de uma rede a partir do número do bloco do endereço.
+    """Calcula a máscara de uma rede a partir do número do bloco do endereço.
 
     @param cidr_mask: Valor do bloco do endereço.
 
-    @return: Tuple com o octeto 1, 2, 3, 4 da máscara: (oct1,oct2,oct3,oct4).  
-    '''
+    @return: Tuple com o octeto 1, 2, 3, 4 da máscara: (oct1,oct2,oct3,oct4).
+    """
     address = 0xFFFFFFFF
     address = address << (32 - cidr_mask)
     return ((address >> 24) & 0xFF, (address >> 16) & 0xFF, (address >> 8) & 0xFF, (address >> 0) & 0xFF)
@@ -38,14 +35,14 @@ def _applyNetmask(host, mask):
 
 
 def is_subnetwork(network_address_01, network_address_02):
-    '''Verifica se o endereço network_address_01 é sub-rede do endereço network_address_02.
+    """Verifica se o endereço network_address_01 é sub-rede do endereço network_address_02.
 
     @param network_address_01: Uma tuple com os octetos do endereço, formato: (oct1, oct2, oct3, oct5)
     @param network_address_02: Uma tuple com os octetos do endereço e o bloco, formato: (oct1, oct2, oct3, oct5, bloco)
 
     @return: True se network_address_01 é sub-rede de network_address_02. False caso contrário.
 
-    '''
+    """
     if network_address_01 is None or network_address_02 is None:
         return False
 
@@ -63,11 +60,11 @@ def is_valid_ip(address):
     if address is None:
         return address
 
-    pattern = r"\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
+    pattern = r'\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
     return re.match(pattern, address)
 
 
-#=========================================================================
+# ========================================================================
 # Function to calculate num_hosts by prefix:
 #
 #    IPV4:
@@ -85,7 +82,7 @@ def is_valid_ip(address):
 #            128 - logarithm(num_hosts, 2) = p
 #
 #    where 'num_hosts' is the number of hosts expected
-#=========================================================================
+# ========================================================================
 
 MAX_IPV4_HOSTS = 4294967296
 MAX_IPV6_HOSTS = 340282366920938463463374607431768211456
@@ -110,7 +107,7 @@ if __name__ == '__main__':
     print get_prefix_IPV4(255)
 
     # IPV4
-    #=========================================================================
+    # ========================================================================
     # /0 : 4294967296    /11 : 2097152    /22 : 1024
     # /1 : 2147483648    /12 : 1048576    /23 : 512
     # /2 : 1073741824    /13 : 524288     /24 : 256
@@ -122,10 +119,10 @@ if __name__ == '__main__':
     # /8 : 16777216      /19 : 8192       /30 : 4
     # /9 : 8388608       /20 : 4096       /31 : 2
     # /10 : 4194304      /21 : 2048       /32 : 1
-    #=========================================================================
+    # ========================================================================
 
     # IPV6
-    #=========================================================================
+    # ========================================================================
     # /0 : 340282366920938463463374607431768211456  /11 : 166153499473114484112975882535043072  /22 : 81129638414606681695789005144064
     # /1 : 170141183460469231731687303715884105728  /12 : 83076749736557242056487941267521536   /23 : 40564819207303340847894502572032
     # /2 : 85070591730234615865843651857942052864   /13 : 41538374868278621028243970633760768   /24 : 20282409603651670423947251286016
@@ -174,4 +171,4 @@ if __name__ == '__main__':
     # /119 : 512
     # /120 : 256
     # /121 : 128
-    #=========================================================================
+    # ========================================================================

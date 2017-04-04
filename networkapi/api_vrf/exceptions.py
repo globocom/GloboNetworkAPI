@@ -29,11 +29,12 @@ class VrfError(APIException):
     def __init__(self, msg=None):
         self.details = msg or self.default_detail
 
+
 class VrfRelatedToEnvironment(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Error on deleting Vrf.'
 
+
 class VrfAssociatedToVlanEquipment(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Error on deleting Vrf.'
-

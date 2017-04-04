@@ -2272,7 +2272,7 @@ class ServerPool(BaseModel):
         managed = True
 
     def __str__(self):
-        return self.identifier
+        return '{} - {}'.format(self.identifier, self.environment)
 
     def prepare_and_save(self, default_port, user):
         self.default_port = default_port

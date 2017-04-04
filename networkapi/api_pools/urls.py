@@ -56,6 +56,8 @@ urlpatterns = patterns(
     ########################
     # Manage Pool V3
     ########################
+    url(r'^v3/pool/deploy/async/(?P<obj_ids>[;\w]+)/$',
+        views_v3.PoolAsyncDeployView.as_view()),
     url(r'^v3/pool/deploy/(?P<obj_ids>[;\w]+)/member/status/$',
         views_v3.PoolMemberStateView.as_view()),
     url(r'^v3/pool/deploy/(?P<obj_ids>[;\w]+)/$',

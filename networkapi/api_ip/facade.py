@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 import logging
 
 from django.core.exceptions import FieldError
@@ -94,13 +93,12 @@ def update_ipv4(ipv4, user):
         return ipv4_obj
 
 
-def delete_ipv4_list(ipv4_list):
+def delete_ipv4(ipv4_id):
     """Delete Ipv4."""
 
     try:
-        for ipv4 in ipv4_list:
-            ipv4_obj = get_ipv4_by_id(ipv4)
-            ipv4_obj.delete_v3()
+        ipv4_obj = get_ipv4_by_id(ipv4_id)
+        ipv4_obj.delete_v3()
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
     except IpCantBeRemovedFromVip, e:
@@ -149,13 +147,12 @@ def update_ipv6(ipv6, user):
         return ipv6_obj
 
 
-def delete_ipv6_list(ipv6_list):
+def delete_ipv6(ipv6_id):
     """Delete Ipv6."""
 
     try:
-        for ipv6 in ipv6_list:
-            ipv6_obj = get_ipv6_by_id(ipv6)
-            ipv6_obj.delete_v3()
+        ipv6_obj = get_ipv6_by_id(ipv6_id)
+        ipv6_obj.delete_v3()
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.message)
     except IpCantBeRemovedFromVip, e:

@@ -1,5 +1,4 @@
-# encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,9 +15,12 @@
 # limitations under the License.
 import json
 import logging
+
 import mock
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
+
 from networkapi import settings
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
 from networkapi.usuario.models import Usuario
 
 log = logging.getLogger('testing')
@@ -49,11 +51,15 @@ def dict2xml(x):
 #         {'finalidade': 'Producao', 'cliente': 'Usuario WEB', 'ambiente':'Portal FE','cache': '(nenhum)', 'status_code': 200},
 #         {'finalidade': 'Producao', 'cliente': 'Usuario WEB', 'ambiente':'Portal FE','cache': 'CACHOS-PORTAL-DSR', 'status_code': 200},
 
-#[ { cliente: '', }, { 'cliente', '' }]
+# [ { cliente: '', }, { 'cliente', '' }]
 
 
 def permute(**kargs):
-    """ permute(finalidade=['Producao', 'Homologacao'], cliente=['Usuario Web', 'Usuario Interno'], ...) """
+    """permute
+    Args:
+        - finalidade=['Producao', 'Homologacao'],
+        - cliente=['Usuario Web', 'Usuario Interno'], ...)
+    """
 
     if len(kargs) == 0:
         return [{}]
@@ -82,9 +88,11 @@ def permute(**kargs):
 def mock_login(func):
 
     def func_wrapper(*args, **kwargs):
-        authenticator = mock.patch('networkapi.api_rest.authentication.BasicAuthentication.authenticate').start()
+        authenticator = mock.patch(
+            'networkapi.api_rest.authentication.BasicAuthentication.authenticate').start()
         authenticator.return_value = (Usuario.objects.get(user='test'), None)
-        permission_decorator = mock.patch('rest_framework.decorators.permission_classes').start()
+        permission_decorator = mock.patch(
+            'rest_framework.decorators.permission_classes').start()
         permission_decorator.return_value = lambda func: func
 
         result = func(*args, **kwargs)

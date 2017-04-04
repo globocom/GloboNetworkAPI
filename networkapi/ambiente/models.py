@@ -884,6 +884,9 @@ class Ambiente(BaseModel):
         managed = True
         unique_together = ('grupo_l3', 'ambiente_logico', 'divisao_dc')
 
+    def __str__(self):
+        return self.name
+
     def _get_name(self):
         """Returns complete name for environment."""
 

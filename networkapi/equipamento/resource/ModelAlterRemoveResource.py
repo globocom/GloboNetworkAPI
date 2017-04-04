@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_MODEL
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_MODEL
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import Marca
+from networkapi.equipamento.models import MarcaModeloNameDuplicatedError
+from networkapi.equipamento.models import MarcaNotFoundError
+from networkapi.equipamento.models import Modelo
+from networkapi.equipamento.models import ModeloNotFoundError
+from networkapi.equipamento.models import ModeloUsedByEquipamentoError
 from networkapi.exception import InvalidValueError
-from networkapi.equipamento.models import Marca, MarcaNotFoundError, EquipamentoError, Modelo, ModeloNotFoundError, MarcaModeloNameDuplicatedError, ModeloUsedByEquipamentoError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class ModelAlterRemoveResource(RestResource):
@@ -39,7 +49,7 @@ class ModelAlterRemoveResource(RestResource):
         """
         try:
 
-            self.log.info("Edit Model")
+            self.log.info('Edit Model')
 
             # User permission
             if not has_perm(user, AdminPermission.BRAND_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -138,7 +148,7 @@ class ModelAlterRemoveResource(RestResource):
         """
         try:
 
-            self.log.info("Remove Model")
+            self.log.info('Remove Model')
 
             # User permission
             if not has_perm(user, AdminPermission.BRAND_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -163,7 +173,7 @@ class ModelAlterRemoveResource(RestResource):
 
                     if model.equipamento_set.count() > 0:
                         raise ModeloUsedByEquipamentoError(
-                            None, u"O modelo %s tem equipamento associado." % model.id)
+                            None, u'O modelo %s tem equipamento associado.' % model.id)
 
                     # remove Model
                     model.delete()

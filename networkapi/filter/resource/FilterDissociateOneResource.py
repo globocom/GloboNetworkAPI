@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.rest import RestResource
-from networkapi.filter.models import Filter, FilterError, FilterNotFoundError
-from networkapi.filterequiptype.models import FilterEquipType, CantDissociateError
-from networkapi.equipamento.models import TipoEquipamento, TipoEquipamentoNotFoundError
-from networkapi.auth import has_perm
+
 import logging
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.exception import InvalidValueError
+
 from django.core.exceptions import ObjectDoesNotExist
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.equipamento.models import TipoEquipamento
+from networkapi.equipamento.models import TipoEquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.filter.models import Filter
+from networkapi.filter.models import FilterError
+from networkapi.filter.models import FilterNotFoundError
+from networkapi.filterequiptype.models import CantDissociateError
+from networkapi.filterequiptype.models import FilterEquipType
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class FilterDissociateOneResource(RestResource):
 
-    '''Class that receives requests to remove association between Filter and TipoEquipamento.'''
+    """Class that receives requests to remove association between Filter and TipoEquipamento."""
 
     log = logging.getLogger('FilterDissociateOneResource')
 
@@ -42,7 +47,7 @@ class FilterDissociateOneResource(RestResource):
         """
 
         try:
-            self.log.info("")
+            self.log.info('')
             # Commons Validations
 
             # User permission

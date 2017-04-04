@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,22 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function, mount_ipv6_string
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_NETWORK_IPV6
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.ip.models import NetworkIPv6, Ipv6Equipament, NetworkIPv6NotFoundError, IpCantRemoveFromServerPool
-from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV6
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.ip.models import IpCantBeRemovedFromVip
-from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError,\
-    Equipamento
+from networkapi.ip.models import IpCantRemoveFromServerPool
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6NotFoundError
 from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import mount_ipv6_string
 
 
 class NetworkIPv6DeallocateResource(RestResource):
@@ -37,12 +43,12 @@ class NetworkIPv6DeallocateResource(RestResource):
     log = logging.getLogger('NetworkIPv6DeallocateResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
-        '''Handles DELETE requests to deallocate all relationships between NetworkIPv6.
+        """Handles DELETE requests to deallocate all relationships between NetworkIPv6.
 
         URL: network/ipv6/<id_ipv6>/deallocate/
-        '''
+        """
 
-        self.log.info("Deallocate all relationships between NetworkIPv6.")
+        self.log.info('Deallocate all relationships between NetworkIPv6.')
 
         try:
 
@@ -71,7 +77,8 @@ class NetworkIPv6DeallocateResource(RestResource):
 
             for ip in network_ipv6.ipv6_set.all():
 
-                server_pool_member_list = ServerPoolMember.objects.filter(ipv6=ip)
+                server_pool_member_list = ServerPoolMember.objects.filter(
+                    ipv6=ip)
 
                 if server_pool_member_list.count() != 0:
 
@@ -79,7 +86,8 @@ class NetworkIPv6DeallocateResource(RestResource):
                     server_pool_name_list = set()
 
                     for member in server_pool_member_list:
-                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        item = '{}: {}'.format(
+                            member.server_pool.id, member.server_pool.identifier)
                         server_pool_name_list.add(item)
 
                     server_pool_name_list = list(server_pool_name_list)
@@ -89,7 +97,7 @@ class NetworkIPv6DeallocateResource(RestResource):
                     network_ipv6_ip = mount_ipv6_string(network_ipv6)
 
                     raise IpCantRemoveFromServerPool({'ip': ip_formated, 'network_ipv6_ip': network_ipv6_ip, 'server_pool_identifiers': server_pool_identifiers},
-                                               "Não foi possível excluir a rede de id %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s" % (network_ipv6_ip, ip_formated, server_pool_identifiers))
+                                                     'Não foi possível excluir a rede de id %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s' % (network_ipv6_ip, ip_formated, server_pool_identifiers))
 
             with distributedlock(LOCK_NETWORK_IPV6 % network_ipv6_id):
 
@@ -98,7 +106,8 @@ class NetworkIPv6DeallocateResource(RestResource):
                     ipv6equipament__ip__networkipv6=network_ipv6).values_list('id', flat=True)
                 destroy_cache_function(key_list_eqs, True)
                 # Remove NetworkIPv6 (will remove all relationships by cascade)
-                network_ipv6.delete()
+                lock_list = [LOCK_NETWORK_IPV6 % network_ipv6_id]
+                network_ipv6.delete_v3(lock_list)
 
                 # Return nothing
                 return self.response(dumps_networkapi({}))
@@ -108,7 +117,7 @@ class NetworkIPv6DeallocateResource(RestResource):
         except EquipamentoAmbienteNotFoundError, e:
             return self.response_error(320)
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319, "network", 'networkipv6', network_ipv6_id)
+            return self.response_error(319, 'network', 'networkipv6', network_ipv6_id)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except NetworkIPv6NotFoundError, e:

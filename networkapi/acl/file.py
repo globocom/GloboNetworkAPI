@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,9 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import os
 import logging
+import os
 
 
 class FileError(Exception):
@@ -25,8 +23,9 @@ class FileError(Exception):
         self.error = error
 
     def __str__(self):
-        msg = u"%s" % (self.error)
-        return msg.encode("utf-8", "replace")
+        msg = u'%s' % (self.error)
+        return msg.encode('utf-8', 'replace')
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +34,17 @@ class File():
 
     @classmethod
     def read(cls, file_name):
-        '''Reading File
+        """Reading File
 
         @param file_name: File name
 
         @raise FileError: Failed to reading file
-        '''
+        """
         try:
 
-            file_name = "./%s" % file_name
+            file_name = './%s' % file_name
 
-            file_acl = open(file_name, "r")
+            file_acl = open(file_name, 'r')
             content = file_acl.read()
             file_acl.close()
 
@@ -57,18 +56,18 @@ class File():
 
     @classmethod
     def write(cls, file_name, content):
-        '''Writing File
+        """Writing File
 
         @param file_name: File name
         @param content: File content
 
         @raise FileError: Failed to writing file
-        '''
+        """
         try:
 
-            file_name = "./%s" % file_name
+            file_name = './%s' % file_name
 
-            file_acl = open(file_name, "w")
+            file_acl = open(file_name, 'w')
             file_acl.write(content)
             file_acl.close()
 
@@ -78,17 +77,17 @@ class File():
 
     @classmethod
     def create(cls, file_name):
-        '''Creating File
+        """Creating File
 
         @param file_name: File name
 
         @raise FileError: Failed to creating file
-        '''
+        """
         try:
 
-            file_name = "./%s" % file_name
+            file_name = './%s' % file_name
 
-            file_acl = open(file_name, "w")
+            file_acl = open(file_name, 'w')
             file_acl.close()
 
         except Exception, e:
@@ -97,17 +96,17 @@ class File():
 
     @classmethod
     def remove(cls, file_name):
-        '''Removing File
+        """Removing File
 
         @param file_name: File name
 
         @raise FileError: Failed to removing file
-        '''
+        """
         try:
 
-            file_name = "./%s" % file_name
+            file_name = './%s' % file_name
 
-            erro = os.system("rm %s" % file_name)
+            erro = os.system('rm %s' % file_name)
 
         except Exception, e:
             logger.error(e)

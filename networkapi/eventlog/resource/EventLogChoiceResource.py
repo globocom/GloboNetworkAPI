@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-import logging
-from networkapi.rest import RestResource
+from networkapi.eventlog.models import EventLog
+from networkapi.eventlog.models import EventLogError
+from networkapi.eventlog.models import Functionality
 from networkapi.exception import InvalidValueError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
-from networkapi.eventlog.models import EventLog, EventLogError, Functionality
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
 from networkapi.usuario.models import Usuario
+
 
 def ValuesQuerySetToList(vqs):
     data = list()

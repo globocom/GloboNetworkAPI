@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,22 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.exception import InvalidValueError, \
-    RequestVipsNotBeenCreatedError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
 
 import logging
-from networkapi.requisicaovips.models import RequisicaoVips
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, \
-    clone
 from datetime import datetime
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import clone
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class RequestVipL7ApplyResource(RestResource):
@@ -42,7 +45,7 @@ class RequestVipL7ApplyResource(RestResource):
         URLs: /vip/l7/<id_vip>/apply/
         """
 
-        self.log.info("Applies a new L7 filter to VIP")
+        self.log.info('Applies a new L7 filter to VIP')
 
         try:
             id_vip = kwargs.get('id_vip')
@@ -76,13 +79,13 @@ class RequestVipL7ApplyResource(RestResource):
                     self.log.error(
                         u'Filter can not be applied because VIP has not been validated yet.')
                     # raise RequestVipsNotBeenCreatedError(None)
-                    return self.response_error(315, "O filtro deve ser validado antes de aplicado.")
+                    return self.response_error(315, 'O filtro deve ser validado antes de aplicado.')
 
                 # salva data, passa o aplicado para rollback, passa o novo para
                 # aplicado
 
                 vip.applied_l7_datetime = datetime.now().strftime(
-                    "%Y-%m-%d %H:%M:%S")
+                    '%Y-%m-%d %H:%M:%S')
 
                 vip.filter_rollback = vip.filter_applied
                 vip.rule_rollback = vip.rule_applied

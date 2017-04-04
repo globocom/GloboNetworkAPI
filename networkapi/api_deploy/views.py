@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from django.db.transaction import commit_on_success
-from django.db.models import Q
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework.response import Response
+import logging
 import time
 
-import logging
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.interface.models import InterfaceNotFoundError
-from networkapi.api_deploy.permissions import Read, Write, DeployConfig
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from networkapi.api_deploy import exceptions
 from networkapi.api_deploy import facade
+from networkapi.api_deploy.permissions import DeployConfig
+from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
-from networkapi.settings import USER_SCRIPTS_REL_PATH
-from networkapi.queue_tools.queue_manager import QueueManager
 from networkapi.queue_tools import queue_keys
+from networkapi.queue_tools.rabbitmq import QueueManager
+from networkapi.settings import USER_SCRIPTS_REL_PATH
 
 log = logging.getLogger(__name__)
 
@@ -50,23 +45,35 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
     """
 
     try:
-        script = request.DATA["script_data"]
-        request_identifier = request.DATA["identifier"]
-        script_file = facade.create_file_from_script(script, USER_SCRIPTS_REL_PATH)
+        script = request.DATA['script_data']
+        request_identifier = request.DATA['identifier']
+        script_file = facade.create_file_from_script(
+            script, USER_SCRIPTS_REL_PATH)
         equipment_id = int(equipment_id)
         lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
         data = dict()
         if request_identifier is not None:
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data = {'timestamp': int(time.time())}
-            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': data})
+            queue_manager.append({
+                'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT,
+                'identifier': request_identifier,
+                'data': data})
             queue_manager.send()
-        data["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
-        data["status"] = "OK"
+        data['output'] = facade.deploy_config_in_equipment_synchronous(
+            script_file, equipment_id, lockvar)
+        data['status'] = 'OK'
         if request_identifier is not None:
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data = {'timestamp': int(time.time()), 'status': 'OK'}
-            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT, 'identifier': request_identifier, 'data': data})
+            queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT,
+                                  'identifier': request_identifier, 'data': data})
             queue_manager.send()
         return Response(data)
 
@@ -87,28 +94,31 @@ def deploy_sync_copy_script_to_multiple_equipments(request):
     """
 
     try:
-        script = request.DATA["script_data"]
-        id_equips = request.DATA["id_equips"]
+        script = request.DATA['script_data']
+        id_equips = request.DATA['id_equips']
 
-        #Check equipment permissions
+        # Check equipment permissions
         for id_equip in id_equips:
-            #TODO
+            # TODO
             pass
 
         output_data = dict()
 
-        script_file = facade.create_file_from_script(script, USER_SCRIPTS_REL_PATH)
+        script_file = facade.create_file_from_script(
+            script, USER_SCRIPTS_REL_PATH)
         for id_equip in id_equips:
             equipment_id = int(id_equip)
             lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
             output_data[equipment_id] = dict()
             try:
-                output_data[equipment_id]["output"] = facade.deploy_config_in_equipment_synchronous(script_file, equipment_id, lockvar)
-                output_data[equipment_id]["status"] = "OK"
+                output_data[equipment_id]['output'] = facade.deploy_config_in_equipment_synchronous(
+                    script_file, equipment_id, lockvar)
+                output_data[equipment_id]['status'] = 'OK'
             except Exception, e:
-                log.error("Error applying script file to equipment_id %s: %s" %(equipment_id, e))
-                output_data[equipment_id]["output"] = str(e)
-                output_data[equipment_id]["status"] = "ERROR"
+                log.error('Error applying script file to equipment_id %s: %s' % (
+                    equipment_id, e))
+                output_data[equipment_id]['output'] = str(e)
+                output_data[equipment_id]['status'] = 'ERROR'
 
         return Response(output_data)
     except KeyError, key:
@@ -117,4 +127,3 @@ def deploy_sync_copy_script_to_multiple_equipments(request):
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()
-

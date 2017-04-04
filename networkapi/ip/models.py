@@ -33,6 +33,8 @@ from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
 from networkapi.distributedlock import LOCK_IP_EQUIPMENT
 from networkapi.distributedlock import LOCK_IP_EQUIPMENT_ONE
+from networkapi.distributedlock import LOCK_IPV4
+from networkapi.distributedlock import LOCK_IPV6
 from networkapi.distributedlock import LOCK_IPV6_EQUIPMENT
 from networkapi.distributedlock import LOCK_IPV6_EQUIPMENT_ONE
 from networkapi.distributedlock import LOCK_NETWORK_IPV4
@@ -51,7 +53,7 @@ from networkapi.infrastructure.ipaddr import IPv6Address
 from networkapi.infrastructure.ipaddr import IPv6Network
 from networkapi.models.BaseModel import BaseModel
 from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools.rabbitmq import QueueManager
 from networkapi.util import mount_ipv4_string
 from networkapi.util import mount_ipv6_string
 from networkapi.util import network
@@ -432,7 +434,10 @@ class NetworkIPv4(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv4_ACTIVATE,
                 'kind': queue_keys.NETWORKv4_KEY,
@@ -457,13 +462,18 @@ class NetworkIPv4(BaseModel):
 
             self.active = 0
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             serializer = NetworkIPv4Serializer(self)
             data_to_queue = serializer.data
-            data_to_queue.update(
-                {'description': queue_keys.NETWORKv4_DEACTIVATE})
-            queue_manager.append({'action': queue_keys.NETWORKv4_DEACTIVATE,
-                                  'kind': queue_keys.NETWORKv4_KEY, 'data': data_to_queue})
+            data_to_queue.update({
+                'description': queue_keys.NETWORKv4_DEACTIVATE})
+            queue_manager.append({
+                'action': queue_keys.NETWORKv4_DEACTIVATE,
+                'kind': queue_keys.NETWORKv4_KEY,
+                'data': data_to_queue})
             queue_manager.send()
             self.save(authenticated_user, commit=commit)
 
@@ -873,7 +883,7 @@ class NetworkIPv4(BaseModel):
             # Create locks for environment
             locks_name = list()
             lock_name = LOCK_NETWORK_IPV4 % self.id
-            if locks_name not in locks_used:
+            if lock_name not in locks_used:
                 locks_name.append(lock_name)
 
             locks_list = create_lock_with_blocking(locks_name)
@@ -911,13 +921,13 @@ class NetworkIPv4(BaseModel):
 
         # Prepares lock for object current network
         lock_name = LOCK_NETWORK_IPV4 % self.id
-        if locks_name not in locks_used:
+        if lock_name not in locks_used:
             locks_name.append(lock_name)
 
         # Prepares lock for environment related
         for env in envs:
             lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
-            if locks_name not in locks_used:
+            if lock_name not in locks_used:
                 locks_name.append(lock_name)
 
         # Create locks for environment and vlan
@@ -993,7 +1003,10 @@ class NetworkIPv4(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv4_ACTIVATE,
                 'kind': queue_keys.NETWORKv4_KEY,
@@ -1029,7 +1042,10 @@ class NetworkIPv4(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv4_DEACTIVATE,
                 'kind': queue_keys.NETWORKv4_KEY,
@@ -1815,7 +1831,10 @@ class Ip(BaseModel):
             super(Ip, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
             queue_manager.append({
                 'action': queue_keys.IPv4_REMOVE,
@@ -1976,6 +1995,11 @@ class Ip(BaseModel):
 
             locks_name = list()
 
+            # Prepare lock for ip
+            lock_name = LOCK_IPV4 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
             # Prepare locks for environment
             for env in envs:
                 lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
@@ -2020,20 +2044,22 @@ class Ip(BaseModel):
             # Removes old associates
             for ip_eqpt in self.ipequipamento_set\
                     .exclude(equipamento__in=eqpts):
-                ip_eqpt.delete_v3()
+                ip_eqpt.delete_v3(bypass_ip=True)
 
         except IpErrorV3, e:
             self.log.error(e.message)
             raise IpErrorV3(e.message)
+
         except Exception, e:
             msg = u'Error edit IP.: %s' % e
             self.log.error(msg)
             raise IpErrorV3(msg)
+
         finally:
             # Destroy locks
             destroy_lock(locks_list)
 
-    def delete_v3(self):
+    def delete_v3(self, locks_used=[]):
         """
         Method V3 to remove Ip.
         Before removing the IP removes all your requests
@@ -2042,6 +2068,17 @@ class Ip(BaseModel):
         @raise IpCantBeRemovedFromVip: Ip is associated with created
                                        Vip Request.
         """
+
+        locks_name = list()
+
+        # Prepare lock for ip
+        lock_name = LOCK_IPV4 % self.id
+        if lock_name not in locks_used:
+            locks_name.append(lock_name)
+
+        # Create Locks
+        locks_name = list(set(locks_name))
+        locks_list = create_lock_with_blocking(locks_name)
 
         try:
             for vip in self.viprequest_set.all():
@@ -2069,7 +2106,10 @@ class Ip(BaseModel):
             super(Ip, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
             queue_manager.append({
                 'action': queue_keys.IPv4_REMOVE,
@@ -2080,6 +2120,15 @@ class Ip(BaseModel):
 
         except IpCantBeRemovedFromVip, e:
             raise IpCantBeRemovedFromVip(e.cause, e.message)
+
+        except Exception, e:
+            msg = u'Error delete IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
 
     def validate_v3(self, equipments):
         """Validate Ip."""
@@ -2643,7 +2692,10 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv6_ACTIVATE,
                 'kind': queue_keys.NETWORKv6_KEY,
@@ -2679,7 +2731,10 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv6_DEACTIVATE,
                 'kind': queue_keys.NETWORKv6_KEY,
@@ -3157,13 +3212,13 @@ class NetworkIPv6(BaseModel):
 
         # Prepares lock for object current network
         lock_name = LOCK_NETWORK_IPV6 % self.id
-        if locks_name not in locks_used:
+        if lock_name not in locks_used:
             locks_name.append(lock_name)
 
         # Prepares lock for environment related
         for env in envs:
             lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
-            if locks_name not in locks_used:
+            if lock_name not in locks_used:
                 locks_name.append(lock_name)
 
         # Create locks for environment and vlan
@@ -3239,7 +3294,10 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv6_ACTIVATE,
                 'kind': queue_keys.NETWORKv6_KEY,
@@ -3275,7 +3333,10 @@ class NetworkIPv6(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.NETWORKv6_DEACTIVATE,
                 'kind': queue_keys.NETWORKv6_KEY,
@@ -4142,7 +4203,10 @@ class Ipv6(BaseModel):
             super(Ipv6, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
             queue_manager.append({
                 'action': queue_keys.IPv6_REMOVE,
@@ -4312,6 +4376,11 @@ class Ipv6(BaseModel):
 
             locks_name = list()
 
+            # Prepare lock for ipv6
+            lock_name = LOCK_IPV6 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
             # Prepare locks for environment
             for env in envs:
                 lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
@@ -4356,20 +4425,22 @@ class Ipv6(BaseModel):
             # Removes old associates
             for ip_eqpt in self.ipv6equipament_set\
                     .exclude(equipamento__in=eqpts):
-                ip_eqpt.delete_v3()
+                ip_eqpt.delete_v3(bypass_ip=True)
 
         except IpErrorV3, e:
             self.log.error(e.message)
             raise IpErrorV3(e.message)
+
         except Exception, e:
             msg = u'Error edit IP.: %s' % e
             self.log.error(msg)
             raise IpErrorV3(msg)
+
         finally:
             # Destroy locks
             destroy_lock(locks_list)
 
-    def delete_v3(self):
+    def delete_v3(self, locks_used=[]):
         """
         Method V3 to remove Ipv6.
         Before removing the IP removes all your requests
@@ -4378,6 +4449,18 @@ class Ipv6(BaseModel):
         @raise IpCantBeRemovedFromVip: Ipv6 is associated with created
                                        Vip Request.
         """
+
+        locks_name = list()
+
+        # Prepare lock for ipv6
+        lock_name = LOCK_IPV6 % self.id
+        if lock_name not in locks_used:
+            locks_name.append(lock_name)
+
+        # Create Locks
+        locks_name = list(set(locks_name))
+        locks_list = create_lock_with_blocking(locks_name)
+
         try:
             for vip in self.viprequest_set.all():
                 id_vip = vip.id
@@ -4404,7 +4487,10 @@ class Ipv6(BaseModel):
             super(Ipv6, self).delete()
 
             # Sends to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
             queue_manager.append({
                 'action': queue_keys.IPv6_REMOVE,
@@ -4415,6 +4501,15 @@ class Ipv6(BaseModel):
 
         except IpCantBeRemovedFromVip, e:
             raise IpCantBeRemovedFromVip(e.cause, e.message)
+
+        except Exception, e:
+            msg = u'Error edit IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
 
     def validate_v3(self, equipments):
         """Validate Ip."""

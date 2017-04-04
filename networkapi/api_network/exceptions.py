@@ -21,8 +21,8 @@ class DHCPRelayAlreadyExistsError(APIException):
     default_detail = 'DHCPRelayIP with giver parameters already found.'
 
     def __init__(self, ip_id, network_id):
-        self.detail = u'DHCPRelayIP with giver parameters already found (%s, %s).' % (
-            ip_id, network_id)
+        self.detail = u'DHCPRelayIP with giver parameters already found ' \
+            '(%s, %s).' % (ip_id, network_id)
 
 
 class EquipmentIDNotInCorrectEnvException(APIException):
@@ -32,14 +32,15 @@ class EquipmentIDNotInCorrectEnvException(APIException):
 
 class IncorrectNetworkRouterRegistryException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Equipment IPs not correctly registered. \
-             In case of multiple gateways, they should have a registered IP other than the gateway.'
+    default_detail = 'Equipment IPs not correctly registered. In case of ' \
+        'multiple gateways, they should have a registered IP other than ' \
+        'the gateway.'
 
 
 class IncorrectRedundantGatewayRegistryException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Equipment IPs not correctly registered. \
-         Equipments should have first IP of network allocated for them as gateways.'
+    default_detail = 'Equipment IPs not correctly registered. Equipments '\
+        'should have first IP of network allocated for them as gateways.'
 
 
 class InvalidInputException(APIException):
@@ -70,8 +71,9 @@ class NoEnvironmentRoutersFoundException(APIException):
 class NetworkConflictException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'One of the equipment associated with the environment ' \
-        'of this Vlan is also associated with other environment that has a '\
-        'network with the same track, add filters in environments if necessary.'
+        'of this Vlan is also associated with other environment that has a ' \
+        'network with the same track, add filters in environments if ' \
+        'necessary.'
 
     def __init__(self, detail=default_detail):
         self.detail = detail

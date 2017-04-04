@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ class DsrL3toVipAllResource(RestResource):
 
         try:
 
-            self.log.info("GET to list all the DSRL3 of VIPs")
+            self.log.info('GET to list all the DSRL3 of VIPs')
 
             # User permission
             if not has_perm(user, AdminPermission.OPTION_VIP, AdminPermission.READ_OPERATION):

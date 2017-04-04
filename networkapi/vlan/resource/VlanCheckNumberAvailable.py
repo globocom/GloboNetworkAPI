@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from networkapi.rest import RestResource, UserNotAuthorizedError
 import logging
-from networkapi.infrastructure.xml_utils import dumps_networkapi
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-
-import logging
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.settings import MAX_VLAN_NUMBER_01
+from networkapi.settings import MAX_VLAN_NUMBER_02
+from networkapi.settings import MIN_VLAN_NUMBER_01
+from networkapi.settings import MIN_VLAN_NUMBER_02
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, \
-    AmbienteError
-from networkapi.vlan.models import Vlan, VlanNotFoundError
-from networkapi.settings import MIN_VLAN_NUMBER_01, MAX_VLAN_NUMBER_01, \
-    MIN_VLAN_NUMBER_02, MAX_VLAN_NUMBER_02
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanNotFoundError
 
 logger = logging.getLogger('VlanCheckNumberAvailable')
 

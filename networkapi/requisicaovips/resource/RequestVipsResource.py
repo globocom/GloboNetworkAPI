@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ class RequestVipsResource(RestResource):
         deprecated:: Use the new rest API
         """
 
-        self.log.info("Add request VIP")
+        self.log.info('Add request VIP')
 
         try:
             # Load XML data
@@ -331,7 +331,7 @@ class RequestVipsResource(RestResource):
         deprecated:: Use the new rest API
         """
 
-        self.log.info("Change request VIP")
+        self.log.info('Change request VIP')
 
         try:
 

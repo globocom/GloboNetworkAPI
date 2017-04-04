@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -30,8 +30,10 @@ class ACE(BasePlugin):
             if vips.get('layers'):
                 for vip_id in vips.get('layers'):
                     for id_layer in vips.get('layers').get(vip_id):
-                        vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
-                        command = 'gerador_vips -i %s --remove --aceonly' % vip_request['id']
+                        vip_request = vips.get('layers').get(
+                            vip_id).get(id_layer).get('vip_request')
+                        command = 'gerador_vips -i %s --remove --aceonly' % vip_request[
+                            'id']
                         log.info('calling script: %s' % command)
                         code, stdout, stderr = exec_script(command)
         except Exception, e:
@@ -54,8 +56,10 @@ class ACE(BasePlugin):
             if vips.get('layers'):
                 for vip_id in vips.get('layers'):
                     for id_layer in vips.get('layers').get(vip_id):
-                        vip_request = vips.get('layers').get(vip_id).get(id_layer).get('vip_request')
-                        command = 'gerador_vips -i %s --cria --aceonly' % vip_request['id']
+                        vip_request = vips.get('layers').get(
+                            vip_id).get(id_layer).get('vip_request')
+                        command = 'gerador_vips -i %s --cria --aceonly' % vip_request[
+                            'id']
                         log.info('calling script: %s' % command)
                         code, stdout, stderr = exec_script(command)
         except Exception, e:

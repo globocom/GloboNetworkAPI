@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,17 +13,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
-from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, AmbienteError
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_ENVIRONMENT
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, EquipamentoNotFoundError, EquipamentoAmbienteNotFoundError, EquipamentoError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_EQUIPMENT_ENVIRONMENT
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-from networkapi.ip.models import IpCantBeRemovedFromVip, IpNotFoundError, IpError
-import logging
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundError
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 
@@ -62,7 +71,7 @@ class EquipmentEnvironmentDeallocateResource(RestResource):
             Equipamento.get_by_pk(id_equipment)
 
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,  id_equipment, AdminPermission.EQUIP_WRITE_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, id_equipment, AdminPermission.EQUIP_WRITE_OPERATION):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
                 return self.not_authorized()
@@ -71,7 +80,7 @@ class EquipmentEnvironmentDeallocateResource(RestResource):
             environment = Ambiente.get_by_pk(id_environment)
 
             with distributedlock(LOCK_EQUIPMENT_ENVIRONMENT % id_environment):
-                '''
+                """
                 equip_env = EquipamentoAmbiente().get_by_equipment_environment(
                     id_equipment, id_environment)
 
@@ -105,7 +114,7 @@ class EquipmentEnvironmentDeallocateResource(RestResource):
                     return self.response_error(336, environment.show_environment(), ipv4_error, ipv6_error)
 
                 # Remove Equipment - Environment
-                '''
+                """
                 EquipamentoAmbiente.remove(user, id_equipment, id_environment)
 
                 return self.response(dumps_networkapi({}))

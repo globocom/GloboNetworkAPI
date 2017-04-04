@@ -1,12 +1,18 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 import base64
-from rest_framework import exceptions, HTTP_HEADER_ENCODING
-from rest_framework.authentication import BaseAuthentication,\
-    get_authorization_header
+
+from rest_framework import exceptions
+from rest_framework import HTTP_HEADER_ENCODING
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.authentication import get_authorization_header
+
 from networkapi.auth import authenticate
 
 
 class BasicAuthentication(BaseAuthentication):
+
     """
     HTTP Basic authentication against username/password.
     """
@@ -30,7 +36,8 @@ class BasicAuthentication(BaseAuthentication):
             raise exceptions.AuthenticationFailed(msg)
 
         try:
-            auth_parts = base64.b64decode(auth[1]).decode(HTTP_HEADER_ENCODING).partition(':')
+            auth_parts = base64.b64decode(auth[1]).decode(
+                HTTP_HEADER_ENCODING).partition(':')
         except (TypeError, UnicodeDecodeError):
             msg = 'Invalid basic header. Credentials not correctly base64 encoded'
             raise exceptions.AuthenticationFailed(msg)
