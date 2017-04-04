@@ -131,7 +131,7 @@ class AclFlowBuilder(object):
             if rule[Tokens.protocol] == "tcp":
                 self._build_tcp(rule)
             elif rule[Tokens.protocol] == "udp":
-                pass
+                self._build_udp(rule)
             elif rule[Tokens.protocol] == "icmp":
                 pass
             else:
@@ -140,25 +140,58 @@ class AclFlowBuilder(object):
                 raise ValueError(self.MALFORMED_MESSAGE % message)
 
     def _build_tcp(self, rule):
-        """ Builds a tcp flow based on OpenDayLight json format """
+        """ Builds a TCP flow based on OpenDayLight json format """
+
+        self.flows["flow"][0]["match"]["ip-match"] = {
+            "ip-protocol": 6
+        }
+
+        self._check_source_and_destination_ports(rule, "tcp")
+
+    def _build_udp(self, rule):
+        """ Builds a UDP flow based on OpenDayLight json format """
+
+        self.flows["flow"][0]["match"]["ip-match"] = {
+            "ip-protocol": 17
+        }
+
+        self._check_source_and_destination_ports(rule, "udp")
+
+    def _check_source_and_destination_ports(self, rule, protocol):
+        """ Checks source and destination options inside json """
 
         if Tokens.l4_options in rule:
-            # Checks for destination port
-            if Tokens.dst_port_op in rule[Tokens.l4_options]:
-
-                if rule[Tokens.l4_options][Tokens.dst_port_op] == "eq":
-                    self.flows["flow"][0]["match"]["tcp-destination-port"] = \
-                        rule[Tokens.l4_options][Tokens.dst_port]
-                elif rule[Tokens.l4_options][Tokens.dst_port_op] == "range":
-                    self.flows["flow"][0]["match"]["tcp-destination-port"] = \
-                        rule[Tokens.l4_options][Tokens.dst_port]
 
             # Checks for source port
-            elif Tokens.src_port_op in rule[Tokens.l4_options]:
+            if Tokens.src_port_op in rule[Tokens.l4_options]:
+                self._build_transport_source_ports(rule, protocol)
 
-                if rule[Tokens.l4_options][Tokens.src_port_op] == "eq":
-                    self.flows["flow"][0]["match"]["tcp-source-port"] = \
-                        rule[Tokens.l4_options][Tokens.src_port]
-                elif rule[Tokens.l4_options][Tokens.src_port_op] == "range":
-                    self.flows["flow"][0]["match"]["tcp-source-port"] = \
-                        rule[Tokens.l4_options][Tokens.src_port]
+            # Checks for destination port
+            if Tokens.dst_port_op in rule[Tokens.l4_options]:
+                self._build_transport_destination_ports(rule, protocol)
+
+    def _build_transport_source_ports(self, rule, protocol):
+        """ Builds source ports for transport protocols TCP or UDP """
+        prefix = protocol + "-source-port"
+        self._build_transport_ports(rule, prefix, Tokens.src_port_op,
+            Tokens.src_port, Tokens.src_port_end)
+
+    def _build_transport_destination_ports(self, rule, protocol):
+        """ Builds destination ports for transport protocols TCP or UDP """
+        prefix = protocol + "-destination-port"
+        self._build_transport_ports(rule, prefix, Tokens.dst_port_op,
+            Tokens.dst_port, Tokens.dst_port_end)
+
+    def _build_transport_ports(self, rule, prefix, operation, start, end):
+        """ Builds transport (TCP | UDP) protocols json data """
+
+        if rule[Tokens.l4_options][operation] == "eq":
+
+            self.flows["flow"][0]["match"][prefix] = \
+                rule[Tokens.l4_options][start]
+
+        elif rule[Tokens.l4_options][operation] == "range":
+
+            # TODO: Implement port range json from opendaylight.
+            self.flows["flow"][0]["match"][prefix] = \
+                rule[Tokens.l4_options][start]
