@@ -15,3 +15,4 @@ Using GloboNetworkAPI V3
    networkv6/networkv6
    ipv4/ipv4
    ipv6/ipv6
+   task/task
