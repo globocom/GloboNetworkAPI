@@ -6,3 +6,4 @@ Server Pool module
    url-api-v3-pool-deploy
    url-api-v3-pool-details
    url-api-v3-pool-environment-vip
+   url-api-v3-pool-deploy-async

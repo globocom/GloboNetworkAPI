@@ -1,6 +1,8 @@
 PUT
 ###
 
+.. _url-api-v3-vlan-put-update-list-vlans:
+
 Updating list of Vlans in database
 **********************************
 

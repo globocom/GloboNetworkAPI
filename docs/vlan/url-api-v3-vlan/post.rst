@@ -1,8 +1,10 @@
 POST
 ####
 
-Creating list of vlan
-*********************
+.. _url-api-v3-vlan-post-create-list-vlans:
+
+Creating list of vlans
+**********************
 
 URL::
 
@@ -82,6 +84,31 @@ Through Vlan POST route you can create one or more Vlans. Only "name" and "envir
     * **network_type** - You can specify the type of Network that is desired to create, but you are not required to do that.
     * **environmentvip** - You can associate Network with some Environment Vip, but you are not required to do that.
     * **prefix** - You are required to specify the prefix of Network. For NetworkIPv4 it ranges from 0 to 31 and for NetworkIPv6 it ranges from 0 to 127.
+
+At the end of POST request, it will be returned the identifiers of new Vlans created.
+
+Response Body:
+
+.. code-block:: json
+
+    [
+        {
+            "id": [integer]
+        },...
+    ]
+
+Response Example for two Vlans created:
+
+.. code-block:: json
+
+    [
+        {
+            "id": 10
+        },
+        {
+            "id": 11
+        }
+    ]
 
 URL Example::
 

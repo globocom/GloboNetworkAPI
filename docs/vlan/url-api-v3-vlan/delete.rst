@@ -1,6 +1,8 @@
 DELETE
 ######
 
+.. _url-api-v3-vlan-delete-delete-list-vlans:
+
 Deleting a list of vlan in database
 ***********************************
 
