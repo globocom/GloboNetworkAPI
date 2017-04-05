@@ -7,15 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_vip_request import permissions
+from networkapi.api_vip_request import tasks
 from networkapi.api_vip_request.facade import v3 as facade
-from networkapi.api_vip_request.permissions import delete_obj_permission
-from networkapi.api_vip_request.permissions import deploy_obj_permission
-from networkapi.api_vip_request.permissions import DeployCreate
-from networkapi.api_vip_request.permissions import DeployDelete
-from networkapi.api_vip_request.permissions import DeployUpdate
-from networkapi.api_vip_request.permissions import Read
-from networkapi.api_vip_request.permissions import Write
-from networkapi.api_vip_request.permissions import write_obj_permission
 from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 from networkapi.distributedlock import LOCK_VIP
 from networkapi.settings import SPECS
@@ -40,8 +34,9 @@ class VipRequestDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployCreate))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates list of vip request in equipments
@@ -49,7 +44,7 @@ class VipRequestDeployView(CustomAPIView):
         :param vip_request_ids=<vip_request_ids>
         """
 
-        vip_request_ids = kwargs['vip_request_ids'].split(';')
+        vip_request_ids = kwargs['obj_ids'].split(';')
         vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestV3Serializer(
             vips, many=True, include=('ports__identifier',))
@@ -68,8 +63,9 @@ class VipRequestDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployDelete))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of vip request in equipments
@@ -77,7 +73,7 @@ class VipRequestDeployView(CustomAPIView):
         :param vip_request_ids=<vip_request_ids>
         """
 
-        vip_request_ids = kwargs['vip_request_ids'].split(';')
+        vip_request_ids = kwargs['obj_ids'].split(';')
         vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestV3Serializer(
             vips, many=True, include=('ports__identifier',))
@@ -96,8 +92,9 @@ class VipRequestDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('vip_request_put')
-    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployUpdate))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def put(self, request, *args, **kwargs):
         """
         Updates list of vip request in equipments
@@ -121,8 +118,9 @@ class VipRequestDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('vip_request_patch')
-    @permission_classes_apiview((IsAuthenticated, Write, DeployUpdate))
-    @permission_obj_apiview([deploy_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployUpdate))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
     def patch(self, request, *args, **kwargs):
         """
         Updates list of vip request in equipments
@@ -143,18 +141,95 @@ class VipRequestDeployView(CustomAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
+class VipRequestAsyncDeployView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployCreate))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
+    def post(self, request, *args, **kwargs):
+
+        response = list()
+        vip_ids = kwargs.get('obj_ids').split(',')
+        user = request.user
+
+        for vip_id in vip_ids:
+            task_obj = tasks.vip_deploy.apply_async(args=[vip_id, user.id],
+                                                    queue='napi.vip')
+
+            task = {
+                'id': vip_id,
+                'task_id': task_obj.id
+            }
+
+        response.append(task)
+
+        return Response(response, status=status.HTTP_202_ACCEPTED)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployDelete))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
+    def delete(self, request, *args, **kwargs):
+
+        response = list()
+        vip_ids = kwargs.get('obj_ids').split(',')
+        user = request.user
+
+        for vip_id in vip_ids:
+            task_obj = tasks.vip_undeploy.apply_async(args=[vip_id, user.id],
+                                                      queue='napi.vip')
+
+            task = {
+                'id': vip_id,
+                'task_id': task_obj.id
+            }
+
+        response.append(task)
+
+        return Response(response, status=status.HTTP_202_ACCEPTED)
+
+    @logs_method_apiview
+    @raise_json_validate('vip_request_put')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write,
+                                 permissions.DeployUpdate))
+    @permission_obj_apiview([permissions.deploy_obj_permission])
+    def put(self, request, *args, **kwargs):
+
+        response = list()
+        vips = request.DATA
+        user = request.user
+        json_validate(SPECS.get('vip_request_put')).validate(vips)
+        verify_ports_vip(vips)
+
+        for vip in vips.get('vips'):
+            task_obj = tasks.vip_redeploy.apply_async(args=[vip, user.id],
+                                                      queue='napi.vip')
+
+            task = {
+                'id': vip.get('id'),
+                'task_id': task_obj.id
+            }
+
+        response.append(task)
+
+        return Response(response, status=status.HTTP_202_ACCEPTED)
+
+
 class VipRequestDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns a list of vip request by ids ou dict
         """
 
-        if not kwargs.get('vip_request_ids'):
+        if not kwargs.get('obj_ids'):
 
             obj_model = facade.get_vip_request_by_search(self.search)
             vips_requests = obj_model['query_set']
@@ -162,7 +237,7 @@ class VipRequestDBView(CustomAPIView):
 
         else:
 
-            vip_request_ids = kwargs['vip_request_ids'].split(';')
+            vip_request_ids = kwargs['obj_ids'].split(';')
             vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
             obj_model = None
             # serializer vips
@@ -190,7 +265,7 @@ class VipRequestDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('vip_request_post')
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """
@@ -212,8 +287,8 @@ class VipRequestDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('vip_request_put')
-    @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([write_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.write_obj_permission])
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """
@@ -238,15 +313,15 @@ class VipRequestDBView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([delete_obj_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.delete_obj_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of vip request
         """
 
-        vip_request_ids = kwargs['vip_request_ids'].split(';')
+        vip_request_ids = kwargs['obj_ids'].split(';')
         locks_list = create_lock(vip_request_ids, LOCK_VIP)
         keepip = request.GET.get('keepip', '0')
         try:
@@ -265,19 +340,19 @@ class VipRequestDBDetailsView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """
         Returns a list of vip request with details by ids ou dict
 
         """
-        if not kwargs.get('vip_request_ids'):
+        if not kwargs.get('obj_ids'):
             obj_model = facade.get_vip_request_by_search(self.search)
             vips_requests = obj_model['query_set']
             only_main_property = False
         else:
-            vip_request_ids = kwargs['vip_request_ids'].split(';')
+            vip_request_ids = kwargs['obj_ids'].split(';')
             vips_requests = facade.get_vip_request_by_ids(vip_request_ids)
             obj_model = None
             only_main_property = True
@@ -308,7 +383,7 @@ class VipRequestPoolView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, permissions.Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """

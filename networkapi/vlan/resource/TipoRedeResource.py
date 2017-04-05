@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.rest import RestResource
-
-from networkapi.auth import has_perm
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
 import logging
 
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
 from networkapi.grupo.models import GrupoError
-
-from networkapi.vlan.models import TipoRede, VlanError, TipoRedeNotFoundError, TipoRedeUsedByVlanError, TipoRedeNameDuplicatedError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import TipoRedeNameDuplicatedError
+from networkapi.vlan.models import TipoRedeNotFoundError
+from networkapi.vlan.models import TipoRedeUsedByVlanError
+from networkapi.vlan.models import VlanError
 
 
 class TipoRedeResource(RestResource):
 
-    '''Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela tipo_rede.'''
+    """Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela tipo_rede."""
 
     log = logging.getLogger('TipoRedeResource')
 
@@ -42,7 +40,7 @@ class TipoRedeResource(RestResource):
 
         Permite a consulta de tipos de rede existentes.
 
-        URL: /tiporede/ 
+        URL: /tiporede/
         """
 
         try:
@@ -71,7 +69,7 @@ class TipoRedeResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Trata as requisições de POST para criar tipos de rede.
 
-        URL: /tiporede/ 
+        URL: /tiporede/
 
         """
 
@@ -123,7 +121,7 @@ class TipoRedeResource(RestResource):
     def handle_put(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar tipos de rede.
 
-        URL: /tiporede/<id_tipo_rede>/ 
+        URL: /tiporede/<id_tipo_rede>/
 
         """
 
@@ -178,7 +176,7 @@ class TipoRedeResource(RestResource):
     def handle_delete(self, request, user, *args, **kwargs):
         """Trata uma requisição DELETE para excluir um tipo de rede
 
-        URL: /tiporede/<id_tipo_rede>/ 
+        URL: /tiporede/<id_tipo_rede>/
 
         """
 

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 """
-from django.db.models import Q
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
 import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, \
-    is_valid_boolean_param
-from networkapi.exception import InvalidValueError
-from networkapi.infrastructure.ipaddr import IPAddress, IPv6Address
 from string import split
+
+from django.db.models import Q
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import IP_VERSION
+from networkapi.auth import has_perm
+from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.datatable import build_query_to_datatable
-from networkapi.ip.models import Ip, Ipv6
+from networkapi.infrastructure.ipaddr import IPAddress
+from networkapi.infrastructure.ipaddr import IPv6Address
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.ip.models import Ip
+from networkapi.ip.models import Ipv6
 from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_minsize
 
 
 def break_ip(ip):
@@ -39,21 +43,21 @@ def break_ip(ip):
     Returns array of each octs and string with ip
     """
 
-    if "." in ip and ":" in ip:
+    if '.' in ip and ':' in ip:
         raise InvalidValueError(None, 'ip', ip)
 
-    if "." in ip:
+    if '.' in ip:
         # IPv4
-        blocks = split(ip, ".")
+        blocks = split(ip, '.')
 
         if len(blocks) != 4:
             raise InvalidValueError(None, 'ip', ip)
 
         version = IP_VERSION.IPv4[0]
 
-    elif ":" in ip:
+    elif ':' in ip:
         # IPv6
-        blocks = split(ip, ":")
+        blocks = split(ip, ':')
 
         if len(blocks) != 8:
             raise InvalidValueError(None, 'ip', ip)
@@ -68,21 +72,21 @@ def break_ip(ip):
 
     for i, block in enumerate(blocks):
         if len(block) == 0:
-            blocks[i] = "0"
+            blocks[i] = '0'
 
-    ip_str = ""
+    ip_str = ''
     if version == IP_VERSION.IPv4[0]:
-        ip_str = blocks[0] + "." + blocks[1] + \
-            "." + blocks[2] + "." + blocks[3]
+        ip_str = blocks[0] + '.' + blocks[1] + \
+            '.' + blocks[2] + '.' + blocks[3]
 
     else:
         # If IPv6, fill with 0 on the left
         for i, block in enumerate(unchanged):
             if len(block) != 4 and len(block) != 0:
-                unchanged[i] = block.rjust(4, "0")
-        ip_str = blocks[0] + ":" + blocks[1] + ":" + blocks[2] + ":" + blocks[3] + \
-            ":" + blocks[4] + ":" + blocks[5] + \
-            ":" + blocks[6] + ":" + blocks[7]
+                unchanged[i] = block.rjust(4, '0')
+        ip_str = blocks[0] + ':' + blocks[1] + ':' + blocks[2] + ':' + blocks[3] + \
+            ':' + blocks[4] + ':' + blocks[5] + \
+            ':' + blocks[6] + ':' + blocks[7]
 
     return unchanged, ip_str, version
 
@@ -109,13 +113,13 @@ def get_vips(vips):
         vip_map = vip.variables_to_map()
 
         list_environment.append(
-            "%s - %s - %s" % (vip_map.get('finalidade', ''), vip_map.get('cliente', ''), vip_map.get('ambiente', '')))
+            '%s - %s - %s' % (vip_map.get('finalidade', ''), vip_map.get('cliente', ''), vip_map.get('ambiente', '')))
         try:
             if vip.ip is not None:
 
                 descricao_ipv4 = vip.ip.descricao
                 list_ips.append(
-                    "%s.%s.%s.%s" % (vip.ip.oct1, vip.ip.oct2, vip.ip.oct3, vip.ip.oct4))
+                    '%s.%s.%s.%s' % (vip.ip.oct1, vip.ip.oct2, vip.ip.oct3, vip.ip.oct4))
                 # list_environment.append("%s - %s - %s" % (vip.ip.networkipv4.vlan.ambiente.divisao_dc.nome,vip.ip.networkipv4.vlan.ambiente.ambiente_logico.nome,vip.ip.networkipv4.vlan.ambiente.grupo_l3.nome))
 
                 equips = vip.ip.ipequipamento_set.all()
@@ -129,7 +133,7 @@ def get_vips(vips):
             if vip.ipv6 is not None:
 
                 descricao_ipv6 = vip.ipv6.description
-                list_ips.append("%s:%s:%s:%s:%s:%s:%s:%s" % (vip.ipv6.block1, vip.ipv6.block2, vip.ipv6.block3,
+                list_ips.append('%s:%s:%s:%s:%s:%s:%s:%s' % (vip.ipv6.block1, vip.ipv6.block2, vip.ipv6.block3,
                                                              vip.ipv6.block4, vip.ipv6.block5, vip.ipv6.block6, vip.ipv6.block7, vip.ipv6.block8))
                 # list_environment.append("%s - %s - %s" % (vip.ipv6.networkipv6.vlan.ambiente.divisao_dc.nome,vip.ipv6.networkipv6.vlan.ambiente.ambiente_logico.nome,vip.ipv6.networkipv6.vlan.ambiente.grupo_l3.nome))
 
@@ -148,7 +152,7 @@ def get_vips(vips):
         vip_dict['ips'] = list_ips
         vip_dict['environments'] = list_environment
         vip_dict['equipments'] = list_equips
-        vip_dict["is_more"] = True if len(equips) > 3 else False
+        vip_dict['is_more'] = True if len(equips) > 3 else False
         itens.append(vip_dict)
 
     return itens
@@ -179,7 +183,7 @@ class RequestVipGetIdIpResource(RestResource):
 
             # Load XML data
             xml_map, attrs_map = loads(
-                request.raw_post_data, ["searchable_columns", "asorting_cols"])
+                request.raw_post_data, ['searchable_columns', 'asorting_cols'])
 
             # XML data format
             networkapi_map = xml_map.get('networkapi')
@@ -195,15 +199,15 @@ class RequestVipGetIdIpResource(RestResource):
                 return self.response_error(3, msg)
 
             # Get XML data
-            start_record = vip_map.get("start_record")
-            end_record = vip_map.get("end_record")
-            asorting_cols = vip_map.get("asorting_cols")
-            searchable_columns = vip_map.get("searchable_columns")
-            custom_search = vip_map.get("custom_search")
+            start_record = vip_map.get('start_record')
+            end_record = vip_map.get('end_record')
+            asorting_cols = vip_map.get('asorting_cols')
+            searchable_columns = vip_map.get('searchable_columns')
+            custom_search = vip_map.get('custom_search')
 
-            id_vip = vip_map.get("id_vip")
-            ip = vip_map.get("ip")
-            created_vip = vip_map.get("create")
+            id_vip = vip_map.get('id_vip')
+            ip = vip_map.get('ip')
+            created_vip = vip_map.get('create')
             if created_vip == 'True':
                 create = True
             elif created_vip == 'False':
@@ -219,7 +223,7 @@ class RequestVipGetIdIpResource(RestResource):
 
             if id_vip is not None and ip is not None:
                 raise InvalidValueError(
-                    None, 'id_vip - ip', "%s - %s" % (id_vip, ip))
+                    None, 'id_vip - ip', '%s - %s' % (id_vip, ip))
 
             if id_vip is not None:
                 # If id_vip is valid, add to filter
@@ -287,7 +291,7 @@ class RequestVipGetIdIpResource(RestResource):
 
             vip = vip.distinct()
 
-            vip = vip.order_by("-pk")
+            vip = vip.order_by('-pk')
 
             # Datatable paginator
             vip, total = build_query_to_datatable(
@@ -296,8 +300,8 @@ class RequestVipGetIdIpResource(RestResource):
             itens = get_vips(vip)
 
             vip_map = dict()
-            vip_map["vips"] = itens
-            vip_map["total"] = total
+            vip_map['vips'] = itens
+            vip_map['total'] = total
 
             return self.response(dumps_networkapi(vip_map))
 

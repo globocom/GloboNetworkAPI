@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns
+from django.conf.urls import url
+
 from networkapi.healthcheckexpect.resource.HealthcheckAddExpectStringResource import HealthcheckAddExpectStringResource
 from networkapi.healthcheckexpect.resource.HealthcheckAddResource import HealthcheckAddResource
 from networkapi.healthcheckexpect.resource.HealthcheckExpectDistinctResource import HealthcheckExpectDistinctResource
@@ -14,7 +16,8 @@ healthcheckexpect_string_resource = HealthcheckAddExpectStringResource()
 healthcheckexpect_distinct_resource = HealthcheckExpectDistinctResource()
 healthcheckexpect_get_resource = HealthcheckExpectGetResource()
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^ambiente/(?P<id_amb>[^/]+)/$', healthcheckexpect_resource.handle_request,
         name='healthcheckexpect.search.by.environment'),
     url(r'^add/$', healthcheckexpect_add_resource.handle_request,

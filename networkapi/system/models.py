@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,19 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from django.db import models
-from networkapi.models.BaseModel import BaseModel
+
 import logging
 
+from django.db import models
+
+from networkapi.models.BaseModel import BaseModel
 
 
 class Variable (BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_variable')
     name = models.CharField(max_length=50, blank=False, db_column='name')
     value = models.CharField(max_length=50, blank=False, db_column='value')
-    description = models.CharField(max_length=100, blank=True, db_column='description')
+    description = models.CharField(
+        max_length=100, blank=True, db_column='description')
 
     log = logging.getLogger('Variable')
 

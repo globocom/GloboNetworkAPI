@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Copyright 2014 Brocade Communications Systems, Inc.  All rights reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -85,8 +85,8 @@ class Httplib2Response:
 class Httplib2Transport(suds_transport.Transport):
 
     def __init__(self, **kwargs):
-        self.username = kwargs["username"]
-        self.password = kwargs["password"]
+        self.username = kwargs['username']
+        self.password = kwargs['password']
         suds_transport.Transport.__init__(self)
         self.http = httplib2.Http(disable_ssl_certificate_validation=True)
 
@@ -104,7 +104,7 @@ class Httplib2Transport(suds_transport.Transport):
         response = Httplib2Response()
         response.headers, response.message = (self.http.request
                                               (request.url,
-                                               "GET",
+                                               'GET',
                                                body=request.message,
                                                headers=request.headers))
         return StringIO.StringIO(response.message)
@@ -117,7 +117,7 @@ class Httplib2Transport(suds_transport.Transport):
         response = Httplib2Response()
         response.headers, response.message = (self.http.request
                                               (url,
-                                               "POST",
+                                               'POST',
                                                body=message,
                                                headers=headers))
         return response
@@ -125,7 +125,8 @@ class Httplib2Transport(suds_transport.Transport):
 
 class AdxService:
 
-    "ADX Service Initialization Class"
+    """ADX Service Initialization Class"""
+
     ns0 = ('ns0', 'https://schemas.xmlsoap.org/soap/envelope123/')
 
     def __init__(self, adx_ip_address, user_name, password, timeout=300):
@@ -133,11 +134,11 @@ class AdxService:
         self.user_name = user_name
         self.timeout = timeout
         self.password = password
-        self.wsdl_base = "https://" + adx_ip_address + "/wsdl/"
-        self.sys_service_wsdl = "sys_service.wsdl"
-        self.slb_service_wsdl = "slb_service.wsdl"
-        self.net_service_wsdl = "network_service.wsdl"
-        self.location = "https://" + adx_ip_address + "/WS/SYS"
+        self.wsdl_base = 'https://' + adx_ip_address + '/wsdl/'
+        self.sys_service_wsdl = 'sys_service.wsdl'
+        self.slb_service_wsdl = 'slb_service.wsdl'
+        self.net_service_wsdl = 'network_service.wsdl'
+        self.location = 'https://' + adx_ip_address + '/WS/SYS'
         self.transport = Httplib2Transport(username=self.user_name,
                                            password=self.password)
 
@@ -150,7 +151,7 @@ class AdxService:
             return request_header
 
         url = self.wsdl_base + self.slb_service_wsdl
-        location = "https://" + self.adx_ip_address + "/WS/SLB"
+        location = 'https://' + self.adx_ip_address + '/WS/SLB'
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSlb',
@@ -172,7 +173,7 @@ class AdxService:
             return request_header
 
         url = self.wsdl_base + self.sys_service_wsdl
-        location = "https://" + self.adx_ip_address + "/WS/SYS"
+        location = 'https://' + self.adx_ip_address + '/WS/SYS'
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcSysInfo',
@@ -194,7 +195,7 @@ class AdxService:
             return request_header
 
         url = self.wsdl_base + self.net_service_wsdl
-        location = "https://" + self.adx_ip_address + "/WS/NET"
+        location = 'https://' + self.adx_ip_address + '/WS/NET'
         start = time.time()
         client = suds_client.Client(url, transport=self.transport,
                                     service='AdcNet',

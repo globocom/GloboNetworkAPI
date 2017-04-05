@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,35 +13,69 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
 
 import logging
 
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_vip_request.syncs import old_to_new
-from networkapi.distributedlock import distributedlock, LOCK_GROUP_VIRTUAL
-from networkapi.equipamento.models import Equipamento, EquipamentoError, EquipamentoNotFoundError, InvalidGroupToEquipmentTypeError, \
-    ModeloNotFoundError, EquipamentoNameDuplicatedError, TipoEquipamentoNotFoundError
-from networkapi.equipamento.resource.EquipamentoResource import insert_equipment, remove_equipment
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_GROUP_VIRTUAL
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNameDuplicatedError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.equipamento.models import InvalidGroupToEquipmentTypeError
+from networkapi.equipamento.models import ModeloNotFoundError
+from networkapi.equipamento.models import TipoEquipamentoNotFoundError
+from networkapi.equipamento.resource.EquipamentoResource import insert_equipment
+from networkapi.equipamento.resource.EquipamentoResource import remove_equipment
 from networkapi.exception import InvalidValueError
-from networkapi.grupo.models import EGrupoNotFoundError, GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.ip.models import IpError, IpEquipmentNotFoundError, IpNotAvailableError, IpNotFoundError, IpEquipamentoDuplicatedError, \
-    IpNotFoundByEquipAndVipError
-from networkapi.ip.resource.IpResource import insert_ip, insert_ip_equipment, remove_ip_equipment
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError, InvalidFinalidadeValueError, \
-    InvalidClienteValueError, InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, \
-    InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, InvalidTimeoutValueError, \
-    InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, InvalidTransbordoValueError, \
-    InvalidServicePortValueError, InvalidRealValueError, EnvironmentVipNotFoundError
-from networkapi.requisicaovips.resource.RequisicaoVipsResource import insert_vip_request, update_vip_request
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.grupo.models import EGrupoNotFoundError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpEquipamentoDuplicatedError
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.resource.IpResource import insert_ip
+from networkapi.ip.resource.IpResource import insert_ip_equipment
+from networkapi.ip.resource.IpResource import remove_ip_equipment
+from networkapi.requisicaovips.models import EnvironmentVipNotFoundError
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.resource.RequisicaoVipsResource import insert_vip_request
+from networkapi.requisicaovips.resource.RequisicaoVipsResource import update_vip_request
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 from networkapi.settings import VIP_REMOVE
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.vlan.models import VlanError, VlanNotFoundError
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class GroupVirtualResource(RestResource):
@@ -50,10 +83,10 @@ class GroupVirtualResource(RestResource):
     log = logging.getLogger('GroupVirtualResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
-        '''Trata as requisições de PUT para remover um grupo virtual.
+        """Trata as requisições de PUT para remover um grupo virtual.
 
         URL: /grupovirtual/
-        '''
+        """
 
         try:
             xml_map, attrs_map = loads(
@@ -93,7 +126,7 @@ class GroupVirtualResource(RestResource):
                                 self.log.error(
                                     u'Valor do id_ip inválido: %s.', ip_id)
                                 raise IpNotFoundError(
-                                    e, u"Valor do id_ip inválido: %s." % ip_id)
+                                    e, u'Valor do id_ip inválido: %s.' % ip_id)
 
                             vip_s = RequisicaoVips.get_by_ipv4_id(ip_id)
                             # Run scripts to remove vips
@@ -119,7 +152,7 @@ class GroupVirtualResource(RestResource):
                                     self.log.error(
                                         u'Valor do id_equipamento inválido: %s.', equip_id)
                                     raise EquipamentoNotFoundError(
-                                        e, u"Valor do id_equipamento inválido: %s." % equip_id)
+                                        e, u'Valor do id_equipamento inválido: %s.' % equip_id)
 
                                 remove_ip_equipment(ip_id, equip_id, user)
                     except KeyError:
@@ -138,7 +171,7 @@ class GroupVirtualResource(RestResource):
                                 self.log.error(
                                     u'Valor do id do equipamento inválido: %s.', equip_id)
                                 raise EquipamentoNotFoundError(
-                                    e, u"Valor do id do equipamento inválido: %s." % equip_id)
+                                    e, u'Valor do id do equipamento inválido: %s.' % equip_id)
 
                             remove_equipment(equip_id, user)
                     except KeyError:
@@ -161,13 +194,13 @@ class GroupVirtualResource(RestResource):
             return self.response_error(1)
 
     def __treat_response_error(self, response):
-        '''Trata as repostas de erro no formato de uma tupla.
+        """Trata as repostas de erro no formato de uma tupla.
 
         Formato da tupla:
              (<codigo da mensagem de erro>, <argumento 01 da mensagem>, <argumento 02 da mensagem>, ...)
 
         @return: HttpResponse com a mensagem de erro.
-        '''
+        """
         if len(response) > 1:
             return self.response_error(response[0], response[1:len(response)])
         return self.response_error(response[0])
@@ -402,7 +435,7 @@ class GroupVirtualResource(RestResource):
                        because in some points the VIP doesn't have cache option and
                        the value can be 'None'"""
                     if vip_map['cache'] is None:
-                        vip_map['cache'] = "(nenhum)"
+                        vip_map['cache'] = '(nenhum)'
 
                     response_vip = insert_vip_request(vip_map, user)
                     if (response_vip[0] != 0):

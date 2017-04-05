@@ -1,4 +1,4 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ import uuid
 
 log = logging.getLogger('MemcachedLock')
 
-__all__ = ['MemcachedLock']
+__all__ = ('MemcachedLock',)
 
 
 class MemcachedLock(object):
@@ -29,7 +29,7 @@ class MemcachedLock(object):
     """
 
     def __init__(self, key, client, timeout=600):
-        self.key = "lock:%s" % key
+        self.key = 'lock:%s' % key
         self.client = client
         self.timeout = timeout
 
@@ -42,14 +42,14 @@ class MemcachedLock(object):
     def acquire(self, blocking=True):
         while True:
             added = self.client.add(self.key, self.instance_id, self.timeout)
-            log.warning("Added Lock=%s,Key=%s,instance_id=%s,timeout=%s" % (
+            log.warning('Added Lock=%s,Key=%s,instance_id=%s,timeout=%s' % (
                 repr(added), self.key, self.instance_id, self.timeout))
             if added:
                 break
 
             if added == 0 and not (added is False):
                 raise RuntimeError(
-                    u"Error calling memcached add! Is memcached up and configured? memcached_client.add returns %s" % repr(added))
+                    u'Error calling memcached add! Is memcached up and configured? memcached_client.add returns %s' % repr(added))
 
             if not blocking:   # and not added
                 return False
@@ -65,7 +65,7 @@ class MemcachedLock(object):
             # below can delete another lock! There is no way to solve this in
             # memcached
             self.client.delete(self.key)
-            log.warning("Removed Lock,Key=%s" % (self.key))
+            log.warning('Removed Lock,Key=%s' % (self.key))
         else:
             log.warning(
                 "I've no lock to release. Increase TIMEOUT of lock operations")

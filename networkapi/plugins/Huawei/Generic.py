@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -24,23 +24,24 @@ class Generic(BasePlugin):
 
     VALID_TFTP_GET_MESSAGE = 'Copy complete, now saving to disk'
 
-    def copyScriptFileToConfig(self, filename, use_vrf=None, destination="running-config"):
+    def copyScriptFileToConfig(self, filename, use_vrf=None, destination='running-config'):
 
         if use_vrf is None:
             use_vrf = self.management_vrf
 
-        command = 'tftp %s get %s %s' % (self.tftpserver, filename, vpn_instance)
-        log.info("sending command: %s" % command)
+        command = 'tftp %s get %s %s' % (
+            self.tftpserver, filename, vpn_instance)
+        log.info('sending command: %s' % command)
 
-        self.channel.send("%s\n" % command)
+        self.channel.send('%s\n' % command)
         recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
 
         local_filename = re.split('\/', filename)[-1]
 
         command = 'execute %s' % (local_filename)
-        log.info("sending command: %s" % command)
+        log.info('sending command: %s' % command)
 
-        self.channel.send("%s\n" % command)
+        self.channel.send('%s\n' % command)
         recv += self.waitString(self.VALID_TFTP_PUT_MESSAGE)
 
         return recv

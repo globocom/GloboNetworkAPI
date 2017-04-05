@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,31 +13,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
-from networkapi.ip.models import *
-
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
-
-from networkapi.rest import RestResource, UserNotAuthorizedError
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.auth import has_perm
-
-from django.conf import settings
 
 import logging
 
-from networkapi.grupo.models import GrupoError
+from django.conf import settings
 
-from networkapi.util import *
-
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_IPV6
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import *
-
-from networkapi.distributedlock import distributedlock, LOCK_IPV6
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import *
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import *
 
 
 class Ipv6AssociateResource(RestResource):
@@ -46,11 +41,11 @@ class Ipv6AssociateResource(RestResource):
     log = logging.getLogger('Ipv6AssociateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Treat requests  PUT to insert the relationship between IPv6 and equipment.
+        """Treat requests  PUT to insert the relationship between IPv6 and equipment.
 
         URL: ipv6/<id_ipv6>/equipment/<id_equip>/$
-        '''
-        self.log.info("Associates an IPv6 to a equipament.")
+        """
+        self.log.info('Associates an IPv6 to a equipament.')
 
         try:
 

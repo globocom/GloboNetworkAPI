@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+from datetime import datetime
 
+from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-import logging
-from networkapi.rest import RestResource
+from networkapi.eventlog.models import EventLog
+from networkapi.eventlog.models import EventLogError
 from networkapi.exception import InvalidValueError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
-from networkapi.eventlog.models import EventLog, EventLogError
-from networkapi.util import is_valid_string_minsize, is_valid_int_greater_zero_param, is_valid_boolean_param, is_valid_int_greater_equal_zero_param,\
-    cache_function
 from networkapi.infrastructure.datatable import build_query_to_datatable
-from django.forms.models import model_to_dict
-from datetime import datetime
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
 from networkapi.settings import API_VERSION
+from networkapi.util import cache_function
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_minsize
 
 
 def get_logs(eventlog):
@@ -77,7 +81,7 @@ class EventLogFindResource(RestResource):
 
             # Load XML data
             xml_map, attrs_map = loads(
-                request.raw_post_data, ["searchable_columns", "asorting_cols"])
+                request.raw_post_data, ['searchable_columns', 'asorting_cols'])
 
             # XML data format
             networkapi_map = xml_map.get('networkapi')
@@ -92,11 +96,11 @@ class EventLogFindResource(RestResource):
                 return self.response_error(3, msg)
 
             # Get XML data
-            start_record = eventlog_map.get("start_record")
-            end_record = eventlog_map.get("end_record")
-            asorting_cols = eventlog_map.get("asorting_cols")
-            searchable_columns = eventlog_map.get("searchable_columns")
-            custom_search = eventlog_map.get("custom_search")
+            start_record = eventlog_map.get('start_record')
+            end_record = eventlog_map.get('end_record')
+            asorting_cols = eventlog_map.get('asorting_cols')
+            searchable_columns = eventlog_map.get('searchable_columns')
+            custom_search = eventlog_map.get('custom_search')
 
             usuario = eventlog_map.get('usuario')
             data_inicial = eventlog_map.get('data_inicial')
@@ -112,13 +116,13 @@ class EventLogFindResource(RestResource):
             eventlog = EventLog.objects.all()
             eventlog = eventlog.order_by('-id')
 
-            if usuario != "0":
+            if usuario != '0':
                 eventlog = eventlog.filter(usuario=usuario)
 
             if acao is not None:
                 eventlog = eventlog.filter(acao=acao)
 
-            if funcionalidade != "0":
+            if funcionalidade != '0':
                 eventlog = eventlog.filter(funcionalidade=funcionalidade)
 
             if data_inicial is not None:
@@ -155,8 +159,8 @@ class EventLogFindResource(RestResource):
             itens = get_logs(eventlog)
 
             eventlog_map = dict()
-            eventlog_map["eventlog"] = itens
-            eventlog_map["total"] = total
+            eventlog_map['eventlog'] = itens
+            eventlog_map['total'] = total
 
             return self.response(dumps_networkapi(eventlog_map))
 

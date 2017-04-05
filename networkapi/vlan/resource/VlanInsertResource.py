@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,25 +13,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
+import logging
 import re
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize
-from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
-from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import AmbienteError, Ambiente, AmbienteNotFoundError,\
-    ConfigEnvironmentInvalidError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6, NetworkIPv6AddressNotAvailableError, Ip, Ipv6, IpEquipamento, Ipv6Equipament
-from networkapi.ip.models import NetworkIPv4AddressNotAvailableError, IpNotAvailableError
 from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4AddressNotAvailableError
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6AddressNotAvailableError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanACLDuplicatedError
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNameDuplicatedError
+from networkapi.vlan.models import VlanNumberEnvironmentNotAvailableError
+from networkapi.vlan.models import VlanNumberNotAvailableError
 
 
 class VlanInsertResource(RestResource):
@@ -40,10 +55,10 @@ class VlanInsertResource(RestResource):
     log = logging.getLogger('VlanInsertResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Treat POST requests to insert vlan
+        """Treat POST requests to insert vlan
 
         URL: vlan/insert/
-        '''
+        """
 
         try:
             # Generic method for v4 and v6
@@ -131,7 +146,7 @@ class VlanInsertResource(RestResource):
                     u'Parameter network_ipv6 is invalid. Value: %s.', network_ipv6)
                 raise InvalidValueError(None, 'network_ipv6', network_ipv6)
 
-            p = re.compile("^[A-Z0-9-_]+$")
+            p = re.compile('^[A-Z0-9-_]+$')
             m = p.match(name)
 
             if not m:
@@ -155,14 +170,14 @@ class VlanInsertResource(RestResource):
                     self.log.error(
                         u'Parameter acl_file is invalid. Value: %s', acl_file)
                     raise InvalidValueError(None, 'acl_file', acl_file)
-                p = re.compile("^[A-Z0-9-_]+$")
+                p = re.compile('^[A-Z0-9-_]+$')
                 m = p.match(acl_file)
                 if not m:
                     raise InvalidValueError(None, 'acl_file', acl_file)
 
                 # VERIFICA SE VLAN COM MESMO ACL JA EXISTE OU NAO
-                #commenting acl name check - issue #55
-                #vlan.get_vlan_by_acl(acl_file)
+                # commenting acl name check - issue #55
+                # vlan.get_vlan_by_acl(acl_file)
 
             # Valid acl_file_v6 Vlan
             if acl_file_v6 is not None:
@@ -170,14 +185,14 @@ class VlanInsertResource(RestResource):
                     self.log.error(
                         u'Parameter acl_file_v6 is invalid. Value: %s', acl_file_v6)
                     raise InvalidValueError(None, 'acl_file_v6', acl_file_v6)
-                p = re.compile("^[A-Z0-9-_]+$")
+                p = re.compile('^[A-Z0-9-_]+$')
                 m = p.match(acl_file_v6)
                 if not m:
                     raise InvalidValueError(None, 'acl_file_v6', acl_file_v6)
 
                 # VERIFICA SE VLAN COM MESMO ACL JA EXISTE OU NAO
-                #commenting acl name check - issue #55
-                #vlan.get_vlan_by_acl_v6(acl_file_v6)
+                # commenting acl name check - issue #55
+                # vlan.get_vlan_by_acl_v6(acl_file_v6)
 
             ambiente = Ambiente()
             ambiente = ambiente.get_by_pk(environment_id)
@@ -196,7 +211,8 @@ class VlanInsertResource(RestResource):
 
             if network_ipv4:
                 network_ipv4 = NetworkIPv4()
-                vlan_map = network_ipv4.add_network_ipv4(user, vlan.id, None, None, None)
+                vlan_map = network_ipv4.add_network_ipv4(
+                    user, vlan.id, None, None, None)
                 list_equip_routers_ambient = EquipamentoAmbiente.objects.select_related('equipamento').filter(
                     ambiente=vlan.ambiente.id, is_router=True)
 
@@ -227,7 +243,8 @@ class VlanInsertResource(RestResource):
                         IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
                         if multiple_ips:
-                            router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                            router_ip = Ip.get_first_available_ip(
+                                network_ipv4.id, True)
                             router_ip = str(router_ip).split('.')
                             ip_model2 = Ip()
                             ip_model2.oct1 = router_ip[0]
@@ -238,10 +255,10 @@ class VlanInsertResource(RestResource):
                             ip_model2.save(user)
                             IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
-
             if network_ipv6:
                 network_ipv6 = NetworkIPv6()
-                vlan_map = network_ipv6.add_network_ipv6(user, vlan.id, None, None, None)
+                vlan_map = network_ipv6.add_network_ipv6(
+                    user, vlan.id, None, None, None)
 
                 list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
                     ambiente=vlan.ambiente.id, is_router=True)
@@ -279,7 +296,8 @@ class VlanInsertResource(RestResource):
                             user, ipv6_model.id, equip.equipamento.id)
 
                         if multiple_ips:
-                            router_ip = Ipv6.get_first_available_ip6(network_ipv6.id, True)
+                            router_ip = Ipv6.get_first_available_ip6(
+                                network_ipv6.id, True)
                             router_ip = str(router_ip).split(':')
                             ipv6_model2 = Ipv6()
                             ipv6_model2.block1 = router_ip[0]
@@ -333,7 +351,7 @@ class VlanInsertResource(RestResource):
         except NetworkIPv4AddressNotAvailableError, e:
             return self.response_error(150, e)
 
-        except NetworkIPv6AddressNotAvailableError,e:
+        except NetworkIPv6AddressNotAvailableError, e:
             return self.response_error(150, e)
 
         except IpNotAvailableError, e:
