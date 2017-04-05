@@ -145,20 +145,21 @@ class AclFlowBuilder(object):
     def _build_tcp(self, rule):
         """ Builds a TCP flow based on OpenDayLight json format """
 
-        self.flows["flow"][0]["match"]["ip-match"] = {
-            "ip-protocol": 6
-        }
-
+        self._set_flow_ip_protocol(self.flows["flow"][0], 6)
         self._check_source_and_destination_ports(rule, "tcp")
 
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """
 
-        self.flows["flow"][0]["match"]["ip-match"] = {
-            "ip-protocol": 17
-        }
-
+        self._set_flow_ip_protocol(self.flows["flow"][0], 17)
         self._check_source_and_destination_ports(rule, "udp")
+
+    def _set_flow_ip_protocol(self, flow, protocol_n):
+        """ Sets the IP protocol number inside given flow """
+
+        flow["match"]["ip-match"] = {
+            "ip-protocol": protocol_n
+        }
 
     def _check_source_and_destination_ports(self, rule, protocol):
         """ Checks source and destination options inside json """
@@ -202,9 +203,7 @@ class AclFlowBuilder(object):
     def _build_icmp(self, rule):
         """ Builds ICMP protocol acl using OpenDayLight json format """
 
-        self.flows["flow"][0]["match"]["ip-match"] = {
-            "ip-protocol": 1
-        }
+        self._set_flow_ip_protocol(self.flows["flow"][0], 1)
 
         if Tokens.icmp_options in rule:
 
