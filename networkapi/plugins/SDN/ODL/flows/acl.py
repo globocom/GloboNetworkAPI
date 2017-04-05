@@ -39,6 +39,9 @@ class Tokens(object):
     dst_port_op = "dest-port-op"
     dst_port = "dest-port-start"
     dst_port_end = "dest-port-end"
+    icmp_options = "icmp-options"
+    icmp_code = "icmp-code"
+    icmp_type = "icmp-type"
 
 
 class AclFlowBuilder(object):
@@ -133,7 +136,7 @@ class AclFlowBuilder(object):
             elif rule[Tokens.protocol] == "udp":
                 self._build_udp(rule)
             elif rule[Tokens.protocol] == "icmp":
-                pass
+                self._build_icmp(rule)
             else:
                 message = "Unknown protocol '%s'" % rule[Tokens.protocol]
                 logging.error(self.MALFORMED_MESSAGE % message)
@@ -195,3 +198,31 @@ class AclFlowBuilder(object):
             # TODO: Implement port range json from opendaylight.
             self.flows["flow"][0]["match"][prefix] = \
                 rule[Tokens.l4_options][start]
+
+    def _build_icmp(self, rule):
+        """ Builds ICMP protocol acl using OpenDayLight json format """
+
+        self.flows["flow"][0]["match"]["ip-match"] = {
+            "ip-protocol": 1
+        }
+
+        if Tokens.icmp_options in rule:
+
+            if Tokens.icmp_code in rule[Tokens.icmp_options] and \
+               Tokens.icmp_type in rule[Tokens.icmp_options]:
+
+                icmp_options = rule[Tokens.icmp_options]
+
+                self.flows["flow"][0]["match"]["icmpv4-match"] = {
+                    "icmpv4-code": icmp_options[Tokens.icmp_code],
+                    "icmpv4-type": icmp_options[Tokens.icmp_type]
+                }
+            else:
+                message = "Missing %s or %s icmp options:\n%s" % (
+                    Tokens.icmp_code, Tokens.icmp_type, rule)
+                logging.error(self.MALFORMED_MESSAGE % message)
+                raise ValueError(self.MALFORMED_MESSAGE % message)
+        else:
+            message = "Missing %s for icmp protocol" % Tokens.icmp_options
+            logging.error(self.MALFORMED_MESSAGE % message)
+            raise ValueError(self.MALFORMED_MESSAGE % message)
