@@ -15,9 +15,9 @@ services:
 
     queue:
         container_name: netapi_queue
-        image: webcenter/activemq:5.13.2
+        image: rabbitmq:3.6.9
         ports:
-            - "127.0.0.1:61616:61616"
+            - "127.0.0.1:5672:5672"
         networks:
             - netapi_net
 
