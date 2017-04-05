@@ -16,4 +16,6 @@ CMD cd /netapi
 EXPOSE 8000
 
 RUN pip install -r requirements.txt
+RUN pip install virtualenv
+RUN pip install virtualenvwrapper
 RUN pip install gunicorn
