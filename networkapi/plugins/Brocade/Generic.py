@@ -370,7 +370,7 @@ class Generic(BasePlugin):
             vppc['members_new'] = list()
             vppc['members_delete'] = list()
             vppc['pools'] = list()
-            vppc['new'] = True if not port.get('id') else False
+            vppc['new'] = True if port.get('insert') else False
             vppc['delete'] = True if port.get('delete') else False
             for pool in port['pools']:
                 vppc['pools'].append(pool['server_pool']['id'])
@@ -388,7 +388,7 @@ class Generic(BasePlugin):
                         mb['pool_id'] = pool['server_pool']['id']
 
                     # used in pools new and deleted in ports
-                    if not pool.get('id'):
+                    if pool.get('insert'):
                         vppc['members_new'].append(mb)
                     elif pool.get('delete'):
                         vppc['members_delete'].append(mb)

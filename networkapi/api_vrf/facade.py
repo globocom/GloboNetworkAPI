@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_vrf import exceptions
 from networkapi.api_vrf.models import Vrf
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
@@ -18,11 +21,15 @@ def get_vrfs_by_search(search=dict()):
     :param search: dict
     """
 
-    vrfs = Vrf.objects.filter()
-
-    vrf_map = build_query_to_datatable_v3(vrfs, search)
-
-    return vrf_map
+    try:
+        vrfs = Vrf.objects.filter()
+        vrf_map = build_query_to_datatable_v3(vrfs, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vrf_map
 
 
 def get_vrf_by_id(vrf_id):
@@ -40,21 +47,17 @@ def get_vrf_by_id(vrf_id):
     return vrf
 
 
-def get_vrfs_by_ids(vrfs_ids):
+def get_vrfs_by_ids(vrf_ids):
     """
     Return vrf list by ids
 
-    :param vrfs_ids: ids list
+    :param vrf_ids: ids list
+
     """
 
-    vrfs_ids = list()
-    for vrf_id in vrfs_ids:
-        vrf = get_vrf_by_id(vrf_id).id
-        vrfs_ids.append(vrf)
+    vrf_ids = [get_vrf_by_id(vrf_id).id for vrf_id in vrf_ids]
 
-    vrfs = Vrf.objects.filter(id__in=vrfs_ids)
-
-    return vrfs
+    return Vrf.objects.filter(id__in=vrf_ids)
 
 
 def create_vrf(vrf):
@@ -78,7 +81,7 @@ def update_vrf(vrf):
     """
     Update vrf
 
-    :param env: dict
+    :param vrf: dict
     """
 
     vrf_obj = get_vrf_by_id(vrf.get('id'))
@@ -95,9 +98,9 @@ def update_vrf(vrf):
 
 def delete_vrf(vrf_id):
     """
-    Delete environment
+    Delete vrf
 
-    :param env: dict
+    :param vrf_id: int
     """
 
-    Vrf.remove(None, vrf_id)
+    Vrf.remove(vrf_id)

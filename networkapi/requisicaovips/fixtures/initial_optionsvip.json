@@ -40,7 +40,7 @@
     }
   },
   {
-  "pk": 10,
+  "pk": 12,
   "model": "requisicaovips.optionvip",
   "fields": {
     "nome_opcao_txt": "Normal",
@@ -60,7 +60,7 @@
   "model": "requisicaovips.optionvip",
   "fields": {
     "nome_opcao_txt": "DSRL3",
-    "tipo_opcao": "Retorno de trafego"    
+    "tipo_opcao": "Retorno de trafego"
     }
   },
   {
@@ -68,7 +68,7 @@
   "model": "requisicaovips.optionvip",
   "fields": {
     "nome_opcao_txt": "HTTP",
-    "tipo_opcao": "l7_protocol"    
+    "tipo_opcao": "l7_protocol"
     }
   },
   {
@@ -108,14 +108,14 @@
   "model": "requisicaovips.optionvip",
   "fields": {
     "nome_opcao_txt": "HTTPS",
-    "tipo_opcao": "l4_protocol"
+    "tipo_opcao": "l7_protocol"
     }
   },
   {
   "pk": 64,
   "model": "requisicaovips.optionvip",
   "fields": {
-    "nome_opcao_txt": "(nenhum)",
+    "nome_opcao_txt": "default_vip",
     "tipo_opcao": "l7_rule"
     }
   },
@@ -123,7 +123,15 @@
   "pk": 65,
   "model": "requisicaovips.optionvip",
   "fields": {
-    "nome_opcao_txt": "default",
+    "nome_opcao_txt": "default_glob",
+    "tipo_opcao": "l7_rule"
+    }
+  },
+  {
+  "pk": 66,
+  "model": "requisicaovips.optionvip",
+  "fields": {
+    "nome_opcao_txt": "glob",
     "tipo_opcao": "l7_rule"
     }
   }

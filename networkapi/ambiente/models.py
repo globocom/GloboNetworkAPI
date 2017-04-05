@@ -24,10 +24,14 @@ from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 
+from networkapi.api_pools import exceptions
 from networkapi.api_vrf.models import Vrf
+from networkapi.distributedlock import LOCK_ENVIRONMENT
+from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
 from networkapi.exception import EnvironmentEnvironmentVipDuplicatedError
 from networkapi.exception import EnvironmentEnvironmentVipError
 from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
+from networkapi.exception import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.exception import EnvironmentVipError
 from networkapi.exception import EnvironmentVipNotFoundError
 from networkapi.exception import InvalidValueError
@@ -38,6 +42,9 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
 from networkapi.util import is_valid_text
+from networkapi.util.geral import create_lock_with_blocking
+from networkapi.util.geral import destroy_lock
+from networkapi.util.geral import get_app
 
 
 class AmbienteError(Exception):
@@ -51,6 +58,15 @@ class AmbienteError(Exception):
     def __str__(self):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
+
+class EnvironmentErrorV3(Exception):
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return str(self.cause)
 
 
 class AmbienteNotFoundError(AmbienteError):
@@ -394,7 +410,8 @@ class EnvironmentVip(BaseModel):
 
     conf = models.TextField(
         blank=False,
-        db_column='conf'
+        db_column='conf',
+        default='{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
     )
 
     log = logging.getLogger('EnvironmentVip')
@@ -408,6 +425,18 @@ class EnvironmentVip(BaseModel):
         return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
 
     name = property(_get_name)
+
+    def _get_environments(self):
+        """Returns list of EnvironmentEnvironmentvip."""
+        return self.environmentenvironmentvip_set.all()
+
+    environments = property(_get_environments)
+
+    def _get_environments_vip(self):
+        """Returns list of OptionvipEnvironmentvip."""
+        return self.optionvipenvironmentvip_set.all()
+
+    optionsvip = property(_get_environments_vip)
 
     @classmethod
     def get_by_pk(cls, id):
@@ -602,6 +631,123 @@ class EnvironmentVip(BaseModel):
             option_environment.delete()
 
         super(EnvironmentVip, self).delete()
+
+    def delete_v3(self):
+
+        entry_netipv4 = self.networkipv4_set.all()
+        entry_netipv6 = self.networkipv6_set.all()
+
+        if len(entry_netipv4) > 0 or len(entry_netipv6) > 0:
+            raise EnvironmentVipAssociatedToSomeNetworkError(
+                None, 'Environment Vip is associated to some IPv4 '
+                      'or IPv6 Network and therefore cannot be deleted.')
+
+        # Deletes options related
+        self.optionvipenvironmentvip_set\
+            .filter(environment_id=self.id).delete()
+
+        # Deletes environment related
+        self.environmentenvironmentvip_set\
+            .filter(environment_vip_id=self.id).delete()
+
+        super(EnvironmentVip, self).delete()
+
+    def create_v3(self, env_map):
+
+        optionvip_model = get_model('requisicaovips', 'OptionVip')
+        optionvipenvvip_model = get_model(
+            'requisicaovips', 'OptionVipEnvironmentVip')
+
+        self.conf = env_map.get('conf')
+
+        optionsvip = env_map.get('optionsvip', None)
+        environments = env_map.get('environments', None)
+
+        self.finalidade_txt = env_map.get('finalidade_txt')
+        self.cliente_txt = env_map.get('cliente_txt')
+        self.ambiente_p44_txt = env_map.get('ambiente_p44_txt')
+        self.description = env_map.get('description')
+
+        self.save()
+
+        if optionsvip is not None:
+            optionsvip = [opt.get('option') for opt in optionsvip]
+            for optionvip in optionsvip:
+                option = optionvip_model.get_by_pk(optionvip)
+                optenv_obj = optionvipenvvip_model()
+                optenv_obj.option = option
+                optenv_obj.environment = self
+                optenv_obj.save()
+
+        if environments is not None:
+            environments = [opt.get('environment') for opt in environments]
+            for environment in environments:
+                env = Ambiente.get_by_pk(environment)
+                envenv_obj = EnvironmentEnvironmentVip()
+                envenv_obj.environment = env
+                envenv_obj.environment_vip = self
+                envenv_obj.validate()
+                envenv_obj.save()
+
+    def update_v3(self, env_map):
+        optionvip_model = get_model('requisicaovips', 'OptionVip')
+        optionvipenvvip_model = get_model(
+            'requisicaovips', 'OptionVipEnvironmentVip')
+
+        conf = env_map.get('conf', None)
+        if conf is not None:
+            self.conf = conf
+
+        optionsvip = env_map.get('optionsvip', None)
+        environments = env_map.get('environments', None)
+
+        self.finalidade_txt = env_map.get('finalidade_txt')
+        self.cliente_txt = env_map.get('cliente_txt')
+        self.ambiente_p44_txt = env_map.get('ambiente_p44_txt')
+        self.description = env_map.get('description')
+
+        self.save()
+
+        if optionsvip is not None:
+            optionsvip = [opt.get('option') for opt in optionsvip]
+
+            # Deletes old relationships
+            self.optionvipenvironmentvip_set\
+                .exclude(option__in=optionsvip).delete()
+
+            options_rel = self.optionvipenvironmentvip_set\
+                .filter(option__in=optionsvip).values_list('option', flat=True)
+
+            # Creates new relationships
+            optionsvip_filter = list(set(optionsvip) - set(options_rel))
+            for optionvip in optionsvip_filter:
+                option = optionvip_model.get_by_pk(optionvip)
+                optenv_obj = optionvipenvvip_model()
+                optenv_obj.option = option
+                optenv_obj.environment = self
+                optenv_obj.save()
+
+        if environments is not None:
+            environments = [env_dict.get('environment')
+                            for env_dict in environments]
+
+            # Deletes old relationships
+            self.environmentenvironmentvip_set\
+                .exclude(environment__in=environments).delete()
+
+            envs_rel = self.environmentenvironmentvip_set\
+                .filter(environment__in=environments)\
+                .values_list('environment', flat=True)
+
+            # Creates new relationships
+            environments_filter = list(set(environments) - set(envs_rel))
+            for environment in environments_filter:
+                env = Ambiente.get_by_pk(environment)
+                envenv_obj = EnvironmentEnvironmentVip()
+                envenv_obj.environment = env
+                envenv_obj.environment_vip = self
+                envenv_obj.validate()
+                envenv_obj.save()
 
     def show_environment_vip(self):
         return '%s - %s - %s' % (self.finalidade_txt, self.cliente_txt, self.ambiente_p44_txt)
@@ -802,6 +948,22 @@ class Ambiente(BaseModel):
 
     eqpts = property(_get_eqpt)
 
+    def _get_filtered_eqpt(self):
+        """Returns filtered eqpts of environment."""
+
+        eqpts = self.equipamentoambiente_set.all()
+
+        eqpts = eqpts.filter(
+            equipamento__in=eqpts.filter(
+                equipamento__tipo_equipamento__filterequiptype__filter=self.filter
+            )
+        ).prefetch_related('equipamento').distinct().values_list(
+            'equipamento', flat=True
+        )
+        return eqpts
+
+    filtered_eqpts = property(_get_filtered_eqpt)
+
     @classmethod
     def get_by_pk(cls, id):
         """Efetua a consulta de Ambiente pelo seu id.
@@ -816,7 +978,7 @@ class Ambiente(BaseModel):
             return Ambiente.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
             raise AmbienteNotFoundError(
-                e, u'Não existe um ambiente com o id = %s.' % id)
+                e, u'There is no environment with id = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -1078,6 +1240,231 @@ class Ambiente(BaseModel):
         )
 
         return envvip_model
+
+    def create_v3(self, env_map):
+
+        try:
+            self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
+            self.ambiente_logico = AmbienteLogico\
+                .get_by_pk(env_map.get('ambiente_logico'))
+            self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
+
+            if env_map.get('filter', None):
+                self.filter = Filter.get_by_pk(env_map.get('filter'))
+            else:
+                self.filter = None
+
+            if env_map.get('father_environment'):
+                self.father_environment = Ambiente\
+                    .get_by_pk(env_map.get('father_environment'))
+            else:
+                self.father_environment = None
+
+            self.acl_path = env_map.get('acl_path')
+            self.ipv4_template = env_map.get('ipv4_template')
+            self.ipv6_template = env_map.get('ipv6_template')
+            self.link = env_map.get('link')
+            self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
+            self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
+            self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
+            self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
+            self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
+            self.vrf = self.default_vrf.internal_name
+            self.validate_v3()
+            self.save()
+
+            configs = env_map.get('configs', [])
+            self.create_configs(configs, self.id)
+
+        except Exception, e:
+            raise EnvironmentErrorV3(e)
+
+    def update_v3(self, env_map):
+
+        try:
+            self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
+
+            self.ambiente_logico = AmbienteLogico\
+                .get_by_pk(env_map.get('ambiente_logico'))
+
+            self.divisao_dc = DivisaoDc.get_by_pk(env_map.get('divisao_dc'))
+
+            if env_map.get('filter', None):
+                self.filter = Filter.get_by_pk(env_map.get('filter'))
+            else:
+                self.filter = None
+
+            if env_map.get('father_environment'):
+                self.father_environment = Ambiente\
+                    .get_by_pk(env_map.get('father_environment'))
+            else:
+                self.father_environment = None
+
+            self.acl_path = env_map.get('acl_path')
+            self.ipv4_template = env_map.get('ipv4_template')
+            self.ipv6_template = env_map.get('ipv6_template')
+            self.link = env_map.get('link')
+            self.min_num_vlan_1 = env_map.get('min_num_vlan_1')
+            self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
+            self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
+            self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
+            self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
+            self.vrf = self.default_vrf.internal_name
+
+        except Exception, e:
+            raise EnvironmentErrorV3(e)
+        else:
+            # Prepate lock for environment
+            locks_name = [LOCK_ENVIRONMENT % self.id]
+
+        configs = env_map.get('configs', None)
+
+        if configs is not None:
+            # Prepate lock for allocates inside environment
+            locks_name += [LOCK_ENVIRONMENT_ALLOCATES % self.id]
+
+        # Creates locks
+        locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+
+            # Validate request
+            self.validate_v3()
+
+            self.save()
+
+            # If have changes in configs
+            if configs is not None:
+                ips_by_env = IPConfig.get_by_environment(None, self.id)
+                ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+
+                # Configs with ids
+                ids_conf_receive = [cfg.get('id') for cfg in configs
+                                    if cfg.get('id')]
+
+                # Configs to update: configs with id
+                cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                           cfg.get('id') in ids_conf_current]
+
+                # Configs to create: configs without id
+                cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+
+                # Configs to delete: configs not received
+                cfg_del = [id_conf for id_conf in ids_conf_current
+                           if id_conf not in ids_conf_receive]
+
+                # Updates configs
+                self.update_configs(cfg_upt, self.id)
+                # Creates configs
+                self.create_configs(cfg_ins, self.id)
+                # Deletes configs
+                self.delete_configs(cfg_del, self.id)
+        except Exception, e:
+            raise EnvironmentErrorV3(e)
+
+        finally:
+            destroy_lock(locks_list)
+
+    def delete_v3(self):
+        ip_models = get_app('ip', 'models')
+        vlan_models = get_app('vlan', 'models')
+        eqpt_models = get_app('equipamento', 'models')
+
+        # Remove every vlan associated with this environment
+        for vlan in self.vlan_set.all():
+            try:
+                if vlan.ativada:
+                    vlan.deactivate_v3()
+                vlan.delete_v3()
+            except vlan_models.VlanCantDeallocate, e:
+                raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
+            except ip_models.IpCantBeRemovedFromVip, e:
+                raise AmbienteUsedByEquipmentVlanError(e.cause, e.message)
+
+        # Remove every association between equipment and this environment
+        for equip_env in self.equipamentoambiente_set.all():
+            try:
+                eqpt_models.EquipamentoAmbiente.remove(
+                    None, equip_env.equipamento_id, equip_env.ambiente_id)
+            except eqpt_models.EquipamentoAmbienteNotFoundError, e:
+                raise AmbienteUsedByEquipmentVlanError(e, e.message)
+            except eqpt_models.EquipamentoError, e:
+                raise AmbienteUsedByEquipmentVlanError(e, e.message)
+
+        # Remove ConfigEnvironments associated with environment
+        try:
+            ConfigEnvironment.remove_by_environment(None, self.id)
+        except (ConfigEnvironmentError, OperationalError,
+                ConfigEnvironmentNotFoundError), e:
+            self.log.error(u'Falha ao remover algum Ambiente Config.')
+            raise AmbienteError(e, u'Falha ao remover algum Ambiente Config.')
+
+        # Remove the environment
+        try:
+            self.delete()
+        except Exception, e:
+            self.log.error(u'Falha ao remover o Ambiente.')
+            raise AmbienteError(e, u'Falha ao remover o Ambiente.')
+
+    def validate_v3(self):
+
+        try:
+            Ambiente.objects.filter(
+                grupo_l3=self.grupo_l3,
+                ambiente_logico=self.ambiente_logico,
+                divisao_dc=self.divisao_dc
+            ).exclude(id=self.id).uniqueResult()
+        except ObjectDoesNotExist:
+            pass
+        except Exception, e:
+            raise AmbienteError(e, u'Failed to search Environment.')
+        else:
+            raise AmbienteDuplicatedError(None, u'Duplicate Environment.')
+
+    def update_configs(self, configs, env_id):
+        """
+        Update configs of environment
+
+        :param configs: Configs of environment
+        :param env: Id of environment
+        """
+        for config in configs:
+            try:
+                ip_config = IPConfig.objects.get(
+                    id=config.get('id'),
+                    configenvironment__environment=env_id
+                )
+            except ObjectDoesNotExist:
+                raise exceptions.ConfigIpDoesNotExistException()
+
+            ip_config.subnet = config.get('subnet')
+            ip_config.new_prefix = config.get('new_prefix')
+            ip_config.type = config.get('type')
+            ip_config.network_type_id = config.get('network_type')
+
+            ip_config.save()
+
+    def create_configs(self, configs, env_id):
+        """
+        Create configs of environment
+
+        :param configs: Configs of environment
+        :param env: Id of environment
+        """
+
+        for config in configs:
+            IPConfig.create(env_id, config)
+
+    def delete_configs(self, configs_ids, env_id):
+        """
+        Delete configs of environment
+
+        :param configs_ids: Id of Configs of environment
+        :param env: Id of environment
+        """
+
+        for config_id in configs_ids:
+            IPConfig.remove(None, None, env_id, config_id)
 
 
 class IP_VERSION:

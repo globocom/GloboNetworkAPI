@@ -1,0 +1,20 @@
+{
+  "networks": [
+    {
+      "block": 64,
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0100",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "cluster_unit": "cluster-unit-1",
+      "environmentvip": 1,
+      "id": 3,
+      "network_type": 1,
+      "vlan": 1
+    }
+  ]
+}

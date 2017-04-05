@@ -1,0 +1,16 @@
+[
+  {
+  "pk": 1,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "BE-TESTE-1"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "ambiente.divisaodc",
+  "fields": {
+    "nome": "BE-TESTE-2"
+    }
+  }
+]

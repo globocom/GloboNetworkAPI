@@ -1,6 +1,6 @@
 - Criar um venv
  	Instalar requirements
-	- pip install -r requirements.txt 
+	- pip install -r requirements.txt
 	- pip install -r requirements_test.txt
 
 -> Todos os testes:
@@ -20,6 +20,12 @@
 
 -> Executar apenas um módulo do pacote (ex: Ambiente.EnvironmentVIP):
 ./manage.py test -- networkapi/ambiente/test/test_EnvironmentVIP.py
+
+-> Executar apenas uma classe de um módulo do pacote (ex: Ambiente.EnvironmentVIP.Classx):
+./manage.py test -- networkapi/ambiente/test/test_EnvironmentVIP.py:ClassX
+
+-> Executar apenas uma função de uma classe de um módulo do pacote (ex: Ambiente.EnvironmentVIP.Classx.test):
+./manage.py test -- networkapi/ambiente/test/test_EnvironmentVIP.py:ClassX.test
 
 -> Verbose pode ser combinado com os outros:
 ./manage.py test -- networkapi/ambiente --verbose

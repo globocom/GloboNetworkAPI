@@ -1,0 +1,204 @@
+[
+  {
+    "pk": 1,
+    "model": "roteiro.tiporoteiro",
+    "fields": {
+      "tipo": "ipv4_activate_network_configuration",
+      "descricao": "DeployIPv4Network"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "roteiro.tiporoteiro",
+    "fields": {
+      "tipo": "ipv4_deactivate_network_configuration",
+      "descricao": "UnDeployIPv4Network"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "roteiro.tiporoteiro",
+    "fields": {
+      "tipo": "ipv6_activate_network_configuration",
+      "descricao": "DeployIPv6Network"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "roteiro.tiporoteiro",
+    "fields": {
+      "tipo": "ipv6_deactivate_network_configuration",
+      "descricao": "UnDeployIPv6Network"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_add_cisco_ios.django",
+      "tipo_roteiro": 1,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_add_cisco_nxos.django",
+      "tipo_roteiro": 1,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_add_dell_ftos.django",
+      "tipo_roteiro": 1,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_delete_cisco_ios.django",
+      "tipo_roteiro": 2,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_delete_cisco_nxos.djang",
+      "tipo_roteiro": 2,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_delete_dell_ftos.django",
+      "tipo_roteiro": 2,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 7,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_add_cisco_ios.django",
+      "tipo_roteiro": 3,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 8,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_add_cisco_nxos.django",
+      "tipo_roteiro": 3,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 9,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_delete_cisco_ios.django",
+      "tipo_roteiro": 4,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 10,
+    "model": "roteiro.roteiro",
+    "fields": {
+      "roteiro": "template_network_delete_cisco_nxos.django",
+      "tipo_roteiro": 4,
+      "descricao": "Descr"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 2
+    }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 3
+    }
+  },
+  {
+    "pk": 4,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 4
+    }
+  },
+  {
+    "pk": 5,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 5
+    }
+  },
+  {
+    "pk": 6,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 6
+    }
+  },
+  {
+    "pk": 7,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 7
+    }
+  },
+  {
+    "pk": 8,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 8
+    }
+  },
+  {
+    "pk": 9,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 9
+    }
+  },
+  {
+    "pk": 10,
+    "model": "equipamento.equipamentoroteiro",
+    "fields": {
+      "equipamento": 1,
+      "roteiro": 10
+    }
+  }
+]

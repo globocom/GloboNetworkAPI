@@ -1,0 +1,15 @@
+{
+  "equipments": [
+    {
+      "equipment_type": 1,
+      "groups": [
+        {
+          "id": 1
+        }
+      ],
+      "maintenance": false,
+      "model": 1,
+      "name": "EQUIPAMENT-SANITY-POST"
+    }
+  ]
+}

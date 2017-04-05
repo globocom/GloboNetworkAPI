@@ -1,0 +1,73 @@
+{
+  "title": "Environment Vip Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "environments_vip"
+  ],
+  "properties": {
+    "environments_vip": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "finalidade_txt": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\-_ ]*$",
+            "minimum": 3,
+            "maximum": 50
+          },
+          "cliente_txt": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\-_ ]*$",
+            "minimum": 3,
+            "maximum": 50
+          },
+          "ambiente_p44_txt": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\-_ ]*$",
+            "minimum": 3,
+            "maximum": 50
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\-_ ]*$",
+            "minimum": 3,
+            "maximum": 50
+          },
+          "conf": {
+            "type": "string"
+          },
+          "optionsvip": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties":{
+                "option": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "environments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties":{
+                "environment": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "finalidade_txt",
+          "cliente_txt",
+          "ambiente_p44_txt",
+          "description"
+        ]
+      }
+    }
+  }
+}
