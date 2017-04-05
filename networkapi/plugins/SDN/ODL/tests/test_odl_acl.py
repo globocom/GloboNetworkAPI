@@ -296,3 +296,76 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 data["rules"][0]["l4-options"]["src-port-start"])
         assert_equal(acl.flows["flow"][0]["match"]["udp-destination-port"],
                 data["rules"][0]["l4-options"]["dest-port-start"])
+
+    def test_acl_should_have_icmp_as_ip_protocol(self):
+        """ Should have ICMP as ip protocol """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "icmp",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "icmp-options": {
+                    "icmp-code": "0",
+                    "icmp-type": "8"
+                }
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        acl.build()
+        assert_equal(1,
+            acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
+
+    def test_acl_should_raise_value_error_when_there_are_no_icmp_options(self):
+        """ Should raise ValueError when there are no ICMP options """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "icmp",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        assert_raises(ValueError, acl.build)
+
+    def test_acl_should_raise_error_for_icmp_type_and_code_missing(self):
+        """ Should raise error for ICMP type and code missing """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "icmp",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "icmp-options": {
+                }
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        assert_raises(ValueError, acl.build)
+
+    def test_acl_should_have_icmp_code_and_type_at_flow(self):
+        """ Should have icmp code and type at flow """
+
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "icmp",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "icmp-options": {
+                    "icmp-code": "0",
+                    "icmp-type": "8"
+                }
+            }]
+        }
+        acl = AclFlowBuilder(data)
+        acl.build()
+        assert_equal(data["rules"][0]["icmp-options"]["icmp-code"],
+                acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-code"])
+        assert_equal(data["rules"][0]["icmp-options"]["icmp-type"],
+                acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-type"])
