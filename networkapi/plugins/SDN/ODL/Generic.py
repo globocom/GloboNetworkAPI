@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 class ODLPlugin(BaseSdnPlugin):
     """
-    Plugin base para interação com controlador SDN
+    Plugin base para interação com controlador ODL
     """
 
     class FlowTypes(Enum):
@@ -48,59 +48,59 @@ class ODLPlugin(BaseSdnPlugin):
 
             self.equipment_access = self._get_equipment_access()
 
-    def add_flow(self, data, flow_type):
-        # TODO: como definir o flow id? onde guardar essa info? ou pegar essa info do controller?
-        # TODO: como definir o controller id?
-        path = "/restconf/config/opendaylight-inventory:nodes/node/openflow:200920773006274/flow-node-inventory:table/0/flow/3"
-        uri = self._get_uri(path=path)
+    def add_flow(self, data=None, flow_id=0):
+        return self._flow(flow_id=flow_id, method='put', data=data)
 
-        flows = {}
-        # Checks which builder should be called
-        if flow_type == FlowTypes.ACL:
-            flows = AclFlowBuilder(data)
+    def del_flow(self, flow_id=0):
+        return self._flow(flow_id=flow_id, method='delete')
 
-        else raise NotImplementedError("Unknown flow type: %s" % flow_type)
+    def get_flow(self, flow_id=0):
+        return self._flow(flow_id=flow_id, method='get')
 
-        data = flows.dump().strip().replace(' ', '')  # remove qualquer espaço
+    def _flow(self, flow_id=0, method='', data=None):
+        import ipdb; ipdb.set_trace()   
+        allowed_methods=["get", "put", "delete"]
 
-        print data
-        raise exceptions.APIException()  # evitando enviar os flows para o controlador por enquanto
+        if flow_id < 1 or method not in allowed_methods:
+            log.error("Invalid parameters in OLDPlugin flow handler")
+            raise exceptions.ValueInvalid()
 
-        return self._request(method=method, uri=uri, data=data, contentType='json')
+        nodes_ids = self._get_nodes_ids()
+        # TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
+        nodes_ids = ["openflow:134984912119576"]
+        if data:
+            data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
 
-    # TODO: Método abaixo é apenas uma viagem. devo remover.
-    def act(self, action="", data=None, contentType='json'):
-        actions = {
-            'get_nodes': {
-                'path': '/restconf/config/opendaylight-inventory:nodes',
-                'method': 'get',
-                },
-            'add_flow': {
-                'path': '/restconf/config/opendaylight-inventory:nodes',
-                'method': 'get',
-                }
-        }
+        for node_id in nodes_ids:
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%d" \
+                   % (node_id, flow_id)
 
-        host = self._get_host()
-        path = actions[action]["path"]
-        uri = self._get_uri(host=host, path=path)
-        method = actions[action]["method"]
+            self._request(method=method, path=path, data=data, contentType='json')
 
-        if data is not None:
-            data = json.dump(data)
-            data = data.strip()
+        #TODO: definir retorno
+        return "OK"
 
-        print data
-        raise exceptions.APIException()
+    def _get_nodes_ids(self):
+        """
+        Returns a list of nodes ids controlled by ODL
+        """
+        nodes = self._get_nodes()
+        nodes_ids = []
+        for node in nodes:
+            nodes_ids.append(node["id"])
+        return nodes_ids
 
-        return self._request(method=method, uri=uri,
-                             data=data, contentType=contentType)
+
+    def _get_nodes(self):
+        path="/restconf/operational/opendaylight-inventory:nodes/"
+        nodes = self._request(method='get', path=path, contentType='json')
+        return nodes['nodes']['node']
 
     def _request(self, **kwargs):
         # Params and default values
         params = {
             'method': 'get',
-            'uri': '',
+            'path': '',
             'data': None,
             'contentType': 'json',
             'verify': False
@@ -112,11 +112,12 @@ class ODLPlugin(BaseSdnPlugin):
                 params[param] = kwargs.get(param)
 
         headers = self._get_headers(contentType=params["contentType"])
+        uri = self._get_uri(path=params["path"])
 
         try:
             func = getattr(requests, params["method"])  # Raises AttributeError if method is not valid
             request = func(
-                params["uri"],
+                uri,
                 auth=self._get_auth(),
                 headers=headers,
                 verify=params["verify"],
@@ -125,17 +126,22 @@ class ODLPlugin(BaseSdnPlugin):
 
             request.raise_for_status()
 
-            if params["contentType"] == 'json':
+            try:
                 return json.loads(request.text)
-            else:
-                return request.text
+            except:
+                return
 
         except AttributeError:
-            self.logger.error('Request method must be valid HTTP request.'
-                              ' ie: GET, POST, PUT, DELETE')
+            log.error('Request method must be valid HTTP request. '
+                      'ie: GET, POST, PUT, DELETE')
         except HTTPError:
-            self.logger.error(request.text)
-            raise exceptions.CommandErrorException()
+            try:
+                response = json.loads(request.text)
+                for error in response["errors"]["error"]:
+                    log.error(error["error-message"])
+            except:
+                log.error("Unknown error during request to ODL Controller")
+            raise exceptions.CommandErrorException(msg=request.status_code)
 
     def _get_auth(self):
         return self._basic_auth()
@@ -156,7 +162,8 @@ class ODLPlugin(BaseSdnPlugin):
             'text': 'text/plain'
         }
 
-        return {'content-type': types[contentType]}
+        return {'content-type': types[contentType],
+                'Accept': types[contentType]}
 
     def _get_equipment_access(self):
         try:
