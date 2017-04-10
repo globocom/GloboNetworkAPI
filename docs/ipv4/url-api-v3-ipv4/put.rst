@@ -8,7 +8,7 @@ Updating list of IPv4 objects in database
 
 URL::
 
-/api/v3/ipv4/[ipv4_ids]/
+    /api/v3/ipv4/[ipv4_ids]/
 
 where **ipv4_ids** are the identifiers of IPv4 objects. It can use multiple ids separated by semicolons.
 
@@ -16,11 +16,11 @@ Example with Parameter IDs:
 
 One ID::
 
-/api/v3/ipv4/1/
+    /api/v3/ipv4/1/
 
 Many IDs::
 
-/api/v3/ipv4/1;3;8/
+    /api/v3/ipv4/1;3;8/
 
 Request body:
 
@@ -65,5 +65,5 @@ In IPv4 PUT request, you can only change description and associations with equip
 
 URL Example::
 
-/api/v3/ipv4/1/
+    /api/v3/ipv4/1/
 

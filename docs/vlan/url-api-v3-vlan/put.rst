@@ -8,7 +8,7 @@ Updating list of Vlans in database
 
 URL::
 
-/api/v3/vlan/[vlan_ids]/
+    /api/v3/vlan/[vlan_ids]/
 
 where **vlan_ids** are the identifiers of Vlans. It can use multiple ids separated by semicolons.
 
@@ -16,11 +16,11 @@ Example with Parameter IDs:
 
 One ID::
 
-/api/v3/vlan/1/
+    /api/v3/vlan/1/
 
 Many IDs::
 
-/api/v3/vlan/1;3;8/
+    /api/v3/vlan/1;3;8/
 
 Request body:
 
@@ -84,5 +84,5 @@ In Vlan PUT request, you need to specify all fields even you don't want to chang
 
 URL Example::
 
-/api/v3/vlan/1/
+    /api/v3/vlan/1/
 
