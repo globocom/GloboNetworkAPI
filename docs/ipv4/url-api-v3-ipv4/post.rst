@@ -65,6 +65,7 @@ Request Example with some more fields:
 Through IPv4 POST route you can create one or more IPv4 objects. Only "networkipv4" field are required. You can specify other fields such as:
 
 * **oct1**, **oct2**, **oct3**, **oct4** - Are the octets of IPv4. Given a network, API can provide to you an IPv4 Address automatically, but you can assign a IPv4 Address in a manually way. If you specify some octet, you need to specify all the others.
+* **description** - Description of new IPv4.
 * **networkipv4** - This parameter is mandatory. It is the network to which new IP address will belong.
 * **equipments** - You can associate new IP address to one or more equipments.
 

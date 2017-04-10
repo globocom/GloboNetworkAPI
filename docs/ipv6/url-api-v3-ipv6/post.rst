@@ -74,6 +74,7 @@ Through IPv6 POST route you can create one or more IPv6 objects. Only "networkip
 
 * **block1**, **block2**, **block3**, **block4**, **block5**, **block6**, **block7** and **block8** - Are the octets of IPv6. Given a network, API can provide to you an IPv6 Address automatically, but you can assign a IPv6 Address in a manually way. If you specify some octet, you need to specify all the others.
 * **networkipv6** - This parameter is mandatory. It is the network to which new IP address will belong.
+* **description** - Description of new IPv6.
 * **equipments** - You can associate new IP address to one or more equipments.
 
 At the end of POST request, it will be returned the identifiers of new IPv6 objects created.
