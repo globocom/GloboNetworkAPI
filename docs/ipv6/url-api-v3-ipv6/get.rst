@@ -205,7 +205,9 @@ Response body with *details* kind:
                         "description": <string>
                     },
                     "active": <boolean>,
-                    "dhcprelay": [],
+                    "dhcprelay": [
+                        <string>,...
+                    ],
                     "cluster_unit": <string>
                 },
                 "description": <string>
