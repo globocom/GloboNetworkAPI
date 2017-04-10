@@ -28,7 +28,7 @@ Response body:
         },...
     ]
 
-Response Example for update of two Network IPv4 objects:
+Response Example for Undeploying two Network IPv4 objects:
 
 .. code-block:: json
 

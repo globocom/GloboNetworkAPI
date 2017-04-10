@@ -28,7 +28,7 @@ Response body:
         },...
     ]
 
-Response Example for update of two Network IPv6 objects:
+Response Example for Deploying two Network IPv6 objects:
 
 .. code-block:: json
 
