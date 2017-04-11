@@ -44,7 +44,7 @@ Request Example:
 
     {
         "ips": [{
-            "id": <integer>,
+            "id": 1,
             "description": "New description",
             "equipments": [
                 {
