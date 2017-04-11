@@ -74,7 +74,7 @@ In Vlan PUT request, you need to specify all fields even you don't want to chang
 * **acl_file_name** and **acl_file_name_v6** - You can give ACL names for associated NetworkIPv4 and NetworkIPv6.
 * **acl_valida** and **acl_valida_v6** - If not specified ACLs will not be validated by default.
 * **active** - If not specified, Vlan will be set to not active.
-* **vrf**
+* **vrf** - Define in what VRF Vlan will be placed.
 * **acl_draft** and **acl_draft_v6** -
 * **create_networkv4** and **create_networkv6** - Through these objects you can create NetworkIPv4 or NetworkIPv6 and automatically associate them to created Vlan.
     * **network_type** - You can specify the type of Network that is desired to create, but you are not required to do that.
