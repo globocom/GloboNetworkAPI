@@ -104,7 +104,7 @@ class QueueManager(object):
         try:
             # Connection
             conn = Connection(
-                host=self._broker_host,
+                hostname=self._broker_host,
                 userid=self._broker_user,
                 password=self._broker_password,
                 virtual_host=self._broker_vhost)

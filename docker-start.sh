@@ -30,4 +30,5 @@ export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
 echo "starting gunicorn"
 /usr/local/bin/gunicorn -c /netapi/gunicorn.conf.py networkapi_wsgi:application
 
+touch /tmp/gunicorn-networkapi_error.log
 tail -f /tmp/gunicorn-networkapi_error.log
