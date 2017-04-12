@@ -1,4 +1,4 @@
-FROM base_globonetworkapi:3.4.3
+FROM suptel/base_globonetworkapi_netapi:3.4.3
 
 RUN mkdir /netapi
 WORKDIR /netapi
