@@ -4,6 +4,7 @@ import logging
 from django.core.exceptions import FieldError
 from django.db.models import Q
 
+from networkapi.equipamento.models import Equipamento
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
@@ -15,6 +16,8 @@ from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.plugins.factory import PluginFactory
+
 
 log = logging.getLogger(__name__)
 
@@ -153,3 +156,41 @@ def delete_environment(env_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
+
+def get_controller_by_envid(env_id):
+    q_filter_environment = {
+        'equipamentoambiente__ambiente': env_id,
+        'equipamentoambiente__is_controller': env_id
+    }
+
+    return Equipamento.objects.filter(Q(**q_filter_environment)).uniqueResult()
+
+def list_flows_by_envid(env_id, flow_id=0):
+    eqpt = get_controller_by_envid(env_id)
+    plugin = PluginFactory.factory(eqpt)
+
+    if flow_id>0:
+        return plugin.get_flow(flow_id=flow_id)
+    else:
+        return plugin.get_flows()
+
+def insert_flow(env_id, data):
+    eqpt = get_controller_by_envid(env_id)
+    plugin = PluginFactory.factory(eqpt)
+
+    return plugin.add_flow(data=data)
+
+def delete_flow(env_id, flow_id):
+    eqpt = get_controller_by_envid(env_id)
+    plugin = PluginFactory.factory(eqpt)
+
+    return plugin.del_flow(flow_id=flow_id)
+
+
+
+
+
+
+
+
+

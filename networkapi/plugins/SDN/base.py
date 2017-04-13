@@ -45,6 +45,10 @@ class BaseSdnPlugin(object):
             else:
                 setattr(self, param, params.get(param))
 
+        if not self.equipment:
+            log.error("An equipment object must be used to instantiate the plugin")
+            raise ValueError
+
     def _get_auth(self):
         raise NotImplementedError()
 
