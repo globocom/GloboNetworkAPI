@@ -1,0 +1,11 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `roteiros`
+CHANGE COLUMN `roteiro` `roteiro` VARCHAR(50) CHARACTER SET 'latin1' NOT NULL;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `roteiros`
+CHANGE COLUMN `roteiro` `roteiro` VARCHAR(40) CHARACTER SET 'latin1' NOT NULL
+"""
