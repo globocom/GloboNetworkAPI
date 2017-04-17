@@ -16,3 +16,5 @@ Using GloboNetworkAPI V3
    ipv4/ipv4
    ipv6/ipv6
    task/task
+   tool-tips/tool-tips
+
