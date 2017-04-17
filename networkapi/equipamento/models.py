@@ -963,6 +963,7 @@ class EquipamentoAmbiente(BaseModel):
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     is_router = models.BooleanField(db_column='is_router')
+    is_controller = models.BooleanField(db_column='is_controller')
 
     log = logging.getLogger('EquipamentoAmbiente')
 

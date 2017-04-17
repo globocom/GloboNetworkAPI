@@ -45,11 +45,35 @@ class ODLPlugin(BaseSdnPlugin):
 
         if not hasattr(self, 'equipment_access') \
            or self.equipment_access is None:
-
             self.equipment_access = self._get_equipment_access()
 
+        print self.equipment_access
+        print type(self.equipment_access)
+
+    def get_flows(self):
+        """
+        
+        :return: All flows for table 0 
+        """
+        nodes_ids = self._get_nodes_ids()
+        # TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
+        nodes_ids = ["openflow:134984912119576"]
+        for node_id in nodes_ids:
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
+                   % (node_id)
+            #TODO: Tratar retornos dos varios vSwitches
+            retorno =  self._request(method="get", path=path, contentType='json')
+            flows_list = retorno["flow-node-inventory:table"][0]
+            #return AclFlowBuilder.dump(flows_list)
+            return flows_list
+
+        flows_return = {}
+
     def add_flow(self, data=None, flow_id=0):
-        return self._flow(flow_id=flow_id, method='put', data=data)
+        builder = AclFlowBuilder(data)
+        data_to_send = builder.dump()
+        flow_id = builder.flows['flow'][0]['id']
+        return self._flow(flow_id=flow_id, method='put', data=data_to_send)
 
     def del_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='delete')
@@ -58,26 +82,31 @@ class ODLPlugin(BaseSdnPlugin):
         return self._flow(flow_id=flow_id, method='get')
 
     def _flow(self, flow_id=0, method='', data=None):
+
         allowed_methods=["get", "put", "delete"]
 
         if flow_id < 1 or method not in allowed_methods:
             log.error("Invalid parameters in OLDPlugin flow handler")
             raise exceptions.ValueInvalid()
 
-        nodes_ids = self._get_nodes_ids()
+        #nodes_ids = self._get_nodes_ids()
         # TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
         nodes_ids = ["openflow:134984912119576"]
-        if data:
-            data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
+        # if data:
+        #     data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
 
         for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%d" \
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
                    % (node_id, flow_id)
 
-            self._request(method=method, path=path, data=data, contentType='json')
+            # TODO: Tratar retornos dos varios vSwitches
+            retorno = self._request(method=method, path=path, data=data, contentType='json')
+            if method=='get':
+                return retorno["flow-node-inventory:flow"][0]
+            else:
+                return retorno
 
-        #TODO: definir retorno
-        return "OK"
+
 
     def _get_nodes_ids(self):
         """
@@ -112,6 +141,12 @@ class ODLPlugin(BaseSdnPlugin):
 
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
+
+        log.info("Starting %s request to controller %s at %s. Data to be sent: %s" %
+                    (params["method"], self.equipment.nome, params["path"], params["data"])
+                 )
+
+
 
         try:
             func = getattr(requests, params["method"])  # Raises AttributeError if method is not valid
@@ -166,9 +201,10 @@ class ODLPlugin(BaseSdnPlugin):
 
     def _get_equipment_access(self):
         try:
-            self.equipment_access = EquipamentoAcesso.search(
+            return EquipamentoAcesso.search(
                 None, self.equipment, 'https').uniqueResult()
         except Exception, e:
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
+        #TODO: ver o metodo existente, bater com o host (http com http)
