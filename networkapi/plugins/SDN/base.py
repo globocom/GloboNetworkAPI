@@ -15,10 +15,8 @@
 # limitations under the License.
 
 import logging
-import requests
 
 from networkapi.plugins import exceptions
-from networkapi.equipamento.models import EquipamentoAcesso
 
 log = logging.getLogger(__name__)
 
