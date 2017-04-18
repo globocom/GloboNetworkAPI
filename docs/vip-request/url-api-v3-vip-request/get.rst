@@ -1,3 +1,5 @@
+.. _url-api-v3-vip-request-get:
+
 GET
 ###
 
