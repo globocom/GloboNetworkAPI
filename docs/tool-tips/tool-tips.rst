@@ -82,7 +82,7 @@ Doing the above, you will get only the identifier of the Vlan that contains the 
 
     fields=vlan__details
 
-Now, Vlan field is not anymore an integer field, but it is a dictionary with some more information as the identifier of environment related to this Vlan. But you are not satisfied, now you want the name of this Environment. Again you don't need to create a new request to Environment module. Using the same Network IPv4 request you can get this information. Look below the way to do this::
+Now, Vlan field is not anymore an integer field, but it is a dictionary with some more information as the vlan name and the identifier of environment related to this Vlan. Let's say now you want the name of this Environment. Again you don't need to create a new request to Environment module, because using the same Network IPv4 request you can get this information. Look below the way to do this::
 
     fields=vlan__details__environment__basic
 
