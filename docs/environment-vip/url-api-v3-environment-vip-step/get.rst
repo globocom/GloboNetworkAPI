@@ -28,11 +28,11 @@ Response body:
 
 .. code-block:: json
 
-[
-    {
-        "finalidade_txt": <string>
-    },...
-]
+    [
+        {
+            "finalidade_txt": <string>
+        },...
+    ]
 
 
 Obtaining client list through finality
@@ -56,11 +56,11 @@ Response body:
 
 .. code-block:: json
 
-[
-    {
-        "cliente_txt": <string>
-    },...
-]
+    [
+        {
+            "cliente_txt": <string>
+        },...
+    ]
 
 
 Obtaining environment vip list through finality and client
@@ -85,15 +85,15 @@ Response body:
 
 .. code-block:: json
 
-[
-    {
-        "id": <integer>,
-        "finalidade_txt": <string>,
-        "cliente_txt": <string>,
-        "ambiente_p44_txt": <string>,
-        "description": <string>
-    },...
-]
+    [
+        {
+            "id": <integer>,
+            "finalidade_txt": <string>,
+            "cliente_txt": <string>,
+            "ambiente_p44_txt": <string>,
+            "description": <string>
+        },...
+    ]
 
 Obtaining environment vip through finality, client and environmentp44
 *********************************************************************
@@ -118,15 +118,15 @@ Response body:
 
 .. code-block:: json
 
-[
-    {
-        "id": <integer>,
-        "finalidade_txt": <string>,
-        "cliente_txt": <string>,
-        "ambiente_p44_txt": <string>,
-        "description": <string>
-    },...
-]
+    [
+        {
+            "id": <integer>,
+            "finalidade_txt": <string>,
+            "cliente_txt": <string>,
+            "ambiente_p44_txt": <string>,
+            "description": <string>
+        },...
+    ]
 
 
 

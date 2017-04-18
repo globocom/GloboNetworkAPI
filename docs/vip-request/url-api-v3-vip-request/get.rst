@@ -331,7 +331,6 @@ Example with details kind and id field::
 
     kind=details&fields=id
 
-
 Default behavior without **kind** and **fields**
 ************************************************
 

@@ -21,7 +21,7 @@ It is possible to specify in several ways fields desired to be retrieved in Netw
     * mask_oct4
     * mask_formated
     * broadcast
-    * vlan
+    * vlan - :ref:`Vip Request <url-api-v3-vip-request-get>`
     * network_type
     * environmentvip
     * active
