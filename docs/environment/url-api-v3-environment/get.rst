@@ -1,17 +1,19 @@
+.. _url-api-v3-environment-get:
+
 GET
 ###
 
 Obtaining list of Environments
 ******************************
 
-It is possible to specify in several ways fields desired to be retrieved in Environment module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Environment module::
+It is possible to specify in several ways fields desired to be retrieved in Environment module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Environment module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation):
 
     * id
     * name
-    * grupo_l3
-    * ambiente_logico
-    * divisao_dc
-    * filter
+    * **grupo_l3**
+    * **ambiente_logico**
+    * **divisao_dc**
+    * **filter**
     * acl_path
     * ipv4_template
     * ipv6_template
@@ -21,12 +23,12 @@ It is possible to specify in several ways fields desired to be retrieved in Envi
     * min_num_vlan_2
     * max_num_vlan_2
     * vrf
-    * default_vrf
-    * father_environment
-    * children
-    * configs
-    * routers
-    * equipments
+    * **default_vrf**
+    * :ref:`father_environment <url-api-v3-environment-get>`
+    * :ref:`children <url-api-v3-environment-get>`
+    * **configs**
+    * :ref:`routers <url-api-v3-equipment-get>`
+    * :ref:`equipments <url-api-v3-equipment-get>`
 
 
 Obtaining list of Environments through id's

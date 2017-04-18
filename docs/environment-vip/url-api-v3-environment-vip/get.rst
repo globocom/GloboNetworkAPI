@@ -4,7 +4,7 @@ GET
 Obtaining list of Environment Vip
 *********************************
 
-It is possible to specify in several ways fields desired to be retrieved in Environment module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Environment module::
+It is possible to specify in several ways fields desired to be retrieved in Environment Vip module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Environment Vip module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation):
 
     * id
     * finalidade_txt
@@ -13,8 +13,8 @@ It is possible to specify in several ways fields desired to be retrieved in Envi
     * description
     * name
     * conf
-    * optionsvip
-    * environments
+    * **optionsvip**
+    * **environments**
 
 
 Obtaining list of Environment Vip through id's

@@ -1,20 +1,22 @@
+.. _url-api-v3-equipment-get:
+
 GET
 ###
 
 Obtaining list of Equipments
 ****************************
 
-It is possible to specify in several ways fields desired to be retrieved in Equipment module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Equipment module::
+It is possible to specify in several ways fields desired to be retrieved in Equipment module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Equipment module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation):
 
     * id
     * name
     * maintenance
-    * equipment_type
-    * model
-    * ipv4
-    * ipv6
-    * environments
-    * groups
+    * **equipment_type**
+    * **model**
+    * :ref:`ipv4 <url-api-v3-ipv4-get>`
+    * :ref:`ipv6 <url-api-v3-ipv6-get>`
+    * **environments**
+    * **groups**
 
 
 Obtaining list of Equipments through some Optional GET Parameters

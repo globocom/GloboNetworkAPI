@@ -6,7 +6,7 @@ GET
 Obtaining list of Vip Request
 *****************************
 
-It is possible to specify in several ways fields desired to be retrieved in Vip Request module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Vip Request module::
+It is possible to specify in several ways fields desired to be retrieved in Vip Request module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Vip Request module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation):
 
     * id
     * name
