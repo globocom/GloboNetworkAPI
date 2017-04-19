@@ -8,7 +8,6 @@ ADD . /netapi/
 CMD cd /netapi
 
 EXPOSE 8000
-EXPOSE 15672
 
 RUN pip install -r requirements.txt
 RUN pip install -r requirements_debug.txt

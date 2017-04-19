@@ -5,7 +5,7 @@ services:
         container_name: netapi_db
         image: mysql:8.0.0
         ports:
-            - "127.0.0.1:3306:3306"
+            - "3306"
         environment:
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
         volumes:
@@ -17,8 +17,8 @@ services:
         container_name: netapi_queue
         image: rabbitmq:3.6.9
         ports:
-            - "127.0.0.1:5672:5672"
-            - "127.0.0.1:15672:15672"
+            - "5672"
+            - "15672"
         networks:
             - netapi_net
 
@@ -26,7 +26,7 @@ services:
         container_name: netapi_cache
         image: memcached:1.4.33
         ports:
-            - "127.0.0.1:11211:11211"
+            - "11211"
         networks:
             - netapi_net
 
