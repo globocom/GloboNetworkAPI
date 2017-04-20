@@ -16,6 +16,10 @@ Using GloboNetworkAPI V3
    networkv6/networkv6
    ipv4/ipv4
    ipv6/ipv6
+   object-group-perm/object-group-perm
+   object-group-perm-general/object-group-perm-general
+   object-type/object-type
+   vrf/vrf
    task/task
 
 
