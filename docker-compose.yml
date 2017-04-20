@@ -1,0 +1,54 @@
+version: '2'
+services:
+
+    db:
+        container_name: netapi_db
+        image: mysql:8.0.0
+        ports:
+            - "3306"
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - netapi_db_vol:/var/lib/mysql
+        networks:
+            - netapi_net
+
+    queue:
+        container_name: netapi_queue
+        image: rabbitmq:3.6.9
+        ports:
+            - "5672"
+            - "15672"
+        networks:
+            - netapi_net
+
+    cache:
+        container_name: netapi_cache
+        image: memcached:1.4.33
+        ports:
+            - "11211"
+        networks:
+            - netapi_net
+
+    netapi:
+        container_name: netapi_app
+        build: .
+        ports:
+            - "127.0.0.1:8000:8000"
+        command: sh docker-start.sh
+        env_file:
+            - netapi.env
+        volumes:
+            - .:/netapi
+        networks:
+            - netapi_net
+        depends_on:
+            - db
+            - queue
+            - cache
+
+volumes:
+    netapi_db_vol:
+
+networks:
+    netapi_net:
