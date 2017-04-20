@@ -12,11 +12,11 @@ It is possible to specify in several ways fields desired to be retrieved in IPv4
     * oct2
     * oct3
     * oct4
-    * networkipv4
+    * `networkipv4 <url-api-v3-networkv4-get>`
     * description
-    * equipments
-    * vips
-    * server_pool_members
+    * `equipments <url-api-v3-equipment-get>
+    * `vips <url-api-v3-vip-request-get>
+    * **server_pool_members**
 
 
 Obtaining list of IPv4 objects through id's

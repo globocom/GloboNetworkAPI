@@ -6,32 +6,33 @@ Obtaining list of Network IPv6 objects
 
 It is possible to specify in several ways fields desired to be retrieved in Network IPv6 module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Network IPv6 module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation):
 
-* id
-* block1
-* block2
-* block3
-* block4
-* block5
-* block6
-* block7
-* block8
-* prefix
-* networkv6
-* mask1
-* mask2
-* mask3
-* mask4
-* mask5
-* mask6
-* mask7
-* mask8
-* mask_formated
-* vlan
-* network_type
-* environmentvip
-* active
-* dhcprelay
-* cluster_unit
+    * id
+    * block1
+    * block2
+    * block3
+    * block4
+    * block5
+    * block6
+    * block7
+    * block8
+    * prefix
+    * networkv6
+    * mask1
+    * mask2
+    * mask3
+    * mask4
+    * mask5
+    * mask6
+    * mask7
+    * mask8
+    * mask_formated
+    * `vlan <url-api-v3-vlan-get>`
+    * **network_type**
+    * `environmentvip <url-api-v3-environment-vip-get>`
+    * active
+    * dhcprelay
+    * cluster_unit
+
 
 Obtaining list of Network IPv6 objects through id's
 ===================================================

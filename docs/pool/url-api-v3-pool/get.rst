@@ -9,16 +9,16 @@ It is possible to specify in several ways fields desired to be retrieved in Serv
     * id
     * identifier
     * default_port
-    * environment
-    * servicedownaction
+    * `environment <url-api-v3-environment-get>`
+    * **servicedownaction**
     * lb_method
-    * healthcheck
+    * **healthcheck**
     * default_limit
-    * server_pool_members
+    * **server_pool_members**
     * pool_created
-    * vips
+    * `vips <url-api-v3-vip-request-get>`
     * dscp
-    * groups_permissions
+    * **groups_permissions**
 
 
 Obtaining list of Server Pools through id's

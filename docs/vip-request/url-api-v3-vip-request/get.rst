@@ -12,15 +12,15 @@ It is possible to specify in several ways fields desired to be retrieved in Vip 
     * name
     * service
     * business
-    * environmentvip
-    * ipv4
-    * ipv6
-    * equipments
+    * `environmentvip <url-api-v3-environment-vip-get>`
+    * `ipv4 <url-api-v3-ipv4-get>`
+    * `ipv6 <url-api-v3-ipv6-get>`
+    * `equipments <url-api-v3-equipment-get>`
     * default_names
     * dscp
     * ports
-    * options
-    * groups_permissions
+    * **options**
+    * **groups_permissions**
     * created
 
 Where:

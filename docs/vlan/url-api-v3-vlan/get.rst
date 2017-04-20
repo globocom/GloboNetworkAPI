@@ -1,3 +1,5 @@
+.. _url-api-v3-vlan-get:
+
 GET
 ###
 
@@ -9,7 +11,7 @@ It is possible to specify in several ways fields desired to be retrieved in Vlan
     * id
     * name
     * num_vlan
-    * environment
+    * `environment <url-api-v3-environment-get>`
     * description
     * acl_file_name
     * acl_valida
@@ -19,10 +21,10 @@ It is possible to specify in several ways fields desired to be retrieved in Vlan
     * vrf
     * acl_draft
     * acl_draft_v6
-    * networks_ipv4
-    * networks_ipv6
-    * vrfs
-    * groups_permissions
+    * `networks_ipv4 <url-api-v3-networkv4-get>`
+    * `networks_ipv6 <url-api-v3-networkv6-get>`
+    * **vrfs**
+    * **groups_permissions**
 
 
 Obtaining list of Vlans through id's

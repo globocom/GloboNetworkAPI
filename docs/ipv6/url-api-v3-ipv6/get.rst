@@ -16,11 +16,11 @@ It is possible to specify in several ways fields desired to be retrieved in IPv6
     * block6
     * block7
     * block8
-    * networkipv6
+    * `networkipv6 <url-api-v3-networkv6-get>`
     * description
-    * equipments
-    * vips
-    * server_pool_members
+    * `equipments <url-api-v3-equipment-get>`
+    * `vips <url-api-v3-vip-request-get>`
+    * **server_pool_members**
 
 
 Obtaining list of IPv6 objects through id's
