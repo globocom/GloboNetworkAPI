@@ -21,8 +21,8 @@ Request body:
             "object_value": <integer>,
             "read": <boolean>,
             "write": <boolean>,
-            "change_config": <integer>,
-            "delete": <integer>
+            "change_config": <boolean>,
+            "delete": <boolean>
         },..]
     }
 
