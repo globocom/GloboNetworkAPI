@@ -192,13 +192,13 @@ class AclFlowBuilder(object):
         """ Builds source ports for transport protocols TCP or UDP """
         prefix = protocol + "-source-port"
         self._build_transport_ports(rule, prefix, Tokens.src_port_op,
-            Tokens.src_port, Tokens.src_port_end)
+                                    Tokens.src_port, Tokens.src_port_end)
 
     def _build_transport_destination_ports(self, rule, protocol):
         """ Builds destination ports for transport protocols TCP or UDP """
         prefix = protocol + "-destination-port"
         self._build_transport_ports(rule, prefix, Tokens.dst_port_op,
-            Tokens.dst_port, Tokens.dst_port_end)
+                                    Tokens.dst_port, Tokens.dst_port_end)
 
     def _build_transport_ports(self, rule, prefix, operation, start, end):
         """ Builds transport (TCP | UDP) protocols json data """

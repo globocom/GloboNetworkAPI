@@ -82,7 +82,7 @@ class ODLPlugin(BaseSdnPlugin):
         return self._flow(flow_id=flow_id, method='get')
 
     def _flow(self, flow_id=0, method='', data=None):
-        # import ipdb; ipdb.set_trace()
+
         allowed_methods=["get", "put", "delete"]
 
         if flow_id < 1 or method not in allowed_methods:

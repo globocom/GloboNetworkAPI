@@ -50,7 +50,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
 
         assert_in("flow-name", acl.flows["flow"][0])
         assert_equal(acl.flows["flow"][0]["flow-name"],
-                data["rules"][0]["description"])
+                     data["rules"][0]["description"])
 
     def test_acl_should_raise_value_error_when_no_destination_is_passed(self):
         """ Should raise ValueError when no destination is passed """
@@ -99,8 +99,8 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
 
         assert_equal(
             2048,
-            acl.flows["flow"][0]["match"]["ethernet-match"]\
-                    ["ethernet-type"]["type"])
+            acl.flows["flow"][0]
+                     ["match"]["ethernet-match"]["ethernet-type"]["type"])
 
     def test_acl_should_raise_exception_when_there_is_no_protocol_field(self):
         """ Should raise an exception when there is no protocol field """
@@ -150,7 +150,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows["flow"][0]["match"]["tcp-destination-port"],
-                data["rules"][0]["l4-options"]["dest-port-start"])
+                     data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_tcp_source_port(self):
         """ Should have tcp source port """
@@ -171,7 +171,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows["flow"][0]["match"]["tcp-source-port"],
-                data["rules"][0]["l4-options"]["src-port-start"])
+                     data["rules"][0]["l4-options"]["src-port-start"])
 
     def test_acl_should_have_tcp_as_ip_protocol(self):
         """ Should have tcp as ip-protocol field """
@@ -187,7 +187,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(6,
-            acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
+                     acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
 
     def test_acl_should_have_udp_as_ip_protocol(self):
         """ Should have upd as ip-protocol field """
@@ -202,8 +202,8 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         }
         acl = AclFlowBuilder(data)
         acl.build()
-        assert_equal(17,
-            acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
+        assert_equal(
+            17, acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
 
     def test_acl_should_have_udp_source_port(self):
         """ Should have udp source port """
@@ -223,7 +223,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows["flow"][0]["match"]["udp-source-port"],
-                data["rules"][0]["l4-options"]["src-port-start"])
+                     data["rules"][0]["l4-options"]["src-port-start"])
 
     def test_acl_should_have_udp_destination_port(self):
         """ Should have udp destination port """
@@ -243,7 +243,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows["flow"][0]["match"]["udp-destination-port"],
-                data["rules"][0]["l4-options"]["dest-port-start"])
+                     data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_tcp_source_and_destination_ports(self):
         """ Should have tcp source and destination ports """
@@ -265,9 +265,9 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows["flow"][0]["match"]["tcp-source-port"],
-                data["rules"][0]["l4-options"]["src-port-start"])
+                     data["rules"][0]["l4-options"]["src-port-start"])
         assert_equal(acl.flows["flow"][0]["match"]["tcp-destination-port"],
-                data["rules"][0]["l4-options"]["dest-port-start"])
+                     data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_udp_source_and_destination_ports(self):
         """ Should have udp source and destination ports """
@@ -289,9 +289,9 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows["flow"][0]["match"]["udp-source-port"],
-                data["rules"][0]["l4-options"]["src-port-start"])
+                     data["rules"][0]["l4-options"]["src-port-start"])
         assert_equal(acl.flows["flow"][0]["match"]["udp-destination-port"],
-                data["rules"][0]["l4-options"]["dest-port-start"])
+                     data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_icmp_as_ip_protocol(self):
         """ Should have ICMP as ip protocol """
@@ -310,8 +310,8 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         }
         acl = AclFlowBuilder(data)
         acl.build()
-        assert_equal(1,
-            acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
+        assert_equal(
+            1, acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
 
     def test_acl_should_raise_value_error_when_there_are_no_icmp_options(self):
         """ Should raise ValueError when there are no ICMP options """
@@ -361,7 +361,9 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         }
         acl = AclFlowBuilder(data)
         acl.build()
-        assert_equal(data["rules"][0]["icmp-options"]["icmp-code"],
-                acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-code"])
-        assert_equal(data["rules"][0]["icmp-options"]["icmp-type"],
-                acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-type"])
+        assert_equal(
+            data["rules"][0]["icmp-options"]["icmp-code"],
+            acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-code"])
+        assert_equal(
+            data["rules"][0]["icmp-options"]["icmp-type"],
+            acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-type"])
