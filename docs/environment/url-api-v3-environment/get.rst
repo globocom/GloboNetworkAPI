@@ -201,8 +201,8 @@ Response body:
             "max_num_vlan_1": <integer>,
             "min_num_vlan_2": <integer>,
             "max_num_vlan_2": <integer>,
-            "vrf": <string>,
-            "default_vrf": <integer>
+            "default_vrf": <integer>,
+            "father_environment": <integer>
         },...]
     }
 
