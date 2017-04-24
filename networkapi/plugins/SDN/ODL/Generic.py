@@ -56,8 +56,7 @@ class ODLPlugin(BaseSdnPlugin):
         :return: All flows for table 0 
         """
         nodes_ids = self._get_nodes_ids()
-        # TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
-        nodes_ids = ["openflow:134984912119576"]
+
         for node_id in nodes_ids:
             path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
                    % (node_id)
@@ -65,6 +64,7 @@ class ODLPlugin(BaseSdnPlugin):
             retorno =  self._request(method="get", path=path, contentType='json')
             flows_list = retorno["flow-node-inventory:table"][0]
             #return AclFlowBuilder.dump(flows_list)
+            # we are assuming that all bridges have the same content, so we return the fist occurrence for gets
             return flows_list
 
         flows_return = {}
@@ -89,11 +89,7 @@ class ODLPlugin(BaseSdnPlugin):
             log.error("Invalid parameters in OLDPlugin flow handler")
             raise exceptions.ValueInvalid()
 
-        #nodes_ids = self._get_nodes_ids()
-        # TODO: Retirar a linha abaixo. Linha adicionada por conta do ambiente ter testes rodando em paralelo
-        nodes_ids = ["openflow:134984912119576"]
-        # if data:
-        #     data = json.dumps(data).strip().replace(' ', '')  # remove qualquer espaço
+        nodes_ids = self._get_nodes_ids()
 
         for node_id in nodes_ids:
             path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
@@ -101,10 +97,12 @@ class ODLPlugin(BaseSdnPlugin):
 
             # TODO: Tratar retornos dos varios vSwitches
             retorno = self._request(method=method, path=path, data=data, contentType='json')
+
+            #we are assuming that all bridges have the same content, so we return the fist occurrence for gets
             if method=='get':
                 return retorno["flow-node-inventory:flow"][0]
-            else:
-                return retorno
+
+        return retorno
 
 
 

@@ -43,6 +43,9 @@ class Tokens(object):
     icmp_code = "icmp-code"
     icmp_type = "icmp-type"
 
+    priority = "priority"
+
+
 
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
@@ -52,6 +55,9 @@ class AclFlowBuilder(object):
     LOG_FORMAT = '%(levelname)s:%(message)s'
 
     MALFORMED_MESSAGE = "Error building ACL Json. Malformed input data: \n%s"
+
+    PIRORITY_DEFAULT = 65000
+    TABLE = 0
 
     def __init__(self, data):
 
@@ -100,6 +106,14 @@ class AclFlowBuilder(object):
 
         self._build_match(rule)
         self._build_protocol(rule)
+
+        # Flow table and priority
+        self.flows["flow"][0]["table_id"] = self.TABLE
+
+        if Tokens.priority in rule:
+            self.flows["flow"][0]["priority"] = rule[Tokens.priority]
+        else:
+            self.flows["flow"][0]["priority"] = self.PIRORITY_DEFAULT
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
