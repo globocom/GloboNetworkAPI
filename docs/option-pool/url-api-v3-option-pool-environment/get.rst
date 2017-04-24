@@ -8,7 +8,7 @@ URL::
 
     /api/v3/option-pool/environment/<environment_id>/
 
-where **environment_id** is the identifier of the environment used as an argument to retrieve associated option pools. Only one **environment_id** can be assigned.
+where **environment_id** is the identifier of the environment used as an argument to retrieve associated option pools. It's mandatory to assign one and only one **environment_id**.
 
 Example::
 
