@@ -24,7 +24,8 @@ Response body:
                 "id": <integer>,
                 "tipo_opcao": <string>,
                 "nome_opcao_txt": <string>
-            }
+            },
+            "environment-vip": <integer>
         },...
     ]
 
