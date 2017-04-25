@@ -8,7 +8,7 @@ URL::
 
     /api/v3/ipv4/async/
 
-You can also create IPv4 objects asynchronously. It is only necessary to provide the same as in the respective synchronous request (For more information about request body please check :ref:`Synchronous IPv4 Creating <url-api-v3-ipv4-post-create-list-ipv4s>`). In this case, when you make request NetworkAPI will create a task to fullfil it. You will not receive the identifier of each IPv4 desired to be created in response, but for each IPv4 you will receive an identifier for the created task. Since this is an asynchronous request, it may be that IPv4 objects have been created after you receive the response. It is your task, therefore, to consult the API through the available means to verify that your request have been met.
+You can also create IPv4 objects asynchronously. It is only necessary to provide the same as in the respective synchronous request (For more information about request body please check :ref:`Synchronous IPv4 Creating <url-api-v3-ipv4-post-create-list-ipv4>`). In this case, when you make request NetworkAPI will create a task to fullfil it. You will not receive the identifier of each IPv4 desired to be created in response, but for each IPv4 you will receive an identifier for the created task. Since this is an asynchronous request, it may be that IPv4 objects have been created after you receive the response. It is your task, therefore, to consult the API through the available means to verify that your request have been met.
 
 URL Example::
 

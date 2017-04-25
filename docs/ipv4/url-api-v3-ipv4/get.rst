@@ -1,3 +1,5 @@
+.. _url-api-v3-ipv4-get:
+
 GET
 ###
 

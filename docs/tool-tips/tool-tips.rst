@@ -72,7 +72,7 @@ Suppose that you want to get the basic payload plus 'dscp' field and except 'ipv
 Getting more information from fields that acts as a foreign key
 ***************************************************************
 
-Through **fields**, **include** and **exclude** parameters, you can obtain more information for fields that acts as a foreign key. If you are dealing with such a field, you can through this 'descend or rise' like a tree.
+Through **fields** and **include** parameters, you can obtain more information for fields that acts as a foreign key. If you are dealing with such a field, you can through this 'descend or rise' like a tree.
 
 For a simple example, suppose that you make a GET Request for :ref:`Network IPv4 module <url-api-v3-networkv4-get>` to get only vlan field. You certainly would use this::
 

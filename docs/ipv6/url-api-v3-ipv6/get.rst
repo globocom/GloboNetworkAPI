@@ -1,3 +1,5 @@
+.. _url-api-v3-ipv6-get:
+
 GET
 ###
 
