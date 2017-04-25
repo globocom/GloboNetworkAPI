@@ -16,8 +16,8 @@ It is possible to specify in several ways fields desired to be retrieved in IPv4
     * oct4
     * :ref:`networkipv4 <url-api-v3-networkv4-get>`
     * description
-    * `equipments <url-api-v3-equipment-get>
-    * `vips <url-api-v3-vip-request-get>
+    * :ref:`equipments <url-api-v3-equipment-get>`
+    * :ref:`vips <url-api-v3-vip-request-get>`
     * **server_pool_members**
         * id
         * :ref:`server_pool <url-api-v3-pool-get>`
