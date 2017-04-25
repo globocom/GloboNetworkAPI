@@ -6,7 +6,7 @@ GET
 Obtaining list of Environment Vip
 *********************************
 
-It is possible to specify in several ways fields desired to be retrieved in Environment Vip module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Environment Vip module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation. Some expandable fields that do not have documentation have its childs described here too because some of these childs are also expandable.):
+It is possible to specify in several ways fields desired to be retrieved in Environment Vip module through the use of some GET parameters. You are not required to use these parameters, but depending on your needs it can make your requests faster if you are dealing with many objects and you need few fields. The following fields are available for Environment Vip module (hyperlinked or bold marked fields acts as foreign keys and can be expanded using __basic or __details when using **fields**, **include** or **exclude** GET Parameters. Hyperlinked fields points to its documentation. Some expandable fields that do not have documentation have its childs described here too because some of these childs are also expandable):
 
     * id
     * finalidade_txt
@@ -17,10 +17,10 @@ It is possible to specify in several ways fields desired to be retrieved in Envi
     * conf
     * **optionsvip**
         * **option**
-        * `environment_vip <url-api-v3-environment-vip-get>`
+        * :ref:`environment_vip <url-api-v3-environment-vip-get>`
     * **environments**
-        * `environment <url-api-v3-environment-get>`
-        * `environment_vip <url-api-v3-environment-vip-get>`
+        * :ref:`environment <url-api-v3-environment-get>`
+        * :ref:`environment_vip <url-api-v3-environment-vip-get>`
 
 
 Obtaining list of Environment Vip through id's
@@ -48,7 +48,7 @@ Obtaining list of Environment Vip through extended search
 
 More information about Django QuerySet API, please see::
 
-    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
+    :ref:`Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 

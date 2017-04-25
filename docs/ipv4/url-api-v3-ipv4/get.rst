@@ -14,16 +14,16 @@ It is possible to specify in several ways fields desired to be retrieved in IPv4
     * oct2
     * oct3
     * oct4
-    * `networkipv4 <url-api-v3-networkv4-get>`
+    * :ref:`networkipv4 <url-api-v3-networkv4-get>`
     * description
     * `equipments <url-api-v3-equipment-get>
     * `vips <url-api-v3-vip-request-get>
     * **server_pool_members**
         * id
-        * `server_pool <url-api-v3-pool-get>`
+        * :ref:`server_pool <url-api-v3-pool-get>`
         * identifier
-        * `ip <url-api-v3-ipv4-get>`
-        * `ipv6 <url-api-v3-ipv6-get>`
+        * :ref:`ip <url-api-v3-ipv4-get>`
+        * :ref:`ipv6 <url-api-v3-ipv6-get>`
         * priority
         * weight
         * limit
@@ -31,8 +31,8 @@ It is possible to specify in several ways fields desired to be retrieved in IPv4
         * member_status
         * last_status_update
         * last_status_update_formated
-        * `equipments <url-api-v3-equipment-get>`
-        * `equipment <url-api-v3-equipment-get>`
+        * :ref:`equipments <url-api-v3-equipment-get>`
+        * :ref:`equipment <url-api-v3-equipment-get>`
 
 
 Obtaining list of IPv4 objects through id's
@@ -60,7 +60,7 @@ Obtaining list of IPv4 objects through extended search
 
 More information about Django QuerySet API, please see::
 
-    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
+    :ref:`Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 

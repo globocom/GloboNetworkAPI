@@ -41,7 +41,7 @@ Obtaining list of General Object Group Permissions through extended search
 
 More information about Django QuerySet API, please see::
 
-    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
+    :ref:`Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 

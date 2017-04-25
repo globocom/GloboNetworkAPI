@@ -12,15 +12,15 @@ It is possible to specify in several ways fields desired to be retrieved in Vip 
     * name
     * service
     * business
-    * `environmentvip <url-api-v3-environment-vip-get>`
-    * `ipv4 <url-api-v3-ipv4-get>`
-    * `ipv6 <url-api-v3-ipv6-get>`
-    * `equipments <url-api-v3-equipment-get>`
+    * :ref:`environmentvip <url-api-v3-environment-vip-get>`
+    * :ref:`ipv4 <url-api-v3-ipv4-get>`
+    * :ref:`ipv6 <url-api-v3-ipv6-get>`
+    * :ref:`equipments <url-api-v3-equipment-get>`
     * default_names
     * dscp
     * ports
     * **options**
-    * `groups_permissions <url-api-v3-object-group-perm-get>`
+    * :ref:`groups_permissions <url-api-v3-object-group-perm-get>`
     * created
 
 Where:
@@ -62,7 +62,7 @@ In the second example, **extended-search** attribute receives an array with only
 
 More information about Django QuerySet API, please see::
 
-    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
+    :ref:`Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 

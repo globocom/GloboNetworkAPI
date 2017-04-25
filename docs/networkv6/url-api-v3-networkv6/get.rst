@@ -26,9 +26,9 @@ It is possible to specify in several ways fields desired to be retrieved in Netw
     * mask7
     * mask8
     * mask_formated
-    * `vlan <url-api-v3-vlan-get>`
+    * :ref:`vlan <url-api-v3-vlan-get>`
     * **network_type**
-    * `environmentvip <url-api-v3-environment-vip-get>`
+    * :ref:`environmentvip <url-api-v3-environment-vip-get>`
     * active
     * dhcprelay
     * cluster_unit
@@ -59,7 +59,7 @@ Obtaining list of Network IPv6 objects through extended search
 
 More information about Django QuerySet API, please see::
 
-    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
+    :ref:`Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 

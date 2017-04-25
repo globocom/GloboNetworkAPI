@@ -11,7 +11,7 @@ It is possible to specify in several ways fields desired to be retrieved in Vlan
     * id
     * name
     * num_vlan
-    * `environment <url-api-v3-environment-get>`
+    * :ref:`environment <url-api-v3-environment-get>`
     * description
     * acl_file_name
     * acl_valida
@@ -21,10 +21,10 @@ It is possible to specify in several ways fields desired to be retrieved in Vlan
     * vrf
     * acl_draft
     * acl_draft_v6
-    * `networks_ipv4 <url-api-v3-networkv4-get>`
-    * `networks_ipv6 <url-api-v3-networkv6-get>`
-    * `vrfs <url-api-v3-vrf-get>`
-    * `groups_permissions <url-api-v3-object-group-perm-get>`
+    * :ref:`networks_ipv4 <url-api-v3-networkv4-get>`
+    * :ref:`networks_ipv6 <url-api-v3-networkv6-get>`
+    * :ref:`vrfs <url-api-v3-vrf-get>`
+    * :ref:`groups_permissions <url-api-v3-object-group-perm-get>`
 
 
 Obtaining list of Vlans through id's
@@ -52,7 +52,7 @@ Obtaining list of Vlans through extended search
 
 More information about Django QuerySet API, please see::
 
-    `Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
+    :ref:`Django QuerySet API reference <https://docs.djangoproject.com/el/1.10/ref/models/querysets/>`_
 
 URL::
 
