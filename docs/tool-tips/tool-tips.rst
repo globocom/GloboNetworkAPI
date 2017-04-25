@@ -78,7 +78,7 @@ For a simple example, suppose that you make a GET Request for :ref:`Network IPv4
 
     fields=vlan
 
-Doing the above, you will get only the identifier of the Vlan that contains the retrieved Network IPv4. But you want not only the identifier, but also the name of the Vlan. Instead of create a new request for Vlan module, you can at same Network IPv4 request obtain this information. See below how to do this::
+Doing the above, you will get only the identifier of the Vlan. But you want not only the identifier, but also the name of the Vlan. Instead of create a new request for Vlan module, you can at same Network IPv4 request obtain this information. See below how to do this::
 
     fields=vlan__details
 
