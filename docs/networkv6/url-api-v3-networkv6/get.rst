@@ -1,3 +1,5 @@
+.. _url-api-v3-networkv6-get:
+
 GET
 ###
 
