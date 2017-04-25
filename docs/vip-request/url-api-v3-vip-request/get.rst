@@ -20,7 +20,7 @@ It is possible to specify in several ways fields desired to be retrieved in Vip 
     * dscp
     * ports
     * **options**
-    * **groups_permissions**
+    * `groups_permissions <url-api-v3-object-group-perm-get>`
     * created
 
 Where:

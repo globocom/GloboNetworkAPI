@@ -13,9 +13,15 @@ It is possible to specify in several ways fields desired to be retrieved in Equi
     * maintenance
     * **equipment_type**
     * **model**
+        * name
+        * **brand**
+            * id
+            * name
     * :ref:`ipv4 <url-api-v3-ipv4-get>`
     * :ref:`ipv6 <url-api-v3-ipv6-get>`
     * **environments**
+        * :ref:`environment <url-api-v3-environment-get>`
+        * :ref:`equipment <url-api-v3-equipment-get>`
     * **groups**
 
 

@@ -23,8 +23,8 @@ It is possible to specify in several ways fields desired to be retrieved in Vlan
     * acl_draft_v6
     * `networks_ipv4 <url-api-v3-networkv4-get>`
     * `networks_ipv6 <url-api-v3-networkv6-get>`
-    * **vrfs**
-    * **groups_permissions**
+    * `vrfs <url-api-v3-vrf-get>`
+    * `groups_permissions <url-api-v3-object-group-perm-get>`
 
 
 Obtaining list of Vlans through id's

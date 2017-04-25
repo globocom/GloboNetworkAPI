@@ -15,10 +15,24 @@ It is possible to specify in several ways fields desired to be retrieved in Serv
     * **healthcheck**
     * default_limit
     * **server_pool_members**
+        * id
+        * `server_pool <url-api-v3-pool-get>`
+        * identifier
+        * `ip <url-api-v3-ipv4-get>`
+        * `ipv6 <url-api-v3-ipv6-get>`
+        * priority
+        * weight
+        * limit
+        * port_real
+        * member_status
+        * last_status_update
+        * last_status_update_formated
+        * `equipments <url-api-v3-equipment-get>`
+        * `equipment <url-api-v3-equipment-get>`
     * pool_created
     * `vips <url-api-v3-vip-request-get>`
     * dscp
-    * **groups_permissions**
+    * `groups_permissions <url-api-v3-object-group-perm-get>`
 
 
 Obtaining list of Server Pools through id's

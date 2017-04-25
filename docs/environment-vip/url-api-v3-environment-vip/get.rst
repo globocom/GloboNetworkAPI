@@ -16,7 +16,11 @@ It is possible to specify in several ways fields desired to be retrieved in Envi
     * name
     * conf
     * **optionsvip**
+        * **option**
+        * `environment_vip <url-api-v3-environment-vip-get>`
     * **environments**
+        * `environment <url-api-v3-environment-get>`
+        * `environment_vip <url-api-v3-environment-vip-get>`
 
 
 Obtaining list of Environment Vip through id's
