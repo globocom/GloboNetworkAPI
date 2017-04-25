@@ -180,10 +180,6 @@ from settings import VLAN_REMOVE
 NETWORKAPI_DEBUG = os.getenv('NETWORKAPI_DEBUG', 'INFO')
 LOG_LEVEL = getattr(logging, NETWORKAPI_DEBUG.upper())
 
-MIDDLEWARE_CLASSES += (
-    'django_pdb.middleware.PdbMiddleware',
-)
-
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -195,7 +191,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
-    'django_pdb',
     'rest_framework',
 )
 
