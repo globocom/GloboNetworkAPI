@@ -11,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'networkapi.settings')
 
 broker = 'amqp://{}/{}'.format(
     settings.BROKER_URL,
-    settings.BROKER_VHOST
+    os.getenv('NETWORKAPI_BROKER_VHOST', u'/')
 )
 
 app = Celery('networkapi', backend='amqp', broker=broker)

@@ -25,7 +25,6 @@ from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
 from settings import BROKER_CONNECT_TIMEOUT
 from settings import BROKER_DESTINATION
 from settings import BROKER_URL
-from settings import BROKER_VHOST
 from settings import CACHE_BACKEND
 from settings import CACHES
 from settings import CELERY_ACCEPT_CONTENT

@@ -483,12 +483,8 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 
 BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
 BROKER_DESTINATION = os.getenv('NETWORKAPI_BROKER_DESTINATION', 'tasks')
-BROKER_VHOST = os.getenv('NETWORKAPI_BROKER_VHOST', u'/')
-BROKER_URL = u'{}:{}@{}'.format(
-    os.getenv('NETWORKAPI_BROKER_URL', u'localhost:5672'),
-    os.getenv('NETWORKAPI_BROKER_USER', u'networkapi'),
-    os.getenv('NETWORKAPI_BROKER_PASSWORD', u'networkapi')
-)
+BROKER_URL = os.getenv('NETWORKAPI_BROKER_URL',
+                       u'networkapi:networkapi@localhost:5672'),
 
 
 ##################################

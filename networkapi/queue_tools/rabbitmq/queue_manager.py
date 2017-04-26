@@ -25,7 +25,6 @@ from kombu import Queue
 from networkapi.settings import BROKER_CONNECT_TIMEOUT
 from networkapi.settings import BROKER_DESTINATION
 from networkapi.settings import BROKER_URL
-from networkapi.settings import BROKER_VHOST
 
 
 class QueueManager(object):
@@ -34,7 +33,7 @@ class QueueManager(object):
 
     log = logging.getLogger(__name__)
 
-    def __init__(self, broker_vhost=None, broker_url=None, queue_name=None,
+    def __init__(self, broker_vhost='/', queue_name=None,
                  exchange_name=None, queue_type='direct', routing_key=None):
         """
             Create a new instance QueueManager and initialize
@@ -45,10 +44,6 @@ class QueueManager(object):
 
         self._msgs = []
         self._broker_timeout = BROKER_CONNECT_TIMEOUT
-        self._broker_url = broker_url if \
-            broker_url is not None else BROKER_URL
-        self._broker_vhost = broker_vhost if \
-            broker_vhost is not None else BROKER_VHOST
         self._queue_name = queue_name if queue_name is not None else \
             BROKER_DESTINATION
         self._exchange_name = exchange_name if exchange_name is not None \
@@ -58,8 +53,8 @@ class QueueManager(object):
         self._queue_type = queue_type
 
         self.broker = 'amqp://{}/{}'.format(
-            self._broker_url,
-            self._broker_vhost,
+            BROKER_URL,
+            broker_vhost,
         )
 
     def append(self, dict_obj):
