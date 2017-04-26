@@ -23,9 +23,8 @@ from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
 from settings import BROKER_CONNECT_TIMEOUT
 from settings import BROKER_DESTINATION
-from settings import BROKER_HOST
 from settings import BROKER_PASSWORD
-from settings import BROKER_PORT
+from settings import BROKER_URL
 from settings import BROKER_USER
 from settings import BROKER_VHOST
 from settings import CACHE_BACKEND
