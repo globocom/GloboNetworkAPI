@@ -9,11 +9,9 @@ from django.conf import settings
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'networkapi.settings')
 
-broker = 'amqp://{}:{}@{}/{}'.format(
-    settings.BROKER_USER,
-    settings.BROKER_PASSWORD,
+broker = 'amqp://{}/{}'.format(
     settings.BROKER_URL,
-    settings.BROKER_VHOST,
+    settings.BROKER_VHOST
 )
 
 app = Celery('networkapi', backend='amqp', broker=broker)

@@ -24,9 +24,7 @@ from kombu import Queue
 
 from networkapi.settings import BROKER_CONNECT_TIMEOUT
 from networkapi.settings import BROKER_DESTINATION
-from networkapi.settings import BROKER_PASSWORD
 from networkapi.settings import BROKER_URL
-from networkapi.settings import BROKER_USER
 from networkapi.settings import BROKER_VHOST
 
 
@@ -36,9 +34,8 @@ class QueueManager(object):
 
     log = logging.getLogger(__name__)
 
-    def __init__(self, broker_vhost=None, broker_url=None, broker_user=None,
-                 broker_password=None, queue_name=None, exchange_name=None,
-                 queue_type='direct', routing_key=None):
+    def __init__(self, broker_vhost=None, broker_url=None, queue_name=None,
+                 exchange_name=None, queue_type='direct', routing_key=None):
         """
             Create a new instance QueueManager and initialize
             with parameters of destination and broker uri
@@ -48,11 +45,6 @@ class QueueManager(object):
 
         self._msgs = []
         self._broker_timeout = BROKER_CONNECT_TIMEOUT
-
-        self._broker_user = broker_user if \
-            broker_user is not None else BROKER_USER
-        self._broker_password = broker_password if \
-            broker_password is not None else BROKER_PASSWORD
         self._broker_url = broker_url if \
             broker_url is not None else BROKER_URL
         self._broker_vhost = broker_vhost if \
@@ -65,20 +57,10 @@ class QueueManager(object):
             BROKER_DESTINATION
         self._queue_type = queue_type
 
-        self.broker = 'amqp://{}:{}@{}/{}'.format(
-            self._broker_user,
-            self._broker_password,
+        self.broker = 'amqp://{}/{}'.format(
             self._broker_url,
             self._broker_vhost,
         )
-
-        self.log.debug('broker_url:%s', self._broker_url)
-        self.log.debug('broker_user:%s', self._broker_user)
-        self.log.debug('broker_vhost:%s', self._broker_vhost)
-        self.log.debug('queue_name:%s', self._queue_name)
-        self.log.debug('exchange_name:%s', self._exchange_name)
-        self.log.debug('routing_key:%s', self._routing_key)
-        self.log.debug('queue_type:%s', self._queue_type)
 
     def append(self, dict_obj):
         """
