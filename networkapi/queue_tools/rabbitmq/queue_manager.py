@@ -65,7 +65,7 @@ class QueueManager(object):
             BROKER_DESTINATION
         self._queue_type = queue_type
 
-        self.broker = 'amqp://{}:{}@/{}'.format(
+        self.broker = 'amqp://{}:{}@{}/{}'.format(
             self._broker_user,
             self._broker_password,
             self._broker_url,
