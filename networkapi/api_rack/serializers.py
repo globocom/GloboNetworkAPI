@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from rest_framework import serializers
-from networkapi.rack.models import Rack, Datacenter
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
 
 
@@ -54,7 +54,7 @@ class DCSerializer(serializers.ModelSerializer):
 class DCRoomSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Datacenter
+        model = DatacenterRooms
         fields = ('id',
                   'name',
                   'dc',

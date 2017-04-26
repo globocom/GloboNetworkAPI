@@ -16,6 +16,7 @@
 # limitations under the License.
 
 
+
 import glob
 import logging
 import commands
@@ -153,6 +154,32 @@ class RackDeployView(APIView):
             raise api_exceptions.NetworkAPIException(exception)
 
 
+class RackConfigView(APIView):
+
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
+
+            if not request.DATA.get('racks'):
+                raise exceptions.InvalidInputException()
+
+            rack = facade.gerar_arquivo_config(request.DATA.get('racks'))
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
+
 class DataCenterView(APIView):
 
     @commit_on_success
@@ -191,9 +218,9 @@ class DataCenterRoomsView(APIView):
                 raise exceptions.InvalidInputException()
 
             dcrooms = facade.save_dcrooms(request.DATA.get('dcrooms'))
-            dcroom_serializer = DCRoomSerializer(dcrooms)
 
             data = dict()
+            dcroom_serializer = DCRoomSerializer(dcrooms)
             data['dcroom'] = dcroom_serializer.data
 
             return Response(data, status=status.HTTP_201_CREATED)
@@ -211,16 +238,18 @@ class DataCenterRoomsView(APIView):
         try:
             log.info("DatacenterRooms")
 
-            if not request.DATA.get('dcroom'):
+            if not request.DATA.get('dcrooms'):
                 raise exceptions.InvalidInputException()
             #validar o json
 
             dcroom_id = kwargs.get('dcroom_id')
+            dcroom = request.DATA.get('dcrooms')
 
-            dcroom = facade.edit_dcrooms(dcroom_id, request.DATA.get('dcroom'))
+            dcrooms = facade.edit_dcrooms(dcroom_id, dcroom)
+            dcroom_serializer = DCRoomSerializer(dcrooms)
 
             data = dict()
-            #data['dcroom'] = dcroom
+            data['dcroom'] = dcroom_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
 

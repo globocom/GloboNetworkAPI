@@ -206,7 +206,7 @@ class Rack(BaseModel):
     id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
     config = models.BooleanField(default=False)
     create_vlan_amb = models.BooleanField(default=False)
-    dcroom = models.ForeignKey(DatacenterRooms, db_column='id_dcroom', null=True)
+    dcroom = models.ForeignKey(DatacenterRooms, db_column='dcroom', null=True)
 
 
     class Meta(BaseModel.Meta):
@@ -244,10 +244,10 @@ class Rack(BaseModel):
             raise Exception ('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
 
         try:
-            self.id_sw1 = Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 else None
-            self.id_sw2 = Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 else None
-            self.id_ilo = Equipamento.get_by_pk(int(id_sw3)) if self.id_ilo else None
-            self.dcroom = DatacenterRoom.get_dcrooms(int(dcroom)) if self.dcroom else None
+            self.id_sw1 = Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 is int  else self.id_sw1
+            self.id_sw2 = Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 is int else self.id_sw2
+            self.id_ilo = Equipamento.get_by_pk(int(id_sw3)) if self.id_sw3 is int else self.id_sw3
+            self.dcroom = DatacenterRoom.get_dcrooms(int(dcroom)) if self.dcroom is int else self.dcroom
             return self.save()
         except Exception, e:
             raise Exception('Falha ao inserir Rack. %s' % e)
