@@ -1,0 +1,37 @@
+[
+  {
+    "business": "business",
+    "created": false,
+    "environmentvip": 1,
+    "id": 1,
+    "ipv4": 11,
+    "ipv6": null,
+    "name": "name2",
+    "options": {
+      "cache_group": 1,
+      "persistence": 7,
+      "timeout": 14,
+      "traffic_return": 48
+    },
+    "ports": [
+      {
+        "id": 1,
+        "options": {
+          "l4_protocol": 57,
+          "l7_protocol": 56
+        },
+        "pools": [
+          {
+            "id": 1,
+            "l7_rule": 64,
+            "l7_value": null,
+            "order": null,
+            "server_pool": 2
+          }
+        ],
+        "port": 80
+      }
+    ],
+    "service": "service"
+  }
+]

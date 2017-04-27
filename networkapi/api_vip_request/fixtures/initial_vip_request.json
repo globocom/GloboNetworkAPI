@@ -1,168 +1,168 @@
 [
-    {
-        "fields": {
-            "business": "business",
-            "created": false,
-            "environmentvip": 1,
-            "ipv4": 1,
-            "ipv6": null,
-            "name": "name",
-            "service": "service"
-        },
-        "model": "api_vip_request.viprequest",
-        "pk": 1
+  {
+    "fields": {
+      "business": "business",
+      "created": false,
+      "environmentvip": 1,
+      "ipv4": 1,
+      "ipv6": null,
+      "name": "name",
+      "service": "service"
     },
-    {
-        "fields": {
-            "optionvip": 1,
-            "vip_request": 1
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 1
+    "model": "api_vip_request.viprequest",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "optionvip": 1,
+      "vip_request": 1
     },
-    {
-        "fields": {
-            "optionvip": 6,
-            "vip_request": 1
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 2
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "optionvip": 6,
+      "vip_request": 1
     },
-    {
-        "fields": {
-            "optionvip": 12,
-            "vip_request": 1
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 3
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "optionvip": 12,
+      "vip_request": 1
     },
-    {
-        "fields": {
-            "optionvip": 14,
-            "vip_request": 1
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 4
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "optionvip": 14,
+      "vip_request": 1
     },
-    {
-        "fields": {
-            "port": 80,
-            "vip_request": 1
-        },
-        "model": "api_vip_request.viprequestport",
-        "pk": 1
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "port": 80,
+      "vip_request": 1
     },
-    {
-        "fields": {
-            "optionvip": 54,
-            "vip_request_port": 1
-        },
-        "model": "api_vip_request.viprequestportoptionvip",
-        "pk": 1
+    "model": "api_vip_request.viprequestport",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "optionvip": 54,
+      "vip_request_port": 1
     },
-    {
-        "fields": {
-            "optionvip": 57,
-            "vip_request_port": 1
-        },
-        "model": "api_vip_request.viprequestportoptionvip",
-        "pk": 2
+    "model": "api_vip_request.viprequestportoptionvip",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "optionvip": 57,
+      "vip_request_port": 1
     },
-    {
-        "fields": {
-            "optionvip": 64,
-            "server_pool": 1,
-            "val_optionvip": null,
-            "vip_request_port": 1
-        },
-        "model": "api_vip_request.viprequestportpool",
-        "pk": 1
+    "model": "api_vip_request.viprequestportoptionvip",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "optionvip": 64,
+      "server_pool": 1,
+      "val_optionvip": null,
+      "vip_request_port": 1
     },
-    {
-        "fields": {
-            "business": "business",
-            "created": false,
-            "environmentvip": 1,
-            "ipv4": 1,
-            "ipv6": null,
-            "name": "name",
-            "service": "service"
-        },
-        "model": "api_vip_request.viprequest",
-        "pk": 2
+    "model": "api_vip_request.viprequestportpool",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "business": "business",
+      "created": false,
+      "environmentvip": 1,
+      "ipv4": 1,
+      "ipv6": null,
+      "name": "name",
+      "service": "service"
     },
-    {
-        "fields": {
-            "dscp": 3,
-            "vip_request": 2
-        },
-        "model": "api_vip_request.viprequestdscp",
-        "pk": 2
+    "model": "api_vip_request.viprequest",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "dscp": 3,
+      "vip_request": 2
     },
-    {
-        "fields": {
-            "optionvip": 1,
-            "vip_request": 2
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 5
+    "model": "api_vip_request.viprequestdscp",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "optionvip": 1,
+      "vip_request": 2
     },
-    {
-        "fields": {
-            "optionvip": 6,
-            "vip_request": 2
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 6
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "optionvip": 6,
+      "vip_request": 2
     },
-    {
-        "fields": {
-            "optionvip": 12,
-            "vip_request": 2
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 7
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "optionvip": 12,
+      "vip_request": 2
     },
-    {
-        "fields": {
-            "optionvip": 14,
-            "vip_request": 2
-        },
-        "model": "api_vip_request.viprequestoptionvip",
-        "pk": 8
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 7
+  },
+  {
+    "fields": {
+      "optionvip": 14,
+      "vip_request": 2
     },
-    {
-        "fields": {
-            "port": 80,
-            "vip_request": 2
-        },
-        "model": "api_vip_request.viprequestport",
-        "pk": 2
+    "model": "api_vip_request.viprequestoptionvip",
+    "pk": 8
+  },
+  {
+    "fields": {
+      "port": 80,
+      "vip_request": 2
     },
-    {
-        "fields": {
-            "optionvip": 54,
-            "vip_request_port": 2
-        },
-        "model": "api_vip_request.viprequestportoptionvip",
-        "pk": 3
+    "model": "api_vip_request.viprequestport",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "optionvip": 54,
+      "vip_request_port": 2
     },
-    {
-        "fields": {
-            "optionvip": 57,
-            "vip_request_port": 2
-        },
-        "model": "api_vip_request.viprequestportoptionvip",
-        "pk": 4
+    "model": "api_vip_request.viprequestportoptionvip",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "optionvip": 57,
+      "vip_request_port": 2
     },
-    {
-        "fields": {
-            "optionvip": 64,
-            "server_pool": 1,
-            "val_optionvip": null,
-            "vip_request_port": 2
-        },
-        "model": "api_vip_request.viprequestportpool",
-        "pk": 2
-    }
+    "model": "api_vip_request.viprequestportoptionvip",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "optionvip": 64,
+      "server_pool": 1,
+      "val_optionvip": null,
+      "vip_request_port": 2
+    },
+    "model": "api_vip_request.viprequestportpool",
+    "pk": 2
+  }
 ]

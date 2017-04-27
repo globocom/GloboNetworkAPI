@@ -28,7 +28,7 @@ from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.infrastructure.xml_utils import loads
 from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools.rabbitmq import QueueManager
 from networkapi.rest import RestResource
 from networkapi.util import get_environment_map
 from networkapi.util import is_valid_int_greater_zero_param
@@ -109,7 +109,10 @@ class VlanCreateAclResource(RestResource):
             createAclCvs(acl_name, environment, network_type, user)
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
 
             serializer = VlanSerializer(vlan)
             data_to_queue = serializer.data

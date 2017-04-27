@@ -4,9 +4,8 @@ from __future__ import unicode_literals
 
 import logging
 
-from celery.exceptions import Ignore
-
 from networkapi import celery_app
+from networkapi.api_task.classes import BaseTask
 from networkapi.api_vip_request.facade import v3 as facade
 from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 from networkapi.distributedlock import LOCK_VIP
@@ -14,10 +13,11 @@ from networkapi.usuario.models import Usuario
 from networkapi.util.geral import create_lock
 from networkapi.util.geral import destroy_lock
 
+
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def deploy(self, vip_id, user_id):
 
     msg = {
@@ -43,13 +43,8 @@ def deploy(self, vip_id, user_id):
     except Exception, exception:
         msg['message'] = 'Vip Request {} was not deployed.'.format(vip_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Vip Request {} was deployed with success.'.format(
@@ -61,7 +56,7 @@ def deploy(self, vip_id, user_id):
         destroy_lock(locks_list)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def undeploy(self, vip_id, user_id):
 
     msg = {
@@ -87,13 +82,8 @@ def undeploy(self, vip_id, user_id):
     except Exception, exception:
         msg['message'] = 'Vip Request {} was not undeployed.'.format(vip_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Vip Request {} was undeployed with success.'.format(
@@ -105,7 +95,7 @@ def undeploy(self, vip_id, user_id):
         destroy_lock(locks_list)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def redeploy(self, vip_dict, user_id):
 
     vip_id = vip_dict.get('id')
@@ -130,13 +120,8 @@ def redeploy(self, vip_dict, user_id):
     except Exception, exception:
         msg['message'] = 'Vip Request {} was not redeployed.'.format(vip_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Vip Request {} was redeployed with success.'.format(

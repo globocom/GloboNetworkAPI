@@ -137,7 +137,7 @@ class TipoRoteiro(BaseModel):
 
 class Roteiro(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_roteiros')
-    roteiro = models.CharField(max_length=40)
+    roteiro = models.CharField(max_length=50)
     tipo_roteiro = models.ForeignKey(TipoRoteiro, db_column='id_tipo_roteiro')
     descricao = models.CharField(max_length=100, blank=True)
 

@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-from celery.exceptions import Ignore
 from celery.utils.log import get_task_logger
 
 from networkapi import celery_app
+from networkapi.api_task.classes import BaseTask
 from networkapi.api_vlan.facade import v3 as facade
 from networkapi.usuario.models import Usuario
+
 
 logger = get_task_logger(__name__)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def create_vlan(self, vlan_dict, user_id):
 
     msg = {
@@ -29,13 +30,8 @@ def create_vlan(self, vlan_dict, user_id):
     except Exception, exception:
         msg['message'] = 'Vlan was not allocated.'
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Vlan {} was allocated with success.'.format(vlan_obj)
@@ -43,7 +39,7 @@ def create_vlan(self, vlan_dict, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def update_vlan(self, vlan_dict, user_id):
 
     vlan_id = vlan_dict.get('id')
@@ -67,13 +63,8 @@ def update_vlan(self, vlan_dict, user_id):
     except Exception, exception:
         msg['message'] = 'Vlan was not updated.'.format(vlan_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Vlan {} was updated with success.'.format(vlan_obj)
@@ -81,7 +72,7 @@ def update_vlan(self, vlan_dict, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def delete_vlan(self, vlan_id, user_id):
 
     msg = {
@@ -102,13 +93,8 @@ def delete_vlan(self, vlan_id, user_id):
     except Exception, exception:
         msg['message'] = 'Vlan was not deallocated.'.format(vlan_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'Vlan {} was deallocated with success.'.format(

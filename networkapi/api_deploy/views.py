@@ -16,9 +16,6 @@
 import logging
 import time
 
-from django.db.models import Q
-from django.db.transaction import commit_on_success
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -27,15 +24,10 @@ from rest_framework.response import Response
 from networkapi.api_deploy import exceptions
 from networkapi.api_deploy import facade
 from networkapi.api_deploy.permissions import DeployConfig
-from networkapi.api_deploy.permissions import Read
-from networkapi.api_deploy.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
-from networkapi.exception import EnvironmentVipNotFoundError
-from networkapi.exception import InvalidValueError
-from networkapi.interface.models import InterfaceNotFoundError
 from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools.rabbitmq import QueueManager
 from networkapi.settings import USER_SCRIPTS_REL_PATH
 
 log = logging.getLogger(__name__)
@@ -61,16 +53,24 @@ def deploy_sync_copy_script_to_equipment(request, equipment_id):
         lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equipment_id)
         data = dict()
         if request_identifier is not None:
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data = {'timestamp': int(time.time())}
-            queue_manager.append({'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT,
-                                  'identifier': request_identifier, 'data': data})
+            queue_manager.append({
+                'action': queue_keys.BEGIN_DEPLOY_SYNC_SCRIPT,
+                'identifier': request_identifier,
+                'data': data})
             queue_manager.send()
         data['output'] = facade.deploy_config_in_equipment_synchronous(
             script_file, equipment_id, lockvar)
         data['status'] = 'OK'
         if request_identifier is not None:
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             data = {'timestamp': int(time.time()), 'status': 'OK'}
             queue_manager.append({'action': queue_keys.END_DEPLOY_SYNC_SCRIPT,
                                   'identifier': request_identifier, 'data': data})
