@@ -2,7 +2,7 @@
 
 from django.test.client import Client
 
-from networkapi.plugins.SDN.ODL.generic import ODLPlugin
+from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
 from networkapi.test.test_case import NetworkApiTestCase
 
 
