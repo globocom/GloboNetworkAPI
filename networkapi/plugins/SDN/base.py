@@ -16,6 +16,8 @@
 
 import logging
 
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins import exceptions
 
 log = logging.getLogger(__name__)
@@ -43,7 +45,7 @@ class BaseSdnPlugin(object):
             else:
                 setattr(self, param, params.get(param))
 
-        if not self.equipment:
+        if not isinstance(self.equipment, Equipamento):
             log.error("An equipment object must be used to instantiate the plugin")
             raise ValueError
 
@@ -54,8 +56,7 @@ class BaseSdnPlugin(object):
 
         if not hasattr(self, 'host'):
 
-            if not hasattr(self, 'equipment_access') \
-               or self.equipment_access is None:
+            if not isinstance(self.equipment_access, EquipamentoAcesso):
 
                 log.error('No fqdn could be found for equipment %s .' %
                           (self.equipment.nome))

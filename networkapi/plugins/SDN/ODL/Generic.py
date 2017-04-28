@@ -43,9 +43,15 @@ class ODLPlugin(BaseSdnPlugin):
 
         super(ODLPlugin, self).__init__(**kwargs)
 
-        if not hasattr(self, 'equipment_access') \
-           or self.equipment_access is None:
+        try:
+            if not isinstance(self.equipment_access, EquipamentoAcesso):
+                log.info('equipment_access is not of EquipamentoAcesso type')
+                raise TypeError
+
+        except AttributeError, TypeError:
+            # If AttributeError raised, equipment_access not exists as variable is this class
             self.equipment_access = self._get_equipment_access()
+
 
         print self.equipment_access
         print type(self.equipment_access)
