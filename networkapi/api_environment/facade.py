@@ -169,22 +169,33 @@ def list_flows_by_envid(env_id, flow_id=0):
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
-    if flow_id>0:
-        return plugin.get_flow(flow_id=flow_id)
-    else:
-        return plugin.get_flows()
+
+    try:
+        if flow_id>0:
+            return plugin.get_flow(flow_id=flow_id)
+        else:
+            return plugin.get_flows()
+
+    except:
+        raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
 
 def insert_flow(env_id, data):
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
-    return plugin.add_flow(data=data)
+    try:
+        return plugin.add_flow(data=data)
+    except:
+        raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
 
 def delete_flow(env_id, flow_id):
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
-    return plugin.del_flow(flow_id=flow_id)
+    try:
+        return plugin.del_flow(flow_id=flow_id)
+    except:
+        raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
 
 
 
