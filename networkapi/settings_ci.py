@@ -24,7 +24,7 @@ from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
 from settings import BROKER_CONNECT_TIMEOUT
 from settings import BROKER_DESTINATION
-from settings import BROKER_URI
+from settings import BROKER_URL
 from settings import CACHE_BACKEND
 from settings import CACHES
 from settings import CELERY_ACCEPT_CONTENT
@@ -176,10 +176,6 @@ from settings import VLAN_REMOVE
 NETWORKAPI_DEBUG = os.getenv('NETWORKAPI_DEBUG', 'INFO')
 LOG_LEVEL = getattr(logging, NETWORKAPI_DEBUG.upper())
 
-MIDDLEWARE_CLASSES += (
-    'django_pdb.middleware.PdbMiddleware',
-)
-
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -191,7 +187,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
-    'django_pdb',
     'rest_framework',
 )
 
@@ -226,12 +221,11 @@ INSTALLED_APPS += (
 )
 
 JENKINS_TASKS = (
+    'django_jenkins.tasks.run_pylint',
     'django_jenkins.tasks.with_coverage',
     'django_jenkins.tasks.django_tests',
     'django_jenkins.tasks.run_pep8',
-    'django_jenkins.tasks.run_pylint',
     'django_jenkins.tasks.run_pyflakes',
-    'django_jenkins.tasks.run_sloccount',
 )
 
 LOGGING = {

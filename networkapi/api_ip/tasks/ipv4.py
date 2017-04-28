@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-from celery import states
-from celery.exceptions import Ignore
 from celery.utils.log import get_task_logger
 
 from networkapi import celery_app
 from networkapi.api_ip import facade
+from networkapi.api_task.classes import BaseTask
 from networkapi.usuario.models import Usuario
 
 
 logger = get_task_logger(__name__)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def create_ipv4(self, ip_dict, user_id):
 
     msg = {
@@ -31,13 +30,8 @@ def create_ipv4(self, ip_dict, user_id):
     except Exception, exception:
         msg['message'] = 'IPv4 {} was not allocated.'.format(ip)
         msg['reason'] = str(exception)
-        self.update_state(
-            state=states.FAILURE,
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'IPv4 {} was allocated with success.'.format(ip)
@@ -46,7 +40,7 @@ def create_ipv4(self, ip_dict, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def update_ipv4(self, ip_dict, user_id):
 
     msg = {
@@ -69,13 +63,8 @@ def update_ipv4(self, ip_dict, user_id):
     except Exception, exception:
         msg['message'] = 'IPv4 {} was not updated.'.format(ip_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state=states.FAILURE,
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'IPv4 {} was updated with success.'.format(ip_obj)
@@ -83,8 +72,8 @@ def update_ipv4(self, ip_dict, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
-def delete_ipv4(self, ip_id):
+@celery_app.task(bind=True, base=BaseTask)
+def delete_ipv4(self, ip_id, user_id):
 
     msg = {
         'object_type': 'ipv4',
@@ -104,13 +93,8 @@ def delete_ipv4(self, ip_id):
     except Exception, exception:
         msg['message'] = 'IPv4 {} was not deallocated.'.format(ip_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state=states.FAILURE,
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'IPv4 {} was deallocated with success.'.format(ip_obj)

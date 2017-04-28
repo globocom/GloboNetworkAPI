@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-from celery.exceptions import Ignore
 from celery.utils.log import get_task_logger
 
 from networkapi import celery_app
 from networkapi.api_network.facade import v3 as facade
+from networkapi.api_task.classes import BaseTask
 from networkapi.usuario.models import Usuario
+
 
 logger = get_task_logger(__name__)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def create_networkv6(self, net_dict, user_id):
 
     msg = {
@@ -29,13 +30,8 @@ def create_networkv6(self, net_dict, user_id):
     except Exception, exception:
         msg['message'] = 'NetworkV6 was not allocated.'
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'NetworkV6 {} was allocated with success.'.format(net)
@@ -44,7 +40,7 @@ def create_networkv6(self, net_dict, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def update_networkv6(self, net_dict, user_id):
 
     msg = {
@@ -67,13 +63,8 @@ def update_networkv6(self, net_dict, user_id):
     except Exception, exception:
         msg['message'] = 'NetworkV6 {} was not updated.'.format(net_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'NetworkV6 {} was updated with success.'.format(
@@ -83,8 +74,8 @@ def update_networkv6(self, net_dict, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
-def delete_networkv6(self, net_id):
+@celery_app.task(bind=True, base=BaseTask)
+def delete_networkv6(self, net_id, user_id):
 
     msg = {
         'object_type': 'networkv6',
@@ -105,13 +96,8 @@ def delete_networkv6(self, net_id):
     except Exception, exception:
         msg['message'] = 'NetworkV6 {} was not deallocated.'.format(net_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'NetworkV6 {} was deallocated with success.'.\
@@ -120,7 +106,7 @@ def delete_networkv6(self, net_id):
         return msg
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def deploy_networkv6(self, net_id, user_id):
 
     msg = {
@@ -145,13 +131,8 @@ def deploy_networkv6(self, net_id, user_id):
     except Exception, exception:
         msg['message'] = 'NetworkV6 {} was not deployed.'.format(net_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'NetworkV6 {} was deployed with success. {}'.format(
@@ -160,7 +141,7 @@ def deploy_networkv6(self, net_id, user_id):
         return msg
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, base=BaseTask)
 def undeploy_networkv6(self, net_id, user_id):
 
     msg = {
@@ -185,13 +166,8 @@ def undeploy_networkv6(self, net_id, user_id):
     except Exception, exception:
         msg['message'] = 'NetworkV6 {} was not deployed.'.format(net_obj)
         msg['reason'] = str(exception)
-        self.update_state(
-            state='FAILED',
-            meta=msg
-        )
 
-        # ignore the task so no other state is recorded
-        raise Ignore()
+        raise Exception(msg)
 
     else:
         msg['message'] = 'NetworkV6 {} was undeployed with success. {}'.\

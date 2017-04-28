@@ -182,9 +182,11 @@ class Networkv6AsyncView(CustomAPIView):
         response = list()
         obj_ids = kwargs['obj_ids'].split(';')
 
+        user = request.user
+
         for obj_id in obj_ids:
-            task_obj = tasks.delete_networkv6.apply_async(args=[obj_id],
-                                                          queue='napi.network')
+            task_obj = tasks.delete_networkv6.apply_async(
+                args=[obj_id, user.id], queue='napi.network')
 
             task = {
                 'task_id': task_obj.id

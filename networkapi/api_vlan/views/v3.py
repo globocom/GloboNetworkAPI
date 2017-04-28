@@ -183,8 +183,10 @@ class VlanAsyncView(CustomAPIView):
         response = list()
         obj_ids = kwargs['obj_ids'].split(';')
 
+        user = request.user
+
         for obj_id in obj_ids:
-            task_obj = tasks.delete_vlan.apply_async(args=[obj_id],
+            task_obj = tasks.delete_vlan.apply_async(args=[obj_id, user.id],
                                                      queue='napi.network')
 
             task = {
