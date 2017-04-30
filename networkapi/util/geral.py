@@ -110,6 +110,27 @@ def url_search(obj_model, property_search, request):
     return url_search_str
 
 
+def prepare_url(uri, **kwargs):
+    """Convert dict for URL params
+    """
+    params = dict()
+    for key in kwargs:
+        if key in ('kind', 'include', 'exclude', 'fields'):
+            params.update({
+                key: ','.join(kwargs.get(key))
+            })
+        elif key == 'search':
+            params.update({
+                key: kwargs.get(key)
+            })
+
+    if params:
+        params = urllib.urlencode(params)
+        uri = '%s?%s' % (uri, params)
+
+    return uri
+
+
 def generate_return_json(obj_serializer, main_property, **kwargs):
 
     data = {

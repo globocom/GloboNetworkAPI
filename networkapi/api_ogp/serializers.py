@@ -25,9 +25,13 @@ class ObjectTypeV3Serializer(DynamicFieldsModelSerializer):
 class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
 
     user_group = serializers.SerializerMethodField('get_user_group')
+    object_type = serializers.SerializerMethodField('get_object_type')
 
     def get_user_group(self, obj):
         return self.extends_serializer(obj, 'user_group')
+
+    def get_object_type(self, obj):
+        return self.extends_serializer(obj, 'object_type')
 
     class Meta:
         ObjectGroupPermission = get_model('api_ogp',
@@ -53,13 +57,12 @@ class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
             'delete'
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         group_slz = get_app('api_group', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'user_group': {
                     'obj': 'user_group_id',
                 },
@@ -80,22 +83,24 @@ class ObjectGroupPermissionV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return cls.mapping
-
 
 class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
 
     user_group = serializers.SerializerMethodField('get_user_group')
+    object_type = serializers.SerializerMethodField('get_object_type')
 
     def get_user_group(self, obj):
         return self.extends_serializer(obj, 'user_group')
 
-    class Meta:
-        ObjectGroupPermissionGeneralV3Serializer = get_model(
-            'api_ogp',
-            'ObjectGroupPermissionGeneralV3Serializer')
+    def get_object_type(self, obj):
+        return self.extends_serializer(obj, 'object_type')
 
-        model = ObjectGroupPermissionGeneralV3Serializer
+    class Meta:
+        ObjectGroupPermissionGeneral = get_model(
+            'api_ogp',
+            'ObjectGroupPermissionGeneral')
+
+        model = ObjectGroupPermissionGeneral
         fields = (
             'id',
             'user_group',
@@ -106,6 +111,7 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
             'delete'
         )
         default_fields = (
+            'id',
             'user_group',
             'object_type',
             'read',
@@ -114,13 +120,12 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
             'delete'
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         group_slz = get_app('api_group', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'user_group': {
                     'obj': 'user_group_id',
                 },
@@ -140,5 +145,3 @@ class ObjectGroupPermissionGeneralV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'object_type',
                 },
             }
-
-        return cls.mapping

@@ -1,0 +1,10 @@
+[
+  {
+  "pk": 1,
+  "model": "filterequiptype.filterequiptype",
+  "fields": {
+    "filter": 1,
+    "equiptype": 3
+    }
+  }
+]

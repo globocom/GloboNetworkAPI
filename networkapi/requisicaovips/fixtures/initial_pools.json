@@ -278,5 +278,33 @@
       "environment": 5,
       "lb_method": "least-conn"
     }
+  },
+  {
+    "pk": 100,
+    "model": "requisicaovips.serverpool",
+    "fields": {
+      "identifier": "Pool for IP tests - 1",
+      "healthcheck": 1,
+      "servicedownaction": 5,
+      "default_port": 80,
+      "default_limit": 100,
+      "pool_created": false,
+      "environment": 15,
+      "lb_method": "least-conn"
+    }
+  },
+  {
+    "pk": 101,
+    "model": "requisicaovips.serverpool",
+    "fields": {
+      "identifier": "Pool for IP tests - 2",
+      "healthcheck": 1,
+      "servicedownaction": 5,
+      "default_port": 80,
+      "default_limit": 100,
+      "pool_created": true,
+      "environment": 15,
+      "lb_method": "least-conn"
+    }
   }
 ]

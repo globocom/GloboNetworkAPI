@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from itertools import chain
 
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
@@ -70,17 +71,32 @@ class VipRequest(BaseModel):
         db_table = u'vip_request'
         managed = True
 
+    def __str__(self):
+        return str(self.id)
+
     @cached_property
     def dscp(self):
-        return self.viprequestdscp_set.get().dscp
+        try:
+            dscp = self.viprequestdscp_set.get()
+            return dscp
+        except ObjectDoesNotExist:
+            return None
 
     @cached_property
     def equipments(self):
-        eqpts = list()
-        if self.ipv4:
-            eqpts = self.ipv4.ipequipamento_set.all().prefetch_related('equipamento')
-        if self.ipv6:
-            eqpts |= self.ipv6.ipv6equipament_set.all().prefetch_related('equipamento')
+        if self.ipv4 and not self.ipv6:
+            eqpts = self.ipv4.ipequipamento_set.all()\
+                .prefetch_related('equipamento')
+        elif self.ipv6 and not self.ipv4:
+            eqpts = self.ipv6.ipv6equipament_set.all()\
+                .prefetch_related('equipamento')
+        elif self.ipv4 and self.ipv6:
+            eqpts_v4 = self.ipv4.ipequipamento_set.all()\
+                .prefetch_related('equipamento')
+            eqpts_v6 = self.ipv6.ipv6equipament_set.all()\
+                .prefetch_related('equipamento')
+            eqpts = list(chain(eqpts_v4, eqpts_v6))
+
         eqpts = [eqpt.equipamento for eqpt in eqpts]
         return eqpts
 
@@ -244,7 +260,7 @@ class VipRequest(BaseModel):
                 vip_dscp = VipRequestDSCP()
                 dscp_map = {
                     'vip_request': self.id,
-                    'dscp': self.dscp(),
+                    'dscp': self.get_dscp(),
                 }
                 vip_dscp.create_v3(dscp_map)
 
@@ -289,7 +305,12 @@ class VipRequest(BaseModel):
                 id=vip_request['environmentvip']
             )
             if not vips:
-                raise exceptions.IpNotFoundByEnvironment(vip_request['name'])
+                raise exceptions.IpNotFoundByEnvironment(
+                    'Environment of Ip: %s is different of environment of vip '
+                    'request: %s. Look the association of network of IP with '
+                    'environment vip.' %
+                    (vip_request['ipv4'], vip_request['name'])
+                )
 
         # validate ipv6
         if vip_request['ipv6']:
@@ -300,7 +321,12 @@ class VipRequest(BaseModel):
                 id=vip_request['environmentvip']
             )
             if not vips:
-                raise exceptions.IpNotFoundByEnvironment(vip_request['name'])
+                raise exceptions.IpNotFoundByEnvironment(
+                    'Environment of Ip: %s is different of environment of vip '
+                    'request: %s. Look the association of network of IP with '
+                    'environment vip.' %
+                    (vip_request['ipv6'], vip_request['name'])
+                )
 
         # validate change info when vip created
         if vip_request.get('id'):
@@ -376,9 +402,10 @@ class VipRequest(BaseModel):
                 )
             except:
                 raise Exception(
-                    'Invalid option %s:%s,viprequest:%s, \
-                    because environmentvip is not associated to options or not exists' % (
-                        opt['tipo_opcao'], opt['id'], vip_request['name'])
+                    'Invalid option %s: %s, vip request: %s, because '
+                    'environment vip is not associated to options or '
+                    'not exists.' %
+                    (opt['tipo_opcao'], opt['id'], vip_request['name'])
                 )
 
         # validate pools associates
@@ -405,9 +432,12 @@ class VipRequest(BaseModel):
                     )
                 except:
                     raise ValidationAPIException(
-                        u'Invalid option %s:%s,port:%s,viprequest:%s, \
-                        because environmentvip is not associated to options or not exists' % (
-                            opt['tipo_opcao'], opt['id'], port['port'], vip_request['name'])
+                        u'Invalid option %s: %s, port: %s, vip request: %s, '
+                        'because environmentvip is not associated to options '
+                        'or not exists.' % (
+                            opt['tipo_opcao'], opt['id'],
+                            port['port'], vip_request['name']
+                        )
                     )
 
             dsrl3 = reqvip_models.OptionVip.objects.filter(
@@ -436,9 +466,11 @@ class VipRequest(BaseModel):
                     )
                 except:
                     raise ValidationAPIException(
-                        u'Invalid option l7_rule:%s,pool:%s,port:%s,viprequest:%s, \
-                        because environmentvip is not associated to options or not exists' % (
-                            pool['l7_rule'], pool['server_pool'], port['port'], vip_request['name'])
+                        u'Invalid option l7_rule: %s, pool: %s, port: %s,'
+                        'viprequest: %s, because environmentvip is not '
+                        'associated to options or not exists' % (
+                            pool['l7_rule'], pool['server_pool'],
+                            port['port'], vip_request['name'])
                     )
 
                 # control to validate l7_rule "default_vip" in one pool by port
@@ -450,8 +482,9 @@ class VipRequest(BaseModel):
                     # Vip with dscp(dsrl3) cannot L7 rules
                     if l7_rule_opt.nome_opcao_txt != 'default_vip':
                         raise ValidationAPIException(
-                            u'Option Vip of pool {} of Vip Request {} must be default_vip'.format(
-                                pool['server_pool'], vip_request['name'])
+                            u'Option Vip of pool %s of Vip Request %s must be '
+                            'default_vip' %
+                            (pool['server_pool'], vip_request['name'])
                         )
 
                     pool_assoc_vip = reqvip_models.ServerPool()\
@@ -462,9 +495,9 @@ class VipRequest(BaseModel):
 
                     if pool_assoc_vip:
                         raise ValidationAPIException(
-                            u'Pool {} must be associated to a only 1 vip request, \
-                            when vip request has dslr3 option'.format(
-                                pool['server_pool']))
+                            u'Pool %s must be associated to a only 1 vip '
+                            'request, when vip request has dslr3 option' %
+                            (pool['server_pool']))
 
                 try:
                     sp = reqvip_models.ServerPool.objects.get(
@@ -478,8 +511,8 @@ class VipRequest(BaseModel):
                 if dsrl3:
                     if int(sp.default_port) != int(port['port']):
                         raise ValidationAPIException(
-                            u'Pool {} must have same port of vip {}'.format(
-                                pool['server_pool'], vip_request['name'])
+                            u'Pool %s must have same port of vip %s' %
+                            (pool['server_pool'], vip_request['name'])
                         )
 
                 spms = reqvip_models.ServerPoolMember.objects.filter(
@@ -490,8 +523,10 @@ class VipRequest(BaseModel):
                         if int(spm.port_real) != int(port['port']):
                             ip_mb = spm.ip if spm.ip else spm.ipv6
                             raise ValidationAPIException(
-                                u'Pool Member {} of Pool {} must have same port of vip {}'.format(
-                                    ip_mb, pool['server_pool'], vip_request['name'])
+                                u'Pool Member %s of Pool {} must have same '
+                                'port of vip %s' % (
+                                    ip_mb, pool['server_pool'],
+                                    vip_request['name'])
                             )
 
                     if spm.ip:
@@ -642,13 +677,13 @@ class VipRequest(BaseModel):
         syncs.new_to_old(self)
 
     def delete_v3(self, bypass_ipv4=False, bypass_ipv6=False, sync=True):
-        """
-        Delete Vip Request
+        """Delete Vip Request.
 
         @raise VipConstraintCreated: Vip request can not be deleted
                                      because it is created in equipment.
         """
-        ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
+
+        ip_models = get_app('ip')
         ogp_models = get_app('api_ogp', 'models')
 
         id_vip = self.id
@@ -674,7 +709,7 @@ class VipRequest(BaseModel):
             if not self._is_ipv4_in_use(id_ipv4, id_vip):
                 try:
                     self.ipv4.delete_v3()
-                except ipcantberemovedfromvip:
+                except ip_models.IpCantBeRemovedFromVip:
                     self.log.info(
                         'Tried to delete Ipv4, because assoc with in more Vips.')
                     pass
@@ -687,7 +722,7 @@ class VipRequest(BaseModel):
             if not self._is_ipv6_in_use(id_ipv6, id_vip):
                 try:
                     self.ipv6.delete_v3()
-                except ipcantberemovedfromvip:
+                except ip_models.IpCantBeRemovedFromVip:
                     self.log.info(
                         'Tried to delete Ipv6, because assoc with in more Vips.')
                     pass
@@ -1141,7 +1176,7 @@ class VipRequestPortPool(BaseModel):
             .get_by_pk(pool_map.get('server_pool'))
         self.optionvip = reqvip_models.OptionVip\
             .get_by_pk(pool_map.get('optionvip'))
-        self.val_optionvip = pool_map.get('val_optionvip')
+        self.val_optionvip = pool_map.get('l7_value')
         self.order = pool_map.get('order')
 
         self.save()
@@ -1154,7 +1189,7 @@ class VipRequestPortPool(BaseModel):
             .get_by_pk(pool_map.get('server_pool'))
         self.optionvip = reqvip_models.OptionVip\
             .get_by_pk(pool_map.get('optionvip'))
-        self.val_optionvip = pool_map.get('val_optionvip')
+        self.val_optionvip = pool_map.get('l7_value')
         self.order = pool_map.get('order')
 
         self.save()

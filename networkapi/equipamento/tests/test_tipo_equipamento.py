@@ -26,6 +26,16 @@ XML_EQUIPMENT_TYPE = """
 
 class TipoEquipamentoTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'initial_variables.json',
+        'initial_usuario.json',
+        'initial_ugrupo.json',
+        'initial_usuariogrupo.json',
+        'initial_permissions.json',
+        'initial_permissoes_administrativas.json',
+        'initial_tipo_equip.json',
+    ]
+
     def setUp(self):
         self.client = Client()
 

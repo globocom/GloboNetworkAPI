@@ -1,53 +1,11 @@
 {
-  "title": "Equipment Post",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "required": [
-    "equipments"
-  ],
   "properties": {
     "equipments": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
-          "id": {
-            "type": "null"
-          },
-          "name": {
-            "type": "string"
-          },
-          "maintenance": {
-            "type": "boolean"
-          },
-          "equipment_type": {
-            "type": "integer"
-          },
-          "model": {
-            "type": "integer"
-          },
-          "ipv4": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          },
-          "ipv6": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          },
-          "groups": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          },
           "environments": {
-            "type": "array",
             "items": {
-              "type": "object",
               "properties": {
                 "id": {
                   "type": "integer"
@@ -55,8 +13,48 @@
                 "is_router": {
                   "type": "boolean"
                 }
-              }
-            }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "equipment_type": {
+            "type": "integer"
+          },
+          "groups": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "null"
+          },
+          "ipv4": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "ipv6": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "maintenance": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
           }
         },
         "required": [
@@ -64,8 +62,15 @@
           "maintenance",
           "equipment_type",
           "model"
-        ]
-      }
+        ],
+        "type": "object"
+      },
+      "type": "array"
     }
-  }
+  },
+  "required": [
+    "equipments"
+  ],
+  "title": "Equipment Post",
+  "type": "object"
 }

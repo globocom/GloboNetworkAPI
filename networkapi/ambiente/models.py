@@ -410,7 +410,8 @@ class EnvironmentVip(BaseModel):
 
     conf = models.TextField(
         blank=False,
-        db_column='conf'
+        db_column='conf',
+        default='{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
     )
 
     log = logging.getLogger('EnvironmentVip')
@@ -638,7 +639,7 @@ class EnvironmentVip(BaseModel):
 
         if len(entry_netipv4) > 0 or len(entry_netipv6) > 0:
             raise EnvironmentVipAssociatedToSomeNetworkError(
-                None, 'Environment Vip is associated to some IPv4'
+                None, 'Environment Vip is associated to some IPv4 '
                       'or IPv6 Network and therefore cannot be deleted.')
 
         # Deletes options related
@@ -657,8 +658,7 @@ class EnvironmentVip(BaseModel):
         optionvipenvvip_model = get_model(
             'requisicaovips', 'OptionVipEnvironmentVip')
 
-        default_conf = '{"conf":{"keys":[],"layers":[],"optionsvip_extended":{}}}'
-        self.conf = env_map.get('conf', default_conf)
+        self.conf = env_map.get('conf')
 
         optionsvip = env_map.get('optionsvip', None)
         environments = env_map.get('environments', None)
@@ -693,7 +693,6 @@ class EnvironmentVip(BaseModel):
         optionvip_model = get_model('requisicaovips', 'OptionVip')
         optionvipenvvip_model = get_model(
             'requisicaovips', 'OptionVipEnvironmentVip')
-        self.valid_environment_vip(env_map)
 
         conf = env_map.get('conf', None)
         if conf is not None:
@@ -701,6 +700,11 @@ class EnvironmentVip(BaseModel):
 
         optionsvip = env_map.get('optionsvip', None)
         environments = env_map.get('environments', None)
+
+        self.finalidade_txt = env_map.get('finalidade_txt')
+        self.cliente_txt = env_map.get('cliente_txt')
+        self.ambiente_p44_txt = env_map.get('ambiente_p44_txt')
+        self.description = env_map.get('description')
 
         self.save()
 
@@ -974,7 +978,7 @@ class Ambiente(BaseModel):
             return Ambiente.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
             raise AmbienteNotFoundError(
-                e, u'Não existe um ambiente com o id = %s.' % id)
+                e, u'There is no environment with id = %s.' % id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -1264,16 +1268,13 @@ class Ambiente(BaseModel):
             self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
-            self.vrf = env_map.get('vrf')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
+            self.vrf = self.default_vrf.internal_name
             self.validate_v3()
             self.save()
 
-            configs = env_map.get('configs')
-            if configs:
-                # save configs
-                for config in configs:
-                    IPConfig.create(self.id, config)
+            configs = env_map.get('configs', [])
+            self.create_configs(configs, self.id)
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
@@ -1307,8 +1308,8 @@ class Ambiente(BaseModel):
             self.max_num_vlan_1 = env_map.get('max_num_vlan_1')
             self.min_num_vlan_2 = env_map.get('min_num_vlan_2')
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
-            self.vrf = env_map.get('vrf')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
+            self.vrf = self.default_vrf.internal_name
 
         except Exception, e:
             raise EnvironmentErrorV3(e)

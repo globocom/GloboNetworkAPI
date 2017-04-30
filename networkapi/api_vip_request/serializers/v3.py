@@ -77,7 +77,6 @@ class VipRequestPortPoolV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'l7_rule',
                 },
             }
-        return self.mapping
 
 
 class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
@@ -163,7 +162,6 @@ class VipRequestPortV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'optionvip',
                 },
             }
-        return self.mapping
 
 
 class VipRequestV3Serializer(DynamicFieldsModelSerializer):
@@ -349,7 +347,7 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                     'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
                     'kwargs': {
                         'include': (
-                            'group__details',
+                            'user_group__details',
                         ),
                         'many': True,
                     },
@@ -412,7 +410,6 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments',
                 }
             }
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_environmentvip(queryset):
@@ -441,40 +438,3 @@ class VipRequestV3Serializer(DynamicFieldsModelSerializer):
         )
         return queryset
 
-class VipRequestPermV3Serializer(DynamicFieldsModelSerializer):
-
-    group = serializers.SerializerMethodField('get_group')
-
-    def get_group(self, obj):
-        return self.extends_serializer(obj, 'group')
-
-    class Meta:
-        VipRequestGroupPermission = get_model('api_vip_request',
-                                              'VipRequestGroupPermission')
-        model = VipRequestGroupPermission
-        fields = (
-            'group',
-            'read',
-            'write',
-            'change_config',
-            'delete'
-        )
-
-    def get_serializers(self):
-        # serializers
-        group_slz = get_app('api_group', module_label='serializers')
-
-        if not self.mapping:
-            self.mapping = {
-                'group': {
-                    'obj': 'user_group_id',
-                },
-                'group__details': {
-                    'serializer': group_slz.UserGroupV3Serializer,
-                    'kwargs': {
-                    },
-                    'obj': 'user_group',
-                },
-            }
-
-        return self.mapping

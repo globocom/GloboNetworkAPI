@@ -3,6 +3,7 @@ import logging
 
 from django.db.models.query_utils import Q
 
+from networkapi.api_network.exceptions import NetworkConflictException
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.util.geral import get_app
 
@@ -19,8 +20,7 @@ def get_free_space_network(free_nets, used_nets):
             temp_net = temp_net_list.pop()
             used_nets = []
             try:
-                used_nets = list(
-                    temp_net.address_exclude(excluded_net))
+                used_nets = list(temp_net.address_exclude(excluded_net))
             except ValueError:
                 used_nets = [temp_net]
                 pass
@@ -32,34 +32,28 @@ def get_free_space_network(free_nets, used_nets):
 
 
 def verify_networks(subnets, supernets):
+    """Verify a list of networks has make intersect with a second list and
+    contrariwise.
     """
-        Verify a list of networks has make intersect with a second list
-        and contrariwise.
-    """
+
+    msg = 'One of the equipment associated with the environment ' \
+        'of this Vlan is also associated with other environment ' \
+        'that has a network with the same track, add filters in ' \
+        'environments if necessary. Your Network: {}, Network ' \
+        'already created: {}'
 
     subnet, supernet = verify_intersect(supernets, subnets)
     if subnet or supernet:
-        raise Exception(
-            'One of the equipment associated with the environment '
-            'of this Vlan is also associated with other environment '
-            'that has a network with the same track, add filters in '
-            'environments if necessary. Your Network: %s, Network'
-            'already created: %s' % (subnet, supernet))
+        raise NetworkConflictException(msg.format(subnet, supernet))
 
     subnet, supernet = verify_intersect(subnets, supernets)
     if subnet or supernet:
-        raise Exception(
-            'One of the equipment associated with the environment '
-            'of this Vlan is also associated with other environment '
-            'that has a network with the same track, add filters in '
-            'environments if necessary. Your Network: %s, Network'
-            'already created: %s' % (supernet, subnet))
+        raise NetworkConflictException(msg.format(supernet, subnet))
 
 
 def verify_intersect(supernets, subnets):
-    """
-        Verify if a item of a list of networks has make intersect
-        with a second list.
+    """Verify if a item of a list of networks has make intersect with a
+    second list.
     """
 
     for supernet in supernets:
@@ -78,8 +72,7 @@ def verify_intersect(supernets, subnets):
 
 
 def validate_vlan_conflict(equips, num_vlan, exclude=None):
-    """
-    Verify if num vlan make conflict in environment or environment related.
+    """Verify if num vlan make conflict in environment or environment related.
     """
 
     models = get_app('vlan', 'models')
@@ -98,7 +91,7 @@ def validate_vlan_conflict(equips, num_vlan, exclude=None):
     if vlans:
         ids_env = [vlan.ambiente.name for vlan in vlans]
         msg = 'There is a registered VLAN with the number in ' \
-            'equipments of environments: %s' % ids_env
+            'equipments of environments: {}'.format(ids_env)
         log.error(msg)
         raise models.VlanErrorV3(msg)
 
@@ -139,10 +132,9 @@ def validate_conflict_join_envs(env_ip, equipments):
                 vlans_conflict = list(
                     set(nums_vlan_rel_eqpt) & set(nums_vlan_rel_ip))
                 if vlans_conflict:
-                    msg = 'VLANs %s already registred with same ' \
-                        'number in equipments of environment: %s' % \
-                        (vlans_conflict, env_rel_eqpt.name)
-
+                    msg = 'VLANs {} already registred with same ' \
+                        'number in equipments of environment: {}'
+                    msg = msg.format(vlans_conflict, env_rel_eqpt.name)
                     log.error(msg)
                     raise models_env.IpErrorV3(msg)
 
@@ -216,8 +208,6 @@ def get_networks_related(vrfs, eqpts, has_netv4=True,
 
     vlans_env_eqpt = vlans_env_eqpt.distinct()
 
-    log.debug('Query vlans: %s' % vlans_env_eqpt.query)
-
     netv4 = list()
     if has_netv4:
         netv4 = reduce(list.__add__, [
@@ -234,8 +224,7 @@ def get_networks_related(vrfs, eqpts, has_netv4=True,
 
 
 def validate_network(envs, net_ip, version):
-    """
-    Verify if network make conflict in environment or environment related.
+    """Verify if network make conflict in environment or environment related.
     """
 
     models = get_app('ambiente', 'models')
@@ -264,20 +253,4 @@ def validate_network(envs, net_ip, version):
                         nets_envs.append(IPNetwork(network_ipv6.networkv6))
 
     if nets_envs:
-        subnet, supernet = verify_intersect(nets_envs, net_ip)
-        if subnet or supernet:
-            raise Exception(
-                'One of the equipment associated with the environment '
-                'of this Vlan is also associated with other environment '
-                'that has a network with the same track, add filters in '
-                'environments if necessary. Your Network: %s, Network'
-                'already created: %s' % (subnet, supernet))
-
-        subnet, supernet = verify_intersect(net_ip, nets_envs)
-        if subnet or supernet:
-            raise Exception(
-                'One of the equipment associated with the environment '
-                'of this Vlan is also associated with other environment '
-                'that has a network with the same track, add filters in '
-                'environments if necessary. Your Network: %s, Network'
-                'already created: %s' % (supernet, subnet))
+        verify_networks(net_ip, nets_envs)

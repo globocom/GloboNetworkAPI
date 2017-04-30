@@ -53,7 +53,6 @@ from settings import local_files
 from settings import LOG_DAYS
 from settings import LOG_DB_LEVEL
 from settings import LOG_FILE
-from settings import LOG_LEVEL
 from settings import LOG_SHOW_SQL
 from settings import LOG_SHOW_TRACEBACK
 from settings import LOG_USE_STDOUT
@@ -165,6 +164,13 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
+NETWORKAPI_DEBUG = os.getenv('NETWORKAPI_DEBUG', 'INFO')
+LOG_LEVEL = getattr(logging, NETWORKAPI_DEBUG.upper())
+
+MIDDLEWARE_CLASSES += (
+    'django_pdb.middleware.PdbMiddleware',
+)
+
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -176,6 +182,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_pdb',
     'rest_framework',
 )
 
@@ -195,10 +202,12 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 JENKINS_TEST_RUNNER = 'django_jenkins.nose_runner.CINoseTestSuiteRunner'
 
 NOSE_ARGS = [
+    # '--with-coverage',
+    # '--cover-html',
     '--verbosity=2',
     #     '--no-byte-compile',
     #     '-d',
-    #     '-s',
+    '-s',
     '--with-fixture-bundling',
 ]
 
@@ -213,7 +222,7 @@ JENKINS_TASKS = (
     'django_jenkins.tasks.run_pep8',
     'django_jenkins.tasks.run_pylint',
     'django_jenkins.tasks.run_pyflakes',
-    # 'django_jenkins.tasks.run_sloccount',
+    'django_jenkins.tasks.run_sloccount',
 )
 
 LOGGING = {
@@ -221,7 +230,9 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '[%(levelname)s] %(asctime)s - N:%(name)s:%(lineno)s , '
+                      'MSG:%(message)s',
+            'datefmt': '%d/%b/%Y:%H:%M:%S %z',
         },
         'simple': {
             'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
@@ -229,46 +240,49 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': logging.INFO,
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'level': LOG_LEVEL,
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': LOG_FILE,
+            'formatter': 'verbose'
         },
     },
     'loggers': {
         'default': {
             'handlers': ['console'],
-            'propagate': True,
-            'level': logging.INFO,
+            'propagate': False,
+            'level': LOG_LEVEL,
         },
         'django': {
             'handlers': ['console'],
-            'propagate': True,
-            'level': logging.ERROR,
+            'propagate': False,
+            'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['console'],
-            'level': logging.ERROR,
-            'propagate': True,
+            'level': LOG_LEVEL,
+            'propagate': False,
         },
         'django.db.backends': {
-            'level': logging.ERROR,
-            'propagate': True,
+            'level': LOG_LEVEL,
+            'propagate': False,
             'handlers': ['console'],
         },
     },
     'root': {
-        'level': logging.INFO,
-        'propagate': True,
+        'level': LOG_LEVEL,
+        'propagate': False,
         'handlers': ['console'],
     },
 }
 
-NOSE_ARGS += [
-    # '--with-coverage',
-    # '--cover-package=networkapi',
-    # '--exclude=.*migrations*',
-    '--with-xunit',
-    '--xunit-file=reports/junit.xml',
-    # '--cover-xml',
-    # '--cover-xml-file=coverage.xml'
-]
+if INTEGRATION:
+
+    NOSE_ARGS += [
+        # '--with-coverage',
+        # '--cover-package=networkapi',
+        # '--exclude=.*migrations*',
+        '--with-xunit',
+        '--xunit-file=reports/junit.xml',
+        # '--cover-xml',
+        # '--cover-xml-file=coverage.xml'
+    ]

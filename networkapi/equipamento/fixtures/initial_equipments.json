@@ -408,5 +408,135 @@
       "modelo": 3,
       "maintenance": false
     }
+  },
+  {
+    "pk": 60,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Test-PUT-1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 61,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM-Test-DELETE-1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 63,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 1",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 90,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 90",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 91,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 91",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 92,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 92",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 93,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 93",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 94,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 94",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 95,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 95",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 96,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 96",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 97,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 97",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 98,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 98",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 99,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "VM for IPs Test - 3",
+      "tipo_equipamento": 3,
+      "modelo": 1,
+      "maintenance": false
+    }
   }
 ]

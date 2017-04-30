@@ -1,0 +1,32 @@
+[
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "filter": 1,
+      "grupo_l3": 1,
+      "max_num_vlan_1": 500,
+      "max_num_vlan_2": 1000,
+      "min_num_vlan_1": 1,
+      "min_num_vlan_2": 501
+    },
+    "model": "ambiente.ambiente",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 2,
+      "divisao_dc": 2,
+      "filter": 1,
+      "grupo_l3": 1,
+      "max_num_vlan_1": 500,
+      "max_num_vlan_2": 1000,
+      "min_num_vlan_1": 1,
+      "min_num_vlan_2": 501
+    },
+    "model": "ambiente.ambiente",
+    "pk": 2
+  }
+]

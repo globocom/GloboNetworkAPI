@@ -80,7 +80,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'num_vlan',
         )
 
-        details_fields = fields
+        details_fields = default_fields
 
     def get_serializers(self):
         """Returns the mapping of serializers."""
@@ -187,8 +187,6 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'groups_permissions',
                 },
             }
-
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_environment(queryset):

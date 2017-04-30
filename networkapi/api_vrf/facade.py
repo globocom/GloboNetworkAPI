@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_vrf import exceptions
 from networkapi.api_vrf.models import Vrf
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
@@ -18,11 +21,15 @@ def get_vrfs_by_search(search=dict()):
     :param search: dict
     """
 
-    vrfs = Vrf.objects.filter()
-
-    vrf_map = build_query_to_datatable_v3(vrfs, search)
-
-    return vrf_map
+    try:
+        vrfs = Vrf.objects.filter()
+        vrf_map = build_query_to_datatable_v3(vrfs, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vrf_map
 
 
 def get_vrf_by_id(vrf_id):
@@ -48,7 +55,7 @@ def get_vrfs_by_ids(vrf_ids):
 
     """
 
-    vl_ids = [get_vrf_by_id(vrf_id).id for vrf_id in vrf_ids]
+    vrf_ids = [get_vrf_by_id(vrf_id).id for vrf_id in vrf_ids]
 
     return Vrf.objects.filter(id__in=vrf_ids)
 
@@ -97,4 +104,3 @@ def delete_vrf(vrf_id):
     """
 
     Vrf.remove(vrf_id)
-

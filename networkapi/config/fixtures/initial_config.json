@@ -1,0 +1,12 @@
+[
+  {
+    "pk": 1,
+    "model": "config.configuration",
+    "fields": {
+      "IPv4_MIN": 2,
+      "IPv4_MAX": 3,
+      "IPv6_MIN": 0,
+      "IPv6_MAX": 0
+    }
+  }
+]

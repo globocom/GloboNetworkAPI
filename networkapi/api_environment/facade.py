@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import FieldError
 from django.db.models import Q
 
 from networkapi.ambiente.models import Ambiente
@@ -9,8 +9,6 @@ from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import EnvironmentErrorV3
-from networkapi.ambiente.models import IPConfig
-from networkapi.api_environment_vip.exceptions import EnvironmentVipDoesNotExistException
 from networkapi.api_environment_vip.facade import get_environmentvip_by_id
 from networkapi.api_pools import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
@@ -18,17 +16,21 @@ from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
-
 log = logging.getLogger(__name__)
 
 
 def get_environment_by_search(search=dict()):
     """Return a list of environments by dict."""
 
-    environments = Ambiente.objects.filter()
-    env_map = build_query_to_datatable_v3(environments, search)
-
-    return env_map
+    try:
+        environments = Ambiente.objects.filter()
+        env_map = build_query_to_datatable_v3(environments, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
 
 
 def get_environment_by_id(environment_id):
@@ -94,7 +96,7 @@ def list_environment_environment_vip_related(env_id=None):
             'grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter'
         ).distinct()
 
-    except EnvironmentVipDoesNotExistException, e:
+    except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(str(e))
     except Exception, e:
         raise NetworkAPIException(str(e))
@@ -151,22 +153,3 @@ def delete_environment(env_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
-
-
-def get_configs_by_id(config_id, env_id=None):
-    """Get config by id."""
-
-    try:
-
-        ip_config = IPConfig.objects
-        if env_id:
-            ip_config.get(
-                id=config_id,
-                configenvironment__environment=env_id
-            )
-        else:
-            ip_config.get(
-                id=config_id
-            )
-    except ObjectDoesNotExist:
-        raise exceptions.ConfigIpDoesNotExistException()

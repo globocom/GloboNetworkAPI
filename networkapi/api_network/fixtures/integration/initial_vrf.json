@@ -1,0 +1,18 @@
+[
+  {
+  "pk": 1,
+  "model": "api_vrf.Vrf",
+  "fields": {
+    "vrf": "BE-TESTE-1",
+    "internal_name": "BE-TESTE-1"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_vrf.Vrf",
+  "fields": {
+    "vrf": "BE-TESTE-2",
+    "internal_name": "BE-TESTE-2"
+    }
+  }
+]

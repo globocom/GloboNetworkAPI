@@ -1,35 +1,79 @@
 [
   {
-  "pk": 1,
-  "model": "ambiente.environmentvip",
-  "fields": {
-    "ambiente_p44_txt": "teste",
-    "cliente_txt": "teste",
-    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
-    "description": "teste",
-    "finalidade_txt": "teste"
-    }
+    "fields": {
+      "ambiente_p44_txt": "test",
+      "cliente_txt": "test",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "test",
+      "finalidade_txt": "test"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 1
   },
   {
-  "pk": 2,
-  "model": "ambiente.environmentvip",
-  "fields": {
-    "ambiente_p44_txt": "teste2",
-    "cliente_txt": "teste2",
-    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
-    "description": "teste2",
-    "finalidade_txt": "teste2"
-    }
+    "fields": {
+      "ambiente_p44_txt": "test2",
+      "cliente_txt": "test2",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "test2",
+      "finalidade_txt": "test2"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 2
   },
   {
-  "pk": 3,
-  "model": "ambiente.environmentvip",
-  "fields": {
-    "ambiente_p44_txt": "teste3",
-    "cliente_txt": "teste3",
-    "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
-    "description": "teste3",
-    "finalidade_txt": "teste3"
-    }
+    "fields": {
+      "ambiente_p44_txt": "test",
+      "cliente_txt": "test",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "test",
+      "finalidade_txt": "test"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "ambiente_p44_txt": "Test to update",
+      "cliente_txt": "Test to update",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "Test to update",
+      "finalidade_txt": "Test to update"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "ambiente_p44_txt": "Test to delete",
+      "cliente_txt": "Test to delete",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "Test to delete",
+      "finalidade_txt": "Test to delete"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "ambiente_p44_txt": "Test to try delete - fail",
+      "cliente_txt": "Test to try delete - fail",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "Test to try delete - fail",
+      "finalidade_txt": "Test to try delete - fail"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "ambiente_p44_txt": "VIP for IP tests",
+      "cliente_txt": "VIP for IP tests",
+      "conf": "{\"conf\":{\"keys\":[],\"layers\":[],\"optionsvip_extended\":{}}}",
+      "description": "VIP for IP testsl",
+      "finalidade_txt": "VIP for IP tests"
+    },
+    "model": "ambiente.environmentvip",
+    "pk": 7
   }
 ]
