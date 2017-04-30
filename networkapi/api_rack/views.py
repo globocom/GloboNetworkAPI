@@ -37,9 +37,8 @@ from networkapi.system import exceptions as var_exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
-
-
 log = logging.getLogger(__name__)
+
 
 @permission_classes((IsAuthenticated, Write))
 class RackView(APIView):
@@ -81,7 +80,7 @@ class RackView(APIView):
             data = dict()
             racks = Rack.objects.all().order_by('numero')
 
-            data['racks'] = RackSerializer(racks, many=True).data if racks else []
+            data['racks'] = RackSerializer(racks, many=True).data if racks else list()
 
             return Response(data, status=status.HTTP_200_OK)
 
