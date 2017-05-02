@@ -20,12 +20,22 @@ import json
 import logging
 import operator
 import re
+
+from ip.models import NetworkIPv4
+
+from networkapi.ambiente.models import DivisaoDc
+from networkapi.vlan.models import TipoRede
+
+from networkapi.ambiente.models import Ambiente, AmbienteLogico
+from networkapi.api_rack.exceptions import RackAplError
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.ip.models import Ip, IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
 from networkapi.system.facade import get_value as get_variable
 from networkapi.api_rack import exceptions, serializers, autoprovision
+from networkapi.system import exceptions as var_exceptions
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from netaddr import IPNetwork
@@ -33,7 +43,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
 
-
+from networkapi.vlan.models import Vlan
 
 log = logging.getLogger(__name__)
 
@@ -287,48 +297,47 @@ def gerar_arquivo_config(ids):
         return False
 
 
-def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
-    """
-    variablestochangecore: list
-    rack: Numero do Rack
-    name_core: Nome do Core
-    name_rack: Nome do rack
-    """
+def dic_vlan_core(rack, name_core, name_rack):
 
+    vars_change_core = dict()
     core = int(name_core.split("-")[2])
 
     try:
-        # valor base para as vlans e portchannels
-        BASE_SO = int(get_variable("base_so"))
-        # rede para conectar cores aos racks
-        SO_OOB_NETipv4 = IPNetwork(get_variable("net_core"))
-        # Vlan para cadastrar
-        vlan_so_name = get_variable("vlan_so_name")
+        # base value for vlans and portchannels
+        base_so = int(get_variable('base_so'))
+
+        # network to connect cores to racks
+        so_oob_netipv4 = IPNetwork(get_variable('net_core'))
+
+        # Vlan to create
+        vlan_so_name = get_variable('vlan_so_name')
+
     except ObjectDoesNotExist, exception:
         log.error(exception)
-        raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável BASE_SO ou SO_OOB_NETipv4.")
+        raise var_exceptions.VariableDoesNotExistException(
+            'Erro buscando a variável BASE_SO ou SO_OOB_NETipv4.')
 
-    variablestochangecore["VLAN_SO"] = str(BASE_SO+rack)
-    variablestochangecore["VLAN_NAME"] = vlan_so_name+name_rack
-    variablestochangecore["VLAN_NUM"] = str(BASE_SO+rack)
+    vars_change_core['VLAN_SO'] = str(base_so + rack)
+    vars_change_core['VLAN_NAME'] = vlan_so_name+name_rack
+    vars_change_core['VLAN_NUM'] = str(base_so + rack)
 
-    # Rede para cadastrar
-    subSO_OOB_NETipv4 = list(SO_OOB_NETipv4.subnet(25))
-    variablestochangecore["REDE_IP"] = str(subSO_OOB_NETipv4[rack]).split("/")[0]
-    variablestochangecore["REDE_MASK"] = str(subSO_OOB_NETipv4[rack].prefixlen)
-    variablestochangecore["NETMASK"] = str(subSO_OOB_NETipv4[rack].netmask)
-    variablestochangecore["BROADCAST"] = str(subSO_OOB_NETipv4[rack].broadcast)
+    # Network to create
+    sub_so_oob_netipv4 = list(so_oob_netipv4.subnet(25))
+    vars_change_core['REDE_IP'] = str(sub_so_oob_netipv4[rack]).split('/')[0]
+    vars_change_core['REDE_MASK'] = str(sub_so_oob_netipv4[rack].prefixlen)
+    vars_change_core['NETMASK'] = str(sub_so_oob_netipv4[rack].netmask)
+    vars_change_core['BROADCAST'] = str(sub_so_oob_netipv4[rack].broadcast)
 
-    # cadastro ip
+    # Creating ip
     ip = 124 + core
-    variablestochangecore["EQUIP_NAME"] = name_core
-    variablestochangecore["IPCORE"] = str(subSO_OOB_NETipv4[rack][ip])
+    vars_change_core['EQUIP_NAME'] = name_core
+    vars_change_core['IPCORE'] = str(sub_so_oob_netipv4[rack][ip])
 
     # ja cadastrado
-    variablestochangecore["IPHSRP"] = str(subSO_OOB_NETipv4[rack][1])
-    variablestochangecore["NUM_CHANNEL"] = str(BASE_SO+rack)
+    vars_change_core['IPHSRP'] = str(sub_so_oob_netipv4[rack][1])
+    vars_change_core['NUM_CHANNEL'] = str(base_so + rack)
 
-    return variablestochangecore
+    return vars_change_core
 
 
 def dic_lf_spn(rack):
@@ -811,55 +820,59 @@ def dic_fe_prod(rack):
 
 def _get_core_name(rack):
 
-    name_core1 = None
-    name_core2 = None
+    name_core_1 = None
+    name_core_2 = None
 
     try:
-        interfaces2 = Interface.search(rack.id_ilo.id)
-        for interface2 in interfaces2:
+        id_eqpt_oob = rack.id_ilo.id
+        interfaces = Interface.search(id_eqpt_oob)
+        for interface in interfaces:
             try:
-                sw = interface2.get_switch_and_router_interface_from_host_interface(None)
+                sw = interface.\
+                    get_switch_and_router_interface_from_host_interface(None)
 
-                if sw.equipamento.nome.split('-')[0]=='OOB':
-                    if sw.equipamento.nome.split('-')[2]=='01':
-                        name_core1 = sw.equipamento.nome
-                    elif sw.equipamento.nome.split('-')[2]=='02':
-                        name_core2 = sw.equipamento.nome
+                name_eqpt_oob = sw.equipamento.nome
+
+                if sw.equipamento.nome.split('-')[0] == 'OOB':
+                    if sw.equipamento.nome.split('-')[2] == '01':
+                        name_core_1 = sw.equipamento.nome
+                    elif sw.equipamento.nome.split('-')[2] == '02':
+                        name_core_2 = sw.equipamento.nome
 
             except InterfaceNotFoundError:
                 next
+                # TODO O que é esse next?
 
-    except e:
-        raise RackAplError(None,rack.nome,"Erro ao buscar os nomes do Core associado ao Switch de gerencia %s" % rack.id_ilo.id)
+    except Exception:
+        raise RackAplError(None, rack.nome,
+                           'Erro ao buscar os nomes do Core associado ao '
+                           'Switch de gerencia %s' % rack.id_ilo.id)
 
-    return name_core1, name_core2
+    return [name_core_1, name_core_2]
 
 
-def _criar_vlan(user, variablestochangecore1, ambientes, active=1):
+def _create_vlan(user, vars_change_core, ambientes, active=1):
 
-    #get environment
-    ambiente = Ambiente()
-    divisaodc = DivisaoDc()
-    divisaodc = divisaodc.get_by_name(ambientes.get('DC'))
-    ambiente_log = AmbienteLogico()
-    ambiente_log = ambiente_log.get_by_name(ambientes.get('LOG'))
-    ambiente = ambiente.search(divisaodc.id, ambiente_log.id)
-    for  amb in ambiente:
-        if amb.grupo_l3.nome==ambientes.get('L3'):
-            id_ambiente = amb
-    # set vlan
-    vlan = Vlan()
-    vlan.acl_file_name = None
-    vlan.acl_file_name_v6 = None
-    vlan.num_vlan = variablestochangecore1.get("VLAN_NUM")
-    vlan.nome = variablestochangecore1.get("VLAN_NAME")
-    vlan.descricao = ""
-    vlan.ambiente = id_ambiente
-    vlan.ativada = active
-    vlan.acl_valida = 0
-    vlan.acl_valida_v6 = 0
+    dc_division = DivisaoDc().get_by_name(ambientes.get('DC'))
+    log_env = AmbienteLogico().get_by_name(ambientes.get('LOG'))
 
-    vlan.insert_vlan(user)
+    environment = Ambiente().search(dc_division.id, log_env.id)
+    for env in environment:
+        if env.grupo_l3.nome == ambientes.get('L3'):
+            id_environment = env.id
+
+    # set vlan fields
+    vlan = {
+        'num_vlan': vars_change_core.get('vlan_num'),
+        'name': vars_change_core.get('vlan_name'),
+        'description': '',
+        'environment': id_environment,
+        'active': active,
+        'acl_valida': 0,
+        'acl_valida_v6': 0
+    }
+
+    Vlan().create_v3(vlan, user)
 
     return vlan
 
@@ -903,26 +916,40 @@ def _criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan, active=1):
     return network_ip
 
 
-def _criar_rede(user, tipo_rede, variablestochangecore1, vlan, active=1):
+def _create_network(user, tipo_rede, vars_change_core, id_vlan, active=1):
 
-    tiporede = TipoRede()
-    net_id = tiporede.get_by_name(tipo_rede)
-    network_type = tiporede.get_by_pk(net_id.id)
+    net_id = TipoRede().get_by_name(tipo_rede)
+    network_type = TipoRede().get_by_pk(net_id.id)
 
-    network_ip = NetworkIPv4()
-    network_ip.oct1, network_ip.oct2, network_ip.oct3, network_ip.oct4 = str(variablestochangecore1.get("REDE_IP")).split('.')
-    network_ip.block = variablestochangecore1.get("REDE_MASK")
-    network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 = str(variablestochangecore1.get("NETMASK")).split('.')
-    network_ip.broadcast = variablestochangecore1.get("BROADCAST")
-    network_ip.vlan = vlan
-    network_ip.network_type = network_type
-    network_ip.ambient_vip = None
-    network_ip.active = active
 
-    destroy_cache_function([vlan.id])
-    network_ip.save()
+    network_ipv4 = {
+        'oct1': str(vars_change_core.get('rede_ip')).split('.')[0],
+        'oct2': str(vars_change_core.get('rede_ip')).split('.')[1],
+        'oct3': str(vars_change_core.get('rede_ip')).split('.')[2],
+        'oct4': str(vars_change_core.get('rede_ip')).split('.')[3],
+        'prefix': vars_change_core.get('rede_mask'),
+        'mask_oct1': str(vars_change_core.get('netmask')).split('.')[0],
+        'mask_oct2': str(vars_change_core.get('netmask')).split('.')[1],
+        'mask_oct3': str(vars_change_core.get('netmask')).split('.')[2],
+        'mask_oct4': str(vars_change_core.get('netmask')).split('.')[3],
+        'vlan': id_vlan,
+        # 'network_type': TODO Falta entender o que vem em tipo_rede
+       # 'active':
+    }
+    # network_ip = NetworkIPv4()
+    # network_ip.oct1, network_ip.oct2, network_ip.oct3, network_ip.oct4 =
+    # network_ip.block =
+    # network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 =
+    # network_ip.broadcast = vars_change_core.get('BROADCAST')
+    # network_ip.vlan = vlan
+    # network_ip.network_type = network_type
+    # network_ip.active = active
+    #
+    # network_ip.save()
+    #
+    # NetworkIPv4().create_v3(network_ipv4)
 
-    return network_ip
+    return network_ipv4
 
 
 def _criar_ambiente(user, ambientes, ranges, acl_path=None, filter=None, vrf=None):
@@ -1336,7 +1363,7 @@ def alocar_ambiente_vlan(id):
     try:
         environment_list = _ambiente_spn_lf(user, rack, environment_list)
     except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans do Spine-leaf.")
+        raise RackAplError(None, rack.nome, 'Erro ao criar os ambientes e alocar as vlans do Spine-leaf.')
 
     #BE - PRODUCAO
     try:
@@ -1344,13 +1371,13 @@ def alocar_ambiente_vlan(id):
     except ObjectDoesNotExist, e:
         raise var_exceptions.VariableDoesNotExistException(e)
     except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de produção.")
+        raise RackAplError(None, rack.nome, 'Erro ao criar os ambientes de produção.')
 
     #BE - Hosts - CLOUD
     try:
         environment_list = _ambiente_cloud(user, rack, environment_list)
     except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans da Cloud.")
+        raise RackAplError(None, rack.nome, 'Erro ao criar os ambientes e alocar as vlans da Cloud.')
 
     #FE
     try:
@@ -1358,7 +1385,7 @@ def alocar_ambiente_vlan(id):
     except ObjectDoesNotExist, e:
         raise var_exceptions.VariableDoesNotExistException(e)
     except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de FE.")
+        raise RackAplError(None, rack.nome, 'Erro ao criar os ambientes de FE.')
 
     #Borda
     try:
@@ -1366,7 +1393,7 @@ def alocar_ambiente_vlan(id):
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException()
     except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de Borda.")
+        raise RackAplError(None, rack.nome, 'Erro ao criar os ambientes de Borda.')
 
     #######################################################################                   Backuper
 
