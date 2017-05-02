@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 
 from django.conf.urls import patterns, url
-from networkapi.api_rack.views import RackView, RackDeployView, DataCenterView, DataCenterRoomsView, RackConfigView
+from networkapi.api_rack.views import RackView, RackDeployView, DataCenterView, DataCenterRoomsView, RackConfigView, \
+    RackEnvironmentView
 from networkapi.api_rack.facade import available_rack_number
 
 
