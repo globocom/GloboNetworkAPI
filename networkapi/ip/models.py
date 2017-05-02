@@ -665,7 +665,7 @@ class NetworkIPv4(BaseModel):
     ##################
     # Methods for V3 #
     ##################
-    def create_v3(self, networkv4, locks_used=[]):
+    def create_v3(self, networkv4, locks_used=[], force=False):
         """Create new networkIPv4."""
 
         vlan_model = get_app('vlan')
@@ -682,6 +682,9 @@ class NetworkIPv4(BaseModel):
             self.mask_oct3 = networkv4.get('mask_oct3')
             self.mask_oct4 = networkv4.get('mask_oct4')
             self.cluster_unit = networkv4.get('cluster_unit')
+
+            if force:
+                self.active = networkv4.get('active')
 
             # Vlan
             self.vlan = vlan_model.Vlan().get_by_pk(networkv4.get('vlan'))
@@ -835,7 +838,7 @@ class NetworkIPv4(BaseModel):
         finally:
             destroy_lock(locks_list)
 
-    def update_v3(self, networkv4, locks_used=[]):
+    def update_v3(self, networkv4, locks_used=[], force=False):
         """Update networkIPv4."""
 
         vlan_model = get_app('vlan')
@@ -846,6 +849,9 @@ class NetworkIPv4(BaseModel):
 
             self.network_type = vlan_model.TipoRede()\
                 .get_by_pk(networkv4.get('network_type'))
+
+            if force:
+                self.active = networkv4.get('active')
 
             # has environmentvip
             if networkv4.get('environmentvip'):
@@ -899,7 +905,7 @@ class NetworkIPv4(BaseModel):
         finally:
             destroy_lock(locks_list)
 
-    def delete_v3(self, locks_used=[]):
+    def delete_v3(self, locks_used=[], force=False):
         """Method V3 to remove NetworkIPv4.
 
         Before removing the NetworkIPv4 removes all your Ipv4
@@ -927,7 +933,7 @@ class NetworkIPv4(BaseModel):
 
         try:
 
-            if self.active:
+            if self.active and not force:
                 msg = 'Can\'t remove network {} because it is active. ' \
                     'Try to set it inactive before removing it.'.format(
                         str(self))
@@ -2914,7 +2920,7 @@ class NetworkIPv6(BaseModel):
     ##################
     # Methods for V3 #
     ##################
-    def create_v3(self, networkv6, locks_used=[]):
+    def create_v3(self, networkv6, locks_used=[], force=False):
         """Create new networkIPv6."""
 
         vlan_model = get_app('vlan')
@@ -2940,6 +2946,9 @@ class NetworkIPv6(BaseModel):
             self.mask8 = networkv6.get('mask8')
 
             self.cluster_unit = networkv6.get('cluster_unit')
+
+            if force:
+                self.active = networkv6.get('active')
 
             # Vlan
             self.vlan = vlan_model.Vlan().get_by_pk(networkv6.get('vlan'))
@@ -3106,7 +3115,7 @@ class NetworkIPv6(BaseModel):
         finally:
             destroy_lock(locks_list)
 
-    def update_v3(self, networkv6, locks_used=[]):
+    def update_v3(self, networkv6, locks_used=[], force=False):
         """
         Update networkIPv6.
         """
@@ -3119,6 +3128,9 @@ class NetworkIPv6(BaseModel):
 
             self.network_type = vlan_model.TipoRede() \
                 .get_by_pk(networkv6.get('network_type'))
+
+            if force:
+                self.active = networkv6.get('active')
 
             # has environmentvip
             if networkv6.get('environmentvip'):
@@ -3172,7 +3184,7 @@ class NetworkIPv6(BaseModel):
         finally:
             destroy_lock(locks_list)
 
-    def delete_v3(self, locks_used=[]):
+    def delete_v3(self, locks_used=[], force=False):
         """Method V3 to remove networkIPv6.
 
         Before removing the networkIPv6 removes all your Ipv4.
@@ -3199,7 +3211,7 @@ class NetworkIPv6(BaseModel):
         locks_list = create_lock_with_blocking(locks_name)
 
         try:
-            if self.active:
+            if self.active and not force:
                 msg = 'Can\'t remove network {} because it is active. ' \
                     'Try to set it inactive before removing it.'.format(
                         str(self))
