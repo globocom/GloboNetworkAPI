@@ -30,6 +30,17 @@ services:
         networks:
             - netapi_net
 
+    odl:
+        container_name: odl
+        image: glefevre/opendaylight
+        command: bash -c "cd /odl/distribution-karaf-0.5.0-Boron && ./bin/start && sleep 20 && ./bin/client feature:install odl-restconf odl-l2switch-switch odl-dlux-all && ./bin/karaf server"
+        ports:
+            - "6653:6653"
+            - "8181:8181"
+            - "8101:8101"
+        networks:
+            - netapi_net
+
     netapi:
         container_name: netapi_app
         build: .
