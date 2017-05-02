@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     url(r'^rack/(?P<rack_id>\d+)/equipments/$', RackDeployView.as_view()),
     url(r'^rack/$', RackView.as_view()),
     url(r'^rack/config/$', RackConfigView.as_view()),
+    url(r'^rack/environmentvlan/(?P<rack_id>\d+)/$', RackEnvironmentView.as_view()),
     url(r'^rack/list/all/$', RackView.as_view()),
     url(r'^rack/next/', available_rack_number),
 

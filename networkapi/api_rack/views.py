@@ -139,9 +139,6 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except exceptions.RackAplError, exception:
-            log.exception(exception)
-            raise exceptions.RackAplError("Falha ao aplicar as configuracoes: %s" %(result))
         except exceptions.RackNumberNotFoundError, exception:
             log.exception(exception)
             raise exceptions.RackNumberNotFoundError()
@@ -177,6 +174,32 @@ class RackConfigView(APIView):
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()
+
+
+class RackEnvironmentView(APIView):
+
+    def handle_post(self, request, user, *args, **kwargs):
+        """Treat requests POST to create the configuration file.
+        URL: rack/alocar-config/id_rack
+        """
+
+        try:
+            log = logging.getLogger('Alocando ambientes e vlans do rack')
+
+            rack_id = kwargs.get('id_rack')
+
+            #Validar configuracao
+
+            rack = facade.alocar_ambiente_vlan(rack_id)
+
+            data = dict
+            rack_serializer = RackSerializer(rack)
+            data["rack"] = rack_serializer
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception, e:
+            raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class DataCenterView(APIView):
