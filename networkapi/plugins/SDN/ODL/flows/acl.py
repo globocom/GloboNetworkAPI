@@ -63,7 +63,6 @@ class AclFlowBuilder(object):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
-        self.flow_metadata = {}  # Metadata of the current flows set
 
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
 
