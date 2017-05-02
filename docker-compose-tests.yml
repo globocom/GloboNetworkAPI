@@ -2,22 +2,13 @@ version: '2'
 
 services:
 
-    odl:
-        container_name: odl
-        image: glefevre/opendaylight
-        command: bash -c "cd /odl/distribution-karaf-0.5.0-Boron && ./bin/start && sleep 10 && ./bin/client feature:install odl-restconf odl-l2switch-switch odl-dlux-all && ./bin/karaf server"
-        ports:
-            - "6653:6653"
-            - "8181:8181"
-            - "8101:8101"
-        networks:
-            - netapi_net
-
     ovs0:
         container_name: ovs0
         image: socketplane/openvswitch
         tty: true
-        command: sh -c "set -m; /usr/bin/supervisord & (sleep 5 && ovs-vsctl add-br br0 && ovs-vsctl set-controller br0 tcp:odl:6653 && ovs-ofctl dump-flows br0); fg %1"
+        volumes:
+            - ./docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
         cap_add:
             - NET_ADMIN
         networks:
@@ -27,7 +18,9 @@ services:
         container_name: ovs1
         image: socketplane/openvswitch
         tty: true
-        command: sh -c "set -m; /usr/bin/supervisord & (sleep 5 && ovs-vsctl add-br br0 && ovs-vsctl set-controller br0 tcp:odl:6653 && ovs-ofctl dump-flows br0); fg %1"
+        volumes:
+            - ./docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
         cap_add:
             - NET_ADMIN
         networks:
@@ -37,7 +30,9 @@ services:
         container_name: ovs2
         image: socketplane/openvswitch
         tty: true
-        command: sh -c "set -m; /usr/bin/supervisord & (sleep 5 && ovs-vsctl add-br br0 && ovs-vsctl set-controller br0 tcp:odl:6653 && ovs-ofctl dump-flows br0); fg %1"
+        volumes:
+            - ./docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
         cap_add:
             - NET_ADMIN
         networks:
