@@ -14,4 +14,6 @@ export NETWORKAPI_DEBUG='DEBUG'
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ci'
-python manage.py test
+
+echo "Starting tests.."
+python manage.py test "$1"
