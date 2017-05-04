@@ -95,12 +95,12 @@ def get_networkipv4_by_search(search=dict()):
         return net_map
 
 
-def create_networkipv4(networkv4, user):
+def create_networkipv4(networkv4, user, force=False):
     """Creates a NetworkIPv4."""
 
     try:
         netv4_obj = ip_models.NetworkIPv4()
-        netv4_obj.create_v3(networkv4)
+        netv4_obj.create_v3(networkv4, force=force)
 
     except ip_models.NetworkIPv4ErrorV3, e:
         raise ValidationAPIException(e.message)
@@ -118,12 +118,12 @@ def create_networkipv4(networkv4, user):
         return netv4_obj
 
 
-def update_networkipv4(networkv4, user):
+def update_networkipv4(networkv4, user, force=False):
     """Updates a NetworkIPv4."""
 
     try:
         netv4_obj = get_networkipv4_by_id(networkv4.get('id'))
-        netv4_obj.update_v3(networkv4)
+        netv4_obj.update_v3(networkv4, force=force)
 
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
@@ -144,13 +144,13 @@ def update_networkipv4(networkv4, user):
         return netv4_obj
 
 
-def delete_networkipv4(network_ids, user):
+def delete_networkipv4(network_ids, user, force=False):
     """Deletes a list of NetworkIPv4."""
 
     for network_id in network_ids:
         try:
             netv4_obj = get_networkipv4_by_id(network_id)
-            netv4_obj.delete_v3()
+            netv4_obj.delete_v3(force=force)
 
         except ObjectDoesNotExistException, e:
             raise ObjectDoesNotExistException(e.detail)
@@ -577,12 +577,12 @@ def get_networkipv6_by_search(search=dict()):
         return net_map
 
 
-def create_networkipv6(networkv6, user):
+def create_networkipv6(networkv6, user, force=False):
     """Creates a NetworkIPv6."""
 
     try:
         netv6_obj = ip_models.NetworkIPv6()
-        netv6_obj.create_v3(networkv6)
+        netv6_obj.create_v3(networkv6, force=force)
 
     except ip_models.NetworkIPv6ErrorV3, e:
         raise ValidationAPIException(e.message)
@@ -600,12 +600,12 @@ def create_networkipv6(networkv6, user):
         return netv6_obj
 
 
-def update_networkipv6(networkv6, user):
+def update_networkipv6(networkv6, user, force=False):
     """Updates a NetworkIPv6."""
 
     try:
         netv6_obj = get_networkipv6_by_id(networkv6.get('id'))
-        netv6_obj.update_v3(networkv6)
+        netv6_obj.update_v3(networkv6, force=force)
 
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
@@ -626,13 +626,13 @@ def update_networkipv6(networkv6, user):
         return netv6_obj
 
 
-def delete_networkipv6(network_ids, user):
+def delete_networkipv6(network_ids, user, force=False):
     """Deletes a list of NetworkIPv6."""
 
     for network_id in network_ids:
         try:
             netv6_obj = get_networkipv6_by_id(network_id)
-            netv6_obj.delete_v3()
+            netv6_obj.delete_v3(force=force)
 
         except ObjectDoesNotExistException, e:
             raise ObjectDoesNotExistException(e.detail)
