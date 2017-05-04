@@ -684,7 +684,7 @@ class NetworkIPv4(BaseModel):
             self.cluster_unit = networkv4.get('cluster_unit')
 
             if force:
-                self.active = networkv4.get('active')
+                self.active = networkv4.get('active', False)
 
             # Vlan
             self.vlan = vlan_model.Vlan().get_by_pk(networkv4.get('vlan'))
@@ -851,7 +851,7 @@ class NetworkIPv4(BaseModel):
                 .get_by_pk(networkv4.get('network_type'))
 
             if force:
-                self.active = networkv4.get('active')
+                self.active = networkv4.get('active', False)
 
             # has environmentvip
             if networkv4.get('environmentvip'):
@@ -2948,7 +2948,7 @@ class NetworkIPv6(BaseModel):
             self.cluster_unit = networkv6.get('cluster_unit')
 
             if force:
-                self.active = networkv6.get('active')
+                self.active = networkv6.get('active', False)
 
             # Vlan
             self.vlan = vlan_model.Vlan().get_by_pk(networkv6.get('vlan'))
@@ -3130,7 +3130,7 @@ class NetworkIPv6(BaseModel):
                 .get_by_pk(networkv6.get('network_type'))
 
             if force:
-                self.active = networkv6.get('active')
+                self.active = networkv6.get('active', False)
 
             # has environmentvip
             if networkv6.get('environmentvip'):
