@@ -20,12 +20,17 @@ import json
 import logging
 import operator
 import re
+from networkapi.ambiente.models import Ambiente, AmbienteLogico, GrupoL3
+from networkapi.vlan import models as models_vlan
+from networkapi.api_vlan.facade import v3 as facade_vlan_v3
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.interface.models import Interface, InterfaceNotFoundError
 from networkapi.ip.models import Ip, IpEquipamento
-from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError, RackAplError
 from networkapi.system.facade import get_value as get_variable
 from networkapi.api_rack import exceptions, serializers, autoprovision
+from networkapi.api_environment import facade as envfacade
+from networkapi.api_environment import serializers as envserializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from netaddr import IPNetwork
@@ -172,7 +177,7 @@ def gerar_arquivo_config(ids):
             dcroom = rack.dcroom
             dcname = rack.dcroom.dc.dcname
         except:
-            raise Exception("Erro: Informações incompletas. Verifique o cadastro do Datacenter, da Sala e do Rack")
+            raise Exception("Erro: Informações incompletas. Verifique o cadastro do Datacenter, do Fabric e do Rack")
 
 
         dcsigla = "".join([c[0] for c in dcname.split(" ")]) if len(dcname.split(" ")) >= 2 else dcname[:3]
@@ -209,82 +214,9 @@ def gerar_arquivo_config(ids):
             except:
                 raise Exception("Erro ao buscar os roteiros do equipamento: %s" % equip.get("nome"))
 
-        try:
-            NETWORKAPI_USE_FOREMAN = int(get_variable("use_foreman"))
-            NETWORKAPI_FOREMAN_URL = get_variable("foreman_url")
-            NETWORKAPI_FOREMAN_USERNAME = get_variable("foreman_username")
-            NETWORKAPI_FOREMAN_PASSWORD = get_variable("foreman_password")
-            FOREMAN_HOSTS_ENVIRONMENT_ID = get_variable("foreman_hosts_environment_id")
-        except ObjectDoesNotExist:
-            raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis relativas ao Foreman.")
-
-        # begin - Create Foreman entries for rack switches
-        if NETWORKAPI_USE_FOREMAN:
-            foreman = Foreman(NETWORKAPI_FOREMAN_URL, (NETWORKAPI_FOREMAN_USERNAME, NETWORKAPI_FOREMAN_PASSWORD),
-                              api_version=2)
-
-            # for each switch, check the switch ip against foreman know networks, finds foreman hostgroup
-            # based on model and brand and inserts the host in foreman
-            # if host already exists, delete and recreate with new information
-            for equip in equips:
-                #Get all foremand subnets and compare with the IP address of the switches until find it
-                switch_nome = equip.get("nome")
-                switch_modelo = equip.get("modelo")
-                switch_marca = equip.get("marca")
-                mac = equip.get("mac")
-                ip = equip.get("ip_mngt")
-
-                if mac == None:
-                    raise Exception("Could not create entry for %s. There is no mac address." % (switch_nome))
-
-                if ip == None:
-                    raise RackConfigError(None, rack.nome,
-                                          ("Could not create entry for %s. There is no management IP." % (switch_nome)))
-
-                switch_cadastrado = 0
-                for subnet in foreman.subnets.index()['results']:
-                    network = IPNetwork(ip+'/'+subnet['mask']).network
-                    # check if switches ip network is the same as subnet['subnet']['network'] e subnet['subnet']['mask']
-                    if network.__str__() == subnet['network']:
-                        subnet_id = subnet['id']
-                        hosts = foreman.hosts.index(search=switch_nome)['results']
-                        if len(hosts) == 1:
-                            foreman.hosts.destroy(id=hosts[0]['id'])
-                        elif len(hosts) > 1:
-                            raise Exception("Could not create entry for %s. There are multiple "
-                                                                    "entries with the same name." % (switch_nome))
-
-                        # Lookup foreman hostgroup
-                        # By definition, hostgroup should be Marca+"_"+Modelo
-                        hostgroup_name = switch_marca+"_"+switch_modelo
-                        hostgroups = foreman.hostgroups.index(search=hostgroup_name)
-                        if len(hostgroups['results']) == 0:
-                            raise Exception("Could not create entry for %s.Could not find hostgroup %s in foreman." %
-                                                  (switch_nome, hostgroup_name))
-                        elif len(hostgroups['results'])>1:
-                            raise Exception("Could not create entry for %s. Multiple hostgroups %s found in Foreman."
-                                            %(switch_nome,hostgroup_name))
-                        else:
-                            hostgroup_id = hostgroups['results'][0]['id']
-
-                        host = foreman.hosts.create(host={'name': switch_nome, 'ip': ip, 'mac': mac,
-                                                          'environment_id': FOREMAN_HOSTS_ENVIRONMENT_ID,
-                                                          'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id,
-                                                          'build': 'true', 'overwrite': 'true'})
-                        switch_cadastrado = 1
-
-                if not switch_cadastrado:
-                    raise Exception("Unknown error. Could not create entry for %s in foreman." % (switch_nome))
-
-        # end - Create Foreman entries for rack switches
-
-        log.info(str(equips))
         var1 = autoprovision.autoprovision_splf(rack, equips)
         var2 = autoprovision.autoprovision_coreoob(rack, equips)
 
-        if var1 and var2:
-            return True
-        return False
 
 
 def dic_vlan_core(variablestochangecore, rack, name_core, name_rack):
@@ -835,35 +767,6 @@ def _get_core_name(rack):
     return name_core1, name_core2
 
 
-def _criar_vlan(user, variablestochangecore1, ambientes, active=1):
-
-    #get environment
-    ambiente = Ambiente()
-    divisaodc = DivisaoDc()
-    divisaodc = divisaodc.get_by_name(ambientes.get('DC'))
-    ambiente_log = AmbienteLogico()
-    ambiente_log = ambiente_log.get_by_name(ambientes.get('LOG'))
-    ambiente = ambiente.search(divisaodc.id, ambiente_log.id)
-    for  amb in ambiente:
-        if amb.grupo_l3.nome==ambientes.get('L3'):
-            id_ambiente = amb
-    # set vlan
-    vlan = Vlan()
-    vlan.acl_file_name = None
-    vlan.acl_file_name_v6 = None
-    vlan.num_vlan = variablestochangecore1.get("VLAN_NUM")
-    vlan.nome = variablestochangecore1.get("VLAN_NAME")
-    vlan.descricao = ""
-    vlan.ambiente = id_ambiente
-    vlan.ativada = active
-    vlan.acl_valida = 0
-    vlan.acl_valida_v6 = 0
-
-    vlan.insert_vlan(user)
-
-    return vlan
-
-
 def _criar_rede_ipv6(user, tipo_rede, variablestochangecore1, vlan, active=1):
 
     tiporede = TipoRede()
@@ -1014,62 +917,105 @@ def _inserir_equip(user, variablestochangecore, rede_id):
     return 0
 
 
-def _ambiente_spn_lf(user, rack, environment_list):
+def _create_spnlfenv(rack, envfathers):
 
-    vlans, redes, ipv6 = dic_lf_spn(user, rack.numero)
+    environment_spn_lf_list = list()
+    spines = int(rack.spines)
+    fabric = rack.dcroom.name
+    try:
+        id_grupo_l3 = GrupoL3().get_by_name(fabric).id
+    except:
+        grupo_l3_dict = GrupoL3()
+        grupo_l3_dict.nome = fabric
+        grupo_l3_dict.save()
+        id_grupo_l3 = grupo_l3_dict.id
+        pass
+    for env in envfathers:
+        envfather = Ambiente().get_by_pk(env.get("id"))
+        config_subnet = list()
+        for net in envfather.configs:
+            cidr = IPNetwork(net.subnet)
+            range = {
+                'cidr': list(cidr.subnet(24)),
+                'type': net.type,
+                'network_type': net.network_type
+            }
+            config_subnet.append(range)
+        for i in range(spines):
+            amb_log_name = "SPINE0" + str(i) + "LEAF"
+            try:
+                id_amb_log = AmbienteLogico().get_by_name(amb_log_name).id
+            except:
+                amb_log_dict = AmbienteLogico()
+                amb_log_dict.nome = spine_name
+                amb_log_dict.save()
+                id_amb_log = amb_log_dict.id
+                pass
+            config = list()
+            for subnet in config_subnet:
+                config_spn = {
+                    'subnet': str(subnet.get("cidr")[i]),
+                    'new_prefix': str(31) if str(subnet.type)[-1] is "4" else str(127),
+                    'type': str(subnet.type),
+                    'network_type': subnet.network_type
+                }
+                config.append(config_spn)
+            environment = {
+                'grupo_l3': id_grupo_l3,
+                'ambiente_logico': id_amb_log,
+                'divisao_dc': envfather.divisao_dc,
+                'min_num_vlan_1': envfather.min_num_vlan_1,
+                'max_num_vlan_1': envfather.max_num_vlan_1,
+                'vrf': envfather.vrf,
+                'father_environment': envfather.id,
+                'default_vrf': envfather.default_vrf,
+                'configs': config
+            }
+            environment_spn_lf = Ambiente().create_v3(environment)
+            environment_spn_lf_list.append(environment_spn_lf)
 
-    divisaoDC = ['BE', 'FE', 'BORDA', 'BORDACACHOS']
-    vrfNames = ['BEVrf', 'FEVrf', 'BordaVrf', 'BordaCachosVrf']
-    spines = ['01', '02', '03', '04']
+    return environment_spn_lf_list
 
-    grupol3 = GrupoL3()
-    grupol3.nome = rack.nome
-    grupol3.save()
 
-    ambientes= dict()
-    ambientes['L3']= rack.nome
+def _create_spnlfvlans(rack, spn_lf_envs):
 
-    ranges=dict()
-    hosts=dict()
-    hosts['TIPO']= "Ponto a ponto"
-    ipv6['TIPO']= "Ponto a ponto"
+    rack_number = int(rack.numero)
+    tipo_rede = "Ponto a ponto"
+    try:
+        id_network_type = models_vlan.TipoRede().get_by_name(tipo_rede)
+    except:
+        network_type = models_vlan.TipoRede()
+        network_type.tipo_rede = tipo_rede
+        network_type.save()
+        id_network_type = network_type.id
+        pass
+    for env in spn_lf_envs:
+        env_id = env.id
+        vlan_base = env.max_num_vlan_1
+        vlan_number = int(vlan_base) + int(rack_number)
+        vlan_name = "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + rack.nome
+        config_subnet = list()
+        for net in env.configs:
+            cidr = IPNetwork(net.subnet)
+            network = {
+                'prefix': list(cidr.subnet(int(net.new_prefix)))[rack_number],
+                'network_type': id_network_type
+            }
+            if str(net.type)[-1] is "4":
+                create_networkv4 = network
+            elif str(net.type)[-1] is "6":
+                create_networkv6 = network
 
-    for divisaodc, vrf in zip(divisaoDC, vrfNames):
-        ambientes['DC']=divisaodc
-        for i in spines:
-
-            ambientes['LOG']= "SPINE"+i+"LEAF"
-            rede = "SPINE"+i[1]+"ipv4"
-            rede_ipv6 = "SPINE"+i[1]+"ipv6"
-
-            #cadastro dos ambientes
-            vlan_name = "VLAN"+divisaodc+"LEAF"
-            ranges['MAX'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]+119
-            ranges['MIN'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
-
-            env = criar_ambiente(user, ambientes, ranges, None, None, vrf)
-            environment_list.append(env)
-            vlan = dict()
-            vlan['VLAN_NUM'] = vlans.get(vlan_name)[rack.numero][int(i[1])-1]
-            vlan['VLAN_NAME'] = "VLAN_"+"SPN"+i[1]+'LF'+"_"+divisaodc
-            vlan = criar_vlan(user, vlan, ambientes)
-            criar_rede(user, hosts['TIPO'], redes.get(rede+'_net'), vlan)
-            criar_rede_ipv6(user, ipv6['TIPO'], ipv6.get(rede_ipv6+'_net'), vlan)
-
-            #configuracao do ambiente
-            hosts['REDE'] = redes.get(rede)
-            hosts['PREFIX'] = "31"
-
-            ambientes['LOG']= "SPINE"+i+"LEAF"
-            hosts['VERSION']="ipv4"
-            config_ambiente(user, hosts, ambientes)
-
-            ipv6['REDE']= ipv6.get(rede_ipv6)
-            ipv6['PREFIX']="127"
-            ipv6['VERSION']="ipv6"
-            config_ambiente(user, ipv6, ambientes)
-
-    return environment_list
+        obj = {
+            'nome': vlan_name,
+            'num_vlan': vlan_number,
+            'ambiente': env_id,
+            'default_vrf': env.vrf,
+            'vrf': env.vrf.vrf if env.vrf else none,
+            'create_networkv4': create_networkv4 if create_networkv4 else None,
+            'create_networkv6': create_networkv6 if create_networkv6 else None
+        }
+        vlan = facade_vlan_v3.create_vlan(obj)
 
 
 def _ambiente_prod(user, rack, environment_list):
@@ -1286,91 +1232,28 @@ def _environment_rack(user, environment_list, rack):
                 pass
 
 
-def alocar_ambiente_vlan(id):
+def rack_environments_vlans(rack_id):
 
     rack = Rack().get_rack(idt=id)
 
-    #variaveis
-    name_core1, name_core2 =  _get_core_name(rack)
+    # get fathers environments BE/FE...
+    # get number of spines and leafs and racks
 
-    environment_list = list()
+    # externo:  spine x leaf
+    spn_lf_envs = _create_spnlfenv(rack, envfathers)
+    _create_spnlfvlans(rack, spn_lf_envs)
 
-    variablestochangecore1 = dict()
-    variablestochangecore2 = dict()
-    variablestochangecore1 = dic_vlan_core(variablestochangecore1, rack.numero, name_core1, rack.nome)
-    variablestochangecore2 = dic_vlan_core(variablestochangecore2, rack.numero, name_core2, rack.nome)
+    # interno:  leaf x leaf (tor)
 
-    #######################################################################           VLAN Gerencia SO
-    ambientes=dict()
-    try:
-        DIVISAODC_MGMT = get_variable("divisaodc_mngt")
-        AMBLOG_MGMT = get_variable("amblog_mngt")
-        GRPL3_MGMT = get_variable("grpl3_mngt")
-    except ObjectDoesNotExist:
-        raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis <DIVISAODC,AMBLOG,GRPL3>_MGMT.")
+    # producao/cloud
+    # get environments prod/cloud
 
-    ambientes['DC']=DIVISAODC_MGMT
-    ambientes['LOG']=AMBLOG_MGMT
-    ambientes['L3']=GRPL3_MGMT
 
-    try:
-        #criar vlan
-        vlan = _criar_vlan(user, variablestochangecore1, ambientes)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar a VLAN_SO.")
-    try:
-        #criar rede
-        network = _criar_rede(user, "Rede invalida equipamentos", variablestochangecore1, vlan)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar a rede da VLAN_SO")
-    try:
-        #inserir os Core
-        _inserir_equip(user, variablestochangecore1, network.id)
-        _inserir_equip(user, variablestochangecore2, network.id)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao inserir o core 1 e 2")
+    # multicast ?
+    # Cloud prod:   interno rack - VMs
+    # redes de gerencia OOB
+    # VIPs ?
 
-    #######################################################################                   Ambientes
-
-    #BE - SPINE - LEAF
-    try:
-        environment_list = _ambiente_spn_lf(user, rack, environment_list)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans do Spine-leaf.")
-
-    #BE - PRODUCAO
-    try:
-        environment_list = _ambiente_prod(user, rack, environment_list)
-    except ObjectDoesNotExist, e:
-        raise var_exceptions.VariableDoesNotExistException(e)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de produção.")
-
-    #BE - Hosts - CLOUD
-    try:
-        environment_list = _ambiente_cloud(user, rack, environment_list)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes e alocar as vlans da Cloud.")
-
-    #FE
-    try:
-        environment_list = _ambiente_prod_fe(user, rack, environment_list)
-    except ObjectDoesNotExist, e:
-        raise var_exceptions.VariableDoesNotExistException(e)
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de FE.")
-
-    #Borda
-    try:
-        environment_list = _ambiente_borda(user, rack, environment_list)
-    except ObjectDoesNotExist:
-        raise var_exceptions.VariableDoesNotExistException()
-    except:
-        raise RackAplError(None, rack.nome, "Erro ao criar os ambientes de Borda.")
-
-    #######################################################################                   Backuper
-
-    _environment_rack(user, environment_list, rack)
 
     rack.__dict__.update(id=rack.id, create_vlan_amb=True)
     rack.save()

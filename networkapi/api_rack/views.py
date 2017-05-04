@@ -152,7 +152,6 @@ class RackDeployView(APIView):
 
 class RackConfigView(APIView):
 
-
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
@@ -178,23 +177,24 @@ class RackConfigView(APIView):
 
 class RackEnvironmentView(APIView):
 
-    def handle_post(self, request, user, *args, **kwargs):
-        """Treat requests POST to create the configuration file.
-        URL: rack/alocar-config/id_rack
-        """
-
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
         try:
             log = logging.getLogger('Alocando ambientes e vlans do rack')
 
-            rack_id = kwargs.get('id_rack')
+            if not request.DATA.get('racks'):
+                raise exceptions.InvalidInputException()
 
             #Validar configuracao
+            response = list()
+            for rack in request.DATA.get('racks'):
+                log.info("ok 1")
+                response.append(facade.alocar_ambiente_vlan(rack))
 
-            rack = facade.alocar_ambiente_vlan(rack_id)
-
+            log.info("ok 2")
             data = dict
-            rack_serializer = RackSerializer(rack)
-            data["rack"] = rack_serializer
+            #rack_serializer = RackSerializer(rack)
+            data["rack"] = response
 
             return Response(data, status=status.HTTP_200_OK)
 

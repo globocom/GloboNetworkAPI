@@ -36,12 +36,14 @@ class RackError(Exception):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
+
 class InvalidMacValueError(RackError):
 
     """Retorna exceção quando o valor da variávmac é inválido."""
 
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
+
 
 class RackNumberDuplicatedValueError(RackError):
 
@@ -50,6 +52,7 @@ class RackNumberDuplicatedValueError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+
 class RackNameDuplicatedError(RackError):
 
     """Retorna exceção quando numero do rack for repetido."""
@@ -57,12 +60,14 @@ class RackNameDuplicatedError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+
 class RackNumberNotFoundError(RackError):
 
     """Retorna exceção quando rack nao for encontrado."""
 
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
+
 
 class RackConfigError(Exception):
 
@@ -72,6 +77,7 @@ class RackConfigError(Exception):
         self.cause = cause
         self.param = param
         self.value = value
+
 
 class RackAplError(Exception):
 
@@ -328,6 +334,7 @@ class Rack(BaseModel):
             self.log.error(u'Falha ao inserir Rack.')
             raise RackError(e, u'Falha ao inserir Rack.')
 
+
 class EnvironmentRackError(Exception):
 
     """EnvironmentRack table errors"""
@@ -340,12 +347,14 @@ class EnvironmentRackError(Exception):
         msg = u'Cause: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
+
 class EnvironmentRackDuplicatedError(EnvironmentRackError):
 
     """Exception when environment and rack are already associated."""
 
     def __init__(self, cause, message=None):
         EnvironmentRackError.__init__(self, cause, message)
+
 
 class EnvironmentRackNotFoundError(EnvironmentRackError):
 
