@@ -14,5 +14,13 @@
       "ugrupo": 2,
       "usuario": 2
     }
+  },
+  {
+    "pk": 3,
+    "model": "usuario.usuariogrupo",
+    "fields": {
+      "ugrupo": 3,
+      "usuario": 3
+    }
   }
 ]
