@@ -30,14 +30,15 @@ from networkapi.plugins.SDN.ODL.flows.acl import AclFlowBuilder
 log = logging.getLogger(__name__)
 
 
+class FlowTypes(Enum):
+    """ Inner class that holds the Enumeration of flow types """
+    ACL = 0
+
+
 class ODLPlugin(BaseSdnPlugin):
     """
     Plugin base para interação com controlador ODL
     """
-
-    class FlowTypes(Enum):
-        """ Inner class that holds the Enumeration of flow types """
-        ACL = 0
 
     def __init__(self, **kwargs):
 
@@ -58,8 +59,7 @@ class ODLPlugin(BaseSdnPlugin):
 
     def get_flows(self):
         """
-        
-        :return: All flows for table 0 
+        :return: All flows for table 0
         """
         nodes_ids = self._get_nodes_ids()
 
@@ -75,8 +75,11 @@ class ODLPlugin(BaseSdnPlugin):
 
         flows_return = {}
 
-    def add_flow(self, data=None, flow_id=0):
-        builder = AclFlowBuilder(data)
+    def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
+
+        if flow_type == FlowTypes.ACL:
+            builder = AclFlowBuilder(data)
+
         data_to_send = builder.dump()
         flow_id = builder.flows['flow'][0]['id']
         return self._flow(flow_id=flow_id, method='put', data=data_to_send)
