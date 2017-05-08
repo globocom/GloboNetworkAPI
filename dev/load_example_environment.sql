@@ -74,6 +74,10 @@ VALUES
    (
       5, 'Balanceador'
    )
+,
+   (
+      6, 'Controller'
+   )
 ;
 -- Dumping data for table `filter`
 INSERT INTO
@@ -857,6 +861,10 @@ VALUES
 ,
    (
       27, 3, 1, 'Fabric router 1', 0
+   )
+,
+   (
+      28, 6, 2, 'ODL Controller 0', 0
    )
 ;
 
