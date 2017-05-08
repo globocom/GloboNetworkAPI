@@ -352,3 +352,94 @@ class NetworkIPv4UnDeploySuccessTestCase(NetworkApiTestCase):
 
         active = response.data['networks'][0]['active']
         self.compare_values(False, active)
+
+class NetworkIPv4ForceDeleteSuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/filter/fixtures/initial_filter.json',
+        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
+        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v4.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv4_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+    ]
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test_admin')
+
+    def tearDown(self):
+        pass
+
+    def test_try_delete_netipv4_with_true_active_flag(self):
+        """Try to delete NetworkIPv4 with true active flag forcibly."""
+
+        response = self.client.delete(
+            '/api/v3/networkv4/force/1/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        response = self.client.get(
+            '/api/v3/networkv4/1/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv4 with pk = 1.',
+            response.data['detail']
+        )
+
+    def test_try_delete_netipv4_with_false_active_flag(self):
+        """Try to delete NetworkIPv4 with false active flag."""
+
+        response = self.client.delete(
+            '/api/v3/networkv4/force/4/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        response = self.client.get(
+            '/api/v3/networkv4/4/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv4 with pk = 4.',
+            response.data['detail']
+        )
+
+

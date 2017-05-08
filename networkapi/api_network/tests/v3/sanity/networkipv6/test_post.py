@@ -401,3 +401,98 @@ class NetworkIPv6DeployErrorTestCase(NetworkApiTestCase):
 
         active = response.data['networks'][0]['active']
         self.compare_values(True, active)
+
+
+class NetworkIPv6ForcePostSuccessTestCase(NetworkApiTestCase):
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/filter/fixtures/initial_filter.json',
+        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
+        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
+        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv6.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+    ]
+
+    json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+
+    def tearDown(self):
+        pass
+
+
+class NetworkIPv6ForcePostErrorTestCase(NetworkApiTestCase):
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/filter/fixtures/initial_filter.json',
+        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
+        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+
+        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
+        'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
+        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv6.json',
+        'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
+        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
+        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
+        'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
+        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+    ]
+
+    json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+
+    def tearDown(self):
+        pass
+
