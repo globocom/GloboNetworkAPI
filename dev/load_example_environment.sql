@@ -38,6 +38,10 @@ VALUES
    (
       1, 'MARCA'
    )
+,
+   (
+      2, 'OpenDayLight'
+   )
 ;
 -- Dumping data for table `modelos`
 INSERT INTO
@@ -45,6 +49,10 @@ INSERT INTO
 VALUES
    (
       1, 'MODELO', 1
+   )
+,
+   (
+      2, 'SDN Controller', 2
    )
 ;
 -- Dumping data for table `tipo_equipamento`
