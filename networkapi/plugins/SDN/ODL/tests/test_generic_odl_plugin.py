@@ -22,4 +22,22 @@ class GenericOpenDayLightTestCase(NetworkApiTestCase):
             equipment=self.equipment,
             equipment_access=self.equipment_access
         )
-        # odl.add_flow({})
+
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "action": "permit",
+                "description": "Acesso ICMP restritivo BE",
+                "destination": "10.0.0.0/8",
+                "icmp-options": {
+                    "icmp-code": "0",
+                    "icmp-type": "8"
+                },
+                "id": "82325",
+                "owner": "ralmeida",
+                "protocol": "icmp",
+                "source": "0.0.0.0/0"
+            }]
+        }
+
+        odl.add_flow(data)
