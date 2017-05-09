@@ -96,12 +96,6 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
-                },
                 "subnet": {
                   "type": "string"
                 },

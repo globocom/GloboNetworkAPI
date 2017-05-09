@@ -18,13 +18,12 @@ api_prefix = r'^api/'
 
 urlpatterns = patterns(
     '',
-    url(r'^django-rq/', include('django_rq.urls')),
     # new API URL patterns are all prefixed with '/api/'
     url(api_prefix, include('networkapi.api_deploy.urls')),
     url(api_prefix, include('networkapi.api_environment.urls')),
     url(api_prefix, include('networkapi.api_environment_vip.urls')),
     url(api_prefix, include('networkapi.api_equipment.urls')),
-    url(api_prefix, include('networkapi.api_healthcheck.urls')),
+    # url(api_prefix, include('networkapi.api_healthcheck.urls')),
     url(api_prefix, include('networkapi.api_interface.urls')),
     url(api_prefix, include('networkapi.api_ip.urls')),
     url(api_prefix, include('networkapi.api_network.urls')),
@@ -35,7 +34,7 @@ urlpatterns = patterns(
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.api_vrf.urls')),
-    url(api_prefix, include('networkapi.snippets.urls')),
+    # url(api_prefix, include('networkapi.snippets.urls')),
     url(api_prefix, include('networkapi.system.urls')),
 
     # app healthchecks

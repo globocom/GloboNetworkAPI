@@ -146,10 +146,12 @@ class Generic(BasePlugin):
         vts = virtualserver.VirtualServer(self._lb)
 
         dict_create_vip = {
+            'vips_cache': tratado.get('vips_cache_filter_to_insert'),
             'vips': tratado.get('vips_filter_to_insert'),
             'pool': tratado.get('pool_filter_to_insert')
         }
         dict_delete_vip = {
+            'vips_cache': tratado.get('vips_cache_filter_to_delete'),
             'vips': tratado.get('vips_filter_to_delete'),
             'pool_created': list()
         }
@@ -387,6 +389,9 @@ class Generic(BasePlugin):
             pl.set_service_down_action(
                 names=pls['pools_names'],
                 actions=pls['pools_actions'])
+
+            pl.set_minimum_active_member(
+                names=pls['pools_names'])
 
             plm = poolmember.PoolMember(self._lb)
 

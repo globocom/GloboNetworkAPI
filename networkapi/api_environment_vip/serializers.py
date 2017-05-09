@@ -60,12 +60,11 @@ class EnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
             'name',
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'optionsvip': {
                     'serializer': OptionVipEnvironmentVipV3Serializer,
                     'kwargs': {
@@ -102,8 +101,6 @@ class EnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
                 },
             }
 
-        return cls.mapping
-
 
 class OptionVipV3Serializer(DynamicFieldsModelSerializer):
     id = serializers.Field()
@@ -124,8 +121,7 @@ class OptionVipV3Serializer(DynamicFieldsModelSerializer):
 
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
 
         return {}
@@ -137,9 +133,11 @@ class OptionVipEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
     environment_vip = serializers.SerializerMethodField('get_environment_vip')
 
     def get_optionsvip(self, obj):
+
         return self.extends_serializer(obj, 'option')
 
     def get_environment_vip(self, obj):
+
         return self.extends_serializer(obj, 'environment')
 
     class Meta:
@@ -151,12 +149,11 @@ class OptionVipEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
             'environment_vip',
         )
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'option': {
                     'obj': 'option_id',
                 },
@@ -178,7 +175,6 @@ class OptionVipEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'environment',
                 },
             }
-        return cls.mapping
 
 
 class EnvironmentEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
@@ -209,14 +205,13 @@ class EnvironmentEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
         basic_fields = fields
         details_fields = fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         """Returns the mapping of serializers."""
 
         env_slz = get_app('api_environment', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'environment': {
                     'obj': 'environment_id',
                 },
@@ -238,4 +233,3 @@ class EnvironmentEnvironmentVipV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'environment_vip',
                 },
             }
-        return cls.mapping

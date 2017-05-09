@@ -1,0 +1,25 @@
+{
+    "server_pools": [
+        {
+            "default_limit": 1001,
+            "default_port": 801,
+            "environment": 3,
+            "healthcheck": {
+                "destination": "*:*",
+                "healthcheck_expect": "",
+                "healthcheck_request": "",
+                "healthcheck_type": "TCP",
+                "identifier": ""
+            },
+            "id": 3,
+            "identifier": "pool-vm-rack1-deployed",
+            "lb_method": "least-conn",
+            "pool_created": true,
+            "server_pool_members": [],
+            "servicedownaction": {
+                "id": 5,
+                "name": "none"
+            }
+        }
+    ]
+}

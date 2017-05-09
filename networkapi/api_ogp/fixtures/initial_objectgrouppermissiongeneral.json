@@ -1,0 +1,38 @@
+[
+  {
+  "pk": 1,
+  "model": "api_ogp.objectgrouppermissiongeneral",
+  "fields": {
+    "user_group": 1,
+    "object_type": 1,
+    "read": 1,
+    "write": 1,
+    "change_config": 1,
+    "delete": 1
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_ogp.objectgrouppermissiongeneral",
+  "fields": {
+    "user_group": 1,
+    "object_type": 2,
+    "read": 1,
+    "write": 1,
+    "change_config": 1,
+    "delete": 1
+    }
+  },
+  {
+  "pk": 3,
+  "model": "api_ogp.objectgrouppermissiongeneral",
+  "fields": {
+    "user_group": 1,
+    "object_type": 3,
+    "read": 1,
+    "write": 1,
+    "change_config": 1,
+    "delete": 1
+    }
+  }
+]

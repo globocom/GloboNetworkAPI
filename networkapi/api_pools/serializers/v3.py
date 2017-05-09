@@ -6,55 +6,6 @@ from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class PoolPermissionV3Serializer(DynamicFieldsModelSerializer):
-
-    group = serializers.SerializerMethodField('get_group')
-
-    def get_group(self, obj):
-        return self.extends_serializer(obj, 'group')
-
-    class Meta:
-        ServerPoolGroupPermission = get_model('requisicaovips',
-                                              'ServerPoolGroupPermission')
-        model = ServerPoolGroupPermission
-        fields = (
-            'id',
-            'group',
-            'user_group',
-            'read',
-            'write',
-            'change_config',
-            'delete'
-        )
-        default_fields = (
-            'group',
-            'read',
-            'write',
-            'change_config',
-            'delete'
-        )
-
-    @classmethod
-    def get_serializers(cls):
-        # serializers
-        group_slz = get_app('api_group', module_label='serializers')
-
-        if not cls.mapping:
-            cls.mapping = {
-                'group': {
-                    'obj': 'user_group_id',
-                },
-                'group__details': {
-                    'serializer': group_slz.UserGroupV3Serializer,
-                    'kwargs': {
-                    },
-                    'obj': 'user_group',
-                },
-            }
-
-        return cls.mapping
-
-
 class OptionPoolV3Serializer(DynamicFieldsModelSerializer):
 
     class Meta:
@@ -156,16 +107,15 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
             'member_status',
         )
 
-        details_fields = fields
+        details_fields = default_fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         ip_slz = get_app('api_ip', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'server_pool': {
                     'obj': 'server_pool_id',
                 },
@@ -182,7 +132,6 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                         'include': (
                             'servicedownaction__details',
                             'environment__details',
-                            'groups_permissions__details',
                         )
                     },
                     'obj': 'server_pool',
@@ -245,8 +194,6 @@ class PoolMemberV3Serializer(DynamicFieldsModelSerializer):
                 },
 
             }
-
-        return cls.mapping
 
 
 class PoolV3Serializer(DynamicFieldsModelSerializer):
@@ -319,16 +266,16 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
             'identifier',
             'pool_created'
         )
-        details_fields = fields
+        details_fields = default_fields
 
-    @classmethod
-    def get_serializers(cls):
+    def get_serializers(self):
         # serializers
         vip_slz = get_app('api_vip_request', module_label='serializers.v3')
         env_slz = get_app('api_environment', module_label='serializers')
+        ogp_slz = get_app('api_ogp', module_label='serializers')
 
-        if not cls.mapping:
-            cls.mapping = {
+        if not self.mapping:
+            self.mapping = {
                 'healthcheck': {
                     'serializer': HealthcheckV3Serializer,
                     'kwargs': {
@@ -376,10 +323,7 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                 'server_pool_members__details': {
                     'serializer': PoolMemberV3Serializer,
                     'kwargs': {
-                        'many': True,
-                        'include': (
-                            'server_pool',
-                        ),
+                        'many': True
                     },
                     'obj': 'server_pool_members',
                 },
@@ -407,22 +351,27 @@ class PoolV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'vips',
                 },
                 'groups_permissions': {
-                    'serializer': PoolPermissionV3Serializer,
+                    'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
                     'kwargs': {
                         'many': True,
+                        'fields': (
+                            'user_group',
+                            'read',
+                            'write',
+                            'change_config',
+                            'delete',
+                        )
                     },
                     'obj': 'groups_permissions',
                 },
                 'groups_permissions__details': {
-                    'serializer': PoolPermissionV3Serializer,
+                    'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
                     'kwargs': {
                         'include': (
-                            'group__details',
+                            'user_group__details',
                         ),
                         'many': True,
                     },
                     'obj': 'groups_permissions',
                 }
             }
-
-        return cls.mapping

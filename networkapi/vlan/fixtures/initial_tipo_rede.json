@@ -12,5 +12,19 @@
   "fields": {
     "tipo_rede": "rede tipo 2"
     }
+  },
+  {
+  "pk": 3,
+  "model": "vlan.tiporede",
+  "fields": {
+    "tipo_rede": "Network Eqpts"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "vlan.tiporede",
+  "fields": {
+    "tipo_rede": "Network Vips"
+    }
   }
 ]

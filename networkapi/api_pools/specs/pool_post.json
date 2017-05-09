@@ -139,7 +139,7 @@
             "items": {
               "type": "object",
               "properties": {
-                "group": {
+                "user_group": {
                    "type": "integer"
                 },
                 "read": {
@@ -156,7 +156,7 @@
                 }
               },
               "required": [
-                "group",
+                "user_group",
                 "read",
                 "write",
                 "delete",

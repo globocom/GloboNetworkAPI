@@ -15,7 +15,7 @@ def get_groups(users_permissions):
             group_id = int(group.ugrupo.id)
             if group_id != 1:
                 groups.append({
-                    'group': group_id,
+                    'user_group': group_id,
                     'read': user_permission['read'],
                     'write': user_permission['write'],
                     'delete': user_permission['delete'],
@@ -28,8 +28,8 @@ def reduce_groups(groups):
     group_reduce = list()
     group_reduce_idx = list()
     for group in groups:
-        if group['group'] in group_reduce_idx:
-            idx = group_reduce_idx[group['group']]
+        if group['user_group'] in group_reduce_idx:
+            idx = group_reduce_idx[group['user_group']]
             if group['read']:
                 group_reduce[idx]['read']
             if group['write']:
@@ -39,6 +39,6 @@ def reduce_groups(groups):
             if group['change_config']:
                 group_reduce[idx]['change_config']
         else:
-            group_reduce_idx.append(group['group'])
+            group_reduce_idx.append(group['user_group'])
             group_reduce.append(group)
     return group_reduce

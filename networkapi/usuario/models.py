@@ -91,7 +91,6 @@ class Usuario(BaseModel):
     grupos = models.ManyToManyField('grupo.UGrupo', through='UsuarioGrupo')
     user_ldap = models.CharField(
         unique=True, max_length=45, null=True, blank=True)
-
     log = logging.getLogger('Usuario')
 
     class Meta(BaseModel.Meta):
@@ -106,6 +105,13 @@ class Usuario(BaseModel):
             user=self.user.lower(),
             pwd=self.pwd,
             ativo=1
+        )
+
+    @property
+    def is_staff(self):
+        return UsuarioGrupo.objects.filter(
+            usuario__id=self.id,
+            ugrupo__nome__iexact='Administradores'
         )
 
     @classmethod

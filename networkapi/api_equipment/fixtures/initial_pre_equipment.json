@@ -1,0 +1,94 @@
+[
+  {
+    "fields": {
+      "internal_name": "default",
+      "vrf": "default"
+    },
+    "model": "api_vrf.vrf",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "tipo_equipamento": "VM"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "Generic Brand"
+    },
+    "model": "equipamento.marca",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "marca": 1,
+      "nome": "Generic Model"
+    },
+    "model": "equipamento.modelo",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "Sanity Test 1"
+    },
+    "model": "grupo.egrupo",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "Sanity Test 2"
+    },
+    "model": "grupo.egrupo",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "nome": "BE"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "SANITY-TEST-1"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "RACK-1"
+    },
+    "model": "ambiente.grupol3",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "RACK-2"
+    },
+    "model": "ambiente.grupol3",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "grupo_l3": 1
+    },
+    "model": "ambiente.ambiente",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "grupo_l3": 2
+    },
+    "model": "ambiente.ambiente",
+    "pk": 2
+  }
+]
