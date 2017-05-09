@@ -20,8 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import get_model
 
-from networkapi.ambiente.models import Ambiente
-from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
 from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.grupo.models import EGrupo
 from networkapi.grupo.models import EGrupoNotFoundError

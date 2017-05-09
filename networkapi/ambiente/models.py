@@ -871,12 +871,15 @@ class Ambiente(BaseModel):
         null=True,
         db_column='id_father_environment'
     )
-
     default_vrf = models.ForeignKey(
         Vrf,
         db_column='id_vrf'
     )
-
+    dcroom = models.IntegerField(
+        #DatacenterRooms,
+        null=True,
+        db_column = 'id_dcroom'
+    )
     log = logging.getLogger('Ambiente')
 
     class Meta(BaseModel.Meta):
@@ -1270,6 +1273,7 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
+            #self.dcroom = models_dc.DatacenterRooms().get_dcrooms(idt=env_map.get('dcroom')) if env_map.get('dcroom') else None
             self.validate_v3()
             self.save()
 
@@ -1278,6 +1282,7 @@ class Ambiente(BaseModel):
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
+        return self
 
     def update_v3(self, env_map):
 

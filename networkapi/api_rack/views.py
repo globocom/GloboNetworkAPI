@@ -177,7 +177,6 @@ class RackConfigView(APIView):
 
 class RackEnvironmentView(APIView):
 
-    @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
             log = logging.getLogger('Alocando ambientes e vlans do rack')
@@ -185,16 +184,12 @@ class RackEnvironmentView(APIView):
             if not request.DATA.get('racks'):
                 raise exceptions.InvalidInputException()
 
-            #Validar configuracao
+            # Validar configuracao
             response = list()
             for rack in request.DATA.get('racks'):
-                log.info("ok 1")
-                response.append(facade.alocar_ambiente_vlan(rack))
+                response.append(facade.rack_environments_vlans(rack, request.user))
 
-            log.info("ok 2")
-            data = dict
-            #rack_serializer = RackSerializer(rack)
-            data["rack"] = response
+            data = dict()
 
             return Response(data, status=status.HTTP_200_OK)
 
