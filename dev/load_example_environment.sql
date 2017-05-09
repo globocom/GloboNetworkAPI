@@ -892,10 +892,10 @@ VALUES
 
 -- Dumping data for table `equiptos_access`
 INSERT INTO
-    `equiptos_access` (`id_equip`, `fqdn`, `user`, `pass`, `id_tipo_acesso`, `enable_pass`)
+    `equiptos_access` (`id_equiptos_access`, `id_equip`, `fqdn`, `user`, `pass`, `id_tipo_acesso`, `enable_pass`)
 VALUES
     (
-        28, 'http://10.0.0.5:8181', 'admin', 'admin', 2, '---'
+        1, 28, 'http://10.0.0.5:8181', 'admin', 'admin', 2, '---'
     )
 ;
 
