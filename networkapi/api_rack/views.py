@@ -104,32 +104,37 @@ class RackDeployView(APIView):
                 PATH_TO_ADD_CONFIG = get_variable("path_to_add_config")
                 REL_PATH_TO_ADD_CONFIG = get_variable("rel_path_to_add_config")
             except ObjectDoesNotExist:
-                raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
+                raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou "
+                                                                   "REL_PATH_TO_ADD_CONFIG.")
 
-            path_config = PATH_TO_ADD_CONFIG +'*'+rack.nome+'*'
+            path_config = PATH_TO_ADD_CONFIG + '*' + rack.nome + '*'
             arquivos = glob.glob(path_config)
 
-            #Get all files and search for equipments of the rack
+            # Get all files and search for equipments of the rack
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
-                rel_filename = "../../"+REL_PATH_TO_ADD_CONFIG+filename_equipments
-                #Check if file is config relative to this rack
+                rel_filename = "../../" + REL_PATH_TO_ADD_CONFIG + filename_equipments
+                # Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
-                    #Apply config only in spines. Leaves already have all necessary config in startup
+                    # Apply config only in spines. Leaves already have all necessary config in startup
                     if "ADD" in filename_equipments:
-                        #Check if equipment in under maintenance. If so, does not aplly on it
+                        # Check if equipment in under maintenance. If so, does not aplly on it
                         equipment_name = filename_equipments.split('-ADD-')[0]
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
                             if not equip.maintenance:
-                                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w 300" % (rel_filename, equipment_name))
+                                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w "
+                                                                          "300" % (rel_filename, equipment_name))
                                 if erro:
                                     raise exceptions.RackAplError()
                         except exceptions.RackAplError, e:
                             raise e
                         except:
-                            #Error equipment not found, do nothing
+                            # Error equipment not found, do nothing
                             pass
+
+            # Create Foreman entries for rack switches
+            facade.api_foreman(rack)
 
             datas = dict()
             success_map = dict()

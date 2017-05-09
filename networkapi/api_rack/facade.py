@@ -501,6 +501,69 @@ def rack_environments_vlans(rack_id, user):
     return rack
 
 
+def api_foreman(rack):
+
+
+    try:
+        NETWORKAPI_FOREMAN_URL = get_variable("foreman_url")
+        NETWORKAPI_FOREMAN_USERNAME = get_variable("foreman_username")
+        NETWORKAPI_FOREMAN_PASSWORD = get_variable("foreman_password")
+        FOREMAN_HOSTS_ENVIRONMENT_ID = get_variable("foreman_hosts_environment_id")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando as variáveis relativas ao Foreman.")
+
+    foreman = Foreman(NETWORKAPI_FOREMAN_URL, (NETWORKAPI_FOREMAN_USERNAME, NETWORKAPI_FOREMAN_PASSWORD), api_version=2)
+
+    # for each switch, check the switch ip against foreman know networks, finds foreman hostgroup
+    # based on model and brand and inserts the host in foreman
+    # if host already exists, delete and recreate with new information
+    for [switch, mac] in [[rack.id_sw1, rack.mac_sw1], [rack.id_sw2, rack.mac_sw2], [rack.id_ilo, rack.mac_ilo]]:
+        # Get all foremand subnets and compare with the IP address of the switches until find it
+        if mac == None:
+            raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There is no mac address." %
+                                                    switch.nome))
+
+        ip = buscar_ip(switch.id)
+        if ip == None:
+            raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There is no management IP." %
+                                                    switch.nome))
+
+        switch_cadastrado = 0
+        for subnet in foreman.subnets.index()['results']:
+            network = IPNetwork(ip + '/' + subnet['mask']).network
+            # check if switches ip network is the same as subnet['subnet']['network'] e subnet['subnet']['mask']
+            if network.__str__() == subnet['network']:
+                subnet_id = subnet['id']
+                hosts = foreman.hosts.index(search = switch.nome)['results']
+                if len(hosts) == 1:
+                    foreman.hosts.destroy(id = hosts[0]['id'])
+                elif len(hosts) > 1:
+                    raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There are multiple entries "
+                                                            "with the sam name." % switch.nome))
+
+                # Lookup foreman hostgroup
+                # By definition, hostgroup should be Marca+"_"+Modelo
+                hostgroup_name = switch.modelo.marca.nome + "_" + switch.modelo.nome
+                hostgroups = foreman.hostgroups.index(search = hostgroup_name)
+                if len(hostgroups['results']) == 0:
+                    raise RackConfigError(None, rack.nome, "Could not create entry for %s. Could not find hostgroup %s "
+                                                           "in foreman." % (switch.nome, hostgroup_name))
+                elif len(hostgroups['results'])>1:
+                    raise RackConfigError(None, rack.nome, "Could not create entry for %s. Multiple hostgroups %s found"
+                                                           " in Foreman." % (switch.nome, hostgroup_name))
+                else:
+                    hostgroup_id = hostgroups['results'][0]['id']
+
+                host = foreman.hosts.create(host = {'name': switch.nome, 'ip': ip, 'mac': mac,
+                                                    'environment_id': FOREMAN_HOSTS_ENVIRONMENT_ID,
+                                                    'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id,
+                                                    'build': 'true', 'overwrite': 'true'})
+                switch_cadastrado = 1
+
+        if not switch_cadastrado:
+            raise RackConfigError(None, rack.nome, "Unknown error. Could not create entry for %s in foreman." %
+                                  switch.nome)
+
 # ################################################### old
 def save_rack(rack_dict):
 
