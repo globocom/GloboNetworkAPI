@@ -4,6 +4,7 @@ import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from networkapi.api_equipment import permissions as perm_eqpt
@@ -293,3 +294,120 @@ class NetworkIPv6DeployView(CustomAPIView):
             })
 
         return Response(response, status=status.HTTP_200_OK)
+
+
+class NetworkIPv4ForceView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('networkv4_post')
+    @permission_classes_apiview((IsAdminUser, Write))
+    @permission_obj_apiview([write_objv4_permission])
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Creates list of networkv4."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv4_post')).validate(data)
+
+        response = list()
+        for networkv4 in data['networks']:
+            vl = facade.create_networkipv4(networkv4, request.user,
+                                           force=True)
+            response.append({'id': vl.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @raise_json_validate('networkv4_put')
+    @permission_classes_apiview((IsAdminUser, Write))
+    @permission_obj_apiview([write_objv4_permission])
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Updates list of networkv4."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv4_put')).validate(data)
+
+        response = list()
+        for networkv4 in data['networks']:
+            vl = facade.update_networkipv4(networkv4, request.user,
+                                           force=True)
+            response.append({'id': vl.id})
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAdminUser, Write))
+    @permission_obj_apiview([write_objv4_permission])
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Deletes list of networkv4."""
+
+        response = list()
+        obj_ids = kwargs['obj_ids'].split(';')
+        facade.delete_networkipv4(obj_ids, request.user,
+                                  force=True)
+
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class NetworkIPv6ForceView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('networkv6_post')
+    @permission_classes_apiview((IsAdminUser, Write))
+    @permission_obj_apiview([write_objv6_permission])
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Creates list of networkv6."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_post')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.create_networkipv6(networkv6, request.user,
+                                           force=True)
+            response.append({'id': vl.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @raise_json_validate('networkv6_put')
+    @permission_classes_apiview((IsAdminUser, Write))
+    @permission_obj_apiview([write_objv6_permission])
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Updates list of networkv6."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_put')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.update_networkipv6(networkv6, request.user,
+                                           force=True)
+            response.append({'id': vl.id})
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAdminUser, Write))
+    @permission_obj_apiview([write_objv6_permission])
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Deletes list of networkv6."""
+
+        response = list()
+        obj_ids = kwargs['obj_ids'].split(';')
+        facade.delete_networkipv6(obj_ids, request.user,
+                                  force=True)
+
+        return Response(response, status=status.HTTP_200_OK)
+
