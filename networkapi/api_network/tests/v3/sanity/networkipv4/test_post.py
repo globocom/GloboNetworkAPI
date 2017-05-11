@@ -431,6 +431,7 @@ class NetworkIPv4DeployErrorTestCase(NetworkApiTestCase):
         active = response.data['networks'][0]['active']
         self.compare_values(True, active)
 
+
 class NetworkIPv4ForcePostSuccessTestCase(NetworkApiTestCase):
 
     fixtures = [
