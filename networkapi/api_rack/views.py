@@ -229,12 +229,12 @@ class DataCenterView(APIView):
             raise api_exceptions.NetworkAPIException()
 
 
-class DataCenterRoomsView(APIView):
+class FabricView(APIView):
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
-            log.info("DatacenterRooms")
+            log.info("Post - Fabric")
 
             if not request.DATA.get('dcrooms'):
                 raise exceptions.InvalidInputException()
@@ -258,18 +258,21 @@ class DataCenterRoomsView(APIView):
     @commit_on_success
     def put(self, request, *args, **kwargs):
         try:
-            log.info("DatacenterRooms")
+            log.info("Put - Fabric")
 
-            if not request.DATA.get('dcrooms'):
+            if not request.DATA.get('fabric'):
                 raise exceptions.InvalidInputException()
             #validar o json
 
-            dcroom_id = kwargs.get('dcroom_id')
-            dcroom = request.DATA.get('dcrooms')
+            fabric_id = kwargs.get('fabric_id')
+            fabric = request.DATA.get('fabric')
 
-            dcrooms = facade.edit_dcrooms(dcroom_id, dcroom)
+            if fabric.get("flag"):
+                dcrooms = facade.update_fabric_config(fabric_id, fabric)
+            else:
+                dcrooms = facade.edit_dcrooms(fabric_id, fabric)
+
             dcroom_serializer = DCRoomSerializer(dcrooms)
-
             data = dict()
             data['dcroom'] = dcroom_serializer.data
 

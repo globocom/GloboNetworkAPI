@@ -101,6 +101,15 @@ class Datacenter(BaseModel):
         db_table = u'datacenter'
         managed = True
 
+    def _get_initials(self):
+
+        if len(self.dcname.split()) <= 1:
+            return self.dcname[:3]
+
+        return "".join(i[0].upper() for i in self.dcname.split())
+
+    sigla = property(_get_initials)
+
     def get_dc(self, idt=None, dcname=None, address=None):
         """"Find Datacenter by id or name.
         @return: Datacenter

@@ -2,21 +2,20 @@
 from __future__ import absolute_import
 
 from django.conf.urls import patterns, url
-from networkapi.api_rack.views import RackView, RackDeployView, DataCenterView, DataCenterRoomsView, RackConfigView, \
-    RackEnvironmentView
-from networkapi.api_rack.facade import available_rack_number
+from networkapi.api_rack import views as rack_views
+from networkapi.api_rack import facade as rack_facade
 
 
 urlpatterns = patterns('',
-    url(r'^rack/(?P<rack_id>\d+)/equipments/$', RackDeployView.as_view()),
-    url(r'^rack/$', RackView.as_view()),
-    url(r'^rack/config/$', RackConfigView.as_view()),
-    url(r'^rack/environmentvlan/$', RackEnvironmentView.as_view()),
-    url(r'^rack/list/all/$', RackView.as_view()),
-    url(r'^rack/next/', available_rack_number),
+    url(r'^rack/(?P<rack_id>\d+)/equipments/$', rack_views.RackDeployView.as_view()),
+    url(r'^rack/$', rack_views.RackView.as_view()),
+    url(r'^rack/config/$', rack_views.RackConfigView.as_view()),
+    url(r'^rack/environmentvlan/$', rack_views.RackEnvironmentView.as_view()),
+    url(r'^rack/list/all/$', rack_views.RackView.as_view()),
+    url(r'^rack/next/', rack_facade.available_rack_number),
 
-    url(r'^dc/$', DataCenterView.as_view()),
-    url(r'^dcrooms/$', DataCenterRoomsView.as_view()),
-    url(r'^dcrooms/(?P<dcroom_id>\d+)/$', DataCenterRoomsView.as_view()),
+    url(r'^dc/$', rack_views.DataCenterView.as_view()),
+    url(r'^dcrooms/$', rack_views.FabricView.as_view()),
+    url(r'^dcrooms/(?P<fabric_id>\d+)/$', rack_views.FabricView.as_view()),
 
 )
