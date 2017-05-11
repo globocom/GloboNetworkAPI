@@ -134,6 +134,62 @@ class NetworkIPv6PutSuccessTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         self.compare_json_lists(name_file, response.data['networks'])
+        
+    def test_try_update_netipv6_ignore_change_active_flag_from_false_to_true(self):
+        """Test of success to update NetworkIPv6 ignore changing active flag
+           from False to True. Active flag cannot be changed.
+        """
+        name_file_put = 'api_network/tests/v3/sanity/networkipv6/json/put/' \
+                        'net_changing_active_from_false_to_true.json'
+
+        # Does PUT request
+        response = self.client.put(
+            '/api/v3/networkv6/3/',
+            data=json.dumps(self.load_json_file(name_file_put)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        get_url = '/api/v3/networkv6/3/?kind=basic&include=cluster_unit,active'
+
+        response = self.client.get(
+            get_url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/net_inactive.json'
+        self.compare_json_lists(name_file, response.data['networks'])
+
+    def test_try_update_netipv6_ignore_change_active_flag_from_true_to_false(self):
+        """Test of success to update NetworkIPv6 changing active flag from True.
+           to False. Active flag cannot be changed.
+        """
+        name_file_put = 'api_network/tests/v3/sanity/networkipv6/json/put/' \
+                        'net_changing_active_from_true_to_false.json'
+
+        # Does PUT request
+        response = self.client.put(
+            '/api/v3/networkv6/1/',
+            data=json.dumps(self.load_json_file(name_file_put)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        get_url = '/api/v3/networkv6/1/?kind=basic&include=cluster_unit,active'
+
+        response = self.client.get(
+            get_url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/net_active.json'
+        self.compare_json_lists(name_file, response.data['networks'])
 
 
 class NetworkIPv6PutErrorTestCase(NetworkApiTestCase):
@@ -231,9 +287,10 @@ class NetworkIPv6PutErrorTestCase(NetworkApiTestCase):
 
         self.compare_values(
             'There is no NetworkIPv6 with pk = 1000.', response.data['detail'])
-
+    
 
 class NetworkIPv6ForcePutSuccessTestCase(NetworkApiTestCase):
+
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
@@ -274,56 +331,68 @@ class NetworkIPv6ForcePutSuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.authorization = self.get_http_authorization('test_admin')
 
     def tearDown(self):
         pass
 
+    def test_try_update_netipv6_changing_active_flag_from_false_to_true(self):
+        """Test of success of changing NetworkIPv6 active flag from false 
+           to true without really deploy the Network.
+        """
 
-class NetworkIPv6ForcePutErrorTestCase(NetworkApiTestCase):
-    fixtures = [
-        'networkapi/system/fixtures/initial_variables.json',
-        'networkapi/usuario/fixtures/initial_usuario.json',
-        'networkapi/grupo/fixtures/initial_ugrupo.json',
-        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
-        'networkapi/api_ogp/fixtures/initial_objecttype.json',
-        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
-        'networkapi/grupo/fixtures/initial_permissions.json',
-        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        name_file_put = 'api_network/tests/v3/sanity/networkipv6/json/put/' \
+                        'net_changing_active_from_false_to_true.json'
 
-        'networkapi/vlan/fixtures/initial_tipo_rede.json',
-        'networkapi/filter/fixtures/initial_filter.json',
-        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
-        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+        # Does PUT request
+        response = self.client.put(
+            '/api/v3/networkv6/force/3/',
+            data=json.dumps(self.load_json_file(name_file_put)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
 
-        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
-        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
-        'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
-        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
-        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
-        'networkapi/api_network/fixtures/sanity/initial_ipv6.json',
-        'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
-        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
-        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
-        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
-        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
-        'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
-        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
-        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
-    ]
+        self.compare_status(200, response.status_code)
 
-    json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
+        get_url = '/api/v3/networkv6/3/?kind=basic&include=cluster_unit,active'
 
-    def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        response = self.client.get(
+            get_url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-    def tearDown(self):
-        pass
+        self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/net_changed_active_from_false_to_true.json'
+        self.compare_json_lists(name_file, response.data['networks'])
+
+    def test_try_update_netipv6_changing_active_flag_from_true_to_false(self):
+        """Test of success of changing NetworkIPv6 active flag from true 
+           to false without really undeploy the Network.
+        """
+
+        name_file_put = 'api_network/tests/v3/sanity/networkipv6/json/put/' \
+                        'net_changing_active_from_true_to_false.json'
+
+        # Does PUT request
+        response = self.client.put(
+            '/api/v3/networkv6/force/1/',
+            data=json.dumps(self.load_json_file(name_file_put)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        get_url = '/api/v3/networkv6/1/?kind=basic&include=cluster_unit,active'
+
+        response = self.client.get(
+            get_url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/net_changed_active_from_true_to_false.json'
+        self.compare_json_lists(name_file, response.data['networks'])
+
 
 

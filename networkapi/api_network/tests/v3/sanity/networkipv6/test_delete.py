@@ -309,6 +309,7 @@ class NetworkIPv6UndeploySuccessTestCase(NetworkApiTestCase):
 
 
 class NetworkIPv6ForceDeleteSuccessTestCase(NetworkApiTestCase):
+
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
@@ -347,57 +348,51 @@ class NetworkIPv6ForceDeleteSuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.authorization = self.get_http_authorization('test_admin')
 
     def tearDown(self):
         pass
 
-        # not deploy tes
+    def test_try_delete_netipv6_with_true_active_flag(self):
+        """Try to delete NetworkIPv6 with true active flag forcibly."""
 
+        response = self.client.delete(
+            '/api/v3/networkv6/force/1/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
 
-class NetworkIPv6ForceDeleteErrorTestCase(NetworkApiTestCase):
-    fixtures = [
-        'networkapi/system/fixtures/initial_variables.json',
-        'networkapi/usuario/fixtures/initial_usuario.json',
-        'networkapi/grupo/fixtures/initial_ugrupo.json',
-        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
-        'networkapi/api_ogp/fixtures/initial_objecttype.json',
-        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
-        'networkapi/grupo/fixtures/initial_permissions.json',
-        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        self.compare_status(200, response.status_code)
 
-        'networkapi/vlan/fixtures/initial_tipo_rede.json',
-        'networkapi/filter/fixtures/initial_filter.json',
-        'networkapi/filterequiptype/fixtures/initial_filterequiptype.json',
-        'networkapi/equipamento/fixtures/initial_tipo_equip.json',
+        response = self.client.get(
+            '/api/v3/networkv6/1/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
 
-        'networkapi/api_network/fixtures/sanity/initial_config_environment.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_dc.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_envlog.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_gl3.json',
-        'networkapi/api_network/fixtures/sanity/initial_ipconfig.json',
-        'networkapi/api_network/fixtures/sanity/initial_networkipv6.json',
-        'networkapi/api_network/fixtures/sanity/initial_vlan.json',
-        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
-        'networkapi/api_network/fixtures/sanity/initial_ipv6.json',
-        'networkapi/api_network/fixtures/sanity/initial_vip_request_v6.json',
-        'networkapi/api_network/fixtures/sanity/initial_environment_vip.json',
-        'networkapi/api_network/fixtures/sanity/initial_env_env_vip.json',
-        'networkapi/api_network/fixtures/sanity/initial_equipments.json',
-        'networkapi/api_network/fixtures/sanity/initial_equipments_env.json',
-        'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
-        'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
-        'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
-        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
-    ]
+        self.compare_status(404, response.status_code)
 
-    def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.compare_values(
+            u'There is no NetworkIPv6 with pk = 1.',
+            response.data['detail']
+        )
 
-    def tearDown(self):
-        pass
+    def test_try_delete_netipv6_with_false_active_flag(self):
+        """Try to delete NetworkIPv6 with false active flag."""
 
+        response = self.client.delete(
+            '/api/v3/networkv6/force/4/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
 
+        self.compare_status(200, response.status_code)
 
+        response = self.client.get(
+            '/api/v3/networkv6/4/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'There is no NetworkIPv6 with pk = 4.',
+            response.data['detail']
+        )
