@@ -105,6 +105,7 @@ class AclFlowBuilder(object):
 
         self._build_match(rule)
         self._build_protocol(rule)
+        self._build_action(rule)
 
         # Flow table and priority
         self.flows["flow"][0]["table_id"] = self.TABLE
@@ -240,3 +241,19 @@ class AclFlowBuilder(object):
             message = "Missing %s for icmp protocol" % Tokens.icmp_options
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
+
+    def _build_action(self, rule):
+        """ Builds the Openflow actions to a flow """
+
+        if Tokens.action in rule and rule[Tokens.action] == "permit":
+            self.flows["flow"][0]["instructions"] = {
+                "instruction": [{
+                    "apply-action": {
+                        "action": [{
+                            "output-action": {
+                                "output-node-connector": "LOCAL"
+                            }
+                        }]
+                    }
+                }]
+            }
