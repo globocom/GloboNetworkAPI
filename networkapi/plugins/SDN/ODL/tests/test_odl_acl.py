@@ -4,6 +4,7 @@
 from nose.tools import assert_raises
 from nose.tools import assert_equal
 from nose.tools import assert_in
+from nose.tools import assert_not_in
 
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.SDN.ODL.flows.acl import AclFlowBuilder
@@ -367,3 +368,61 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         assert_equal(
             data["rules"][0]["icmp-options"]["icmp-type"],
             acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-type"])
+
+    def test_acl_should_create_internet_protocol_flow(self):
+        """ Should create an Internet Protocol flow """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "ip",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+            }]
+        }
+
+        acl = AclFlowBuilder(data)
+        acl.build()
+        assert_equal(acl.flows['flow'][0]['match']['ipv4-source'],
+            data['rules'][0]['source'])
+        assert_equal(acl.flows['flow'][0]['match']['ipv4-destination'],
+            data['rules'][0]['destination'])
+
+    def test_acl_should_have_action_local(self):
+        """ Should have the Openflow LOCAL action """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "ip",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "action": "permit",
+            }]
+        }
+
+        acl = AclFlowBuilder(data)
+        acl.build()
+
+        assert_in("instructions", acl.flows["flow"][0])
+        instruction = acl.flows["flow"][0]["instructions"]["instruction"][0]
+        assert_equal(instruction["apply-action"]["action"][0]["output-action"]
+            ["output-node-connector"], "LOCAL")
+
+    def test_acl_should_not_have_actions(self):
+        """ Should have the Openflow LOCAL action """
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "id": 1,
+                "protocol": "ip",
+                "source": "10.0.0.1/32",
+                "destination": "10.0.0.2/32",
+                "action": "drop",
+            }]
+        }
+
+        acl = AclFlowBuilder(data)
+        acl.build()
+
+        assert_not_in("instructions", acl.flows["flow"][0])
