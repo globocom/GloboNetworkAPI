@@ -150,6 +150,8 @@ class AclFlowBuilder(object):
                 self._build_udp(rule)
             elif rule[Tokens.protocol] == "icmp":
                 self._build_icmp(rule)
+            elif rule[Tokens.protocol] == "ip":
+                pass  # It is not necessary to process a IP protocol
             else:
                 message = "Unknown protocol '%s'" % rule[Tokens.protocol]
                 logging.error(self.MALFORMED_MESSAGE % message)
