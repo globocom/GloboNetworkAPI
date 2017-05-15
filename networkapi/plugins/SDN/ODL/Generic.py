@@ -148,8 +148,8 @@ class ODLPlugin(BaseSdnPlugin):
         uri = self._get_uri(path=params["path"])
 
         log.info("Starting %s request to controller %s at %s. Data to be sent: %s" %
-                    (params["method"], self.equipment.nome, params["path"], params["data"])
-                 )
+            (params["method"], self.equipment.nome, uri, params["data"])
+         )
 
         try:
             # Raises AttributeError if method is not valid
