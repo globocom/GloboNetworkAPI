@@ -17,7 +17,7 @@ SLEEP_TIME=10
 sleep ${SLEEP_TIME} && ovs-vsctl add-br br0
 
 # Remote controller IP address
-REMOTE_CTRL=$(nslookup odl | grep Address | tail -1 | awk '{print $3}')
+REMOTE_CTRL=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $3}')
 
 # Set remote controller
 ovs-vsctl set-controller br0 tcp:${REMOTE_CTRL}:6653
