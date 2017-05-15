@@ -154,9 +154,9 @@ class EnvFlowView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     def get(self, request, *args, **kwargs):
         """Returns a list of environment by ids ou dict."""
-
         environment_id = kwargs.get('environment_id')
-        if 'flow_id' in kwargs:
+
+        if kwargs.get('flow_id') is not None:
             flow_id = kwargs.get('flow_id')
             flows = facade.list_flows_by_envid(environment_id, flow_id=flow_id)
         else:
