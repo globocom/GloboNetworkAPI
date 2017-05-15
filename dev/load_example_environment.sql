@@ -40,7 +40,7 @@ VALUES
    )
 ,
    (
-      2, 'OpenDayLight'
+      2, 'OpenDaylight'
    )
 ;
 -- Dumping data for table `modelos`
