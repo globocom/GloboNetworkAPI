@@ -35,7 +35,7 @@ class BaseSdnPlugin(object):
         params = {
             'equipment': None,
             'equipment_access': None,
-            'protocol': 'https',
+            'protocol': 'http',
         }
 
         # Setting params via kwargs or use the defaults
@@ -47,14 +47,14 @@ class BaseSdnPlugin(object):
 
         if not isinstance(self.equipment, Equipamento):
             log.error("An equipment object must be used to instantiate the plugin")
-            raise ValueError
+            raise TypeError
 
     def _get_auth(self):
         raise NotImplementedError()
 
     def _get_host(self):
 
-        if not hasattr(self, 'host'):
+        if not hasattr(self, 'host') or self.host is None:
 
             if not isinstance(self.equipment_access, EquipamentoAcesso):
 
