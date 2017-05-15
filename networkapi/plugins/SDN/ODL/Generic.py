@@ -46,10 +46,11 @@ class ODLPlugin(BaseSdnPlugin):
 
         try:
             if not isinstance(self.equipment_access, EquipamentoAcesso):
-                log.info('equipment_access is not of EquipamentoAcesso type')
-                raise TypeError
+                msg = 'equipment_access is not of EquipamentoAcesso type'
+                log.info(msg)
+                raise TypeError(msg)
 
-        except AttributeError, TypeError:
+        except (AttributeError, TypeError):
             # If AttributeError raised, equipment_access not exists as variable is this class
             self.equipment_access = self._get_equipment_access()
 
