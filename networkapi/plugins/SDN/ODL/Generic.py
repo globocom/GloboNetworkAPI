@@ -107,13 +107,11 @@ class ODLPlugin(BaseSdnPlugin):
             # TODO: Tratar retornos dos varios vSwitches
             retorno = self._request(method=method, path=path, data=data, contentType='json')
 
-            #we are assuming that all bridges have the same content, so we return the fist occurrence for gets
-            if method=='get':
+            # we are assuming that all bridges have the same content, so we return the fist occurrence for gets
+            if method == 'get':
                 return retorno["flow-node-inventory:flow"][0]
 
         return retorno
-
-
 
     def _get_nodes_ids(self):
         """
@@ -125,9 +123,8 @@ class ODLPlugin(BaseSdnPlugin):
             nodes_ids.append(node["id"])
         return nodes_ids
 
-
     def _get_nodes(self):
-        path="/restconf/operational/opendaylight-inventory:nodes/"
+        path = "/restconf/operational/opendaylight-inventory:nodes/"
         nodes = self._request(method='get', path=path, contentType='json')
         return nodes['nodes']['node']
 
@@ -153,10 +150,9 @@ class ODLPlugin(BaseSdnPlugin):
                     (params["method"], self.equipment.nome, params["path"], params["data"])
                  )
 
-
-
         try:
-            func = getattr(requests, params["method"])  # Raises AttributeError if method is not valid
+            # Raises AttributeError if method is not valid
+            func = getattr(requests, params["method"])
             request = func(
                 uri,
                 auth=self._get_auth(),
@@ -184,7 +180,6 @@ class ODLPlugin(BaseSdnPlugin):
                 log.error("Unknown error during request to ODL Controller")
             raise HTTPError(msg=request.status_code)
 
-
     def _get_auth(self):
         return self._basic_auth()
 
@@ -211,8 +206,8 @@ class ODLPlugin(BaseSdnPlugin):
         try:
             return EquipamentoAcesso.search(
                 None, self.equipment, 'https').uniqueResult()
-        except Exception, e:
+        except Exception:
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
-        #TODO: ver o metodo existente, bater com o host (http com http)
+        # TODO: ver o metodo existente, bater com o host (http com http)
