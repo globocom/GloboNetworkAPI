@@ -1,8 +1,8 @@
 # Waits for other containers availability
 sleep 5
 
-mysql -uroot -h netapi_db -e 'drop database if exists networkapi;'
-mysql -uroot -h netapi_db -e 'create database networkapi;'
+mysql -uroot -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
+mysql -uroot -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 cd /netapi/dbmigrate; db-migrate --show-sql
 mysql -u root -h netapi_db networkapi < /netapi/dev/load_example_environment.sql
 
