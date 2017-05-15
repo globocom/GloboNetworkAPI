@@ -65,7 +65,7 @@ class ODLPlugin(BaseSdnPlugin):
         nodes_ids = self._get_nodes_ids()
 
         for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
+            path = "/restconf/operational/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
                    % (node_id)
             #TODO: Tratar retornos dos varios vSwitches
             retorno =  self._request(method="get", path=path, contentType='json')
@@ -102,7 +102,7 @@ class ODLPlugin(BaseSdnPlugin):
         nodes_ids = self._get_nodes_ids()
 
         for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
+            path = "/restconf/operational/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
                    % (node_id, flow_id)
 
             # TODO: Tratar retornos dos varios vSwitches
