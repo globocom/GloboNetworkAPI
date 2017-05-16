@@ -11,26 +11,25 @@ from nose.tools import assert_equal
 from nose.tools import assert_in
 from nose.tools import assert_not_in
 
-
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """
 
+    fixtures = [
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
+    ]
+
     def setUp(self):
         self.client = Client()
-        self.equipment = Equipamento(id=28)
-        self.equipment_access = EquipamentoAcesso(id=1)
+        self.equipment = Equipamento.objects.filter(id=1)[0]
+        self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.odl = ODLPlugin(
             equipment=self.equipment,
             equipment_access=self.equipment_access
         )
 
-    def test_add_simple_acl_flow(self):
-        """ Adding simple ACL flow through generic ODL plugin """
-
-        odl = ODLPlugin(
-            equipment=self.equipment,
-            equipment_access=self.equipment_access
-        )
+    def test_add_flow_one_acl_rule_with_icmp_protocol(self):
+        """Test of success to add flow with one ACL rule 
+            with icmp protocol."""
 
         data = {
             "kind": "default#acl",
@@ -49,7 +48,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             }]
         }
 
-        # odl.add_flow(data)
+        self.odl.add_flow(data)
+
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """

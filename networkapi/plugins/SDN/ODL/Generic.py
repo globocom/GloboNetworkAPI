@@ -102,7 +102,7 @@ class ODLPlugin(BaseSdnPlugin):
         nodes_ids = self._get_nodes_ids()
 
         for node_id in nodes_ids:
-            path = "/restconf/operational/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
                    % (node_id, flow_id)
 
             # TODO: Tratar retornos dos varios vSwitches
@@ -143,6 +143,9 @@ class ODLPlugin(BaseSdnPlugin):
         for param in params:
             if param in kwargs:
                 params[param] = kwargs.get(param)
+
+        # if isinstance(params["data"], basestring):
+        #     params["data"] = params["data"].replace(" ","")
 
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
