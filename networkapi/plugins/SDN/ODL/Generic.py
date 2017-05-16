@@ -97,18 +97,18 @@ class ODLPlugin(BaseSdnPlugin):
 
         nodes_ids = self._get_nodes_ids()
 
+        return_flows = []
         for node_id in nodes_ids:
             path = "/restconf/operational/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
                    % (node_id, flow_id)
 
-            # TODO: Tratar retornos dos varios vSwitches
-            retorno = self._request(method=method, path=path, data=data, contentType='json')
+            return_flows.append(
+                self._request(
+                    method=method, path=path, data=data, contentType='json'
+                )
+            )
 
-            # we are assuming that all bridges have the same content, so we return the fist occurrence for gets
-            if method == 'get':
-                return retorno["flow-node-inventory:flow"][0]
-
-        return retorno
+        return return_flows
 
     def _get_nodes_ids(self):
         """
