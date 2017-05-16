@@ -31,7 +31,7 @@ services:
             - netapi_net
 
     odl:
-        container_name: odl
+        container_name: netapi_odl
         image: glefevre/opendaylight
         volumes:
             - ./docker-start-opendaylight.sh:/odl/docker-start-opendaylight.sh:ro
@@ -59,6 +59,7 @@ services:
             - db
             - queue
             - cache
+            - odl
 
 volumes:
     netapi_db_vol:

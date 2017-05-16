@@ -1,13 +1,13 @@
 # Waits for other containers availability
 sleep 5
 
-mysql -uroot -h netapi_db -e 'drop database if exists networkapi;'
-mysql -uroot -h netapi_db -e 'create database networkapi;'
+mysql -uroot -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
+mysql -uroot -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 cd /netapi/dbmigrate; db-migrate --show-sql
 mysql -u root -h netapi_db networkapi < /netapi/dev/load_example_environment.sql
 
 # Updates the SDN controller ip address
-REMOTE_CTRL=$(nslookup odl | grep Address | tail -1 | awk '{print $2}')
+REMOTE_CTRL=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $2}')
 mysql -uroot -h netapi_db -b networkapi -e "UPDATE equiptos_access SET fqdn = 'http://${REMOTE_CTRL}:8181' WHERE id_equiptos_access = 1;"
 
 echo -e "PYTHONPATH=\"/netapi/networkapi:/netapi/$PYTHONPATH\"" >> /etc/environment
@@ -32,7 +32,7 @@ update-rc.d gunicorn_networkapi defaults
 export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
 
 echo "starting gunicorn"
-/usr/local/bin/gunicorn -c /netapi/gunicorn.conf.py networkapi_wsgi:application
+/usr/local/bin/gunicorn -c /netapi/gunicorn.conf.py networkapi_wsgi:application --reload
 
 touch /tmp/gunicorn-networkapi_error.log
 tail -f /tmp/gunicorn-networkapi_error.log

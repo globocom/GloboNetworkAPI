@@ -169,14 +169,14 @@ def list_flows_by_envid(env_id, flow_id=0):
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
-
     try:
-        if flow_id>0:
+        if flow_id > 0:
             return plugin.get_flow(flow_id=flow_id)
         else:
             return plugin.get_flows()
 
-    except:
+    except Exception as e:
+        log.error(e)
         raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
 
 def insert_flow(env_id, data):

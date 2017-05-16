@@ -46,7 +46,6 @@ class Tokens(object):
     priority = "priority"
 
 
-
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
     OpenDayLight controller
