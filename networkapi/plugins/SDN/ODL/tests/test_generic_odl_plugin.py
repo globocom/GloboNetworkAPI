@@ -22,6 +22,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         self.client = Client()
         self.equipment = Equipamento.objects.filter(id=1)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
+
         self.odl = ODLPlugin(
             equipment=self.equipment,
             equipment_access=self.equipment_access
@@ -165,16 +166,17 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             with only source."""
 
         data = {
-            "kind": "default#acl",
+            "kind": "Access Control List",
             "rules": [{
                 "action": "permit",
-                "description": "Acesso ICMP restritivo BE",
+                "description": "Restrict environment",
+                "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
                     "icmp-type": "8"
                 },
                 "id": "82325",
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "icmp",
                 "source": "0.0.0.0/0"
             }]
