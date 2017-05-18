@@ -45,18 +45,15 @@ class ODLPlugin(BaseSdnPlugin):
         super(ODLPlugin, self).__init__(**kwargs)
 
         try:
+
             if not isinstance(self.equipment_access, EquipamentoAcesso):
                 msg = 'equipment_access is not of EquipamentoAcesso type'
                 log.info(msg)
                 raise TypeError(msg)
 
         except (AttributeError, TypeError):
-            # If AttributeError raised, equipment_access not exists as variable is this class
+            # If AttributeError raised, equipment_access do not exists
             self.equipment_access = self._get_equipment_access()
-
-
-        print self.equipment_access
-        print type(self.equipment_access)
 
     def get_flows(self):
         """
@@ -64,17 +61,16 @@ class ODLPlugin(BaseSdnPlugin):
         """
         nodes_ids = self._get_nodes_ids()
 
+        flows_list_by_switch = []
         for node_id in nodes_ids:
             path = "/restconf/operational/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
                    % (node_id)
-            #TODO: Tratar retornos dos varios vSwitches
-            retorno =  self._request(method="get", path=path, contentType='json')
-            flows_list = retorno["flow-node-inventory:table"][0]
-            #return AclFlowBuilder.dump(flows_list)
-            # we are assuming that all bridges have the same content, so we return the fist occurrence for gets
-            return flows_list
 
-        flows_return = {}
+            flows_list_by_switch.append(
+                self._request(method="get", path=path, contentType='json')
+            )
+
+        return flows_list_by_switch
 
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
 
@@ -101,18 +97,18 @@ class ODLPlugin(BaseSdnPlugin):
 
         nodes_ids = self._get_nodes_ids()
 
+        return_flows = []
         for node_id in nodes_ids:
             path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
                    % (node_id, flow_id)
 
-            # TODO: Tratar retornos dos varios vSwitches
-            retorno = self._request(method=method, path=path, data=data, contentType='json')
+            return_flows.append(
+                self._request(
+                    method=method, path=path, data=data, contentType='json'
+                )
+            )
 
-            # we are assuming that all bridges have the same content, so we return the fist occurrence for gets
-            if method == 'get':
-                return retorno["flow-node-inventory:flow"][0]
-
-        return retorno
+        return return_flows
 
     def _get_nodes_ids(self):
         """
