@@ -247,8 +247,10 @@ class AclFlowBuilder(object):
         if Tokens.action in rule and rule[Tokens.action] == "permit":
             self.flows["flow"][0]["instructions"] = {
                 "instruction": [{
-                    "apply-action": {
+                    "order": 0,
+                    "apply-actions": {
                         "action": [{
+                            "order": 0,
                             "output-action": {
                                 "output-node-connector": "LOCAL"
                             }
