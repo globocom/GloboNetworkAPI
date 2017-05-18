@@ -35,7 +35,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         )
 
     def test_add_flow_one_acl_rule_with_icmp_protocol(self):
-        """Test of success to add flow with one ACL rule 
+        """Test of success to add flow with one ACL rule
             with icmp protocol."""
 
         data = {
@@ -75,7 +75,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
         )
 
     def test_add_flow_one_acl_rule_without_icmp_options(self):
-        """Test of error to add flow with one ACL rule 
+        """Test of error to add flow with one ACL rule
             without ICMP options."""
 
         data = {
@@ -88,11 +88,13 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        assert_raises_regexp(ValueError,
-                             'Error building ACL Json. Malformed input data: \n'
-                             'Missing icmp-options for icmp protocol',
-                             self.odl.add_flow,
-                             data)
+        assert_raises_regexp(
+            ValueError,
+            'Error building ACL Json. Malformed input data: \n'
+            'Missing icmp-options for icmp protocol',
+            self.odl.add_flow,
+            data
+        )
 
     def test_add_flow_one_acl_rule_with_only_icmp_code(self):
         """Test of error to add flow with one ACL rule
@@ -113,15 +115,17 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
 
         rule = data['rules'][0]
 
-        assert_raises_regexp(ValueError,
-                             "Error building ACL Json. Malformed input data: \n"
-                             "Missing icmp-code or icmp-type icmp options:\n%s" %
-                             rule,
-                             self.odl.add_flow,
-                             data)
+        assert_raises_regexp(
+            ValueError,
+            "Error building ACL Json. Malformed input data: \n"
+            "Missing icmp-code or icmp-type icmp options:\n%s" %
+            rule,
+            self.odl.add_flow,
+            data
+        )
 
     def test_add_flow_one_acl_rule_with_only_icmp_type(self):
-        """Test of error to add flow with one ACL rule 
+        """Test of error to add flow with one ACL rule
             with only icmp-type."""
 
         data = {
@@ -139,12 +143,14 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
 
         rule = data['rules'][0]
 
-        assert_raises_regexp(ValueError,
-                             "Error building ACL Json. Malformed input data: \n"
-                             "Missing icmp-code or icmp-type icmp options:\n%s" %
-                             rule,
-                             self.odl.add_flow,
-                             data)
+        assert_raises_regexp(
+            ValueError,
+            "Error building ACL Json. Malformed input data: \n"
+            "Missing icmp-code or icmp-type icmp options:\n%s" %
+            rule,
+            self.odl.add_flow,
+            data
+        )
 
     def test_add_flow_one_acl_rule_without_icmp_code_and_icmp_type(self):
         """Test of error to add flow with one ACL rule
@@ -164,12 +170,14 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
 
         rule = data['rules'][0]
 
-        assert_raises_regexp(ValueError,
-                             "Error building ACL Json. Malformed input data: \n"
-                             "Missing icmp-code or icmp-type icmp options:\n%s" %
-                             rule,
-                             self.odl.add_flow,
-                             data)
+        assert_raises_regexp(
+            ValueError,
+            "Error building ACL Json. Malformed input data: \n"
+            "Missing icmp-code or icmp-type icmp options:\n%s" %
+            rule,
+            self.odl.add_flow,
+            data
+        )
 
     def test_add_flow_one_acl_rule_with_only_source(self):
         """Test of error to add flow with one ACL rule
@@ -194,11 +202,13 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
 
         rule = data['rules'][0]
 
-        assert_raises_regexp(ValueError,
-                             "Error building ACL Json. Malformed input data: \n%s" %
-                             rule,
-                             self.odl.add_flow,
-                             data)
+        assert_raises_regexp(
+            ValueError,
+            "Error building ACL Json. Malformed input data: \n%s" %
+            rule,
+            self.odl.add_flow,
+            data
+        )
 
     def test_add_flow_one_acl_rule_with_only_destination(self):
         """Test of error to add flow with one ACL rule
@@ -222,11 +232,13 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
 
         rule = data['rules'][0]
 
-        assert_raises_regexp(ValueError,
-                             "Error building ACL Json. Malformed input data: \n%s" %
-                             rule,
-                             self.odl.add_flow,
-                             data)
+        assert_raises_regexp(
+            ValueError,
+            "Error building ACL Json. Malformed input data: \n%s" %
+            rule,
+            self.odl.add_flow,
+            data
+        )
 
     def test_add_flow_one_acl_rule_without_source_and_destination(self):
         """Test of error to add flow with one ACL rule
@@ -249,15 +261,14 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
 
         rule = data['rules'][0]
 
-        assert_raises_regexp(ValueError,
-                             "Error building ACL Json. Malformed input data: \n%s" %
-                             rule,
-                             self.odl.add_flow,
-                             data)
-
-
+        assert_raises_regexp(
+            ValueError,
+            "Error building ACL Json. Malformed input data: \n%s" %
+            rule,
+            self.odl.add_flow,
+            data
+        )
 
     # Testar inserindo icmp-options com icmp-code e sem icmp-type
     # Testar inserindo icmp-options com icmp-type
     # Verificar quais tipos de icmp-code e icmp-type são permitidos
-
