@@ -42,8 +42,10 @@ class Tokens(object):
     icmp_options = "icmp-options"
     icmp_code = "icmp-code"
     icmp_type = "icmp-type"
-
+    flags = "flags"
     priority = "priority"
+
+    sequence = "sequence"
 
 
 class AclFlowBuilder(object):
@@ -109,8 +111,8 @@ class AclFlowBuilder(object):
         # Flow table and priority
         self.flows["flow"][0]["table_id"] = self.TABLE
 
-        if Tokens.priority in rule:
-            self.flows["flow"][0]["priority"] = rule[Tokens.priority]
+        if Tokens.sequence in rule:
+            self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
         else:
             self.flows["flow"][0]["priority"] = self.PIRORITY_DEFAULT
 
@@ -163,6 +165,12 @@ class AclFlowBuilder(object):
         self._set_flow_ip_protocol(self.flows["flow"][0], 6)
         self._check_source_and_destination_ports(rule, "tcp")
 
+        if Tokens.l4_options in rule:
+            if Tokens.flags in rule[Tokens.l4_options]:
+                self._set_flags(self.flows["flow"][0],
+                                rule[Tokens.l4_options][Tokens.flags])
+
+
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """
 
@@ -175,6 +183,15 @@ class AclFlowBuilder(object):
         flow["match"]["ip-match"] = {
             "ip-protocol": protocol_n
         }
+
+    def _set_flags(self, flow, flags):
+        """ Sets the flags inside given flow """
+
+        flow["flags"] = []
+        for flag in flags:
+            flow["flags"].append(flag)
+
+
 
     def _check_source_and_destination_ports(self, rule, protocol):
         """ Checks source and destination options inside json """
