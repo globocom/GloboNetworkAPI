@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from django.test.client import Client
-from networkapi.equipamento.models import Equipamento
-from networkapi.equipamento.models import EquipamentoAcesso
-from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
-from networkapi.test.test_case import NetworkApiTestCase
 
 from nose.tools import assert_raises_regexp
 from nose.tools import assert_equal
 from nose.tools import assert_in
 from nose.tools import assert_not_in
+
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
+from networkapi.plugins.SDN.ODL.tests.utils import OpenDaylightTestUtils
+from networkapi.test.test_case import NetworkApiTestCase
+
 
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """
@@ -85,7 +88,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
                              data)
 
     def test_add_flow_one_acl_rule_with_only_icmp_code(self):
-        """Test of error to add flow with one ACL rule 
+        """Test of error to add flow with one ACL rule
             with only icmp-code."""
 
         data = {
