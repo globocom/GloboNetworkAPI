@@ -21,10 +21,13 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
     ]
 
+    utils = OpenDaylightTestUtils()
+
     def setUp(self):
         self.client = Client()
         self.equipment = Equipamento.objects.filter(id=1)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
+        self.utils.set_controller_endpoint(self.equipment_access)
 
         self.odl = ODLPlugin(
             equipment=self.equipment,
@@ -58,10 +61,14 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """
 
+    utils = OpenDaylightTestUtils()
+
     def setUp(self):
         self.client = Client()
         self.equipment = Equipamento(id=28)
         self.equipment_access = EquipamentoAcesso(id=1)
+        self.utils.set_controller_endpoint(self.equipment_access)
+
         self.odl = ODLPlugin(
             equipment=self.equipment,
             equipment_access=self.equipment_access
