@@ -49,7 +49,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "dest-port-op": "eq",
                     "dest-port-start": "123"
                 },
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "source": "0.0.0.0/0"
 
@@ -74,7 +74,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                         "RST"
                     ]
                 },
-                "owner": "vicente.fiebig",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "source": "0.0.0.0/0"
             }]
@@ -98,7 +98,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                         "ACK"
                     ]
                 },
-                "owner": "vicente.fiebig",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "source": "0.0.0.0/0"
             }]
@@ -117,7 +117,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                 "description": "GERENCIA SO A (volta L2)",
                 "destination": "0.0.0.0/0",
                 "id": "106966",
-                "owner": "manoel.junior",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "source": "10.128.0.64/27"
             }]
@@ -139,7 +139,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "dest-port-op": "eq",
                     "dest-port-start": "27017"
                 },
-                "owner": "ricardo.dias",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "sequence": 2,
                 "source": "10.129.195.0/24"
@@ -158,7 +158,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                 "action": "permit",
                 "destination": "10.143.224.54/32",
                 "id": "110886",
-                "owner": "frederico.costa",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "sequence": 6,
                 "source": "10.129.200.96/27"
@@ -183,7 +183,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "dest-port-op": "range",
                     "dest-port-start": "161"
                 },
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "tcp",
                 "sequence": 214,
                 "source": "10.129.199.192/27"
@@ -209,7 +209,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "src-port-op": "eq",
                     "src-port-start": "1985"
                 },
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "udp",
                 "source": "0.0.0.0/0"
             }]
@@ -232,7 +232,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "dest-port-op": "eq",
                     "dest-port-start": "53"
                 },
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "udp",
                 "source": "0.0.0.0/0"
             }]
@@ -255,7 +255,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "src-port-op": "eq",
                     "src-port-start": "161"
                 },
-                "owner": "vicente.fiebig",
+                "owner": "networkapi",
                 "protocol": "udp",
                 "source": "0.0.0.0/0"
             }]
@@ -278,7 +278,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "dest-port-op": "range",
                     "dest-port-start": "1024"
                 },
-                "owner": "nedimar",
+                "owner": "networkapi",
                 "protocol": "udp",
                 "sequence": 42,
                 "source": "10.129.193.32/27"
@@ -298,7 +298,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                 "description": "Retorno redes de usuarios - VPN",
                 "destination": "10.254.0.0/16",
                 "id": "82332",
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "ip",
                 "source": "0.0.0.0/0"
             }]
@@ -316,7 +316,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                 "action": "permit",
                 "destination": "10.130.64.0/27",
                 "id": "107200",
-                "owner": "paulo.sousa",
+                "owner": "networkapi",
                 "protocol": "ip",
                 "sequence": 2,
                 "source": "10.129.192.32/27"
@@ -340,7 +340,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
                     "icmp-type": "8"
                 },
                 "id": "82325",
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "icmp",
                 "source": "0.0.0.0/0"
             }]
@@ -519,7 +519,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
                     "icmp-type": "8"
                 },
                 "id": "82325",
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "icmp"
             }]
         }
@@ -548,7 +548,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
                     "icmp-type": "8"
                 },
                 "id": "82325",
-                "owner": "ralmeida",
+                "owner": "networkapi",
                 "protocol": "icmp"
             }]
         }
