@@ -167,7 +167,7 @@ class AclFlowBuilder(object):
 
         if Tokens.l4_options in rule:
             if Tokens.flags in rule[Tokens.l4_options]:
-                self._set_flags(self.flows["flow"][0],
+                self._set_tcp_flags(self.flows["flow"][0],
                                 rule[Tokens.l4_options][Tokens.flags])
 
 
@@ -184,14 +184,13 @@ class AclFlowBuilder(object):
             "ip-protocol": protocol_n
         }
 
-    def _set_flags(self, flow, flags):
+    def _set_tcp_flags(self, flow, flags):
         """ Sets the flags inside given flow """
 
-        flow["flags"] = []
-        for flag in flags:
-            flow["flags"].append(flag)
-
-
+        flow["match"]["tcp-flags-match"] = {
+            "tcp-flags": 0,
+        }
+        
 
     def _check_source_and_destination_ports(self, rule, protocol):
         """ Checks source and destination options inside json """
