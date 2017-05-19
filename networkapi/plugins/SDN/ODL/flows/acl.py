@@ -57,7 +57,7 @@ class AclFlowBuilder(object):
 
     MALFORMED_MESSAGE = "Error building ACL Json. Malformed input data: \n%s"
 
-    PIRORITY_DEFAULT = 65000
+    PRIORITY_DEFAULT = 65000
     TABLE = 0
 
     def __init__(self, data):
@@ -114,7 +114,7 @@ class AclFlowBuilder(object):
         if Tokens.sequence in rule:
             self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
         else:
-            self.flows["flow"][0]["priority"] = self.PIRORITY_DEFAULT
+            self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
@@ -190,7 +190,6 @@ class AclFlowBuilder(object):
         flow["match"]["tcp-flags-match"] = {
             "tcp-flags": 0,
         }
-        
 
     def _check_source_and_destination_ports(self, rule, protocol):
         """ Checks source and destination options inside json """
