@@ -38,8 +38,64 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             equipment_access=self.equipment_access
         )
 
+    def test_add_flow_one_acl_rule_and_check_if_persisted_in_all_ovss(self):
+        """Test of success to add flow with one ACL rule checking 
+            if the ACL was correctly persisted at all OVS's."""
 
-    # TODO Create test to verify persistence in the three OVS's
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "action": "permit",
+                "description": "generic",
+                "destination": "10.128.24.3/32",
+                "id": "83000",
+                "l4-options": {
+                    "dest-port-op": "eq",
+                    "dest-port-start": "123"
+                },
+                "owner": "networkapi",
+                "protocol": "tcp",
+                "source": "0.0.0.0/0"
+
+            }]
+        }
+
+        self.odl.add_flow(data)
+
+        flow_id = data['rules'][0]['id']
+
+        flows = self.odl.get_flow(flow_id)
+
+        for flow in flows:
+
+            flow = flow['flow-node-inventory:flow'][0]
+
+            output_node_connector = \
+                flow.get('instructions').get('instruction')[0] \
+                    .get("apply-actions").get("action")[0] \
+                    .get("output-action").get("output-node-connector")
+            assert_equal(
+                output_node_connector,
+                "LOCAL")
+
+            assert_equal(data['rules'][0]['description'], flow['flow-name'])
+
+            assert_equal(data['rules'][0]['destination'],
+                         flow['match']['ipv4-destination'])
+
+            assert_equal(data['rules'][0]['id'], flow['id'])
+
+            assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                         flow['match']['tcp-destination-port'])
+
+            assert_equal(self.TCP_PROTOCOL_NUMBER,
+                         flow['match']['ip-match']['ip-protocol'])
+
+            assert_equal(data['rules'][0]['source'],
+                         flow['match']['ipv4-source'])
+
+            assert_equal(self.DEFAULT_PRIORITY, flow['priority'])
+
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
