@@ -178,7 +178,8 @@ class ODLPlugin(BaseSdnPlugin):
                     log.error(error["error-message"])
             except:
                 log.error("Unknown error during request to ODL Controller")
-            raise HTTPError(msg=request.status_code)
+
+            raise HTTPError(request.status_code)
 
     def _get_auth(self):
         return self._basic_auth()
