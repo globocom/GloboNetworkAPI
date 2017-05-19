@@ -406,7 +406,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
 
         assert_in("instructions", acl.flows["flow"][0])
         instruction = acl.flows["flow"][0]["instructions"]["instruction"][0]
-        assert_equal(instruction["apply-action"]["action"][0]["output-action"]
+        assert_equal(instruction["apply-actions"]["action"][0]["output-action"]
             ["output-node-connector"], "LOCAL")
 
     def test_acl_should_not_have_actions(self):
