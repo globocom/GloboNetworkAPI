@@ -3,16 +3,16 @@
 from django.test.client import Client
 
 from nose.tools import assert_raises_regexp
+from nose.tools import assert_raises
 from nose.tools import assert_equal
-from nose.tools import assert_in
-from nose.tools import assert_not_in
+from requests.exceptions import HTTPError
+import random
 
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
 from networkapi.plugins.SDN.ODL.tests.utils import OpenDaylightTestUtils
 from networkapi.test.test_case import NetworkApiTestCase
-
 
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """
@@ -28,11 +28,18 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         self.equipment = Equipamento.objects.filter(id=1)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
+        self.DEFAULT_PRIORITY = 65000
+        self.TCP_PROTOCOL_NUMBER = 6
+        self.UDP_PROTOCOL_NUMBER = 17
+        self.ICMP_PROTOCOL_NUMBER = 1
 
         self.odl = ODLPlugin(
             equipment=self.equipment,
             equipment_access=self.equipment_access
         )
+
+
+    # TODO Create test to verify persistence in the three OVS's
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
@@ -42,7 +49,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "NTP",
+                "description": "generic",
                 "destination": "10.128.24.3/32",
                 "id": "82338",
                 "l4-options": {
@@ -58,6 +65,41 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'], flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                     flow['match']['tcp-destination-port'])
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY, flow['priority'])
+
+
     def test_add_flow_one_acl_rule_with_tcp_protocol_flags_rst_l4(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and flags RST in l4 options."""
@@ -66,7 +108,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Acessos estabelecidos - RST",
+                "description": "generic",
                 "destination": "10.0.0.0/8",
                 "id": "101301",
                 "l4-options": {
@@ -82,6 +124,42 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'], flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        for flag in data['rules'][0]['l4-options']['flags']:
+            # TODO Check if flag is present
+            pass
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY, flow['priority'])
+
+
     def test_add_flow_one_acl_rule_with_tcp_protocol_flags_ack_l4(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and flags ACK in l4 options."""
@@ -90,7 +168,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Acessos estabelecidos - ACK",
+                "description": "generic",
                 "destination": "10.0.0.0/8",
                 "id": "101302",
                 "l4-options": {
@@ -106,6 +184,42 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'], flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        for flag in data['rules'][0]['l4-options']['flags']:
+            # TODO Check if flag is present
+            pass
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY, flow['priority'])
+
+
     def test_add_flow_one_acl_rule_with_tcp_protocol(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol."""
@@ -114,7 +228,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "GERENCIA SO A (volta L2)",
+                "description": "generic",
                 "destination": "0.0.0.0/0",
                 "id": "106966",
                 "owner": "networkapi",
@@ -124,6 +238,38 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         }
 
         self.odl.add_flow(data)
+
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'], flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY, flow['priority'])
+
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4_and_sequence(self):
         """Test of success to add flow with one ACL rule
@@ -148,6 +294,40 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                     flow['match']['tcp-destination-port'])
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['sequence'],
+                     flow['priority'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+
     def test_add_flow_one_acl_rule_with_tcp_protocol_and_sequence(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and sequence."""
@@ -167,6 +347,37 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['sequence'],
+                     flow['priority'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_range_l4(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and dest range in l4 options."""
@@ -175,7 +386,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Sumarizando Supseg",
+                "description": "generic",
                 "destination": "10.0.0.0/8",
                 "id": "141239",
                 "l4-options": {
@@ -192,6 +403,43 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'],
+                     flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                     flow['match']['tcp-destination-port'])
+
+        assert_equal(self.TCP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['sequence'],
+                     flow['priority'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+
     def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_and_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
             with udp protocol and src eq, dest eq in l4 options."""
@@ -200,7 +448,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Acesso HSRP",
+                "description": "generic",
                 "destination": "224.0.0.102/32",
                 "id": "82324",
                 "l4-options": {
@@ -217,6 +465,46 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'],
+                     flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                     flow['match']['udp-destination-port'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['src-port-start']),
+                     flow['match']['udp-source-port'])
+
+        assert_equal(self.UDP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY,
+                     flow['priority'])
+
+
     def test_add_flow_one_acl_rule_with_udp_protocol_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
             with udp protocol and dest eq in l4 options."""
@@ -225,7 +513,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "DNS",
+                "description": "generic",
                 "destination": "10.128.24.2/32",
                 "id": "82337",
                 "l4-options": {
@@ -240,6 +528,43 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'],
+                     flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                     flow['match']['udp-destination-port'])
+
+        assert_equal(self.UDP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY,
+                     flow['priority'])
+
+
     def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_l4(self):
         """Test of success to add flow with one ACL rule
             with udp protocol and src eq in l4 options."""
@@ -248,7 +573,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Retorno SNMP ACS",
+                "description": "generic",
                 "destination": "10.128.160.32/27",
                 "id": "112140",
                 "l4-options": {
@@ -262,6 +587,43 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         }
 
         self.odl.add_flow(data)
+
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'],
+                     flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['src-port-start']),
+                     flow['match']['udp-source-port'])
+
+        assert_equal(self.UDP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY,
+                     flow['priority'])
+
 
     def test_add_flow_one_acl_rule_with_udp_protocol_dest_range_l4(self):
         """Test of success to add flow with one ACL rule
@@ -287,6 +649,40 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(int(data['rules'][0]['l4-options']['dest-port-start']),
+                     flow['match']['udp-destination-port'])
+
+        assert_equal(self.UDP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['sequence'],
+                     flow['priority'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+
     def test_add_flow_one_acl_rule_with_ip_protocol(self):
         """Test of success to add flow with one ACL rule
             with ip protocol."""
@@ -295,7 +691,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Retorno redes de usuarios - VPN",
+                "description": "generic",
                 "destination": "10.254.0.0/16",
                 "id": "82332",
                 "owner": "networkapi",
@@ -305,6 +701,37 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         }
 
         self.odl.add_flow(data)
+
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'],
+                     flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY,
+                     flow['priority'])
+
 
     def test_add_flow_one_acl_rule_with_ip_protocol_and_sequence(self):
         """Test of success to add flow with one ACL rule
@@ -325,6 +752,34 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(data['rules'][0]['sequence'],
+                     flow['priority'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+
     def test_add_flow_one_acl_rule_with_icmp_protocol(self):
         """Test of success to add flow with one ACL rule
             with icmp protocol."""
@@ -333,7 +788,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Acesso ICMP restritivo BE",
+                "description": "generic",
                 "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
@@ -348,8 +803,73 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.odl.add_flow(data)
 
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(
+            flow_id)[random_idx]['flow-node-inventory:flow'][0]
+
+        output_node_connector = \
+            flow.get('instructions').get('instruction')[0] \
+                .get("apply-actions").get("action")[0] \
+                .get("output-action").get("output-node-connector")
+        assert_equal(
+            output_node_connector,
+            "LOCAL")
+
+        assert_equal(data['rules'][0]['description'],
+                     flow['flow-name'])
+
+        assert_equal(data['rules'][0]['destination'],
+                     flow['match']['ipv4-destination'])
+
+        assert_equal(int(data['rules'][0]['icmp-options']['icmp-code']),
+                     flow['match']['icmpv4-match']['icmpv4-code'])
+
+        assert_equal(int(data['rules'][0]['icmp-options']['icmp-type']),
+                     flow['match']['icmpv4-match']['icmpv4-type'])
+
+        assert_equal(data['rules'][0]['id'], flow['id'])
+
+        assert_equal(self.ICMP_PROTOCOL_NUMBER,
+                     flow['match']['ip-match']['ip-protocol'])
+
+        assert_equal(data['rules'][0]['source'],
+                     flow['match']['ipv4-source'])
+
+        assert_equal(self.DEFAULT_PRIORITY,
+                     flow['priority'])
 
 
+    def test_remove_flow(self):
+        """Test of success to remove flow."""
+
+        data = {
+            "kind": "default#acl",
+            "rules": [{
+                "action": "permit",
+                "description": "generic",
+                "destination": "10.128.24.3/32",
+                "id": "80000",
+                "l4-options": {
+                    "dest-port-op": "eq",
+                    "dest-port-start": "123"
+                },
+                "owner": "networkapi",
+                "protocol": "tcp",
+                "source": "0.0.0.0/0"
+
+            }]
+        }
+
+        self.odl.add_flow(data)
+
+        id_flow = data['rules'][0]['id']
+        self.odl.del_flow(id_flow)
+
+        assert_raises(HTTPError, self.odl.get_flow, id_flow)
 
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
@@ -481,7 +1001,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "kind": "Access Control List",
             "rules": [{
                 "action": "permit",
-                "description": "Restrict environment",
+                "description": "generic",
                 "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
@@ -512,7 +1032,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Acesso ICMP restritivo BE",
+                "description": "generic",
                 "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
@@ -542,7 +1062,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "kind": "default#acl",
             "rules": [{
                 "action": "permit",
-                "description": "Acesso ICMP restritivo BE",
+                "description": "generic",
                 "icmp-options": {
                     "icmp-code": "0",
                     "icmp-type": "8"
