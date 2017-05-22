@@ -44,8 +44,44 @@ class Tokens(object):
     icmp_type = "icmp-type"
     flags = "flags"
     priority = "priority"
+    cookie = "cookie"
 
     sequence = "sequence"
+
+
+class CookieHandler(object):
+    """This class intends to Handle the cookie field described by the 
+        OpenFlow Specification and present in OpenVSwitch.
+        
+        Cookie field has 64 bits. The first 32-bits are assigned to the id
+        of ACL input. The next 4 bits are assigned to the operation type and
+        the remaining 28 bits are filled by zeros.
+    """
+
+    @staticmethod
+    def get_cookie(id_acl, op_type):
+
+        id_acl = format(int(id_acl), '032b')
+        op_type = format(int(op_type), '04b')
+        padding = format(0, '028b')
+
+        cookie = id_acl + op_type + padding
+
+        return int(cookie, 2)
+
+    @staticmethod
+    def get_id_acl(cookie):
+
+        cookie = format(cookie, '064b')
+
+        return int(cookie[0:32], 2)
+
+    @staticmethod
+    def get_op_type(cookie):
+
+        cookie = format(cookie, '064b')
+
+        return int(cookie[32:36], 2)
 
 
 class AclFlowBuilder(object):
@@ -107,6 +143,7 @@ class AclFlowBuilder(object):
         self._build_match(rule)
         self._build_protocol(rule)
         self._build_action(rule)
+        self._build_cookie(rule)
 
         # Flow table and priority
         self.flows["flow"][0]["table_id"] = self.TABLE
@@ -115,6 +152,11 @@ class AclFlowBuilder(object):
             self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
         else:
             self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
+
+    def _build_cookie(self, rule):
+
+        self.flows["flow"][0][Tokens.cookie] = \
+            CookieHandler.get_cookie(rule[Tokens.id], 1)
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
@@ -267,7 +309,7 @@ class AclFlowBuilder(object):
                         "action": [{
                             "order": 0,
                             "output-action": {
-                                "output-node-connector": "LOCAL"
+                                "output-node-connector": "NORMAL"
                             }
                         }]
                     }
