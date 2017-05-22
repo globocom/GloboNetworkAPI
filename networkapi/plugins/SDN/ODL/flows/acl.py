@@ -267,7 +267,7 @@ class AclFlowBuilder(object):
                         "action": [{
                             "order": 0,
                             "output-action": {
-                                "output-node-connector": "LOCAL"
+                                "output-node-connector": "NORMAL"
                             }
                         }]
                     }
