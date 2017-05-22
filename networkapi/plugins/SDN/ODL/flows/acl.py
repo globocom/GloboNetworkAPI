@@ -61,8 +61,8 @@ class CookieHandler(object):
     @staticmethod
     def get_cookie(id_acl, op_type):
 
-        id_acl = format(id_acl, '032b')
-        op_type = format(op_type, '04b')
+        id_acl = format(int(id_acl), '032b')
+        op_type = format(int(op_type), '04b')
         padding = format(0, '028b')
 
         cookie = id_acl + op_type + padding
@@ -72,16 +72,16 @@ class CookieHandler(object):
     @staticmethod
     def get_id_acl(cookie):
 
-        cookie_str = format(cookie, '064b')
+        cookie = format(cookie, '064b')
 
-        return int(cookie_str[0:32], 2)
+        return int(cookie[0:32], 2)
 
     @staticmethod
     def get_op_type(cookie):
 
-        cookie_str = format(cookie, '064b')
+        cookie = format(cookie, '064b')
 
-        return int(cookie_str[32:36], 2)
+        return int(cookie[32:36], 2)
 
 
 class AclFlowBuilder(object):
@@ -154,8 +154,9 @@ class AclFlowBuilder(object):
             self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
 
     def _build_cookie(self, rule):
-        cookie_handler = CookieHandler(rule[Tokens.id], 1)
-        self.flows["flow"][0][Tokens.cookie] = cookie_handler.get_cookie()
+
+        self.flows["flow"][0][Tokens.cookie] = \
+            CookieHandler.get_cookie(rule[Tokens.id], 1)
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
