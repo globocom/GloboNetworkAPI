@@ -1,0 +1,28 @@
+{
+  "networks": [
+    {
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0006",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "prefix": 64,
+      "mask1": "ffff",
+      "mask2": "ffff",
+      "mask3": "ffff",
+      "mask4": "ffff",
+      "mask5": "0000",
+      "mask6": "0000",
+      "mask7": "0000",
+      "mask8": "0000",
+      "vlan": 1,
+      "network_type": 1,
+      "environmentvip": null,
+      "cluster_unit": "cluster-unit-1",
+      "active": false
+    }
+  ]
+}

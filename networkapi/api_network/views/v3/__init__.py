@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .networkv4 import NetworkIPv4DeployView
+from .networkv4 import NetworkIPv4ForceView
 from .networkv4 import NetworkIPv4View
 from .networkv4 import Networkv4AsyncView
 from .networkv4 import Networkv4DeployAsyncView
 from .networkv6 import NetworkIPv6DeployView
+from .networkv6 import NetworkIPv6ForceView
 from .networkv6 import NetworkIPv6View
 from .networkv6 import Networkv6AsyncView
 from .networkv6 import Networkv6DeployAsyncView
@@ -25,4 +27,5 @@ from .networkv6 import Networkv6DeployAsyncView
 __all__ = ('NetworkIPv4View', 'Networkv4AsyncView', 'NetworkIPv4DeployView',
            'Networkv4DeployAsyncView', 'NetworkIPv6View',
            'Networkv6AsyncView', 'NetworkIPv6DeployView',
-           'Networkv6DeployAsyncView')
+           'Networkv6DeployAsyncView', 'NetworkIPv4ForceView',
+           'NetworkIPv6ForceView')

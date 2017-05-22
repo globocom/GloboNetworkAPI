@@ -295,3 +295,61 @@ class Networkv6DeployAsyncView(CustomAPIView):
             response.append(task)
 
         return Response(response, status=status.HTTP_202_ACCEPTED)
+
+
+class NetworkIPv6ForceView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('networkv6_post')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.write_objv6_permission])
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Creates list of networkv6."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_post')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.create_networkipv6(networkv6, request.user,
+                                           force=True)
+            response.append({'id': vl.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @raise_json_validate('networkv6_put')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.write_objv6_permission])
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Updates list of networkv6."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_put')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.update_networkipv6(networkv6, request.user,
+                                           force=True)
+            response.append({'id': vl.id})
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.write_objv6_permission])
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Deletes list of networkv6."""
+
+        response = list()
+        obj_ids = kwargs['obj_ids'].split(';')
+        facade.delete_networkipv6(obj_ids, request.user,
+                                  force=True)
+
+        return Response(response, status=status.HTTP_200_OK)

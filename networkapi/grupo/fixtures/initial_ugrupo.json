@@ -12,5 +12,12 @@
     "fields": {
       "nome": "Visitors"
     }
+  },
+  {
+    "pk": 3,
+    "model": "grupo.ugrupo",
+    "fields": {
+      "nome": "Administradores"
+    }
   }
 ]

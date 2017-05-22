@@ -1,0 +1,17 @@
+[
+  {
+    "active": true,
+    "cluster_unit": "cluster-unit-updated",
+    "environmentvip": 2,
+    "id": 3,
+    "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+    "network_type": 2,
+    "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
+    "vlan": {
+      "id": 1,
+      "name": "Vlan with PK 1",
+      "num_vlan": 1
+    }
+  }
+]
+

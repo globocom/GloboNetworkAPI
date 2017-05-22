@@ -1,0 +1,15 @@
+[
+  {
+    "networkv4": "10.10.6.0/25",
+    "mask_formated": "255.255.255.128",
+    "broadcast": "10.10.6.127",
+    "vlan": {
+      "id": 1,
+      "name": "Vlan with PK 1",
+      "num_vlan": 1
+    },
+    "network_type": 1,
+    "environmentvip": null,
+    "active": true
+  }
+]
