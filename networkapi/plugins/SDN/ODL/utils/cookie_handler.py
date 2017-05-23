@@ -10,12 +10,12 @@ class CookieHandler(object):
     """
 
     @staticmethod
-    def get_cookie(id_acl, op_type):
+    def get_cookie(id_acl, src_port=0, dest_port=0):
         id_acl = format(int(id_acl), '032b')
-        op_type = format(int(op_type), '04b')
-        padding = format(0, '028b')
+        src_port = format(int(src_port), '016b')
+        dest_port = format(int(dest_port), '016b')
 
-        cookie = id_acl + op_type + padding
+        cookie = id_acl + src_port + dest_port
 
         return int(cookie, 2)
 
@@ -26,7 +26,13 @@ class CookieHandler(object):
         return int(cookie[0:32], 2)
 
     @staticmethod
-    def get_op_type(cookie):
+    def get_src_port(cookie):
         cookie = format(cookie, '064b')
 
-        return int(cookie[32:36], 2)
+        return int(cookie[32:48], 2)
+
+    @staticmethod
+    def get_dest_port(cookie):
+        cookie = format(cookie, '064b')
+
+        return int(cookie[48:64], 2)

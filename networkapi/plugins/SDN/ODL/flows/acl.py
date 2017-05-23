@@ -18,7 +18,7 @@ from json import dumps
 import logging
 from networkapi.plugins.SDN.ODL.utils.cookie_handler import CookieHandler
 from networkapi.plugins.SDN.ODL.utils.tcp_control_bits import TCPControlBits
-
+import re
 
 class Tokens(object):
     """ Class that holds all key words from the source json that identifies
@@ -86,15 +86,90 @@ class AclFlowBuilder(object):
             logging.info("Building ACL Json: %s", self.raw_data["kind"])
 
             for rule in self.raw_data[Tokens.rules]:
-                self._build_rule(rule)
+                self._prepare_to_build_rule(rule)
 
         else:
             message = "Missing %s or %s fields." % (Tokens.kind, Tokens.rules)
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
-    def _build_rule(self, rule):
+    def _prepare_to_build_rule(self, rule):
         """ Build one single ACL rule """
+
+        id_port = "{}_{}"
+        id_port_both = "{}_{}_{} "
+
+        name_range = "{} - {}:{}"
+        name_range_both = "{} - {}:{} - {}:{}"
+
+        if not rule.get(Tokens.description):
+            rule[Tokens.description] = ""
+
+        # Need to check if it is a src-range, dest-range or both
+        if rule.get(Tokens.l4_options, {}).get(Tokens.src_port_op) == 'range' \
+            and rule.get(Tokens.l4_options, {}).get(Tokens.dst_port_op) == 'range':
+
+            src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
+            src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end]) + 1
+
+            dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
+            dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end]) + 1
+
+            rule[Tokens.l4_options][Tokens.src_port_op] = 'eq'
+            del rule[Tokens.l4_options][Tokens.src_port_end]
+
+            rule[Tokens.l4_options][Tokens.dst_port_op] = 'eq'
+            del rule[Tokens.l4_options][Tokens.dst_port_end]
+
+            for src_port in xrange(src_port_start, src_port_end):
+                for dst_port in xrange(dst_port_start, dst_port_end):
+                    rule[Tokens.l4_options][Tokens.src_port] = str(src_port)
+                    rule[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
+
+                    rule[Tokens.id] = id_port_both.format(rule[Tokens.id], src_port, dst_port)
+
+                    rule[Tokens.description] = name_range_both.format(rule[Tokens.description],
+                                                                      src_port_start, src_port_end,
+                                                                      dst_port_start, dst_port_end)
+                    self._build_rule(rule)
+
+        elif rule.get(Tokens.l4_options, {}).get(Tokens.src_port_op) == 'range':
+            src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
+            src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end]) + 1
+
+            rule[Tokens.l4_options][Tokens.src_port_op] = 'eq'
+            del rule[Tokens.l4_options][Tokens.src_port_end]
+            for port in xrange(src_port_start, src_port_end):
+                rule[Tokens.l4_options][Tokens.src_port] = str(port)
+                rule[Tokens.id] = id_port.format(rule[Tokens.id], port)
+                rule[Tokens.description] = name_range.format(rule[Tokens.description],
+                                                             src_port_start, src_port_end)
+                self._build_rule(rule)
+
+
+
+
+        elif rule.get(Tokens.l4_options, {}).get(Tokens.dst_port_op) == 'range':
+            dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
+            dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end]) + 1
+
+            rule[Tokens.l4_options][Tokens.dst_port_op] = 'eq'
+            del rule[Tokens.l4_options][Tokens.dst_port_end]
+            for port in xrange(dst_port_start, dst_port_end):
+                rule[Tokens.l4_options][Tokens.dst_port] = str(port)
+                rule[Tokens.id] = id_port.format(rule[Tokens.id], port)
+                rule[Tokens.description] = name_range.format(rule[Tokens.description],
+                                                             dst_port_start, dst_port_end)
+                self._build_rule(rule)
+
+                print port
+
+        else:
+
+            self._build_rule(rule)
+
+
+    def _build_rule(self, rule):
 
         # Assigns the id of the current ACL
         if Tokens.id in rule:
@@ -103,8 +178,7 @@ class AclFlowBuilder(object):
             self.flows["flow"].insert(0, {Tokens.id: rule[Tokens.id]})
 
         # Flow description
-        if Tokens.description in rule:
-            self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
+        self._build_description(rule)
 
         self._build_match(rule)
         self._build_protocol(rule)
@@ -114,15 +188,29 @@ class AclFlowBuilder(object):
         # Flow table and priority
         self.flows["flow"][0]["table_id"] = self.TABLE
 
+        self._build_sequence(rule)
+
+    def _build_description(self, rule):
+        if Tokens.description in rule:
+            self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
+
+    def _build_sequence(self, rule):
+
         if Tokens.sequence in rule:
             self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
         else:
             self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
 
+    def _get_id_from_rule(self, rule):
+
+        return re.search('(^[0-9]+).*',rule[Tokens.id]).group(1)
+
     def _build_cookie(self, rule):
 
+        # TODO Need to put ports
+        id_rule = self._get_id_from_rule(rule)
         self.flows["flow"][0][Tokens.cookie] = \
-            CookieHandler.get_cookie(rule[Tokens.id], 1)
+            CookieHandler.get_cookie(id_rule)
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
