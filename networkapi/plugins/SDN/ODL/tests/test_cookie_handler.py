@@ -1,6 +1,6 @@
 from nose.tools import assert_equal
 
-from networkapi.plugins.SDN.ODL.flows.acl import CookieHandler
+from networkapi.plugins.SDN.ODL.utils.cookie_handler import CookieHandler
 from networkapi.test.test_case import NetworkApiTestCase
 
 class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
@@ -42,14 +42,16 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_id_acl method returns right value for 
             cookie 644245631270912."""
 
-        assert_equal(CookieHandler.get_id_acl(644245631270912),
+        cookie = 644245631270912
+        assert_equal(CookieHandler.get_id_acl(cookie),
                      150000)
 
     def test_get_id_acl_returns_ok_2(self):
         """Test if get_id_acl method returns right value for 
             cookie 366936504401920."""
 
-        assert_equal(CookieHandler.get_id_acl(366936504401920),
+        cookie = 366936504401920
+        assert_equal(CookieHandler.get_id_acl(cookie),
                      85434)
 
 
@@ -57,7 +59,8 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_id_acl method returns right value for 
             cookie 328719348531200."""
 
-        assert_equal(CookieHandler.get_id_acl(328719348531200),
+        cookie = 328719348531200
+        assert_equal(CookieHandler.get_id_acl(cookie),
                      76535)
 
 
@@ -65,7 +68,8 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_id_acl method returns right value for 
             cookie 108210084772839424."""
 
-        assert_equal(CookieHandler.get_id_acl(108210084772839424),
+        cookie = 108210084772839424
+        assert_equal(CookieHandler.get_id_acl(cookie),
                      25194623)
 
 
@@ -73,7 +77,8 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_op_type method returns right value for 
             cookie 644245631270912."""
 
-        assert_equal(CookieHandler.get_op_type(644245631270912),
+        cookie = 644245631270912
+        assert_equal(CookieHandler.get_op_type(cookie),
                      2)
 
 
@@ -81,7 +86,8 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_op_type method returns right value for 
             cookie 366936504401920."""
 
-        assert_equal(CookieHandler.get_op_type(366936504401920),
+        cookie = 366936504401920
+        assert_equal(CookieHandler.get_op_type(cookie),
                      1)
 
 
@@ -89,7 +95,8 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_op_type method returns right value for 
             cookie 328719348531200."""
 
-        assert_equal(CookieHandler.get_op_type(328719348531200),
+        cookie = 328719348531200
+        assert_equal(CookieHandler.get_op_type(cookie),
                      15)
 
 
@@ -97,5 +104,6 @@ class CookieFieldHandlerTestCaseSuccess(NetworkApiTestCase):
         """Test if get_op_type method returns right value for 
             cookie 108210084772839424."""
 
-        assert_equal(CookieHandler.get_op_type(108210084772839424),
+        cookie = 108210084772839424
+        assert_equal(CookieHandler.get_op_type(cookie),
                      11)
