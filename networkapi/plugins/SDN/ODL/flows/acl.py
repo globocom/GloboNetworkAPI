@@ -17,6 +17,7 @@
 from json import dumps
 import logging
 from networkapi.plugins.SDN.ODL.utils.cookie_handler import CookieHandler
+from networkapi.plugins.SDN.ODL.utils.tcp_control_bits import TCPControlBits
 
 
 class Tokens(object):
@@ -194,8 +195,10 @@ class AclFlowBuilder(object):
     def _set_tcp_flags(self, flow, flags):
         """ Sets the flags inside given flow """
 
+        tcp_flags = TCPControlBits(flags).to_int()
+
         flow["match"]["tcp-flags-match"] = {
-            "tcp-flags": 0,
+            "tcp-flags": tcp_flags,
         }
 
     def _check_source_and_destination_ports(self, rule, protocol):
