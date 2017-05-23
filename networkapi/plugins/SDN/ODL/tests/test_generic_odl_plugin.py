@@ -4,7 +4,6 @@ from django.test.client import Client
 
 from nose.tools import assert_raises_regexp
 from nose.tools import assert_raises
-from nose.tools import assert_equal
 from requests.exceptions import HTTPError
 import random
 
@@ -13,6 +12,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
 from networkapi.plugins.SDN.ODL.tests.utils import OpenDaylightTestUtils
 from networkapi.test.test_case import NetworkApiTestCase
+
 
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """
@@ -133,7 +133,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_106966.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4_and_sequence(self):
+    def test_add_flow_with_tcp_protocol_dest_eq_l4_and_sequence(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and dest eq in l4 options."""
 
@@ -190,7 +190,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_141239.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_and_dest_eq_l4(self):
+    def test_add_flow_with_udp_protocol_src_eq_and_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
             with udp protocol and src eq, dest eq in l4 options."""
 
