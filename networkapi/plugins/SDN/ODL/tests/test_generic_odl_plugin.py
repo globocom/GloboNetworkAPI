@@ -340,12 +340,16 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """ Class for testing the generic OpenDayLight plugin """
 
+    fixtures = [
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
+    ]
+
     utils = OpenDaylightTestUtils()
 
     def setUp(self):
         self.client = Client()
-        self.equipment = Equipamento(id=28)
-        self.equipment_access = EquipamentoAcesso(id=1)
+        self.equipment = Equipamento.objects.filter(id=1)[0]
+        self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
 
         self.odl = ODLPlugin(
@@ -467,7 +471,6 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "rules": [{
                 "action": "permit",
                 "description": "generic",
-                "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
                     "icmp-type": "8"
