@@ -35,6 +35,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             equipment=self.equipment,
             equipment_access=self.equipment_access
         )
+        
+        self.flow_key = "flow-node-inventory:flow"
 
     def test_add_flow_one_acl_rule_and_check_if_persisted_in_all_ovss(self):
         """Test of success to add flow with one ACL rule checking 
@@ -52,7 +54,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         for flow in flows:
 
             output = self.json_odl_output_path % 'odl_id_83000.json'
-            self.compare_json_lists(output, flow)
+            self.compare_json_lists(output, flow[self.flow_key])
 
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
@@ -69,7 +71,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_82338.json'
         self.compare_json_lists(output, flow)
@@ -78,7 +80,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     def test_add_flow_one_acl_rule_with_tcp_protocol_flags_rst_l4(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and flags RST in l4 options."""
-        # TODO: Check if tcp flags were persisted
 
         input = self.json_aclapi_input_path % 'acl_id_101301.json'
         data = self.load_json_file(input)
@@ -90,9 +91,10 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_101301.json'
+
         self.compare_json_lists(output, flow)
 
 
@@ -110,7 +112,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_101302.json'
         self.compare_json_lists(output, flow)
@@ -130,7 +132,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_106966.json'
         self.compare_json_lists(output, flow)
@@ -150,7 +152,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_107480.json'
         self.compare_json_lists(output, flow)
@@ -169,7 +171,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_110886.json'
         self.compare_json_lists(output, flow)
@@ -189,7 +191,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_141239.json'
         self.compare_json_lists(output, flow)
@@ -209,7 +211,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_82324.json'
         self.compare_json_lists(output, flow)
@@ -229,7 +231,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_82337.json'
         self.compare_json_lists(output, flow)
@@ -249,7 +251,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_112140.json'
         self.compare_json_lists(output, flow)
@@ -269,7 +271,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_141880.json'
         self.compare_json_lists(output, flow)
@@ -289,7 +291,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_82332.json'
         self.compare_json_lists(output, flow)
@@ -309,7 +311,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_107200.json'
         self.compare_json_lists(output, flow)
@@ -329,7 +331,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx]
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         output = self.json_odl_output_path % 'odl_id_82325.json'
         self.compare_json_lists(output, flow)
