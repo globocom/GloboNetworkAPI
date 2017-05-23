@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.test.client import Client
-
 from nose.tools import assert_raises_regexp
 from nose.tools import assert_raises
 from requests.exceptions import HTTPError
@@ -26,7 +24,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     json_odl_output_path = 'plugins/SDN/ODL/json/odl_output/%s'
 
     def setUp(self):
-        self.client = Client()
         self.equipment = Equipamento.objects.filter(id=1)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
@@ -347,7 +344,6 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     utils = OpenDaylightTestUtils()
 
     def setUp(self):
-        self.client = Client()
         self.equipment = Equipamento.objects.filter(id=1)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
