@@ -30,7 +30,7 @@
           }
         },
         "tcp-flags-match": {
-          "tcp-flags": 0
+          "tcp-flags": 4
         },
         "ip-match": {
           "ip-protocol": 6
