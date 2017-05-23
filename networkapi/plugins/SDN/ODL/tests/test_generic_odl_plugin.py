@@ -35,11 +35,11 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             equipment=self.equipment,
             equipment_access=self.equipment_access
         )
-        
+
         self.flow_key = "flow-node-inventory:flow"
 
     def test_add_flow_one_acl_rule_and_check_if_persisted_in_all_ovss(self):
-        """Test of success to add flow with one ACL rule checking 
+        """Test of success to add flow with one ACL rule checking
             if the ACL was correctly persisted at all OVS's."""
 
         input = self.json_aclapi_input_path % 'acl_id_83000.json'
@@ -55,7 +55,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
             output = self.json_odl_output_path % 'odl_id_83000.json'
             self.compare_json_lists(output, flow[self.flow_key])
-
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
@@ -75,7 +74,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         output = self.json_odl_output_path % 'odl_id_82338.json'
         self.compare_json_lists(output, flow)
-
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_flags_rst_l4(self):
         """Test of success to add flow with one ACL rule
@@ -97,7 +95,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_tcp_protocol_flags_ack_l4(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and flags ACK in l4 options."""
@@ -117,7 +114,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_101302.json'
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_tcp_protocol(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol."""
@@ -136,7 +132,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         output = self.json_odl_output_path % 'odl_id_106966.json'
         self.compare_json_lists(output, flow)
-
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4_and_sequence(self):
         """Test of success to add flow with one ACL rule
@@ -176,7 +171,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_110886.json'
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_range_l4(self):
         """Test of success to add flow with one ACL rule
             with tcp protocol and dest range in l4 options."""
@@ -195,7 +189,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         output = self.json_odl_output_path % 'odl_id_141239.json'
         self.compare_json_lists(output, flow)
-
 
     def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_and_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
@@ -216,7 +209,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82324.json'
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_udp_protocol_dest_eq_l4(self):
         """Test of success to add flow with one ACL rule
             with udp protocol and dest eq in l4 options."""
@@ -235,7 +227,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         output = self.json_odl_output_path % 'odl_id_82337.json'
         self.compare_json_lists(output, flow)
-
 
     def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_l4(self):
         """Test of success to add flow with one ACL rule
@@ -256,7 +247,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_112140.json'
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_udp_protocol_dest_range_l4(self):
         """Test of success to add flow with one ACL rule
             with udp protocol and dest range in l4 options."""
@@ -275,7 +265,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         output = self.json_odl_output_path % 'odl_id_141880.json'
         self.compare_json_lists(output, flow)
-
 
     def test_add_flow_one_acl_rule_with_ip_protocol(self):
         """Test of success to add flow with one ACL rule
@@ -296,7 +285,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82332.json'
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_ip_protocol_and_sequence(self):
         """Test of success to add flow with one ACL rule
             with ip protocol and sequence."""
@@ -316,7 +304,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_107200.json'
         self.compare_json_lists(output, flow)
 
-
     def test_add_flow_one_acl_rule_with_icmp_protocol(self):
         """Test of success to add flow with one ACL rule
             with icmp protocol."""
@@ -335,7 +322,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         output = self.json_odl_output_path % 'odl_id_82325.json'
         self.compare_json_lists(output, flow)
-
 
     def test_remove_flow(self):
         """Test of success to remove flow."""
