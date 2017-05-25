@@ -81,8 +81,7 @@ class ODLPlugin(BaseSdnPlugin):
 
             for flows in flows_set:
 
-                import ipdb; ipdb.sset_trace()
-                flow_id = flows['flow'][0]['id']
+                flow_id = builder.flows['flow'][0]['id']
                 self._flow(flow_id=flow_id, method='put', data=flows)
 
         return None
