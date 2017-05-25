@@ -50,6 +50,14 @@ class Tokens(object):
 
     sequence = "sequence"
 
+class ODLPluginMasks(object):
+
+    id_port = "{}_{}"
+    id_port_both = "{}_{}_{} "
+
+    name_range = "{} - {}:{}"
+    name_range_both = "{} - {}:{} - {}:{}"
+
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
     OpenDayLight controller
@@ -67,6 +75,8 @@ class AclFlowBuilder(object):
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
+        self.allowed_size = 2
+
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
 
     def dump(self):
@@ -75,9 +85,18 @@ class AclFlowBuilder(object):
         if not isinstance(self.flows, dict):
             raise TypeError("self.flows must be a dictionary")
 
-        self.build()
+        flows_set = self.build()
 
-        return dumps(self.flows)
+        for flows in flows_set:
+
+            if len(self.flows["flow"]) == self.allowed_size:
+                yield self.flows
+                self.flows["flow"] = []
+
+        yield self.flows
+        self.flows["flow"] = []
+
+        # return dumps(self.flows)
 
     def build(self):
         """ Verifies input data and build flows for OpenDayLight controller """
@@ -86,109 +105,117 @@ class AclFlowBuilder(object):
             logging.info("Building ACL Json: %s", self.raw_data["kind"])
 
             for rule in self.raw_data[Tokens.rules]:
-                self._prepare_to_build_rule(rule)
+                self._build_rule(rule)
+
+                if len(self.flows["flow"]) == self.allowed_size:
+                    yield self.flows
+
+            yield self.flows
 
         else:
             message = "Missing %s or %s fields." % (Tokens.kind, Tokens.rules)
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
-    def _prepare_to_build_rule(self, rule):
-        """ Build one single ACL rule """
+    def _build_rule(self, rule):
 
-        id_port = "{}_{}"
-        id_port_both = "{}_{}_{} "
+        if Tokens.description not in rule:
+            rule[Tokens.description] = ""
 
-        name_range = "{} - {}:{}"
-        name_range_both = "{} - {}:{} - {}:{}"
+        for info in self._build_range(rule):
+            # Assigns the id of the current ACL
+            if Tokens.id in info:
+                # We always insert in the head of the list to simplify the access
+                # to the current index
+                self.flows["flow"].insert(0, {Tokens.id: info[Tokens.id]})
+
+            # Flow description
+            self._build_description(info)
+
+            self._build_match(info)
+            self._build_protocol(info)
+            self._build_action(info)
+            self._build_cookie(info)
+
+            # Flow table and priority
+            self.flows["flow"][0]["table_id"] = self.TABLE
+
+            self._build_sequence(info)
+
+            if len(self.flows["flow"]) == self.allowed_size:
+                yield self.flows
+
+        yield self.flows
+
+    def _build_range(self, rule):
 
         if not rule.get(Tokens.description):
             rule[Tokens.description] = ""
 
-        # Need to check if it is a src-range, dest-range or both
-        if rule.get(Tokens.l4_options, {}).get(Tokens.src_port_op) == 'range' \
+        l4_options = rule.get(Tokens.l4_options, {})
+
+        if l4_options.get(Tokens.src_port_op) == 'range' \
             and rule.get(Tokens.l4_options, {}).get(Tokens.dst_port_op) == 'range':
 
-            src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
-            src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end]) + 1
+            for info in self._get_for_double_range(rule):
+                yield info
 
-            dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
-            dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end]) + 1
+        elif l4_options.get(Tokens.src_port_op) == 'range':
 
-            rule[Tokens.l4_options][Tokens.src_port_op] = 'eq'
-            del rule[Tokens.l4_options][Tokens.src_port_end]
+            for info in self._get_for_src_or_dst_range(rule,
+                                                       Tokens.src_port,
+                                                       Tokens.src_port_end):
+                yield info
 
-            rule[Tokens.l4_options][Tokens.dst_port_op] = 'eq'
-            del rule[Tokens.l4_options][Tokens.dst_port_end]
+        elif l4_options.get(Tokens.dst_port_op) == 'range':
 
-            for src_port in xrange(src_port_start, src_port_end):
-                for dst_port in xrange(dst_port_start, dst_port_end):
-                    rule[Tokens.l4_options][Tokens.src_port] = str(src_port)
-                    rule[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
-
-                    rule[Tokens.id] = id_port_both.format(rule[Tokens.id], src_port, dst_port)
-
-                    rule[Tokens.description] = name_range_both.format(rule[Tokens.description],
-                                                                      src_port_start, src_port_end,
-                                                                      dst_port_start, dst_port_end)
-                    self._build_rule(rule)
-
-        elif rule.get(Tokens.l4_options, {}).get(Tokens.src_port_op) == 'range':
-            src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
-            src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end]) + 1
-
-            rule[Tokens.l4_options][Tokens.src_port_op] = 'eq'
-            del rule[Tokens.l4_options][Tokens.src_port_end]
-            for port in xrange(src_port_start, src_port_end):
-                rule[Tokens.l4_options][Tokens.src_port] = str(port)
-                rule[Tokens.id] = id_port.format(rule[Tokens.id], port)
-                rule[Tokens.description] = name_range.format(rule[Tokens.description],
-                                                             src_port_start, src_port_end)
-                self._build_rule(rule)
-
-
-
-
-        elif rule.get(Tokens.l4_options, {}).get(Tokens.dst_port_op) == 'range':
-            dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
-            dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end]) + 1
-
-            rule[Tokens.l4_options][Tokens.dst_port_op] = 'eq'
-            del rule[Tokens.l4_options][Tokens.dst_port_end]
-            for port in xrange(dst_port_start, dst_port_end):
-                rule[Tokens.l4_options][Tokens.dst_port] = str(port)
-                rule[Tokens.id] = id_port.format(rule[Tokens.id], port)
-                rule[Tokens.description] = name_range.format(rule[Tokens.description],
-                                                             dst_port_start, dst_port_end)
-                self._build_rule(rule)
-
-                print port
-
+            for info in self._get_for_src_or_dst_range(rule,
+                                                       Tokens.dst_port,
+                                                       Tokens.dst_port_end):
+                yield info
         else:
+            yield rule
 
-            self._build_rule(rule)
+    def _get_for_src_or_dst_range(self, rule, start, end):
 
+        port_start = int(rule[Tokens.l4_options][start])
+        port_end = int(rule[Tokens.l4_options][end])
 
-    def _build_rule(self, rule):
+        description = rule[Tokens.description]
+        id = rule[Tokens.id]
 
-        # Assigns the id of the current ACL
-        if Tokens.id in rule:
-            # We always insert in the head of the list to simplify the access
-            # to the current index
-            self.flows["flow"].insert(0, {Tokens.id: rule[Tokens.id]})
+        for port in xrange(port_start, port_end + 1):
 
-        # Flow description
-        self._build_description(rule)
+            rule[Tokens.l4_options][start] = str(port)
+            rule[Tokens.id] = ODLPluginMasks.id_port.format(id, port)
+            rule[Tokens.description] = ODLPluginMasks.name_range.format(description,
+                                                         port_start, port_end)
 
-        self._build_match(rule)
-        self._build_protocol(rule)
-        self._build_action(rule)
-        self._build_cookie(rule)
+            yield rule
 
-        # Flow table and priority
-        self.flows["flow"][0]["table_id"] = self.TABLE
+    def _get_for_double_range(self, rule):
 
-        self._build_sequence(rule)
+        src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
+        src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end])
+
+        dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
+        dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end])
+
+        description = rule[Tokens.description]
+        id = rule[Tokens.id]
+
+        for src_port in xrange(src_port_start, src_port_end + 1):
+            for dst_port in xrange(dst_port_start, dst_port_end + 1):
+
+                rule[Tokens.l4_options][Tokens.src_port] = str(src_port)
+                rule[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
+
+                rule[Tokens.id] = ODLPluginMasks.id_port_both.format(id, src_port, dst_port)
+
+                rule[Tokens.description] = ODLPluginMasks.name_range_both.format(description,
+                                                                  src_port_start, src_port_end,
+                                                                  dst_port_start, dst_port_end)
+                yield rule
 
     def _build_description(self, rule):
         if Tokens.description in rule:
@@ -261,9 +288,8 @@ class AclFlowBuilder(object):
         self._set_flow_ip_protocol(self.flows["flow"][0], 6)
         self._check_source_and_destination_ports(rule, "tcp")
 
-        if Tokens.l4_options in rule:
-            if Tokens.flags in rule[Tokens.l4_options]:
-                self._set_tcp_flags(self.flows["flow"][0],
+        if Tokens.flags in rule.get(Tokens.l4_options, {}):
+            self._set_tcp_flags(self.flows["flow"][0],
                                 rule[Tokens.l4_options][Tokens.flags])
 
 
