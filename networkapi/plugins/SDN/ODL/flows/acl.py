@@ -95,15 +95,7 @@ class AclFlowBuilder(object):
         flows_set = self.build()
 
         for flows in flows_set:
-
-            if len(self.flows["flow"]) == self.allowed_size:
-                yield self.flows
-                self.flows["flow"] = []
-
-        yield self.flows
-        self.flows["flow"] = []
-
-        # return dumps(self.flows)
+            yield dumps(flows)
 
     def build(self):
         """ Verifies input data and build flows for OpenDayLight controller """
@@ -112,12 +104,17 @@ class AclFlowBuilder(object):
             logging.info("Building ACL Json: %s", self.raw_data["kind"])
 
             for rule in self.raw_data[Tokens.rules]:
-                self._build_rule(rule)
 
                 if len(self.flows["flow"]) == self.allowed_size:
                     yield self.flows
+                    self._clear_flows()
+
+                done_iteration = self._build_rule(rule)
+                if done_iteration:
+                    yield self.flows
 
             yield self.flows
+            self._clear_flows()
 
         else:
             message = "Missing %s or %s fields." % (Tokens.kind, Tokens.rules)
