@@ -1,6 +1,14 @@
 # Waits for other containers availability
 sleep 5
 
+apt-get update
+apt-get install libncurses5-dev wget -y
+apt-get remove python-pip -y
+wget https://bootstrap.pypa.io/get-pip.py
+python get-pip.py
+rm get-pip.py
+pip install --upgrade readline
+
 mysql -uroot -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
 mysql -uroot -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 cd /netapi/dbmigrate; db-migrate --show-sql
