@@ -20,6 +20,7 @@ from networkapi.plugins.SDN.ODL.utils.cookie_handler import CookieHandler
 from networkapi.plugins.SDN.ODL.utils.tcp_control_bits import TCPControlBits
 import re
 
+
 class Tokens(object):
     """ Class that holds all key words from the source json that identifies
     a valid ACL to be translated to a OpenDayLight json format
@@ -49,6 +50,7 @@ class Tokens(object):
     cookie = "cookie"
 
     sequence = "sequence"
+
 
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
@@ -168,7 +170,6 @@ class AclFlowBuilder(object):
 
             self._build_rule(rule)
 
-
     def _build_rule(self, rule):
 
         # Assigns the id of the current ACL
@@ -203,7 +204,7 @@ class AclFlowBuilder(object):
 
     def _get_id_from_rule(self, rule):
 
-        return re.search('(^[0-9]+).*',rule[Tokens.id]).group(1)
+        return re.search('(^[0-9]+).*', rule[Tokens.id]).group(1)
 
     def _build_cookie(self, rule):
 
@@ -264,8 +265,7 @@ class AclFlowBuilder(object):
         if Tokens.l4_options in rule:
             if Tokens.flags in rule[Tokens.l4_options]:
                 self._set_tcp_flags(self.flows["flow"][0],
-                                rule[Tokens.l4_options][Tokens.flags])
-
+                                    rule[Tokens.l4_options][Tokens.flags])
 
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """

@@ -89,7 +89,7 @@ class ODLPlugin(BaseSdnPlugin):
 
     def _flow(self, flow_id=0, method='', data=None):
 
-        allowed_methods=["get", "put", "delete"]
+        allowed_methods = ["get", "put", "delete"]
 
         if flow_id < 1 or method not in allowed_methods:
             log.error("Invalid parameters in OLDPlugin flow handler")
@@ -146,9 +146,10 @@ class ODLPlugin(BaseSdnPlugin):
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
 
-        log.info("Starting %s request to controller %s at %s. Data to be sent: %s" %
+        log.info(
+            "Starting %s request to controller %s at %s. Data to be sent: %s" %
             (params["method"], self.equipment.nome, uri, params["data"])
-         )
+        )
 
         try:
             # Raises AttributeError if method is not valid
