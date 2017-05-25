@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+
 class CookieHandler(object):
-    """This class intends to Handle the cookie field described by the 
+    """This class intends to Handle the cookie field described by the
         OpenFlow Specification and present in OpenVSwitch.
 
         Cookie field has 64 bits. The first 32-bits are assigned to the id

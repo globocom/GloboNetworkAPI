@@ -384,9 +384,9 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         acl = AclFlowBuilder(data)
         acl.build()
         assert_equal(acl.flows['flow'][0]['match']['ipv4-source'],
-            data['rules'][0]['source'])
+                     data['rules'][0]['source'])
         assert_equal(acl.flows['flow'][0]['match']['ipv4-destination'],
-            data['rules'][0]['destination'])
+                     data['rules'][0]['destination'])
 
     def test_acl_should_have_action_local(self):
         """ Should have the Openflow NORMAL action """
@@ -407,7 +407,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         assert_in("instructions", acl.flows["flow"][0])
         instruction = acl.flows["flow"][0]["instructions"]["instruction"][0]
         assert_equal(instruction["apply-actions"]["action"][0]["output-action"]
-            ["output-node-connector"], "NORMAL")
+                     ["output-node-connector"], "NORMAL")
 
     def test_acl_should_not_have_actions(self):
         """ Should not have any action """
