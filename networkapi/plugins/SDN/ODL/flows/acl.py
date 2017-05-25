@@ -82,6 +82,10 @@ class AclFlowBuilder(object):
 
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
 
+    def _clear_flows(self):
+        """ Clear flows variable to avoid huge object in memory """
+        self.flows["flow"] = []
+
     def dump(self):
         """ Returns a json of built flows """
 
