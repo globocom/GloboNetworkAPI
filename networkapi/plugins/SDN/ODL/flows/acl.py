@@ -126,40 +126,28 @@ class AclFlowBuilder(object):
         if Tokens.description not in rule:
             rule[Tokens.description] = ""
 
-        for info in self._build_range(rule):
-            # Assigns the id of the current ACL
-            if Tokens.id in info:
-                # We always insert in the head of the list to simplify the access
-                # to the current index
-                self.flows["flow"].insert(0, {Tokens.id: info[Tokens.id]})
+        # Assigns the id of the current ACL
+        # We always insert in the head of the list to simplify the access
+        # to the current index
+        self.flows["flow"].insert(0, {Tokens.id: rule[Tokens.id]})
 
-            # Flow description
-            self._build_description(info)
+        # Flow table and priority
+        self.flows["flow"][0]["table_id"] = self.TABLE
 
-            self._build_match(info)
-            self._build_protocol(info)
-            self._build_action(info)
-            self._build_cookie(info)
-
-            # Flow table and priority
-            self.flows["flow"][0]["table_id"] = self.TABLE
-
-            self._build_sequence(info)
-
-            if len(self.flows["flow"]) == self.allowed_size:
-                yield self.flows
-
-        yield self.flows
+        self._build_description(rule)
+        self._build_match(rule)
+        self._build_protocol(rule)
+        self._build_action(rule)
+        self._build_cookie(rule)
+        self._build_sequence(rule)
+        self._build_range(rule)
 
     def _build_range(self, rule):
-
-        if not rule.get(Tokens.description):
-            rule[Tokens.description] = ""
 
         l4_options = rule.get(Tokens.l4_options, {})
 
         if l4_options.get(Tokens.src_port_op) == 'range' \
-            and rule.get(Tokens.l4_options, {}).get(Tokens.dst_port_op) == 'range':
+            and l4_options.get(Tokens.dst_port_op) == 'range':
 
             for info in self._get_for_double_range(rule):
                 yield info
@@ -177,8 +165,6 @@ class AclFlowBuilder(object):
                                                        Tokens.dst_port,
                                                        Tokens.dst_port_end):
                 yield info
-        else:
-            yield rule
 
     def _get_for_src_or_dst_range(self, rule, start, end):
 
