@@ -28,6 +28,14 @@ class Write(BasePermission):
             AdminPermission.WRITE_OPERATION
         )
 
+class WriteForce(BasePermission):
+
+    def has_permission(self, request, view):
+        return has_perm(
+            request.user,
+            AdminPermission.NETWORK_FORCE,
+            AdminPermission.WRITE_OPERATION
+        )
 
 class DeployConfig(BasePermission):
 
@@ -205,3 +213,4 @@ def read_objv6_permission(request, *args, **kwargs):
             )
 
     return Perm
+

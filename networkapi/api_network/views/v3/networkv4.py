@@ -301,8 +301,7 @@ class NetworkIPv4ForceView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('networkv4_post')
-    @permission_classes_apiview((IsAuthenticated, permissions.Write))
-    @permission_obj_apiview([permissions.write_objv4_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Creates list of networkv4."""
@@ -321,8 +320,7 @@ class NetworkIPv4ForceView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('networkv4_put')
-    @permission_classes_apiview((IsAuthenticated, permissions.Write))
-    @permission_obj_apiview([permissions.write_objv4_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Updates list of networkv4."""
@@ -341,8 +339,7 @@ class NetworkIPv4ForceView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, permissions.Write))
-    @permission_obj_apiview([permissions.write_objv4_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """Deletes list of networkv4."""
