@@ -17,10 +17,11 @@ class BaseTask(celery_app.Task):
             result = task.result
 
         queue_name = 'tasks.%s' % user.user.lower()
+        routing_key = '%s.%s' % (queue_name, task_id)
         queue_manager = QueueManager(broker_vhost='tasks',
                                      queue_name=queue_name,
                                      exchange_name=queue_name,
-                                     routing_key=queue_name)
+                                     routing_key=routing_key)
         queue_manager.append({
             'task_id': task_id,
             'status': status,

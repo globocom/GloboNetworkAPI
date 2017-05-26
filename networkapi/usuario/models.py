@@ -23,8 +23,6 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
-from networkapi.distributedlock import distributedlock
-from networkapi.distributedlock import LOCK_USER_GROUP
 from networkapi.models.BaseModel import BaseModel
 from networkapi.system import exceptions
 from networkapi.system.facade import get_value
@@ -245,7 +243,7 @@ class UsuarioGrupo(BaseModel):
         unique_together = ('usuario', 'ugrupo')
 
     @classmethod
-    def list_by_user_id(self, user_id):
+    def list_by_user_id(cls, user_id):
         """"Get UserGroup by user.
 
         @return: UserGroup.
@@ -259,7 +257,7 @@ class UsuarioGrupo(BaseModel):
             raise UsuarioNotFoundError(
                 e, u'Dont there is a UserGroup by user = %s.' % user_id)
         except Exception, e:
-            self.log.error(u'Failure to search the UserGroup.')
+            cls.log.error(u'Failure to search the UserGroup.')
             raise UsuarioError(e, u'Failure to search the UserGroup.')
 
     @classmethod

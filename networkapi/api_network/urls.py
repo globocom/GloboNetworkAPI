@@ -35,6 +35,10 @@ urlpatterns = patterns(
         v3.Networkv4AsyncView.as_view()),
     url(r'^v3/networkv6/async/((?P<obj_ids>[;\w]+)/)?$',
         v3.Networkv6AsyncView.as_view()),
+    url(r'^v3/networkv4/force/((?P<obj_ids>[;\w]+)/)?$',
+        v3.NetworkIPv4ForceView.as_view()),
+    url(r'^v3/networkv6/force/((?P<obj_ids>[;\w]+)/)?$',
+        v3.NetworkIPv6ForceView.as_view()),
     url(r'^v3/networkv4/deploy/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv4DeployView.as_view()),
     url(r'^v3/networkv6/deploy/((?P<obj_ids>[;\w]+)/)?$',
@@ -43,4 +47,5 @@ urlpatterns = patterns(
         v3.NetworkIPv4View.as_view()),
     url(r'^v3/networkv6/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv6View.as_view()),
+
 )

@@ -1,0 +1,12 @@
+{
+  "networks": [
+    {
+      "cluster_unit": "cluster-unit-updated",
+      "environmentvip": 2,
+      "id": 1,
+      "network_type": 2,
+      "vlan": 1,
+      "active": false
+    }
+  ]
+}

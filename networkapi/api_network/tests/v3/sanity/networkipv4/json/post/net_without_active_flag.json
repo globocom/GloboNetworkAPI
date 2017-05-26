@@ -1,0 +1,20 @@
+{
+  "networks": [
+    {
+      "oct1": 10,
+      "oct2": 10,
+      "oct3": 6,
+      "oct4": 0,
+      "prefix": 25,
+      "mask_oct1": 255,
+      "mask_oct2": 255,
+      "mask_oct3": 255,
+      "mask_oct4": 128,
+      "broadcast": "10.10.6.127",
+      "vlan": 1,
+      "network_type": 1,
+      "environmentvip": null,
+      "cluster_unit": "cluster-unit-1"
+    }
+  ]
+}
