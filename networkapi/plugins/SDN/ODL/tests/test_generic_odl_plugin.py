@@ -280,7 +280,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         self.odl.add_flow(data)
 
         nodes_ids = self.odl._get_nodes_ids()
-
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
@@ -392,7 +391,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
         """Test plugin deny add flow with only icmp-type."""
 
         data = {
-            "kind": "default#acl",
+            "kind": "Access Control List",
             "rules": [{
                 "id": 1,
                 "protocol": "icmp",
@@ -419,7 +418,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
         """Test plugin deny add flow without icmp-code and icmp-type."""
 
         data = {
-            "kind": "default#acl",
+            "kind": "Access Control List",
             "rules": [{
                 "id": 1,
                 "protocol": "icmp",
@@ -448,7 +447,8 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "kind": "Access Control List",
             "rules": [{
                 "action": "permit",
-                "description": "generic",
+                "description": "Restrict environment",
+                "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
                     "icmp-type": "8"
