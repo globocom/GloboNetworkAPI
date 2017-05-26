@@ -110,13 +110,6 @@ class Usuario(BaseModel):
             ativo=1
         )
 
-    @property
-    def is_staff(self):
-        return UsuarioGrupo.objects.filter(
-            usuario__id=self.id,
-            ugrupo__nome__iexact='Administradores'
-        )
-
     @classmethod
     def uniqueUsers(cls):
         userlist = Usuario.objects.all().order_by('user')
