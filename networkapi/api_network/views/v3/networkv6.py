@@ -301,8 +301,7 @@ class NetworkIPv6ForceView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('networkv6_post')
-    @permission_classes_apiview((IsAuthenticated, permissions.Write))
-    @permission_obj_apiview([permissions.write_objv6_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Creates list of networkv6."""
@@ -321,8 +320,7 @@ class NetworkIPv6ForceView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('networkv6_put')
-    @permission_classes_apiview((IsAuthenticated, permissions.Write))
-    @permission_obj_apiview([permissions.write_objv6_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Updates list of networkv6."""
@@ -341,8 +339,7 @@ class NetworkIPv6ForceView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, permissions.Write))
-    @permission_obj_apiview([permissions.write_objv6_permission])
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """Deletes list of networkv6."""
