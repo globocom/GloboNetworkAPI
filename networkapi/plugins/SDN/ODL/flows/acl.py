@@ -219,6 +219,22 @@ class AclFlowBuilder(object):
             format(description,
                    port_start, port_end)
 
+        if start == Tokens.src_port and rule[Tokens.l4_options].get(Tokens.dst_port) is not None:
+            rule[Tokens.id] = ODLPluginMasks.id_port_both.format(id_, port, rule[Tokens.l4_options][Tokens.dst_port])
+            rule[Tokens.description] = ODLPluginMasks.name_range_both. \
+                format(description,
+                       port_start, port_end,
+                       rule[Tokens.l4_options].get(Tokens.dst_port),
+                       rule[Tokens.l4_options].get(Tokens.dst_port))
+
+        elif start == Tokens.dst_port and rule[Tokens.l4_options].get(Tokens.src_port) is not None:
+            rule[Tokens.id] = ODLPluginMasks.id_port_both.format(id_, rule[Tokens.l4_options][Tokens.src_port], port)
+            rule[Tokens.description] = ODLPluginMasks.name_range_both. \
+                format(description,
+                       rule[Tokens.l4_options].get(Tokens.src_port),
+                       rule[Tokens.l4_options].get(Tokens.src_port),
+                       port_start, port_end)
+
     def _change_rule_for_src_and_dst_ports(self, rule, src_port, dst_port,
                                            src_port_start, src_port_end,
                                            dst_port_start, dst_port_end,
