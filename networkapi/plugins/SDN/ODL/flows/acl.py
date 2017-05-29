@@ -140,10 +140,10 @@ class AclFlowBuilder(object):
 
         self._build_description(rule)
         self._build_match(rule)
-        self._build_protocol(rule)
         self._build_action(rule)
         self._build_cookie(rule)
         self._build_sequence(rule)
+        self._build_protocol(rule)
         self._build_range(rule)
 
     def _build_range(self, rule):
@@ -318,9 +318,7 @@ class AclFlowBuilder(object):
 
         self._set_flow_ip_protocol(6)
         self._check_source_and_destination_ports(rule, "tcp")
-
-        if Tokens.flags in rule.get(Tokens.l4_options, {}):
-            self._set_tcp_flags(rule[Tokens.l4_options][Tokens.flags])
+        self._set_tcp_flags(rule)
 
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """
@@ -335,14 +333,17 @@ class AclFlowBuilder(object):
             "ip-protocol": protocol_n
         }
 
-    def _set_tcp_flags(self, flags):
+    def _set_tcp_flags(self, rule):
         """ Sets the flags inside given flow """
+        l4_options = rule.get(Tokens.l4_options, {})
+        if Tokens.flags in l4_options:
 
-        tcp_flags = TCPControlBits(flags).to_int()
+            flags = l4_options[Tokens.flags]
+            tcp_flags = TCPControlBits(flags).to_int()
 
-        self.flows["flow"][0]["match"]["tcp-flags-match"] = {
-            "tcp-flags": tcp_flags,
-        }
+            self.flows["flow"][0]["match"]["tcp-flags-match"] = {
+                "tcp-flags": tcp_flags,
+            }
 
     def _check_source_and_destination_ports(self, rule, protocol):
         """ Checks source and destination options inside json """
@@ -356,6 +357,7 @@ class AclFlowBuilder(object):
             # Checks for destination port
             if Tokens.dst_port_op in rule[Tokens.l4_options]:
                 self._build_transport_destination_ports(rule, protocol)
+
 
     def _build_transport_source_ports(self, rule, protocol):
         """ Builds source ports for transport protocols TCP or UDP """
