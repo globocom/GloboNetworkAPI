@@ -111,7 +111,6 @@ class AclFlowBuilder(object):
                     yield self.flows
                     self._clear_flows()
 
-
                 done_iteration = self._build_rule(rule)
 
                 if done_iteration:
@@ -158,13 +157,13 @@ class AclFlowBuilder(object):
 
             self._change_rule_for_src_or_dst_ports(rule, port,
                                                    start, port_start,
-                                                   port_end, description, id_)
+                                                   port_end, description,
+                                                   id_)
 
             self._build_transport_source_ports(rule, protocol)
             self._build_transport_destination_ports(rule, protocol)
             self._build_description(rule)
             self._build_id(rule)
-
             self._insert_new_flow_for_single_range(port, port_end)
 
     def _build_specific_src_and_dst_ports_in_range(self, rule, protocol):
@@ -192,17 +191,18 @@ class AclFlowBuilder(object):
                 self._build_transport_destination_ports(rule, protocol)
                 self._build_description(rule)
                 self._build_id(rule)
-
-                self._insert_new_flow_for_double_range(src_port, src_port_end, dst_port, dst_port_end)
+                self._insert_new_flow_for_double_range(src_port, src_port_end,
+                                                       dst_port, dst_port_end)
 
     def _insert_new_flow_for_single_range(self, port, port_end):
 
         if port < port_end:
             self._insert_new_flow()
 
-    def _insert_new_flow_for_double_range(self, src_port, src_port_end, dst_port, dst_port_end):
+    def _insert_new_flow_for_double_range(self, src_port, src_port_end,
+                                          dst_port, dst_port_end):
 
-        if dst_port < dst_port_end or src_port < src_port_end:
+        if src_port < src_port_end or dst_port < dst_port_end:
             self._insert_new_flow()
 
     def _insert_new_flow(self):
@@ -229,7 +229,6 @@ class AclFlowBuilder(object):
         rule[Tokens.id] = ODLPluginMasks.id_port_both. \
             format(id_,
                    src_port, dst_port)
-
         rule[Tokens.description] = ODLPluginMasks.name_range_both. \
             format(description,
                    src_port_start, src_port_end,
