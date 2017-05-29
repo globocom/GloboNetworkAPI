@@ -114,8 +114,6 @@ class AclFlowBuilder(object):
 
                 done_iteration = self._build_rule(rule)
 
-                import ipdb; ipdb.sset_trace(context=5)
-
                 if done_iteration:
                     yield self.flows
 
@@ -184,7 +182,7 @@ class AclFlowBuilder(object):
             self._build_description(rule)
             self._build_id(rule)
 
-            self._check_if_is_last_iteration(port, port_end)
+            self._insert_new_flow(port, port_end)
 
     def _build_specific_src_and_dst_ports_in_range(self, rule):
 
@@ -210,12 +208,12 @@ class AclFlowBuilder(object):
                 self._build_description(rule)
                 self._build_id(rule)
 
-                self._check_if_is_last_iteration(dst_port, dst_port_end)
+                self._insert_new_flow(dst_port, dst_port_end)
 
-            self._check_if_is_last_iteration(src_port, src_port_end)
+            self._insert_new_flow(src_port, src_port_end)
 
 
-    def _check_if_is_last_iteration(self, port, port_end):
+    def _insert_new_flow(self, port, port_end):
 
         if port < port_end:
             self.flows["flow"].insert(0, deepcopy(self.flows["flow"][0]))
