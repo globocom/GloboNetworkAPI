@@ -114,8 +114,6 @@ class AclFlowBuilder(object):
 
                 done_iteration = self._build_rule(rule)
 
-                import ipdb; ipdb.sset_trace(context=5)
-
                 if done_iteration:
                     yield self.flows
 
