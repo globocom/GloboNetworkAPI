@@ -31,7 +31,7 @@ class Tokens(object):
     kind = "kind"
     rules = "rules"
 
-    id = "id"
+    id_ = "id"
     action = "action"
     description = "description"
     source = "source"
@@ -126,13 +126,12 @@ class AclFlowBuilder(object):
 
     def _build_rule(self, rule):
 
-        if Tokens.description not in rule:
-            rule[Tokens.description] = ""
+
 
         # Assigns the id of the current ACL
         # We always insert in the head of the list to simplify the access
         # to the current index
-        self.flows["flow"].insert(0, {Tokens.id: rule[Tokens.id]})
+        self.flows["flow"].insert(0, {Tokens.id_: rule[Tokens.id_]})
 
         # Flow table and priority
         self.flows["flow"][0]["table_id"] = self.TABLE
@@ -144,29 +143,22 @@ class AclFlowBuilder(object):
         self._build_sequence(rule)
         self._build_protocol(rule)
 
-    def _build_specific_src_or_dst_ports_in_range(self, rule, protocol,
-                                                  start, end):
+    def _build_simple_range(self, rule, protocol,
+                            start, end):
 
         port_start = int(rule[Tokens.l4_options][start])
         port_end = int(rule[Tokens.l4_options][end])
 
-        description = rule[Tokens.description]
-        id_ = rule[Tokens.id]
-
         for port in xrange(port_start, port_end + 1):
-
-            self._change_rule_for_src_or_dst_ports(rule, port,
-                                                   start, port_start,
-                                                   port_end, description,
-                                                   id_)
 
             self._build_transport_source_ports(rule, protocol)
             self._build_transport_destination_ports(rule, protocol)
-            self._build_description(rule)
-            self._build_id(rule)
-            self._insert_new_flow_for_single_range(port, port_end)
 
-    def _build_specific_src_and_dst_ports_in_range(self, rule, protocol):
+            self._build_id_and_description_when_simple_range(rule, port, port_start, port_end)
+
+            self._insert_new_flow_when_single_range(port, port_end)
+
+    def _build_double_range(self, rule, protocol):
 
         src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
         src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end])
@@ -174,33 +166,39 @@ class AclFlowBuilder(object):
         dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
         dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end])
 
-        description = rule[Tokens.description]
-        id_ = rule[Tokens.id]
-
         for src_port in xrange(src_port_start, src_port_end + 1):
             for dst_port in xrange(dst_port_start, dst_port_end + 1):
 
-                self._change_rule_for_src_and_dst_ports(
-                    rule,
-                    src_port, dst_port,
-                    src_port_start, src_port_end,
-                    dst_port_start, dst_port_end,
-                    description, id_)
-
                 self._build_transport_source_ports(rule, protocol)
                 self._build_transport_destination_ports(rule, protocol)
-                self._build_description(rule)
-                self._build_id(rule)
-                self._insert_new_flow_for_double_range(src_port, src_port_end,
-                                                       dst_port, dst_port_end)
 
-    def _insert_new_flow_for_single_range(self, port, port_end):
+                self._build_id_and_description_when_double_range(rule, src_port, dst_port)
+
+                self._insert_new_flow_when_double_range(src_port, src_port_end,
+                                                        dst_port, dst_port_end)
+
+    def _build_id_and_description_when_simple_range(self, rule, port, port_start, port_end):
+
+        self._build_id_when_only_src_or_dst_range(rule, port)
+        self._build_id_when_src_eq_and_dst_range(rule, port)
+        self._build_id_when_src_range_and_dst_eq(rule, port)
+
+        self._build_description_when_only_src_or_dst_range(rule, port_start, port_end)
+        self._build_description_when_src_range_and_dst_eq(rule, port_start, port_end)
+        self._build_description_when_src_eq_and_dst_range(rule, port_start, port_end)
+
+    def _build_id_and_description_when_double_range(self, rule, src_port, dst_port):
+
+        self._build_id_when_src_range_and_dst_range(rule, src_port, dst_port)
+        self._build_description_when_src_range_and_dst_range(rule)
+
+    def _insert_new_flow_when_single_range(self, port, port_end):
 
         if port < port_end:
             self._insert_new_flow()
 
-    def _insert_new_flow_for_double_range(self, src_port, src_port_end,
-                                          dst_port, dst_port_end):
+    def _insert_new_flow_when_double_range(self, src_port, src_port_end,
+                                           dst_port, dst_port_end):
 
         if src_port < src_port_end or dst_port < dst_port_end:
             self._insert_new_flow()
@@ -209,57 +207,86 @@ class AclFlowBuilder(object):
 
         self.flows["flow"].insert(0, deepcopy(self.flows["flow"][0]))
 
-    def _change_rule_for_src_or_dst_ports(self, rule, port,
-                                          start, port_start,
-                                          port_end, description, id_):
 
-        rule[Tokens.l4_options][start] = str(port)
+    def _build_description(self, rule):
 
-        if start == Tokens.src_port and \
-            rule[Tokens.l4_options].get(Tokens.dst_port) is not None:
+        if Tokens.description not in rule:
+            rule[Tokens.description] = ""
 
-            rule[Tokens.id] = ODLPluginMasks.id_port_both.\
-                format(id_, port, rule[Tokens.l4_options][Tokens.dst_port])
-            rule[Tokens.description] = ODLPluginMasks.name_range_both. \
-                format(description,
+        self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
+
+    def _build_description_when_src_eq_and_dst_range(self, rule, port_start, port_end):
+
+        if rule[Tokens.l4_options].get(Tokens.src_port_op) == 'eq' and \
+           rule[Tokens.l4_options].get(Tokens.dst_port_op) == 'range':
+
+            self.flows["flow"][0]["flow-name"] =  ODLPluginMasks.name_range_both. \
+                    format(rule[Tokens.description],
+                           rule[Tokens.l4_options].get(Tokens.src_port),
+                           rule[Tokens.l4_options].get(Tokens.src_port),
+                           port_start, port_end)
+
+    def _build_description_when_src_range_and_dst_eq(self, rule, port_start, port_end):
+
+        if rule[Tokens.l4_options].get(Tokens.src_port_op) == 'range' and \
+           rule[Tokens.l4_options].get(Tokens.dst_port_op) == 'eq':
+
+            self.flows["flow"][0]["flow-name"] = ODLPluginMasks.name_range_both. \
+                format(rule[Tokens.description],
                        port_start, port_end,
                        rule[Tokens.l4_options].get(Tokens.dst_port),
                        rule[Tokens.l4_options].get(Tokens.dst_port))
 
-        elif start == Tokens.dst_port and \
-            rule[Tokens.l4_options].get(Tokens.src_port) is not None:
+    def _build_description_when_only_src_or_dst_range(self, rule, port_start, port_end):
 
-            rule[Tokens.id] = ODLPluginMasks.id_port_both.\
-                format(id_, rule[Tokens.l4_options][Tokens.src_port], port)
-            rule[Tokens.description] = ODLPluginMasks.name_range_both. \
-                format(description,
-                       rule[Tokens.l4_options].get(Tokens.src_port),
-                       rule[Tokens.l4_options].get(Tokens.src_port),
-                       port_start, port_end)
-        else:
-            rule[Tokens.id] = ODLPluginMasks.id_port.format(id_, port)
-            rule[Tokens.description] = ODLPluginMasks.name_range. \
-                format(description,
-                       port_start, port_end)
+        self.flows["flow"][0]["flow-name"] = ODLPluginMasks.name_range. \
+            format(rule[Tokens.description],
+                   port_start, port_end)
 
-    def _change_rule_for_src_and_dst_ports(self, rule, src_port, dst_port,
-                                           src_port_start, src_port_end,
-                                           dst_port_start, dst_port_end,
-                                           description, id_):
+    def _build_description_when_src_range_and_dst_range(self, rule):
 
-        rule[Tokens.l4_options][Tokens.src_port] = str(src_port)
-        rule[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
-        rule[Tokens.id] = ODLPluginMasks.id_port_both. \
-            format(id_,
-                   src_port, dst_port)
-        rule[Tokens.description] = ODLPluginMasks.name_range_both. \
-            format(description,
-                   src_port_start, src_port_end,
-                   dst_port_start, dst_port_end)
+        self.flows["flow"][0]["flow-name"] = ODLPluginMasks.name_range_both. \
+            format(rule[Tokens.description],
+                   rule[Tokens.l4_options][Tokens.src_port],
+                   rule[Tokens.l4_options][Tokens.src_port_end],
+                   rule[Tokens.l4_options][Tokens.dst_port],
+                   rule[Tokens.l4_options][Tokens.dst_port_end])
 
-    def _build_description(self, rule):
-        if Tokens.description in rule:
-            self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
+    def _build_id(self, rule):
+
+        self.flows["flow"][0]["id"] = rule[Tokens.id_]
+
+    def _build_id_when_src_eq_and_dst_range(self, rule, port):
+
+        if rule[Tokens.l4_options].get(Tokens.src_port_op) == 'eq' and \
+                        rule[Tokens.l4_options].get(Tokens.dst_port_op) == 'range':
+
+            self.flows["flow"][0]["id"] = ODLPluginMasks.\
+                id_port_both.format(rule[Tokens.id_],
+                                    rule[Tokens.l4_options][Tokens.src_port],
+                                    port)
+
+    def _build_id_when_src_range_and_dst_eq(self, rule, port):
+
+        if rule[Tokens.l4_options].get(Tokens.src_port_op) == 'range' and \
+                        rule[Tokens.l4_options].get(Tokens.dst_port_op) == 'eq':
+
+            self.flows["flow"][0]["id"] = ODLPluginMasks.\
+                id_port_both.format(rule[Tokens.id_],
+                                    port,
+                                    rule[Tokens.l4_options][Tokens.dst_port])
+
+    def _build_id_when_only_src_or_dst_range(self, rule, port):
+
+        self.flows["flow"][0]["id"] = ODLPluginMasks.\
+            id_port.format(rule[Tokens.id_],
+                           port)
+
+    def _build_id_when_src_range_and_dst_range(self, rule, src_port, dst_port):
+
+        self.flows["flow"][0]["id"] = ODLPluginMasks.\
+            id_port_both.format(rule[Tokens.id_],
+                                src_port, dst_port)
 
     def _build_sequence(self, rule):
 
@@ -270,17 +297,13 @@ class AclFlowBuilder(object):
 
     def _get_id_from_rule(self, rule):
 
-        return re.search('(^[0-9]+).*', rule[Tokens.id]).group(1)
+        return re.search('(^[0-9]+).*', rule[Tokens.id_]).group(1)
 
     def _build_cookie(self, rule):
 
         id_rule = self._get_id_from_rule(rule)
         self.flows["flow"][0][Tokens.cookie] = \
             CookieHandler.get_cookie(id_rule)
-
-    def _build_id(self, rule):
-
-        self.flows["flow"][0]["id"] = rule[Tokens.id]
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
@@ -366,17 +389,17 @@ class AclFlowBuilder(object):
 
         if l4_options.get(Tokens.src_port_op) == 'range' \
                 and l4_options.get(Tokens.dst_port_op) == 'range':
-            self._build_specific_src_and_dst_ports_in_range(rule, protocol)
+            self._build_double_range(rule, protocol)
 
         elif l4_options.get(Tokens.src_port_op) == 'range':
-            self._build_specific_src_or_dst_ports_in_range(rule, protocol,
-                                                           Tokens.src_port,
-                                                           Tokens.src_port_end)
+            self._build_simple_range(rule, protocol,
+                                     Tokens.src_port,
+                                     Tokens.src_port_end)
 
         elif l4_options.get(Tokens.dst_port_op) == 'range':
-            self._build_specific_src_or_dst_ports_in_range(rule, protocol,
-                                                           Tokens.dst_port,
-                                                           Tokens.dst_port_end)
+            self._build_simple_range(rule, protocol,
+                                     Tokens.dst_port,
+                                     Tokens.dst_port_end)
         else:
             self._build_transport_source_ports(rule, protocol)
             self._build_transport_destination_ports(rule, protocol)
