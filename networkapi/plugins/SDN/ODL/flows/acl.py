@@ -313,8 +313,12 @@ class AclFlowBuilder(object):
 
         for port in xrange(port_start, port_end + 1):
 
-            self._build_transport_source_ports(rule, protocol)
-            self._build_transport_destination_ports(rule, protocol)
+            # Do this to avoid change the first port of range in orig rule
+            rule_copy = deepcopy(rule)
+            rule_copy[Tokens.l4_options][start] = str(port)
+
+            self._build_transport_source_ports(rule_copy, protocol)
+            self._build_transport_destination_ports(rule_copy, protocol)
             self._build_id_and_description_when_simple_range(
                 rule, port, port_start, port_end)
 
@@ -322,17 +326,23 @@ class AclFlowBuilder(object):
 
     def _build_double_range(self, rule, protocol):
 
-        src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
-        src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end])
+        l4_options = rule[Tokens.l4_options]
+        src_port_start = int(l4_options[Tokens.src_port])
+        src_port_end = int(l4_options[Tokens.src_port_end])
 
-        dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
-        dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end])
+        dst_port_start = int(l4_options[Tokens.dst_port])
+        dst_port_end = int(l4_options[Tokens.dst_port_end])
 
         for src_port in xrange(src_port_start, src_port_end + 1):
             for dst_port in xrange(dst_port_start, dst_port_end + 1):
 
-                self._build_transport_source_ports(rule, protocol)
-                self._build_transport_destination_ports(rule, protocol)
+                # Do this to avoid change the first port of range in orig rule
+                rule_copy = deepcopy(rule)
+                rule_copy[Tokens.l4_options][Tokens.src_port] = str(src_port)
+                rule_copy[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
+
+                self._build_transport_source_ports(rule_copy, protocol)
+                self._build_transport_destination_ports(rule_copy, protocol)
                 self._build_id_and_description_when_double_range(
                     rule, src_port, dst_port)
 
