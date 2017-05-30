@@ -63,7 +63,7 @@ class ODLPlugin(BaseSdnPlugin):
 
         flows_list_by_switch = []
         for node_id in nodes_ids:
-            path = "/restconf/operational/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
                    % (node_id)
 
             flows_list_by_switch.append(
@@ -123,7 +123,11 @@ class ODLPlugin(BaseSdnPlugin):
     def _get_nodes(self):
         path = "/restconf/operational/opendaylight-inventory:nodes/"
         nodes = self._request(method='get', path=path, contentType='json')
-        return nodes['nodes']['node']
+        retorno = []
+        for node in nodes['nodes']['node']:
+            if node["id"] not in ["controller-config"]:
+                retorno.append(node)
+        return retorno
 
     def _request(self, **kwargs):
         # Params and default values
