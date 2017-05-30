@@ -1,0 +1,45 @@
+{
+    "server_pools": [
+        {
+            "default_limit": 1001,
+            "default_port": 801,
+            "environment": 3,
+            "healthcheck": {
+                "destination": "*:*",
+                "healthcheck_expect": "",
+                "healthcheck_request": "",
+                "healthcheck_type": "TCP",
+                "identifier": ""
+            },
+            "id": 3,
+            "identifier": "pool-vm-rack1-deployed",
+            "lb_method": "least-conn",
+            "pool_created": true,
+            "server_pool_members": [
+                {
+                    "equipment": {
+                        "id": 7,
+                        "name": "VM-1-RACK-1"
+                    },
+                    "id": 5,
+                    "identifier": "192.168.1.2",
+                    "ip": {
+                        "id": 7,
+                        "ip_formated": "192.168.1.2"
+                    },
+                    "ipv6": null,
+                    "last_status_update_formated": null,
+                    "limit": 101,
+                    "member_status": 7,
+                    "port_real": 801,
+                    "priority": 2,
+                    "weight": 2
+                }
+            ],
+            "servicedownaction": {
+                "id": 5,
+                "name": "none"
+            }
+        }
+    ]
+}

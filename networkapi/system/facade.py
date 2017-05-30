@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -26,9 +26,9 @@ log = logging.getLogger(__name__)
 
 def save_variable(user, name, value, description):
 
-    if name is None or name == "":
+    if name is None or name == '':
         raise exceptions.InvalidIdNameException()
-    if value is None or name == "":
+    if value is None or name == '':
         raise exceptions.InvalidIdValueException()
 
     var = Variable()
@@ -38,7 +38,7 @@ def save_variable(user, name, value, description):
     try:
         var.save(user)
     except Exception, e:
-        log.info("Erro inserindo variavel: %s" % (e))
+        log.info('Erro inserindo variavel: %s' % (e))
         raise exceptions.VariableError()
     return var
 

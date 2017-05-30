@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from django.forms.models import model_to_dict
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.rack.models import Rack , RackError, EnvironmentRack
-from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import Ambiente
 
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.auth import has_perm
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.rack.models import EnvironmentRack
+from networkapi.rack.models import Rack
+from networkapi.rack.models import RackError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 
 
 def get_environment_map(environment):
@@ -34,10 +35,11 @@ def get_environment_map(environment):
     environment_map['divisao_dc_name'] = environment.divisao_dc.nome
     environment_map['ambiente_logico_name'] = environment.ambiente_logico.nome
     environment_map['grupo_l3_name'] = environment.grupo_l3.nome
-    if not environment.min_num_vlan_1==None and not environment.max_num_vlan_1==None:
-        environment_map['range'] = str(environment.min_num_vlan_1) + " - " + str(environment.max_num_vlan_1)
+    if not environment.min_num_vlan_1 is None and not environment.max_num_vlan_1 is None:
+        environment_map['range'] = str(
+            environment.min_num_vlan_1) + ' - ' + str(environment.max_num_vlan_1)
     else:
-        environment_map['range'] = "Nao definido"
+        environment_map['range'] = 'Nao definido'
 
     return environment_map
 
@@ -57,7 +59,7 @@ class RackEnvironmentResource(RestResource):
         try:
 
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT , AdminPermission.READ_OPERATION):
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
                 return self.not_authorized()
@@ -70,7 +72,7 @@ class RackEnvironmentResource(RestResource):
                 envs = model_to_dict(envs)
                 amb = Ambiente()
                 ambiente = amb.get_by_pk(envs['ambiente'])
-                if "PROD" in ambiente.ambiente_logico.nome:
+                if 'PROD' in ambiente.ambiente_logico.nome:
                     environment_list.append(get_environment_map(ambiente))
 
             return self.response(dumps_networkapi({'ambiente': environment_list}))

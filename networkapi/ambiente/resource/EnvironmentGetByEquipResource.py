@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
+from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
 from networkapi.auth import has_perm
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
 from networkapi.rest import RestResource
-from networkapi.ambiente.models import Ambiente
-from django.forms.models import model_to_dict
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.exception import InvalidValueError
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente,\
-    EquipamentoNotFoundError
 
 
 class EnvironmentGetByEquipResource(RestResource):
@@ -65,25 +65,27 @@ class EnvironmentGetByEquipResource(RestResource):
             for environment in environments_list:
                 env = Ambiente.get_by_pk(environment.ambiente.id)
                 env_map = model_to_dict(env)
-                env_map["grupo_l3_name"] = env.grupo_l3.nome
-                env_map["ambiente_logico_name"] = env.ambiente_logico.nome
-                env_map["divisao_dc_name"] = env.divisao_dc.nome
-                env_map["is_router"] = environment.is_router
+                env_map['grupo_l3_name'] = env.grupo_l3.nome
+                env_map['ambiente_logico_name'] = env.ambiente_logico.nome
+                env_map['divisao_dc_name'] = env.divisao_dc.nome
+                env_map['is_router'] = environment.is_router
 
                 try:
-                    env_map['range'] = str(env.min_num_vlan_1) + " - " + str(env.max_num_vlan_1)
+                    env_map['range'] = str(
+                        env.min_num_vlan_1) + ' - ' + str(env.max_num_vlan_1)
                     if env.min_num_vlan_1 != env.min_num_vlan_2:
-                        env_map['range'] = env_map['range'] + "; " + str(env.min_num_vlan_2) + " - " + str(env.max_num_vlan_2)
+                        env_map['range'] = env_map[
+                            'range'] + '; ' + str(env.min_num_vlan_2) + ' - ' + str(env.max_num_vlan_2)
                 except:
-                    env_map['range'] = "Nao definido"
+                    env_map['range'] = 'Nao definido'
 
                 if env.filter is not None:
-                    env_map["filter_name"] = env.filter.name
+                    env_map['filter_name'] = env.filter.name
 
                 lists_aux.append(env_map)
             # Return XML
             environment_list = dict()
-            environment_list["ambiente"] = lists_aux
+            environment_list['ambiente'] = lists_aux
             return self.response(dumps_networkapi(environment_list))
 
         except InvalidValueError, e:

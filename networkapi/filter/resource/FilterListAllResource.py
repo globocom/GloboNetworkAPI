@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.rest import RestResource
-from networkapi.filter.models import Filter
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi
+
 import logging
+
 from django.forms.models import model_to_dict
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.filter.models import Filter
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.rest import RestResource
 
 
 class FilterListAllResource(RestResource):
 
-    '''Class that receives requests to list all Filters.'''
+    """Class that receives requests to list all Filters."""
 
     log = logging.getLogger('FilterListAllResource')
 
@@ -39,7 +40,7 @@ class FilterListAllResource(RestResource):
 
         try:
 
-            self.log.info("List all Filters")
+            self.log.info('List all Filters')
             # Commons Validations
 
             # User permission

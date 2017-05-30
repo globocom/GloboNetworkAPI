@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import random
 import re
 import string
 import unicodedata
 from time import sleep
 
 import paramiko
-import random
 
 from . import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
@@ -34,9 +34,7 @@ log = logging.getLogger(__name__)
 
 class BasePlugin(object):
 
-    """
-    Base plugin interface
-    """
+    """Base plugin interface."""
 
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
     INVALID_REGEX = '([Ii]nvalid)'
@@ -68,21 +66,22 @@ class BasePlugin(object):
             self.tftpserver = kwargs.get('tftpserver')
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
+        """Copy file from server to destination configuration.
+        By default, plugin should apply file in running configuration (active).
         """
-        Copy file from server to destination configuration
-        By default, plugin should apply file in running configuration (active)
-        """
+
         raise NotImplementedError()
 
     @mock_return('')
     def connect(self):
         """Connects to equipment via ssh using paramiko.SSHClient  and
-            sets channel variable with invoked shell object
+            sets channel variable with invoked shell object.
 
         Raises:
             IOError: if cannot connect to host
             Exception: for other unhandled exceptions
         """
+
         if self.equipment_access is None:
             try:
                 self.equipment_access = EquipamentoAcesso.search(
@@ -102,7 +101,7 @@ class BasePlugin(object):
         try:
             retries = 0
             connected = 0
-            while(not connected and retries < self.connect_max_retries): 
+            while(not connected and retries < self.connect_max_retries):
                 try:
                     self.remote_conn.connect(
                         device, port=self.connect_port, username=username, password=password)
@@ -112,10 +111,10 @@ class BasePlugin(object):
                     retries += 1
                     # not capable of connecting after max retries
                     if retries is self.connect_max_retries:
-                        raise Exception(e) 
-                    log.error('Try %s/%s - Error connecting to host %s: %s' % (retries, self.connect_max_retries, device, e))
-                    sleep(random.randint(1,15))
-
+                        raise Exception(e)
+                    log.error('Try %s/%s - Error connecting to host %s: %s' %
+                              (retries, self.connect_max_retries, device, e))
+                    sleep(random.randint(1, 15))
 
         except IOError, e:
             log.error('Could not connect to host %s: %s' % (device, e))
@@ -125,9 +124,8 @@ class BasePlugin(object):
             raise Exception(e)
 
     def create_svi(self, svi_number, svi_description='no description'):
-        """
-        Delete SVI in switch
-        """
+        """Delete SVI in switch."""
+
         raise NotImplementedError()
 
     @mock_return('')
@@ -135,16 +133,15 @@ class BasePlugin(object):
         self.channel.close()
 
     def ensure_privilege_level(self, privilege_level=None):
-        """
-        Ensure connection has the right privileges expected
-        """
+        """Ensure connection has the right privileges expected."""
+
         raise NotImplementedError()
 
     @mock_return('')
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
+        """Send single command to equipment and than closes connection channel.
         """
-        Send single command to equipment and than closes connection channel
-        """
+
         if self.channel is None:
             log.error(
                 'No channel connection to the equipment %s. Was the connect() funcion ever called?' % self.equipment.nome)
@@ -176,9 +173,8 @@ class BasePlugin(object):
         return ''.join(c for c in cleanedstr if c in self.VALID_OUTPUT_CHARS)
 
     def remove_svi(self, svi_number):
-        """
-        Delete SVI from switch
-        """
+        """Delete SVI from switch."""
+
         raise NotImplementedError()
 
     def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
@@ -206,37 +202,52 @@ class BasePlugin(object):
         return recv_string
 
     def get_state_member(self, status):
-        """
-        Return state of poolmember
-        """
+        """Return state of poolmember."""
+
         raise NotImplementedError()
 
     def set_state_member(self, status):
-        """
-        Set state of poolmember
-        """
+        """Set state of poolmember."""
+
         raise NotImplementedError()
 
     def create_member(self, status):
-        """
-        Crate poolmember
-        """
+        """Crate poolmember."""
+
         raise NotImplementedError()
 
     def remove_member(self, status):
-        """
-        Remove poolmember
-        """
+        """Remove poolmember."""
+
         raise NotImplementedError()
 
     def get_restrictions(self, status):
-        """
-        Remove poolmember
-        """
+        """Remove poolmember."""
+
         raise NotImplementedError()
 
     def partial_update_vip(self, **kwargs):
         """
-        Partial Update of VIP
-        """
+        Partial Update of VIP."""
+
+        raise NotImplementedError()
+
+    def get_name_eqpt(self, **kwargs):
+        """Generate name of VIP."""
+
+        raise NotImplementedError()
+
+    def update_pool(self, **kwargs):
+        """Update of VIP."""
+
+        raise NotImplementedError()
+
+    def create_pool(self, **kwargs):
+        """Create of VIP."""
+
+        raise NotImplementedError()
+
+    def delete_pool(self, **kwargs):
+        """Delete of VIP."""
+
         raise NotImplementedError()

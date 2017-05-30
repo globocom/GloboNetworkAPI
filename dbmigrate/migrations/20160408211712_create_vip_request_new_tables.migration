@@ -7,8 +7,8 @@ CREATE TABLE `vip_request_port` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `id_vip_request` INT(11) UNSIGNED NULL COMMENT '',
   `port` INT(5) UNSIGNED NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_vip_request_pool_id_requisicao_vips_idx` (`id_vip_request` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_vip_request_pool_id_requisicao_vips_idx` (`id_vip_request` ASC),
   CONSTRAINT `fk_vip_request_pool_id_requisicao_vips`
     FOREIGN KEY (`id_vip_request`)
     REFERENCES `vip_request` (`id`)
@@ -21,10 +21,10 @@ CREATE TABLE `vip_request_port_pool` (
   `id_opcoesvip` INT(10) UNSIGNED NULL COMMENT '',
   `id_server_pool` INT(11) NULL COMMENT '',
   `val_optionvip` VARCHAR(255) NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_vip_request_port_pool_id_vip_request_port_idx` (`id_vip_request_port` ASC)  COMMENT '',
-  INDEX `fk_vip_request_port_pool_id_opcoesvip_idx` (`id_opcoesvip` ASC)  COMMENT '',
-  INDEX `fk_vip_request_port_pool_id_server_pool_idx` (`id_server_pool` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_vip_request_port_pool_id_vip_request_port_idx` (`id_vip_request_port` ASC),
+  INDEX `fk_vip_request_port_pool_id_opcoesvip_idx` (`id_opcoesvip` ASC),
+  INDEX `fk_vip_request_port_pool_id_server_pool_idx` (`id_server_pool` ASC),
   CONSTRAINT `fk_vip_request_port_pool_id_vip_request_port`
     FOREIGN KEY (`id_vip_request_port`)
     REFERENCES `vip_request_port` (`id`)
@@ -45,9 +45,9 @@ CREATE TABLE `vip_request_port_optionsvip` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `id_vip_request_port` INT(11) UNSIGNED NULL COMMENT '',
   `id_opcoesvip` INT(10) UNSIGNED NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `vip_request_port_optionsvip_id_vip_request_idx` (`id_vip_request_port` ASC)  COMMENT '',
-  INDEX `vip_request_port_optionsvip_id_opcoesvip_idx` (`id_opcoesvip` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `vip_request_port_optionsvip_id_vip_request_idx` (`id_vip_request_port` ASC),
+  INDEX `vip_request_port_optionsvip_id_opcoesvip_idx` (`id_opcoesvip` ASC),
   CONSTRAINT `vip_request_port_optionsvip_id_vip_request`
     FOREIGN KEY (`id_vip_request_port`)
     REFERENCES `vip_request_port` (`id`)
@@ -79,9 +79,9 @@ CREATE TABLE `vip_request_pool` (
     `val_optionvip` VARCHAR(255) NULL COMMENT '',
     `port` INT(5) UNSIGNED NOT NULL COMMENT '',
     PRIMARY KEY (`id`) COMMENT '',
-    INDEX `fk_vip_request_pool_id_requisicao_vips_idx` (`id_vip_request` ASC) COMMENT '',
-    INDEX `fk_vip_request_pool_id_opcoesvip_idx` (`id_opcoesvip` ASC) COMMENT '',
-    INDEX `fk_vip_request_pool_id_server_pool_idx` (`id_server_pool` ASC) COMMENT '',
+    INDEX `fk_vip_request_pool_id_requisicao_vips_idx` (`id_vip_request` ASC),
+    INDEX `fk_vip_request_pool_id_opcoesvip_idx` (`id_opcoesvip` ASC),
+    INDEX `fk_vip_request_pool_id_server_pool_idx` (`id_server_pool` ASC),
     CONSTRAINT `fk_vip_request_pool_id_requisicao_vips` FOREIGN KEY (`id_vip_request`)
         REFERENCES `vip_request` (`id`)
         ON DELETE CASCADE ON UPDATE NO ACTION,

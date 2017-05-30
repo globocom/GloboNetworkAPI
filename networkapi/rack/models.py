@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,14 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
+
 import logging
-from networkapi.models.BaseModel import BaseModel
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
 from networkapi.equipamento.models import Equipamento
-from networkapi.ambiente.models import Ambiente, AmbienteError
+from networkapi.models.BaseModel import BaseModel
 
 
 class RackError(Exception):
@@ -36,12 +38,14 @@ class RackError(Exception):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
+
 class InvalidMacValueError(RackError):
 
     """Retorna exceção quando o valor da variávmac é inválido."""
 
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
+
 
 class RackNumberDuplicatedValueError(RackError):
 
@@ -50,6 +54,7 @@ class RackNumberDuplicatedValueError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+
 class RackNameDuplicatedError(RackError):
 
     """Retorna exceção quando numero do rack for repetido."""
@@ -57,12 +62,14 @@ class RackNameDuplicatedError(RackError):
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
 
+
 class RackNumberNotFoundError(RackError):
 
     """Retorna exceção quando rack nao for encontrado."""
 
     def __init__(self, cause, message=None):
         RackError.__init__(self, cause, message)
+
 
 class RackConfigError(Exception):
 
@@ -72,6 +79,7 @@ class RackConfigError(Exception):
         self.cause = cause
         self.param = param
         self.value = value
+
 
 class RackAplError(Exception):
 
@@ -90,15 +98,20 @@ class Rack(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_rack')
     numero = models.IntegerField(unique=True)
     nome = models.CharField(max_length=4, unique=True)
-    mac_sw1 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw1')
-    mac_sw2 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw2')
-    mac_ilo = models.CharField(max_length=17, blank=True, null=True, db_column='mac_ilo')
-    id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
-    id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
-    id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
+    mac_sw1 = models.CharField(
+        max_length=17, blank=True, null=True, db_column='mac_sw1')
+    mac_sw2 = models.CharField(
+        max_length=17, blank=True, null=True, db_column='mac_sw2')
+    mac_ilo = models.CharField(
+        max_length=17, blank=True, null=True, db_column='mac_ilo')
+    id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True,
+                               db_column='id_equip1', related_name='equipamento_sw1')
+    id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True,
+                               db_column='id_equip2', related_name='equipamento_sw2')
+    id_ilo = models.ForeignKey(Equipamento, blank=True, null=True,
+                               db_column='id_equip3', related_name='equipamento_ilo')
     config = models.BooleanField(default=False)
     create_vlan_amb = models.BooleanField(default=False)
-
 
     class Meta(BaseModel.Meta):
         db_table = u'racks'
@@ -115,7 +128,8 @@ class Rack(BaseModel):
         try:
             return Rack.objects.filter(id=idt).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+            raise RackNumberNotFoundError(
+                e, u'Dont there is a Rack by pk = %s.' % idt)
         except Exception, e:
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
@@ -131,7 +145,8 @@ class Rack(BaseModel):
         try:
             return Rack.objects.filter(nome=name).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise RackNumberNotFoundError(e, u'Dont there is the Rack %s.' % name)
+            raise RackNumberNotFoundError(
+                e, u'Dont there is the Rack %s.' % name)
         except Exception, e:
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
@@ -147,7 +162,8 @@ class Rack(BaseModel):
         try:
             return Rack.objects.get(numero__iexact=number)
         except ObjectDoesNotExist, e:
-            raise RackNumberNotFoundError(e, u'Dont there is a Rack by pk = %s.' % idt)
+            raise RackNumberNotFoundError(
+                e, u'Dont there is a Rack by pk = %s.' % idt)
         except Exception, e:
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
@@ -159,7 +175,7 @@ class Rack(BaseModel):
                 None, u'Numero de Rack %s ja existe.' % (self.numero))
         except ObjectDoesNotExist, e:
             pass
-        
+
         try:
             Rack.objects.get(nome__iexact=self.nome)
             raise RackNameDuplicatedError(
@@ -173,6 +189,7 @@ class Rack(BaseModel):
             self.log.error(u'Falha ao inserir Rack.')
             raise RackError(e, u'Falha ao inserir Rack.')
 
+
 class EnvironmentRackError(Exception):
 
     """EnvironmentRack table errors"""
@@ -185,12 +202,14 @@ class EnvironmentRackError(Exception):
         msg = u'Cause: %s, Message: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
 
+
 class EnvironmentRackDuplicatedError(EnvironmentRackError):
 
     """Exception when environment and rack are already associated."""
 
     def __init__(self, cause, message=None):
         EnvironmentRackError.__init__(self, cause, message)
+
 
 class EnvironmentRackNotFoundError(EnvironmentRackError):
 
@@ -213,7 +232,7 @@ class EnvironmentRack(BaseModel):
         managed = True
 
     def create(self, authenticated_user):
-        '''Insert a new associoation between rack and environment
+        """Insert a new associoation between rack and environment
 
         @return: Nothing
 
@@ -222,7 +241,7 @@ class EnvironmentRack(BaseModel):
         @raise EnvironmentRackDuplicatedError: Rack already related to environment
 
         @raise EnvironmentRackError: Not able to complete.
-        '''
+        """
 
         self.ambiente = Ambiente().get_by_pk(self.ambiente.id)
         self.rack = Rack().get_by_pk(self.rack.id)
@@ -243,7 +262,6 @@ class EnvironmentRack(BaseModel):
             raise EnvironmentRackError(
                 e, u'Error trying to insert EnvironmentRack: %s/%s.' % (self.rack.id, self.ambiente.id))
 
-
     def get_by_rack_environment(self, rack_id, environment_id):
         try:
             return EnvironmentRack.objects.get(ambiente__id=environment_id, rack__id=rack_id)
@@ -251,13 +269,13 @@ class EnvironmentRack(BaseModel):
             raise EnvironmentRackNotFoundError(
                 e, u'There is no EnvironmentRack with rack = %s and environment = %s.' % (rack_id, environment_id))
         except Exception, e:
-            self.log.error(u'Error trying to search EnvironmentRack %s/%s.' %(rack_id, environment_id))
+            self.log.error(
+                u'Error trying to search EnvironmentRack %s/%s.' % (rack_id, environment_id))
             raise EnvironmentRackError(
                 e, u'Error trying to search EnvironmentRack.')
 
     @classmethod
     def get_by_rack(cls, rack_id):
-
         """"Get Environment by racks id.
         @return: Environment.
         """

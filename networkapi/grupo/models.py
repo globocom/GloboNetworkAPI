@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from django.db import models
-
-from django.core.exceptions import ObjectDoesNotExist
-
-from networkapi.admin_permission import AdminPermission
-
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -135,12 +130,12 @@ class UGrupo(BaseModel):
         managed = True
 
     def delete(self):
-        '''Sobrescreve o método do Django para remover o grupo de usuário.
+        """Sobrescreve o método do Django para remover o grupo de usuário.
 
         Além de remover o grupo também remove as permissões administrativas do grupo,
         os relacionamentos do grupo com usuários e os relacionamentos do grupo com
         grupos de equipamento.
-        '''
+        """
         for p in self.permissaoadministrativa_set.all():
             p.delete()
         for ug in self.usuariogrupo_set.all():
@@ -213,7 +208,7 @@ class PermissaoAdministrativa(BaseModel):
         managed = True
 
     def create(self, authenticated_user):
-        '''Insere uma nova Permissao Administrativa.
+        """Insere uma nova Permissao Administrativa.
 
         @return: Nothing
 
@@ -222,7 +217,7 @@ class PermissaoAdministrativa(BaseModel):
         @raise GrupoError: Falha ao inserir uma Permissao Administrativa.
 
         @raise PermissaoAdministrativaDuplicatedError: Permissão administrativa com grupo de usuário e função já cadastrada
-        '''
+        """
 
         try:
             PermissaoAdministrativa.get_permission_by_function_ugroup(
@@ -332,10 +327,11 @@ class EGrupo(BaseModel):
             return EGrupo.objects.get(pk=pk)
         except ObjectDoesNotExist, e:
             raise EGrupoNotFoundError(
-                e, u'Não existe um egrupo com a pk = %s.' % pk)
+                e, u'There is no group with a pk = %s.' % pk)
         except Exception, e:
-            cls.log.error(u'Falha ao pesquisar o grupo de equipamento.')
-            raise GrupoError(e, u'Falha ao pesquisar o grupo de equipamento.')
+            msg = u'Failed to search the equipment group {}.'
+            cls.log.error(msg.format(pk))
+            raise GrupoError(e, msg.format(pk))
 
     @classmethod
     def search(cls):
@@ -347,13 +343,13 @@ class EGrupo(BaseModel):
                 e, u'Falha ao pesquisar os grupos de equipamento.')
 
     def create(self, authenticated_user):
-        '''Insere um novo grupo de equipamento.
+        """Insere um novo grupo de equipamento.
 
         @return: Nothing.
 
         @raise EGrupoNameDuplicatedError: Grupo de equipamento com o nome já cadastrado
-        @raise GrupoError: Falha ao inserir o grupo. 
-        '''
+        @raise GrupoError: Falha ao inserir o grupo.
+        """
         try:
             try:
                 EGrupo.objects.get(nome__iexact=self.nome)
@@ -371,7 +367,7 @@ class EGrupo(BaseModel):
 
     @classmethod
     def update(cls, authenticated_user, pk, **kwargs):
-        '''Atualiza os dados de um grupo de equipamento.
+        """Atualiza os dados de um grupo de equipamento.
 
         @return: Nothing.
 
@@ -379,8 +375,8 @@ class EGrupo(BaseModel):
 
         @raise EGrupoNotFoundError: Grupo de equipamento não cadastrado.
 
-        @raise EGrupoNameDuplicatedError: Grupo de equipamento com o nome já cadastrado.  
-        '''
+        @raise EGrupoNameDuplicatedError: Grupo de equipamento com o nome já cadastrado.
+        """
         egrupo = EGrupo.get_by_pk(pk)
 
         try:
@@ -413,9 +409,9 @@ class EGrupo(BaseModel):
                 list_equip.append(equipament.nome)
 
         if len(list_equip) > 0:
-            msg = ""
+            msg = ''
             for equip in list_equip:
-                msg = msg + equip + ", "
+                msg = msg + equip + ', '
             raise GroupDontRemoveError(egrupo.nome, msg)
 
         try:
@@ -425,11 +421,11 @@ class EGrupo(BaseModel):
             raise GrupoError(e, u'Falha ao remover o grupo de equipamento.')
 
     def delete(self):
-        '''Sobrescreve o método do Django para remover o grupo de equipamento.
+        """Sobrescreve o método do Django para remover o grupo de equipamento.
 
-        Além de remover o grupo também remove os relacionamentos do grupo 
+        Além de remover o grupo também remove os relacionamentos do grupo
         com equipamentos e os relacionamentos do grupo com grupos de usuário.
-        '''
+        """
         for eg in self.equipamentogrupo_set.all():
             eg.delete()
 
@@ -468,15 +464,15 @@ class DireitosGrupoEquipamento(BaseModel):
                 e, u'Falha ao pesquisar os direitos de um grupo de usuário em um grupo de equipamento.')
 
     def create(self, authenticated_user):
-        '''Insere um novo direito de um grupo de usuário em um grupo de equipamento.
+        """Insere um novo direito de um grupo de usuário em um grupo de equipamento.
 
         @return: Nothing.
 
         @raise UGrupo.DoesNotExist: Grupo de usuário não cadastrado.
         @raise EGrupoNotFoundError: Grupo de equipamento não cadastrado.
-        @raise DireitoGrupoEquipamentoDuplicatedError: Direito Grupo Equipamento já cadastrado. 
+        @raise DireitoGrupoEquipamentoDuplicatedError: Direito Grupo Equipamento já cadastrado.
         @raise GrupoError: Falha ao inserir o direito.
-        '''
+        """
         self.egrupo = EGrupo.get_by_pk(self.egrupo.id)
 
         try:
@@ -499,14 +495,14 @@ class DireitosGrupoEquipamento(BaseModel):
 
     @classmethod
     def update(cls, authenticated_user, pk, **kwargs):
-        '''Atualiza os direitos de um grupo de usuário em um grupo de equipamento.
+        """Atualiza os direitos de um grupo de usuário em um grupo de equipamento.
 
         @return: Nothing.
 
         @raise GrupoError: Falha ao alterar os direitos.
 
         @raise DireitosGrupoEquipamento.DoesNotExist: DireitoGrupoEquipamento não cadastrado.
-        '''
+        """
         direito = DireitosGrupoEquipamento.get_by_pk(pk)
         try:
             if 'ugrupo_id' in kwargs:
@@ -531,12 +527,12 @@ class DireitosGrupoEquipamento(BaseModel):
 
     @classmethod
     def remove(cls, authenticated_user, pk):
-        '''Remove os direitos de um grupo de usuário em um grupo de equipamento.
+        """Remove os direitos de um grupo de usuário em um grupo de equipamento.
 
         @raise GrupoError: Falha ao alterar os direitos.
 
         @raise DireitosGrupoEquipamento.DoesNotExist: DireitoGrupoEquipamento não cadastrado.
-        '''
+        """
         direito = DireitosGrupoEquipamento.get_by_pk(pk)
         try:
             direito.delete()

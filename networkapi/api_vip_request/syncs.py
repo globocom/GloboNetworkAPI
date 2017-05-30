@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+
 log = logging.getLogger(__name__)
 
 # files have "#SYNC_VIP" to find where have migrations

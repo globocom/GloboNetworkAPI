@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -84,14 +84,14 @@ def get_environment_map(environment):
 
 class AmbienteResource(RestResource):
 
-    '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
+    """Classe que recebe as requisições relacionadas com a tabela 'ambiente'."""
 
     log = logging.getLogger('AmbienteResource')
 
     CODE_MESSAGE_CONFIG_ENVIRONMENT_ALREADY_EXISTS = 302
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Trata as requisições de GET para consulta de ambientes.
+        """Trata as requisições de GET para consulta de ambientes.
 
         Permite a consulta de todos os ambientes, ambientes filtrados por divisao_dc,
         ambientes filtrados por divisão_dc e por ambiente_logico
@@ -99,7 +99,7 @@ class AmbienteResource(RestResource):
         URLs: /ambiente/,
               /ambiente/divisao_dc/<id_divisao_dc>/,
               /ambiente/divisao_dc/<id_divisao_dc>/ambiente_logico/<id_amb_logico>/,
-        '''
+        """
         try:
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()
@@ -127,7 +127,7 @@ class AmbienteResource(RestResource):
                     loc_env = AmbienteLogico.get_by_pk(environment_logical_id)
 
             environments = Ambiente().search(
-                division_id, environment_logical_id).select_related("grupo_l3", "ambiente_logico", "divisao_dc", "filter")
+                division_id, environment_logical_id).select_related('grupo_l3', 'ambiente_logico', 'divisao_dc', 'filter')
             for environment in environments:
                 environment_list.append(get_environment_map(environment))
 
@@ -655,17 +655,17 @@ class AmbienteResource(RestResource):
 
 class AmbienteEquipamentoResource(RestResource):
 
-    '''Classe que recebe as requisições relacionadas com a tabela 'ambiente'.'''
+    """Classe que recebe as requisições relacionadas com a tabela 'ambiente'."""
 
     log = logging.getLogger('AmbienteEquipamentoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Trata as requisições de GET para consulta de um ambiente.
+        """Trata as requisições de GET para consulta de um ambiente.
 
         Consulta o ambiente de um IP associado a um Equipamento.
 
         URL: /ambiente/equipamento/<nome_equip>/ip/<x1>.<x2>.<x3>.<x4>/
-        '''
+        """
         equipment_name = kwargs.get('nome_equip')
         oct1 = kwargs.get('x1')
         oct2 = kwargs.get('x2')
@@ -675,11 +675,11 @@ class AmbienteEquipamentoResource(RestResource):
         if equipment_name is None or oct1 is None or oct2 is None or oct3 is None or oct4 is None:
             return super(AmbienteEquipamentoResource, self).handle_get(request, user, *args, **kwargs)
 
-        self.log.debug("nome_equip = %s", equipment_name)
-        self.log.debug("x1 = %s", oct1)
-        self.log.debug("x2 = %s", oct2)
-        self.log.debug("x3 = %s", oct3)
-        self.log.debug("x4 = %s", oct4)
+        self.log.debug('nome_equip = %s', equipment_name)
+        self.log.debug('x1 = %s', oct1)
+        self.log.debug('x2 = %s', oct2)
+        self.log.debug('x3 = %s', oct3)
+        self.log.debug('x4 = %s', oct4)
 
         try:
             equip = Equipamento().get_by_name(equipment_name)
@@ -714,15 +714,16 @@ def fix_acl_path(acl_path):
         if is_valid_regex(path, r'^.*[\\\\:*?"<>|].*$'):
             raise InvalidValueError(None, 'acl_path', acl_path)
         try:
-            while path[0] == "/":
+            while path[0] == '/':
                 path = path[1:]
 
-            while path[-1] == "/":
+            while path[-1] == '/':
                 path = path[:-1]
         except IndexError:
             raise InvalidValueError(None, 'acl_path', acl_path)
 
     return path
+
 
 if __name__ == '__main__':
     pass

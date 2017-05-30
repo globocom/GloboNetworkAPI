@@ -17,6 +17,8 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
     networks_ipv4 = serializers.SerializerMethodField('get_networks_ipv4')
     networks_ipv6 = serializers.SerializerMethodField('get_networks_ipv6')
     vrfs = serializers.SerializerMethodField('get_vrfs')
+    groups_permissions = serializers\
+        .SerializerMethodField('get_groups_permissions')
 
     def get_environment(self, obj):
         return self.extends_serializer(obj, 'environment')
@@ -29,6 +31,9 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
 
     def get_vrfs(self, obj):
         return self.extends_serializer(obj, 'vrfs')
+
+    def get_groups_permissions(self, obj):
+        return self.extends_serializer(obj, 'groups_permissions')
 
     class Meta:
         vlan_model = get_app('vlan', module_label='models')
@@ -50,6 +55,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'networks_ipv4',
             'networks_ipv6',
             'vrfs',
+            'groups_permissions',
         )
 
         default_fields = (
@@ -74,13 +80,14 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'num_vlan',
         )
 
-        details_fields = fields
+        details_fields = default_fields
 
     def get_serializers(self):
         """Returns the mapping of serializers."""
         env_slz = get_app('api_environment', module_label='serializers')
         ip_slz = get_app('api_network', module_label='serializers.v3')
         vrf_slz = get_app('api_vrf', module_label='serializers')
+        ogp_slz = get_app('api_ogp', module_label='serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -155,9 +162,31 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'vrfs'
                 },
+                'groups_permissions': {
+                    'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'user_group',
+                            'read',
+                            'write',
+                            'change_config',
+                            'delete',
+                        )
+                    },
+                    'obj': 'groups_permissions',
+                },
+                'groups_permissions__details': {
+                    'serializer': ogp_slz.ObjectGroupPermissionV3Serializer,
+                    'kwargs': {
+                        'include': (
+                            'group__details',
+                        ),
+                        'many': True,
+                    },
+                    'obj': 'groups_permissions',
+                },
             }
-
-        return self.mapping
 
     @staticmethod
     def setup_eager_loading_environment(queryset):

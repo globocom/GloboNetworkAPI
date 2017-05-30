@@ -1,16 +1,58 @@
 [
   {
-  "pk": 1,
-  "model": "ambiente.divisaodc",
-  "fields": {
-    "nome": "BE"
-    }
+    "fields": {
+      "nome": "BE"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 1
   },
   {
-  "pk": 2,
-  "model": "ambiente.divisaodc",
-  "fields": {
-    "nome": "FE"
-    }
+    "fields": {
+      "nome": "FE"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "nome": "TEST POST"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "nome": "TEST PUT"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "nome": "TEST DELETE"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "nome": "Test used in environment vip"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "nome": "DC Division 1 - IPs Test"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 7
+  },
+  {
+    "fields": {
+      "nome": "DC Division 2 - IPs Test"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 8
   }
 ]

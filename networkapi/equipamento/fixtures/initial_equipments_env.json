@@ -16,5 +16,77 @@
     "equipamento": "5",
     "is_router": "False"
     }
+  },
+  {
+  "pk": 3,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 4,
+    "equipamento": 6,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 4,
+    "equipamento": 7,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 5,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 4,
+    "equipamento": 8,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 6,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 4,
+    "equipamento": 9,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 7,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 4,
+    "equipamento": 10,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 8,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 5,
+    "equipamento": 11,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 9,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 5,
+    "equipamento": 12,
+    "is_router": "False"
+    }
+  },
+  {
+  "pk": 10,
+  "model": "equipamento.equipamentoambiente",
+  "fields": {
+    "ambiente": 1,
+    "equipamento": 1,
+    "is_router": "True"
+    }
   }
 ]

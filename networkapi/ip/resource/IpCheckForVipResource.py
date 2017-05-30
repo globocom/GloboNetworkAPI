@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.auth import has_perm
-
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
-from networkapi.ip.models import Ipv6, IpError, Ip, IpNotFoundError, IpNotAvailableError, NetworkNotInEvip
-
 import logging
 
-from networkapi.rest import RestResource, UserNotAuthorizedError
-
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-
-from networkapi.util import is_valid_ipv4, is_valid_ipv6, is_valid_int_greater_zero_param
 from django.forms.models import model_to_dict
-from networkapi.equipamento.models import TipoEquipamento
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.auth import has_perm
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import NetworkNotInEvip
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_ipv4
+from networkapi.util import is_valid_ipv6
 
 
 class IpCheckForVipResource(RestResource):
@@ -41,11 +43,13 @@ class IpCheckForVipResource(RestResource):
     log = logging.getLogger('IpCheckForVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to check an IPv4 or Ipv6 for vip request.
+        """Handles POST requests to check an IPv4 or Ipv6 for vip request.
 
         URL: ip/checkvipip/
-        '''
+        """
         self.log.info('Check a Ipv4 or Ipv6 for Vip')
+
+        from networkapi.equipamento.models import TipoEquipamento
 
         try:
 
@@ -89,7 +93,7 @@ class IpCheckForVipResource(RestResource):
 
             evip = EnvironmentVip.get_by_pk(id_evip)
 
-            ip_list = ip.split(".")
+            ip_list = ip.split('.')
 
             if len(ip_list) == 1:
 
@@ -101,7 +105,7 @@ class IpCheckForVipResource(RestResource):
                     raise NetworkNotInEvip(
                         'IPv6', 'Não há rede no ambiente vip fornecido')
 
-                ip_list = ip.split(":")
+                ip_list = ip.split(':')
                 ip_checked = Ipv6.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[
                                                                   2], ip_list[3], ip_list[4], ip_list[5], ip_list[6], ip_list[7], id_evip)
 
@@ -116,7 +120,7 @@ class IpCheckForVipResource(RestResource):
 
                 if not ip_ok:
                     raise IpNotAvailableError(
-                        None, "Ipv6 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip." % evip.show_environment_vip())
+                        None, 'Ipv6 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip.' % evip.show_environment_vip())
 
             else:
 
@@ -142,7 +146,7 @@ class IpCheckForVipResource(RestResource):
 
                 if not ip_ok:
                     raise IpNotAvailableError(
-                        None, "Ipv4 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip." % evip.show_environment_vip())
+                        None, 'Ipv4 indisponível para o Ambiente Vip: %s, pois não existe equipamento do Tipo Balanceador relacionado a este Ip.' % evip.show_environment_vip())
 
             ip_dict = model_to_dict(ip_checked)
 

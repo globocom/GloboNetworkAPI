@@ -1,0 +1,10 @@
+{
+  "networks": [
+    {
+      "environmentvip": 1,
+      "id": 3,
+      "network_type": null,
+      "vlan": 1
+    }
+  ]
+}

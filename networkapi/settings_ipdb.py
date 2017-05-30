@@ -17,14 +17,26 @@ import logging
 
 from settings import ADMIN_MEDIA_PREFIX
 from settings import ADMINS
+from settings import ALLOWED_HOSTS
 from settings import AMBLOG_MGMT
 from settings import APPLYED_CONFIG_REL_PATH
 from settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
 from settings import BROKER_CONNECT_TIMEOUT
 from settings import BROKER_DESTINATION
-from settings import BROKER_URI
+from settings import BROKER_URL
 from settings import CACHE_BACKEND
 from settings import CACHES
+from settings import CELERY_ACCEPT_CONTENT
+from settings import CELERY_DEFAULT_EXCHANGE_TYPE
+from settings import CELERY_DEFAULT_QUEUE
+from settings import CELERY_DEFAULT_ROUTING_KEY
+from settings import CELERY_QUEUES
+from settings import CELERY_RESULT_PERSISTENT
+from settings import CELERY_RESULT_SERIALIZER
+from settings import CELERY_TASK_RESULT_EXPIRES
+from settings import CELERY_TASK_SERIALIZER
+from settings import CELERY_TIMEZONE
+from settings import CELERYD_PREFETCH_MULTIPLIER
 from settings import CONFIG_FILES_PATH
 from settings import CONFIG_FILES_REL_PATH
 from settings import CONFIG_TEMPLATE_PATH

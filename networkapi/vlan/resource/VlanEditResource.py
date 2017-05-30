@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize,\
-    destroy_cache_function
-from networkapi.vlan.models import VlanError, Vlan, VlanNameDuplicatedError, VlanNumberNotAvailableError, VlanNotFoundError, VlanACLDuplicatedError, VlanNumberEnvironmentNotAvailableError
-from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import AmbienteError, Ambiente, AmbienteNotFoundError
-from networkapi.distributedlock import distributedlock, LOCK_VLAN
 import re
-from networkapi import settings, error_message_utils
-from networkapi.infrastructure.script_utils import exec_script
+
+from networkapi import error_message_utils
+from networkapi import settings
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.equipamento.models import Equipamento
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanACLDuplicatedError
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNameDuplicatedError
+from networkapi.vlan.models import VlanNotFoundError
+from networkapi.vlan.models import VlanNumberEnvironmentNotAvailableError
+from networkapi.vlan.models import VlanNumberNotAvailableError
 
 
 class VlanEditResource(RestResource):
@@ -38,10 +52,10 @@ class VlanEditResource(RestResource):
     log = logging.getLogger('VlanEditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Treat POST requests to edit a vlan 
+        """Treat POST requests to edit a vlan
 
         URL: vlan/edit/
-        '''
+        """
 
         try:
 
@@ -104,7 +118,7 @@ class VlanEditResource(RestResource):
                 self.log.error(u'Parameter name is invalid. Value: %s', name)
                 raise InvalidValueError(None, 'name', name)
 
-            p = re.compile("^[A-Z0-9-_]+$")
+            p = re.compile('^[A-Z0-9-_]+$')
             m = p.match(name)
 
             if not m:
@@ -131,14 +145,14 @@ class VlanEditResource(RestResource):
                         self.log.error(
                             u'Parameter acl_file is invalid. Value: %s', acl_file)
                         raise InvalidValueError(None, 'acl_file', acl_file)
-                    p = re.compile("^[A-Z0-9-_]+$")
+                    p = re.compile('^[A-Z0-9-_]+$')
                     m = p.match(acl_file)
                     if not m:
                         raise InvalidValueError(None, 'acl_file', acl_file)
 
                     # VERIFICA SE VLAN COM MESMO ACL JA EXISTE OU NAO
-                    #commenting acl name check - issue #55
-                    #vlan.get_vlan_by_acl(acl_file)
+                    # commenting acl name check - issue #55
+                    # vlan.get_vlan_by_acl(acl_file)
 
                 # Valid acl_file_v6 Vlan
                 if acl_file_v6 is not None:
@@ -147,15 +161,15 @@ class VlanEditResource(RestResource):
                             u'Parameter acl_file_v6 is invalid. Value: %s', acl_file_v6)
                         raise InvalidValueError(
                             None, 'acl_file_v6', acl_file_v6)
-                    p = re.compile("^[A-Z0-9-_]+$")
+                    p = re.compile('^[A-Z0-9-_]+$')
                     m = p.match(acl_file_v6)
                     if not m:
                         raise InvalidValueError(
                             None, 'acl_file_v6', acl_file_v6)
 
                     # VERIFICA SE VLAN COM MESMO ACL JA EXISTE OU NAO
-                    #commenting acl name check - issue #55
-                    #vlan.get_vlan_by_acl_v6(acl_file_v6)
+                    # commenting acl name check - issue #55
+                    # vlan.get_vlan_by_acl_v6(acl_file_v6)
 
                 ambiente = Ambiente()
                 ambiente = ambiente.get_by_pk(environment_id)
@@ -271,11 +285,11 @@ class VlanEditResource(RestResource):
             return self.response_error(1)
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Treat PUT requests to activate a vlan 
+        """Treat PUT requests to activate a vlan
            Set column ativada = 1
 
         URL: vlan/create/
-        '''
+        """
 
         try:
 

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import copy
+import logging
+import random
 import urllib
+from time import sleep
 
 from django.db.models.loading import AppCache
 from django.db.models.loading import import_module
@@ -8,7 +11,11 @@ from django.db.models.loading import module_has_submodule
 from rest_framework.response import Response
 
 from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LockNotAcquiredError
 from networkapi.extra_logging import local
+
+
+log = logging.getLogger(__name__)
 
 
 class CustomResponse(Response):
@@ -24,15 +31,17 @@ class CustomResponse(Response):
             }
             headers = headers.update(headers) if headers else headers_default
 
-        return super(CustomResponse, self).__init__(data,
-                                                    status=status,
-                                                    template_name=template_name,
-                                                    headers=headers,
-                                                    content_type=content_type)
+        return super(CustomResponse, self).__init__(
+            data,
+            status=status,
+            template_name=template_name,
+            headers=headers,
+            content_type=content_type
+        )
 
 
 def create_lock(objects, lock_name):
-    """Create locks for list of objects"""
+    """Creates locks for list of objects"""
 
     locks_list = list()
     for obj in objects:
@@ -47,10 +56,36 @@ def create_lock(objects, lock_name):
 
 
 def destroy_lock(locks_list):
-    """Destroy locks by list of objects"""
+    """Destroys locks by list of objects"""
 
     for lock in locks_list:
         lock.__exit__('', '', '')
+
+
+def create_lock_with_blocking(locks_name):
+    """
+    Creates locks for list of objects.
+    Tries to lock all objects, if can not, unlocks all
+    and tries again in 1 at 10 seconds.
+    """
+
+    locks_list = list()
+    for lock_name in locks_name:
+        try:
+            lock = distributedlock(lock_name, blocking=False)
+            lock.__enter__()
+            locks_list.append(lock)
+        except LockNotAcquiredError:
+            destroy_lock(locks_list)
+            break
+
+    if locks_name and not locks_list:
+        time_sleep = random.randint(1, 10)
+        log.warning('Trying lock in %s seconds' % time_sleep)
+        sleep(time_sleep)
+        create_lock_with_blocking(locks_name)
+
+    return locks_list
 
 
 def url_search(obj_model, property_search, request):
@@ -73,6 +108,27 @@ def url_search(obj_model, property_search, request):
         url_search_str = None
 
     return url_search_str
+
+
+def prepare_url(uri, **kwargs):
+    """Convert dict for URL params
+    """
+    params = dict()
+    for key in kwargs:
+        if key in ('kind', 'include', 'exclude', 'fields'):
+            params.update({
+                key: ','.join(kwargs.get(key))
+            })
+        elif key == 'search':
+            params.update({
+                key: kwargs.get(key)
+            })
+
+    if params:
+        params = urllib.urlencode(params)
+        uri = '%s?%s' % (uri, params)
+
+    return uri
 
 
 def generate_return_json(obj_serializer, main_property, **kwargs):
@@ -171,6 +227,7 @@ class AppCacheExtend(AppCache):
     #         app_label, item_name, seed_cache, only_installed)
 
     #     return model
+
 
 cache = AppCacheExtend()
 
