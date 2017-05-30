@@ -14,13 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from json import dumps
-import logging
+
 from networkapi.plugins.SDN.ODL.utils.cookie_handler import CookieHandler
 from networkapi.plugins.SDN.ODL.utils.tcp_control_bits import TCPControlBits
-import re
+from networkapi.plugins.SDN.ODL.utils.odl_plugin_masks import ODLPluginMasks
 
+import re
+import logging
+from json import dumps
 from copy import deepcopy
+
+to_str_id = ODLPluginMasks.to_str_id
+to_str_id_both = ODLPluginMasks.to_str_id_both
+to_str_description = ODLPluginMasks.to_str_description
+to_str_description_both = ODLPluginMasks.to_str_description_both
 
 
 class Tokens(object):
@@ -31,7 +38,7 @@ class Tokens(object):
     kind = "kind"
     rules = "rules"
 
-    id = "id"
+    id_ = "id"
     action = "action"
     description = "description"
     source = "source"
@@ -50,17 +57,7 @@ class Tokens(object):
     flags = "flags"
     priority = "priority"
     cookie = "cookie"
-
     sequence = "sequence"
-
-
-class ODLPluginMasks(object):
-
-    id_port = "{}_{}"
-    id_port_both = "{}_{}_{} "
-
-    name_range = "{} - {}:{}"
-    name_range_both = "{} - {}:{} - {}:{}"
 
 
 class AclFlowBuilder(object):
@@ -111,7 +108,6 @@ class AclFlowBuilder(object):
                     yield self.flows
                     self._clear_flows()
 
-
                 done_iteration = self._build_rule(rule)
 
                 if done_iteration:
@@ -127,148 +123,27 @@ class AclFlowBuilder(object):
 
     def _build_rule(self, rule):
 
-        if Tokens.description not in rule:
-            rule[Tokens.description] = ""
-
         # Assigns the id of the current ACL
         # We always insert in the head of the list to simplify the access
         # to the current index
-        self.flows["flow"].insert(0, {Tokens.id: rule[Tokens.id]})
+        self.flows["flow"].insert(0, {Tokens.id_: rule[Tokens.id_]})
 
         # Flow table and priority
         self.flows["flow"][0]["table_id"] = self.TABLE
 
         self._build_description(rule)
         self._build_match(rule)
-        self._build_protocol(rule)
         self._build_action(rule)
         self._build_cookie(rule)
         self._build_sequence(rule)
-        self._build_range(rule)
-
-    def _build_range(self, rule):
-
-        l4_options = rule.get(Tokens.l4_options, {})
-
-        if l4_options.get(Tokens.src_port_op) == 'range' \
-            and l4_options.get(Tokens.dst_port_op) == 'range':
-            self._build_specific_src_and_dst_ports_in_range(rule)
-
-        elif l4_options.get(Tokens.src_port_op) == 'range':
-            self._build_specific_src_or_dst_ports_in_range(rule, 
-                                           Tokens.src_port, 
-                                           Tokens.src_port_end)
-
-        elif l4_options.get(Tokens.dst_port_op) == 'range':
-            self._build_specific_src_or_dst_ports_in_range(rule, 
-                                           Tokens.dst_port, 
-                                           Tokens.dst_port_end)
-
-    def _build_specific_src_or_dst_ports_in_range(self, rule, start, end):
-
-        port_start = int(rule[Tokens.l4_options][start])
-        port_end = int(rule[Tokens.l4_options][end])
-
-        description = rule[Tokens.description]
-        id_ = rule[Tokens.id]
-
-        for port in xrange(port_start, port_end + 1):
-
-            self._change_rule_for_src_or_dst_ports(rule, port,
-                                                   start, port_start,
-                                                   port_end, description, id_)
-
-            self._build_protocol(rule)
-            self._build_description(rule)
-            self._build_id(rule)
-
-            self._insert_new_flow(port, port_end)
-
-    def _build_specific_src_and_dst_ports_in_range(self, rule):
-
-        src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
-        src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end])
-
-        dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
-        dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end])
-
-        description = rule[Tokens.description]
-        id_ = rule[Tokens.id]
-
-        for src_port in xrange(src_port_start, src_port_end + 1):
-            for dst_port in xrange(dst_port_start, dst_port_end + 1):
-
-                self._change_rule_for_src_and_dst_ports(rule,
-                                         src_port, dst_port,
-                                         src_port_start, src_port_end,
-                                         dst_port_start, dst_port_end,
-                                         description, id_)
-
-                self._build_protocol(rule)
-                self._build_description(rule)
-                self._build_id(rule)
-
-                self._insert_new_flow(dst_port, dst_port_end)
-
-            self._insert_new_flow(src_port, src_port_end)
-
-
-    def _insert_new_flow(self, port, port_end):
-
-        if port < port_end:
-            self.flows["flow"].insert(0, deepcopy(self.flows["flow"][0]))
-
-    def _change_rule_for_src_or_dst_ports(self, rule, port,
-                                          start, port_start,
-                                          port_end, description, id_):
-
-        rule[Tokens.l4_options][start] = str(port)
-        rule[Tokens.id] = ODLPluginMasks.id_port.format(id_, port)
-        rule[Tokens.description] = ODLPluginMasks.name_range. \
-            format(description,
-                   port_start, port_end)
-
-    def _change_rule_for_src_and_dst_ports(self, rule, src_port, dst_port,
-                                           src_port_start, src_port_end,
-                                           dst_port_start, dst_port_end,
-                                           description, id_):
-
-        rule[Tokens.l4_options][Tokens.src_port] = str(src_port)
-        rule[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
-        rule[Tokens.id] = ODLPluginMasks.id_port_both. \
-            format(id_,
-                   src_port, dst_port)
-
-        rule[Tokens.description] = ODLPluginMasks.name_range_both. \
-            format(description,
-                   src_port_start, src_port_end,
-                   dst_port_start, dst_port_end)
+        self._build_protocol(rule)
 
     def _build_description(self, rule):
-        if Tokens.description in rule:
-            self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
 
-    def _build_sequence(self, rule):
+        if Tokens.description not in rule:
+            rule[Tokens.description] = ""
 
-        if Tokens.sequence in rule:
-            self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
-        else:
-            self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
-
-    def _get_id_from_rule(self, rule):
-
-        return re.search('(^[0-9]+).*', rule[Tokens.id]).group(1)
-
-    def _build_cookie(self, rule):
-
-        # TODO Need to put ports
-        id_rule = self._get_id_from_rule(rule)
-        self.flows["flow"][0][Tokens.cookie] = \
-            CookieHandler.get_cookie(id_rule)
-
-    def _build_id(self, rule):
-
-        self.flows["flow"][0]["id"] = rule[Tokens.id]
+        self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
@@ -290,6 +165,41 @@ class AclFlowBuilder(object):
         else:
             logging.error(self.MALFORMED_MESSAGE % rule)
             raise ValueError(self.MALFORMED_MESSAGE % rule)
+
+    def _build_action(self, rule):
+        """ Builds the Openflow actions to a flow """
+
+        if Tokens.action in rule and rule[Tokens.action] == "permit":
+            self.flows["flow"][0]["instructions"] = {
+                "instruction": [{
+                    "order": 0,
+                    "apply-actions": {
+                        "action": [{
+                            "order": 0,
+                            "output-action": {
+                                "output-node-connector": "NORMAL"
+                            }
+                        }]
+                    }
+                }]
+            }
+
+    def _build_cookie(self, rule):
+
+        id_rule = self._get_id_from_rule(rule)
+        self.flows["flow"][0][Tokens.cookie] = \
+            CookieHandler.get_cookie(id_rule)
+
+    def _get_id_from_rule(self, rule):
+
+        return re.search('(^[0-9]+).*', rule[Tokens.id_]).group(1)
+
+    def _build_sequence(self, rule):
+
+        if Tokens.sequence in rule:
+            self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
+        else:
+            self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
 
     def _build_protocol(self, rule):
         """ Identifies the protocol of the ACL rule """
@@ -318,69 +228,13 @@ class AclFlowBuilder(object):
 
         self._set_flow_ip_protocol(6)
         self._check_source_and_destination_ports(rule, "tcp")
-
-        if Tokens.flags in rule.get(Tokens.l4_options, {}):
-            self._set_tcp_flags(rule[Tokens.l4_options][Tokens.flags])
+        self._set_tcp_flags(rule)
 
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """
 
         self._set_flow_ip_protocol(17)
         self._check_source_and_destination_ports(rule, "udp")
-
-    def _set_flow_ip_protocol(self, protocol_n):
-        """ Sets the IP protocol number inside given flow """
-
-        self.flows["flow"][0]["match"]["ip-match"] = {
-            "ip-protocol": protocol_n
-        }
-
-    def _set_tcp_flags(self, flags):
-        """ Sets the flags inside given flow """
-
-        tcp_flags = TCPControlBits(flags).to_int()
-
-        self.flows["flow"][0]["match"]["tcp-flags-match"] = {
-            "tcp-flags": tcp_flags,
-        }
-
-    def _check_source_and_destination_ports(self, rule, protocol):
-        """ Checks source and destination options inside json """
-
-        if Tokens.l4_options in rule:
-
-            # Checks for source port
-            if Tokens.src_port_op in rule[Tokens.l4_options]:
-                self._build_transport_source_ports(rule, protocol)
-
-            # Checks for destination port
-            if Tokens.dst_port_op in rule[Tokens.l4_options]:
-                self._build_transport_destination_ports(rule, protocol)
-
-    def _build_transport_source_ports(self, rule, protocol):
-        """ Builds source ports for transport protocols TCP or UDP """
-        prefix = protocol + "-source-port"
-        self._build_transport_ports(rule, prefix, Tokens.src_port_op,
-                                    Tokens.src_port, Tokens.src_port_end)
-
-    def _build_transport_destination_ports(self, rule, protocol):
-        """ Builds destination ports for transport protocols TCP or UDP """
-        prefix = protocol + "-destination-port"
-        self._build_transport_ports(rule, prefix, Tokens.dst_port_op,
-                                    Tokens.dst_port, Tokens.dst_port_end)
-
-    def _build_transport_ports(self, rule, prefix, operation, start, end):
-        """ Builds transport (TCP | UDP) protocols json data """
-
-        if rule[Tokens.l4_options][operation] == "eq":
-
-            self.flows["flow"][0]["match"][prefix] = \
-                rule[Tokens.l4_options][start]
-
-        elif rule[Tokens.l4_options][operation] == "range":
-            # TODO: Implement port range json from opendaylight.
-            self.flows["flow"][0]["match"][prefix] = \
-                rule[Tokens.l4_options][start]
 
     def _build_icmp(self, rule):
         """ Builds ICMP protocol acl using OpenDayLight json format """
@@ -408,20 +262,216 @@ class AclFlowBuilder(object):
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
-    def _build_action(self, rule):
-        """ Builds the Openflow actions to a flow """
+    def _set_flow_ip_protocol(self, protocol_n):
+        """ Sets the IP protocol number inside given flow """
 
-        if Tokens.action in rule and rule[Tokens.action] == "permit":
-            self.flows["flow"][0]["instructions"] = {
-                "instruction": [{
-                    "order": 0,
-                    "apply-actions": {
-                        "action": [{
-                            "order": 0,
-                            "output-action": {
-                                "output-node-connector": "NORMAL"
-                            }
-                        }]
-                    }
-                }]
+        self.flows["flow"][0]["match"]["ip-match"] = {
+            "ip-protocol": protocol_n
+        }
+
+    def _check_source_and_destination_ports(self, rule, protocol):
+        """ Checks source and destination options inside json """
+
+        l4_options = rule.get(Tokens.l4_options, {})
+
+        if l4_options.get(Tokens.src_port_op) == 'range' \
+                and l4_options.get(Tokens.dst_port_op) == 'range':
+            self._build_double_range(rule, protocol)
+
+        elif l4_options.get(Tokens.src_port_op) == 'range':
+            self._build_simple_range(rule, protocol,
+                                     Tokens.src_port,
+                                     Tokens.src_port_end)
+
+        elif l4_options.get(Tokens.dst_port_op) == 'range':
+            self._build_simple_range(rule, protocol,
+                                     Tokens.dst_port,
+                                     Tokens.dst_port_end)
+        else:
+            self._build_transport_source_ports(rule, protocol)
+            self._build_transport_destination_ports(rule, protocol)
+
+    def _set_tcp_flags(self, rule):
+        """ Sets the flags inside given flow """
+
+        l4_options = rule.get(Tokens.l4_options, {})
+
+        if Tokens.flags in l4_options:
+
+            flags = l4_options[Tokens.flags]
+            tcp_flags = TCPControlBits(flags).to_int()
+
+            self.flows["flow"][0]["match"]["tcp-flags-match"] = {
+                "tcp-flags": tcp_flags,
             }
+
+    def _build_simple_range(self, rule, protocol,
+                            start, end):
+
+        port_start = int(rule[Tokens.l4_options][start])
+        port_end = int(rule[Tokens.l4_options][end])
+
+        for port in xrange(port_start, port_end + 1):
+
+            self._build_transport_source_ports(rule, protocol)
+            self._build_transport_destination_ports(rule, protocol)
+            self._build_id_and_description_when_simple_range(
+                rule, port, port_start, port_end)
+
+            self._insert_new_flow_when_single_range(port, port_end)
+
+    def _build_double_range(self, rule, protocol):
+
+        src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
+        src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end])
+
+        dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
+        dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end])
+
+        for src_port in xrange(src_port_start, src_port_end + 1):
+            for dst_port in xrange(dst_port_start, dst_port_end + 1):
+
+                self._build_transport_source_ports(rule, protocol)
+                self._build_transport_destination_ports(rule, protocol)
+                self._build_id_and_description_when_double_range(
+                    rule, src_port, dst_port)
+
+                self._insert_new_flow_when_double_range(src_port, src_port_end,
+                                                        dst_port, dst_port_end)
+
+    def _insert_new_flow_when_single_range(self, port, port_end):
+
+        if port < port_end:
+            self._insert_new_flow()
+
+    def _insert_new_flow_when_double_range(self, src_port, src_port_end,
+                                           dst_port, dst_port_end):
+
+        if src_port < src_port_end or dst_port < dst_port_end:
+            self._insert_new_flow()
+
+    def _insert_new_flow(self):
+
+        self.flows["flow"].insert(0, deepcopy(self.flows["flow"][0]))
+
+    def _build_id_and_description_when_simple_range(
+            self, rule, port, port_start, port_end):
+
+        self._build_id_when_only_src_or_dst_range(rule, port)
+        self._build_id_when_src_eq_and_dst_range(rule, port)
+        self._build_id_when_src_range_and_dst_eq(rule, port)
+
+        self._build_description_when_only_src_or_dst_range(
+            rule, port_start, port_end)
+        self._build_description_when_src_range_and_dst_eq(
+            rule, port_start, port_end)
+        self._build_description_when_src_eq_and_dst_range(
+            rule, port_start, port_end)
+
+    def _build_id_and_description_when_double_range(
+            self, rule, src_port, dst_port):
+
+        self._build_id_when_src_range_and_dst_range(rule, src_port, dst_port)
+        self._build_description_when_src_range_and_dst_range(rule)
+
+    def _build_description_when_src_eq_and_dst_range(
+            self, rule, port_start, port_end):
+
+        l4_options = rule[Tokens.l4_options]
+        if l4_options.get(Tokens.src_port_op) == 'eq' and \
+           l4_options.get(Tokens.dst_port_op) == 'range':
+
+            self.flows["flow"][0]["flow-name"] = to_str_description_both(
+                rule[Tokens.description],
+                rule[Tokens.l4_options].get(Tokens.src_port),
+                rule[Tokens.l4_options].get(Tokens.src_port),
+                port_start, port_end)
+
+    def _build_description_when_src_range_and_dst_eq(
+            self, rule, port_start, port_end):
+
+        l4_options = rule[Tokens.l4_options]
+        if l4_options.get(Tokens.src_port_op) == 'range' and \
+           l4_options.get(Tokens.dst_port_op) == 'eq':
+
+            self.flows["flow"][0]["flow-name"] = to_str_description_both(
+                rule[Tokens.description],
+                port_start, port_end,
+                rule[Tokens.l4_options].get(Tokens.dst_port),
+                rule[Tokens.l4_options].get(Tokens.dst_port))
+
+    def _build_description_when_only_src_or_dst_range(
+            self, rule, port_start, port_end):
+
+        self.flows["flow"][0]["flow-name"] = to_str_description(
+            rule[Tokens.description],
+            port_start, port_end)
+
+    def _build_description_when_src_range_and_dst_range(self, rule):
+
+        self.flows["flow"][0]["flow-name"] = to_str_description_both(
+            rule[Tokens.description],
+            rule[Tokens.l4_options][Tokens.src_port],
+            rule[Tokens.l4_options][Tokens.src_port_end],
+            rule[Tokens.l4_options][Tokens.dst_port],
+            rule[Tokens.l4_options][Tokens.dst_port_end])
+
+    def _build_id_when_src_eq_and_dst_range(self, rule, port):
+
+        l4_options = rule[Tokens.l4_options]
+        if l4_options.get(Tokens.src_port_op) == 'eq' and \
+           l4_options.get(Tokens.dst_port_op) == 'range':
+
+            self.flows["flow"][0]["id"] = to_str_id_both(
+                rule[Tokens.id_],
+                rule[Tokens.l4_options][Tokens.src_port],
+                port)
+
+    def _build_id_when_src_range_and_dst_eq(self, rule, port):
+
+        l4_options = rule[Tokens.l4_options]
+        if l4_options.get(Tokens.src_port_op) == 'range' and \
+           l4_options.get(Tokens.dst_port_op) == 'eq':
+
+            self.flows["flow"][0]["id"] = to_str_id_both(
+                rule[Tokens.id_],
+                port,
+                rule[Tokens.l4_options][Tokens.dst_port])
+
+    def _build_id_when_only_src_or_dst_range(self, rule, port):
+
+        self.flows["flow"][0]["id"] = to_str_id(
+            rule[Tokens.id_],
+            port)
+
+    def _build_id_when_src_range_and_dst_range(self, rule, src_port, dst_port):
+
+        self.flows["flow"][0]["id"] = to_str_id_both(
+            rule[Tokens.id_],
+            src_port, dst_port)
+
+    def _build_transport_source_ports(self, rule, protocol):
+        """ Builds source ports for transport protocols TCP or UDP """
+
+        l4_options = rule.get(Tokens.l4_options, {})
+        if Tokens.src_port_op in l4_options:
+            prefix = protocol + "-source-port"
+            self._build_transport_ports(rule, prefix, Tokens.src_port_op,
+                                        Tokens.src_port,
+                                        Tokens.src_port_end)
+
+    def _build_transport_destination_ports(self, rule, protocol):
+        """ Builds destination ports for transport protocols TCP or UDP """
+
+        l4_options = rule.get(Tokens.l4_options, {})
+        if Tokens.dst_port_op in l4_options:
+            prefix = protocol + "-destination-port"
+            self._build_transport_ports(rule, prefix, Tokens.dst_port_op,
+                                        Tokens.dst_port, Tokens.dst_port_end)
+
+    def _build_transport_ports(self, rule, prefix, operation, start, end):
+        """ Builds transport (TCP | UDP) protocols json data """
+
+        self.flows["flow"][0]["match"][prefix] = \
+            rule[Tokens.l4_options][start]
+
