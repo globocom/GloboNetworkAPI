@@ -7,12 +7,19 @@ apt-get install libmysqlclient-dev -y
 apt-get install python-dev -y
 apt-get install libldap2-dev libsasl2-dev libssl-dev -y
 
-# activemq
-apt-get install activemq -y
-rm -rf /etc/activemq/instances-enabled
-ln -sf /etc/activemq/instances-available /etc/activemq/instances-enabled
-sed -i 's/512/128/g' /usr/share/activemq/activemq-options
-sed -i 's/.*openwire.*/\t\t<transportConnector name="stomp" uri="stomp:\/\/localhost:61613"\/>/g' /etc/activemq/instances-available/main/activemq.xml
+# RabbitMQ
+apt-get install rabbitmq-server -y
+rabbitmq-plugins enable rabbitmq_management
+rabbitmq-server restart &
+rabbitmqctl add_user networkapi networkapi
+rabbitmqctl add_vhost tasks
+rabbitmqctl add_user tasks tasks
+rabbitmqctl change_password networkapi networkapi
+rabbitmqctl change_password tasks tasks
+rabbitmqctl set_user_tags networkapi administrator
+rabbitmqctl set_permissions -p / networkapi ".*" ".*" ".*"
+rabbitmqctl set_permissions -p tasks networkapi ".*" ".*" ".*"
+rabbitmqctl set_permissions -p tasks tasks ".*" ".*" ".*"
 
 pip install gunicorn
 pip install virtualenv virtualenvwrapper
@@ -31,7 +38,7 @@ cat > /etc/init.d/gunicorn_networkapi <<- EOM
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application.
+/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
 EOM
 
 chmod 777 /etc/init.d/gunicorn_networkapi

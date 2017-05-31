@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from networkapi.plugins.F5.f5base import F5Base
@@ -106,8 +106,10 @@ class PoolMember(F5Base):
             if v == []:
                 return
 
-        names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
-        members = [kwargs['members'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
+        names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs[
+            'names'][k] and kwargs['members'][k]]
+        members = [kwargs['members'][k] for k, n in enumerate(
+            kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
 
         if names:
             self._lb._channel.LocalLB.Pool.add_member_v2(
@@ -120,8 +122,10 @@ class PoolMember(F5Base):
             if v == []:
                 return
 
-        names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
-        members = [kwargs['members'][k] for k, n in enumerate(kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
+        names = [kwargs['names'][k] for k, n in enumerate(kwargs['members']) if kwargs[
+            'names'][k] and kwargs['members'][k]]
+        members = [kwargs['members'][k] for k, n in enumerate(
+            kwargs['members']) if kwargs['names'][k] and kwargs['members'][k]]
 
         if names:
             self._lb._channel.LocalLB.Pool.remove_member_v2(

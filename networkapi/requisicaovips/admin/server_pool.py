@@ -1,9 +1,11 @@
-# -*- coding:utf-8 -*_
+# -*- coding: utf-8 -*-
 from django.contrib import admin
 
+
 class ServerPoolAdmin(admin.ModelAdmin):
-    search_fields = ["identifier", "id"]
-    list_display = ["id", "identifier", "get_healthcheck", "default_port", "pool_created"]
+    search_fields = ['identifier', 'id']
+    list_display = ['id', 'identifier',
+                    'get_healthcheck', 'default_port', 'pool_created']
     list_filter = ('pool_created',)
 
     def get_healthcheck(self, obj):

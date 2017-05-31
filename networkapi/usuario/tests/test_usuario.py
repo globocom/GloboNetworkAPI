@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-import mock
-from django.test import TestCase
-from django.db import IntegrityError
-from networkapi.usuario.tests import factory
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import logging
 
+import mock
+from django.db import IntegrityError
+from django.test import TestCase
+
+from networkapi.usuario.tests import factory
+
 LOG = logging.getLogger(__name__)
+
 
 class UsuarioTestCase(TestCase):
 
-    fixtures = ['initial_ugrupo.json','initial_usuario.json']
+    fixtures = ['initial_ugrupo.json', 'initial_usuario.json']
 
     def setUp(self):
         self.usuario = factory.UserWithGroupFactory()

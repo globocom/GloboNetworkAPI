@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.exception import InvalidValueError
-from networkapi.rack.models import Rack , RackError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_RACK
 from networkapi.equipamento.models import Equipamento
-from networkapi.distributedlock import distributedlock, LOCK_RACK
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rack.models import Rack
+from networkapi.rack.models import RackError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+
 
 class RackEditResource(RestResource):
 
@@ -39,7 +43,7 @@ class RackEditResource(RestResource):
 
         try:
 
-            self.log.info("Edit Rack")
+            self.log.info('Edit Rack')
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -73,20 +77,21 @@ class RackEditResource(RestResource):
             racks = Rack()
 
             with distributedlock(LOCK_RACK % id_rack):
-                racks.__dict__.update(id=id_rack, nome=name, numero=number, mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
-                if not id_sw1==None:
+                racks.__dict__.update(id=id_rack, nome=name, numero=number,
+                                      mac_sw1=mac_address_sw1, mac_sw2=mac_address_sw2, mac_ilo=mac_address_ilo)
+                if not id_sw1 is None:
                     id_sw1 = int(id_sw1)
                     racks.id_sw1 = Equipamento.get_by_pk(id_sw1)
 
-                if not id_sw2==None:
+                if not id_sw2 is None:
                     id_sw2 = int(id_sw2)
                     racks.id_sw2 = Equipamento.get_by_pk(id_sw2)
 
-                if not id_ilo==None:
+                if not id_ilo is None:
                     id_ilo = int(id_ilo)
                     racks.id_ilo = Equipamento.get_by_pk(id_ilo)
 
-                # save 
+                # save
                 racks.save()
 
                 rack_map = dict()
@@ -102,4 +107,3 @@ class RackEditResource(RestResource):
 
         except RackError:
             return self.response_error(401)
-

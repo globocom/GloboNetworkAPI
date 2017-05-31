@@ -26,6 +26,9 @@ export NETWORKAPI_BROKER_URI='tcp://localhost:61613'
 echo "Starting ActiveMQ message broker"
 sudo service activemq start
 
+echo "Starting RabbitMQ message broker"
+sudo service rabbitmq start
+
 echo "clearing memcached:"
 echo 'flush_all' | nc localhost 11211
 

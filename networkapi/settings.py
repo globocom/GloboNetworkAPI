@@ -30,6 +30,7 @@ if syspath not in sys.path:
 def local_files(path):
     return '{}/networkapi/{}'.format(os.getcwd(), path)
 
+
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
 # Aplicação rodando em modo Debug
@@ -98,24 +99,6 @@ CACHES = {
     }
 }
 
-
-NETWORKAPI_RQ_QUEUES_HOST = os.getenv('NETWORKAPI_RQ_QUEUES_HOST', 'localhost')
-NETWORKAPI_RQ_QUEUES_PORT = os.getenv('NETWORKAPI_RQ_QUEUES_PORT', '6379')
-NETWORKAPI_RQ_QUEUES_DB = os.getenv('NETWORKAPI_RQ_QUEUES_DB', '0')
-NETWORKAPI_RQ_QUEUES_PASSWORD = os.getenv('NETWORKAPI_RQ_QUEUES_PASSWORD', '')
-NETWORKAPI_RQ_QUEUES_TIMEOUT = os.getenv('NETWORKAPI_RQ_QUEUES_TIMEOUT', '360')
-
-# Use the same redis as with caches for RQ
-RQ_QUEUES = {
-    'default': {
-        'HOST': NETWORKAPI_RQ_QUEUES_HOST,
-        'PORT': NETWORKAPI_RQ_QUEUES_PORT,
-        'DB': NETWORKAPI_RQ_QUEUES_DB,
-        'PASSWORD': NETWORKAPI_RQ_QUEUES_PASSWORD,
-        'DEFAULT_TIMEOUT': NETWORKAPI_RQ_QUEUES_TIMEOUT,
-    },
-
-}
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
@@ -327,6 +310,7 @@ PROJECT_APPS = (
     'networkapi.api_pools',
     'networkapi.api_rack',
     'networkapi.api_rest',
+    'networkapi.api_task',
     'networkapi.api_usuario',
     'networkapi.api_vip_request',
     'networkapi.api_vlan',
@@ -498,13 +482,38 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ##################################
 
 BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
-BROKER_DESTINATION = os.getenv(
-    'NETWORKAPI_BROKER_DESTINATION', '/topic/networkapi_queue')
-BROKER_URI = os.getenv(
-    'NETWORKAPI_BROKER_URI',
-    u'failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)'
-    '?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e'
-)
+BROKER_DESTINATION = os.getenv('NETWORKAPI_BROKER_DESTINATION', 'tasks')
+BROKER_URL = os.getenv('NETWORKAPI_BROKER_URL',
+                       u'networkapi:networkapi@localhost:5672')
+
+
+##################################
+# CELERY SETTINGS
+##################################
+
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_RESULT_EXPIRES = 720  # 720 seconds.
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_PERSISTENT = True
+CELERY_QUEUES = {
+    'napi.default': {
+        'exchange': 'napi.default',
+        'binding_key': 'napi.default'},
+    'napi.network': {
+        'exchange': 'napi.network',
+        'binding_key': 'napi.network',
+    },
+    'napi.vip': {
+        'exchange': 'napi.vip',
+        'binding_key': 'napi.vip',
+    }
+}
+CELERY_DEFAULT_QUEUE = 'napi.default'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_DEFAULT_ROUTING_KEY = 'napi.default'
 
 
 ###################################

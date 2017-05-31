@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import IP_VERSION
 from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_version_ip
-from networkapi.vlan.models import VlanError, Vlan, VlanNotFoundError
-from networkapi.ambiente.models import IP_VERSION
-from networkapi.distributedlock import distributedlock, LOCK_VLAN
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_version_ip
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class VlanInvalidateResource(RestResource):
@@ -33,10 +38,10 @@ class VlanInvalidateResource(RestResource):
     log = logging.getLogger('VlanInvalidateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Treat PUT requests to Invalidate a vlan 
+        """Treat PUT requests to Invalidate a vlan
 
         URL: vlan/<id_vlan>/invalidate/<network>
-        '''
+        """
 
         try:
 

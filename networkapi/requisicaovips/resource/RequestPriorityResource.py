@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.admin_permission import AdminPermission
-from networkapi.requisicaovips.models import RequisicaoVips, RequisicaoVipsError, RequisicaoVipsNotFoundError
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi, XMLError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
+
 import logging
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_int_greater_equal_zero_param, clone
-from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, EquipmentGroupsNotAuthorizedError
-from networkapi.distributedlock import distributedlock, LOCK_VIP
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.exception import EquipmentGroupsNotAuthorizedError
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import clone
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util.decorators import deprecated
 
 
@@ -40,7 +51,7 @@ class RequestPriorityResource(RestResource):
         URLs: /vip/<id_vip>/priority/
         """
 
-        self.log.info("Change list the reals_priority to VIP")
+        self.log.info('Change list the reals_priority to VIP')
 
         try:
 

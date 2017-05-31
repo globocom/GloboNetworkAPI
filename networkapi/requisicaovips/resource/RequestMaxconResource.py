@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,38 +13,64 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from django.db import transaction
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError, \
-    EquipamentoError
-from networkapi.exception import InvalidValueError, \
-    EquipmentGroupsNotAuthorizedError, RequestVipsNotBeenCreatedError
-from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError, \
-    HealthcheckExpectError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
-from networkapi.ip.models import Ipv6, Ipv6Equipament, Ip, IpEquipamento, \
-    IpNotFoundError, IpEquipmentNotFoundError, IpError, IpNotFoundByEquipAndVipError
-import logging
-from networkapi.requisicaovips.models import RequisicaoVips, \
-    RequisicaoVipsNotFoundError, RequisicaoVipsError, InvalidFinalidadeValueError, \
-    InvalidAmbienteValueError, InvalidCacheValueError, InvalidMetodoBalValueError, \
-    InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, \
-    InvalidPriorityValueError, InvalidHealthcheckValueError, \
-    InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, \
-    InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidClienteValueError, ServerPoolMember, \
-    ServerPool
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, \
-    is_valid_int_greater_equal_zero_param, clone
 from networkapi.ambiente.models import EnvironmentVip
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import EquipmentGroupsNotAuthorizedError
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
+from networkapi.grupo.models import GrupoError
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidPriorityValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import ServerPool
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import clone
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util.decorators import deprecated
 
 
@@ -60,7 +85,7 @@ class RequestMaxconResource(RestResource):
         URLs: /vip/<id_vip>/maxcon/<maxcon>/
         """
 
-        self.log.info("Change limit connections to VIP")
+        self.log.info('Change limit connections to VIP')
 
         try:
 
@@ -91,7 +116,8 @@ class RequestMaxconResource(RestResource):
             with distributedlock(LOCK_VIP % vip_id):
 
                 vip_old = clone(vip)
-                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+                server_pools = ServerPool.objects.filter(
+                    vipporttopool__requisicao_vip=vip)
                 server_pools_old = []
                 server_pools_members_old = []
                 for sp in server_pools:
@@ -164,14 +190,17 @@ class RequestMaxconResource(RestResource):
 
                 vip.save(user, commit=True)
 
-                #update server pool limits table
-                #Fix #27
-                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip)
+                # update server pool limits table
+                # Fix #27
+                server_pools = ServerPool.objects.filter(
+                    vipporttopool__requisicao_vip=vip)
 
                 for sp in server_pools:
-                    #If exists pool member, change default maxconn of pool and members
+                    # If exists pool member, change default maxconn of pool and
+                    # members
                     if(len(sp.serverpoolmember_set.all()) > 0):
-                        #if(old_maxconn != sp.default_limit and sp.pool_created):
+                        # if(old_maxconn != sp.default_limit and
+                        # sp.pool_created):
                         sp.default_limit = maxcon
                         sp.save(user, commit=True)
                         for serverpoolmember in sp.serverpoolmember_set.all():
@@ -192,7 +221,7 @@ class RequestMaxconResource(RestResource):
                     map['sucesso'] = success_map
                     return self.response(dumps_networkapi(map))
                 else:
-                    #TODO Check if is needed to update pool members separately
+                    # TODO Check if is needed to update pool members separately
                     vip_old.save(user, commit=True)
                     for sp in server_pools_old:
                         sp.save(user, commit=True)

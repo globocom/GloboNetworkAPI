@@ -30,5 +30,7 @@ urlpatterns = patterns(
     ########################
     # Vlan V3
     ########################
+    url(r'^v3/vlan/async/((?P<obj_ids>[;\w]+)/)?$',
+        views.VlanAsyncView.as_view()),
     url(r'^v3/vlan/((?P<obj_ids>[;\w]+)/)?$', views.VlanDBView.as_view()),
 )

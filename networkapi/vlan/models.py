@@ -16,7 +16,7 @@ from networkapi.filter.models import verify_subnet_and_equip
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.models.BaseModel import BaseModel
 from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools.rabbitmq import QueueManager
 from networkapi.semaforo.model import Semaforo
 from networkapi.settings import MAX_VLAN_NUMBER_01
 from networkapi.settings import MAX_VLAN_NUMBER_02
@@ -461,7 +461,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_ACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -507,7 +510,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_DEACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -1174,10 +1180,42 @@ class Vlan(BaseModel):
 
     def delete_v3(self):
         ogp_models = get_app('api_ogp', 'models')
+        ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
 
         id_vlan = self.id
 
-        super(Vlan, self).delete()
+        try:
+
+            if not self.ativada:
+
+                for net4 in self.networkipv4_set.all():
+                    net4.delete_v3()
+
+                for net6 in self.networkipv6_set.all():
+                    net6.delete_v3()
+            else:
+                self.log.error(
+                    'Cant deallocate all relationships between vlan because '
+                    'its active.')
+                raise VlanCantDeallocate(
+                    str(self.nome),
+                    'Cant deallocate all relationships between vlan because '
+                    'its active.')
+
+            super(Vlan, self).delete()
+
+        except ipcantberemovedfromvip, e:
+            cause = e.cause
+            cause['Vlan'] = self.nome
+            self.log.error(
+                'This Vlan has a Network with Vip Request pointing to it, and '
+                'can not be deleted')
+            raise ipcantberemovedfromvip(
+                cause,
+                'This Vlan has a Network with Vip Request pointing to it, and '
+                'can not be deleted')
+        except VlanCantDeallocate, e:
+            raise e
 
         # Deletes Permissions
         ogp_models.ObjectGroupPermission.objects.filter(
@@ -1227,7 +1265,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_ACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -1286,7 +1327,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_DEACTIVATE,
                 'kind': queue_keys.VLAN_KEY,

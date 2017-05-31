@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,31 +13,55 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from django.conf import settings
+
+from networkapi import error_message_utils
+from networkapi import settings
 from networkapi.admin_permission import AdminPermission
-from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, AmbienteError
-from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, Equipamento, EquipamentoError
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.interface.models import Interface, InterfaceError, InterfaceNotFoundError, InterfaceProtectedError
-import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
-from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, Vlan, VlanNameDuplicatedError, \
-    VlanNumberNotAvailableError, VlanNetworkAddressNotAvailableError, VlanError, VlanNotFoundError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, NetworkIPv4AddressNotAvailableError, ConfigEnvironmentInvalidError, NetworkIPvXNotFoundError
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import EnvironmentVip
-from networkapi import settings, error_message_utils
+from networkapi.auth import has_perm
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.interface.models import Interface
+from networkapi.interface.models import InterfaceError
+from networkapi.interface.models import InterfaceNotFoundError
+from networkapi.interface.models import InterfaceProtectedError
+from networkapi.ip.models import ConfigEnvironmentInvalidError
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4AddressNotAvailableError
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.ip.models import NetworkIPvXNotFoundError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.vlan.models import NetworkTypeNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNameDuplicatedError
+from networkapi.vlan.models import VlanNetworkAddressNotAvailableError
+from networkapi.vlan.models import VlanNotFoundError
+from networkapi.vlan.models import VlanNumberNotAvailableError
 
 
 class VlanResource(RestResource):
 
-    '''Class to treat GET, POST, PUT and DELETE requests for Vlan.'''
+    """Class to treat GET, POST, PUT and DELETE requests for Vlan."""
 
     log = logging.getLogger('VlanResource')
 
@@ -49,7 +72,7 @@ class VlanResource(RestResource):
         URL: vlan/
         """
 
-        self.log.info("Allocate new VLAN")
+        self.log.info('Allocate new VLAN')
 
         try:
 
@@ -211,10 +234,10 @@ class VlanResource(RestResource):
         vlan_map['id_ambiente'] = vlan.ambiente.id
         vlan_map['descricao'] = vlan.descricao
         vlan_map['acl_file_name'] = vlan.acl_file_name
-        vlan_map['acl_valida'] = "1" if vlan.acl_valida else "0"
+        vlan_map['acl_valida'] = '1' if vlan.acl_valida else '0'
         vlan_map['acl_file_name_v6'] = vlan.acl_file_name_v6
-        vlan_map['acl_valida_v6'] = "1" if vlan.acl_valida_v6 else "0"
-        vlan_map['ativada'] = "1" if vlan.ativada else "0"
+        vlan_map['acl_valida_v6'] = '1' if vlan.acl_valida_v6 else '0'
+        vlan_map['ativada'] = '1' if vlan.ativada else '0'
         return vlan_map
 
     def get_vlan_map(self, vlan, network_ipv4):
@@ -268,7 +291,7 @@ class VlanResource(RestResource):
 
             # Get vlan by id
             if id_vlan is not None:
-                self.log.debug("id_vlan = %s", kwargs['id_vlan'])
+                self.log.debug('id_vlan = %s', kwargs['id_vlan'])
 
                 # Valid environment_vip ID
                 if not is_valid_int_greater_zero_param(id_vlan):
@@ -311,11 +334,11 @@ class VlanResource(RestResource):
             return self.response_error(1)
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Treat PUT requests to create, add, validate, remove or check VLAN to trunk.
+        """Treat PUT requests to create, add, validate, remove or check VLAN to trunk.
 
         URLs: /vlan/<id_vlan>/criar/, /vlan/<id_vlan>/add/, /vlan/<id_vlan>/del/, /vlan/<id_vlan>/check/,
               /vlan/list/, /vlanl2/<id_vlan>/criar/
-        '''
+        """
         operation = kwargs.get('operacao')
         if operation is None:
             return super(VlanResource, self).handle_put(request, user, *args, **kwargs)

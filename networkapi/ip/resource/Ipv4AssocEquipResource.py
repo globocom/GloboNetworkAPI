@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,42 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError,\
-    Equipamento
-from networkapi.grupo.models import GrupoError
-from networkapi.filterequiptype.models import FilterEquipType
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4NotFoundError, Ip, IpNotAvailableError, IpError, NetworkIPv4Error, \
-    NetworkIPv4, IpEquipmentAlreadyAssociation, IpEquipamento, IpEquipmentNotFoundError, IpNotFoundError, IpRangeAlreadyAssociation
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_NETWORK_IPV4
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.equipamento.models import EquipamentoAmbienteDuplicatedError
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function
-from networkapi.vlan.models import VlanNumberNotAvailableError
-from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV4
-from networkapi.equipamento.models import EquipamentoAmbiente, EquipamentoAmbienteDuplicatedError
+from networkapi.filterequiptype.models import FilterEquipType
+from networkapi.grupo.models import GrupoError
 from networkapi.infrastructure.ipaddr import AddressValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpEquipmentAlreadyAssociation
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import IpRangeAlreadyAssociation
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4Error
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.vlan.models import VlanNumberNotAvailableError
 
 
 class Ipv4AssocEquipResource(RestResource):
@@ -41,10 +56,10 @@ class Ipv4AssocEquipResource(RestResource):
     log = logging.getLogger('Ipv4AssocEquipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to associate and IP to an equipment.
+        """Handles POST requests to associate and IP to an equipment.
 
         URL: ipv4/assoc/
-        '''
+        """
 
         self.log.info('Associate Ip to an Equipment')
 
@@ -148,28 +163,28 @@ class Ipv4AssocEquipResource(RestResource):
                                 for fet in FilterEquipType.objects.filter(filter=vlan.ambiente.filter.id):
                                     tp_equip_list_two.append(fet.equiptype)
 
-                                #Equipment type should be in both filters
+                                # Equipment type should be in both filters
                                 if equip.tipo_equipamento not in tp_equip_list_one or equip.tipo_equipamento not in tp_equip_list_two:
                                     flag_vlan_error = True
 
-                                    #Out of band network is never trunked, it is only in mgmt interface
-                                    # allow it - not a good thing to to, but is very specific
+                                    # Out of band network is never trunked, it is only in mgmt interface
+                                    # allow it - not a good thing to to, but is
+                                    # very specific
                                     if vlan.ambiente.divisao_dc.nome == 'OOB-CM' or vlan_atual.ambiente.divisao_dc.nome == 'OOB-CM':
                                         flag_vlan_error = False
-                                        
 
                             ## Filter case 3 - end ##
 
                             if flag_vlan_error:
                                 ambiente_aux = vlan.ambiente
                                 vlan_aux = vlan
-                                nome_ambiente = "%s - %s - %s" % (
+                                nome_ambiente = '%s - %s - %s' % (
                                     vlan.ambiente.divisao_dc.nome, vlan.ambiente.ambiente_logico.nome, vlan.ambiente.grupo_l3.nome)
                                 raise VlanNumberNotAvailableError(None,
-                                                                  '''O ip informado não pode ser cadastrado, pois o equipamento %s, faz parte do ambiente %s (id %s), 
-                                                                    que possui a Vlan de id %s, que também possui o número %s, e não é permitido que vlans que compartilhem o mesmo ambiente 
+                                                                  """O ip informado não pode ser cadastrado, pois o equipamento %s, faz parte do ambiente %s (id %s),
+                                                                    que possui a Vlan de id %s, que também possui o número %s, e não é permitido que vlans que compartilhem o mesmo ambiente
                                                                     por meio de equipamentos, possuam o mesmo número, edite o número de uma das Vlans ou adicione um filtro no ambiente para efetuar o cadastro desse IP no Equipamento Informado.
-                                                                    ''' % (equip.nome, nome_ambiente, ambiente_aux.id, vlan_aux.id, vlan_atual.num_vlan))
+                                                                    """ % (equip.nome, nome_ambiente, ambiente_aux.id, vlan_aux.id, vlan_atual.num_vlan))
 
                 # Persist
                 try:
