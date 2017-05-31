@@ -2,7 +2,7 @@
 
 SQL_UP = u"""
 
-INSERT INTO `marcas` (`nome`) VALUES ('OpenDaylight');
+INSERT IGNORE INTO `marcas` (`nome`) VALUES ('OpenDaylight');
 
 INSERT INTO `modelos` (`nome`, `id_marca`) VALUES
 	('SDN Controller',
