@@ -1,0 +1,18 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.128.24.2/32",
+      "id": "82337",
+      "l4-options": {
+        "dest-port-op": "eq",
+        "dest-port-start": "53"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "source": "0.0.0.0/0"
+    }
+  ]
+}

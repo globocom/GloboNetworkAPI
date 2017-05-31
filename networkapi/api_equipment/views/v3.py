@@ -63,6 +63,7 @@ class EquipmentView(CustomAPIView):
             ipv4 = request.GET.get('ipv4')
             ipv6 = request.GET.get('ipv6')
             is_router = request.GET.get('is_router')
+            environment_sdn_controller = request.GET.get('environment_sdn_controller')
             name = request.GET.get('name')
 
             # get equipments queryset
@@ -75,6 +76,7 @@ class EquipmentView(CustomAPIView):
                 rights_write=rights_write,
                 name=name,
                 is_router=is_router,
+                environment_sdn_controller=environment_sdn_controller,
                 search=self.search
             )
             equipments = obj_model['query_set']

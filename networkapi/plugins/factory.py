@@ -62,6 +62,9 @@ class PluginFactory(object):
             if re.search('DELL', marca.upper(), re.DOTALL):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
+            if re.search('OPENDAYLIGHT', marca.upper(), re.DOTALL):
+                from .SDN.ODL.Generic import ODLPlugin
+                return ODLPlugin
 
         raise NotImplementedError('plugin not implemented')
 

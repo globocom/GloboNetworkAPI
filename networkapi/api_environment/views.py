@@ -147,3 +147,45 @@ class EnvEnvVipRelatedView(CustomAPIView):
         )
 
         return Response(data, status=status.HTTP_200_OK)
+
+class EnvFlowView(CustomAPIView):
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Read))
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+        environment_id = kwargs.get('environment_id')
+
+        if kwargs.get('flow_id') is not None:
+            flow_id = kwargs.get('flow_id')
+            flows = facade.list_flows_by_envid(environment_id, flow_id=flow_id)
+        else:
+            flows = facade.list_flows_by_envid(environment_id)
+
+
+        return Response(flows, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    def put(self, request, *args, **kwargs):
+        """"""
+        environment_id = kwargs.get('environment_id')
+        flow_id = kwargs.get('flow_id')
+        if flow_id:
+            log.error("not allowed yet")
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        #TODO: json validate specs
+        facade.insert_flow(environment_id, request.DATA)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    def delete(self, request, *args, **kwargs):
+        if not 'flow_id' in kwargs:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        environment_id = kwargs.get('environment_id')
+        flow_id = kwargs.get('flow_id')
+
+        facade.delete_flow(environment_id, flow_id)
+
+        return Response({}, status=status.HTTP_200_OK)

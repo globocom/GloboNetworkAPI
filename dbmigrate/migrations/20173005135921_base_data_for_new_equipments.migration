@@ -1,0 +1,25 @@
+#-*- coding:utf-8 -*-
+
+SQL_UP = u"""
+
+INSERT IGNORE INTO `marcas` (`nome`) VALUES ('OpenDaylight');
+
+INSERT INTO `modelos` (`nome`, `id_marca`) VALUES
+	('SDN Controller',
+		(
+			SELECT `id_marca` FROM `marcas`
+			WHERE `nome` = 'OpenDaylight'
+		)
+	);
+
+INSERT INTO `tipo_equipamento` (`tipo_equipamento`) VALUES ('Controller');
+
+"""
+
+SQL_DOWN = u"""
+
+DELETE FROM `tipo_equipamento` WHERE `tipo_equipamento` = 'Controller';
+DELETE FROM `modelos` WHERE `nome` = 'SDN Controller';
+DELETE IGNORE FROM `marcas` WHERE `nome` = 'OpenDaylight';
+
+"""

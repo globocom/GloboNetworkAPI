@@ -14,4 +14,11 @@ export NETWORKAPI_DEBUG='DEBUG'
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ci'
-python manage.py test
+
+# Updates the SDN controller ip address
+export REMOTE_CTRL_IP=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $2}')
+
+
+echo "Starting tests.."
+python manage.py test "$1"
+
