@@ -26,3 +26,4 @@ PyYAML==3.10
 Sphinx==1.2.2
 sphinx-rtd-theme==0.1.6
 sure==1.2.7
+urllib3==1.21.1
