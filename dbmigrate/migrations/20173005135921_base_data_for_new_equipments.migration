@@ -20,6 +20,6 @@ SQL_DOWN = u"""
 
 DELETE FROM `tipo_equipamento` WHERE `tipo_equipamento` = 'Controller';
 DELETE FROM `modelos` WHERE `nome` = 'SDN Controller';
-DELETE FROM `marcas` WHERE `nome` = 'OpenDaylight';
+DELETE FROM IGNORE `marcas` WHERE `nome` = 'OpenDaylight';
 
 """
