@@ -11,7 +11,6 @@ from networkapi.api_equipment import facade as facade_eqpt
 from networkapi.api_pools import exceptions
 from networkapi.api_pools.facade.v3 import base as facade_v3
 from networkapi.api_pools.serializers import v3 as serializers
-from networkapi.api_vip_request.facade import v3 as facade_vip
 from networkapi.api_vip_request.serializers import v3 as serializers_vip
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -25,7 +24,7 @@ log = logging.getLogger(__name__)
 ################
 # Apply in eqpt
 ################
-def _prepare_apply(pools, user):
+def _prepare_apply(pools, created=False, user=None):
 
     load_balance = dict()
     keys = list()
@@ -58,18 +57,19 @@ def _prepare_apply(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+            vips_requests = ServerPool().get_vips_related(pool['id'])
 
-            if 'Brocade' in plugin.__module__:
-                serializer_vips = serializers_vip.VipRequestV3Serializer(
-                    vips_requests,
-                    many=True,
-                    kind='details',
-                    include=('ports__identifier',)
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
+                vips_requests,
+                many=True,
+                include=(
+                    'ipv4__details',
+                    'ipv6__details',
+                    'ports__identifier',
+                    'ports__pools__server_pool__basic__lb_method',
                 )
-                vips = serializer_vips.data
-            else:
-                vips = []
+            )
+            vips = serializer_vips.data
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -102,11 +102,9 @@ def _prepare_apply(pools, user):
 
 @commit_on_success
 def create_real_pool(pools, user):
-    """
-        Create real pool in eqpt
-    """
+    """Create real pool in eqpt."""
 
-    load_balance = _prepare_apply(pools, user)
+    load_balance = _prepare_apply(pools=pools, created=False, user=user)
 
     for lb in load_balance:
         load_balance[lb]['plugin'].create_pool(load_balance[lb])
@@ -119,11 +117,9 @@ def create_real_pool(pools, user):
 
 @commit_on_success
 def delete_real_pool(pools, user):
-    """
-    delete real pool in eqpt
-    """
+    """Delete real pool in eqpt."""
 
-    load_balance = _prepare_apply(pools, user)
+    load_balance = _prepare_apply(pools=pools, created=True, user=user)
 
     for lb_id in load_balance:
         load_balance[lb_id]['plugin'].delete_pool(load_balance[lb_id])
@@ -136,24 +132,21 @@ def delete_real_pool(pools, user):
 
 @commit_on_success
 def update_real_pool(pools, user):
-    """
-    - update real pool in eqpt
-    - update data pool in db
-    """
+    """Update real pool in Load Balancer and DB."""
+
     load_balance = dict()
     keys = list()
 
-    for pool in pools['server_pools']:
-        facade_v3.validate_save(pool, permit_created=True)
+    for pool in pools:
 
-        member_ids = [spm['id']
-                      for spm in pool['server_pool_members'] if spm['id']]
-
-        db_members = ServerPoolMember.objects.filter(id__in=member_ids)
+        pool_obj = facade_v3.get_pool_by_id(pool['id'])
+        db_members = pool_obj.serverpoolmember_set.all()
+        member_ids = [spm['id'] for spm in pool['server_pool_members']
+                      if spm['id']]
+        db_members_remove = list(db_members.exclude(id__in=member_ids))
         db_members_id = [str(s.id) for s in db_members]
 
-        db_members_remove = ServerPoolMember.objects.filter(
-            server_pool__id=pool['id']).exclude(id__in=member_ids)
+        pool_obj.update_v3(pool, user, permit_created=True)
 
         pools_members = list()
         for pool_member in pool['server_pool_members']:
@@ -161,7 +154,7 @@ def update_real_pool(pools, user):
             ip = pool_member['ip']['ip_formated'] if pool_member[
                 'ip'] else pool_member['ipv6']['ip_formated']
 
-            if pool_member['id']:
+            if pool_member.get('id', None) is not None:
 
                 member = db_members[
                     db_members_id.index(str(pool_member['id']))]
@@ -259,18 +252,19 @@ def update_real_pool(pools, user):
                     'pools': [],
                 }
 
-            vips_requests = facade_vip.get_vip_request_by_pool(pool['id'])
+            vips_requests = ServerPool().get_vips_related(pool['id'])
 
-            if 'Brocade' in plugin.__module__:
-                serializer_vips = serializers_vip.VipRequestV3Serializer(
-                    vips_requests,
-                    many=True,
-                    kind='details',
-                    include=('ports__identifier',)
+            serializer_vips = serializers_vip.VipRequestV3Serializer(
+                vips_requests,
+                many=True,
+                include=(
+                    'ipv4__details',
+                    'ipv6__details',
+                    'ports__identifier',
+                    'ports__pools__server_pool__basic__lb_method',
                 )
-                vips = serializer_vips.data
-            else:
-                vips = []
+            )
+            vips = serializer_vips.data
 
             load_balance[eqpt_id]['pools'].append({
                 'id': pool['id'],
@@ -281,8 +275,6 @@ def update_real_pool(pools, user):
                 'vips': vips,
                 'pools_members': pools_members
             })
-
-        facade_v3.update_pool(pool, user)
 
     # pools are in differents load balancers
     keys = [','.join(key) for key in keys]
@@ -350,10 +342,7 @@ def _prepare_apply_state(pools, user=None):
 
 
 def set_poolmember_state(pools, user):
-    """
-    Set Pool Members state
-
-    """
+    """Set Pool Members state."""
 
     load_balance = _prepare_apply_state(pools['server_pools'], user)
 
@@ -372,9 +361,7 @@ def set_poolmember_state(pools, user):
 
 
 def get_poolmember_state(pools):
-    """
-    Return Pool Members State
-    """
+    """Return Pool Members State."""
 
     load_balance = _prepare_apply_state(pools)
 
@@ -432,6 +419,7 @@ def _validate_pool_members_to_apply(pool, user=None):
 
 
 def _validate_pool_to_apply(pool, update=False, user=None):
+
     server_pool = ServerPool.objects.get(id=pool['id'])
     if not server_pool:
         raise exceptions.PoolNotExist()

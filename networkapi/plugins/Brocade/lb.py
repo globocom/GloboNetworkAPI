@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from networkapi.plugins import exceptions as base_exceptions
@@ -25,7 +25,7 @@ class Lb(object):
             self.service_clients = (ClientCache
                                     .get_adx_service_client(device))
         except Exception, e:
-            logging.critical("Unable to connect to BROCADE. Details: %s" % (e))
+            logging.critical('Unable to connect to BROCADE. Details: %s' % (e))
             raise base_exceptions.CommandErrorException(e)
 
         log.info('connected in hostname:%s' % hostname)

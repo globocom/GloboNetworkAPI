@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
+from string import split
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.ambiente.models import ConfigEnvironmentInvalidError, IP_VERSION, \
-    Ambiente, IPConfig, ConfigEnvironment, AmbienteNotFoundError,\
-    ConfigEnvironmentDuplicateError
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import ConfigEnvironment
+from networkapi.ambiente.models import ConfigEnvironmentDuplicateError
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.ambiente.models import IPConfig
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.grupo.models import GrupoError, PermissionError
+from networkapi.grupo.models import GrupoError
+from networkapi.grupo.models import PermissionError
 from networkapi.infrastructure.ipaddr import IPNetwork
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import IpError, NetworkIPv6Error, NetworkIPv4Error, NetworkIPRangeEnvError
-import logging
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import NetworkIPRangeEnvError
+from networkapi.ip.models import NetworkIPv4Error
+from networkapi.ip.models import NetworkIPv6Error
 from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_version_ip, \
-    is_valid_int_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_int_param
+from networkapi.util import is_valid_version_ip
+from networkapi.vlan.models import TipoRede
 from networkapi.vlan.models import VlanError
 from networkapi.vlan.resource.VlanFindResource import break_network
-from string import split
-from networkapi.vlan.models import TipoRede
 
 
 class EnvironmentConfigurationAddResource(RestResource):
@@ -175,7 +184,7 @@ class EnvironmentConfigurationAddResource(RestResource):
         blocks, network, version = break_network(network)
 
         expl = split(
-            net.network.exploded, "." if version == IP_VERSION.IPv4[0] else ":")
+            net.network.exploded, '.' if version == IP_VERSION.IPv4[0] else ':')
         expl.append(str(net.prefixlen))
 
         block = int(blocks[-1])

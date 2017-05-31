@@ -3,7 +3,7 @@ SQL_UP = u"""
 CREATE TABLE `object_type` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `name` VARCHAR(45) NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '');
+  PRIMARY KEY (`id`));
 
 CREATE TABLE `object_group_permission` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
@@ -14,10 +14,10 @@ CREATE TABLE `object_group_permission` (
   `write` TINYINT(1) UNSIGNED NULL COMMENT '',
   `change_config` TINYINT(1) UNSIGNED NULL COMMENT '',
   `delete` TINYINT(1) UNSIGNED NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_ogp_id_usergroup_idx` (`id_user_group` ASC)  COMMENT '',
-  INDEX `fk_ogp_id_object_type_idx` (`id_object_type` ASC)  COMMENT '',
-  UNIQUE INDEX `uniq_user_group_object` (`id_user_group` ASC, `id_object_type` ASC, `id_object` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_ogp_id_usergroup_idx` (`id_user_group` ASC),
+  INDEX `fk_ogp_id_object_type_idx` (`id_object_type` ASC),
+  UNIQUE INDEX `uniq_user_group_object` (`id_user_group` ASC, `id_object_type` ASC, `id_object` ASC),
   CONSTRAINT `fk_ogp_id_usergroup`
     FOREIGN KEY (`id_user_group`)
     REFERENCES `grupos` (`id`)
@@ -37,10 +37,10 @@ CREATE TABLE `object_group_permission_general` (
   `write` TINYINT(1) UNSIGNED NULL COMMENT '',
   `change_config` TINYINT(1) UNSIGNED NULL COMMENT '',
   `delete` TINYINT(1) UNSIGNED NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_ogpg_id_usergroup_idx` (`id_user_group` ASC)  COMMENT '',
-  INDEX `fk_ogpg_id_object_type_idx` (`id_object_type` ASC)  COMMENT '',
-  UNIQUE INDEX `uniq_user_group_object_general` (`id_user_group` ASC, `id_object_type` ASC)  COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_ogpg_id_usergroup_idx` (`id_user_group` ASC),
+  INDEX `fk_ogpg_id_object_type_idx` (`id_object_type` ASC),
+  UNIQUE INDEX `uniq_user_group_object_general` (`id_user_group` ASC, `id_object_type` ASC),
   CONSTRAINT `fk_ogpg_id_usergroup`
     FOREIGN KEY (`id_user_group`)
     REFERENCES `grupos` (`id`)

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.rest import RestResource
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 import logging
-from networkapi.grupo.models import GrupoError
-from networkapi.equipamento.models import EquipamentoError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
 from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
 
 
 class EquipmentListResource(RestResource):
@@ -49,7 +48,7 @@ class EquipmentListResource(RestResource):
             # Business Rules
 
             equip_list = Equipamento.objects.raw(
-                "SELECT e.* \
+                'SELECT e.* \
                   FROM equipamentos e \
                    LEFT JOIN equip_do_grupo edg on e.id_equip = edg.id_equip \
                    LEFT JOIN grupos_equip ge on edg.id_egrupo = ge.id \
@@ -58,7 +57,7 @@ class EquipmentListResource(RestResource):
                    LEFT JOIN usuarios_do_grupo udg on g.id = udg.id_grupo \
                    LEFT JOIN usuarios u on udg.id_user = u.id_user \
                   WHERE u.id_user = %s \
-                   AND dg.leitura = 1",
+                   AND dg.leitura = 1',
                 [user.id]
             )
 

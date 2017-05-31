@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,19 +13,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
 from networkapi.exception import InvalidValueError
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.grupo.models import UGrupo, GrupoError, UGrupoNameDuplicatedError,\
-    PermissaoAdministrativa, Permission
-from networkapi.util import is_valid_string_maxsize, is_valid_string_minsize, is_valid_text, is_valid_yes_no_choice
-from networkapi.settings import ASSOCIATE_PERMISSION_AUTOMATICALLY,\
-    ID_AUTHENTICATE_PERMISSION
+from networkapi.grupo.models import GrupoError
+from networkapi.grupo.models import PermissaoAdministrativa
+from networkapi.grupo.models import Permission
+from networkapi.grupo.models import UGrupo
+from networkapi.grupo.models import UGrupoNameDuplicatedError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.settings import ASSOCIATE_PERMISSION_AUTOMATICALLY
+from networkapi.settings import ID_AUTHENTICATE_PERMISSION
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.util import is_valid_text
+from networkapi.util import is_valid_yes_no_choice
 
 
 class GroupUserAddResource(RestResource):

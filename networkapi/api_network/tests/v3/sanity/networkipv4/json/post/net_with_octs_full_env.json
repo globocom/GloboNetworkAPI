@@ -1,0 +1,15 @@
+{
+  "networks": [
+    {
+      "cluster_unit": "cluster-unit-1",
+      "environmentvip": null,
+      "network_type": 1,
+      "oct1": 10,
+      "oct2": 11,
+      "oct3": 6,
+      "oct4": 0,
+      "prefix": 24,
+      "vlan": 2
+    }
+  ]
+}

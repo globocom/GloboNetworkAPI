@@ -1,3 +1,5 @@
+networkapi_venv/
+test_venv/
 *.pyc
 *.orig
 *.log
@@ -20,4 +22,6 @@ build
 *.db
 sqldump_vm_teste.sql
 sitestatic/
-config_templates/
+reports/
+networkapi/generated_config/network/network_equip*
+cover/

@@ -21,7 +21,10 @@ from django.db import models
 from django.db.models import get_model
 
 from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.grupo.models import EGrupo
+from networkapi.grupo.models import EGrupoNotFoundError
 from networkapi.models.BaseModel import BaseModel
 from networkapi.roteiro.models import Roteiro
 from networkapi.tipoacesso.models import TipoAcesso
@@ -229,64 +232,6 @@ class Marca(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'marcas'
         managed = True
-
-    """
-    @classmethod
-    def search(cls):
-        try:
-            return Marca.objects.all()
-        except Exception:
-            cls.log.error(u'Falha ao pesquisar as marcas de equipamentos.')
-            raise EquipamentoError(u'Falha ao pesquisar as marcas de equipamentos.')
-
-    def create(self, authenticated_user):
-        try:
-            Marca.get_by_name(self.nome)
-            raise MarcaNameDuplicatedError(None, u'Marca com o nome %s já cadastrada.' % self.nome)
-        except MarcaNotFoundError:
-            pass
-
-        try:
-            self.save()
-        except Exception:
-            self.log.error(u'Falha ao inserir marca de equipamento.')
-            raise EquipamentoError(u'Falha ao inserir marca de equipamento.')
-
-
-    @classmethod
-    def update(cls, authenticated_user, pk, **kwargs):
-        brand = Marca.get_by_pk(pk)
-
-        try:
-            name = kwargs['nome']
-            if brand.nome.lower() != name.lower():
-                Marca.get_by_name(name)
-                raise MarcaNameDuplicatedError(None, u'Marca com o nome %s já cadastrada.' % name)
-        except (KeyError, MarcaNotFoundError):
-            pass
-
-        try:
-            brand.__dict__.update(kwargs)
-            brand.save(authenticated_user)
-        except Exception, e:
-            cls.log.error(u'Falha ao atualizar a marca de equipamento.')
-            raise EquipamentoError(e, u'Falha ao atualizar a marca de equipamento.')
-
-    @classmethod
-    def remove(cls, authenticated_user, pk):
-        brand = Marca.get_by_pk(pk)
-
-        try:
-            if brand.modelo_set.count() > 0:
-                raise MarcaUsedByModeloError(None, u"A marca %d tem modelo associado." % brand.id)
-
-            brand.delete()
-        except MarcaUsedByModeloError, e:
-            raise e
-        except Exception, e:
-            cls.log.error(u'Falha ao remover a marca de equipamento.')
-            raise EquipamentoError(e, u'Falha ao remover a marca de equipamento.')
-    """
 
     @classmethod
     def get_by_pk(cls, idt):
@@ -543,6 +488,9 @@ class Equipamento(BaseModel):
         db_table = u'equipamentos'
         managed = True
 
+    def __str__(self):
+        return self.nome
+
     def _get_groups(self):
         groups = self.grupos.all()
         return groups
@@ -675,7 +623,7 @@ class Equipamento(BaseModel):
                 return query.uniqueResult()
         except ObjectDoesNotExist, e:
             raise EquipamentoNotFoundError(
-                e, u'Dont there is a equipament by pk = %s.' % id)
+                e, u'Dont there is a equipament by pk = %s.' % pk)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -705,7 +653,7 @@ class Equipamento(BaseModel):
             return Equipamento.objects.get(nome__iexact=name)
         except ObjectDoesNotExist, e:
             raise EquipamentoNotFoundError(
-                e, u'Não existe um equipamento com o nome = %s.' % name)
+                e, u'There is no equipment with the name = %s.' % name)
         except Exception, e:
             cls.log.error(u'Falha ao pesquisar o equipamento.')
             raise EquipamentoError(e, u'Falha ao pesquisar o equipamento.')
@@ -800,11 +748,12 @@ class Equipamento(BaseModel):
         except IpCantBeRemovedFromVip, e:
             raise e
         except Exception, e:
-            self.log.error(u'Falha ao remover um equipamento.')
+            self.log.error(u'Falha ao remover um equipamento: %s' % e)
             raise EquipamentoError(e, u'Falha ao remover um equipamento.')
 
     def delete_v3(self):
-        """Before removing the computer it eliminates all your relationships."""
+        """Before removing the computer it eliminates all your relationships.
+        """
 
         # ipv4
         for ip_equipment in self.ipequipamento_set.all():
@@ -833,137 +782,177 @@ class Equipamento(BaseModel):
 
     def create_v3(self, equipment):
 
-        self.nome = equipment.get('name').upper()
-        self.tipo_equipamento = TipoEquipamento().get_by_pk(
-            equipment.get('equipment_type'))
-        self.modelo = Modelo.get_by_pk(equipment.get('model'))
-        self.maintenance = equipment.get('maintenance', False)
+        try:
+            self.nome = equipment.get('name').upper()
+            self.tipo_equipamento = TipoEquipamento()\
+                .get_by_pk(equipment.get('equipment_type'))
+            self.modelo = Modelo.get_by_pk(equipment.get('model'))
+            self.maintenance = equipment.get('maintenance', False)
 
-        self.save()
+            try:
+                self.get_by_name(self.nome)
+            except EquipamentoNotFoundError:
+                pass
+            else:
+                msg = 'There is another equipment with same name {}'
+                raise EquipmentInvalidValueException(msg.format(self.nome))
 
-        # groups
-        for group_id in equipment.get('groups', []):
-            eqpt_group = EquipamentoGrupo()
-            eqpt_group.egrupo = EGrupo.get_by_pk(group_id)
-            eqpt_group.equipamento = self
-            eqpt_group.create()
+            self.save()
 
-        # environments
-        for environment in equipment.get('environments', []):
-            eqpt_env = EquipamentoAmbiente()
-            eqpt_env.ambiente = Ambiente.get_by_pk(
-                environment.get('environment'))
-            eqpt_env.equipamento = self
-            eqpt_env.is_router = environment.get('is_router')
-            eqpt_env.create()
+            # groups
+            for group in equipment.get('groups', []):
+                eqpt_group = EquipamentoGrupo()
+                eqpt_group.egrupo = EGrupo.get_by_pk(group.get('id'))
+                eqpt_group.equipamento = self
+                eqpt_group.create()
 
-        # ipv4s
-        ipeqpt_model = get_model('ip', 'IpEquipamento')
-        for ipv4 in equipment.get('ipv4', []):
-            ipeqpt_model.create_v3({
-                'equipment': self.id,
-                'ip': ipv4
-            })
+            # environments
+            for environment in equipment.get('environments', []):
+                eqpt_env = EquipamentoAmbiente()
+                eqpt_env.ambiente = Ambiente.get_by_pk(
+                    environment.get('environment'))
+                eqpt_env.equipamento = self
+                eqpt_env.is_router = environment.get('is_router')
+                eqpt_env.create()
 
-        # ipv6s
-        ipeqpt_model = get_model('ip', 'Ipv6Equipament')
-        for ipv6 in equipment.get('ipv6', []):
-            ipeqpt_model.create_v3({
-                'equipment': self.id,
-                'ip': ipv6
-            })
+            # ipv4s
+            ipeqpt_model = get_model('ip', 'IpEquipamento')
+            for ipv4 in equipment.get('ipv4', []):
+                ipeqpt_model.create_v3({
+                    'equipment': self.id,
+                    'ip': ipv4
+                })
+
+            # ipv6s
+            ipeqpt_model = get_model('ip', 'Ipv6Equipament')
+            for ipv6 in equipment.get('ipv6', []):
+                ipeqpt_model.create_v3({
+                    'equipment': self.id,
+                    'ip': ipv6
+                })
+
+        except EquipmentInvalidValueException, e:
+            raise EquipmentInvalidValueException(e.detail)
+        except AmbienteNotFoundError, e:
+            raise EquipmentInvalidValueException(e.message)
+        except EGrupoNotFoundError, e:
+            raise EquipmentInvalidValueException(e.message)
+        except Exception, e:
+            raise EquipamentoError(None, e)
 
     def update_v3(self, equipment):
 
-        self.nome = equipment.get('name').upper()
-        self.tipo_equipamento = TipoEquipamento().get_by_pk(
-            equipment.get('equipment_type'))
-        self.modelo = Modelo.get_by_pk(equipment.get('model'))
-        self.maintenance = equipment.get('maintenance', False)
+        try:
+            self.tipo_equipamento = TipoEquipamento().get_by_pk(
+                equipment.get('equipment_type'))
+            self.modelo = Modelo.get_by_pk(equipment.get('model'))
+            self.maintenance = equipment.get('maintenance', False)
 
-        self.save()
-
-        # groups
-        if equipment.get('groups'):
-            groups_db = EquipamentoGrupo.get_by_equipment(self.id)
-            groups_db_ids = groups_db.values_list('egrupo', flat=True)
-            groups_ids = equipment.get('groups')
-
-            for group_id in groups_ids:
-                # insert relashionship with group
-                if group_id not in groups_db_ids:
-                    eqpt_group = EquipamentoGrupo()
-                    eqpt_group.egrupo = EGrupo.get_by_pk(group_id)
-                    eqpt_group.equipamento = self
-                    eqpt_group.create()
-
-            # delete relashionship with groups not sended
-            groups_db_ids_old = list(set(groups_db_ids) - set(groups_ids))
-            groups_db.filter(egrupo__in=groups_db_ids_old).delete()
-
-        # environments
-        if equipment.get('environments'):
-            env_db = EquipamentoAmbiente.get_by_equipment(self.id)
-            env_db_ids = list(env_db.values_list('ambiente', flat=True))
-            env_ids = list()
-
-            for environment in equipment.get('environments'):
-                env_id = environment.get('environment')
-                if env_id not in env_db_ids:
-                    # insert new relashionship with enviroment
-                    eqpt_env = EquipamentoAmbiente()
-                    eqpt_env.ambiente = Ambiente.get_by_pk(env_id)
-                    eqpt_env.equipamento = self
-                    eqpt_env.is_router = environment.get('is_router')
-                    eqpt_env.create()
+            if self.nome != equipment.get('name').upper():
+                self.nome = equipment.get('name').upper()
+                try:
+                    self.get_by_name(self.nome)
+                except EquipamentoNotFoundError:
+                    pass
                 else:
-                    # update relashionship with enviroment
-                    env_current = env_db[env_db_ids.index(env_id)]
-                    env_current.is_router = environment.get('is_router')
-                    env_current.save()
-                env_ids.append(env_id)
+                    msg = 'There is another equipment with same name {}'
+                    raise EquipmentInvalidValueException(msg.format(self.nome))
 
-            # delete relashionship with enviroment not sended
-            env_db_ids_old = list(set(env_db_ids) - set(env_ids))
-            env_db.filter(ambiente__in=env_db_ids_old).delete()
+            self.save()
 
-        # ipv4s
-        if equipment.get('ipv4'):
-            ipeqpt_model = get_model('ip', 'IpEquipamento')
-            ips_db = ipeqpt_model.list_by_equip(self.id)
-            ips_db_ids = ips_db.values_list('ip', flat=True)
-            ipv4_ids = equipment.get('ipv4')
+            # groups
+            if equipment.get('groups'):
+                groups_db = EquipamentoGrupo.get_by_equipment(self.id)
+                groups_db_ids = groups_db.values_list('egrupo', flat=True)
+                groups = equipment.get('groups')
 
-            for ipv4 in ipv4_ids:
-                # insert new relashionship with ipv4
-                if ipv4 not in ips_db_ids:
-                    ipeqpt_model.create_v3({
-                        'equipment': self.id,
-                        'ip': ipv4
-                    })
+                groups_ids = list()
+                for group in groups:
+                    # insert relashionship with group
+                    if group.get('id') not in groups_db_ids:
+                        eqpt_group = EquipamentoGrupo()
+                        eqpt_group.egrupo = EGrupo.get_by_pk(group.get('id'))
+                        eqpt_group.equipamento = self
+                        eqpt_group.create()
 
-            # delete relashionship with ipv4 not sended
-            ips_db_ids_old = list(set(ips_db_ids) - set(ipv4_ids))
-            ips_db.filter(ip__in=ips_db_ids_old).delete()
+                    groups_ids.append(group.get('id'))
 
-        # ipv6s
-        if equipment.get('ipv6'):
-            ipeqpt_model = get_model('ip', 'Ipv6Equipament')
-            ipv6s_db = ipeqpt_model.list_by_equip(self.id)
-            ipv6s_db_ids = ipv6s_db.values_list('ip', flat=True)
-            ipv6_ids = equipment.get('ipv6')
+                # delete relashionship with groups not sended
+                groups_db_ids_old = list(set(groups_db_ids) - set(groups_ids))
+                groups_db.filter(egrupo__in=groups_db_ids_old).delete()
 
-            for ipv6 in ipv6_ids:
-                # insert new relashionship with ipv6
-                if ipv6 not in ipv6s_db_ids:
-                    ipeqpt_model.create_v3({
-                        'equipment': self.id,
-                        'ip': ipv6
-                    })
+            # environments
+            if equipment.get('environments'):
+                env_db = EquipamentoAmbiente.get_by_equipment(self.id)
+                env_db_ids = list(env_db.values_list('ambiente', flat=True))
+                env_ids = list()
 
-            # delete relashionship with ipv6 not sended
-            ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
-            ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
+                for environment in equipment.get('environments'):
+                    env_id = environment.get('environment')
+                    if env_id not in env_db_ids:
+                        # insert new relashionship with enviroment
+                        eqpt_env = EquipamentoAmbiente()
+                        eqpt_env.ambiente = Ambiente.get_by_pk(env_id)
+                        eqpt_env.equipamento = self
+                        eqpt_env.is_router = environment.get('is_router')
+                        eqpt_env.create()
+                    else:
+                        # update relashionship with enviroment
+                        env_current = env_db[env_db_ids.index(env_id)]
+                        env_current.is_router = environment.get('is_router')
+                        env_current.save()
+                    env_ids.append(env_id)
+
+                # delete relashionship with enviroment not sended
+                env_db_ids_old = list(set(env_db_ids) - set(env_ids))
+                env_db.filter(ambiente__in=env_db_ids_old).delete()
+
+            # ipv4s
+            if equipment.get('ipv4'):
+                ipeqpt_model = get_model('ip', 'IpEquipamento')
+                ips_db = ipeqpt_model.list_by_equip(self.id)
+                ips_db_ids = ips_db.values_list('ip', flat=True)
+                ipv4_ids = equipment.get('ipv4')
+
+                for ipv4 in ipv4_ids:
+                    # insert new relashionship with ipv4
+                    if ipv4 not in ips_db_ids:
+                        ipeqpt_model.create_v3({
+                            'equipment': self.id,
+                            'ip': ipv4
+                        })
+
+                # delete relashionship with ipv4 not sended
+                ips_db_ids_old = list(set(ips_db_ids) - set(ipv4_ids))
+                ips_db.filter(ip__in=ips_db_ids_old).delete()
+
+            # ipv6s
+            if equipment.get('ipv6'):
+                ipeqpt_model = get_model('ip', 'Ipv6Equipament')
+                ipv6s_db = ipeqpt_model.list_by_equip(self.id)
+                ipv6s_db_ids = ipv6s_db.values_list('ip', flat=True)
+                ipv6_ids = equipment.get('ipv6')
+
+                for ipv6 in ipv6_ids:
+                    # insert new relashionship with ipv6
+                    if ipv6 not in ipv6s_db_ids:
+                        ipeqpt_model.create_v3({
+                            'equipment': self.id,
+                            'ip': ipv6
+                        })
+
+                # delete relashionship with ipv6 not sended
+                ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
+                ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
+
+        except EquipmentInvalidValueException, e:
+            raise EquipmentInvalidValueException(e.detail)
+        except AmbienteNotFoundError, e:
+            raise EquipmentInvalidValueException(e.message)
+        except EGrupoNotFoundError, e:
+            raise EquipmentInvalidValueException(e.message)
+        except Exception, e:
+            raise EquipamentoError(None, e)
 
 
 class EquipamentoAmbiente(BaseModel):
@@ -1021,6 +1010,18 @@ class EquipamentoAmbiente(BaseModel):
             raise EquipamentoError(
                 e, u'Falha ao pesquisar o equipamento-ambiente.')
 
+    def get_by_environment(self, environment_id):
+        try:
+            return EquipamentoAmbiente.objects.get(ambiente__id=environment_id)
+        except ObjectDoesNotExist, e:
+            raise EquipamentoAmbienteNotFoundError(
+                e, u'Não existe um equipamento_ambiente com o ambiente = %s.' %
+                (environment_id))
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar o equipamento-ambiente.')
+            raise EquipamentoError(
+                e, u'Falha ao pesquisar o equipamento-ambiente.')
+
     @classmethod
     def get_by_equipment(cls, equipment_id):
         try:
@@ -1064,6 +1065,44 @@ class EquipamentoAmbiente(BaseModel):
     def get_routers_by_environment(cls, environment_id):
         return EquipamentoAmbiente.objects.select_related('equipamento')\
             .filter(ambiente=environment_id, is_router=True)
+
+    def create_v3(self, eqpt_env_map):
+        """
+        Insert a new relashionship between an equipment and an environment.
+
+        @return: Nothing
+
+        @raise AmbienteNotFoundError: Environment not registered.
+        @raise EquipamentoAmbienteDuplicatedError: Equipment already
+                                                   registered in
+                                                   environment.
+        @raise EquipamentoError: Failure to insert the relashionship
+                                 between equipment and environment.
+        """
+
+        self.ambiente = Ambiente()\
+            .get_by_pk(eqpt_env_map.get('environment'))
+        self.equipamento = Equipamento()\
+            .get_by_pk(eqpt_env_map.get('equipment'))
+
+        try:
+            EquipamentoAmbiente().get_by_equipment_environment(
+                self.equipamento.id, self.ambiente.id)
+            raise EquipamentoAmbienteDuplicatedError(
+                None, u'Equipment already registered in environment.')
+        except EquipamentoAmbienteNotFoundError:
+            pass
+
+        try:
+            self.save()
+        except Exception, e:
+            msg = u'Failure to insert the relashionship between ' \
+                'equipment and environment. %s/%s.' % \
+                (self.equipamento.id, self.ambiente.id)
+
+            self.log.error(msg)
+
+            raise EquipamentoError(e, msg)
 
 
 class EquipamentoGrupo(BaseModel):

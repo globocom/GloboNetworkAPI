@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
+from django.db.utils import IntegrityError
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param,\
-    destroy_cache_function, mount_ipv4_string
-from networkapi.exception import InvalidValueError
-from networkapi.ip.models import NetworkIPv4, NetworkIPv4NotFoundError, IpEquipamento, IpCantRemoveFromServerPool
-from networkapi.requisicaovips.models import RequisicaoVips
-from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV4
-from networkapi.ip.models import IpCantBeRemovedFromVip
-from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
-from django.db.utils import IntegrityError
-from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_NETWORK_IPV4
 from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAmbienteNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.ip.models import IpCantRemoveFromServerPool
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import mount_ipv4_string
 
 
 class NetworkIPv4DeallocateResource(RestResource):
@@ -39,12 +46,12 @@ class NetworkIPv4DeallocateResource(RestResource):
     log = logging.getLogger('NetworkIPv4DeallocateResource')
 
     def handle_delete(self, request, user, *args, **kwargs):
-        '''Handles DELETE requests to deallocate all relationships between NetworkIPv4.
+        """Handles DELETE requests to deallocate all relationships between NetworkIPv4.
 
         URL: network/ipv4/<id_network_ipv4>/deallocate/
-        '''
+        """
 
-        self.log.info("Deallocate all relationships between NetworkIPv4.")
+        self.log.info('Deallocate all relationships between NetworkIPv4.')
 
         try:
 
@@ -73,7 +80,8 @@ class NetworkIPv4DeallocateResource(RestResource):
 
             for ipv4 in network_ipv4.ip_set.all():
 
-                server_pool_member_list = ServerPoolMember.objects.filter(ip=ipv4)
+                server_pool_member_list = ServerPoolMember.objects.filter(
+                    ip=ipv4)
 
                 if server_pool_member_list.count() != 0:
 
@@ -81,7 +89,8 @@ class NetworkIPv4DeallocateResource(RestResource):
                     server_pool_name_list = set()
 
                     for member in server_pool_member_list:
-                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        item = '{}: {}'.format(
+                            member.server_pool.id, member.server_pool.identifier)
                         server_pool_name_list.add(item)
 
                     server_pool_name_list = list(server_pool_name_list)
@@ -91,7 +100,7 @@ class NetworkIPv4DeallocateResource(RestResource):
                     network_ipv4_ip = mount_ipv4_string(network_ipv4)
 
                     raise IpCantRemoveFromServerPool({'ip': ip_formated, 'network_ip': network_ipv4_ip, 'server_pool_identifiers': server_pool_identifiers},
-                                               "Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s" % (network_ipv4_ip, ip_formated, server_pool_identifiers))
+                                                     'Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s' % (network_ipv4_ip, ip_formated, server_pool_identifiers))
 
             with distributedlock(LOCK_NETWORK_IPV4 % network_ipv4_id):
 
@@ -101,7 +110,9 @@ class NetworkIPv4DeallocateResource(RestResource):
                 destroy_cache_function(key_list_eqs, True)
                 # Business Rules
                 # Remove NetworkIPv4 (will remove all relationships by cascade)
-                network_ipv4.delete()
+                locks_used = [LOCK_NETWORK_IPV4 % network_ipv4_id]
+
+                network_ipv4.delete_v3(locks_used)
 
                 # Return nothing
                 return self.response(dumps_networkapi({}))
@@ -111,7 +122,7 @@ class NetworkIPv4DeallocateResource(RestResource):
         except EquipamentoAmbienteNotFoundError, e:
             return self.response_error(320)
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319, "network", "networkipv4", network_ipv4_id)
+            return self.response_error(319, 'network', 'networkipv4', network_ipv4_id)
         except InvalidValueError, e:
             return self.response_error(269, e.param, e.value)
         except NetworkIPv4NotFoundError, e:

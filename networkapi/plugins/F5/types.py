@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 
 from networkapi.plugins import exceptions as base_exceptions
@@ -10,8 +10,8 @@ def address_type(value):
 
     values = {
         # 'ATYPE_UNSET'
-        "*:*": 'ATYPE_STAR_ADDRESS_STAR_PORT',
-        "*:$": 'ATYPE_STAR_ADDRESS_EXPLICIT_PORT',
+        '*:*': 'ATYPE_STAR_ADDRESS_STAR_PORT',
+        '*:$': 'ATYPE_STAR_ADDRESS_EXPLICIT_PORT',
         # 'ATYPE_EXPLICIT_ADDRESS_EXPLICIT_PORT',
         # 'ATYPE_STAR_ADDRESS',
         # 'ATYPE_EXPLICIT_ADDRESS',

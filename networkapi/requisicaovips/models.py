@@ -24,6 +24,7 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models import Q
 
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.ambiente.models import IP_VERSION
@@ -36,7 +37,6 @@ from networkapi.exception import OptionVipEnvironmentVipError
 from networkapi.exception import OptionVipEnvironmentVipNotFoundError
 from networkapi.exception import OptionVipError
 from networkapi.exception import OptionVipNotFoundError
-from networkapi.grupo.models import UGrupo
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_int_greater_equal_zero_param
 from networkapi.util import is_valid_int_greater_zero_param
@@ -50,16 +50,18 @@ from networkapi.util import is_valid_string_minsize
 from networkapi.util import mount_ipv4_string
 from networkapi.util import mount_ipv6_string
 from networkapi.util.decorators import cached_property
+from networkapi.util.geral import get_app
+
 # from networkapi.api_pools.exceptions import PoolError
 
 Ip = get_model('ip', 'Ip')
 IpNotFoundByEquipAndVipError = get_model('ip', 'IpNotFoundByEquipAndVipError')
 Ipv6 = get_model('ip', 'Ipv6')
 
-Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
-HealthcheckExpect = get_model('healthcheckexpect', 'HealthcheckExpect')
-HealthcheckExpectNotFoundError = get_model(
-    'healthcheckexpect', 'HealthcheckExpectNotFoundError')
+# Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
+# HealthcheckExpect = get_model('healthcheckexpect', 'HealthcheckExpect')
+# HealthcheckExpectNotFoundError = get_model(
+#     'healthcheckexpect', 'HealthcheckExpectNotFoundError')
 
 
 class RequisicaoVipsError(Exception):
@@ -836,6 +838,9 @@ class RequisicaoVips(BaseModel):
         return map
 
     def set_new_variables(self, data):
+
+        Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
+
         log = logging.getLogger('insert_vip_request_set_new_variables')
 
         self.variaveis = ''
@@ -1236,16 +1241,6 @@ class RequisicaoVips(BaseModel):
 
         if self.variaveis != '':
             self.variaveis = self.variaveis[0:len(self.variaveis) - 1]
-
-    def update_vip_created(self, authenticated_user, vip_created):
-        try:
-            self.vip_criado = vip_created
-            self.save()
-        except Exception, e:
-            self.log.error(
-                u'Falha ao atualizar o campo vip_criado da requisição de vip.')
-            raise RequisicaoVipsError(
-                e, u'Falha ao atualizar o campo vip_criado da requisição de vip.')
 
     @classmethod
     def update(cls, authenticated_user, pk, variables_map, **kwargs):
@@ -1650,6 +1645,10 @@ class RequisicaoVips(BaseModel):
 
         """
 
+        HealthcheckExpect = get_model('healthcheckexpect', 'HealthcheckExpect')
+        HealthcheckExpectNotFoundError = get_model(
+            'healthcheckexpect', 'HealthcheckExpectNotFoundError')
+
         # Get XML data
         healthcheck_type = upper(str(vip_map['healthcheck_type']))
         healthcheck = vip_map['healthcheck']
@@ -1737,8 +1736,6 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def valid_real_server(cls, ip, equip, evip, valid=True):
-
-
         """Validation real server
 
         @param ip:     IPv4 or Ipv6. 'xxx.xxx.xxx.xxx or xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx'
@@ -1753,7 +1750,8 @@ class RequisicaoVips(BaseModel):
         """
 
         Ip = get_model('ip', 'Ip')
-        IpNotFoundByEquipAndVipError = get_model('ip', 'IpNotFoundByEquipAndVipError')
+        IpNotFoundByEquipAndVipError = get_model(
+            'ip', 'IpNotFoundByEquipAndVipError')
         Ipv6 = get_model('ip', 'Ipv6')
 
         if is_valid_ipv4(ip):
@@ -1834,6 +1832,10 @@ class RequisicaoVips(BaseModel):
         return ip, equip, evip
 
     def save_vips_and_ports(self, vip_map, user):
+        Healthcheck = get_model('healthcheckexpect', 'Healthcheck')
+
+        HealthcheckExpect = get_model('healthcheckexpect', 'HealthcheckExpect')
+
         # Ports Vip
         ports_vip_map = vip_map.get('portas_servicos')
         ports_vip = ports_vip_map.get('porta')
@@ -2269,6 +2271,9 @@ class ServerPool(BaseModel):
         db_table = u'server_pool'
         managed = True
 
+    def __str__(self):
+        return '{} - {}'.format(self.identifier, self.environment)
+
     def prepare_and_save(self, default_port, user):
         self.default_port = default_port
         self.save()
@@ -2279,8 +2284,8 @@ class ServerPool(BaseModel):
 
     @cached_property
     def vips(self):
-        ports_assoc = self.viprequestportpool_set.select_related('vip_request')
-        vips = [poolport.vip_request_port.vip_request for poolport in ports_assoc]
+        vips = self.get_vips_related(self.id)
+
         return vips
 
     @cached_property
@@ -2299,8 +2304,270 @@ class ServerPool(BaseModel):
 
     @cached_property
     def groups_permissions(self):
-        perms = self.serverpoolgrouppermission_set.all()
+        ogp_models = get_app('api_ogp', 'models')
+        perms = ogp_models.ObjectGroupPermission\
+            .get_by_object(self.id, AdminPermission.OBJ_TYPE_POOL)
         return perms
+
+    def get_vips_related(self, pool_id):
+        vip_model = get_app('api_vip_request', 'models')
+
+        vips = vip_model.VipRequest.objects.filter(
+            viprequestport__viprequestportpool__server_pool__id=pool_id
+        )
+
+        return vips
+
+    @classmethod
+    def get_by_pk(cls, id):
+        """Get ServerPool by id.
+            @return: ServerPool.
+            @raise ServerPoolNotFoundError: ServerPool is not registered.
+            @raise PoolError: Failed to search for the ServerPool.
+            @raise OperationalError: Lock wait timeout exceeded.
+        """
+
+        exceptions = get_app('api_pools', 'exceptions')
+
+        try:
+            return ServerPool.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            cls.log.exception(u'There is no ServerPool with pk = %s.' % id)
+            raise exceptions.PoolDoesNotExistException(id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            cls.log.error(u'Failure to search the ServerPool.')
+            raise exceptions.PoolError(e, u'Failure to search the ServerPool.')
+
+    def create_v3(self, pool, user):
+        pool_models = get_app('api_pools', 'models')
+        ogp_models = get_app('api_ogp', 'models')
+        env_models = get_app('ambiente', 'models')
+        hc_models = get_app('healthcheckexpect', 'models')
+
+        # Validate
+        self.validate_v3(pool)
+
+        self.identifier = pool.get('identifier')
+        self.default_port = pool.get('default_port')
+        self.lb_method = pool.get('lb_method')
+        self.default_limit = pool.get('default_limit')
+        self.pool_created = False
+
+        # Environment
+        self.environment = env_models.Ambiente.get_by_pk(
+            pool.get('environment'))
+        # ServiceDownAction
+        self.servicedownaction = pool_models.OptionPool().get_option_pool(
+            pool.get('servicedownaction').get('name'),
+            'ServiceDownAction'
+        )
+
+        # Healthcheck
+        healthcheck = {
+            'identifier': pool.get('healthcheck')
+            .get('identifier'),
+            'healthcheck_expect': pool.get('healthcheck')
+            .get('healthcheck_expect'),
+            'healthcheck_type': pool.get('healthcheck')
+            .get('healthcheck_type'),
+            'healthcheck_request': pool.get('healthcheck')
+            .get('healthcheck_request'),
+            'destination': pool.get('healthcheck')
+            .get('destination'),
+        }
+
+        self.healthcheck = hc_models.Healthcheck()\
+            .get_create_healthcheck(healthcheck)
+
+        self.save()
+
+        # Server Pool Members
+        for server_pool_member in pool['server_pool_members']:
+            server_pool_member['server_pool'] = self.id
+            sp = ServerPoolMember()
+            sp.create_v3(server_pool_member)
+
+        # Permissions
+        perm = ogp_models.ObjectGroupPermission()
+        perm.create_perms(pool, self.id, AdminPermission.OBJ_TYPE_POOL, user)
+
+    def update_v3(self, pool, user, permit_created=False):
+
+        pool_models = get_app('api_pools', 'models')
+        pool_exceptions = get_app('api_pools', 'models')
+        ogp_models = get_app('api_ogp', 'models')
+        env_models = get_app('ambiente', 'models')
+        hc_models = get_app('healthcheckexpect', 'models')
+
+        if self.dscp:
+            if self.default_port != pool.get('default_port'):
+                raise pool_exceptions.PoolError(
+                    'DRSL3 Restriction: Pool {} cannot change port'.format(
+                        str(self)
+                    )
+                )
+
+        # Validate
+        self.validate_v3(pool, permit_created)
+
+        self.identifier = pool.get('identifier')
+        self.default_port = pool.get('default_port')
+        self.lb_method = pool.get('lb_method')
+        self.default_limit = pool.get('default_limit')
+
+        # Environment
+        self.environment = env_models.Ambiente.get_by_pk(
+            pool.get('environment'))
+        # ServiceDownAction
+        self.servicedownaction = pool_models.OptionPool().get_option_pool(
+            pool.get('servicedownaction').get('name'),
+            'ServiceDownAction'
+        )
+
+        # Healthcheck
+        healthcheck = {
+            'identifier': pool.get('healthcheck')
+            .get('identifier'),
+            'healthcheck_expect': pool.get('healthcheck')
+            .get('healthcheck_expect'),
+            'healthcheck_type': pool.get('healthcheck')
+            .get('healthcheck_type'),
+            'healthcheck_request': pool.get('healthcheck')
+            .get('healthcheck_request'),
+            'destination': pool.get('healthcheck')
+            .get('destination'),
+        }
+        self.healthcheck = hc_models.Healthcheck()\
+            .get_create_healthcheck(healthcheck)
+
+        self.save()
+
+        # Server Pool Members to delete
+        members_ids = [member['id'] for member in pool['server_pool_members']
+                       if member['id']]
+        for server_pool_member in self.serverpoolmember_set.all():
+            if server_pool_member.id not in members_ids:
+                sp = ServerPoolMember.get_by_pk(server_pool_member.id)
+                sp.delete()
+
+        # Server Pool Members to create
+        for server_pool_member in pool['server_pool_members']:
+            if server_pool_member.get('id', None) is None:
+                server_pool_member['server_pool'] = self.id
+                spm = ServerPoolMember()
+                spm.create_v3(server_pool_member)
+
+        # Server Pool Members to update
+        for server_pool_member in pool['server_pool_members']:
+            if server_pool_member.get('id', None) is not None:
+                server_pool_member['server_pool'] = self.id
+                spm = ServerPoolMember.get_by_pk(server_pool_member.get('id'))
+                spm.update_v3(server_pool_member)
+
+        # Permissions
+        perm = ogp_models.ObjectGroupPermission()
+        perm.update_perms(pool, self.id, AdminPermission.OBJ_TYPE_POOL, user)
+
+    def delete_v3(self):
+        ogp_models = get_app('api_ogp', 'models')
+        pools_exceptions = get_app('api_pools', 'exceptions')
+
+        id_pool = self.id
+
+        if self.pool_created:
+            raise pools_exceptions.PoolConstraintCreatedException()
+
+        if self.vips:
+            raise pools_exceptions.PoolError('Pool has related with VIPs')
+
+        # Deletes Server Pool Members
+        ServerPoolMember.objects.filter(server_pool=id_pool).delete()
+
+        self.delete()
+
+        # Deletes Permissions
+        ogp_models.ObjectGroupPermission.objects.filter(
+            object_type__name=AdminPermission.OBJ_TYPE_POOL,
+            object_value=id_pool
+        ).delete()
+
+    def validate_v3(self, pool, permit_created=False):
+
+        pool_exceptions = get_app('api_pools', 'exceptions')
+
+        has_identifier = ServerPool.objects.filter(
+            identifier=pool['identifier'],
+            environment=pool['environment']
+        )
+
+        if pool.get('id'):
+            server_pool = ServerPool.objects.get(id=pool['id'])
+            if server_pool.pool_created:
+                if not permit_created:
+                    raise pool_exceptions\
+                        .CreatedPoolValuesException(
+                            'Pool: %s' % str(server_pool))
+
+                # identifier changed
+                if server_pool.identifier != pool['identifier']:
+                    raise pool_exceptions\
+                        .PoolNameChange('Pool: %s' % str(server_pool))
+
+                # Environment changed
+                if server_pool.environment_id != pool['environment']:
+                    raise pool_exceptions\
+                        .PoolEnvironmentChange('Pool: %s' %
+                                               str(server_pool))
+
+            # members_db = [spm.id for spm in server_pool.serverpoolmember_set.
+            # all()]
+            has_identifier = has_identifier.exclude(id=pool['id'])
+
+        # Name duplicated
+        if has_identifier.count() > 0:
+            raise pool_exceptions.InvalidIdentifierAlreadyPoolException()
+
+        for member in pool['server_pool_members']:
+
+            amb = Ambiente.objects.filter(Q(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.
+                objects.filter(
+                    networkipv4__vlan__ambiente=pool['environment']
+                )) | Q(
+                environmentenvironmentvip__environment_vip__in=EnvironmentVip.
+                objects.filter(
+                    networkipv6__vlan__ambiente=pool['environment']
+                ))
+            ).distinct()
+
+            if member.get('ip', None) is not None:
+                amb = amb.filter(
+                    vlan__networkipv4__ip=member['ip']['id']
+                )
+                # Ip not found environment
+                if not amb:
+                    raise pool_exceptions.IpNotFoundByEnvironment(
+                        'Environment of IP:%s and different of environment '
+                        'of server pool: %s' %
+                        (member['ip']['id'], pool['identifier'])
+                    )
+
+            if member.get('ipv6', None) is not None:
+                amb = amb.filter(
+                    vlan__networkipv6__ipv6=member['ipv6']['id']
+                )
+
+                # Ip not found environment
+                if not amb:
+                    raise pool_exceptions.IpNotFoundByEnvironment(
+                        'Environment of IP:%s and different of environment '
+                        'of server pool: %s' %
+                        (member['ipv6']['id'], pool['identifier'])
+                    )
 
 
 class ServerPoolMember(BaseModel):
@@ -2357,16 +2624,24 @@ class ServerPoolMember(BaseModel):
         null=True
     )
 
+    log = logging.getLogger('ServerPoolMember')
+
     class Meta(BaseModel.Meta):
         db_table = u'server_pool_member'
         managed = True
 
+    def __str__(self):
+        spm = '{}:{}'.format(
+            (self.ip.ip_formated if self.ip else self.ipv6.ip_formated),
+            self.port_real)
+        return spm
+
     @classmethod
-    def get_spm_by_eqpt_id(cls, eqpt_id):
+    def get_spm_by_eqpt_id(cls, eqpts_id):
 
         spm = ServerPoolMember.objects.filter(
-            Q(ip__ipequipamento__equipamento__id=eqpt_id) |
-            Q(ipv6__ipv6equipament__equipamento__id=eqpt_id)
+            Q(ip__ipequipamento__equipamento__id__in=eqpts_id) |
+            Q(ipv6__ipv6equipament__equipamento__id__in=eqpts_id)
         )
 
         return spm
@@ -2407,6 +2682,32 @@ class ServerPoolMember(BaseModel):
             formated = self.last_status_update.strftime('%d/%m/%Y %H:%M:%S')
 
         return formated
+
+    @classmethod
+    def get_by_pk(cls, id):
+        """Get ServerPoolMember by id.
+            @return: ServerPoolMember.
+            @raise PoolMemberDoesNotExistException: ServerPoolMember is not registered.
+            @raise PoolError: Failed to search for the ServerPoolMember.
+            @raise OperationalError: Lock wait timeout exceeded.
+        """
+
+        exceptions = get_app('api_pools', 'exceptions')
+
+        try:
+            return ServerPoolMember.objects.filter(id=id).uniqueResult()
+        except ObjectDoesNotExist, e:
+            cls.log.exception(
+                u'There is no ServerPoolMember with pk = %s.' % id)
+            raise exceptions.PoolMemberDoesNotExistException(id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
+        except Exception, e:
+            cls.log.error(u'Failure to search the ServerPoolMember.')
+            raise exceptions.PoolError(
+                e, u'Failure to search the ServerPoolMember.')
 
     def prepare_and_save(self, server_pool, ip, ip_type, priority,
                          weight, port_real, user, commit=False):
@@ -2461,6 +2762,110 @@ class ServerPoolMember(BaseModel):
             vipporttopool = vipporttopool[0]
             ServerPoolMember().prepare_and_save(
                 vipporttopool.server_pool, ip, ip_version, 0, 1, port_real, user, commit=True)
+
+    def create_v3(self, member):
+        """
+        Creates pool member.
+
+        @raise ServerPoolNotFoundError
+        @raise PoolError
+        @raise OperationalError
+        @raise IpNotFoundError
+        @raise IpError
+        """
+
+        model_ip = get_model('ip', 'Ip')
+        model_ipv6 = get_model('ip', 'Ipv6')
+        pools_exceptions = get_app('api_pools', 'exceptions')
+
+        # Server Pool
+        self.server_pool = ServerPool.get_by_pk(member['server_pool'])
+        # Ip
+        self.ip = model_ip.get_by_pk(member['ip']['id']) \
+            if member['ip'] else None
+        # Ipv6
+        self.ipv6 = model_ipv6.get_by_pk(member['ipv6']['id']) \
+            if member['ipv6'] else None
+
+        identifier = self.ip.ip_formated if self.ip else self.ipv6.ip_formated
+        self.identifier = identifier
+        self.weight = member['weight']
+        self.priority = member['priority']
+        self.port_real = member['port_real']
+        self.member_status = member['member_status']
+        self.limit = member['limit']
+        # vip with dsrl3 using pool
+        if self.server_pool.dscp:
+
+            mbs = self.get_spm_by_eqpt_id(self.equipments)
+
+            # check all the pools related to this pool vip request to filter
+            # dscp value
+            related_viprequestports = self.server_pool.vips[0]\
+                .viprequestport_set.all()
+            vippools = [p.viprequestportpool_set.all()[0].server_pool_id
+                        for p in related_viprequestports]
+
+            sps = ServerPool.objects.filter(
+                serverpoolmember__in=mbs).exclude(id__in=vippools)
+            dscps = [sp.dscp for sp in sps]
+
+            if self.server_pool.dscp in dscps:
+                raise pools_exceptions.PoolError(
+                    'DRSL3 Restriction: Pool Member {} cannot be insert'
+                    ' in Pool {}, because already in other pool'.format(
+                        str(self), str(self.server_pool)
+                    )
+                )
+
+            if self.port_real != self.server_pool.default_port:
+                raise pools_exceptions.PoolError(
+                    'DRSL3 Restriction: Pool Member {} cannot have different'
+                    ' port of Pool {}'.format(
+                        str(self), str(self.server_pool)
+                    )
+                )
+
+        self.save()
+
+    def update_v3(self, member):
+        """
+        Creates pool member.
+
+        @raise ServerPoolNotFoundError
+        @raise PoolError
+        @raise OperationalError
+        @raise IpNotFoundError
+        @raise IpError
+        """
+
+        model_ip = get_model('ip', 'Ip')
+        model_ipv6 = get_model('ip', 'Ipv6')
+        pools_exceptions = get_app('api_pools', 'exceptions')
+
+        # Ip
+        self.ip = model_ip.get_by_pk(member['ip']['id']) \
+            if member['ip'] else None
+        # Ipv6
+        self.ipv6 = model_ipv6.get_by_pk(member['ipv6']['id']) \
+            if member['ipv6'] else None
+
+        self.weight = member['weight']
+        self.priority = member['priority']
+        self.port_real = member['port_real']
+        self.member_status = member['member_status']
+        self.limit = member['limit']
+        self.save()
+
+        if self.server_pool.dscp:
+            if self.port_real != self.server_pool.default_port:
+
+                raise pools_exceptions.PoolError(
+                    'DRSL3 Restriction: Pool Member {} cannot have different'
+                    ' port of Pool {}'.format(
+                        str(self), str(self.server_pool)
+                    )
+                )
 
 
 class VipPortToPool(BaseModel):
@@ -2550,7 +2955,8 @@ class DsrL3_to_Vip(BaseModel):
             @raise RequisicaoVipsError: Failed to search for VipPortToPool.
         """
         try:
-            return DsrL3_to_Vip.objects.filter(requisicao_vip__id=id_vip).uniqueResult()
+            return DsrL3_to_Vip.objects.filter(
+                requisicao_vip__id=id_vip).uniqueResult()
         except ObjectDoesNotExist, e:
             raise ObjectDoesNotExist(
                 e, u'There is not DSRL3 entry for vip = %s.' % id_vip)
@@ -2572,19 +2978,3 @@ class DsrL3_to_Vip(BaseModel):
         except Exception, e:
             cls.log.error(u'Failure to list all DsrL3_to_Vip .')
             raise OptionVipError(e, u'Failure to list all DsrL3_to_Vip.')
-
-
-class ServerPoolGroupPermission(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id')
-    user_group = models.ForeignKey(UGrupo, db_column='id_user_group')
-    server_pool = models.ForeignKey(ServerPool, db_column='id_server_pool')
-    read = models.BooleanField()
-    write = models.BooleanField()
-    change_config = models.BooleanField()
-    delete = models.BooleanField()
-
-    log = logging.getLogger('ServerPoolGroupPermission')
-
-    class Meta(BaseModel.Meta):
-        db_table = u'server_pool_group_permission'
-        managed = True

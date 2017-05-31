@@ -1,22 +1,34 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import unittest
-from mock import patch, Mock
-from networkapi.ambiente.models import EnvironmentVip, Ambiente, ConfigEnvironmentInvalidError, ConfigEnvironment, \
-    IPConfig, IP_VERSION
-from networkapi.ip.models import NetworkIPv4, NetworkIPv4AddressNotAvailableError
+
+from mock import Mock
+from mock import patch
+
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import ConfigEnvironment
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.ambiente.models import IPConfig
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4AddressNotAvailableError
 from networkapi.usuario.models import Usuario
-from networkapi.vlan.models import Vlan, TipoRede, VlanNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class NetworkAddTestCase(unittest.TestCase):
 
     def setUp(self):
         self.user = Usuario()
-        self.vlan = Vlan(id = 1, ambiente = Ambiente(id = 1))
-        self.network_type = TipoRede(id = 1)
-        self.vip_env = EnvironmentVip(id = 1)
-        self.network = NetworkIPv4(oct1 = 10, oct2 = 126, oct3 = 1, oct4 = 0, block=24)
+        self.vlan = Vlan(id=1, ambiente=Ambiente(id=1))
+        self.network_type = TipoRede(id=1)
+        self.vip_env = EnvironmentVip(id=1)
+        self.network = NetworkIPv4(oct1=10, oct2=126, oct3=1, oct4=0, block=24)
 
         self.mock_distributed_lock()
         self.mock_transaction()
@@ -29,7 +41,8 @@ class NetworkAddTestCase(unittest.TestCase):
 
         with self.assertRaises(VlanNotFoundError):
             network = NetworkIPv4()
-            network.add_network_ipv4(self.user, 2, self.network_type, self.vip_env, 24)
+            network.add_network_ipv4(
+                self.user, 2, self.network_type, self.vip_env, 24)
 
     def test_add_network_ipv4_given_environment_config_not_found(self):
         self.mock_find_vlan_by_pk(self.vlan)
@@ -37,39 +50,46 @@ class NetworkAddTestCase(unittest.TestCase):
 
         with self.assertRaises(ConfigEnvironmentInvalidError):
             network = NetworkIPv4()
-            network.add_network_ipv4(self.user, self.vlan.id, self.network_type, self.vip_env, 24)
+            network.add_network_ipv4(
+                self.user, self.vlan.id, self.network_type, self.vip_env, 24)
             self.assertEquals(self.vlan, network.vlan)
 
     def test_add_network_ipv4_given_no_ipv4_config_set(self):
         self.mock_find_vlan_by_pk(self.vlan)
-        self.mock_find_config_environment([ConfigEnvironment(ip_config = IPConfig(type = IP_VERSION.IPv6[0]))])
+        self.mock_find_config_environment(
+            [ConfigEnvironment(ip_config=IPConfig(type=IP_VERSION.IPv6[0]))])
         self.mock_get_networks([self.network])
 
         with self.assertRaises(ConfigEnvironmentInvalidError):
             network = NetworkIPv4()
-            network.add_network_ipv4(self.user, self.vlan.id, self.network_type, self.vip_env, 24)
+            network.add_network_ipv4(
+                self.user, self.vlan.id, self.network_type, self.vip_env, 24)
             self.assertEquals(self.vlan, network.vlan)
 
     def test_add_network_ipv4_given_no_more_address_available(self):
-        environment_config = ConfigEnvironment(ip_config=IPConfig(type=IP_VERSION.IPv4[0], subnet='10.126.1.0/24'))
+        environment_config = ConfigEnvironment(ip_config=IPConfig(
+            type=IP_VERSION.IPv4[0], subnet='10.126.1.0/24'))
         self.mock_find_vlan_by_pk(self.vlan)
         self.mock_find_config_environment([environment_config])
         self.mock_get_networks([self.network])
 
         with self.assertRaises(NetworkIPv4AddressNotAvailableError):
             network = NetworkIPv4()
-            network.add_network_ipv4(self.user, self.vlan.id, self.network_type, self.vip_env, 24)
+            network.add_network_ipv4(
+                self.user, self.vlan.id, self.network_type, self.vip_env, 24)
             self.assertEquals(self.vlan, network.vlan)
 
     def test_add_network_ipv4_successfully(self):
-        environment_config = ConfigEnvironment(ip_config=IPConfig(type=IP_VERSION.IPv4[0], subnet='10.126.1.0/24'))
+        environment_config = ConfigEnvironment(ip_config=IPConfig(
+            type=IP_VERSION.IPv4[0], subnet='10.126.1.0/24'))
         self.mock_find_vlan_by_pk(self.vlan)
         self.mock_find_config_environment([environment_config])
         self.mock_get_networks([])
         save_network_mock = self.mock_save_network()
 
         network = NetworkIPv4()
-        vlan_map = network.add_network_ipv4(self.user, self.vlan.id, self.network_type, self.vip_env, 24)
+        vlan_map = network.add_network_ipv4(
+            self.user, self.vlan.id, self.network_type, self.vip_env, 24)
         self.assertEquals(self.vlan, network.vlan)
         self.assertTrue(save_network_mock.called)
         self.assertTrue(isinstance(vlan_map, dict))
@@ -82,7 +102,8 @@ class NetworkAddTestCase(unittest.TestCase):
             mock.return_value = response
 
     def mock_find_config_environment(self, response):
-        mock = patch('networkapi.ambiente.models.ConfigEnvironment.get_by_environment').start()
+        mock = patch(
+            'networkapi.ambiente.models.ConfigEnvironment.get_by_environment').start()
         mock.return_value = Mock()
         mock.return_value.filter.return_value = response
 

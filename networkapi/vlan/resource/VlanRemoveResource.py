@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
+from networkapi import error_message_utils
+from networkapi import settings
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, XMLError
-import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.vlan.models import Vlan, VlanError, VlanNotFoundError, \
-    VlanInactiveError, VlanNetworkError
-from networkapi.exception import InvalidValueError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi import settings, error_message_utils
-from networkapi.distributedlock import distributedlock, LOCK_VLAN
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.equipamento.models import Equipamento
 from networkapi.error_message_utils import error_messages
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanInactiveError
+from networkapi.vlan.models import VlanNetworkError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class VlanRemoveResource(RestResource):
@@ -88,7 +95,6 @@ class VlanRemoveResource(RestResource):
                         u'User does not have permission to perform the operation.')
                     return self.not_authorized()
 
-
             with distributedlock(LOCK_VLAN % vlan_id):
 
                 # Business Rules
@@ -100,7 +106,8 @@ class VlanRemoveResource(RestResource):
 
                         if net4.active:
                             try:
-                                command = settings.NETWORKIPV4_REMOVE % int(net4.id)
+                                command = settings.NETWORKIPV4_REMOVE % int(
+                                    net4.id)
 
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
@@ -115,7 +122,8 @@ class VlanRemoveResource(RestResource):
 
                         if net6.active:
                             try:
-                                command = settings.NETWORKIPV6_REMOVE % int(net6.id)
+                                command = settings.NETWORKIPV6_REMOVE % int(
+                                    net6.id)
                                 code, stdout, stderr = exec_script(command)
                                 if code == 0:
                                     net6.deactivate(user, True)
@@ -133,7 +141,7 @@ class VlanRemoveResource(RestResource):
                     success_map = dict()
                     success_map['codigo'] = '%04d' % 0
                     success_map['descricao'] = {
-                    'stdout': 'Nothing to do. Vlan was already not active', 'stderr': ''}
+                        'stdout': 'Nothing to do. Vlan was already not active', 'stderr': ''}
                     map = dict()
                     map['sucesso'] = success_map
 
@@ -157,7 +165,7 @@ class VlanRemoveResource(RestResource):
                     map = dict()
                     map['sucesso'] = success_map
 
-                    #Set as deactivate
+                    # Set as deactivate
                     vlan.remove(user)
 
                     return self.response(dumps_networkapi(map))

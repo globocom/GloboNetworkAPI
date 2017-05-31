@@ -6,20 +6,23 @@ apt-get install python-pip -y
 apt-get install libmysqlclient-dev -y
 apt-get install python-dev -y
 apt-get install libldap2-dev libsasl2-dev libssl-dev -y
-pip install -r /vagrant/requirements.txt
+
+# RabbitMQ
+apt-get install rabbitmq-server -y
+rabbitmq-plugins enable rabbitmq_management
+rabbitmq-server restart &
+rabbitmqctl add_user networkapi networkapi
+rabbitmqctl add_vhost tasks
+rabbitmqctl add_user tasks tasks
+rabbitmqctl change_password networkapi networkapi
+rabbitmqctl change_password tasks tasks
+rabbitmqctl set_user_tags networkapi administrator
+rabbitmqctl set_permissions -p / networkapi ".*" ".*" ".*"
+rabbitmqctl set_permissions -p tasks networkapi ".*" ".*" ".*"
+rabbitmqctl set_permissions -p tasks tasks ".*" ".*" ".*"
 
 pip install gunicorn
-#criar usuario  no DB
-#load migrations
-# externel access:
-# mysql -uroot -hlocalhost -e 'GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '' WITH GRANT OPTION; FLUSH PRIVILEGES;'
-# vim /etc/mysql/my.cnf
-# change bind-address		= 127.0.0.1 to bind-address		= 0.0.0.0
-mysql -uroot -hlocalhost -e 'drop database if exists networkapi;'
-mysql -uroot -hlocalhost -e 'create database networkapi;'
-cd /vagrant/dbmigrate; db-migrate --show-sql
-#mysql -u root -h localhost < /vagrant/dev/database_configuration.sql
-mysql -u root -h localhost networkapi < /vagrant/dev/load_example_environment.sql
+pip install virtualenv virtualenvwrapper
 
 echo -e "PYTHONPATH=\"/vagrant/networkapi:/vagrant/$PYTHONPATH\"" >> /etc/environment
 
@@ -35,11 +38,18 @@ cat > /etc/init.d/gunicorn_networkapi <<- EOM
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application.
+/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
 EOM
 
 chmod 777 /etc/init.d/gunicorn_networkapi
 update-rc.d gunicorn_networkapi defaults
 export PYTHONPATH="/vagrant/networkapi:/vagrant/$PYTHONPATH"
 
-. /vagrant/start_networkapi.sh
+cd /vagrant/
+./start_networkapi.sh
+source networkapi_venv/bin/activate
+
+mysql -u root -h localhost -e 'drop database if exists networkapi;'
+mysql -u root -h localhost -e 'create database networkapi;'
+cd /vagrant/dbmigrate; db-migrate --show-sql
+mysql -u root -h localhost networkapi < /vagrant/dev/load_example_environment.sql

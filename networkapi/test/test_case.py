@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import base64
+import json
 import logging
 
 from django.test import TestCase
@@ -15,43 +16,6 @@ LOG = logging.getLogger(__name__)
 
 class NetworkApiTestCase(TestCase):
 
-    fixtures = [
-        'initial_ugrupo.json',
-        'initial_equip_grupos.json',
-        'initial_permissions.json',
-        'initial_permissoes_administrativas.json',
-        'initial_direitos_grupos_equip.json',
-        'initial_usuario.json',
-        'initial_variables.json',
-        'initial_tipo_equip.json',
-        'initial_equip_marca.json',
-        'initial_equip_model.json',
-        'initial_equipments.json',
-        'initial_vrf.json',
-        'initial_environment_dc.json',
-        'initial_environment_envlog.json',
-        'initial_environment_gl3.json',
-        'initial_environment.json',
-        'initial_optionspool.json',
-        'initial_healthcheck.json',
-        'initial_tipo_rede.json',
-        'initial_environment_vip.json',
-        'initial_environment_env_vip.json',
-        'initial_vlan.json',
-        'initial_networkipv4.json',
-        'initial_ipv4.json',
-        'initial_ipv4_eqpt.json',
-        'initial_optionsvip.json',
-        'initial_pools.json',
-        'initial_equipments_env.json',
-        'initial_vip_request.json',
-        'initial_vip_request_port.json',
-        'initial_vip_request_port_options_vip.json',
-        'initial_vip_request_port_pool.json',
-        'initial_vip_request_options_vip.json',
-        'initial_vip_request_dscp.json',
-    ]
-
     def setUp(self):
         pass
 
@@ -63,3 +27,54 @@ class NetworkApiTestCase(TestCase):
 
     def load_json_file(self, file_name):
         return load_json(local_files(file_name))
+
+    def compare_json(self, name_file, data):
+
+        expected_data = json.dumps(self.load_json_file(name_file),
+                                   sort_keys=True)
+        received_data = json.dumps(data, sort_keys=True)
+
+        msg = 'Jsons should be same. Expected: {}, Received: {}'
+        self.assertEqual(
+            expected_data,
+            received_data,
+            msg.format(expected_data, received_data)
+        )
+
+    def compare_json_lists(self, name_file, data):
+        expected_data = self.load_json_file(name_file)
+        received_data = data
+        self.assertEqual(
+            sorted(expected_data),
+            sorted(received_data),
+            'Lists of Jsons should be same.\n Expected:\n %s \n Received:\n %s\n' % (
+                json.dumps(expected_data), json.dumps(received_data))
+        )
+
+    def compare_status(self, expected_code, code):
+
+        msg = 'Status code should be same. Expected: {}, Received: {}'
+        self.assertEqual(
+            expected_code,
+            code,
+            msg.format(expected_code, code)
+        )
+
+    def contains_values(self, expected_data, received_data):
+
+        msg = 'Expected data should be in received data. Expected: {}, ' \
+            'Received: {}'
+        self.assertContains(
+            expected_data,
+            received_data,
+            msg.format(expected_data, received_data)
+        )
+
+    def compare_values(self, expected_data, received_data):
+
+        msg = 'Value should be same. Expected: {}, Received: {}'
+        self.assertEqual(
+            expected_data,
+            received_data,
+            msg.format(expected_data, received_data)
+        )

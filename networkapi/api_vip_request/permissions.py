@@ -8,7 +8,7 @@ from rest_framework.permissions import BasePermission
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.auth import perm_vip
+from networkapi.auth import perm_obj
 
 
 class Read(BasePermission):
@@ -61,41 +61,65 @@ class DeployDelete(BasePermission):
         )
 
 
-def deploy_vip_permission(request, *args, **kwargs):
+def deploy_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
-            return perm_vip(request, AdminPermission.VIP_UPDATE_CONFIG_OPERATION, *args, **kwargs)
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_UPDATE_CONFIG_OPERATION,
+                AdminPermission.OBJ_TYPE_VIP,
+                *args,
+                **kwargs
+            )
 
     return Perm
 
 
-def write_vip_permission(request, *args, **kwargs):
+def write_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
-            return perm_vip(request, AdminPermission.VIP_WRITE_OPERATION, *args, **kwargs)
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_WRITE_OPERATION,
+                AdminPermission.OBJ_TYPE_VIP,
+                *args,
+                **kwargs
+            )
 
     return Perm
 
 
-def delete_vip_permission(request, *args, **kwargs):
+def delete_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
-            return perm_vip(request, AdminPermission.VIP_DELETE_OPERATION, *args, **kwargs)
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_DELETE_OPERATION,
+                AdminPermission.OBJ_TYPE_VIP,
+                *args,
+                **kwargs
+            )
 
     return Perm
 
 
-def read_vip_ermission(request, *args, **kwargs):
+def read_obj_permission(request, *args, **kwargs):
 
     class Perm(BasePermission):
 
         def has_permission(self, request, view):
-            return perm_vip(request, AdminPermission.VIP_READ_OPERATION, *args, **kwargs)
+            return perm_obj(
+                request,
+                AdminPermission.OBJ_READ_OPERATION,
+                AdminPermission.OBJ_TYPE_VIP,
+                *args,
+                **kwargs
+            )
 
     return Perm

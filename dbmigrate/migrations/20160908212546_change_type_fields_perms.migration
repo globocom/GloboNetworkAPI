@@ -1,13 +1,13 @@
 #-*- coding:utf-8 -*-
 SQL_UP = u"""
-ALTER TABLE `networkapi`.`server_pool_group_permission` 
+ALTER TABLE `server_pool_group_permission` 
 CHANGE COLUMN `read` `read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ,
 CHANGE COLUMN `write` `write` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ,
 CHANGE COLUMN `change_config` `change_config` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ,
 CHANGE COLUMN `delete` `delete` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ;
 
 
-ALTER TABLE `networkapi`.`vip_request_group_permission` 
+ALTER TABLE `vip_request_group_permission` 
 CHANGE COLUMN `read` `read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ,
 CHANGE COLUMN `write` `write` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ,
 CHANGE COLUMN `change_config` `change_config` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ,
@@ -16,14 +16,14 @@ CHANGE COLUMN `delete` `delete` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '' ;
 """
 
 SQL_DOWN = u"""
-ALTER TABLE `networkapi`.`server_pool_group_permission` 
+ALTER TABLE `server_pool_group_permission` 
 CHANGE COLUMN `read` `read` CHAR(1) NOT NULL COMMENT '' ,
 CHANGE COLUMN `write` `write` CHAR(1) NOT NULL COMMENT '' ,
 CHANGE COLUMN `change_config` `change_config` CHAR(1) NOT NULL COMMENT '' ,
 CHANGE COLUMN `delete` `delete` CHAR(1) NOT NULL COMMENT '' ;
 
 
-ALTER TABLE `networkapi`.`vip_request_group_permission` 
+ALTER TABLE `vip_request_group_permission` 
 CHANGE COLUMN `read` `read` CHAR(1) NOT NULL COMMENT '' ,
 CHANGE COLUMN `write` `write` CHAR(1) NOT NULL COMMENT '' ,
 CHANGE COLUMN `change_config` `change_config` CHAR(1) NOT NULL COMMENT '' ,

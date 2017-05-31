@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,11 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from xml.dom import InvalidCharacterErr
-from xml.dom.minidom import *
 from xml.dom.minicompat import StringTypes
+from xml.dom.minidom import *
 
 
 class XMLError(Exception):
@@ -106,14 +103,14 @@ def _add_nodes_to_parent(map, parent, doc):
 
 
 def dumps(map, root_name, root_attributes=None):
-    '''Cria um string no formato XML a partir dos elementos do map.
+    """Cria um string no formato XML a partir dos elementos do map.
 
-    Os elementos do mapa serão nós filhos do root_name.    
+    Os elementos do mapa serão nós filhos do root_name.
 
     Cada chave do map será um Nó no XML. E o valor da chave será o conteúdo do Nó.
 
     Throws: XMLError, InvalidNodeNameXMLError, InvalidNodeTypeXMLError
-    '''
+    """
     xml = ''
     try:
         implementation = getDOMImplementation()
@@ -198,18 +195,18 @@ def _create_childs_map(parent, force_list):
 
 
 def loads(xml, force_list=None):
-    '''Cria um dict com os dados do element root.
+    """Cria um dict com os dados do element root.
 
     O dict terá como chave o nome do element root e como valor o conteúdo do element root.
     Quando o conteúdo de um element é uma lista de Nós então o valor do element será
-    um dict com uma chave para cada nó. 
+    um dict com uma chave para cada nó.
     Entretanto, se existir nós, de um mesmo pai, com o mesmo nome, então eles serão
-    armazenados uma mesma chave do dict que terá como valor uma lista.     
+    armazenados uma mesma chave do dict que terá como valor uma lista.
 
     Se o element root tem atributo, então também retorna um dict com os atributos.
 
     Throws: XMLError
-    '''
+    """
     if force_list is None:
         force_list = []
 
@@ -261,7 +258,7 @@ if __name__ == '__main__':
     xml = dumps(None, 'networkapi', {'versao': '1.0'})
     print xml
 
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
     <networkapi versao="1.0">
     <equipamento>
         <id_tipo_equipamento>1</id_tipo_equipamento>
@@ -269,7 +266,7 @@ if __name__ == '__main__':
         <nome>teste</nome>
         <id_grupo>teste</id_grupo>
     </equipamento>
-    </networkapi>'''
+    </networkapi>"""
 
     map, attrs_map = loads(xml)
 
@@ -277,7 +274,7 @@ if __name__ == '__main__':
 
     print dumps(map, 'networkapi', attrs_map)
 
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
 <networkapi versao="1.0">
 <equipamento>
 <id ></id>
@@ -286,7 +283,7 @@ if __name__ == '__main__':
 <id></id>
 </equipamento_grupo>
 </networkapi>
-'''
+"""
 
     map, attrs_map = loads(xml)
 
@@ -294,11 +291,11 @@ if __name__ == '__main__':
 
     print dumps(map, 'networkapi', attrs_map)
 
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
 <networkapi versao="1.0">
     <x/>
 </networkapi>
-'''
+"""
 
     map, attrs_map = loads(xml)
 

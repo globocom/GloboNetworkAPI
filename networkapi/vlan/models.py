@@ -9,18 +9,24 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models import Q
 
+from networkapi.admin_permission import AdminPermission
+from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
+from networkapi.distributedlock import LOCK_VLAN
 from networkapi.filter.models import verify_subnet_and_equip
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.models.BaseModel import BaseModel
 from networkapi.queue_tools import queue_keys
-from networkapi.queue_tools.queue_manager import QueueManager
+from networkapi.queue_tools.rabbitmq import QueueManager
 from networkapi.semaforo.model import Semaforo
 from networkapi.settings import MAX_VLAN_NUMBER_01
 from networkapi.settings import MAX_VLAN_NUMBER_02
 from networkapi.settings import MIN_VLAN_NUMBER_01
 from networkapi.settings import MIN_VLAN_NUMBER_02
 from networkapi.util import clone
+from networkapi.util import network
 from networkapi.util.decorators import cached_property
+from networkapi.util.geral import create_lock_with_blocking
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 
 
@@ -35,6 +41,15 @@ class VlanError(Exception):
     def __str__(self):
         msg = u'Causa: %s, Mensagem: %s' % (self.cause, self.message)
         return msg.encode('utf-8', 'replace')
+
+
+class VlanErrorV3(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return str(self.message)
 
 
 class NetworkTypeNotFoundError(VlanError):
@@ -196,8 +211,8 @@ class Vlan(BaseModel):
     log = logging.getLogger('Vlan')
 
     id = models.AutoField(primary_key=True, db_column='id_vlan')
-    nome = models.CharField(unique=True, max_length=50)
-    num_vlan = models.IntegerField(unique=True)
+    nome = models.CharField(max_length=50)
+    num_vlan = models.IntegerField()
     ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
     descricao = models.CharField(max_length=200, blank=True)
     acl_file_name = models.CharField(max_length=200, blank=True)
@@ -228,11 +243,21 @@ class Vlan(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'vlans'
         managed = True
-        unique_together = (('nome', 'ambiente'), ('num_vlan', 'ambiente'))
+        unique_together = (
+            ('nome', 'ambiente'),
+            ('num_vlan', 'ambiente')
+        )
 
     @cached_property
     def vrfs(self):
         return self.get_vrf().prefetch_related()
+
+    @cached_property
+    def groups_permissions(self):
+        ogp_models = get_app('api_ogp', 'models')
+        perms = ogp_models.ObjectGroupPermission\
+            .get_by_object(self.id, AdminPermission.OBJ_TYPE_VLAN)
+        return perms
 
     def get_by_pk(self, vlan_id):
         """Get Vlan by id.
@@ -378,26 +403,30 @@ class Vlan(BaseModel):
 
         # Find equipment's ids from environmnet that is 'switches',
         # 'roteadores' or 'balanceadores'
-        id_equipamentos = EquipamentoAmbiente.objects.filter(equipamento__tipo_equipamento__id__in=[1, 3, 5],
-                                                             ambiente__id=self.ambiente_id).values_list('equipamento',
-                                                                                                        flat=True)
-        # Vlan numbers in others environment but in environment that has equipments found in before
-        # filter ('switches', 'roteadores' or 'balanceadores')
-        vlans_others_environments = Vlan.objects.exclude(ambiente__id=self.ambiente_id) \
-            .filter(ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos) \
-            .values_list('num_vlan', flat=True)
+        id_equipamentos = EquipamentoAmbiente.objects.filter(
+            equipamento__tipo_equipamento__id__in=[1, 3, 5],
+            ambiente__id=self.ambiente_id
+        ).values_list('equipamento', flat=True)
+        # Vlan numbers in others environment but in environment that has
+        # equipments found in before filter ('switches', 'roteadores' or
+        # 'balanceadores')
+        vlans_others_environments = Vlan.objects.exclude(
+            ambiente__id=self.ambiente_id
+        ).filter(
+            ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos
+        ).values_list('num_vlan', flat=True)
 
         # Clean duplicates numbers and update merge 'vlan_numbers_in_interval'
         # with 'vlans_others_environments'
         vlan_numbers_in_interval = set(vlan_numbers_in_interval)
         vlan_numbers_in_interval.update(vlans_others_environments)
 
-        self.log.info('Interval: %s.', interval)
-        self.log.info('VLANs in interval: %s.', vlan_numbers_in_interval)
+        self.log.debug('Interval: %s.', interval)
+        self.log.debug('VLANs in interval: %s.', vlan_numbers_in_interval)
 
         # if len(interval) > len(vlan_numbers_in_interval):
         diff_set = set(interval) - set(vlan_numbers_in_interval)
-        self.log.info('Difference in the lists: %s.', diff_set)
+        self.log.debug('Difference in the lists: %s.', diff_set)
         if list_available:
             return diff_set
         for num_vlan in diff_set:
@@ -432,7 +461,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_ACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -478,7 +510,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_DEACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -494,7 +529,8 @@ class Vlan(BaseModel):
         """
         Create a Vlan with the new Model
 
-        The fields num_vlan, acl_file_name, acl_valida and ativada will be generated automatically
+        The fields num_vlan, acl_file_name, acl_valida and ativada will be
+        generated automatically
 
         @return: nothing
         """
@@ -614,7 +650,8 @@ class Vlan(BaseModel):
         @raise OperationalError: Lock wait timeout exceed
         """
         try:
-            return Vlan.objects.filter(num_vlan=number, ambiente=environment).uniqueResult()
+            return Vlan.objects.filter(
+                num_vlan=number, ambiente=environment).uniqueResult()
         except ObjectDoesNotExist, e:
             raise VlanNotFoundError(
                 e, u'Dont there is a Vlan by number = %s.' % number)
@@ -706,7 +743,8 @@ class Vlan(BaseModel):
         # Get all equipments from the environment being tested
         # that are not supposed to be filtered
         # (not the same type of the equipment type of a filter of the environment)
-        for env in ambiente.equipamentoambiente_set.all().exclude(equipamento__tipo_equipamento__in=equipment_types):
+        for env in ambiente.equipamentoambiente_set.all().exclude(
+                equipamento__tipo_equipamento__in=equipment_types):
             equips.append(env.equipamento)
 
         # Get all environment that the equipments above are included
@@ -887,15 +925,22 @@ class Vlan(BaseModel):
             raise e
 
     def get_eqpt(self):
-        # get all eqpts of environment
+        """Returns list of equipments associated with environment."""
+
+        # Get all eqpts of environment
         eqpts = self.ambiente.eqpts
-        if self.ambiente.filter:
-            eqpts = eqpts.exclude(
-                equipamento__in=self.ambiente.eqpts.filter(
-                    equipamento__tipo_equipamento__filterequiptype__filter=self.ambiente.filter
-                )
+
+        # Filter of environment
+        filenv = self.ambiente.filter
+
+        # Use filter
+        if filenv:
+            eqpts = eqpts.exclude(equipamento__in=eqpts.filter(
+                equipamento__tipo_equipamento__filterequiptype__filter=filenv)
             )
-        self.log.debug(eqpts)
+
+        self.log.debug('Equipments of environment(filtered): %s' % eqpts)
+
         return eqpts
 
     def get_vrf(self):
@@ -912,162 +957,289 @@ class Vlan(BaseModel):
 
         return vrfs
 
-    def validate_num_vlan_v3(self):
-        """
-        Validate if number of vlan is duplicated in environment or
-        environment assoc with eqpt.
-        """
-        equips = self.get_eqpt()
-        vlan_model = get_model('vlan', 'Vlan')
-
-        # get vlans with same num_vlan
-        vlan = vlan_model.objects.filter(
-            ambiente__equipamentoambiente__equipamento__in=equips,
-            num_vlan=self.num_vlan
-        ).exclude(
-            id=self.id
-        )
-
-        if vlan:
-            raise Exception(
-                'There is a registered VLAN with the number in '
-                'equipments of environment')
-
     def validate_v3(self):
         """Make validations in values inputted."""
+
         if self.exist_vlan_num_in_environment(self.id):
-            raise Exception(
-                'Number Vlan can not be duplicated in the environment.')
+            msg = 'Number VLAN can not be duplicated in the environment.'
+            self.log.error(msg)
+            raise VlanErrorV3(msg)
 
         if self.exist_vlan_name_in_environment(self.id):
-            raise Exception(
-                'Name VLAN can not be duplicated in the environment.')
+            msg = 'Name VLAN can not be duplicated in the environment.'
+            self.log.error(msg)
+            raise VlanErrorV3(msg)
 
-        if not self.num_vlan:
-            raise Exception(
-                'Number VLAN can not be empty.')
+        # Validate Number of vlan in environment related
+        equips = self.get_eqpt()
 
-        # update
-        if self.id:
-            old_env = self.get_by_pk(self.id)
-            if old_env.ativada:
-                if old_env.ambiente != self.ambiente:
-                    raise Exception(
-                        'Environment can not be changed in vlan actived')
-                if old_env.num_vlan != self.num_vlan:
-                    raise Exception(
-                        'Number Vlan can not be changed in vlan actived')
+        network.validate_vlan_conflict(equips, self.num_vlan, self.id)
 
-            if old_env.ambiente != self.ambiente:
-                netv4_vip = self.networkipv4_set.filter(
-                    ambient_vip__isnull=False)
-                netv6_vip = self.networkipv6_set.filter(
-                    ambient_vip__isnull=False)
-                if netv4_vip or netv6_vip:
-                    raise NotImplementedError(
-                        'Not change vlan when networks are of environment Vip'
-                    )
-                self.validate_network()
-
-        self.validate_num_vlan_v3()
-
-    def create_v3(self, vlan):
+    def create_v3(self, vlan, user):
         """Create new vlan."""
 
-        env_model = get_model('ambiente', 'Ambiente')
+        try:
+            env_model = get_model('ambiente', 'Ambiente')
+            ogp_models = get_app('api_ogp', 'models')
 
-        env = env_model.get_by_pk(vlan.get('environment'))
+            self.ambiente = env_model.get_by_pk(vlan.get('environment'))
+            self.nome = vlan.get('name').upper()
+            self.num_vlan = vlan.get('num_vlan')
+            self.descricao = vlan.get('description')
+            self.acl_file_name = vlan.get('acl_file_name')
+            self.acl_valida = vlan.get('acl_valida', False)
+            self.acl_file_name_v6 = vlan.get('acl_file_name_v6')
+            self.acl_valida_v6 = vlan.get('acl_valida_v6', False)
+            self.ativada = vlan.get('active', False)
+            self.vrf = vlan.get('vrf')
+            self.acl_draft = vlan.get('acl_draft')
+            self.acl_draft_v6 = vlan.get('acl_draft_v6')
 
-        self.ambiente = env
-        self.nome = vlan.get('name').upper()
-        self.num_vlan = vlan.get('num_vlan')
-        self.descricao = vlan.get('description')
-        self.acl_file_name = vlan.get('acl_file_name')
-        self.acl_valida = vlan.get('acl_valida', False)
-        self.acl_file_name_v6 = vlan.get('acl_file_name_v6')
-        self.acl_valida_v6 = vlan.get('acl_valida_v6', False)
-        self.ativada = vlan.get('active', False)
-        self.vrf = vlan.get('vrf')
-        self.acl_draft = vlan.get('acl_draft')
-        self.acl_draft_v6 = vlan.get('acl_draft_v6')
+            # Get environments related
+            envs = self.get_environment_related(use_vrf=False)\
+                .values_list('id', flat=True)
 
-        # Allocates 1 number of vlan automatically
-        if not self.num_vlan:
-            self.allocate_vlan()
+        except Exception, e:
+            raise VlanErrorV3(e)
 
-        self.validate_v3()
+        else:
+            # Create locks for environment
+            locks_name = [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
+            locks_list = create_lock_with_blocking(locks_name)
 
-        self.save()
+        try:
+            # Allocates 1 number of vlan automatically
+            if not self.num_vlan:
+                self.allocate_vlan()
 
-        # Allocates networkv4
-        netv4 = vlan.get('create_networkv4')
-        if netv4:
-            network_type = vlan.get('create_networkv4').get(
-                'network_type', None)
-            prefix = vlan.get('create_networkv4').get('prefix', None)
-            environmentvip = vlan.get('create_networkv4').get(
-                'environmentvip', None)
-            dict_net = {
-                'network_type': network_type,
-                'prefix': prefix,
-                'vlan': self.id,
-                'environmentvip': environmentvip,
-            }
-            net4_model = get_model('ip', 'NetworkIPv4')
-            netv4_obj = net4_model()
-            netv4_obj.create_v3(dict_net)
+            self.validate_v3()
 
-        # Allocates networkv6
-        if vlan.get('create_networkv6'):
-            network_type = vlan.get('create_networkv6').get(
-                'network_type', None)
-            prefix = vlan.get('create_networkv6').get('prefix', None)
-            environmentvip = vlan.get('create_networkv6').get(
-                'environmentvip', None)
-            dict_net = {
-                'network_type': network_type,
-                'prefix': prefix,
-                'vlan': self.id,
-                'environmentvip': environmentvip,
-            }
-            net6_model = get_model('ip', 'NetworkIPv6')
-            netv6_obj = net6_model()
-            netv6_obj.create_v3(dict_net)
+            self.save()
 
-    def update_v3(self, vlan):
+            # Permissions
+            perm = ogp_models.ObjectGroupPermission()
+            perm.create_perms(
+                vlan, self.id, AdminPermission.OBJ_TYPE_VLAN, user)
+
+            # Allocates networkv4
+            netv4 = vlan.get('create_networkv4')
+            if netv4:
+
+                network_type = vlan.get('create_networkv4').get(
+                    'network_type', None)
+                prefix = vlan.get('create_networkv4').get('prefix', None)
+                environmentvip = vlan.get('create_networkv4').get(
+                    'environmentvip', None)
+
+                dict_net = {
+                    'network_type': network_type,
+                    'prefix': prefix,
+                    'vlan': self.id,
+                    'environmentvip': environmentvip,
+                }
+
+                net4_model = get_model('ip', 'NetworkIPv4')
+
+                netv4_obj = net4_model()
+
+                netv4_obj.create_v3(dict_net, locks_used=locks_name)
+
+            # Allocates networkv6
+            if vlan.get('create_networkv6'):
+
+                network_type = vlan.get('create_networkv6').get(
+                    'network_type', None)
+                prefix = vlan.get('create_networkv6').get('prefix', None)
+                environmentvip = vlan.get('create_networkv6').get(
+                    'environmentvip', None)
+
+                dict_net = {
+                    'network_type': network_type,
+                    'prefix': prefix,
+                    'vlan': self.id,
+                    'environmentvip': environmentvip,
+                }
+
+                net6_model = get_model('ip', 'NetworkIPv6')
+
+                netv6_obj = net6_model()
+
+                netv6_obj.create_v3(dict_net, locks_used=locks_name)
+        except Exception, e:
+
+            raise VlanErrorV3(e)
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+    def update_v3(self, vlan, user):
         """Update vlan."""
 
-        env_model = get_model('ambiente', 'Ambiente')
+        try:
+            env_model = get_model('ambiente', 'Ambiente')
+            ogp_models = get_app('api_ogp', 'models')
 
-        env = env_model.get_by_pk(vlan.get('environment'))
+            env = env_model.get_by_pk(vlan.get('environment'))
 
-        self.ambiente = env
-        self.nome = vlan.get('name')
-        self.num_vlan = vlan.get('num_vlan')
-        self.descricao = vlan.get('description')
-        self.acl_file_name = vlan.get('acl_file_name')
-        self.acl_valida = vlan.get('acl_valida', False)
-        self.acl_file_name_v6 = vlan.get('acl_file_name_v6')
-        self.acl_valida_v6 = vlan.get('acl_valida_v6', False)
-        self.ativada = vlan.get('active', False)
-        self.vrf = vlan.get('vrf')
-        self.acl_draft = vlan.get('acl_draft')
-        self.acl_draft_v6 = vlan.get('acl_draft_v6')
+            self.ambiente = env
+            self.nome = vlan.get('name')
+            self.num_vlan = vlan.get('num_vlan')
+            self.descricao = vlan.get('description')
+            self.acl_file_name = vlan.get('acl_file_name')
+            self.acl_valida = vlan.get('acl_valida', False)
+            self.acl_file_name_v6 = vlan.get('acl_file_name_v6')
+            self.acl_valida_v6 = vlan.get('acl_valida_v6', False)
+            self.ativada = vlan.get('active', False)
+            self.vrf = vlan.get('vrf')
+            self.acl_draft = vlan.get('acl_draft')
+            self.acl_draft_v6 = vlan.get('acl_draft_v6')
 
-        self.validate_v3()
+            old_vlan = self.get_by_pk(self.id)
+        except Exception, e:
+            raise VlanErrorV3(e)
 
-        self.save()
+        else:
+            # Prepare locks for vlan
+            locks_name = [LOCK_VLAN % self.id]
 
-    def activate_v3(self):
-        """ Set column ativada = 1"""
+            # If the environment was changed, create lock to validate
+            if old_vlan.ambiente != self.ambiente:
+                # Get environments related
+                envs = self.get_environment_related(use_vrf=False)\
+                    .values_list('id', flat=True)
+
+                # Prepare locks for environment
+                locks_name += [LOCK_ENVIRONMENT_ALLOCATES % env_id
+                               for env_id in envs]
+
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            # Activate vlan can not be changed of environment
+            if old_vlan.ativada:
+
+                if old_vlan.ambiente != self.ambiente:
+
+                    msg = 'Environment can not be changed in vlan actived.'
+                    self.log.error(msg)
+                    raise VlanErrorV3(msg)
+
+                if old_vlan.num_vlan != self.num_vlan:
+
+                    msg = 'Number Vlan can not be changed in vlan actived.'
+                    self.log.error(msg)
+                    raise VlanErrorV3(msg)
+
+                if old_vlan.nome != self.nome:
+
+                    msg = 'Name Vlan can not be changed in vlan actived.'
+                    self.log.error(msg)
+                    raise VlanErrorV3(msg)
+
+            # If the environment was changed, create lock to validate
+            if old_vlan.ambiente != self.ambiente:
+
+                # If vlan has networks of environment, can not be changed
+                # of environment
+                netv4_vip = self.networkipv4_set.filter(
+                    ambient_vip__isnull=False)
+
+                netv6_vip = self.networkipv6_set.filter(
+                    ambient_vip__isnull=False)
+
+                if netv4_vip or netv6_vip:
+
+                    msg = u'Not change vlan when networks are of' \
+                          ' environment Vip.'
+                    self.log.error(msg)
+                    raise VlanErrorV3(msg)
+
+                if self.networkipv4_set.all() or self.networkipv6_set.all():
+                    # Validate conflicts of network(equal, subnet ou supernet)
+                    self.validate_network()
+
+                # Validate name and number
+                self.validate_v3()
+
+            self.save()
+
+            # Permissions
+            perm = ogp_models.ObjectGroupPermission()
+            perm.update_perms(
+                vlan, self.id, AdminPermission.OBJ_TYPE_VLAN, user)
+
+        except Exception, e:
+            raise VlanErrorV3(e)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+        return self
+
+    def delete_v3(self):
+        ogp_models = get_app('api_ogp', 'models')
+        ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')
+
+        id_vlan = self.id
+
+        try:
+
+            if not self.ativada:
+
+                for net4 in self.networkipv4_set.all():
+                    net4.delete_v3()
+
+                for net6 in self.networkipv6_set.all():
+                    net6.delete_v3()
+            else:
+                self.log.error(
+                    'Cant deallocate all relationships between vlan because '
+                    'its active.')
+                raise VlanCantDeallocate(
+                    str(self.nome),
+                    'Cant deallocate all relationships between vlan because '
+                    'its active.')
+
+            super(Vlan, self).delete()
+
+        except ipcantberemovedfromvip, e:
+            cause = e.cause
+            cause['Vlan'] = self.nome
+            self.log.error(
+                'This Vlan has a Network with Vip Request pointing to it, and '
+                'can not be deleted')
+            raise ipcantberemovedfromvip(
+                cause,
+                'This Vlan has a Network with Vip Request pointing to it, and '
+                'can not be deleted')
+        except VlanCantDeallocate, e:
+            raise e
+
+        # Deletes Permissions
+        ogp_models.ObjectGroupPermission.objects.filter(
+            object_type__name=AdminPermission.OBJ_TYPE_VLAN,
+            object_value=id_vlan
+        ).delete()
+
+    def activate_v3(self, locks_used):
+        """Set column ativada = 1"""
 
         """
             Send activate notication of network for queue of ACL
                 configuration system.
             Update status column  to 'ativada = 1'.
 
-            @raise VlanError: Error activating a Vlan.
+            @raise VlanErrorV3: Error activating a Vlan.
         """
+
+        locks_list = list()
+        # Prepare locks for vlan
+        lock_name = [LOCK_VLAN % self.id]
+        if lock_name not in locks_used:
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking([lock_name])
 
         try:
 
@@ -1093,7 +1265,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_ACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -1104,17 +1279,29 @@ class Vlan(BaseModel):
             self.save()
 
         except Exception, e:
-            self.log.error(u'Error activating Vlan.')
-            raise VlanError(e, u'Error activating Vlan.')
+            self.log.error(u'Error activating Vlan.: %s' % e)
+            raise VlanErrorV3(u'Error activating Vlan.')
 
-    def deactivate_v3(self):
+        finally:
+            if locks_list:
+                # Destroy locks
+                destroy_lock(locks_list)
+
+    def deactivate_v3(self, locks_used):
         """
             Send activate notication of vlan for queue of ACL
                 configuration system.
             Update status column  to 'ativada = 0'.
 
-            @raise VlanError: Error disabling a Vlan.
+            @raise VlanErrorV3: Error disabling a Vlan.
         """
+
+        locks_list = list()
+        # Prepare locks for vlan
+        lock_name = [LOCK_VLAN % self.id]
+        if lock_name not in locks_used:
+            # Create locks for environment and vlan
+            locks_list = create_lock_with_blocking([lock_name])
 
         try:
 
@@ -1140,7 +1327,10 @@ class Vlan(BaseModel):
             })
 
             # Send to Queue
-            queue_manager = QueueManager()
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
             queue_manager.append({
                 'action': queue_keys.VLAN_DEACTIVATE,
                 'kind': queue_keys.VLAN_KEY,
@@ -1151,62 +1341,76 @@ class Vlan(BaseModel):
             self.save()
 
         except Exception, e:
-            self.log.error(u'Error disabling Vlan.')
-            raise VlanError(e, u'Error disabling Vlan.')
+            self.log.error(u'Error disabling Vlan.: %s' % e)
+            raise VlanErrorV3(u'Error disabling Vlan.')
 
-    def get_environment_related(self):
+        finally:
+            if locks_list:
+                # Destroy locks
+                destroy_lock(locks_list)
+
+    def get_environment_related(self, use_vrf=True):
 
         env_model = get_model('ambiente', 'Ambiente')
 
+        # get environment or environment assoc with equipments
+        # of current vlan
         envs = env_model.objects.filter(
-            # get environment or environment assoc with equipments
-            # of current vlan
             equipamentoambiente__equipamento__in=self.get_eqpt()
-        ).filter(
-            # get vlans with customized vrfs of current vlan
-            Q(vlan__vrfvlanequipment__vrf__in=self.get_vrf()) |
-            # get environments using vrfs of current vlan
-            Q(default_vrf__in=self.get_vrf())
-        ).distinct()
+        )
+
+        if use_vrf is True:
+            envs = envs.filter(
+                # get vlans with customized vrfs of current vlan
+                Q(vlan__vrfvlanequipment__vrf__in=self.get_vrf()) |
+                # get environments using vrfs of current vlan
+                Q(default_vrf__in=self.get_vrf())
+            )
+
+        envs = envs.distinct()
 
         return envs
 
-    def get_networks_related(self, has_netv4=True, has_netv6=True, exclude_current=True):
+    # def get_networks_related(self, eqpts=None, has_netv4=True, has_netv6=True,
+    #                          exclude_current=True):
 
-        vlan_model = get_model('vlan', 'Vlan')
+    #     if not eqpts:
+    #         eqpts = self.get_eqpt()
 
-        vlans_env_eqpt = vlan_model.objects.filter(
-            # get vlans of environment or environment assoc
-            ambiente__equipamentoambiente__equipamento__in=self.get_eqpt()
-        ).filter(
-            # get vlans with customized vrfs
-            Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
-            # get vlans using vrf of environment
-            Q(ambiente__default_vrf__in=self.get_vrf())
-        ).distinct()
+    #     vlan_model = get_model('vlan', 'Vlan')
 
-        if exclude_current:
-            vlans_env_eqpt = vlans_env_eqpt.exclude(
-                # exclude current vlan
-                id=self.id
-            )
-        vlans_env_eqpt = vlans_env_eqpt.distinct()
+    #     vlans_env_eqpt = vlan_model.objects.filter(
+    #         # get vlans of environment or environment assoc
+    #         ambiente__equipamentoambiente__equipamento__in=eqpts
+    #     ).filter(
+    #         # get vlans with customized vrfs
+    #         Q(vrfvlanequipment__vrf__in=self.get_vrf()) |
+    #         # get vlans using vrf of environment
+    #         Q(ambiente__default_vrf__in=self.get_vrf())
+    #     ).distinct()
 
-        self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
+    #     if exclude_current:
+    #         vlans_env_eqpt = vlans_env_eqpt.exclude(
+    #             # exclude current vlan
+    #             id=self.id
+    #         )
+    #     vlans_env_eqpt = vlans_env_eqpt.distinct()
 
-        netv4 = list()
-        if has_netv4:
-            netv4 = reduce(list.__add__, [
-                list(vlan_env.networkipv4_set.all())
-                for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
+    #     self.log.debug('Query vlans: %s' % vlans_env_eqpt.query)
 
-        netv6 = list()
-        if has_netv6:
-            netv6 = reduce(list.__add__, [
-                list(vlan_env.networkipv6_set.all())
-                for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
+    #     netv4 = list()
+    #     if has_netv4:
+    #         netv4 = reduce(list.__add__, [
+    #             list(vlan_env.networkipv4_set.all())
+    # for vlan_env in vlans_env_eqpt if vlan_env.networkipv4_set.all()], [])
 
-        return netv4, netv6
+    #     netv6 = list()
+    #     if has_netv6:
+    #         netv6 = reduce(list.__add__, [
+    #             list(vlan_env.networkipv6_set.all())
+    # for vlan_env in vlans_env_eqpt if vlan_env.networkipv6_set.all()], [])
+
+    #     return netv4, netv6
 
     def validate_network(self):
 
@@ -1216,7 +1420,8 @@ class Vlan(BaseModel):
 
         self.allow_networks_environment(configs, netv4, netv6)
 
-        netv4, netv6 = self.get_networks_related()
+        netv4, netv6 = network.get_networks_related(
+            vrfs=self.get_vrf(), eqpts=self.get_eqpt(), exclude=self.id)
 
         netv4_env_format = [IPNetwork(net.networkv4) for net in netv4]
         netv6_env_format = [IPNetwork(net.networkv6) for net in netv6]
@@ -1226,8 +1431,8 @@ class Vlan(BaseModel):
         netv6_format = [IPNetwork(net.networkv6)
                         for net in self.networkipv6_set.all()]
 
-        self.verify_networks(netv4_format, netv4_env_format)
-        self.verify_networks(netv6_format, netv6_env_format)
+        network.verify_networks(netv4_format, netv4_env_format)
+        network.verify_networks(netv6_format, netv6_env_format)
 
     def allow_networks_environment(self, configs, netv4, netv6):
         """
@@ -1244,12 +1449,13 @@ class Vlan(BaseModel):
 
             net_ip = [IPNetwork(net.networkv4)]
 
-            if not self.verify_intersect(nts, net_ip)[0]:
-                raise Exception(
-                    'Network can not inserted in environment %s because '
-                    'network %s are in out of the range of allowed networks ' %
-                    (self.ambiente.name, net.networkv4)
-                )
+            if not network.verify_intersect(nts, net_ip)[0]:
+                msg = 'Network can not inserted in environment {} because ' \
+                    'network {} are in out of the range of allowed networks.'
+                msg = msg.format(self.ambiente.name, net.networkv4)
+                self.log.error(msg)
+
+                raise VlanErrorV3(msg)
 
         for net in netv6:
             configsv6 = configs.filter(
@@ -1260,88 +1466,18 @@ class Vlan(BaseModel):
 
             net_ip = [IPNetwork(net.networkv6)]
 
-            if not self.verify_intersect(nts, net_ip)[0]:
-                raise Exception(
-                    'Network can not inserted in environment %s because '
-                    'network %s are in out of the range of allowed networks ' %
-                    (self.ambiente.name, net.networkv6)
-                )
-
-    def prepare_networks(self, netv4, netv6):
-        """
-            Make a dict where key is block of network and value is a list
-            network with block.
-        """
-
-        netv4_dict = dict()
-        for net in netv4:
-            if not netv4_dict.get(net.block):
-                netv4_dict.update({
-                    net.block: list()
-                })
-            nt = IPNetwork(net.networkv4)
-            netv4_dict[net.block].append(nt)
-
-        netv6_dict = dict()
-        for net in netv6:
-            if not netv6_dict.get(net.block):
-                netv6_dict.update({
-                    net.block: list()
-                })
-            nt = IPNetwork(net.networkv6)
-            netv6_dict[net.block].append(nt)
-
-        return netv4_dict, netv6_dict
-
-    def verify_networks(self, subnets, supernets):
-        """
-            Verify a list of networks has make intersect with a second list
-            and contrariwise.
-        """
-
-        subnet, supernet = self.verify_intersect(supernets, subnets)
-        if subnet or supernet:
-            raise Exception(
-                'One of the equipment associated with the environment '
-                'of this Vlan is also associated with other environment '
-                'that has a network with the same track, add filters in '
-                'environments if necessary. Your Network: %s, Network'
-                'already created: %s' % (subnet, supernet))
-
-        subnet, supernet = self.verify_intersect(subnets, supernets)
-        if subnet or supernet:
-            raise Exception(
-                'One of the equipment associated with the environment '
-                'of this Vlan is also associated with other environment '
-                'that has a network with the same track, add filters in '
-                'environments if necessary. Your Network: %s, Network'
-                'already created: %s' % (supernet, subnet))
-
-    def verify_intersect(self, supernets, subnets):
-        """
-            Verify if a item of a list of networks has make intersect
-            with a second list.
-        """
-
-        for supernet in supernets:
-            try:
-                # has subnet is inside of supernet
-                for subnet in subnets:
-                    if subnet in supernet:
-                        self.log.debug(
-                            'Subnet %s is inside of supernet: %s' %
-                            (subnet, supernet))
-                        return subnet, supernet
-            except:
-                pass
-
-        return None, None
+            if not network.verify_intersect(nts, net_ip)[0]:
+                msg = 'Network can not inserted in environment {} because ' \
+                    'network {} are in out of the range of allowed networks.'
+                msg = msg.format(self.ambiente.name, net.networkv6)
+                self.log.error(msg)
+                raise VlanErrorV3(msg)
 
     def allocate_vlan(self):
-        """
-        Create a Vlan with the new Model
+        """Create a Vlan with the new Model
 
-        The fields num_vlan, acl_file_name, acl_valida and ativada will be generated automatically
+        The fields num_vlan, acl_file_name, acl_valida and ativada will be
+        generated automatically
 
         @return: nothing
         """
@@ -1377,17 +1513,19 @@ class Vlan(BaseModel):
                 min_num_02, max_num_02)
             if self.num_vlan is None:
                 raise VlanNumberNotAvailableError(
-                    None, u'Number VLAN unavailable for environment %d.' % self.ambiente.id)
+                    None, u'Number VLAN unavailable for environment %d.'
+                    % self.ambiente.id)
 
     def calculate_vlan_number_v3(self, min_num, max_num, list_available=False):
-        """
-            Caculate if has a number available in range (min_num/max_num) to specified environment
+        """Caculate if has a number available in range (min_num/max_num) to
+        specified environment
 
-            @param min_num: Minimum number that the vlan can be created.
-            @param max_num: Maximum number that the vlan can be created.
-            @param list_available: If = True, return the list of numbers availables
+        @param min_num: Minimum number that the vlan can be created.
+        @param max_num: Maximum number that the vlan can be created.
+        @param list_available: If = True, return the list of numbers availables
 
-            @return: None when hasn't a number available | num_vlan when found a number available
+        @return: None when hasn't a number available | num_vlan when found
+                 a number available
         """
 
         interval = range(min_num, max_num + 1)
@@ -1400,22 +1538,25 @@ class Vlan(BaseModel):
         # 'roteadores' or 'balanceadores'
         id_equipamentos = self.get_eqpt()
 
-        # Vlan numbers in others environment but in environment that has equipments
-        # found in before filter ('switches', 'roteadores' or 'balanceadores')
-        vlans_others_environments = Vlan.objects.exclude(ambiente__id=self.ambiente_id) \
-            .filter(ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos) \
-            .values_list('num_vlan', flat=True)
+        # Vlan numbers in others environment but in environment that has
+        # equipments found in before filter ('switches', 'roteadores' or
+        # 'balanceadores')
+        vlans_others_environments = Vlan.objects.exclude(
+            ambiente__id=self.ambiente_id
+        ).filter(
+            ambiente__equipamentoambiente__equipamento__id__in=id_equipamentos
+        ).values_list('num_vlan', flat=True)
 
         # Clean duplicates numbers and update merge 'vlan_numbers_in_interval'
         # with 'vlans_others_environments'
         vlan_numbers_in_interval = set(vlan_numbers_in_interval)
         vlan_numbers_in_interval.update(vlans_others_environments)
 
-        self.log.info('Interval: %s.', interval)
-        self.log.info('VLANs in interval: %s.', vlan_numbers_in_interval)
+        self.log.debug('Interval: %s.', interval)
+        self.log.debug('VLANs in interval: %s.', vlan_numbers_in_interval)
 
         diff_set = set(interval) - set(vlan_numbers_in_interval)
-        self.log.info('Difference in the lists: %s.', diff_set)
+        self.log.debug('Difference in the lists: %s.', diff_set)
 
         if list_available:
             return diff_set

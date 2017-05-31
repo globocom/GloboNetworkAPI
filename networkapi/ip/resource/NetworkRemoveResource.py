@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,22 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.infrastructure.script_utils import exec_script
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6
+
 import logging
-from networkapi.rest import RestResource
-from networkapi.settings import NETWORKIPV4_REMOVE, NETWORKIPV6_REMOVE
-from networkapi.util import is_valid_version_ip, is_valid_int_greater_zero_param
-from networkapi.ambiente.models import IP_VERSION
-from networkapi.exception import InvalidValueError, NetworkInactiveError
-from networkapi.error_message_utils import error_messages
-from networkapi.ip.models import NetworkIPv4NotFoundError, NetworkIPv6NotFoundError
-from networkapi.equipamento.models import Equipamento
-from networkapi.auth import has_perm
+
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import IP_VERSION
+from networkapi.auth import has_perm
+from networkapi.equipamento.models import Equipamento
+from networkapi.error_message_utils import error_messages
+from networkapi.exception import InvalidValueError
+from networkapi.exception import NetworkInactiveError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.ip.models import NetworkIPv6
+from networkapi.ip.models import NetworkIPv6NotFoundError
+from networkapi.rest import RestResource
+from networkapi.settings import NETWORKIPV4_REMOVE
+from networkapi.settings import NETWORKIPV6_REMOVE
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_version_ip
 
 
 class NetworkRemoveResource(RestResource):
@@ -44,10 +50,10 @@ class NetworkRemoveResource(RestResource):
     CODE_MESSAGE_DEFAULT_ERROR = 1
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Handles PUT requests to remove Network and Vlan.
+        """Handles PUT requests to remove Network and Vlan.
 
         URL: network/remove/
-        '''
+        """
         try:
 
             # User permission

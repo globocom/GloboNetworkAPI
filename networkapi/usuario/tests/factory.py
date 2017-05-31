@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-import factory
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import logging
+
+import factory
+
 from networkapi.grupo.tests.factory import UGrupoFactory
+from networkapi.usuario import models
 
 LOG = logging.getLogger(__name__)
 
-from networkapi.usuario import models
 
 class UsuarioFactory(factory.DjangoModelFactory):
+
     """
     usr = Usuario()
 
@@ -45,6 +50,7 @@ class UsuarioGrupoFactory(factory.django.DjangoModelFactory):
 
     usuario = factory.SubFactory(UsuarioFactory)
     ugrupo = factory.SubFactory(UGrupoFactory)
+
 
 class UserWithGroupFactory(UsuarioFactory):
     group = factory.RelatedFactory(UsuarioGrupoFactory, 'usuario')

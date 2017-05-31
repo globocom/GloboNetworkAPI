@@ -126,8 +126,9 @@ def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
                 # deploy config file in equipments
                 lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_NETWORK_SCRIPT % (
                     equipment.id)
-                status_deploy[equipment.id] = deploy_config_in_equipment_synchronous(
-                    file_to_deploy, equipment, lockvar)
+                status_deploy[equipment.id] = \
+                    deploy_config_in_equipment_synchronous(
+                        file_to_deploy, equipment, lockvar)
 
             networkipv4.activate(user)
             transaction.commit()

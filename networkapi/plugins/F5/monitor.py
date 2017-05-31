@@ -61,8 +61,10 @@ class Monitor(F5Base):
                                 'is_directly_usable': 1
                             })
 
-                            hr = kwargs['healthcheck'][i]['healthcheck_request']
-                            healthcheck_expect = kwargs['healthcheck'][i]['healthcheck_expect']
+                            hr = kwargs['healthcheck'][
+                                i]['healthcheck_request']
+                            healthcheck_expect = kwargs[
+                                'healthcheck'][i]['healthcheck_expect']
                             if kwargs['healthcheck'][i]['healthcheck_type'] in ['HTTP', 'HTTPS']:
                                 rg = '^([\" ]?)+(GET|HEAD|POST|PUT|CONNECT|DELETE|OPTIONS|TRACE|PATCH)'
                                 if not valid_regex(hr, rg):
@@ -103,11 +105,14 @@ class Monitor(F5Base):
                             })
 
                         else:
-                            name = kwargs['healthcheck'][i]['healthcheck_type'].lower()
+                            name = kwargs['healthcheck'][i][
+                                'healthcheck_type'].lower()
 
                         monitor_association['pool_name'] = kwargs['names'][i]
-                        monitor_association['monitor_rule']['monitor_templates'].append(name)
-                        monitor_association['monitor_rule']['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                        monitor_association['monitor_rule'][
+                            'monitor_templates'].append(name)
+                        monitor_association['monitor_rule'][
+                            'type'] = 'MONITOR_RULE_TYPE_SINGLE'
                         monitor_association['monitor_rule']['quorum'] = 0
                         monitor_associations.append(monitor_association)
 
@@ -118,11 +123,15 @@ class Monitor(F5Base):
                                     'type': None,
                                     'quorum': None
                                 }
-                                monitor_association_node['monitor_templates'].append('icmp')
-                                monitor_association_node['type'] = 'MONITOR_RULE_TYPE_SINGLE'
+                                monitor_association_node[
+                                    'monitor_templates'].append('icmp')
+                                monitor_association_node[
+                                    'type'] = 'MONITOR_RULE_TYPE_SINGLE'
                                 monitor_association_node['quorum'] = 0
-                                monitor_associations_nodes['monitor_rules'].append(monitor_association_node)
-                                monitor_associations_nodes['nodes'].append(node['address'])
+                                monitor_associations_nodes['monitor_rules'].append(
+                                    monitor_association_node)
+                                monitor_associations_nodes[
+                                    'nodes'].append(node['address'])
 
         except Exception, e:
             log.error(e)
@@ -196,7 +205,8 @@ class Monitor(F5Base):
                 return
         self._lb._channel.System.Session.start_transaction()
         try:
-            self._lb._channel.LocalLB.Monitor.delete_template(template_names=kwargs['template_names'])
+            self._lb._channel.LocalLB.Monitor.delete_template(
+                template_names=kwargs['template_names'])
         except Exception:
             self._lb._channel.System.Session.rollback_transaction()
         else:

@@ -280,5 +280,27 @@
       "escrita": true,
       "permission": 32
     }
+  },
+
+
+  {
+    "pk": 29,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 3,
+      "leitura": true,
+      "escrita": true,
+      "permission": 13
+    }
+  },
+  {
+    "pk": 30,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 3,
+      "leitura": true,
+      "escrita": true,
+      "permission": 40
+    }
   }
 ]

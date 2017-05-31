@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,21 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4NotFoundError, Ip, IpNotAvailableError, IpError, NetworkIPv4Error, IpEquipmentAlreadyAssociation,\
-    IpNotFoundError
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_IPV4
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize,\
-    is_valid_int_param, is_valid_string_minsize
-from networkapi.distributedlock import distributedlock, LOCK_IPV4
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipmentAlreadyAssociation
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import NetworkIPv4Error
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_int_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class IPv4EditResource(RestResource):
@@ -36,10 +48,10 @@ class IPv4EditResource(RestResource):
     log = logging.getLogger('IPv4EditResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to edit an IP.
+        """Handles POST requests to edit an IP.
 
         URL: ipv4/edit/
-        '''
+        """
 
         self.log.info('Edit an IP')
 
@@ -100,7 +112,7 @@ class IPv4EditResource(RestResource):
                 ip_error = ip4
 
                 # verificação se foi passado algo errado no ip
-                ip4 = ip4.split(".")
+                ip4 = ip4.split('.')
                 for oct in ip4:
                     if not is_valid_int_param(oct):
                         raise InvalidValueError(None, 'ip4', ip_error)
