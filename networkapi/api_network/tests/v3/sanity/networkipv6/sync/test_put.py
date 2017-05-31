@@ -109,7 +109,9 @@ class NetworkIPv6PutSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_try_update_inactive_netipv6_changing_octets(self):
-        """Test of success to update inactive Network IPv6 changing octets."""
+        """Test of success to update inactive Network IPv6 changing octets.
+           Octets will not be changed.
+        """
 
         name_file = self.json_path % 'put/net_inactive_changing_octets.json'
 
@@ -241,7 +243,8 @@ class NetworkIPv6PutErrorTestCase(NetworkApiTestCase):
 
     def test_try_update_inactive_netipv6_changing_nettype_to_none(self):
         """Test of error to update inactive Network IPv6 changing network type
-        to None."""
+           to None.
+        """
 
         name_file = self.json_path % 'put/net_inactive_changing_net_type.json'
 

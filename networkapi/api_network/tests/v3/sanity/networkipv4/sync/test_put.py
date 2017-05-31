@@ -54,7 +54,8 @@ class NetworkIPv4PutSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_try_update_inactive_netipv4(self):
-        """Test of success to update inactive Network IPv4 changing cluster unit, network type and environment vip.
+        """Test of success to update inactive Network IPv4 changing cluster unit,
+           network type and environment vip.
         """
 
         name_file = self.json_path % 'put/net_inactive.json'
@@ -82,7 +83,8 @@ class NetworkIPv4PutSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_try_update_active_netipv4(self):
-        """Test of success to update active Network IPv4 changing cluster unit, network type and environment vip.
+        """Test of success to update active Network IPv4 changing cluster unit,
+           network type and environment vip.
         """
 
         name_file = self.json_path % 'put/net_active.json'
@@ -109,9 +111,10 @@ class NetworkIPv4PutSuccessTestCase(NetworkApiTestCase):
 
     def test_try_update_inactive_netipv4_changing_octets(self):
         """Test of success to update inactive Network IPv4 changing octets.
+           Octets will not be changed.
         """
 
-        name_file_put = 'api_network/tests/v3/sanity/networkipv4/json/put/net_inactive_changing_octets.json'
+        name_file_put = self.json_path % 'put/net_inactive_changing_octets.json'
 
         # Does PUT request
         response = self.client.put(
@@ -257,7 +260,7 @@ class NetworkIPv4PutErrorTestCase(NetworkApiTestCase):
 
     def test_try_update_inactive_netipv4_changing_nettype_to_none(self):
         """Test of error to update inactive Network IPv4 changing network type
-        to None.
+           to None.
         """
 
         name_file = self.json_path % 'put/net_inactive_changing_net_type.json'

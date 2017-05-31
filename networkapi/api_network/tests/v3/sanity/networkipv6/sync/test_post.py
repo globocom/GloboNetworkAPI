@@ -115,7 +115,7 @@ class NetworkIPv6PostSuccessTestCase(NetworkApiTestCase):
     def test_try_create_netipv6_with_auto_alloc(self):
         """Test of success to create a Network IPv6 without octs."""
 
-        name_file_post = 'api_network/tests/v3/sanity/networkipv6/json/post/net_without_octs.json'
+        name_file_post = self.json_path % 'post/net_without_octs.json'
 
         # Does POST request
         response = self.client.post(
@@ -219,7 +219,7 @@ class NetworkIPv6DeploySuccessTestCase(NetworkApiTestCase):
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_deploy_inactive_netipv6(self, test_patch):
-        """Test of error to deploy a inactive NetworkIPv6. NAPI should allow this request."""
+        """Test of success to deploy a inactive NetworkIPv6."""
 
         mock = MockPluginNetwork()
         mock.status(True)
@@ -296,7 +296,9 @@ class NetworkIPv6PostErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_try_create_netipv6_with_auto_alloc_in_full_env(self):
-        """Test of error to create a Network IPv6 without octs in vlan of Environment with not available Network IPv6."""
+        """Test of error to create a Network IPv6 without octs in vlan
+           of Environment with not available Network IPv6.
+        """
 
         name_file = self.json_path % 'post/net_without_octs_full_env.json'
 
@@ -314,7 +316,9 @@ class NetworkIPv6PostErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_try_create_netipv6_with_octs_in_full_env(self):
-        """Test of error to create a Network IPv6 with octs in vlan of Environment with not available Network IPv6."""
+        """Test of error to create a Network IPv6 with octs in vlan
+           of Environment with not available Network IPv6.
+        """
 
         name_file = self.json_path % 'post/net_with_octs_full_env.json'
 
@@ -335,7 +339,9 @@ class NetworkIPv6PostErrorTestCase(NetworkApiTestCase):
         self.compare_values(msg, response.data['detail'])
 
     def test_try_create_netipv6_out_of_range_with_octs(self):
-        """Test of error to create a Network IPv6 with octs out of range configuration defined in related Environment."""
+        """Test of error to create a Network IPv6 with octs out of range
+           configuration defined in related Environment.
+        """
 
         name_file = self.json_path % 'post/net_with_octs_out_of_range.json'
 
@@ -402,7 +408,7 @@ class NetworkIPv6DeployErrorTestCase(NetworkApiTestCase):
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')
     def test_try_deploy_active_netipv6(self, test_patch):
-        """Test of error to deploy a active NetworkIPv6. NAPI should deny this request."""
+        """Test of error to deploy a active NetworkIPv6."""
 
         mock = MockPluginNetwork()
         mock.status(False)
