@@ -16,7 +16,8 @@
       "max_num_vlan_2": null,
       "min_num_vlan_1": null,
       "min_num_vlan_2": null,
-      "name": "BE - SANITY-TEST-1 - RACK-1"
+      "name": "BE - SANITY-TEST-1 - RACK-1",
+      "sdn_controlled": false
     },
     {
       "acl_path": null,
@@ -34,7 +35,8 @@
       "max_num_vlan_2": null,
       "min_num_vlan_1": null,
       "min_num_vlan_2": null,
-      "name": "BE - SANITY-TEST-1 - RACK-2"
+      "name": "BE - SANITY-TEST-1 - RACK-2",
+      "sdn_controlled": false
     }
   ]
 }
