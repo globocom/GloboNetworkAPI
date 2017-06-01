@@ -5,7 +5,7 @@ services:
         container_name: netapi_db
         image: mysql:8.0.0
         ports:
-            - "3306"
+            - "3306:3306"
         environment:
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
         volumes:
@@ -32,6 +32,19 @@ services:
         networks:
             - netapi_net
 
+    odl:
+        container_name: netapi_odl
+        image: glefevre/opendaylight
+        volumes:
+            - ./docker-start-opendaylight.sh:/odl/docker-start-opendaylight.sh:ro
+        command: bash docker-start-opendaylight.sh
+        ports:
+            - "6653:6653"
+            - "8181:8181"
+            - "8101:8101"
+        networks:
+            - netapi_net
+
     netapi:
         container_name: netapi_app
         build: .
@@ -48,6 +61,7 @@ services:
             - db
             - queue
             - cache
+            - odl
 
 volumes:
     netapi_db_vol:

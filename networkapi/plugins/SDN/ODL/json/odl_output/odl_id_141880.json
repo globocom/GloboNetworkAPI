@@ -1,0 +1,38 @@
+[
+  {
+    "id": "141880",
+    "table_id": 0,
+    "priority": 42,
+    "cookie": 609370228391936,
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "order": 0,
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "match": {
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ip-match": {
+        "ip-protocol": 17
+      },
+      "ipv4-destination": "10.130.70.224/27",
+      "ipv4-source": "10.129.193.32/27",
+      "udp-destination-port": 1024
+    }
+  }
+]

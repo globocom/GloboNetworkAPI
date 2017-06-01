@@ -1,0 +1,38 @@
+[
+  {
+    "id": "106966",
+    "priority": 65000,
+    "table_id": 0,
+    "flow-name": "generic",
+    "cookie": 459415740219392,
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "order": 0,
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "match": {
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ip-match": {
+        "ip-protocol": 6
+      },
+      "ipv4-destination": "0.0.0.0/0",
+      "ipv4-source": "10.128.0.64/27"
+    }
+  }
+]

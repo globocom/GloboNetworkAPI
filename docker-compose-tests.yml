@@ -1,0 +1,42 @@
+version: '2'
+
+services:
+
+    ovs0:
+        container_name: ovs0
+        image: socketplane/openvswitch
+        tty: true
+        volumes:
+            - ./docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
+        cap_add:
+            - NET_ADMIN
+        networks:
+            - netapi_net
+
+    ovs1:
+        container_name: ovs1
+        image: socketplane/openvswitch
+        tty: true
+        volumes:
+            - ./docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
+        cap_add:
+            - NET_ADMIN
+        networks:
+            - netapi_net
+
+    ovs2:
+        container_name: ovs2
+        image: socketplane/openvswitch
+        tty: true
+        volumes:
+            - ./docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
+        cap_add:
+            - NET_ADMIN
+        networks:
+            - netapi_net
+
+networks:
+    netapi_net:

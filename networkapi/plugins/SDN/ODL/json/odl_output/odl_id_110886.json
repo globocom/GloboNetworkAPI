@@ -1,0 +1,37 @@
+[
+  {
+    "id": "110886",
+    "table_id": 0,
+    "priority": 6,
+    "cookie": 476252012019712,
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "order": 0,
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "match": {
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ip-match": {
+        "ip-protocol": 6
+      },
+      "ipv4-destination": "10.143.224.54/32",
+      "ipv4-source": "10.129.200.96/27"
+    }
+  }
+]

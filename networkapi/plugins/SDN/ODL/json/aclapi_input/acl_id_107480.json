@@ -1,0 +1,18 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "destination": "10.130.2.0/24",
+      "id": "107480",
+      "l4-options": {
+        "dest-port-op": "eq",
+        "dest-port-start": "27017"
+      },
+      "owner": "networkapi",
+      "protocol": "tcp",
+      "sequence": 2,
+      "source": "10.129.195.0/24"
+    }
+  ]
+}
