@@ -20,8 +20,6 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 from networkapi.models.BaseModel import BaseModel
-from networkapi.equipamento.models import Equipamento
-from networkapi.ambiente.models import Ambiente, AmbienteError
 
 
 class RackError(Exception):
@@ -216,9 +214,9 @@ class Rack(BaseModel):
     mac_sw1 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw1')
     mac_sw2 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw2')
     mac_ilo = models.CharField(max_length=17, blank=True, null=True, db_column='mac_ilo')
-    id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
-    id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
-    id_ilo = models.ForeignKey(Equipamento, blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
+    id_sw1 = models.ForeignKey('equipamento.Equipamento', blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
+    id_sw2 = models.ForeignKey('equipamento.Equipamento', blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
+    id_ilo = models.ForeignKey('equipamento.Equipamento', blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
     config = models.BooleanField(default=False)
     create_vlan_amb = models.BooleanField(default=False)
     dcroom = models.ForeignKey(DatacenterRooms, db_column='dcroom', null=True)
@@ -259,9 +257,9 @@ class Rack(BaseModel):
             raise Exception ('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
 
         try:
-            self.id_sw1 = Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 is int  else self.id_sw1
-            self.id_sw2 = Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 is int else self.id_sw2
-            self.id_ilo = Equipamento.get_by_pk(int(id_sw3)) if self.id_sw3 is int else self.id_sw3
+            self.id_sw1 = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 is int  else self.id_sw1
+            self.id_sw2 = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 is int else self.id_sw2
+            self.id_ilo = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw3)) if self.id_sw3 is int else self.id_sw3
             self.dcroom = DatacenterRoom.get_dcrooms(int(dcroom)) if self.dcroom is int else self.dcroom
             return self.save()
         except Exception, e:
@@ -378,7 +376,7 @@ class EnvironmentRack(BaseModel):
     log = logging.getLogger('EnvironmentRack')
 
     id = models.AutoField(primary_key=True, db_column='id_ambienterack')
-    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
     rack = models.ForeignKey(Rack, db_column='id_rack')
 
     class Meta(BaseModel.Meta):

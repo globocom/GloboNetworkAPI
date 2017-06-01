@@ -39,6 +39,7 @@ from networkapi.filter.models import CannotDissociateFilterError
 from networkapi.filter.models import Filter
 from networkapi.filter.models import FilterNotFoundError
 from networkapi.models.BaseModel import BaseModel
+from networkapi.rack.models import DatacenterRooms
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
 from networkapi.util import is_valid_text
@@ -876,7 +877,7 @@ class Ambiente(BaseModel):
         db_column='id_vrf'
     )
     dcroom = models.IntegerField(
-        #DatacenterRooms,
+        DatacenterRooms,
         null=True,
         db_column = 'id_dcroom'
     )
@@ -1273,7 +1274,7 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
-            #self.dcroom = models_dc.DatacenterRooms().get_dcrooms(idt=env_map.get('dcroom')) if env_map.get('dcroom') else None
+            self.dcroom = DatacenterRooms().get_dcrooms(idt=env_map.get('dcroom')) if env_map.get('dcroom') else None
             self.validate_v3()
             self.save()
 

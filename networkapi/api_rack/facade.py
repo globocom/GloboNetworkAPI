@@ -24,7 +24,7 @@ from netaddr import IPNetwork
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from networkapi.ambiente.models import Ambiente, AmbienteLogico, GrupoL3
+#from networkapi.ambiente import models as models_env
 from networkapi.vlan import models as models_vlan
 from networkapi.api_vlan.facade import v3 as facade_vlan_v3
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
@@ -245,9 +245,9 @@ def _create_spnlfenv(rack, envfathers):
     fabric = rack.dcroom.name
 
     try:
-        id_grupo_l3 = GrupoL3().get_by_name(fabric).id
+        id_grupo_l3 = models_env.GrupoL3().get_by_name(fabric).id
     except:
-        grupo_l3_dict = GrupoL3()
+        grupo_l3_dict = models_env.GrupoL3()
         grupo_l3_dict.nome = fabric
         grupo_l3_dict.save()
         id_grupo_l3 = grupo_l3_dict.id
@@ -267,9 +267,9 @@ def _create_spnlfenv(rack, envfathers):
         for spn in range(spines):
             amb_log_name = "SPINE0" + str(spn+1) + "LEAF"
             try:
-                id_amb_log = AmbienteLogico().get_by_name(amb_log_name).id
+                id_amb_log = models_env.AmbienteLogico().get_by_name(amb_log_name).id
             except:
-                amb_log_dict = AmbienteLogico()
+                amb_log_dict = models_env.AmbienteLogico()
                 amb_log_dict.nome = spine_name
                 amb_log_dict.save()
                 id_amb_log = amb_log_dict.id
@@ -300,7 +300,7 @@ def _create_spnlfenv(rack, envfathers):
                 'default_vrf': env.default_vrf.id,
                 'configs': config
             }
-            environment_spn_lf = Ambiente().create_v3(obj)
+            environment_spn_lf = models_env.Ambiente().environment_spn_lf.create_v3(obj)
             log.debug("Environment object: %s" % str(obj))
             environment_spn_lf_list.append(environment_spn_lf)
     return environment_spn_lf_list
@@ -417,9 +417,9 @@ def _create_vlans_cloud(rack, env_mngtcloud, user):
 def _create_fe_envs(rack, env_fe):
 
     try:
-        id_grupo_l3 = GrupoL3().get_by_name(rack.nome).id
+        id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
     except:
-        grupo_l3_dict = GrupoL3()
+        grupo_l3_dict = models_env.GrupoL3()
         grupo_l3_dict.nome = rack.nome
         grupo_l3_dict.save()
         id_grupo_l3 = grupo_l3_dict.id
@@ -454,7 +454,7 @@ def _create_fe_envs(rack, env_fe):
             'default_vrf': env.default_vrf.id,
             'configs': confs
         }
-        environment = Ambiente().create_v3(obj)
+        environment = models_env.Ambiente().environment.create_v3(obj)
         log.debug("Environment object: %s" % str(environment))
     return environment
 
@@ -497,7 +497,7 @@ def rack_environments_vlans(rack_id, user):
     env_be = list()
     env_fe = list()
     env_oob = list()
-    environments = Ambiente.objects.filter(dcroom=int(rack.dcroom.id))
+    environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id))
     for envs in environments:
         if envs.ambiente_logico.nome == "SPINES":
             env_spn.append(envs)
