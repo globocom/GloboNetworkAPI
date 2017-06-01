@@ -95,9 +95,6 @@ urlpatterns = patterns(
     url(r'^environmentvip/', include('networkapi.requisicaovips.urls_environmentvip')),
     url(r'^optionvip/', include('networkapi.requisicaovips.urls_optionvip')),
 
-    # Border Gateway Protocol BGP
-    url(r'^bgp/', include('networkapi.bgp.urls')),
-
     # grupovirtual
     url(r'^grupovirtual/', include('networkapi.grupovirtual.urls')),
 
