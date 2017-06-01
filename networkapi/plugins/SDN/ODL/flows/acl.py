@@ -65,15 +65,15 @@ class AclFlowBuilder(object):
     def __init__(self, data):
 
         self.raw_data = data  # Original data
-        self.flows = {"flow": []}  # Processed data
+        self.flows = []  # Processed data
 
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
 
     def dump(self):
         """ Returns a json of built flows """
 
-        if not isinstance(self.flows, dict):
-            raise TypeError("self.flows must be a dictionary")
+        if not isinstance(self.flows, list):
+            raise TypeError("self.flows must be a list")
 
         self.build()
 
