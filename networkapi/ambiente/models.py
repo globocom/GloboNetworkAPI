@@ -923,15 +923,13 @@ class Ambiente(BaseModel):
     vlans = property(_get_vlan)
 
     def _sdn_controlled(self):
-        is_controlled = False
-        controllers = self.equipamentoambiente_set.prefetch_related('equipamento')\
+        controllers = self.equipamentoambiente_set\
             .filter(is_controller=True)
-        controllers = [eqpt.equipamento for eqpt in controllers]
 
         if controllers:
-            is_controlled = True
+            return True
 
-        return is_controlled
+        return False
 
     sdn_controlled = property(_sdn_controlled)
 

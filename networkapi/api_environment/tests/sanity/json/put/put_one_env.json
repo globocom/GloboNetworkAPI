@@ -15,7 +15,8 @@
       "max_num_vlan_1": 20,
       "max_num_vlan_2": null,
       "min_num_vlan_1": 2,
-      "min_num_vlan_2": null
+      "min_num_vlan_2": null,
+      "sdn_controlled": false
     }
   ]
 }
