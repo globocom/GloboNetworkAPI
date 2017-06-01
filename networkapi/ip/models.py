@@ -4697,7 +4697,7 @@ class Ipv6Equipament(BaseModel):
         @raise IpEquipamentoDuplicatedError: IP já cadastrado para o equipamento.
         @raise EquipamentoError: Falha ao pesquisar o equipamento.
         """
-        equipamento = get_model('equipamento', 'EquipamentoAmbiente')
+        equipamento = get_model('equipamento', 'Equipamento')
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
 
         self.equipamento = equipamento().get_by_pk(equipment_id)
