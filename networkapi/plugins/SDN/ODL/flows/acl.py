@@ -139,11 +139,11 @@ class AclFlowBuilder(object):
         # Used to build simple ranges
         self.current_src_or_dst_port = None
 
-        # Assigns the id of the current ACL
-        # We always insert in the head of the list to simplify the access
-        # to the current index
-
         while not self.generated_all_flows_from_rule:
+
+            # Assigns the id of the current ACL
+            # We always insert in the head of the list to simplify the access
+            # to the current index
 
             self.flows["flow"].insert(0, {Tokens.id_: rule[Tokens.id_]})
 
