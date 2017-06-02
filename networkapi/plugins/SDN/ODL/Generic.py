@@ -77,9 +77,18 @@ class ODLPlugin(BaseSdnPlugin):
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data)
 
-        data_to_send = builder.dump()
-        flow_id = builder.flows['flow'][0]['id']
-        return self._flow(flow_id=flow_id, method='put', data=data_to_send)
+        builder.build()
+        return_flows = []
+
+        for flow in builder.flows:
+            flow_id = flow['flow']['id']
+            data_to_send = json.dumps(flow)
+
+            return_flows.append(
+                self._flow(flow_id=flow_id, method='put', data=data_to_send)
+            )
+
+        return return_flows
 
     def del_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='delete')

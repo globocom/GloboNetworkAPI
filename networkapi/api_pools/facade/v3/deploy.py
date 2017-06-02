@@ -140,6 +140,10 @@ def update_real_pool(pools, user):
     for pool in pools:
 
         pool_obj = facade_v3.get_pool_by_id(pool['id'])
+
+        healthcheck_old = serializers.HealthcheckV3Serializer(
+            pool_obj.healthcheck).data
+
         db_members = pool_obj.serverpoolmember_set.all()
         member_ids = [spm['id'] for spm in pool['server_pool_members']
                       if spm['id']]
@@ -224,10 +228,6 @@ def update_real_pool(pools, user):
         equips = _validate_pool_to_apply(pool, update=True, user=user)
 
         keys.append(sorted([str(eqpt.id) for eqpt in equips]))
-
-        sp = ServerPool.objects.get(id=pool['id'])
-        healthcheck_old = serializers.HealthcheckV3Serializer(
-            sp.healthcheck).data
 
         healthcheck = copy.deepcopy(pool['healthcheck'])
         healthcheck['new'] = False

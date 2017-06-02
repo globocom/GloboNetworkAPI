@@ -65,15 +65,15 @@ class AclFlowBuilder(object):
     def __init__(self, data):
 
         self.raw_data = data  # Original data
-        self.flows = {"flow": []}  # Processed data
+        self.flows = []  # Processed data
 
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
 
     def dump(self):
         """ Returns a json of built flows """
 
-        if not isinstance(self.flows, dict):
-            raise TypeError("self.flows must be a dictionary")
+        if not isinstance(self.flows, list):
+            raise TypeError("self.flows must be a list")
 
         self.build()
 
@@ -100,11 +100,11 @@ class AclFlowBuilder(object):
         if Tokens.id in rule:
             # We always insert in the head of the list to simplify the access
             # to the current index
-            self.flows["flow"].insert(0, {Tokens.id: rule[Tokens.id]})
+            self.flows.insert(0, {"flow": {Tokens.id: rule[Tokens.id]}})
 
         # Flow description
         if Tokens.description in rule:
-            self.flows["flow"][0]["flow-name"] = rule[Tokens.description]
+            self.flows[0]["flow"]["flow-name"] = rule[Tokens.description]
 
         self._build_match(rule)
         self._build_protocol(rule)
@@ -112,22 +112,22 @@ class AclFlowBuilder(object):
         self._build_cookie(rule)
 
         # Flow table and priority
-        self.flows["flow"][0]["table_id"] = self.TABLE
+        self.flows[0]["flow"]["table_id"] = self.TABLE
 
         if Tokens.sequence in rule:
-            self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
+            self.flows[0]["flow"]["priority"] = rule[Tokens.sequence]
         else:
-            self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
+            self.flows[0]["flow"]["priority"] = self.PRIORITY_DEFAULT
 
     def _build_cookie(self, rule):
 
-        self.flows["flow"][0][Tokens.cookie] = \
+        self.flows[0]["flow"][Tokens.cookie] = \
             CookieHandler.get_cookie(rule[Tokens.id], 1)
 
     def _build_match(self, rule):
         """ Builds the match field that identifies the ACL rule """
 
-        self.flows["flow"][0]["match"] = {
+        self.flows[0]["flow"]["match"] = {
             "ethernet-match": {
                 "ethernet-type": {
                     "type": 2048
@@ -137,9 +137,9 @@ class AclFlowBuilder(object):
 
         if Tokens.destination in rule and Tokens.source in rule:
 
-            self.flows["flow"][0]["match"]["ipv4-destination"] = \
+            self.flows[0]["flow"]["match"]["ipv4-destination"] = \
                 rule[Tokens.destination]
-            self.flows["flow"][0]["match"]["ipv4-source"] = rule[Tokens.source]
+            self.flows[0]["flow"]["match"]["ipv4-source"] = rule[Tokens.source]
 
         else:
             logging.error(self.MALFORMED_MESSAGE % rule)
@@ -170,19 +170,19 @@ class AclFlowBuilder(object):
     def _build_tcp(self, rule):
         """ Builds a TCP flow based on OpenDayLight json format """
 
-        self._set_flow_ip_protocol(self.flows["flow"][0], 6)
+        self._set_flow_ip_protocol(self.flows[0]["flow"], 6)
         self._check_source_and_destination_ports(rule, "tcp")
 
         if Tokens.l4_options in rule:
             if Tokens.flags in rule[Tokens.l4_options]:
-                self._set_tcp_flags(self.flows["flow"][0],
+                self._set_tcp_flags(self.flows[0]["flow"],
                                 rule[Tokens.l4_options][Tokens.flags])
 
 
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """
 
-        self._set_flow_ip_protocol(self.flows["flow"][0], 17)
+        self._set_flow_ip_protocol(self.flows[0]["flow"], 17)
         self._check_source_and_destination_ports(rule, "udp")
 
     def _set_flow_ip_protocol(self, flow, protocol_n):
@@ -231,19 +231,19 @@ class AclFlowBuilder(object):
 
         if rule[Tokens.l4_options][operation] == "eq":
 
-            self.flows["flow"][0]["match"][prefix] = \
+            self.flows[0]["flow"]["match"][prefix] = \
                 rule[Tokens.l4_options][start]
 
         elif rule[Tokens.l4_options][operation] == "range":
 
             # TODO: Implement port range json from opendaylight.
-            self.flows["flow"][0]["match"][prefix] = \
+            self.flows[0]["flow"]["match"][prefix] = \
                 rule[Tokens.l4_options][start]
 
     def _build_icmp(self, rule):
         """ Builds ICMP protocol acl using OpenDayLight json format """
 
-        self._set_flow_ip_protocol(self.flows["flow"][0], 1)
+        self._set_flow_ip_protocol(self.flows[0]["flow"], 1)
 
         if Tokens.icmp_options in rule:
 
@@ -252,7 +252,7 @@ class AclFlowBuilder(object):
 
                 icmp_options = rule[Tokens.icmp_options]
 
-                self.flows["flow"][0]["match"]["icmpv4-match"] = {
+                self.flows[0]["flow"]["match"]["icmpv4-match"] = {
                     "icmpv4-code": icmp_options[Tokens.icmp_code],
                     "icmpv4-type": icmp_options[Tokens.icmp_type]
                 }
@@ -270,7 +270,7 @@ class AclFlowBuilder(object):
         """ Builds the Openflow actions to a flow """
 
         if Tokens.action in rule and rule[Tokens.action] == "permit":
-            self.flows["flow"][0]["instructions"] = {
+            self.flows[0]["flow"]["instructions"] = {
                 "instruction": [{
                     "order": 0,
                     "apply-actions": {

@@ -320,6 +320,22 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82325.json'
         self.compare_json_lists(output, flow)
 
+    def test_add_a_list_of_acls_in_one_request(self):
+        """ Should insert many flows with one request """
+
+        input = self.json_aclapi_input_path % 'acl_id_40000.json'
+        data = self.load_json_file(input)
+
+        self.odl.add_flow(data)
+
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
+
+
     def test_remove_flow(self):
         """Test of success to remove flow."""
 

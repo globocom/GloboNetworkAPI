@@ -20,5 +20,5 @@ export REMOTE_CTRL_IP=$(nslookup netapi_odl | grep Address | tail -1 | awk '{pri
 
 
 echo "Starting tests.."
-python manage.py test "$1"
+python manage.py test "$@"
 

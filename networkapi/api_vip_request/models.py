@@ -78,7 +78,7 @@ class VipRequest(BaseModel):
     def dscp(self):
         try:
             dscp = self.viprequestdscp_set.get()
-            return dscp
+            return dscp.dscp
         except ObjectDoesNotExist:
             return None
 
