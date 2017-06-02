@@ -2343,6 +2343,7 @@ class ServerPool(BaseModel):
             raise exceptions.PoolError(e, u'Failure to search the ServerPool.')
 
     def create_v3(self, pool, user):
+
         pool_models = get_app('api_pools', 'models')
         ogp_models = get_app('api_ogp', 'models')
         env_models = get_app('ambiente', 'models')
@@ -2550,9 +2551,10 @@ class ServerPool(BaseModel):
                 # Ip not found environment
                 if not amb:
                     raise pool_exceptions.IpNotFoundByEnvironment(
-                        'Environment of IP:%s and different of environment '
-                        'of server pool: %s' %
-                        (member['ip']['id'], pool['identifier'])
+                        'Environment of IP:%s(%s) and different of '
+                        'environment of server pool: %s' %
+                        (member['ip']['ip_formated'], member['ip']['id'],
+                            pool['identifier'])
                     )
 
             if member.get('ipv6', None) is not None:
@@ -2563,9 +2565,10 @@ class ServerPool(BaseModel):
                 # Ip not found environment
                 if not amb:
                     raise pool_exceptions.IpNotFoundByEnvironment(
-                        'Environment of IP:%s and different of environment '
-                        'of server pool: %s' %
-                        (member['ipv6']['id'], pool['identifier'])
+                        'Environment of IP:%s(%s) and different of '
+                        'environment of server pool: %s' %
+                        (member['ipv6']['ip_formated'], member['ipv6']['id'],
+                            pool['identifier'])
                     )
 
 
