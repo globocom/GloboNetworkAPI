@@ -78,8 +78,6 @@ class AclFlowBuilder(object):
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
-        ALLOWED_FLOWS_SIZE = 5
-
         # Used to build double ranges
         self.current_src_port = None
         self.current_dst_port = None
@@ -160,14 +158,6 @@ class AclFlowBuilder(object):
             self._build_protocol(rule)
 
             yield self.flows
-
-            # if len(self.flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
-            #     self._clear_flows()
-            #
-            # if not self.generated_all_flows_from_rule:
-            #     self.flows["flow"].insert(0, {Tokens.id_: rule[Tokens.id_]})
-
-
 
     def _build_description(self, rule):
 
@@ -362,13 +352,16 @@ class AclFlowBuilder(object):
                 rule[Tokens.l4_options][start],
                 port_end)
 
+            if port == port_end:
+                self.generated_all_flows_from_rule = True
+                return
+
             if len(self.flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
                 self.current_src_or_dst_port = port + 1
                 return
 
             self._insert_new_flow_when_single_range(port, port_end)
 
-        self.generated_all_flows_from_rule = True
 
 
     def _build_double_range(self, rule, protocol):
@@ -399,6 +392,10 @@ class AclFlowBuilder(object):
                 self._build_id_and_description_when_double_range(
                     rule, src_port, dst_port)
 
+                if src_port == src_port_end and dst_port == dst_port_end:
+                    self.generated_all_flows_from_rule = True
+                    return
+
                 if len(self.flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
                     self.current_src_port = src_port + 1
                     self.current_dst_port = dst_port + 1
@@ -406,8 +403,6 @@ class AclFlowBuilder(object):
 
                 self._insert_new_flow_when_double_range(src_port, src_port_end,
                                                         dst_port, dst_port_end)
-
-        self.generated_all_flows_from_rule = True
 
     def _insert_new_flow_when_single_range(self, port, port_end):
 
