@@ -2396,7 +2396,6 @@ class ServerPool(BaseModel):
         perm.create_perms(pool, self.id, AdminPermission.OBJ_TYPE_POOL, user)
 
     def update_v3(self, pool, user, permit_created=False):
-
         pool_models = get_app('api_pools', 'models')
         pool_exceptions = get_app('api_pools', 'models')
         ogp_models = get_app('api_ogp', 'models')
@@ -2637,11 +2636,11 @@ class ServerPoolMember(BaseModel):
         return spm
 
     @classmethod
-    def get_spm_by_eqpt_id(cls, eqpts_id):
+    def get_spm_by_eqpts(cls, eqpts_id):
 
         spm = ServerPoolMember.objects.filter(
-            Q(ip__ipequipamento__equipamento__id__in=eqpts_id) |
-            Q(ipv6__ipv6equipament__equipamento__id__in=eqpts_id)
+            Q(ip__ipequipamento__equipamento__in=eqpts_id) |
+            Q(ipv6__ipv6equipament__equipamento__in=eqpts_id)
         )
 
         return spm
@@ -2797,7 +2796,7 @@ class ServerPoolMember(BaseModel):
         # vip with dsrl3 using pool
         if self.server_pool.dscp:
 
-            mbs = self.get_spm_by_eqpt_id(self.equipments)
+            mbs = self.get_spm_by_eqpts(self.equipments)
 
             # check all the pools related to this pool vip request to filter
             # dscp value
