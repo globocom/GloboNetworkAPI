@@ -78,6 +78,12 @@ class AclFlowBuilder(object):
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
+        self._reset_control_members()
+
+        logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
+
+    def _reset_control_members(self):
+
         # Used to build double ranges
         self.current_src_port = None
         self.current_dst_port = None
@@ -85,9 +91,8 @@ class AclFlowBuilder(object):
         # Used to build simple ranges
         self.current_src_or_dst_port = None
 
+        # Used to control flows generation for one rule
         self.generated_all_flows_from_rule = None
-
-        logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
 
     def _clear_flows(self):
         """ Clear flows variable to avoid huge object in memory """
@@ -130,14 +135,7 @@ class AclFlowBuilder(object):
 
     def _build_rule(self, rule):
 
-        self.generated_all_flows_from_rule = False
-
-        # Used to build double ranges
-        self.current_src_port = None
-        self.current_dst_port = None
-
-        # Used to build simple ranges
-        self.current_src_or_dst_port = None
+        self._reset_control_members()
 
         while not self.generated_all_flows_from_rule:
 
@@ -329,8 +327,7 @@ class AclFlowBuilder(object):
                 "tcp-flags": tcp_flags,
             }
 
-    def _build_simple_range(self, rule, protocol,
-                            start, end):
+    def _build_simple_range(self, rule, protocol, start, end):
 
         port_end = int(rule[Tokens.l4_options][end])
 
@@ -342,6 +339,7 @@ class AclFlowBuilder(object):
         for port in xrange(port_start, port_end + 1):
 
             # Do this to avoid change the first port of range in orig rule
+            # We use it to update each flow description field
             rule_copy = deepcopy(rule)
             rule_copy[Tokens.l4_options][start] = str(port)
 
@@ -361,8 +359,6 @@ class AclFlowBuilder(object):
                 return
 
             self._insert_new_flow_when_single_range(port, port_end)
-
-
 
     def _build_double_range(self, rule, protocol):
 
@@ -387,6 +383,8 @@ class AclFlowBuilder(object):
 
                 # Do this to avoid change the first port of range
                 # in original rule.
+                # We use it to update each flow description field
+
                 rule_copy = deepcopy(rule)
                 rule_copy[Tokens.l4_options][Tokens.src_port] = str(src_port)
                 rule_copy[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
