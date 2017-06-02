@@ -102,7 +102,7 @@ class AclFlowBuilder(object):
         flows_set = self.build()
 
         for flows in flows_set:
-            yield dumps(flows)
+            yield flows["flow"][0]["id"], dumps(flows)
 
     def build(self):
         """ Verifies input data and build flows for OpenDayLight controller """
@@ -378,6 +378,10 @@ class AclFlowBuilder(object):
             src_port_start = int(l4_options[Tokens.src_port])
             dst_port_start = int(l4_options[Tokens.dst_port])
 
+        if dst_port_start > dst_port_end:
+            src_port_start += 1
+            dst_port_start = int(l4_options[Tokens.dst_port])
+
         for src_port in xrange(src_port_start, src_port_end + 1):
             for dst_port in xrange(dst_port_start, dst_port_end + 1):
 
@@ -396,8 +400,11 @@ class AclFlowBuilder(object):
                     self.generated_all_flows_from_rule = True
                     return
 
+                if dst_port == dst_port_end:
+                    dst_port_start = int(l4_options[Tokens.dst_port])
+
                 if len(self.flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
-                    self.current_src_port = src_port + 1
+                    self.current_src_port = src_port
                     self.current_dst_port = dst_port + 1
                     return
 
