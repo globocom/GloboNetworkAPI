@@ -79,9 +79,8 @@ class ODLPlugin(BaseSdnPlugin):
 
             flows_set = builder.dump()
 
-            for flows in flows_set:
+            for flow_id, flows in flows_set:
 
-                flow_id = builder.flows['flow'][0]['id']
                 self._flow(flow_id=flow_id, method='put', data=flows)
 
         return None
