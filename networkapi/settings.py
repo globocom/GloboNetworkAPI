@@ -33,6 +33,9 @@ def local_files(path):
 
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
+NETWORKAPI_ENVIRONMENT_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
+                                          'local')
+
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
@@ -145,7 +148,17 @@ LOGGING = {
     'filters': {
         'user_filter': {
             '()': 'networkapi.extra_logging.filters.ExtraLoggingFilter',
-        }
+        },
+        'static_fields': {
+            '()': 'networkapi.extra_logging.filters.StaticFieldFilter',
+            'fields': {
+                'project': 'networkapi',
+                'environment': NETWORKAPI_ENVIRONMENT_DEPLOY,
+            },
+        },
+        'django_exc': {
+            '()': 'networkapi.extra_logging.filters.RequestFilter',
+        },
     },
     'handlers': {
         'log_file': {
@@ -162,37 +175,43 @@ LOGGING = {
             'formatter': 'simple',
             'filters': ['user_filter'],
         },
+        'gelf': {
+            'class': 'graypy.GELFHandler',
+            'host': 'globonetworkapi_graylog_1',
+            'port': 12201,
+            'filters': ['user_filter', 'static_fields', 'django_exc'],
+        },
     },
     'loggers': {
         'default': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'django': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'django.request': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'bigsuds': {
             'level': logging.INFO,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'suds': {
             'level': logging.INFO,
             'propagate': True,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'django.db.backends': {
             'level': LOG_DB_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
     },
     'root': {

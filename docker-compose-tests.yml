@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
 
@@ -13,6 +13,8 @@ services:
             - NET_ADMIN
         networks:
             - netapi_net
+        external_links:
+            - netapi_odl
 
     ovs1:
         container_name: ovs1
@@ -25,6 +27,8 @@ services:
             - NET_ADMIN
         networks:
             - netapi_net
+        external_links:
+            - netapi_odl
 
     ovs2:
         container_name: ovs2
@@ -37,6 +41,8 @@ services:
             - NET_ADMIN
         networks:
             - netapi_net
+        external_links:
+            - netapi_odl
 
 networks:
     netapi_net:

@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
 
     db:
@@ -18,7 +18,7 @@ services:
         image: rabbitmq:3.6.9
         ports:
             - "5672"
-            - "15672"
+            - "15672:15672"
         volumes:
             - ./docker-start-queue.sh:/docker-start-queue.sh:ro
         networks:
@@ -62,6 +62,13 @@ services:
             - queue
             - cache
             - odl
+        links:
+            - db:netapi_db
+        external_links:
+            - netapi_graylog2
+            - cache:netapi_cache
+            - odl:netapi_odl
+            - queue:netapi_queue
 
 volumes:
     netapi_db_vol:

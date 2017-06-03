@@ -19,13 +19,10 @@ SLEEP_TIME=10
 # Waits for openvswitch ready state, then add a bridge
 sleep ${SLEEP_TIME} && ovs-vsctl add-br br0
 
-# Remote controller IP address
-REMOTE_CTRL=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $3}')
-
 # Waits until a port is open and ready for connections
 for i in $(seq 1..${MAX_RETRY}); do
 
-    (echo "e") | telnet ${REMOTE_CTRL} 6653
+    (echo "e") | telnet netapi_odl 6653
 
     # If the port is open we continue with the script
     if [ "$?" -eq "0" ]; then
@@ -43,7 +40,7 @@ for i in $(seq 1..${MAX_RETRY}); do
 done
 
 # Set remote controller
-ovs-vsctl set-controller br0 tcp:${REMOTE_CTRL}:6653
+ovs-vsctl set-controller br0 tcp:netapi_odl:6653
 
 # List openvswitch configuration
 ovs-vsctl show

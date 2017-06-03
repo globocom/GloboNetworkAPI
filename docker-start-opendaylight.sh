@@ -17,7 +17,7 @@ cd /odl/distribution-karaf-0.5.0-Boron
 sleep ${SLEEP_TIME}
 
 # Attaches to Karaf client and install some features for ODL
-./bin/client feature:install odl-restconf odl-l2switch-switch odl-dlux-all odl-netconf-connector-all odl-openflowplugin-flow-services
+./bin/client feature:install odl-restconf odl-l2switch-switch odl-dlux-all odl-restconf-all odl-netconf-connector-all odl-openflowplugin-flow-services
 
 # Attaches to Karaf server as a foreground process
 ./bin/karaf server
