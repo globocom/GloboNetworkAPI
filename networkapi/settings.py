@@ -36,6 +36,9 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 NETWORKAPI_ENVIRONMENT_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
                                           'local')
 
+NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
+                                   'networkapi,app')
+
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
@@ -152,8 +155,8 @@ LOGGING = {
         'static_fields': {
             '()': 'networkapi.extra_logging.filters.StaticFieldFilter',
             'fields': {
-                'project': 'networkapi',
                 'environment': NETWORKAPI_ENVIRONMENT_DEPLOY,
+                'tags': NETWORKAPI_TAGS_DEPLOY,
             },
         },
         'django_exc': {
