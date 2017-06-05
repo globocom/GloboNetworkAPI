@@ -177,7 +177,7 @@ LOGGING = {
         },
         'gelf': {
             'class': 'graypy.GELFHandler',
-            'host': 'globonetworkapi_graylog_1',
+            'host': 'netapi_graylog2',
             'port': 12201,
             'filters': ['user_filter', 'static_fields', 'django_exc'],
         },
