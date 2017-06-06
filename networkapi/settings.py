@@ -39,6 +39,9 @@ NETWORKAPI_ENVIRONMENT_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
 NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
                                    'networkapi,app')
 
+NETWORKAPI_GELF_HOST = os.getenv('NETWORKAPI_GELF_HOST',
+                                 'netapi_graylog2')
+
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
@@ -180,7 +183,7 @@ LOGGING = {
         },
         'gelf': {
             'class': 'graypy.GELFHandler',
-            'host': 'netapi_graylog2',
+            'host': NETWORKAPI_GELF_HOST,
             'port': 12201,
             'filters': ['user_filter', 'static_fields', 'django_exc'],
         },
