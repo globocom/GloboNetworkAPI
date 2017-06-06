@@ -33,7 +33,7 @@ update-rc.d gunicorn_networkapi defaults
 export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
 
 echo "starting gunicorn"
-/usr/local/bin/gunicorn -c /netapi/gunicorn.conf.py networkapi_wsgi:application --reload
+/etc/init.d/gunicorn_networkapi start
 
 touch /tmp/gunicorn-networkapi_error.log
 tail -f /tmp/gunicorn-networkapi_error.log
