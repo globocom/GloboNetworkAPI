@@ -36,7 +36,7 @@ NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 NETWORKAPI_ENVIRONMENT_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
                                           'local')
 
-NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
+NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_TAGS_DEPLOY',
                                    'networkapi,app')
 
 NETWORKAPI_GELF_HOST = os.getenv('NETWORKAPI_GELF_HOST',
