@@ -182,7 +182,10 @@ LOGGING = {
             'filters': ['user_filter'],
         },
         'gelf': {
+            'level': LOG_LEVEL,
             'class': 'graypy.GELFHandler',
+            'formatter': 'verbose',
+            'mode': 'a',
             'host': NETWORKAPI_GELF_HOST,
             'port': 12201,
             'filters': ['user_filter', 'static_fields', 'django_exc'],
@@ -223,7 +226,7 @@ LOGGING = {
     'root': {
         'level': LOG_LEVEL,
         'propagate': False,
-        'handlers': ['log_file', 'console'],
+        'handlers': ['log_file', 'console', 'gelf'],
     },
 }
 
