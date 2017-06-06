@@ -92,7 +92,7 @@ class AclFlowBuilder(object):
         self.current_src_or_dst_port = None
 
         # Used to control flows generation for one rule
-        self.generated_all_flows_from_rule = None
+        self.generated_all_flows_from_rule = False
 
     def _clear_flows(self):
         """ Clear flows variable to avoid huge object in memory """
