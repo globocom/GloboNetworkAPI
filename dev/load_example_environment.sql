@@ -38,10 +38,6 @@ VALUES
    (
       1, 'MARCA'
    )
-,
-   (
-      2, 'OpenDaylight'
-   )
 ;
 -- Dumping data for table `modelos`
 INSERT INTO
@@ -49,10 +45,6 @@ INSERT INTO
 VALUES
    (
       1, 'MODELO', 1
-   )
-,
-   (
-      2, 'SDN Controller', 2
    )
 ;
 -- Dumping data for table `tipo_equipamento`
@@ -73,10 +65,6 @@ VALUES
 ,
    (
       5, 'Balanceador'
-   )
-,
-   (
-      6, 'Controller'
    )
 ;
 -- Dumping data for table `filter`
@@ -863,10 +851,6 @@ VALUES
    (
       27, 3, 1, 'Fabric router 1', 0
    )
-,
-   (
-      28, 6, 2, 'ODL Controller 0', 0
-   )
 ;
 
 -- Dumping data for table `tipo_acesso`
@@ -887,15 +871,6 @@ VALUES
 ,
     (
         4, 'telnet'
-    )
-;
-
--- Dumping data for table `equiptos_access`
-INSERT INTO
-    `equiptos_access` (`id_equiptos_access`, `id_equip`, `fqdn`, `user`, `pass`, `id_tipo_acesso`, `enable_pass`)
-VALUES
-    (
-        1, 28, 'http://10.0.0.5:8181', 'admin', 'admin', 2, '---'
     )
 ;
 
@@ -965,10 +940,6 @@ VALUES
 ,
    (
       16, 1, 27, 1, 0
-   )
-,
-   (
-      17, 2, 28, 0, 1
    )
 ;
 
