@@ -24,13 +24,13 @@ from netaddr import IPNetwork
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-#from networkapi.ambiente import models as models_env
 from networkapi.vlan import models as models_vlan
 from networkapi.api_vlan.facade import v3 as facade_vlan_v3
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
 from networkapi.interface.models import Interface
 from networkapi.ip.models import IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
+from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
 
 
@@ -47,6 +47,23 @@ def save_dc(dc_dict):
     dc.save_dc()
     return dc
 
+
+def listdc():
+
+    dc_list = list()
+    for dc in Datacenter().get_dc():
+        dc_list.append(rack_serializers.DCSerializer(dc).data)
+
+    dc_sorted = sorted(dc_list, key=operator.itemgetter('dcname'))
+
+    for dcs in dc_sorted:
+        fabric = DatacenterRooms().get_dcrooms(id_dc=dcs.get("id"))
+        fabric_list = list()
+        for i in fabric:
+            fabric_list.append(rack_serializers.DCRoomSerializer(i).data)
+        dcs["fabric"] = fabric_list
+
+    return dc_sorted
 
 def save_dcrooms(dcrooms_dict):
 
@@ -80,6 +97,28 @@ def edit_dcrooms(dcroom_id, dcrooms_dict):
 
     dcrooms.save_dcrooms()
     return dcrooms
+
+
+def get_fabric(idt=None, name=None, id_dc=None):
+
+    fabric_list = list()
+    fabric_obj = DatacenterRooms()
+
+    if idt:
+        fabric = [fabric_obj.get_dcrooms(idt=idt)]
+    elif name:
+        fabric = fabric_obj.get_dcrooms(name=name)
+
+    elif id_dc:
+        fabric = fabric_obj.get_dcrooms(id_dc=id_dc)
+    else:
+        fabric = fabric_obj.get_dcrooms()
+
+
+    for i in fabric:
+        fabric_list.append(rack_serializers.DCRoomSerializer(i).data)
+
+    return fabric_list
 
 
 def update_fabric_config(fabric_id, fabric_dict):
@@ -129,6 +168,20 @@ def save_rack_dc(rack_dict):
 
     rack.save_rack()
     return rack
+
+
+def get_rack(fabric_id=None):
+
+    rack_obj = Rack()
+
+    if fabric_id:
+        rack = rack_obj.get_rack(dcroom_id=fabric_id)
+    else:
+        rack = rack_obj.get_rack()
+
+    rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+
+    return rack_list
 
 
 def _buscar_roteiro(id_sw, tipo):

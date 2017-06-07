@@ -77,10 +77,15 @@ class RackView(APIView):
         try:
             log.info('List all Racks')
 
-            data = dict()
-            racks = Rack.objects.all().order_by('numero')
+            fabric_id = kwargs.get("fabric_id")
 
-            data['racks'] = RackSerializer(racks, many=True).data if racks else list()
+            if fabric_id:
+                racks = facade.get_rack(fabric_id=fabric_id)
+            else:
+                racks = facade.get_rack()
+
+            data = dict()
+            data['racks'] = racks
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -207,7 +212,7 @@ class DataCenterView(APIView):
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
-            log.info("Datacenter")
+            log.info("POST Datacenter")
 
             if not request.DATA.get('dc'):
                 raise exceptions.InvalidInputException()
@@ -219,6 +224,27 @@ class DataCenterView(APIView):
             data['dc'] = dc_serializer.data
 
             return Response(data, status=status.HTTP_201_CREATED)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
+
+    @commit_on_success
+    def get(self, request, *args, **kwargs):
+        try:
+            log.info("GET Datacenter")
+
+            dc = facade.listdc()
+
+            data = dict()
+            data['dc'] = dc
+
+            return Response(data, status=status.HTTP_200_OK)
 
         except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
                 exceptions.InvalidInputException) as exception:
@@ -275,6 +301,38 @@ class FabricView(APIView):
             dcroom_serializer = DCRoomSerializer(dcrooms)
             data = dict()
             data['dcroom'] = dcroom_serializer.data
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, exception:
+            log.exception(exception)
+            raise api_exceptions.NetworkAPIException()
+
+
+    @commit_on_success
+    def get(self, request, *args, **kwargs):
+        try:
+            log.info("GET Fabric")
+
+            fabric_id = kwargs.get('fabric_id')
+            fabric_name = kwargs.get('fabric_name')
+            fabric_dc = kwargs.get('dc_id')
+
+            if  fabric_id:
+                fabric = facade.get_fabric(idt=fabric_id)
+            elif  fabric_name:
+                fabric = facade.get_fabric(name=fabric_name)
+            elif  fabric_dc:
+                fabric = facade.get_fabric(id_dc=fabric_dc)
+            else:
+                fabric = facade.get_fabric()
+
+            data = dict()
+            data['fabric'] = fabric
 
             return Response(data, status=status.HTTP_200_OK)
 

@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ast
 from rest_framework import serializers
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
@@ -39,7 +40,8 @@ class RackSerializer(serializers.ModelSerializer):
                   'id_sw2',
                   'id_ilo',
                   'config',
-                  'create_vlan_amb'
+                  'create_vlan_amb',
+                  'dcroom'
                   )
 
 class DCSerializer(serializers.ModelSerializer):
@@ -52,6 +54,14 @@ class DCSerializer(serializers.ModelSerializer):
                   )
 
 class DCRoomSerializer(serializers.ModelSerializer):
+
+    config = serializers.SerializerMethodField('get_config')
+
+    def get_config(self, obj):
+        if obj.config:
+            config = ast.literal_eval(obj.config)
+            return config
+        return []
 
     class Meta:
         model = DatacenterRooms
