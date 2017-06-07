@@ -61,3 +61,17 @@ class RequestFilter(logging.Filter):
         if hasattr(record, 'request'):
             del record.request
         return True
+
+
+class UserFilter(logging.Filter):
+
+    """
+    """
+
+    def filter(self, record):
+
+        if hasattr(record, 'request_user'):
+            record.user = record.request_user
+            del record.request_user
+
+        return True

@@ -33,11 +33,8 @@ def local_files(path):
 
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
 
-NETWORKAPI_ENVIRONMENT_DEPLOY = os.getenv('NETWORKAPI_ENVIRONMENT_DEPLOY',
-                                          'local')
-
 NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_TAGS_DEPLOY',
-                                   'networkapi,app')
+                                   'networkapi,app-local')
 
 NETWORKAPI_GELF_HOST = os.getenv('NETWORKAPI_GELF_HOST',
                                  'netapi_graylog2')
@@ -158,12 +155,14 @@ LOGGING = {
         'static_fields': {
             '()': 'networkapi.extra_logging.filters.StaticFieldFilter',
             'fields': {
-                'environment': NETWORKAPI_ENVIRONMENT_DEPLOY,
                 'tags': NETWORKAPI_TAGS_DEPLOY,
             },
         },
         'django_exc': {
             '()': 'networkapi.extra_logging.filters.RequestFilter',
+        },
+        'user_filter_gelf': {
+            '()': 'networkapi.extra_logging.filters.UserFilter',
         },
     },
     'handlers': {
@@ -184,10 +183,14 @@ LOGGING = {
         'gelf': {
             'level': LOG_LEVEL,
             'class': 'graypy.GELFHandler',
-            'formatter': 'verbose',
             'host': NETWORKAPI_GELF_HOST,
             'port': 12201,
-            'filters': ['user_filter', 'static_fields', 'django_exc'],
+            'filters': [
+                'user_filter',
+                'static_fields',
+                'django_exc',
+                'user_filter_gelf'
+            ]
         },
     },
     'loggers': {
