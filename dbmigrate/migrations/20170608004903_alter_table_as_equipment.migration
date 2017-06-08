@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `as_equipment`
+ADD UNIQUE INDEX `id_equipment_UNIQUE` (`id_equipment` ASC);
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `as_equipment`
+DROP INDEX `id_equipment_UNIQUE` ;
+
+"""

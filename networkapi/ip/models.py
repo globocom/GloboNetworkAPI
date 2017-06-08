@@ -2210,6 +2210,12 @@ class IpEquipamento(BaseModel):
         db_column='id_equip'
     )
 
+    virtual_interface = models.ForeignKey(
+        'api_virtual_interface.VirtualInterface',
+        db_column='id_virtual_interface',
+        null=True
+    )
+
     log = logging.getLogger('IpEquipamento')
 
     class Meta(BaseModel.Meta):
@@ -4596,6 +4602,11 @@ class Ipv6Equipament(BaseModel):
     equipamento = models.ForeignKey(
         'equipamento.Equipamento',
         db_column='id_equip'
+    )
+    virtual_interface = models.ForeignKey(
+        'api_virtual_interface.VirtualInterface',
+        db_column='id_virtual_interface',
+        null=True
     )
 
     log = logging.getLogger('Ipv6Equipament')
