@@ -888,6 +888,9 @@ class Ambiente(BaseModel):
         managed = True
         unique_together = ('grupo_l3', 'ambiente_logico', 'divisao_dc')
 
+    def __str__(self):
+        return self.name
+
     def _get_name(self):
         """Returns complete name for environment."""
 
@@ -922,6 +925,17 @@ class Ambiente(BaseModel):
         return vlans
 
     vlans = property(_get_vlan)
+
+    def _sdn_controlled(self):
+        controllers = self.equipamentoambiente_set\
+            .filter(is_controller=True)
+
+        if controllers:
+            return True
+
+        return False
+
+    sdn_controlled = property(_sdn_controlled)
 
     def _get_routers(self):
         """Returns routers of environment."""

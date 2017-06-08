@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
 

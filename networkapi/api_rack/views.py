@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,15 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
 import glob
 import logging
+
 import commands
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import commit_on_success
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from networkapi.api_rack.permissions import Read, Write
@@ -37,12 +37,12 @@ from networkapi.system import exceptions as var_exceptions
 from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
+
 log = logging.getLogger(__name__)
 
 
 @permission_classes((IsAuthenticated, Write))
 class RackView(APIView):
-
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
@@ -67,7 +67,6 @@ class RackView(APIView):
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()
-
 
     def get(self, user, *args, **kwargs):
         """Handles GET requests to list all Racks
@@ -100,14 +99,14 @@ class RackDeployView(APIView):
     @commit_on_success
     def post(self, *args, **kwargs):
         try:
-            log.info("RACK deploy.")
+            log.info('RACK deploy.')
 
-            rack_id = kwargs.get("rack_id")
+            rack_id = kwargs.get('rack_id')
             rack = facade.get_by_pk(self.request.user, rack_id)
 
             try:
-                PATH_TO_ADD_CONFIG = get_variable("path_to_add_config")
-                REL_PATH_TO_ADD_CONFIG = get_variable("rel_path_to_add_config")
+                PATH_TO_ADD_CONFIG = get_variable('path_to_add_config')
+                REL_PATH_TO_ADD_CONFIG = get_variable('rel_path_to_add_config')
             except ObjectDoesNotExist:
                 raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou "
                                                                    "REL_PATH_TO_ADD_CONFIG.")
@@ -124,12 +123,14 @@ class RackDeployView(APIView):
                     # Apply config only in spines. Leaves already have all necessary config in startup
                     if "ADD" in filename_equipments:
                         # Check if equipment in under maintenance. If so, does not aplly on it
+
                         equipment_name = filename_equipments.split('-ADD-')[0]
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
                             if not equip.maintenance:
                                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w "
                                                                           "300" % (rel_filename, equipment_name))
+
                                 if erro:
                                     raise exceptions.RackAplError()
                         except exceptions.RackAplError, e:
@@ -154,7 +155,8 @@ class RackDeployView(APIView):
             raise exceptions.RackNumberNotFoundError()
         except var_exceptions.VariableDoesNotExistException, exception:
             log.error(exception)
-            raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.")
+            raise var_exceptions.VariableDoesNotExistException(
+                'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.')
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException(exception)

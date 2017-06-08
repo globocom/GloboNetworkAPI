@@ -38,6 +38,8 @@ More information about the PUT request can be obtained in::
 
     /api/v3/help/pool_put/
 
+.. _url-api-v3-pool-put-redeploy-list-pool:
+
 Updating pools by list in equipments
 ************************************
 

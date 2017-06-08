@@ -78,7 +78,7 @@ class VipRequest(BaseModel):
     def dscp(self):
         try:
             dscp = self.viprequestdscp_set.get()
-            return dscp
+            return dscp.dscp
         except ObjectDoesNotExist:
             return None
 
@@ -1176,7 +1176,7 @@ class VipRequestPortPool(BaseModel):
             .get_by_pk(pool_map.get('server_pool'))
         self.optionvip = reqvip_models.OptionVip\
             .get_by_pk(pool_map.get('optionvip'))
-        self.val_optionvip = pool_map.get('l7_value')
+        self.val_optionvip = pool_map.get('val_optionvip')
         self.order = pool_map.get('order')
 
         self.save()
@@ -1189,7 +1189,7 @@ class VipRequestPortPool(BaseModel):
             .get_by_pk(pool_map.get('server_pool'))
         self.optionvip = reqvip_models.OptionVip\
             .get_by_pk(pool_map.get('optionvip'))
-        self.val_optionvip = pool_map.get('l7_value')
+        self.val_optionvip = pool_map.get('val_optionvip')
         self.order = pool_map.get('order')
 
         self.save()

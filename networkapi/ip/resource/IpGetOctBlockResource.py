@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,17 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
+from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import Ipv6, IpError, Ip, IpNotFoundError, IP_VERSION
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IP_VERSION
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 from networkapi.util import is_valid_ip_ipaddr
-from django.forms.models import model_to_dict
 
 
 class IpGetOctBlockResource(RestResource):
@@ -32,10 +38,10 @@ class IpGetOctBlockResource(RestResource):
     log = logging.getLogger('IpGetOctBlockResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to get an IPv4 or Ipv6 by oct or blocks .
+        """Handles POST requests to get an IPv4 or Ipv6 by oct or blocks .
 
         URL: ip/getbyoctblock/
-        '''
+        """
 
         self.log.info("Get a Ipv4's or Ipv6's")
 
@@ -73,12 +79,12 @@ class IpGetOctBlockResource(RestResource):
                 raise InvalidValueError(None, 'ip', ip)
 
             # Business Rules
-            version = ""
-            ip_list = ip.split(".")
+            version = ''
+            ip_list = ip.split('.')
 
             if len(ip_list) == 1:
 
-                ip_list = ip.split(":")
+                ip_list = ip.split(':')
                 ips = Ipv6.get_by_blocks(ip_list[0], ip_list[1], ip_list[2], ip_list[
                                          3], ip_list[4], ip_list[5], ip_list[6], ip_list[7])
                 version = IP_VERSION.IPv6[1]
@@ -92,7 +98,7 @@ class IpGetOctBlockResource(RestResource):
             ips_list = []
             for ip in ips:
                 ip_dict = model_to_dict(ip)
-                ip_dict["version"] = version
+                ip_dict['version'] = version
                 ips_list.append(ip_dict)
 
             return self.response(dumps_networkapi({'ips': ips_list}))

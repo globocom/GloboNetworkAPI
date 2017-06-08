@@ -2272,7 +2272,7 @@ class ServerPool(BaseModel):
         managed = True
 
     def __str__(self):
-        return self.identifier
+        return '{} - {}'.format(self.identifier, self.environment)
 
     def prepare_and_save(self, default_port, user):
         self.default_port = default_port
@@ -2343,6 +2343,7 @@ class ServerPool(BaseModel):
             raise exceptions.PoolError(e, u'Failure to search the ServerPool.')
 
     def create_v3(self, pool, user):
+
         pool_models = get_app('api_pools', 'models')
         ogp_models = get_app('api_ogp', 'models')
         env_models = get_app('ambiente', 'models')
@@ -2396,7 +2397,6 @@ class ServerPool(BaseModel):
         perm.create_perms(pool, self.id, AdminPermission.OBJ_TYPE_POOL, user)
 
     def update_v3(self, pool, user, permit_created=False):
-
         pool_models = get_app('api_pools', 'models')
         pool_exceptions = get_app('api_pools', 'models')
         ogp_models = get_app('api_ogp', 'models')
@@ -2551,9 +2551,10 @@ class ServerPool(BaseModel):
                 # Ip not found environment
                 if not amb:
                     raise pool_exceptions.IpNotFoundByEnvironment(
-                        'Environment of IP:%s and different of environment '
-                        'of server pool: %s' %
-                        (member['ip']['id'], pool['identifier'])
+                        'Environment of IP:%s(%s) and different of '
+                        'environment of server pool: %s' %
+                        (member['ip']['ip_formated'], member['ip']['id'],
+                            pool['identifier'])
                     )
 
             if member.get('ipv6', None) is not None:
@@ -2564,9 +2565,10 @@ class ServerPool(BaseModel):
                 # Ip not found environment
                 if not amb:
                     raise pool_exceptions.IpNotFoundByEnvironment(
-                        'Environment of IP:%s and different of environment '
-                        'of server pool: %s' %
-                        (member['ipv6']['id'], pool['identifier'])
+                        'Environment of IP:%s(%s) and different of '
+                        'environment of server pool: %s' %
+                        (member['ipv6']['ip_formated'], member['ipv6']['id'],
+                            pool['identifier'])
                     )
 
 
@@ -2637,11 +2639,11 @@ class ServerPoolMember(BaseModel):
         return spm
 
     @classmethod
-    def get_spm_by_eqpt_id(cls, eqpts_id):
+    def get_spm_by_eqpts(cls, eqpts_id):
 
         spm = ServerPoolMember.objects.filter(
-            Q(ip__ipequipamento__equipamento__id__in=eqpts_id) |
-            Q(ipv6__ipv6equipament__equipamento__id__in=eqpts_id)
+            Q(ip__ipequipamento__equipamento__in=eqpts_id) |
+            Q(ipv6__ipv6equipament__equipamento__in=eqpts_id)
         )
 
         return spm
@@ -2797,7 +2799,7 @@ class ServerPoolMember(BaseModel):
         # vip with dsrl3 using pool
         if self.server_pool.dscp:
 
-            mbs = self.get_spm_by_eqpt_id(self.equipments)
+            mbs = self.get_spm_by_eqpts(self.equipments)
 
             # check all the pools related to this pool vip request to filter
             # dscp value

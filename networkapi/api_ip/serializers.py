@@ -20,7 +20,6 @@ class Ipv4V3Serializer(DynamicFieldsModelSerializer):
     server_pool_members = serializers.RelatedField(
         source='server_pool_members')
 
-    networkipv6 = serializers.SerializerMethodField('get_networkipv6')
     server_pool_members = serializers.\
         SerializerMethodField('get_server_pool_members')
     vips = serializers.SerializerMethodField('get_vips')
@@ -195,7 +194,6 @@ class Ipv6V3Serializer(DynamicFieldsModelSerializer):
         'get_server_pool_members')
     vips = serializers.SerializerMethodField('get_vips')
     equipments = serializers.SerializerMethodField('get_equipments')
-    networkipv4 = serializers.SerializerMethodField('get_networkipv4')
 
     class Meta:
         Ipv6 = get_model('ip', 'Ipv6')

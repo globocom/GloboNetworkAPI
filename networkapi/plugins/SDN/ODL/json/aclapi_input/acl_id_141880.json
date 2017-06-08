@@ -1,0 +1,19 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "destination": "10.130.70.224/27",
+      "id": "141880",
+      "l4-options": {
+        "dest-port-end": "65535",
+        "dest-port-op": "range",
+        "dest-port-start": "1024"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "sequence": 42,
+      "source": "10.129.193.32/27"
+    }
+  ]
+}

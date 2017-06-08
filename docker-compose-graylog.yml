@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+
+    some-mongo:
+        container_name: netapi_mongo
+        image: "mongo:3"
+        networks:
+            - netapi_net
+
+    some-elasticsearch:
+        container_name: netapi_elasticsearch
+        image: "elasticsearch:2"
+        command: "elasticsearch -Des.cluster.name='graylog'"
+        networks:
+            - netapi_net
+
+    graylog:
+        container_name: netapi_graylog2
+        image: graylog2/server:2.1.1-1
+        environment:
+            GRAYLOG_PASSWORD_SECRET: somepasswordpepper
+            GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+            GRAYLOG_WEB_ENDPOINT_URI: http://127.0.0.1:9000/api
+        links:
+            - some-mongo:mongo
+            - some-elasticsearch:elasticsearch
+        ports:
+            - "9000:9000"
+            - "12201/udp:12201/udp"
+        networks:
+            - netapi_net
+
+networks:
+    netapi_net:

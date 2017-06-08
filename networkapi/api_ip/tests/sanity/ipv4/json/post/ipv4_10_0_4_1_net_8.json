@@ -1,0 +1,12 @@
+{
+  "ips": [
+    {
+      "description": "IP",
+      "networkipv4": 8,
+      "oct1": 10,
+      "oct2": 0,
+      "oct3": 4,
+      "oct4": 1
+    }
+  ]
+}

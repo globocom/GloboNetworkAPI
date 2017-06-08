@@ -1,0 +1,19 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.0.0.0/8",
+      "id": "101302",
+      "l4-options": {
+        "flags": [
+          "ACK"
+        ]
+      },
+      "owner": "networkapi",
+      "protocol": "tcp",
+      "source": "0.0.0.0/0"
+    }
+  ]
+}

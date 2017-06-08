@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import logging
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import commit_on_success
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from networkapi.system.permissions import Read, Write
-from networkapi.system import facade
-from networkapi.system.exceptions import *
-from networkapi.system.serializers import VariableSerializer
+
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.system import exceptions
-from django.core.exceptions import ObjectDoesNotExist
+from networkapi.system import facade
+from networkapi.system.exceptions import *
+from networkapi.system.permissions import Read
+from networkapi.system.permissions import Write
+from networkapi.system.serializers import VariableSerializer
 from networkapi.util import is_valid_int_greater_zero_param
 
 
 log = logging.getLogger(__name__)
+
 
 class VariableView(APIView):
 
@@ -63,7 +65,8 @@ class VariableView(APIView):
             if var:
                 raise exceptions.VariableDuplicateNotExistException()
 
-            variable = facade.save_variable(self.request.user, name, value, description)
+            variable = facade.save_variable(
+                self.request.user, name, value, description)
 
             data = dict()
             variable_serializer = VariableSerializer(variable)
@@ -83,7 +86,7 @@ class VariableView(APIView):
     @permission_classes((IsAuthenticated, Read))
     def get(self, *args, **kwargs):
         try:
-            log.info("GET ALL VARIABLES")
+            log.info('GET ALL VARIABLES')
 
             variable_query = facade.get_all_variables()
             serializer_variable = VariableSerializer(variable_query, many=True)
@@ -92,27 +95,30 @@ class VariableView(APIView):
 
         except ObjectDoesNotExist, exception:
             log.error(exception)
-            raise api_exceptions.ObjectDoesNotExistException('Variable Does Not Exist')
+            raise api_exceptions.ObjectDoesNotExistException(
+                'Variable Does Not Exist')
 
         except Exception, exception:
             log.exception(exception)
             raise api_exceptions.NetworkAPIException()
+
 
 class VariablebyPkView(APIView):
 
     @permission_classes((IsAuthenticated, Write))
     def delete(self, *args, **kwargs):
         try:
-            log.info("DELETE VARIABLE")
+            log.info('DELETE VARIABLE')
 
             variable_id = kwargs['variable_id']
 
             if not is_valid_int_greater_zero_param(variable_id, False):
-                raise api_exceptions.ValidationException('Variable id invalid.')
+                raise api_exceptions.ValidationException(
+                    'Variable id invalid.')
 
             facade.delete_variable(self.request.user, variable_id)
             data = dict()
-            data['variable'] = "ok"
+            data['variable'] = 'ok'
 
             return Response(data, status=status.HTTP_200_OK)
 

@@ -267,6 +267,7 @@ VALUES
       13, 38, 18, 28, 'http://globonetworkapi.readthedocs.org/en/latest/definitions.html#environment', 'NULL', '1', '1', '500', '501', '1000', NULL, 1
    )
 ;
+
 -- Dumping data for table `ambientevip`
 INSERT INTO
    `ambientevip`
@@ -852,72 +853,93 @@ VALUES
    )
 ;
 
+-- Dumping data for table `tipo_acesso`
+INSERT INTO
+    `tipo_acesso` (`id_tipo_acesso`, `protocolo`)
+VALUES
+    (
+        1, 'http'
+    )
+,
+    (
+        2, 'https'
+    )
+,
+    (
+        3, 'ssh'
+    )
+,
+    (
+        4, 'telnet'
+    )
+;
+
 -- Dumping data for table `equip_do_ambiente`
 INSERT INTO
-   `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is_router)
+   `equip_do_ambiente` (id_equip_do_ambiente, id_ambiente, id_equip, is_router, is_controller)
 VALUES
    (
-      1, 9, 14, 0
+      1, 9, 14, 0, 0
    )
 ,
    (
-      2, 9, 15, 0
+      2, 9, 15, 0, 0
    )
 ,
    (
-      3, 9, 16, 0
+      3, 9, 16, 0, 0
    )
 ,
    (
-      4, 9, 17, 0
+      4, 9, 17, 0, 0
    )
 ,
    (
-      5, 9, 18, 0
+      5, 9, 18, 0, 0
    )
 ,
    (
-      6, 10, 19, 0
+      6, 10, 19, 0, 0
    )
 ,
    (
-      7, 12, 20, 0
+      7, 12, 20, 0, 0
    )
 ,
    (
-      8, 13, 21, 0
+      8, 13, 21, 0, 0
    )
 ,
    (
-      9, 12, 22, 0
+      9, 12, 22, 0, 0
    )
 ,
    (
-      10, 12, 23, 0
+      10, 12, 23, 0, 0
    )
 ,
    (
-      11, 13, 24, 0
+      11, 13, 24, 0, 0
    )
 ,
    (
-      12, 13, 25, 0
+      12, 13, 25, 0, 0
    )
 ,
    (
-      13, 11, 19, 0
+      13, 11, 19, 0, 0
    )
 ,
    (
-      14, 10, 12, 1
+      14, 10, 12, 1, 0
    )
 ,
    (
-      15, 1, 26, 1
+      15, 1, 26, 1, 0
    )
 ,
    (
-      16, 1, 27, 1
+      16, 1, 27, 1, 0
    )
 ;
 

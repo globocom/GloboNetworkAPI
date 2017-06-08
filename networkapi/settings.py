@@ -30,7 +30,14 @@ if syspath not in sys.path:
 def local_files(path):
     return '{}/networkapi/{}'.format(os.getcwd(), path)
 
+
 NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
+
+NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_TAGS_DEPLOY',
+                                   'networkapi,app-local')
+
+NETWORKAPI_GELF_HOST = os.getenv('NETWORKAPI_GELF_HOST',
+                                 'netapi_graylog2')
 
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
@@ -99,24 +106,6 @@ CACHES = {
 }
 
 
-NETWORKAPI_RQ_QUEUES_HOST = os.getenv('NETWORKAPI_RQ_QUEUES_HOST', 'localhost')
-NETWORKAPI_RQ_QUEUES_PORT = os.getenv('NETWORKAPI_RQ_QUEUES_PORT', '6379')
-NETWORKAPI_RQ_QUEUES_DB = os.getenv('NETWORKAPI_RQ_QUEUES_DB', '0')
-NETWORKAPI_RQ_QUEUES_PASSWORD = os.getenv('NETWORKAPI_RQ_QUEUES_PASSWORD', '')
-NETWORKAPI_RQ_QUEUES_TIMEOUT = os.getenv('NETWORKAPI_RQ_QUEUES_TIMEOUT', '360')
-
-# Use the same redis as with caches for RQ
-RQ_QUEUES = {
-    'default': {
-        'HOST': NETWORKAPI_RQ_QUEUES_HOST,
-        'PORT': NETWORKAPI_RQ_QUEUES_PORT,
-        'DB': NETWORKAPI_RQ_QUEUES_DB,
-        'PASSWORD': NETWORKAPI_RQ_QUEUES_PASSWORD,
-        'DEFAULT_TIMEOUT': NETWORKAPI_RQ_QUEUES_TIMEOUT,
-    },
-
-}
-
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
@@ -162,7 +151,19 @@ LOGGING = {
     'filters': {
         'user_filter': {
             '()': 'networkapi.extra_logging.filters.ExtraLoggingFilter',
-        }
+        },
+        'static_fields': {
+            '()': 'networkapi.extra_logging.filters.StaticFieldFilter',
+            'fields': {
+                'tags': NETWORKAPI_TAGS_DEPLOY,
+            },
+        },
+        'django_exc': {
+            '()': 'networkapi.extra_logging.filters.RequestFilter',
+        },
+        'user_filter_gelf': {
+            '()': 'networkapi.extra_logging.filters.UserFilter',
+        },
     },
     'handlers': {
         'log_file': {
@@ -179,43 +180,55 @@ LOGGING = {
             'formatter': 'simple',
             'filters': ['user_filter'],
         },
+        'gelf': {
+            'level': LOG_LEVEL,
+            'class': 'graypy.GELFHandler',
+            'host': NETWORKAPI_GELF_HOST,
+            'port': 12201,
+            'filters': [
+                'user_filter',
+                'static_fields',
+                'django_exc',
+                'user_filter_gelf'
+            ]
+        },
     },
     'loggers': {
         'default': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'django': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'django.request': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'bigsuds': {
             'level': logging.INFO,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'suds': {
             'level': logging.INFO,
             'propagate': True,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
         'django.db.backends': {
             'level': LOG_DB_LEVEL,
             'propagate': False,
-            'handlers': ['log_file'],
+            'handlers': ['log_file', 'gelf'],
         },
     },
     'root': {
         'level': LOG_LEVEL,
         'propagate': False,
-        'handlers': ['log_file', 'console'],
+        'handlers': ['log_file', 'console', 'gelf'],
     },
 }
 
@@ -327,6 +340,7 @@ PROJECT_APPS = (
     'networkapi.api_pools',
     'networkapi.api_rack',
     'networkapi.api_rest',
+    'networkapi.api_task',
     'networkapi.api_usuario',
     'networkapi.api_vip_request',
     'networkapi.api_vlan',
@@ -498,13 +512,38 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ##################################
 
 BROKER_CONNECT_TIMEOUT = os.getenv('NETWORKAPI_BROKER_CONNECT_TIMEOUT', '2')
-BROKER_DESTINATION = os.getenv(
-    'NETWORKAPI_BROKER_DESTINATION', '/topic/networkapi_queue')
-BROKER_URI = os.getenv(
-    'NETWORKAPI_BROKER_URI',
-    u'failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)'
-    '?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e'
-)
+BROKER_DESTINATION = os.getenv('NETWORKAPI_BROKER_DESTINATION', 'tasks')
+BROKER_URL = os.getenv('NETWORKAPI_BROKER_URL',
+                       u'networkapi:networkapi@localhost:5672')
+
+
+##################################
+# CELERY SETTINGS
+##################################
+
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_RESULT_EXPIRES = 720  # 720 seconds.
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_PERSISTENT = True
+CELERY_QUEUES = {
+    'napi.default': {
+        'exchange': 'napi.default',
+        'binding_key': 'napi.default'},
+    'napi.network': {
+        'exchange': 'napi.network',
+        'binding_key': 'napi.network',
+    },
+    'napi.vip': {
+        'exchange': 'napi.vip',
+        'binding_key': 'napi.vip',
+    }
+}
+CELERY_DEFAULT_QUEUE = 'napi.default'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_DEFAULT_ROUTING_KEY = 'napi.default'
 
 
 ###################################

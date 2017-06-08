@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.rest import RestResource
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import XMLError, dumps_networkapi
 import logging
-from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param
+
 from django.forms.models import model_to_dict
-from networkapi.ip.models import Ipv6, IpNotFoundError, IpError, IpEquipmentNotFoundError, Ipv6Equipament
-from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError, EquipamentoError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class IPv6GetResource(RestResource):
@@ -63,7 +69,7 @@ class IPv6GetResource(RestResource):
 
             EquipIps = []
             mapa = dict()
-            #lista = []
+            # lista = []
 
             try:
 

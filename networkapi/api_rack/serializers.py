@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -19,6 +18,8 @@ import ast
 from rest_framework import serializers
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
+
+from networkapi.rack.models import Rack
 
 
 class RackSerializer(serializers.ModelSerializer):

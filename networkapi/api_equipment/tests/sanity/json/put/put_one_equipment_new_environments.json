@@ -4,7 +4,8 @@
       "environments": [
         {
           "environment": 2,
-          "is_router": false
+          "is_router": false,
+          "is_controller": false
         }
       ],
       "equipment_type": 1,

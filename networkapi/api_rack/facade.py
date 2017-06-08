@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -709,3 +708,4 @@ def available_rack_number(request):
             return Response(data, status=status.HTTP_200_OK)
 
     return Response(data, status=status.HTTP_200_OK)
+

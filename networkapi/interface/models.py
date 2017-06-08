@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
 import logging
-from networkapi.models.BaseModel import BaseModel
-from networkapi.util import is_valid_regex, is_valid_int_greater_zero_param
-from networkapi.exception import InvalidValueError
-from networkapi.equipamento.models import Equipamento, TipoEquipamento
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
 from networkapi.ambiente.models import Ambiente
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import TipoEquipamento
+from networkapi.exception import InvalidValueError
+from networkapi.models.BaseModel import BaseModel
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_regex
 
 
 class InterfaceError(Exception):
@@ -139,6 +140,7 @@ class TipoInterface(BaseModel):
             cls.log.error(u'Falha ao pesquisar o tipo de interface.')
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
 
+
 class PortChannel(BaseModel):
 
     log = logging.getLogger('PortChannel')
@@ -172,7 +174,8 @@ class PortChannel(BaseModel):
         try:
             return PortChannel.objects.filter(id=id).uniqueResult()
         except ObjectDoesNotExist, e:
-            raise InterfaceNotFoundError(e, u'Can not find a Channel with id = %s.' % id)
+            raise InterfaceNotFoundError(
+                e, u'Can not find a Channel with id = %s.' % id)
         except Exception, e:
             cls.log.error(u'Falha ao pesquisar o Channel.')
             raise InterfaceError(e, u'Falha ao pesquisar o interface.')
@@ -182,14 +185,15 @@ class PortChannel(BaseModel):
         try:
             return PortChannel.objects.filter(nome=name)
         except ObjectDoesNotExist, e:
-            raise InterfaceNotFoundError(e, u'Can not find a Channel with name = %s.' % id)
+            raise InterfaceNotFoundError(
+                e, u'Can not find a Channel with name = %s.' % id)
         except Exception, e:
             cls.log.error(u'Failure to search the Group L3.')
             raise InterfaceError(e, u'Failure to search the Group L3.')
 
     def delete(self, user):
-        '''Override Django method to remove port channel.
-        '''
+        """Override Django method to remove port channel.
+        """
         id = self.id
         interfaces = Interface.objects.all().filter(channel=id)
         for interface in interfaces:
@@ -198,13 +202,14 @@ class PortChannel(BaseModel):
         super(PortChannel, self).delete()
 
     def list_interfaces(self):
-        '''Override Django method to remove port channel.
-        '''
+        """Override Django method to remove port channel.
+        """
         try:
             return Interface.objects.all().filter(channel=self)
         except ObjectDoesNotExist, e:
             raise InterfaceNotFoundError(
                 e, u'Can not find interfaces for channel: %s.' % self.id)
+
 
 class Interface(BaseModel):
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
@@ -216,9 +221,12 @@ class Interface(BaseModel):
         'self', null=True, db_column='id_ligacao_front', blank=True, related_name='interfaces_front')
     ligacao_back = models.ForeignKey(
         'self', null=True, db_column='id_ligacao_back', blank=True, related_name='interfaces_back')
-    vlan_nativa = models.CharField(max_length=200, blank=True, null=True, db_column='vlan_nativa', default=1)
-    tipo = models.ForeignKey(TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
-    channel = models.ForeignKey(PortChannel, db_column='id_channel', blank=True, null=True)
+    vlan_nativa = models.CharField(
+        max_length=200, blank=True, null=True, db_column='vlan_nativa', default=1)
+    tipo = models.ForeignKey(
+        TipoInterface, db_column='id_tipo_interface', blank=True, default=1)
+    channel = models.ForeignKey(
+        PortChannel, db_column='id_channel', blank=True, null=True)
 
     log = logging.getLogger('Interface')
 
@@ -250,20 +258,20 @@ class Interface(BaseModel):
             raise InterfaceError(e, u'Falha ao pesquisar a interface.')
 
     def search_interfaces(self, from_interface):
-        '''Retorna a interface e as todas as interfaces ligadas no front ou no back da mesma.
+        """Retorna a interface e as todas as interfaces ligadas no front ou no back da mesma.
 
         Se a interface do front é a interface "from_interface" então deverá seguir a ligação pelo back,
         caso contrário, deverá seguir pelo front.
 
-        A busca encerra quando não tem mais ligação ou quando encontra um "loop" por erro 
+        A busca encerra quando não tem mais ligação ou quando encontra um "loop" por erro
         na configuração do banco de dados.
 
-        @param from_interface: Interface de origem da consulta. 
+        @param from_interface: Interface de origem da consulta.
 
         @return: Lista de interfaces.
 
-        @raise InterfaceError: Falha na consulta de interfaces. 
-        '''
+        @raise InterfaceError: Falha na consulta de interfaces.
+        """
         interfaces = []
 
         try:
@@ -291,14 +299,14 @@ class Interface(BaseModel):
         return interfaces
 
     def search_front_back_interfaces(self):
-        '''Busca todas as interfaces ligadas no front e no back da interface.
+        """Busca todas as interfaces ligadas no front e no back da interface.
 
         Retorna um set vazio se não tiver nenhuma interface nas ligações.
 
         @return: Set de interfaces.
 
-        @raise InterfaceError: Falha na consulta de interfaces.      
-        '''
+        @raise InterfaceError: Falha na consulta de interfaces.
+        """
         interfaces = set()
 
         try:
@@ -316,7 +324,7 @@ class Interface(BaseModel):
         return interfaces
 
     def get_server_switch_or_router_interface_from_host_interface(self, protegida=None):
-        '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
+        """A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
 
         @param protegida: Indicação do campo 'protegida' da interface do switch.
 
@@ -327,7 +335,7 @@ class Interface(BaseModel):
         @raise InterfaceNotFoundError: Interface do switch não encontrada.
 
         @raise InterfaceProtectedError: A interface do switch está com o campo protegida diferente do parâmetro.
-        '''
+        """
 
         interface_ids = []
         from_interface = self
@@ -369,18 +377,18 @@ class Interface(BaseModel):
         return interface
 
     def get_switch_and_router_interface_from_host_interface(self, protegida=None):
-        '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
+        """A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
 
-        @param protegida: Indicação do campo 'protegida' da interface do switch. 
+        @param protegida: Indicação do campo 'protegida' da interface do switch.
 
         @return: Interface ligada a um equipamento do tipo SWITCH.
 
         @raise InterfaceError: Falha ao pesquisar a interface do switch
 
-        @raise InterfaceNotFoundError: Interface do switch não encontrada. 
+        @raise InterfaceNotFoundError: Interface do switch não encontrada.
 
         @raise InterfaceProtectedError: A interface do switch está com o campo protegida diferente do parâmetro.
-        '''
+        """
 
         interface_ids = []
         from_interface = self
@@ -419,15 +427,14 @@ class Interface(BaseModel):
 
         return interface
 
-
     def get_switch_interface_from_host_interface(self, protegida=None):
-        '''A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
+        """A partir da ligacao_front da interface local busca uma interface ligada a um equipamento do tipo SWITCH.
         @param protegida: Indicação do campo 'protegida' da interface do switch
         @return: Interface ligada a um equipamento do tipo SWITCH.
         @raise InterfaceError: Falha ao pesquisar a interface do switch
         @raise InterfaceNotFoundError: Interface do switch não encontrada.
         @raise InterfaceProtectedError: A interface do switch está com o campo protegida diferente do parâmetr
-        '''
+        """
         interface_ids = []
         from_interface = self
         interface = self.ligacao_front
@@ -483,7 +490,7 @@ class Interface(BaseModel):
         @return: Interface instance
 
         @raise EquipamentoNotFoundError: Equipment doesn't exist
-        @raise EquipamentoError: Failed to find equipment 
+        @raise EquipamentoError: Failed to find equipment
         @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
         @raise BackLinkNotFoundError: BackEnd interface doesn't exist
         @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same equipment already exists
@@ -496,19 +503,19 @@ class Interface(BaseModel):
         marca = self.equipamento.modelo.marca.id if self.equipamento.tipo_equipamento.id != 2 else 0
 
         if marca == 0:
-            regex = "^([a-zA-Z0-9-_/ ]+(:)?){1,6}$"
+            regex = '^([a-zA-Z0-9-_/ ]+(:)?){1,6}$'
         elif marca == 2:
-            regex = "^(Int)\s[0-9]+$"
+            regex = '^(Int)\s[0-9]+$'
         elif marca == 3:
-            regex = "^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$"
+            regex = '^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$'
         elif marca == 4:
-            regex = "^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$"
+            regex = '^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$'
         elif marca == 5:
-            regex = "^(eth)[0-9]+(/[0-9]+)?$"
+            regex = '^(eth)[0-9]+(/[0-9]+)?$'
         elif marca == 8:
-            regex = "^[0-9]+$"
+            regex = '^[0-9]+$'
         else:
-            regex = ""
+            regex = ''
 
         # Checks if name is valid according to the brand
         if not is_valid_regex(self.interface, regex):
@@ -532,9 +539,10 @@ class Interface(BaseModel):
 
         if self.vlan_nativa is None:
             self.vlan_nativa = 1
-        elif int(self.vlan_nativa) < 1 or 3967 < int(self.vlan_nativa) < 4048 or int(self.vlan_nativa)==4096:
-            raise InvalidValueError(None, "Vlan Nativa" ,"Intervalo reservado: 3968-4047 e 4094")
-            
+        elif int(self.vlan_nativa) < 1 or 3967 < int(self.vlan_nativa) < 4048 or int(self.vlan_nativa) == 4096:
+            raise InvalidValueError(
+                None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
+
         try:
             # Check if interface name already exists for this equipment
             if Interface.objects.filter(equipamento=self.equipamento, interface__iexact=self.interface).count() > 0:
@@ -554,7 +562,7 @@ class Interface(BaseModel):
     def update(cls, authenticated_user, id_interface, **kwargs):
         """Update interface according to arguments
 
-        @param id_interface: Interface identifier 
+        @param id_interface: Interface identifier
 
         @return: Interface instance
 
@@ -570,21 +578,20 @@ class Interface(BaseModel):
         nome = kwargs['interface']
         marca = interface.equipamento.modelo.marca.id if interface.equipamento.tipo_equipamento.id != 2 else 0
 
-
         if marca == 0:
-            regex = "^([a-zA-Z0-9-_/ ]+(:)?){1,6}$"
+            regex = '^([a-zA-Z0-9-_/ ]+(:)?){1,6}$'
         elif marca == 2:
-            regex = "^(Int)\s[0-9]+$"
+            regex = '^(Int)\s[0-9]+$'
         elif marca == 3:
-            regex = "^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$"
+            regex = '^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$'
         elif marca == 4:
-            regex = "^(interface)\s[0-9]+(/[0-9]+.[0-9]+)?$"
+            regex = '^(interface)\s[0-9]+(/[0-9]+.[0-9]+)?$'
         elif marca == 5:
-            regex = "^(eth)[0-9]+(/[0-9]+)?$"
+            regex = '^(eth)[0-9]+(/[0-9]+)?$'
         elif marca == 8:
-            regex = "^[0-9]+$"
+            regex = '^[0-9]+$'
         else:
-            regex = ""
+            regex = ''
 
         # Checks if name is valid according to the brand
         if not is_valid_regex(nome, regex):
@@ -594,7 +601,8 @@ class Interface(BaseModel):
             id_ligacao_front = kwargs['ligacao_front_id']
             if id_ligacao_front is not None:
                 if (interface.ligacao_front_id != id_ligacao_front):
-                    interface.ligacao_front = Interface.get_by_pk(id_ligacao_front)
+                    interface.ligacao_front = Interface.get_by_pk(
+                        id_ligacao_front)
             else:
                 interface.ligacao_front = None
         except InterfaceNotFoundError, e:
@@ -607,7 +615,8 @@ class Interface(BaseModel):
             id_ligacao_back = kwargs['ligacao_back_id']
             if id_ligacao_back is not None:
                 if (interface.ligacao_back_id != id_ligacao_back):
-                    interface.ligacao_back = Interface.get_by_pk(id_ligacao_back)
+                    interface.ligacao_back = Interface.get_by_pk(
+                        id_ligacao_back)
             else:
                 interface.ligacao_back = None
         except InterfaceNotFoundError, e:
@@ -635,9 +644,11 @@ class Interface(BaseModel):
             interface.vlan_nativa = kwargs['vlan_nativa']
             if interface.vlan_nativa is not None:
                 if int(interface.vlan_nativa) < 1 or int(interface.vlan_nativa) > 4096:
-                    raise InvalidValueError(None, "Vlan" , interface.vlan_nativa)
-                if 3967 < int(interface.vlan_nativa) < 4048 or int(interface.vlan_nativa)==4096:
-                    raise InvalidValueError(None, "Vlan Nativa" ,"Range reservado: 3968-4047;4094.")
+                    raise InvalidValueError(
+                        None, 'Vlan', interface.vlan_nativa)
+                if 3967 < int(interface.vlan_nativa) < 4048 or int(interface.vlan_nativa) == 4096:
+                    raise InvalidValueError(
+                        None, 'Vlan Nativa', 'Range reservado: 3968-4047;4094.')
             try:
                 interface.channel = kwargs['channel']
             except:
@@ -657,7 +668,7 @@ class Interface(BaseModel):
     def remove(cls, authenticated_user, id_interface):
         """Removes an interface
 
-        @param id_interface: Interface identifier 
+        @param id_interface: Interface identifier
 
         @return: Nothing
 
@@ -683,10 +694,10 @@ class Interface(BaseModel):
             raise InterfaceError(e, u'Failed to remove interface')
 
     def delete(self):
-        '''Override Django method to remove interface.
+        """Override Django method to remove interface.
 
         Before removing interface, removes all relationships between this interface and others.
-        '''
+        """
         for i in self.interfaces_front.all():
             i.ligacao_front = None
             i.save()
@@ -696,7 +707,6 @@ class Interface(BaseModel):
             i.save()
 
         super(Interface, self).delete()
-
 
 
 class EnvironmentInterface(BaseModel):
@@ -731,4 +741,5 @@ class EnvironmentInterface(BaseModel):
                 e, u'Can not find a EnvironmentInterface with interface id = %s.' % id)
         except Exception, e:
             cls.log.error(u'Falha ao pesquisar interfaces neste ambiente.')
-            raise InterfaceError(e, u'Falha ao pesquisar interfaces neste ambiente.')
+            raise InterfaceError(
+                e, u'Falha ao pesquisar interfaces neste ambiente.')

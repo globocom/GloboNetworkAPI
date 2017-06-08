@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns
+from django.conf.urls import url
+
 from networkapi.ip.resource.NetworkAddResource import NetworkAddResource
 from networkapi.ip.resource.NetworkEditResource import NetworkEditResource
 from networkapi.ip.resource.NetworkIPv4AddResource import NetworkIPv4AddResource
@@ -24,7 +26,8 @@ network_ipv6_add_resource = NetworkIPv6AddResource()
 network_ipv6_deallocate_resource = NetworkIPv6DeallocateResource()
 search_ipv6_environment = SearchIPv6EnvironmentResource()
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^ipv4/id/(?P<id_rede4>[^/]+)/$', networkip4_get_resource.handle_request,
         name='network.ip4.get.by.id'),
     url(r'^ipv6/id/(?P<id_rede6>[^/]+)/$', networkip6_get_resource.handle_request,

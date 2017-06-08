@@ -4,7 +4,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.network "private_network", ip: "10.0.0.2", auto_config: "false"
   config.vm.hostname = "NETWORKAPI"
-  config.omnibus.chef_version = :latest
+  config.omnibus.chef_version = "12.16.42" # keep this version, the latest version is with bug
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048
   end

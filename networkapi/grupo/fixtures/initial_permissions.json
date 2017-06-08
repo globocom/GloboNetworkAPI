@@ -222,5 +222,12 @@
     "fields": {
       "function": "validar_vip"
     }
+  },
+  {
+    "pk": 40,
+    "model": "grupo.permission",
+    "fields": {
+      "function": "network_force"
+    }
   }
 ]

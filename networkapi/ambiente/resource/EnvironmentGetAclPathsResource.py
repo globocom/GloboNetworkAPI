@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from networkapi.auth import has_perm
 from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import AmbienteError, Ambiente
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.rest import RestResource
 
 
 class EnvironmentGetAclPathsResource(RestResource):
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Handles a get request to a environment lookup.
+        """Handles a get request to a environment lookup.
 
         Lists all distinct ACL paths
 
-        URL: /environment/acl_path/ 
-        '''
+        URL: /environment/acl_path/
+        """
         try:
             if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()

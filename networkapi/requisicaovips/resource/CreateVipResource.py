@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
 
 import logging
@@ -22,19 +20,26 @@ import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_VIP
-from networkapi.equipamento.models import EquipamentoError, EquipamentoNotFoundError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
 from networkapi.healthcheckexpect.models import HealthcheckExpectError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
 from networkapi.ip.models import IpError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import ServerPool
 from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, RequisicaoVipsError, \
-    RequisicaoVips, ServerPool
 from networkapi.settings import VIP_CREATE
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class CreateVipResource(RestResource):
@@ -42,10 +47,10 @@ class CreateVipResource(RestResource):
     log = logging.getLogger('CreateVipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Treat POST requests to run script creation for vip
+        """Treat POST requests to run script creation for vip
 
         URL: vip/create/
-        '''
+        """
 
         try:
 
@@ -150,7 +155,8 @@ class CreateVipResource(RestResource):
                 # SYNC_VIP
                 old_to_new(vip)
 
-                server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=vip.id)
+                server_pools = ServerPool.objects.filter(
+                    vipporttopool__requisicao_vip=vip.id)
 
                 for server_pool in server_pools:
                     if not server_pool.pool_created:

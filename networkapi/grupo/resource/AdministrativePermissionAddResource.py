@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 from __future__ import with_statement
+
+import logging
+
 from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.grupo.models import GrupoError, PermissaoAdministrativa, PermissaoAdministrativaNotFoundError, Permission, UGrupo, PermissionNotFoundError, UGrupoNotFoundError, PermissionError, PermissaoAdministrativaDuplicatedError
-from networkapi.infrastructure.xml_utils import loads, dumps_networkapi
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_boolean_param, convert_string_or_int_to_boolean
+from networkapi.grupo.models import GrupoError
+from networkapi.grupo.models import PermissaoAdministrativa
+from networkapi.grupo.models import PermissaoAdministrativaDuplicatedError
+from networkapi.grupo.models import PermissaoAdministrativaNotFoundError
+from networkapi.grupo.models import Permission
+from networkapi.grupo.models import PermissionError
+from networkapi.grupo.models import PermissionNotFoundError
+from networkapi.grupo.models import UGrupo
+from networkapi.grupo.models import UGrupoNotFoundError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class AdministrativePermissionAddResource(RestResource):
@@ -40,7 +52,7 @@ class AdministrativePermissionAddResource(RestResource):
 
         try:
 
-            self.log.info("Add Administrative Permission")
+            self.log.info('Add Administrative Permission')
 
             # User permission
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.WRITE_OPERATION):
@@ -123,7 +135,7 @@ class AdministrativePermissionAddResource(RestResource):
 
             perm_map = dict()
             perm_map['perm'] = model_to_dict(
-                adm_perm, exclude=["permission", "leitura", "escrita", "ugrupo"])
+                adm_perm, exclude=['permission', 'leitura', 'escrita', 'ugrupo'])
 
             return self.response(dumps_networkapi(perm_map))
 

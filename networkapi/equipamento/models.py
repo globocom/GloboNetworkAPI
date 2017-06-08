@@ -812,6 +812,7 @@ class Equipamento(BaseModel):
                     environment.get('environment'))
                 eqpt_env.equipamento = self
                 eqpt_env.is_router = environment.get('is_router')
+                eqpt_env.is_controller = environment.get('is_controller')
                 eqpt_env.create()
 
             # ipv4s
@@ -894,11 +895,13 @@ class Equipamento(BaseModel):
                         eqpt_env.ambiente = Ambiente.get_by_pk(env_id)
                         eqpt_env.equipamento = self
                         eqpt_env.is_router = environment.get('is_router')
+                        eqpt_env.is_controller = environment.get('is_controller')
                         eqpt_env.create()
                     else:
                         # update relashionship with enviroment
                         env_current = env_db[env_db_ids.index(env_id)]
                         env_current.is_router = environment.get('is_router')
+                        env_current.is_controller = environment.get('is_controller')
                         env_current.save()
                     env_ids.append(env_id)
 
@@ -959,6 +962,7 @@ class EquipamentoAmbiente(BaseModel):
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     is_router = models.BooleanField(db_column='is_router')
+    is_controller = models.BooleanField(db_column='is_controller')
 
     log = logging.getLogger('EquipamentoAmbiente')
 
@@ -1518,3 +1522,15 @@ class ModeloRoteiro(BaseModel):
                 u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
             raise EquipamentoError(
                 e, u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
+
+
+class AmbienteController(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id')
+    equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+
+    log = logging.getLogger('AmbienteController')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'controller_environment_xref'
+        managed = True

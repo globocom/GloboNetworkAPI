@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `equip_do_ambiente`
+ADD COLUMN `is_controller` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '' AFTER `is_router`;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `equip_do_ambiente`
+DROP COLUMN `is_controller`;
+
+"""

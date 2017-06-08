@@ -8,12 +8,6 @@ from networkapi.api_network.views.v1 import DHCPRelayIPv4View
 from networkapi.api_network.views.v1 import DHCPRelayIPv6ByPkView
 from networkapi.api_network.views.v1 import DHCPRelayIPv6View
 
-#     """
-# TODO (v4 and v6)
-# POST /api/network - allocate network
-# DELETE /api/vlan/ID - remove network
-# PUT /api/network/ID - modify network
-#     """
 urlpatterns = patterns(
 
     'networkapi.api_network.views.v1',
@@ -30,10 +24,17 @@ urlpatterns = patterns(
     url(r'^dhcprelayv6/(?P<dhcprelay_id>\d+)/$',
         DHCPRelayIPv6ByPkView.as_view()),
 
-
     ########################
     # Network V3
     ########################
+    url(r'^v3/networkv4/deploy/async/((?P<obj_ids>[;\w]+)/)?$',
+        v3.Networkv4DeployAsyncView.as_view()),
+    url(r'^v3/networkv6/deploy/async/((?P<obj_ids>[;\w]+)/)?$',
+        v3.Networkv6DeployAsyncView.as_view()),
+    url(r'^v3/networkv4/async/((?P<obj_ids>[;\w]+)/)?$',
+        v3.Networkv4AsyncView.as_view()),
+    url(r'^v3/networkv6/async/((?P<obj_ids>[;\w]+)/)?$',
+        v3.Networkv6AsyncView.as_view()),
     url(r'^v3/networkv4/force/((?P<obj_ids>[;\w]+)/)?$',
         v3.NetworkIPv4ForceView.as_view()),
     url(r'^v3/networkv6/force/((?P<obj_ids>[;\w]+)/)?$',

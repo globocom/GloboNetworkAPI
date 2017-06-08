@@ -81,6 +81,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     routers = serializers.SerializerMethodField('get_routers')
     equipments = serializers.SerializerMethodField('get_equipments')
     name = serializers.SerializerMethodField('get_name')
+    sdn_controlled = serializers.BooleanField()
 
     def get_name(self, obj):
         return self.extends_serializer(obj, 'name')
@@ -138,6 +139,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'configs',
             'routers',
             'equipments',
+            'sdn_controlled',
         )
         default_fields = (
             'id',
@@ -156,6 +158,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'max_num_vlan_2',
             'default_vrf',
             'father_environment',
+            'sdn_controlled',
         )
 
         basic_fields = (
@@ -328,7 +331,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'equipments'
-                },
+                }
             }
 
     @staticmethod

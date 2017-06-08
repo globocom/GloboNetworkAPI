@@ -21,23 +21,8 @@ export DJANGO_SETTINGS_MODULE='networkapi.settings_ipdb'
 echo "exporting NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1"
 export NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1
 
-echo "exporting NETWORKAPI_BROKER_DESTINATION"
-export NETWORKAPI_BROKER_DESTINATION='networkapi'
-
-echo "exporting NETWORKAPI_BROKER_URI"
-export NETWORKAPI_BROKER_URI='tcp://localhost:61613'
-
-echo "Starting ActiveMQ message broker"
-sudo service activemq start
-
-echo "clearing memcached:"
-echo 'flush_all' | nc localhost 11211
-
 echo "cleaning up .pyc"
 python manage.py clean_pyc --path /vagrant/networkapi/
-
-# killall rqworker.sh
-# ./rqworker.sh &
 
 echo "starting runserver 0.0.0.0:8001 --ipdb"
 python manage.py runserver 0.0.0.0:8001 --ipdb

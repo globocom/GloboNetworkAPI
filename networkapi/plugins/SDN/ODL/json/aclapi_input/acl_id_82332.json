@@ -1,0 +1,14 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.254.0.0/16",
+      "id": "82332",
+      "owner": "networkapi",
+      "protocol": "ip",
+      "source": "0.0.0.0/0"
+    }
+  ]
+}
