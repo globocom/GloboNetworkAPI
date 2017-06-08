@@ -876,7 +876,7 @@ class Ambiente(BaseModel):
         Vrf,
         db_column='id_vrf'
     )
-    dcroom = models.IntegerField(
+    dcroom = models.ForeignKey(
         DatacenterRooms,
         null=True,
         db_column = 'id_dcroom'
