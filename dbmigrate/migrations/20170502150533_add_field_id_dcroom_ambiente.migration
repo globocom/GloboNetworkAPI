@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `ambiente` 
+ADD COLUMN `id_dcroom` INT(10) UNSIGNED NULL;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `ambiente` 
+DROP COLUMN `id_dcroom`;
+
+"""
