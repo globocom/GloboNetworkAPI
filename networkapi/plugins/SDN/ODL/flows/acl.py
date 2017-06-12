@@ -108,7 +108,8 @@ class AclFlowBuilder(object):
         flows_set = self.build()
 
         for flows in flows_set:
-            yield flows["flow"][0]["id"], dumps(flows)
+            flows_ids = [flow["id"] for flow in flows["flow"]]
+            yield flows_ids, dumps(flows)
 
     def build(self):
         """ Verifies input data and build flows for OpenDayLight controller """

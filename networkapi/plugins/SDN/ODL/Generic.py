@@ -77,11 +77,14 @@ class ODLPlugin(BaseSdnPlugin):
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data)
 
-            flows_set = builder.dump()
+            flows_set = builder.build()
 
-            for flow_id, flows in flows_set:
+            for flows in flows_set:
+                for flow in flows['flow']:
 
-                self._flow(flow_id=flow_id, method='put', data=flows)
+                    self._flow(flow_id=flow['id'],
+                               method='put',
+                               data=json.dumps({'flow': [flow]}))
 
         return None
 
