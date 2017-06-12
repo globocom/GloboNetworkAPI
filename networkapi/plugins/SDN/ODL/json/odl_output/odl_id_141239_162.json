@@ -1,6 +1,6 @@
 [
   {
-    "id": "141239_161",
+    "id": "141239_162",
     "priority": 214,
     "table_id": 0,
     "cookie": 606616885919744,
@@ -13,7 +13,7 @@
         }
       },
       "ipv4-source": "10.129.199.192/27",
-      "tcp-destination-port": "161",
+      "tcp-destination-port": "162",
       "ip-match": {
         "ip-protocol": 6
       }
