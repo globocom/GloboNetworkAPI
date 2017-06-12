@@ -48,6 +48,7 @@ class AdminPermission(object):
     POOL_REMOVE_SCRIPT = 'script_remover_pool'
     POOL_ALTER_SCRIPT = 'script_alterar_pool'
     NETWORK_FORCE = 'network_force'
+    AS_MANAGEMENT = 'as_management'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'
