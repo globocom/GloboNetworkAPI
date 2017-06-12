@@ -778,6 +778,9 @@ class Equipamento(BaseModel):
         for equipment_group in self.equipamentogrupo_set.all():
             equipment_group.delete()
 
+        for as_equipment in self.asequipment_set.all():
+            as_equipment.delete()
+
         self.delete()
 
     def create_v3(self, equipment):
