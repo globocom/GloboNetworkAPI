@@ -343,6 +343,7 @@ PROJECT_APPS = (
     'networkapi.api_task',
     'networkapi.api_usuario',
     'networkapi.api_vip_request',
+    'networkapi.api_virtual_interface',
     'networkapi.api_vlan',
     'networkapi.api_vrf',
     'networkapi.blockrules',
