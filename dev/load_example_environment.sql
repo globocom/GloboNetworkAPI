@@ -38,10 +38,6 @@ VALUES
    (
       1, 'MARCA'
    )
-,
-   (
-      2, 'OpenDaylight'
-   )
 ;
 -- Dumping data for table `modelos`
 INSERT INTO
@@ -49,10 +45,6 @@ INSERT INTO
 VALUES
    (
       1, 'MODELO', 1
-   )
-,
-   (
-      2, 'SDN Controller', 2
    )
 ;
 -- Dumping data for table `tipo_equipamento`
@@ -73,10 +65,6 @@ VALUES
 ,
    (
       5, 'Balanceador'
-   )
-,
-   (
-      6, 'Controller'
    )
 ;
 -- Dumping data for table `filter`
@@ -865,7 +853,15 @@ VALUES
    )
 ,
    (
-      28, 6, 2, 'ODL Controller 0', 0
+      28, (
+			SELECT `id_tipo_equipamento` FROM `tipo_equipamento`
+			WHERE `tipo_equipamento` = 'Controller'
+		), (
+			SELECT `id_modelo` FROM `modelos`
+			WHERE `nome` = 'SDN Controller'
+		),
+		'ODL Controller 0',
+		0
    )
 ;
 
