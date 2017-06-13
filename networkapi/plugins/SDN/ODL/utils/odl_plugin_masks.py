@@ -4,7 +4,7 @@
 class ODLPluginMasks(object):
 
     id_ = "{}_{}"
-    id_both = "{}_{}_{} "
+    id_both = "{}_{}_{}"
 
     description = "{} - {}:{}"
     description_both = "{} - {}:{} - {}:{}"

@@ -1,0 +1,39 @@
+[
+  {
+    "id": "141239_162",
+    "priority": 214,
+    "table_id": 0,
+    "cookie": 606616885919744,
+    "flow-name": "generic - 161:162",
+    "match": {
+      "ipv4-destination": "10.0.0.0/8",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ipv4-source": "10.129.199.192/27",
+      "tcp-destination-port": 162,
+      "ip-match": {
+        "ip-protocol": 6
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

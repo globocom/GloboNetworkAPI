@@ -58,7 +58,8 @@ class Tokens(object):
     priority = "priority"
     cookie = "cookie"
     sequence = "sequence"
-
+    range = "range"
+    eq = "eq"
 
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
@@ -71,15 +72,30 @@ class AclFlowBuilder(object):
 
     PRIORITY_DEFAULT = 65000
     TABLE = 0
+    ALLOWED_FLOWS_SIZE = 5
 
     def __init__(self, data):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
-        self.allowed_size = 2
+        self.dumped_rule = None # Actual processing rule in json format
+
+        self._reset_control_members()
 
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
+
+    def _reset_control_members(self):
+
+        # Used to build double ranges
+        self.current_src_port = None
+        self.current_dst_port = None
+
+        # Used to build simple ranges
+        self.current_src_or_dst_port = None
+
+        # Used to control flows generation for one rule
+        self.generated_all_flows_from_rule = False
 
     def _clear_flows(self):
         """ Clear flows variable to avoid huge object in memory """
@@ -94,7 +110,8 @@ class AclFlowBuilder(object):
         flows_set = self.build()
 
         for flows in flows_set:
-            yield dumps(flows)
+            flows_ids = [flow["id"] for flow in flows["flow"]]
+            yield flows_ids, dumps(flows)
 
     def build(self):
         """ Verifies input data and build flows for OpenDayLight controller """
@@ -104,17 +121,16 @@ class AclFlowBuilder(object):
 
             for rule in self.raw_data[Tokens.rules]:
 
-                if len(self.flows["flow"]) == self.allowed_size:
-                    yield self.flows
-                    self._clear_flows()
+                for current_flows in self._build_rule(rule):
 
-                done_iteration = self._build_rule(rule)
+                    if len(current_flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
 
-                if done_iteration:
-                    yield self.flows
+                        yield current_flows
+                        self._clear_flows()
 
-            yield self.flows
-            self._clear_flows()
+            if len(self.flows["flow"]) > 0:
+                yield self.flows
+                self._clear_flows()
 
         else:
             message = "Missing %s or %s fields." % (Tokens.kind, Tokens.rules)
@@ -122,23 +138,34 @@ class AclFlowBuilder(object):
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
     def _build_rule(self, rule):
+        """ Builds one or more flows based at one ACL rule """
 
-        # Assigns the id of the current ACL
-        # We always insert in the head of the list to simplify the access
-        # to the current index
-        self.flows["flow"].insert(0, {Tokens.id_: rule[Tokens.id_]})
+        self.dumped_rule = dumps(rule, sort_keys=True)
 
-        # Flow table and priority
-        self.flows["flow"][0]["table_id"] = self.TABLE
+        self._reset_control_members()
 
-        self._build_description(rule)
-        self._build_match(rule)
-        self._build_action(rule)
-        self._build_cookie(rule)
-        self._build_sequence(rule)
-        self._build_protocol(rule)
+        while not self.generated_all_flows_from_rule:
+
+            # Assigns the id of the current ACL
+            # We always insert in the head of the list to simplify the access
+            # to the current index
+
+            self.flows["flow"].insert(0, {Tokens.id_: rule[Tokens.id_]})
+
+            # Flow table and priority
+            self.flows["flow"][0]["table_id"] = self.TABLE
+
+            self._build_description(rule)
+            self._build_match(rule)
+            self._build_action(rule)
+            self._build_cookie(rule)
+            self._build_sequence(rule)
+            self._build_protocol(rule)
+
+            yield self.flows
 
     def _build_description(self, rule):
+        """ Builds the flow name field using OpenDayLight json format """
 
         if Tokens.description not in rule:
             rule[Tokens.description] = ""
@@ -163,8 +190,8 @@ class AclFlowBuilder(object):
             self.flows["flow"][0]["match"]["ipv4-source"] = rule[Tokens.source]
 
         else:
-            logging.error(self.MALFORMED_MESSAGE % rule)
-            raise ValueError(self.MALFORMED_MESSAGE % rule)
+            logging.error(self.MALFORMED_MESSAGE % self.dumped_rule)
+            raise ValueError(self.MALFORMED_MESSAGE % self.dumped_rule)
 
     def _build_action(self, rule):
         """ Builds the Openflow actions to a flow """
@@ -185,16 +212,14 @@ class AclFlowBuilder(object):
             }
 
     def _build_cookie(self, rule):
+        """ Builds optional 64-bits field named cookie """
 
-        id_rule = self._get_id_from_rule(rule)
+        id_rule = rule[Tokens.id_]
         self.flows["flow"][0][Tokens.cookie] = \
             CookieHandler.get_cookie(id_rule)
 
-    def _get_id_from_rule(self, rule):
-
-        return re.search('(^[0-9]+).*', rule[Tokens.id_]).group(1)
-
     def _build_sequence(self, rule):
+        """ Build sequence field to set flow priority """
 
         if Tokens.sequence in rule:
             self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
@@ -205,7 +230,8 @@ class AclFlowBuilder(object):
         """ Identifies the protocol of the ACL rule """
 
         if Tokens.protocol not in rule:
-            message = "Missing %s field:\n%s" % (Tokens.protocol, rule)
+            message = "Missing %s field:\n%s" % (Tokens.protocol,
+                                                 self.dumped_rule)
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
@@ -217,6 +243,7 @@ class AclFlowBuilder(object):
             elif rule[Tokens.protocol] == "icmp":
                 self._build_icmp(rule)
             elif rule[Tokens.protocol] == "ip":
+                self.generated_all_flows_from_rule = True
                 pass  # It is not necessary to process a IP protocol
             else:
                 message = "Unknown protocol '%s'" % rule[Tokens.protocol]
@@ -227,8 +254,8 @@ class AclFlowBuilder(object):
         """ Builds a TCP flow based on OpenDayLight json format """
 
         self._set_flow_ip_protocol(6)
-        self._check_source_and_destination_ports(rule, "tcp")
         self._set_tcp_flags(rule)
+        self._check_source_and_destination_ports(rule, "tcp")
 
     def _build_udp(self, rule):
         """ Builds a UDP flow based on OpenDayLight json format """
@@ -240,6 +267,7 @@ class AclFlowBuilder(object):
         """ Builds ICMP protocol acl using OpenDayLight json format """
 
         self._set_flow_ip_protocol(1)
+        self.generated_all_flows_from_rule = True
 
         if Tokens.icmp_options in rule:
 
@@ -254,7 +282,7 @@ class AclFlowBuilder(object):
                 }
             else:
                 message = "Missing %s or %s icmp options:\n%s" % (
-                    Tokens.icmp_code, Tokens.icmp_type, rule)
+                    Tokens.icmp_code, Tokens.icmp_type, self.dumped_rule)
                 logging.error(self.MALFORMED_MESSAGE % message)
                 raise ValueError(self.MALFORMED_MESSAGE % message)
         else:
@@ -274,22 +302,23 @@ class AclFlowBuilder(object):
 
         l4_options = rule.get(Tokens.l4_options, {})
 
-        if l4_options.get(Tokens.src_port_op) == 'range' \
-                and l4_options.get(Tokens.dst_port_op) == 'range':
+        if l4_options.get(Tokens.src_port_op) == Tokens.range and \
+           l4_options.get(Tokens.dst_port_op) == Tokens.range:
             self._build_double_range(rule, protocol)
 
-        elif l4_options.get(Tokens.src_port_op) == 'range':
+        elif l4_options.get(Tokens.src_port_op) == Tokens.range:
             self._build_simple_range(rule, protocol,
                                      Tokens.src_port,
                                      Tokens.src_port_end)
 
-        elif l4_options.get(Tokens.dst_port_op) == 'range':
+        elif l4_options.get(Tokens.dst_port_op) == Tokens.range:
             self._build_simple_range(rule, protocol,
                                      Tokens.dst_port,
                                      Tokens.dst_port_end)
         else:
             self._build_transport_source_ports(rule, protocol)
             self._build_transport_destination_ports(rule, protocol)
+            self.generated_all_flows_from_rule = True
 
     def _set_tcp_flags(self, rule):
         """ Sets the flags inside given flow """
@@ -305,57 +334,143 @@ class AclFlowBuilder(object):
                 "tcp-flags": tcp_flags,
             }
 
-    def _build_simple_range(self, rule, protocol,
-                            start, end):
+    def _build_simple_range(self, rule, protocol, start, end):
+        """ Builds a TCP|UDP flows when ACL has Src and Dst ranges."""
 
-        port_start = int(rule[Tokens.l4_options][start])
         port_end = int(rule[Tokens.l4_options][end])
+
+        if self.current_src_or_dst_port is not None:
+
+            # Assigns if the last iteration made flows array to reach
+            # ALLOWED_FLOWS_SIZE before reach the last port in range
+            port_start = self.current_src_or_dst_port
+        else:
+
+            # Assigns if it is the first time building range for rule
+            port_start = int(rule[Tokens.l4_options][start])
 
         for port in xrange(port_start, port_end + 1):
 
-            self._build_transport_source_ports(rule, protocol)
-            self._build_transport_destination_ports(rule, protocol)
+            # Do this to avoid change the first port of range in orig rule
+            # We use it to update each flow description field
+            rule_copy = deepcopy(rule)
+            rule_copy[Tokens.l4_options][start] = str(port)
+
+            self._build_transport_source_ports(rule_copy, protocol)
+            self._build_transport_destination_ports(rule_copy, protocol)
             self._build_id_and_description_when_simple_range(
-                rule, port, port_start, port_end)
+                rule, port,
+                rule[Tokens.l4_options][start],
+                port_end)
+
+            if port == port_end:
+                # If we finished to build all ports in range,
+                # set variable below to True to avoid rebuild
+                # the same rule
+                self.generated_all_flows_from_rule = True
+                return
+
+            if len(self.flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
+                # If flows array reach ALLOWED_FLOWS_SIZE, we stop to
+                # build and save actual state
+                self.current_src_or_dst_port = port + 1
+                return
 
             self._insert_new_flow_when_single_range(port, port_end)
 
     def _build_double_range(self, rule, protocol):
+        """ Builds a TCP|UDP flows when ACL has Src or Dst ranges."""
 
-        src_port_start = int(rule[Tokens.l4_options][Tokens.src_port])
-        src_port_end = int(rule[Tokens.l4_options][Tokens.src_port_end])
+        l4_options = rule[Tokens.l4_options]
 
-        dst_port_start = int(rule[Tokens.l4_options][Tokens.dst_port])
-        dst_port_end = int(rule[Tokens.l4_options][Tokens.dst_port_end])
+        src_port_end = int(l4_options[Tokens.src_port_end])
+        dst_port_end = int(l4_options[Tokens.dst_port_end])
+
+        if self.current_src_port is not None and self.current_dst_port is not None:
+
+            # Assigns if the last iteration made flows array to reach
+            # ALLOWED_FLOWS_SIZE before reach the last port in range
+            src_port_start = self.current_src_port
+            dst_port_start = self.current_dst_port
+        else:
+
+            # Assigns if it is the first time building range for rule
+            src_port_start = int(l4_options[Tokens.src_port])
+            dst_port_start = int(l4_options[Tokens.dst_port])
+
+        if dst_port_start > dst_port_end:
+            src_port_start += 1
+            dst_port_start = int(l4_options[Tokens.dst_port])
 
         for src_port in xrange(src_port_start, src_port_end + 1):
             for dst_port in xrange(dst_port_start, dst_port_end + 1):
 
-                self._build_transport_source_ports(rule, protocol)
-                self._build_transport_destination_ports(rule, protocol)
+                # Do this to avoid change the first port of range
+                # in original rule.
+                # We use it to update each flow description field
+
+                rule_copy = deepcopy(rule)
+                rule_copy[Tokens.l4_options][Tokens.src_port] = str(src_port)
+                rule_copy[Tokens.l4_options][Tokens.dst_port] = str(dst_port)
+
+                self._build_transport_source_ports(rule_copy, protocol)
+                self._build_transport_destination_ports(rule_copy, protocol)
                 self._build_id_and_description_when_double_range(
                     rule, src_port, dst_port)
+
+                if src_port == src_port_end and dst_port == dst_port_end:
+                    # If we finished to build all ports in range,
+                    # set variable below to True to avoid rebuild
+                    # the same rule
+                    self.generated_all_flows_from_rule = True
+                    return
+
+                if dst_port == dst_port_end:
+                    # When state is save, make sure that in next iteration
+                    # of src ranges all related destination ports will be
+                    # built together
+                    dst_port_start = int(l4_options[Tokens.dst_port])
+
+                if len(self.flows["flow"]) == self.ALLOWED_FLOWS_SIZE:
+                    # If flows array reach ALLOWED_FLOWS_SIZE, we stop to
+                    # build and save actual state
+                    self.current_src_port = src_port
+                    self.current_dst_port = dst_port + 1
+                    return
 
                 self._insert_new_flow_when_double_range(src_port, src_port_end,
                                                         dst_port, dst_port_end)
 
     def _insert_new_flow_when_single_range(self, port, port_end):
+        """ Check inside single range if still exists ports to build
+            allocating one flow more
+        """
 
         if port < port_end:
             self._insert_new_flow()
 
     def _insert_new_flow_when_double_range(self, src_port, src_port_end,
                                            dst_port, dst_port_end):
+        """ Check inside double range if still exists ports to build
+            allocating one flow more
+        """
 
         if src_port < src_port_end or dst_port < dst_port_end:
             self._insert_new_flow()
 
     def _insert_new_flow(self):
+        """ Create deep copy of last flow built in the head of the list
+            to simplify the access to the current index when building next
+            port.
+        """
 
         self.flows["flow"].insert(0, deepcopy(self.flows["flow"][0]))
 
     def _build_id_and_description_when_simple_range(
             self, rule, port, port_start, port_end):
+        """ Builds custom id and description for flows generated
+            by ACL that have Src range or Dst range.
+        """
 
         self._build_id_when_only_src_or_dst_range(rule, port)
         self._build_id_when_src_eq_and_dst_range(rule, port)
@@ -370,6 +485,9 @@ class AclFlowBuilder(object):
 
     def _build_id_and_description_when_double_range(
             self, rule, src_port, dst_port):
+        """ Builds custom id and description for flows generated
+            by ACL that have Src range and Dst range.
+        """
 
         self._build_id_when_src_range_and_dst_range(rule, src_port, dst_port)
         self._build_description_when_src_range_and_dst_range(rule)
@@ -378,8 +496,8 @@ class AclFlowBuilder(object):
             self, rule, port_start, port_end):
 
         l4_options = rule[Tokens.l4_options]
-        if l4_options.get(Tokens.src_port_op) == 'eq' and \
-           l4_options.get(Tokens.dst_port_op) == 'range':
+        if l4_options.get(Tokens.src_port_op) == Tokens.eq and \
+           l4_options.get(Tokens.dst_port_op) == Tokens.range:
 
             self.flows["flow"][0]["flow-name"] = to_str_description_both(
                 rule[Tokens.description],
@@ -391,8 +509,8 @@ class AclFlowBuilder(object):
             self, rule, port_start, port_end):
 
         l4_options = rule[Tokens.l4_options]
-        if l4_options.get(Tokens.src_port_op) == 'range' and \
-           l4_options.get(Tokens.dst_port_op) == 'eq':
+        if l4_options.get(Tokens.src_port_op) == Tokens.range and \
+           l4_options.get(Tokens.dst_port_op) == Tokens.eq:
 
             self.flows["flow"][0]["flow-name"] = to_str_description_both(
                 rule[Tokens.description],
@@ -419,8 +537,8 @@ class AclFlowBuilder(object):
     def _build_id_when_src_eq_and_dst_range(self, rule, port):
 
         l4_options = rule[Tokens.l4_options]
-        if l4_options.get(Tokens.src_port_op) == 'eq' and \
-           l4_options.get(Tokens.dst_port_op) == 'range':
+        if l4_options.get(Tokens.src_port_op) == Tokens.eq and \
+           l4_options.get(Tokens.dst_port_op) == Tokens.range:
 
             self.flows["flow"][0]["id"] = to_str_id_both(
                 rule[Tokens.id_],
@@ -430,8 +548,8 @@ class AclFlowBuilder(object):
     def _build_id_when_src_range_and_dst_eq(self, rule, port):
 
         l4_options = rule[Tokens.l4_options]
-        if l4_options.get(Tokens.src_port_op) == 'range' and \
-           l4_options.get(Tokens.dst_port_op) == 'eq':
+        if l4_options.get(Tokens.src_port_op) == Tokens.range and \
+           l4_options.get(Tokens.dst_port_op) == Tokens.eq:
 
             self.flows["flow"][0]["id"] = to_str_id_both(
                 rule[Tokens.id_],

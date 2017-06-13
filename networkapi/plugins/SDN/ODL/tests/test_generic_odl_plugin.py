@@ -4,6 +4,7 @@ from nose.tools import assert_raises_regexp
 from nose.tools import assert_raises
 from requests.exceptions import HTTPError
 import random
+from json import dumps
 
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -163,24 +164,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_110886.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_range_l4(self):
-        """Test add flow with tcp protocol and dest range in l4 options."""
-
-        input = self.json_aclapi_input_path % 'acl_id_141239.json'
-        data = self.load_json_file(input)
-
-        self.odl.add_flow(data)
-
-        nodes_ids = self.odl._get_nodes_ids()
-
-        random_idx = random.randint(0, len(nodes_ids) - 1)
-
-        flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
-
-        output = self.json_odl_output_path % 'odl_id_141239.json'
-        self.compare_json_lists(output, flow)
-
     def test_add_flow_with_udp_protocol_src_eq_and_dest_eq_l4(self):
         """Test add flow with udp protocol and src eq, dest eq in l4 options."""
 
@@ -235,23 +218,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_112140.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_udp_protocol_dest_range_l4(self):
-        """Test add flow with udp protocol and dest range in l4 options."""
-
-        input = self.json_aclapi_input_path % 'acl_id_141880.json'
-        data = self.load_json_file(input)
-
-        self.odl.add_flow(data)
-
-        nodes_ids = self.odl._get_nodes_ids()
-
-        random_idx = random.randint(0, len(nodes_ids) - 1)
-
-        flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
-
-        output = self.json_odl_output_path % 'odl_id_141880.json'
-        self.compare_json_lists(output, flow)
 
     def test_add_flow_one_acl_rule_with_ip_protocol(self):
         """Test add flow with ip protocol."""
@@ -319,6 +285,46 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         assert_raises(HTTPError, self.odl.get_flow, id_flow)
 
+    def test_add_flow_one_acl_rule_with_udp_protocol_dest_range_l4(self):
+        """Test add flow with udp protocol and dest range in l4 options."""
+
+        input = self.json_aclapi_input_path % 'acl_id_141880.json'
+        data = self.load_json_file(input)
+
+        self.odl.add_flow(data)
+
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+
+        for id_ in xrange(1024, 1027+1):
+
+            flow = self.odl.get_flow(flow_id + '_%s' % id_)[random_idx][self.flow_key]
+            output = self.json_odl_output_path % 'odl_id_141880_%s.json' % id_
+            self.compare_json_lists(output, flow)
+
+    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_range_l4(self):
+        """Test add flow with tcp protocol and dest range in l4 options."""
+
+        input = self.json_aclapi_input_path % 'acl_id_141239.json'
+        data = self.load_json_file(input)
+
+        self.odl.add_flow(data)
+
+        nodes_ids = self.odl._get_nodes_ids()
+
+        random_idx = random.randint(0, len(nodes_ids) - 1)
+
+        flow_id = data['rules'][0]['id']
+
+        for id_ in xrange(161, 162+1):
+
+            flow = self.odl.get_flow(flow_id + '_%s' % id_)[random_idx][self.flow_key]
+            output = self.json_odl_output_path % 'odl_id_141239_%s.json' % id_
+            self.compare_json_lists(output, flow)
+
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for error cases."""
@@ -376,7 +382,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -403,7 +409,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -429,7 +435,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -448,7 +454,6 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "rules": [{
                 "action": "permit",
                 "description": "Restrict environment",
-                "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
                     "icmp-type": "8"
@@ -460,7 +465,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -489,7 +494,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -517,7 +522,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,

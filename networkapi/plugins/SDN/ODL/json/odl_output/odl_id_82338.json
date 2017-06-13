@@ -4,7 +4,7 @@
     "priority": 65000,
     "table_id": 0,
     "flow-name": "generic",
-    "cookie": 353639285653504,
+    "cookie": 353639017218048,
     "instructions": {
       "instruction": [
         {

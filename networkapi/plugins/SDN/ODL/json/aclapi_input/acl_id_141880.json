@@ -6,9 +6,9 @@
       "destination": "10.130.70.224/27",
       "id": "141880",
       "l4-options": {
-        "dest-port-end": "65535",
+        "dest-port-start": "1024",
         "dest-port-op": "range",
-        "dest-port-start": "1024"
+        "dest-port-end": "1027"
       },
       "owner": "networkapi",
       "protocol": "udp",
