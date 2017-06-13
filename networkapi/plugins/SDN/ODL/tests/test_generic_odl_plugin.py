@@ -4,6 +4,7 @@ from nose.tools import assert_raises_regexp
 from nose.tools import assert_raises
 from requests.exceptions import HTTPError
 import random
+from json import dumps
 
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -381,7 +382,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -408,7 +409,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -434,7 +435,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -464,7 +465,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -493,7 +494,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
@@ -521,7 +522,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             }]
         }
 
-        rule = data['rules'][0]
+        rule = dumps(data['rules'][0], sort_keys=True)
 
         assert_raises_regexp(
             ValueError,
