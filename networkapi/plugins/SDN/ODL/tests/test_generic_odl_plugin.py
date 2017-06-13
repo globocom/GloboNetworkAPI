@@ -317,7 +317,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
-        flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
         for id_ in xrange(161, 162+1):
 

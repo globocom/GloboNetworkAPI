@@ -13,7 +13,7 @@
         }
       },
       "ipv4-source": "10.129.199.192/27",
-      "tcp-destination-port": "162",
+      "tcp-destination-port": 162,
       "ip-match": {
         "ip-protocol": 6
       }
