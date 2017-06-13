@@ -453,7 +453,6 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
             "rules": [{
                 "action": "permit",
                 "description": "Restrict environment",
-                "destination": "10.0.0.0/8",
                 "icmp-options": {
                     "icmp-code": "0",
                     "icmp-type": "8"
