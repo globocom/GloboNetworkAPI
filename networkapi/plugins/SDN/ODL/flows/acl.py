@@ -79,6 +79,8 @@ class AclFlowBuilder(object):
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
+        self.dumped_rule = None # Actual processing rule in json format
+
         self._reset_control_members()
 
         logging.basicConfig(format=self.LOG_FORMAT, level=logging.DEBUG)
@@ -138,6 +140,8 @@ class AclFlowBuilder(object):
     def _build_rule(self, rule):
         """ Builds one or more flows based at one ACL rule """
 
+        self.dumped_rule = dumps(rule, sort_keys=True)
+
         self._reset_control_members()
 
         while not self.generated_all_flows_from_rule:
@@ -186,8 +190,8 @@ class AclFlowBuilder(object):
             self.flows["flow"][0]["match"]["ipv4-source"] = rule[Tokens.source]
 
         else:
-            logging.error(self.MALFORMED_MESSAGE % rule)
-            raise ValueError(self.MALFORMED_MESSAGE % rule)
+            logging.error(self.MALFORMED_MESSAGE % self.dumped_rule)
+            raise ValueError(self.MALFORMED_MESSAGE % self.dumped_rule)
 
     def _build_action(self, rule):
         """ Builds the Openflow actions to a flow """
@@ -226,7 +230,8 @@ class AclFlowBuilder(object):
         """ Identifies the protocol of the ACL rule """
 
         if Tokens.protocol not in rule:
-            message = "Missing %s field:\n%s" % (Tokens.protocol, rule)
+            message = "Missing %s field:\n%s" % (Tokens.protocol,
+                                                 self.dumped_rule)
             logging.error(self.MALFORMED_MESSAGE % message)
             raise ValueError(self.MALFORMED_MESSAGE % message)
 
@@ -277,7 +282,7 @@ class AclFlowBuilder(object):
                 }
             else:
                 message = "Missing %s or %s icmp options:\n%s" % (
-                    Tokens.icmp_code, Tokens.icmp_type, rule)
+                    Tokens.icmp_code, Tokens.icmp_type, self.dumped_rule)
                 logging.error(self.MALFORMED_MESSAGE % message)
                 raise ValueError(self.MALFORMED_MESSAGE % message)
         else:
