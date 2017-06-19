@@ -835,6 +835,14 @@ class Equipamento(BaseModel):
                     'ip': ipv6
                 })
 
+            # as
+            aseqpt_model = get_model('api_as', 'AsEquipment')
+            if equipment.get('as'):
+                aseqpt_model.create_v3({
+                    'equipment': self.id,
+                    'id_as': equipment.get('as')
+                })
+
         except EquipmentInvalidValueException, e:
             raise EquipmentInvalidValueException(e.detail)
         except AmbienteNotFoundError, e:
@@ -950,6 +958,20 @@ class Equipamento(BaseModel):
                 # delete relashionship with ipv6 not sended
                 ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
+
+            # as
+            if equipment.get('as'):
+                aseqpt_model = get_model('api_as', 'AsEquipment')
+
+                # delete old AsEquipment association
+                for aseqpt in self.asequipment_set.all():
+                    aseqpt.delete()
+
+                # create new AsEquipment association
+                aseqpt_model.create_v3({
+                    'equipment': self.id,
+                    'id_as': equipment.get('as')
+                })
 
         except EquipmentInvalidValueException, e:
             raise EquipmentInvalidValueException(e.detail)
