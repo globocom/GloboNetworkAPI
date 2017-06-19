@@ -66,14 +66,6 @@ class As(BaseModel):
 
         self.save()
 
-        # Creates relationship between AS and equipment
-        for eqpt in as_map.get('equipments', []):
-            as_equipment = AsEquipment()
-            as_equipment.create_v3({
-                'id_as': self.id,
-                'equipment': eqpt.get('id')
-            })
-
     def update_v3(self, as_map):
         """Update AS."""
 
@@ -83,30 +75,6 @@ class As(BaseModel):
         self.description = as_map.get('description')
 
         self.save()
-
-        # Get objects of equipments
-        eqpts = eqpt_models.Equipamento.objects.filter(id__in=[
-            eqpt.get('id') for eqpt in as_map.get('equipments', [])]
-        )
-
-        # Get current associates
-        current = self.asequipment_set \
-            .filter(equipment__in=eqpts) \
-            .values_list('equipment', flat=True)
-
-        # Creates new associate
-        for eqpt in eqpts:
-            if eqpt.id not in current:
-                as_equipment = AsEquipment()
-                as_equipment.create_v3({
-                    'id_as': self.id,
-                    'equipment': eqpt.id
-                })
-
-        # Removes old associates
-        for as_eqpt in self.asequipment_set \
-                .exclude(equipment__in=eqpts):
-            as_eqpt.delete_v3()
 
     def delete_v3(self):
         """Delete AS.
