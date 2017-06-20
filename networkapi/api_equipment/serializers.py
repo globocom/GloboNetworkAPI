@@ -339,7 +339,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                 'as_bgp__basic': {
                     'serializer': as_slz.AsV3Serializer,
                     'kwargs': {
-                        
+
                     },
                     'obj': 'as_bgp'
                 },
