@@ -53,7 +53,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
 
         assert_in("flow-name", acl["flow"][0])
         assert_equal(acl["flow"][0]["flow-name"],
-                data["rules"][0]["description"])
+                     data["rules"][0]["description"])
 
     def test_acl_should_raise_value_error_when_no_destination_is_passed(self):
         """ Should raise ValueError when no destination is passed """
@@ -103,7 +103,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
         assert_equal(
             2048,
             acl["flow"][0]
-                ["match"]["ethernet-match"]["ethernet-type"]["type"])
+            ["match"]["ethernet-match"]["ethernet-type"]["type"])
 
     def test_acl_should_raise_exception_when_there_is_no_protocol_field(self):
         """ Should raise an exception when there is no protocol field """
