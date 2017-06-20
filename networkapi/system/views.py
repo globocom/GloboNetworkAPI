@@ -63,7 +63,7 @@ class VariableView(APIView):
             if var:
                 raise exceptions.VariableDuplicateNotExistException()
 
-            variable = facade.save_variable(self.request.user, name, value, description)
+            variable = facade.save_variable(name, value, description)
 
             data = dict()
             variable_serializer = VariableSerializer(variable)
