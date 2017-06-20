@@ -525,6 +525,14 @@ class Equipamento(BaseModel):
 
     as_bgp = property(_get_as_bgp)
 
+    def _get_as_bgp_id(self):
+        as_bgp = self.asequipment_set.all()
+        if as_bgp:
+            return as_bgp[0].id_as.id
+        return None
+
+    as_bgp_id = property(_get_as_bgp_id)
+
     @classmethod
     def get_next_name_by_prefix(cls, prefix):
         try:
