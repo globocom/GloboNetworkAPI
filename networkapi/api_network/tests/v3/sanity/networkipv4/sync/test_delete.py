@@ -51,11 +51,9 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    # not deploy tes
-
     def test_try_delete_inactive_netipv4(self):
         """Test of success to delete an inactive Network IPv4 without IP
-            Addresses.
+           Addresses.
         """
 
         response = self.client.delete(
@@ -79,7 +77,8 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
 
     def test_try_delete_inactive_netipv4_with_ip_assoc_to_inactive_vip(self):
         """Test of success to delete an inactive Network IPv4 with only one IP
-            Address associated to an active VIP Request."""
+           Address associated to an inactive VIP Request.
+        """
 
         response = self.client.delete(
             '/api/v3/networkv4/4/',
@@ -102,7 +101,8 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
 
     def test_try_delete_inactive_netipv4_with_ips(self):
         """Test of success to delete a Network IPv4 with two IP Addresses not
-            associated to any active VIP Request."""
+           associated to any active VIP Request.
+        """
 
         response = self.client.delete(
             '/api/v3/networkv4/6/',
@@ -235,8 +235,7 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_try_delete_active_netipv4(self):
-        """Test of success to undeploy an active Network IPv4 without IP
-            Addresses."""
+        """Test of error to delete an active Network IPv4."""
 
         response = self.client.delete(
             '/api/v3/networkv4/1/',
@@ -260,8 +259,9 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data['networks'])
 
     def test_try_delete_inactive_netipv4_with_ip_assoc_to_active_vip(self):
-        """Test of success to undeploy an inactive Network IPv4 with only one
-            IP address associated to an active VIP Request."""
+        """Test of error to delete an inactive Network IPv4 with only one
+           IP address associated to an active VIP Request.
+        """
 
         response = self.client.delete(
             '/api/v3/networkv4/3/',

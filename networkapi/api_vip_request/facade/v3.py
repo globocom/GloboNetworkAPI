@@ -113,7 +113,7 @@ def update_vip_request(vip_request, user, permit_created=False):
         vip = get_vip_request_by_id(vip_request.get('id'))
         vip.update_v3(vip_request, user, permit_created)
     except exceptions.VipRequestDoesNotExistException, e:
-        raise ObjectDoesNotExistException(e)
+        raise ObjectDoesNotExistException(e.detail)
     except ValidationAPIException, e:
         raise ValidationAPIException(e)
     except Exception, e:
@@ -131,7 +131,7 @@ def delete_vip_request(vip_request_ids, keep_ip='0'):
             bypass_ip = True if keep_ip == '1' else False
             vip.delete_v3(bypass_ipv4=bypass_ip, bypass_ipv6=bypass_ip)
         except exceptions.VipRequestDoesNotExistException, e:
-            raise ObjectDoesNotExistException(e)
+            raise ObjectDoesNotExistException(e.detail)
         except exceptions.VipConstraintCreated, e:
             raise ValidationAPIException(e)
         except ValidationAPIException, e:

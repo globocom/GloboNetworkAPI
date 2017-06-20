@@ -31,7 +31,8 @@
         "max_num_vlan_2": null,
         "min_num_vlan_1": null,
         "min_num_vlan_2": null,
-        "name": "BE - SANITY-TEST-1 - GENERAL"
+        "name": "BE - SANITY-TEST-1 - GENERAL",
+        "sdn_controlled": false
       },
       "filter": {
         "description": "Servidores",
@@ -50,7 +51,8 @@
       "max_num_vlan_2": null,
       "min_num_vlan_1": null,
       "min_num_vlan_2": null,
-      "name": "BE - SANITY-TEST-1 - RACK-1"
+      "name": "BE - SANITY-TEST-1 - RACK-1",
+      "sdn_controlled": false
     }
   ]
 }

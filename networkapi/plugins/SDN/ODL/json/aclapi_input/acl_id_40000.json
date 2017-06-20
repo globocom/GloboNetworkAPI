@@ -1,0 +1,31 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.128.24.3/32",
+      "id": "40000",
+      "l4-options": {
+        "dest-port-op": "eq",
+        "dest-port-start": "123"
+      },
+      "owner": "networkapi",
+      "protocol": "tcp",
+      "source": "0.0.0.0/0"
+    },
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.128.24.4/32",
+      "id": "40001",
+      "l4-options": {
+        "dest-port-op": "eq",
+        "dest-port-start": "8080"
+      },
+      "owner": "networkapi",
+      "protocol": "tcp",
+      "source": "0.0.0.0/0"
+    }
+  ]
+}

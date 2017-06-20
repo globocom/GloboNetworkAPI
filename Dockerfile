@@ -5,10 +5,6 @@ WORKDIR /netapi
 
 ADD . /netapi/
 
-RUN apt-get update && apt-get install -y \
-            net-tools \
-            dnsutils
-
 CMD cd /netapi
 
 EXPOSE 8000

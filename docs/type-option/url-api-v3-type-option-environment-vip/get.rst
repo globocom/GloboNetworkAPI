@@ -8,7 +8,7 @@ URL::
 
     /api/v3/type-option/environment-vip/<environment_vip_id>/
 
-where **environment_vip_id** is the identifier of environment vip used as an argument to retrieve associated type options. Only one identifier can be assigned to **environment_vip_id**.
+where **environment_vip_id** are the identifiers of environment vips used as an argument to retrieve associated type options. It can use multiple id's separated by semicolons.
 
 Example::
 
@@ -18,15 +18,10 @@ Response body:
 
 .. code-block:: json
 
-    {
+    [
+        [
+            <string>,...
+        ],...
+    ]
 
-        "optionsvip": [
-            [{
-                "id": <integer>,
-                "tipo_opcao": <string>,
-                "nome_opcao_txt": <string>
-            },...]
-        ]
-
-    }
 

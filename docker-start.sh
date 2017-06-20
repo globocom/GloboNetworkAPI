@@ -1,9 +1,9 @@
 # Waits for other containers availability
 sleep 5
 
+# DB
 mysql -u root -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
 mysql -u root -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
-
 cd /netapi/dbmigrate; db-migrate --show-sql
 mysql -u root -h netapi_db networkapi < /netapi/dev/load_example_environment.sql
 
@@ -33,7 +33,7 @@ update-rc.d gunicorn_networkapi defaults
 export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
 
 echo "starting gunicorn"
-/usr/local/bin/gunicorn -c /netapi/gunicorn.conf.py networkapi_wsgi:application
+/etc/init.d/gunicorn_networkapi start
 
 touch /tmp/gunicorn-networkapi_error.log
 tail -f /tmp/gunicorn-networkapi_error.log

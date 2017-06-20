@@ -1,6 +1,8 @@
 PUT
 ###
 
+.. _url-api-v3-vip-request-put-redeploy-list-vip-request:
+
 Updating list of vip requests in equipments
 *******************************************
 

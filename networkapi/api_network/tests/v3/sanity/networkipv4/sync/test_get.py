@@ -45,7 +45,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_get_netipv4_by_id_using_basic_kind(self):
-        """Test of success to get a Network IPv4 by id using 'basic' kind."""
+        """Test of success to get a Network IPv4 by id using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1.json'
 
@@ -60,9 +60,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv4_by_id_using_basic_kind(self):
-        """
-        Test of success to get two Network IPv4 by id using basic kind.
-        """
+        """Test of success to get two Network IPv4 by id using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1;2.json'
 
@@ -77,9 +75,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_netipv4_by_search_using_basic_kind(self):
-        """
-        Test of success to get a Network IPv4 by search using basic kind.
-        """
+        """Test of success to get a Network IPv4 by search using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1.json'
 
@@ -109,9 +105,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv4_by_search_using_basic_kind(self):
-        """
-        Test of success to get two Network IPv4 by search using basic kind.
-        """
+        """Test of success to get two Network IPv4 by search using basic kind."""
 
         name_file = self.json_path % 'get/basic/pk_1;2.json'
 
@@ -154,8 +148,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv4_by_id_using_details_kind(self):
-        """Test of success to get two Network IPv4 by id using details kind.
-        """
+        """Test of success to get two Network IPv4 by id using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1;2.json'
 
@@ -171,9 +164,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_netipv4_by_search_using_details_kind(self):
-        """
-        Test of success to get a Network IPv4 by search using details kind.
-        """
+        """Test of success to get a Network IPv4 by search using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1.json'
 
@@ -203,9 +194,7 @@ class NetworkIPv4GetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['networks'])
 
     def test_get_two_netipv4_by_search_using_details_kind(self):
-        """
-        Test of success to get two Network IPv4 by search using details kind.
-        """
+        """Test of success to get two Network IPv4 by search using details kind."""
 
         name_file = self.json_path % 'get/details/pk_1;2.json'
 
@@ -306,8 +295,7 @@ class NetworkIPv4GetErrorTestCase(NetworkApiTestCase):
         )
 
     def test_get_a_existent_and_inexistent_netipv4_by_id(self):
-        """Test of error to get a existent and a inexistent Network IPv4 by id.
-        """
+        """Test of error to get a existent and a inexistent Network IPv4 by id."""
 
         # Make a GET request
         response = self.client.get(

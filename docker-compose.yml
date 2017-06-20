@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
 
     db:
@@ -18,7 +18,7 @@ services:
         image: rabbitmq:3.6.9
         ports:
             - "5672"
-            - "15672"
+            - "15672:15672"
         volumes:
             - ./docker-start-queue.sh:/docker-start-queue.sh:ro
         networks:
@@ -34,10 +34,10 @@ services:
 
     odl:
         container_name: netapi_odl
-        image: glefevre/opendaylight
+        image: opendaylight/odl:5.2.0
         volumes:
-            - ./docker-start-opendaylight.sh:/odl/docker-start-opendaylight.sh:ro
-        command: bash docker-start-opendaylight.sh
+            - ./docker-start-opendaylight.sh:/opt/opendaylight/docker-start-opendaylight.sh:ro
+        command: bash /opt/opendaylight/docker-start-opendaylight.sh
         ports:
             - "6653:6653"
             - "8181:8181"
@@ -62,6 +62,13 @@ services:
             - queue
             - cache
             - odl
+        links:
+            - db:netapi_db
+        external_links:
+            - netapi_graylog2
+            - cache:netapi_cache
+            - odl:netapi_odl
+            - queue:netapi_queue
 
 volumes:
     netapi_db_vol:

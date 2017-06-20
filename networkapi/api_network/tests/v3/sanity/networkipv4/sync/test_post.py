@@ -84,9 +84,7 @@ class NetworkIPv4PostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file_get, response.data['networks'])
 
     def test_try_create_netipv4_with_octs_and_env_vip(self):
-        """Test of success to create a Network IPv4 with octs and Environment
-        Vip.
-        """
+        """Test of success to create a Network IPv4 with octs and Environment Vip."""
 
         name_file = self.json_path % 'post/net_with_octs_env_vip.json'
 
@@ -292,7 +290,8 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
 
     def test_try_create_netipv4_with_auto_alloc_in_full_env(self):
         """Test of error to create a Network IPv4 without octs in vlan of
-        Environment with not available Network IPv4."""
+           Environment with not available Network IPv4.
+        """
 
         name_file = self.json_path % 'post/net_without_octs_full_env.json'
 
@@ -311,7 +310,8 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
 
     def test_try_create_netipv4_with_octs_in_full_env(self):
         """Test of error to create a Network IPv4 with octs in vlan of
-        Environment with not available Network IPv4."""
+           Environment with not available Network IPv4.
+        """
 
         name_file = self.json_path % 'post/net_with_octs_full_env.json'
 
@@ -334,7 +334,8 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
 
     def test_try_create_netipv4_out_of_range_with_octs(self):
         """Test of error to create a Network IPv4 with octs out of range
-        configuration defined in related Environment."""
+           configuration defined in related vlan of Environment.
+        """
 
         name_file = self.json_path % 'post/net_with_octs_out_of_range.json'
 
