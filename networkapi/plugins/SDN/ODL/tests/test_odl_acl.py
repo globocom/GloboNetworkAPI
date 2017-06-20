@@ -206,10 +206,11 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 "protocol": "udp"
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
         assert_equal(
-            17, acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
+            17, acl["flow"][0]["match"]["ip-match"]["ip-protocol"])
 
     def test_acl_should_have_udp_source_port(self):
         """ Should have udp source port """
@@ -226,9 +227,10 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
-        assert_equal(acl.flows["flow"][0]["match"]["udp-source-port"],
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
+        assert_equal(acl["flow"][0]["match"]["udp-source-port"],
                      data["rules"][0]["l4-options"]["src-port-start"])
 
     def test_acl_should_have_udp_destination_port(self):
@@ -246,9 +248,10 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
-        assert_equal(acl.flows["flow"][0]["match"]["udp-destination-port"],
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
+        assert_equal(acl["flow"][0]["match"]["udp-destination-port"],
                      data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_tcp_source_and_destination_ports(self):
@@ -268,11 +271,12 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
-        assert_equal(acl.flows["flow"][0]["match"]["tcp-source-port"],
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
+        assert_equal(acl["flow"][0]["match"]["tcp-source-port"],
                      data["rules"][0]["l4-options"]["src-port-start"])
-        assert_equal(acl.flows["flow"][0]["match"]["tcp-destination-port"],
+        assert_equal(acl["flow"][0]["match"]["tcp-destination-port"],
                      data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_udp_source_and_destination_ports(self):
@@ -292,11 +296,12 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
-        assert_equal(acl.flows["flow"][0]["match"]["udp-source-port"],
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
+        assert_equal(acl["flow"][0]["match"]["udp-source-port"],
                      data["rules"][0]["l4-options"]["src-port-start"])
-        assert_equal(acl.flows["flow"][0]["match"]["udp-destination-port"],
+        assert_equal(acl["flow"][0]["match"]["udp-destination-port"],
                      data["rules"][0]["l4-options"]["dest-port-start"])
 
     def test_acl_should_have_icmp_as_ip_protocol(self):
@@ -314,10 +319,10 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
-        assert_equal(
-            1, acl.flows["flow"][0]["match"]["ip-match"]["ip-protocol"])
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
+        assert_equal(1, acl["flow"][0]["match"]["ip-match"]["ip-protocol"])
 
     def test_acl_should_raise_value_error_when_there_are_no_icmp_options(self):
         """ Should raise ValueError when there are no ICMP options """
@@ -330,8 +335,9 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 "destination": "10.0.0.2/32",
             }]
         }
-        acl = AclFlowBuilder(data)
-        assert_raises(ValueError, acl.build)
+        flows = AclFlowBuilder(data)
+        acl = flows.build()
+        assert_raises(ValueError, acl.next)
 
     def test_acl_should_raise_error_for_icmp_type_and_code_missing(self):
         """ Should raise error for ICMP type and code missing """
@@ -346,8 +352,9 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        assert_raises(ValueError, acl.build)
+        flows = AclFlowBuilder(data)
+        acl = flows.build()
+        assert_raises(ValueError, acl.next)
 
     def test_acl_should_have_icmp_code_and_type_at_flow(self):
         """ Should have icmp code and type at flow """
@@ -365,14 +372,15 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
                 }
             }]
         }
-        acl = AclFlowBuilder(data)
-        acl.build()
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
         assert_equal(
             data["rules"][0]["icmp-options"]["icmp-code"],
-            acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-code"])
+            acl["flow"][0]["match"]["icmpv4-match"]["icmpv4-code"])
         assert_equal(
             data["rules"][0]["icmp-options"]["icmp-type"],
-            acl.flows["flow"][0]["match"]["icmpv4-match"]["icmpv4-type"])
+            acl["flow"][0]["match"]["icmpv4-match"]["icmpv4-type"])
 
     def test_acl_should_create_internet_protocol_flow(self):
         """ Should create an Internet Protocol flow """
@@ -386,11 +394,12 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             }]
         }
 
-        acl = AclFlowBuilder(data)
-        acl.build()
-        assert_equal(acl.flows['flow'][0]['match']['ipv4-source'],
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
+
+        assert_equal(acl['flow'][0]['match']['ipv4-source'],
                      data['rules'][0]['source'])
-        assert_equal(acl.flows['flow'][0]['match']['ipv4-destination'],
+        assert_equal(acl['flow'][0]['match']['ipv4-destination'],
                      data['rules'][0]['destination'])
 
     def test_acl_should_have_action_local(self):
@@ -406,11 +415,11 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             }]
         }
 
-        acl = AclFlowBuilder(data)
-        acl.build()
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
 
-        assert_in("instructions", acl.flows["flow"][0])
-        instruction = acl.flows["flow"][0]["instructions"]["instruction"][0]
+        assert_in("instructions", acl["flow"][0])
+        instruction = acl["flow"][0]["instructions"]["instruction"][0]
         assert_equal(instruction["apply-actions"]["action"][0]["output-action"]
                      ["output-node-connector"], "NORMAL")
 
@@ -427,7 +436,7 @@ class OpenDayLightACLTestCase(NetworkApiTestCase):
             }]
         }
 
-        acl = AclFlowBuilder(data)
-        acl.build()
+        flows = AclFlowBuilder(data)
+        acl = flows.build().next()
 
-        assert_not_in("instructions", acl.flows["flow"][0])
+        assert_not_in("instructions", acl["flow"][0])
