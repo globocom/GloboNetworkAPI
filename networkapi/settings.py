@@ -445,8 +445,8 @@ SPECS = {
     'ogp_put': 'networkapi/api_ogp/specs/ogp_put.json',
     'ogpg_post': 'networkapi/api_ogp/specs/ogpg_post.json',
     'ogpg_put': 'networkapi/api_ogp/specs/ogpg_put.json',
-    'as_post': 'networkapi/api_as/specs/as_post.json',
-    'as_put': 'networkapi/api_as/specs/as_put.json',
+    'as_v3_post': 'networkapi/api_as/v3/specs/as_post.json',
+    'as_v3_put': 'networkapi/api_as/v3/specs/as_put.json',
 }
 
 ##########

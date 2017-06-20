@@ -2,15 +2,15 @@
 import logging
 
 from django.core.exceptions import FieldError
-from networkapi.api_as.exceptions import AsNotFoundError, AsError
-from networkapi.api_as.exceptions import AsErrorV3
+
 from networkapi.api_as.models import As
-from networkapi.api_as import exceptions
+from networkapi.api_as.v3 import exceptions
+from networkapi.api_as.v3.exceptions import AsErrorV3
+from networkapi.api_as.v3.exceptions import AsNotFoundError, AsError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-
 
 log = logging.getLogger(__name__)
 

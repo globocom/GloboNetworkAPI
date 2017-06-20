@@ -517,6 +517,14 @@ class Equipamento(BaseModel):
 
     ipv6 = property(_get_ipv6)
 
+    def _get_as_bgp(self):
+        as_bgp = self.asequipment_set.all()
+        if as_bgp:
+            return as_bgp[0].id_as
+        return None
+
+    as_bgp = property(_get_as_bgp)
+
     @classmethod
     def get_next_name_by_prefix(cls, prefix):
         try:
@@ -838,7 +846,7 @@ class Equipamento(BaseModel):
             # as
             aseqpt_model = get_model('api_as', 'AsEquipment')
             if equipment.get('as'):
-                aseqpt_model.create_v3({
+                aseqpt_model().create_v3({
                     'equipment': self.id,
                     'id_as': equipment.get('as')
                 })

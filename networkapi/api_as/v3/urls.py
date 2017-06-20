@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import patterns
-from django.conf.urls import include
 from django.conf.urls import url
 
-v3_prefix = r'^v3/'
+from networkapi.api_as.v3 import views
 
 urlpatterns = patterns(
     '',
-    url(v3_prefix, include('networkapi.api_as.v3.urls')),
-
+    url(r'^as/((?P<obj_ids>[;\w]+)/)?$',
+        views.AsDBView.as_view()),
 )

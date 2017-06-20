@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
 from django.db.transaction import commit_on_success
-
-from networkapi.api_as.permissions import Write
-from networkapi.api_as.permissions import Read
-from networkapi.settings import SPECS
+from networkapi.api_as.v3.permissions import Read
+from networkapi.api_as.v3.permissions import Write
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from networkapi.api_as import serializers, facade
+from networkapi.api_as.v3 import facade
+from networkapi.api_as.v3 import serializers
+from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
-from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.json_validate import json_validate
-from rest_framework.response import Response
+from networkapi.util.json_validate import raise_json_validate
 
 
 class AsDBView(CustomAPIView):
@@ -60,14 +60,14 @@ class AsDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('as_post')
+    @raise_json_validate('as_v3_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Create new AS."""
 
         as_s = request.DATA
-        json_validate(SPECS.get('as_post')).validate(as_s)
+        json_validate(SPECS.get('as_v3_post')).validate(as_s)
         response = list()
         for as_ in as_s['as_s']:
 
@@ -77,14 +77,14 @@ class AsDBView(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('as_put')
+    @raise_json_validate('as_v3_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Update AS."""
 
         as_s = request.DATA
-        json_validate(SPECS.get('as_put')).validate(as_s)
+        json_validate(SPECS.get('as_v3_put')).validate(as_s)
         response = list()
         for as_ in as_s['as_s']:
 

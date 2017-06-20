@@ -8,6 +8,10 @@
 --
 -- ----------------------------------------------------------------------------------
 -- Dumping data for table `config`
+
+SET @id_as_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'as_management');
+
+
 INSERT INTO
    `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max)
 VALUES
@@ -1529,6 +1533,14 @@ VALUES
 ,
    (
       34, 1, 1, 2, 5
+   )
+,
+   (
+      35, 1, 1, 1, @id_as_management_perm
+   )
+,
+   (
+      36, 1, 1, 2, @id_as_management_perm
    )
 ;
 

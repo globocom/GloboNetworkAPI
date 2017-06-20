@@ -8,10 +8,10 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 class AsV3Serializer(DynamicFieldsModelSerializer):
 
-    equipments = serializers.SerializerMethodField('get_equipments')
+    equipment = serializers.SerializerMethodField('get_equipment')
 
-    def get_equipments(self, obj):
-        return self.extends_serializer(obj, 'equipments')
+    def get_equipment(self, obj):
+        return self.extends_serializer(obj, 'equipment')
 
     class Meta:
         As_ = get_model('api_as', 'As')
@@ -21,7 +21,7 @@ class AsV3Serializer(DynamicFieldsModelSerializer):
             'id',
             'name',
             'description',
-            'equipments'
+            'equipment'
         )
 
         basic_fields = (
@@ -43,27 +43,22 @@ class AsV3Serializer(DynamicFieldsModelSerializer):
 
         if not self.mapping:
             self.mapping = {
-                'equipments': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
-                    'kwargs': {
-                        'many': True,
-                    },
-                    'obj': 'equipments',
+
+                'equipment': {
+                    'obj': 'equipment_id'
                 },
-                'equipments__basic': {
+                'equipment__basic': {
                     'serializer': eqpt_slz.EquipmentV3Serializer,
                     'kwargs': {
-                        'many': True,
-                        'kind': 'basic'
+
                     },
-                    'obj': 'equipments',
+                    'obj': 'equipment'
                 },
-                'equipments__details': {
+                'equipment__details': {
                     'serializer': eqpt_slz.EquipmentV3Serializer,
                     'kwargs': {
-                        'many': True,
-                        'kind': 'details'
+
                     },
-                    'obj': 'equipments',
+                    'obj': 'equipment'
                 }
             }

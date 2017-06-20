@@ -5,9 +5,9 @@ from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import get_model
-from networkapi.api_as import exceptions
+
+from networkapi.api_as.v3 import exceptions
 from networkapi.models.BaseModel import BaseModel
-from networkapi.util.geral import get_app
 
 
 class As(BaseModel):
@@ -27,6 +27,22 @@ class As(BaseModel):
         null=False,
         max_length=200
     )
+
+    def _get_equipment(self):
+        equipment = self.asequipment_set.all()
+        if equipment:
+            return equipment[0].equipment
+        return None
+
+    equipment = property(_get_equipment)
+
+    def _get_equipment_id(self):
+        equipment = self.asequipment_set.all()
+        if equipment:
+            return equipment[0].equipment.id
+        return None
+
+    equipment_id = property(_get_equipment_id)
 
     log = logging.getLogger('As')
 
@@ -69,8 +85,6 @@ class As(BaseModel):
     def update_v3(self, as_map):
         """Update AS."""
 
-        eqpt_models = get_app('equipamento', 'models')
-
         self.name = as_map.get('name')
         self.description = as_map.get('description')
 
@@ -86,11 +100,10 @@ class As(BaseModel):
         try:
 
             if self.asequipment_set.count() > 0:
-                ids_equipments = [asequipment.equipment_id
-                       for asequipment in self.asequipment_set.all()]
-                ids_equipments = map(int, ids_equipments)
-                msg = u'AS {} is associated with Equipments: {}'.\
-                    format(self.id, ids_equipments)
+                id_equipment = self.asequipment_set.all()[0].equipment_id
+                msg = u'Cannot delete AS {} because it is associated ' \
+                      u'with Equipment {}.'.\
+                    format(self.id, id_equipment)
                 raise exceptions.AsAssociatedToEquipmentError(
                     msg
                 )
