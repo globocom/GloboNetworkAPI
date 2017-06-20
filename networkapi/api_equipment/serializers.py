@@ -202,7 +202,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     def get_serializers(self):
         ip_slz = get_app('api_ip', module_label='serializers')
         grp_slz = get_app('api_group', module_label='serializers')
-        as_slz = get_app('api_as', module_label='v3.serializers')
+        as_slz = get_app('api_as', module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -337,14 +337,14 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'as_bgp_id'
                 },
                 'as_bgp__basic': {
-                    'serializer': as_slz.AsV3Serializer,
+                    'serializer': as_slz.AsV4Serializer,
                     'kwargs': {
 
                     },
                     'obj': 'as_bgp'
                 },
                 'as_bgp__details': {
-                    'serializer': as_slz.AsV3Serializer,
+                    'serializer': as_slz.AsV4Serializer,
                     'kwargs': {
 
                     },

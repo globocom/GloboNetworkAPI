@@ -2,7 +2,7 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
-from networkapi.api_as.v3 import views
+from networkapi.api_as.v4 import views
 
 urlpatterns = patterns(
     '',

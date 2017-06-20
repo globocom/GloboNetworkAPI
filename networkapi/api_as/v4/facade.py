@@ -4,9 +4,9 @@ import logging
 from django.core.exceptions import FieldError
 
 from networkapi.api_as.models import As
-from networkapi.api_as.v3 import exceptions
-from networkapi.api_as.v3.exceptions import AsErrorV3
-from networkapi.api_as.v3.exceptions import AsNotFoundError, AsError
+from networkapi.api_as.v4 import exceptions
+from networkapi.api_as.v4.exceptions import AsErrorV4
+from networkapi.api_as.v4.exceptions import AsNotFoundError, AsError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
@@ -71,8 +71,8 @@ def update_as(as_):
 
     try:
         as_obj = get_as_by_id(as_.get('id'))
-        as_obj.update_v3(as_)
-    except AsErrorV3, e:
+        as_obj.update_v4(as_)
+    except AsErrorV4, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
@@ -89,8 +89,8 @@ def create_as(as_):
 
     try:
         as_obj = As()
-        as_obj.create_v3(as_)
-    except AsErrorV3, e:
+        as_obj.create_v4(as_)
+    except AsErrorV4, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
@@ -106,7 +106,7 @@ def delete_as(as_ids):
     for as_id in as_ids:
         try:
             as_obj = get_as_by_id(as_id)
-            as_obj.delete_v3()
+            as_obj.delete_v4()
         except exceptions.AsDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
         except exceptions.AsAssociatedToEquipmentError, e:

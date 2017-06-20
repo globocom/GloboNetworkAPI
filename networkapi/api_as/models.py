@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import get_model
 
-from networkapi.api_as.v3 import exceptions
+from networkapi.api_as.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -74,7 +74,7 @@ class As(BaseModel):
             raise exceptions.AsError(
                 e, u'Failure to search the AS.')
 
-    def create_v3(self, as_map):
+    def create_v4(self, as_map):
         """Create AS."""
 
         self.name = as_map.get('name')
@@ -82,7 +82,7 @@ class As(BaseModel):
 
         self.save()
 
-    def update_v3(self, as_map):
+    def update_v4(self, as_map):
         """Update AS."""
 
         self.name = as_map.get('name')
@@ -90,7 +90,7 @@ class As(BaseModel):
 
         self.save()
 
-    def delete_v3(self):
+    def delete_v4(self):
         """Delete AS.
 
         :raise ASAssociatedToEquipmentError: AS cannot be deleted because it
@@ -115,7 +115,7 @@ class As(BaseModel):
             raise exceptions.AsAssociatedToEquipmentError(e.detail)
         except Exception, e:
             self.log.error(e)
-            raise exceptions.AsErrorV3(e)
+            raise exceptions.AsErrorV4(e)
 
 
 class AsEquipment(BaseModel):
@@ -165,7 +165,7 @@ class AsEquipment(BaseModel):
             raise exceptions.AsEquipmentError(
                 e, u'Failure to search the AS.')
 
-    def create_v3(self, as_equipment):
+    def create_v4(self, as_equipment):
         """Create AsEquipment relationship."""
 
         equipment = get_model('equipamento', 'Equipamento')
@@ -176,7 +176,7 @@ class AsEquipment(BaseModel):
 
         self.save()
 
-    def delete_v3(self):
+    def delete_v4(self):
         """Delete AsEquipment relationship."""
 
         super(AsEquipment, self).delete()

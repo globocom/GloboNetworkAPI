@@ -6,7 +6,7 @@ from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 
-class AsV3Serializer(DynamicFieldsModelSerializer):
+class AsV4Serializer(DynamicFieldsModelSerializer):
 
     equipment = serializers.SerializerMethodField('get_equipment')
 
