@@ -822,7 +822,7 @@ class Equipamento(BaseModel):
             # ipv4s
             ipeqpt_model = get_model('ip', 'IpEquipamento')
             for ipv4 in equipment.get('ipv4', []):
-                ipeqpt_model.create_v3({
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv4
                 })
@@ -830,7 +830,7 @@ class Equipamento(BaseModel):
             # ipv6s
             ipeqpt_model = get_model('ip', 'Ipv6Equipament')
             for ipv6 in equipment.get('ipv6', []):
-                ipeqpt_model.create_v3({
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv6
                 })
@@ -931,7 +931,7 @@ class Equipamento(BaseModel):
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
                     if ipv4 not in ips_db_ids:
-                        ipeqpt_model.create_v3({
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
                             'ip': ipv4
                         })
@@ -950,7 +950,7 @@ class Equipamento(BaseModel):
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
                     if ipv6 not in ipv6s_db_ids:
-                        ipeqpt_model.create_v3({
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
                             'ip': ipv6
                         })
