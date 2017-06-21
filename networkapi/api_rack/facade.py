@@ -160,7 +160,7 @@ def save_rack_dc(rack_dict):
     rack.id_sw1 = Equipamento().get_by_pk(rack_dict.get('id_sw1'))
     rack.id_sw2 = Equipamento().get_by_pk(rack_dict.get('id_sw2'))
     rack.id_sw3 = Equipamento().get_by_pk(rack_dict.get('id_ilo'))
-    rack.dcroom = DatacenterRooms().get_dcrooms(idt=rack_dict.get('dcroom')) if rack_dict.get('dcroom') else None
+    rack.dcroom = DatacenterRooms().get_dcrooms(idt=rack_dict.get('fabric_id')) if rack_dict.get('fabric_id') else None
 
     if not rack.nome:
         raise exceptions.InvalidInputException("O nome do Rack não foi informado.")
