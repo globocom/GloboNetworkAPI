@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `as_equipment`
+CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `as_equipment`
+CHANGE COLUMN `id` `id` INT(11) NOT NULL ;
+
+"""

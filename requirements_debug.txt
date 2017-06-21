@@ -1,3 +1,4 @@
 django-pdb==0.5.1
 pdb==0.1
 virtualenv==15.1.0
+ipdb==0.10.2

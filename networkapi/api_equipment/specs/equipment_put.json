@@ -58,6 +58,9 @@
           },
           "name": {
             "type": "string"
+          },
+          "as": {
+            "type": "integer"
           }
         },
         "required": [

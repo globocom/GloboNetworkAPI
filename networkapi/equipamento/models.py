@@ -517,6 +517,22 @@ class Equipamento(BaseModel):
 
     ipv6 = property(_get_ipv6)
 
+    def _get_as_bgp(self):
+        as_bgp = self.asequipment_set.all()
+        if as_bgp:
+            return as_bgp[0].id_as
+        return None
+
+    as_bgp = property(_get_as_bgp)
+
+    def _get_as_bgp_id(self):
+        as_bgp = self.asequipment_set.all()
+        if as_bgp:
+            return as_bgp[0].id_as.id
+        return None
+
+    as_bgp_id = property(_get_as_bgp_id)
+
     @classmethod
     def get_next_name_by_prefix(cls, prefix):
         try:
@@ -778,6 +794,9 @@ class Equipamento(BaseModel):
         for equipment_group in self.equipamentogrupo_set.all():
             equipment_group.delete()
 
+        for as_equipment in self.asequipment_set.all():
+            as_equipment.delete()
+
         self.delete()
 
     def create_v3(self, equipment):
@@ -819,7 +838,7 @@ class Equipamento(BaseModel):
             # ipv4s
             ipeqpt_model = get_model('ip', 'IpEquipamento')
             for ipv4 in equipment.get('ipv4', []):
-                ipeqpt_model.create_v3({
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv4
                 })
@@ -827,9 +846,17 @@ class Equipamento(BaseModel):
             # ipv6s
             ipeqpt_model = get_model('ip', 'Ipv6Equipament')
             for ipv6 in equipment.get('ipv6', []):
-                ipeqpt_model.create_v3({
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv6
+                })
+
+            # as
+            aseqpt_model = get_model('api_as', 'AsEquipment')
+            if equipment.get('as'):
+                aseqpt_model().create_v3({
+                    'equipment': self.id,
+                    'id_as': equipment.get('as')
                 })
 
         except EquipmentInvalidValueException, e:
@@ -920,7 +947,7 @@ class Equipamento(BaseModel):
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
                     if ipv4 not in ips_db_ids:
-                        ipeqpt_model.create_v3({
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
                             'ip': ipv4
                         })
@@ -939,7 +966,7 @@ class Equipamento(BaseModel):
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
                     if ipv6 not in ipv6s_db_ids:
-                        ipeqpt_model.create_v3({
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
                             'ip': ipv6
                         })
@@ -947,6 +974,20 @@ class Equipamento(BaseModel):
                 # delete relashionship with ipv6 not sended
                 ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
+
+            # as
+            if equipment.get('as'):
+                aseqpt_model = get_model('api_as', 'AsEquipment')
+
+                # delete old AsEquipment association
+                for aseqpt in self.asequipment_set.all():
+                    aseqpt.delete()
+
+                # create new AsEquipment association
+                aseqpt_model.create_v3({
+                    'equipment': self.id,
+                    'id_as': equipment.get('as')
+                })
 
         except EquipmentInvalidValueException, e:
             raise EquipmentInvalidValueException(e.detail)

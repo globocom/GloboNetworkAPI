@@ -330,6 +330,7 @@ TEMPLATE_DIRS = (
 # Apps of Project
 PROJECT_APPS = (
     'networkapi.ambiente',
+    'networkapi.api_as',
     'networkapi.api_environment',
     'networkapi.api_environment_vip',
     'networkapi.api_equipment',
@@ -445,7 +446,10 @@ SPECS = {
     'ogp_post': 'networkapi/api_ogp/specs/ogp_post.json',
     'ogp_put': 'networkapi/api_ogp/specs/ogp_put.json',
     'ogpg_post': 'networkapi/api_ogp/specs/ogpg_post.json',
-    'ogpg_put': 'networkapi/api_ogp/specs/ogpg_put.json'}
+    'ogpg_put': 'networkapi/api_ogp/specs/ogpg_put.json',
+    'as_v3_post': 'networkapi/api_as/v3/specs/as_post.json',
+    'as_v3_put': 'networkapi/api_as/v3/specs/as_put.json',
+}
 
 ##########
 # Scripts
