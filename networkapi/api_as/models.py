@@ -28,21 +28,10 @@ class As(BaseModel):
         max_length=200
     )
 
-    def _get_equipment(self):
-        equipment = self.asequipment_set.all()
-        if equipment:
-            return equipment[0].equipment
-        return None
+    def _get_equipments(self):
+        return self.asequipment_set.all()
 
-    equipment = property(_get_equipment)
-
-    def _get_equipment_id(self):
-        equipment = self.asequipment_set.all()
-        if equipment:
-            return equipment[0].equipment.id
-        return None
-
-    equipment_id = property(_get_equipment_id)
+    equipments = property(_get_equipments)
 
     log = logging.getLogger('As')
 

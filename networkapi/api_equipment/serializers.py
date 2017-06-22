@@ -145,7 +145,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     model = serializers.SerializerMethodField('get_model')
     environments = serializers.SerializerMethodField('get_environments')
     groups = serializers.SerializerMethodField('get_groups')
-    as_bgp = serializers.SerializerMethodField('get_as_bgp')
+    id_as = serializers.SerializerMethodField('get_id_as')
 
     class Meta:
         Equipamento = get_model('equipamento', 'Equipamento')
@@ -160,7 +160,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
             'ipv6',
             'environments',
             'groups',
-            'as_bgp'
+            'id_as'
         )
 
         basic_fields = (
@@ -196,8 +196,8 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     def get_ipv6(self, obj):
         return self.extends_serializer(obj, 'ipv6')
 
-    def get_as_bgp(self, obj):
-        return self.extends_serializer(obj, 'as_bgp')
+    def get_id_as(self, obj):
+        return self.extends_serializer(obj, 'id_as')
 
     def get_serializers(self):
         ip_slz = get_app('api_ip', module_label='serializers')
@@ -333,22 +333,22 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'environments'
                 },
-                'as_bgp':{
-                    'obj': 'as_bgp_id'
+                'id_as':{
+                    'obj': 'id_as_id'
                 },
-                'as_bgp__basic': {
+                'id_as__basic': {
                     'serializer': as_slz.AsV4Serializer,
                     'kwargs': {
 
                     },
-                    'obj': 'as_bgp'
+                    'obj': 'id_as'
                 },
-                'as_bgp__details': {
+                'id_as__details': {
                     'serializer': as_slz.AsV4Serializer,
                     'kwargs': {
 
                     },
-                    'obj': 'as_bgp'
+                    'obj': 'id_as'
                 }
             }
 

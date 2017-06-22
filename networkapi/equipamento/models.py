@@ -517,21 +517,21 @@ class Equipamento(BaseModel):
 
     ipv6 = property(_get_ipv6)
 
-    def _get_as_bgp(self):
+    def _get_id_as(self):
         as_bgp = self.asequipment_set.all()
         if as_bgp:
             return as_bgp[0].id_as
         return None
 
-    as_bgp = property(_get_as_bgp)
+    id_as = property(_get_id_as)
 
-    def _get_as_bgp_id(self):
+    def _get_id_as_id(self):
         as_bgp = self.asequipment_set.all()
         if as_bgp:
             return as_bgp[0].id_as.id
         return None
 
-    as_bgp_id = property(_get_as_bgp_id)
+    id_as_id = property(_get_id_as_id)
 
     @classmethod
     def get_next_name_by_prefix(cls, prefix):
@@ -854,7 +854,7 @@ class Equipamento(BaseModel):
             # as
             aseqpt_model = get_model('api_as', 'AsEquipment')
             if equipment.get('as'):
-                aseqpt_model().create_v3({
+                aseqpt_model().create_v4({
                     'equipment': self.id,
                     'id_as': equipment.get('as')
                 })
