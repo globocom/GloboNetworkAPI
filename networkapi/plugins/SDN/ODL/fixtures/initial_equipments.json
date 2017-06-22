@@ -32,6 +32,16 @@
     }
   },
   {
+    "fields": {
+        "ambiente": 1,
+        "equipamento": 1,
+        "is_controller": true,
+        "is_router": false
+    },
+    "model": "equipamento.equipamentoambiente",
+    "pk": 1
+  },
+  {
     "pk": 1,
     "model": "tipoacesso.tipoacesso",
     "fields": {
