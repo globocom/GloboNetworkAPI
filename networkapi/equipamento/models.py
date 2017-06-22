@@ -853,10 +853,10 @@ class Equipamento(BaseModel):
 
             # as
             aseqpt_model = get_model('api_as', 'AsEquipment')
-            if equipment.get('as'):
+            if equipment.get('id_as'):
                 aseqpt_model().create_v4({
                     'equipment': self.id,
-                    'id_as': equipment.get('as')
+                    'id_as': equipment.get('id_as')
                 })
 
         except EquipmentInvalidValueException, e:
@@ -976,7 +976,7 @@ class Equipamento(BaseModel):
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
 
             # as
-            if equipment.get('as'):
+            if equipment.get('id_as'):
                 aseqpt_model = get_model('api_as', 'AsEquipment')
 
                 # delete old AsEquipment association
@@ -984,9 +984,9 @@ class Equipamento(BaseModel):
                     aseqpt.delete()
 
                 # create new AsEquipment association
-                aseqpt_model.create_v3({
+                aseqpt_model.create_v4({
                     'equipment': self.id,
-                    'id_as': equipment.get('as')
+                    'id_as': equipment.get('id_as')
                 })
 
         except EquipmentInvalidValueException, e:
