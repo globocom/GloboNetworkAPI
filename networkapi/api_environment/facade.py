@@ -17,6 +17,7 @@ from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_environment.tasks.flows import async_add_flow
 
 
 log = logging.getLogger(__name__)
@@ -184,7 +185,9 @@ def insert_flow(env_id, data):
     plugin = PluginFactory.factory(eqpt)
 
     try:
-        return plugin.add_flow(data=data)
+        return async_add_flow.apply_async(
+                    args=[plugin, data], queue="napi.odl_flow"
+                )
     except:
         raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
 
