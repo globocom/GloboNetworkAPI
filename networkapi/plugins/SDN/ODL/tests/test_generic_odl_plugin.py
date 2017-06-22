@@ -6,6 +6,8 @@ from requests.exceptions import HTTPError
 import random
 from json import dumps
 
+from django.test.utils import override_settings
+
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
@@ -286,7 +288,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         flow_id = data['rules'][0]['id']
         flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
-
 
     def test_remove_flow(self):
         """Test of success to remove flow."""
