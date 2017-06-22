@@ -148,6 +148,7 @@ class EnvEnvVipRelatedView(CustomAPIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+
 class EnvFlowView(CustomAPIView):
 
     @logs_method_apiview
@@ -162,7 +163,6 @@ class EnvFlowView(CustomAPIView):
         else:
             flows = facade.list_flows_by_envid(environment_id)
 
-
         return Response(flows, status=status.HTTP_200_OK)
 
     @logs_method_apiview
@@ -174,14 +174,13 @@ class EnvFlowView(CustomAPIView):
             log.error("not allowed yet")
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        #TODO: json validate specs
         facade.insert_flow(environment_id, request.DATA)
 
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
-        if not 'flow_id' in kwargs:
+        if 'flow_id' not in kwargs:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
