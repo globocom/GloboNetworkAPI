@@ -59,7 +59,7 @@
           "name": {
             "type": "string"
           },
-          "as": {
+          "id_as": {
             "type": "integer"
           }
         },
