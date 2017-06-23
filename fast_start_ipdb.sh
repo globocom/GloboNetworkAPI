@@ -24,5 +24,5 @@ export NETWORKAPI_ALLOWED_HOSTS=10.0.0.2,localhost,127.0.0.1
 echo "cleaning up .pyc"
 python manage.py clean_pyc --path /vagrant/networkapi/
 
-echo "starting runserver 0.0.0.0:8001 --ipdb"
-python manage.py runserver 0.0.0.0:8001 --ipdb
+echo "starting runserver 0.0.0.0:8000 --ipdb"
+python manage.py runserver 0.0.0.0:8000 --ipdb

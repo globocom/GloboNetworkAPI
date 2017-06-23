@@ -145,7 +145,6 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     model = serializers.SerializerMethodField('get_model')
     environments = serializers.SerializerMethodField('get_environments')
     groups = serializers.SerializerMethodField('get_groups')
-    id_as = serializers.SerializerMethodField('get_id_as')
 
     class Meta:
         Equipamento = get_model('equipamento', 'Equipamento')
@@ -160,7 +159,6 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
             'ipv6',
             'environments',
             'groups',
-            'id_as'
         )
 
         basic_fields = (
@@ -196,13 +194,9 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     def get_ipv6(self, obj):
         return self.extends_serializer(obj, 'ipv6')
 
-    def get_id_as(self, obj):
-        return self.extends_serializer(obj, 'id_as')
-
     def get_serializers(self):
         ip_slz = get_app('api_ip', module_label='serializers')
         grp_slz = get_app('api_group', module_label='serializers')
-        as_slz = get_app('api_as', module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -332,23 +326,6 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         ),
                     },
                     'obj': 'environments'
-                },
-                'id_as':{
-                    'obj': 'id_as_id'
-                },
-                'id_as__basic': {
-                    'serializer': as_slz.AsV4Serializer,
-                    'kwargs': {
-
-                    },
-                    'obj': 'id_as'
-                },
-                'id_as__details': {
-                    'serializer': as_slz.AsV4Serializer,
-                    'kwargs': {
-
-                    },
-                    'obj': 'id_as'
                 }
             }
 

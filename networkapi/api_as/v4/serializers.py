@@ -91,7 +91,7 @@ class AsEquipmentV4Serializer(DynamicFieldsModelSerializer):
 
         # serializers
         as_slz = get_app('api_as', module_label='v4.serializers')
-        eqpt_slz = get_app('api_equipment', module_label='serializers')
+        eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -108,7 +108,7 @@ class AsEquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipment_id'
                 },
                 'equipment__details': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'serializer': eqpt_slz.EquipmentV4Serializer,
                     'kwargs': {
                         'kind': 'details'
 
