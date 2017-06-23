@@ -15,11 +15,11 @@
 # limitations under the License.
 
 import ast
+import logging
 from rest_framework import serializers
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
-
-from networkapi.rack.models import Rack
+log = logging.getLogger(__name__)
 
 
 class RackSerializer(serializers.ModelSerializer):
@@ -58,10 +58,14 @@ class DCRoomSerializer(serializers.ModelSerializer):
 
     config = serializers.SerializerMethodField('get_config')
 
+
     def get_config(self, obj):
         if obj.config:
-            config = ast.literal_eval(obj.config)
-            return config
+            try:
+                config = ast.literal_eval(obj.config)
+                return config
+            except:
+                return obj.config
         return []
 
     class Meta:

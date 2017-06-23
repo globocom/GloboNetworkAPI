@@ -124,28 +124,32 @@ def update_fabric_config(fabric_id, fabric_dict):
 
     fabric = DatacenterRooms().get_dcrooms(idt=fabric_id)
 
-    if fabric.config:
+    try:
         envconfig = ast.literal_eval(fabric.config)
-    else:
-        envconfig = dict()
+    except:
+        envconfig = []
+
+    fabric_dict = fabric_dict.get("config")
 
     if fabric_dict.get("Ambiente"):
-        log.info("ambiente")
         if envconfig.get("Ambiente"):
-            envconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
+            try:
+                envconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
+            except:
+                envconfig["Ambiente"] = [envconfig.get("Ambiente")]
+                envconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
         else:
             envconfig["Ambiente"] = [fabric_dict.get("Ambiente")]
-    """
     elif fabric_dict.get("BGP"):
-        log.info("bgp")
-        envconfig.get("BGP") = fabric_dict.get("BGP")
+        envconfig["BGP"] = fabric_dict.get("BGP")
     elif fabric_dict.get("VLT"):
-        log.info("vlt")
-        envconfig.get("VLT") = fabric_dict.get("VLT")
-    """
+        envconfig["VLT"] = fabric_dict.get("VLT")
+    elif fabric_dict.get("Gerencia"):
+        envconfig["Gerencia"] = fabric_dict.get("Gerencia")
 
     fabric.config = envconfig
     fabric.save_dcrooms()
+
     return fabric
 
 def save_rack_dc(rack_dict):
