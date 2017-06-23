@@ -89,10 +89,14 @@ class As(BaseModel):
         try:
 
             if self.asequipment_set.count() > 0:
-                id_equipment = self.asequipment_set.all()[0].equipment_id
+                ids_equipments = [asequipment.equipment_id
+                                  for asequipment
+                                  in self.asequipment_set.all()]
+
+                ids_equipments = map(int, ids_equipments)
                 msg = u'Cannot delete AS {} because it is associated ' \
-                      u'with Equipment {}.'.\
-                    format(self.id, id_equipment)
+                      u'with Equipments {}.'.\
+                    format(self.id, ids_equipments)
                 raise exceptions.AsAssociatedToEquipmentError(
                     msg
                 )
