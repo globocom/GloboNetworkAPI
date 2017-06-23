@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "equipments": {
+      "items": {
+        "properties": {
+          "environments": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "is_router": {
+                  "type": "boolean"
+                },
+                "is_controller": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "equipment_type": {
+            "type": "integer"
+          },
+          "groups": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "ipv4": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "ipv6": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "maintenance": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "id_as": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "maintenance",
+          "equipment_type",
+          "model"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "equipments"
+  ],
+  "title": "Equipment Put",
+  "type": "object"
+}

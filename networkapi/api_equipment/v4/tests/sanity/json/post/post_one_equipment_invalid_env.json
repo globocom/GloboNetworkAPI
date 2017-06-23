@@ -1,0 +1,16 @@
+{
+  "equipments": [
+    {
+      "environments": [
+        {
+          "environment": 10,
+          "is_router": false
+        }
+      ],
+      "equipment_type": 1,
+      "maintenance": true,
+      "model": 1,
+      "name": "VM-SANITY-TEST-2"
+    }
+  ]
+}
