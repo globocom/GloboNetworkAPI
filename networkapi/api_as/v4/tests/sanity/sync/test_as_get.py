@@ -101,8 +101,7 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                # 'asequipment_equipment': 1,
-                # 'asequipment_equipment': 2
+                'asequipment__equipment__in': [1,2,3,4],
             }]
         }
 
