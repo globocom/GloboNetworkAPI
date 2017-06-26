@@ -1,0 +1,64 @@
+[
+  {
+    "fields": {
+      "tipo_equipamento": "VM"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "Generic Brand"
+    },
+    "model": "equipamento.marca",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "marca": 1,
+      "nome": "Generic Model"
+    },
+    "model": "equipamento.modelo",
+    "pk": 1
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "EQUIPMENT-BGP-1",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "EQUIPMENT-BGP-2",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "EQUIPMENT-BGP-3",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "EQUIPMENT-BGP-4",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  }
+]

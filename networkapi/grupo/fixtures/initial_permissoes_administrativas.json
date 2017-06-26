@@ -281,8 +281,6 @@
       "permission": 32
     }
   },
-
-
   {
     "pk": 29,
     "model": "grupo.permissaoadministrativa",
@@ -301,6 +299,26 @@
       "leitura": true,
       "escrita": true,
       "permission": 40
+    }
+  },
+  {
+    "pk": 31,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
+      "permission": 41
+    }
+  },
+  {
+    "pk": 32,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 3,
+      "leitura": true,
+      "escrita": true,
+      "permission": 41
     }
   }
 ]

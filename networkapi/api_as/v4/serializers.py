@@ -26,7 +26,8 @@ class AsV4Serializer(DynamicFieldsModelSerializer):
 
         basic_fields = (
             'id',
-            'name'
+            'name',
+            'description'
         )
 
         default_fields = (

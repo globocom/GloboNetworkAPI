@@ -51,7 +51,7 @@ class AsDBView(CustomAPIView):
         # prepare serializer with customized properties
         data = render_to_json(
             serializer_as,
-            main_property='as_s',
+            main_property='asns',
             obj_model=obj_model,
             request=request,
             only_main_property=only_main_property
@@ -69,7 +69,7 @@ class AsDBView(CustomAPIView):
         as_s = request.DATA
         json_validate(SPECS_V4.get('as_post')).validate(as_s)
         response = list()
-        for as_ in as_s['as_s']:
+        for as_ in as_s['asns']:
 
             as_obj = facade.create_as(as_)
             response.append({'id': as_obj.id})
@@ -86,7 +86,7 @@ class AsDBView(CustomAPIView):
         as_s = request.DATA
         json_validate(SPECS_V4.get('as_put')).validate(as_s)
         response = list()
-        for as_ in as_s['as_s']:
+        for as_ in as_s['asns']:
 
             as_obj = facade.update_as(as_)
             response.append({

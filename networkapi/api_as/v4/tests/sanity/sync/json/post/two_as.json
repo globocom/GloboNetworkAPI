@@ -1,0 +1,12 @@
+{
+  "asns": [
+    {
+      "name": "AS-1",
+      "description": "AS-1"
+    },
+    {
+      "name": "AS-2",
+      "description": "AS-2"
+    }
+  ]
+}
