@@ -36,7 +36,7 @@
             "type": "array"
           },
           "id": {
-            "type": "integer"
+            "type": "null"
           },
           "ipv4": {
             "items": {
@@ -58,10 +58,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "id_as": {
+            "type": "integer"
           }
         },
         "required": [
-          "id",
           "name",
           "maintenance",
           "equipment_type",
@@ -75,6 +77,6 @@
   "required": [
     "equipments"
   ],
-  "title": "Equipment Put",
+  "title": "Equipment Post",
   "type": "object"
 }

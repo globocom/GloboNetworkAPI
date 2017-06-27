@@ -28,7 +28,7 @@ class AsAssociatedToEquipmentError(APIException):
             self.detail = self.default_detail
 
 
-class AsErrorV3(Exception):
+class AsErrorV4(Exception):
 
     """Generic exception for everything related to AS."""
 

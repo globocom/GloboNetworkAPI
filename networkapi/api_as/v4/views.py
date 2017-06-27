@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
 from django.db.transaction import commit_on_success
-from networkapi.api_as.v3.permissions import Read
-from networkapi.api_as.v3.permissions import Write
+from networkapi.api_as.v4.permissions import Read
+from networkapi.api_as.v4.permissions import Write
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from networkapi.api_as.v3 import facade
-from networkapi.api_as.v3 import serializers
-from networkapi.settings import SPECS
+from networkapi.api_as.v4 import facade
+from networkapi.api_as.v4 import serializers
+from networkapi.settings import SPECS_V4
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -39,7 +39,7 @@ class AsDBView(CustomAPIView):
             obj_model = None
 
         # serializer AS's
-        serializer_as = serializers.AsV3Serializer(
+        serializer_as = serializers.AsV4Serializer(
             as_s,
             many=True,
             fields=self.fields,
@@ -51,7 +51,7 @@ class AsDBView(CustomAPIView):
         # prepare serializer with customized properties
         data = render_to_json(
             serializer_as,
-            main_property='as_s',
+            main_property='asns',
             obj_model=obj_model,
             request=request,
             only_main_property=only_main_property
@@ -60,16 +60,16 @@ class AsDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('as_v3_post')
+    @raise_json_validate('as_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Create new AS."""
 
         as_s = request.DATA
-        json_validate(SPECS.get('as_v3_post')).validate(as_s)
+        json_validate(SPECS_V4.get('as_post')).validate(as_s)
         response = list()
-        for as_ in as_s['as_s']:
+        for as_ in as_s['asns']:
 
             as_obj = facade.create_as(as_)
             response.append({'id': as_obj.id})
@@ -77,16 +77,16 @@ class AsDBView(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('as_v3_put')
+    @raise_json_validate('as_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Update AS."""
 
         as_s = request.DATA
-        json_validate(SPECS.get('as_v3_put')).validate(as_s)
+        json_validate(SPECS_V4.get('as_put')).validate(as_s)
         response = list()
-        for as_ in as_s['as_s']:
+        for as_ in as_s['asns']:
 
             as_obj = facade.update_as(as_)
             response.append({

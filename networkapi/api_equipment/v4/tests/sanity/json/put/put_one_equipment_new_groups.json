@@ -1,0 +1,19 @@
+{
+  "equipments": [
+    {
+      "equipment_type": 1,
+      "groups": [
+        {
+          "id": 1
+        },
+        {
+          "id": 2
+        }
+      ],
+      "id": 1,
+      "maintenance": true,
+      "model": 1,
+      "name": "VM-TEST-PUT-1-UPDATED"
+    }
+  ]
+}

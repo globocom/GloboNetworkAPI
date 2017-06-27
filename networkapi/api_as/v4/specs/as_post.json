@@ -3,7 +3,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "required": [
-    "as_s"
+    "asns"
   ],
   "properties": {
     "networks": {
@@ -11,11 +11,8 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer"
-          },
           "name": {
-            "type": "string"
+            "type": "integer"
           },
           "description": {
             "type": "string"

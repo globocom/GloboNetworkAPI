@@ -1,5 +1,6 @@
 autopep8==1.0.3
 coverage==3.6
+nose-exclude==0.5.0
 
 django-jenkins==0.14.1
 django-nose==1.2

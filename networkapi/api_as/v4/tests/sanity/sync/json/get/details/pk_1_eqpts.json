@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "name": "AS-1",
+    "description": "AS-1",
+    "equipments": [
+      {
+        "equipment": {
+          "id": 1,
+          "name": "EQUIPMENT-BGP-1",
+          "maintenance": false,
+          "equipment_type": {
+            "id": 1,
+            "equipment_type": "VM"
+          },
+          "model": {
+            "id": 1,
+            "name": "Generic Model"
+          },
+          "ipv4": [],
+          "ipv6": [],
+          "environments": [],
+          "groups": [
+          ],
+          "id_as": {
+            "id": 1,
+            "name": "AS-1",
+            "description": "AS-1"
+          }
+        }
+      },
+      {
+        "equipment": {
+          "id": 2,
+          "name": "EQUIPMENT-BGP-2",
+          "maintenance": false,
+          "equipment_type": {
+            "id": 1,
+            "equipment_type": "VM"
+          },
+          "model": {
+            "id": 1,
+            "name": "Generic Model"
+          },
+          "ipv4": [],
+          "ipv6": [],
+          "environments": [],
+          "groups": [
+          ],
+          "id_as": {
+            "id": 1,
+            "name": "AS-1",
+            "description": "AS-1"
+          }
+        }
+      }
+    ]
+  }
+]

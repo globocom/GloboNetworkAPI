@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "name": "AS-1",
+    "description": "AS-1",
+    "equipments": [
+      {
+        "equipment": 1
+      },
+      {
+        "equipment": 2
+      }
+    ]
+  }
+]

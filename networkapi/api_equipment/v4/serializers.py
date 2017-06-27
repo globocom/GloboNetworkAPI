@@ -2,6 +2,7 @@
 import logging
 
 from django.db.models import get_model
+
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
@@ -10,133 +11,7 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 log = logging.getLogger(__name__)
 
 
-class EquipmentEnvironmentV3Serializer(DynamicFieldsModelSerializer):
-
-    environment = serializers.SerializerMethodField('get_environment')
-    equipment = serializers.SerializerMethodField('get_equipment')
-
-    class Meta:
-        EquipamentoAmbiente = get_model('equipamento', 'EquipamentoAmbiente')
-        model = EquipamentoAmbiente
-        fields = (
-            'is_router',
-            'is_controller',
-            'environment',
-            'equipment',
-        )
-
-    def get_environment(self, obj):
-        return self.extends_serializer(obj, 'environment')
-
-    def get_equipment(self, obj):
-        return self.extends_serializer(obj, 'equipment')
-
-    def get_serializers(self):
-        # serializers
-        eqpt_slz = get_app('api_equipment', module_label='serializers')
-        env_slz = get_app('api_environment', module_label='serializers')
-
-        if not self.mapping:
-            self.mapping = {
-                'environment': {
-                    'obj': 'ambiente_id'
-                },
-                'environment__details': {
-                    'serializer': env_slz.EnvironmentV3Serializer,
-                    'kwargs': {
-                    },
-                    'obj': 'ambiente'
-                },
-                'equipment': {
-                    'obj': 'equipamento_id'
-                },
-                'equipment__details': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
-                    'kwargs': {
-                        'kind': 'details'
-                    },
-                    'obj': 'equipamento'
-                }
-            }
-
-    @staticmethod
-    def setup_eager_loading_networkipv4(queryset):
-
-        log.info('Using setup_eager_loading_networkipv4')
-        queryset = queryset.select_related(
-            'networkipv4',
-        )
-        return queryset
-
-
-class BrandV3Serializer(DynamicFieldsModelSerializer):
-
-    name = serializers.Field(source='nome')
-
-    class Meta:
-        Marca = get_model('equipamento', 'Marca')
-        model = Marca
-        fields = (
-            'id',
-            'name'
-        )
-
-
-class ModelV3Serializer(DynamicFieldsModelSerializer):
-
-    name = serializers.Field(source='nome')
-
-    brand = serializers.SerializerMethodField('get_brand')
-
-    def get_brand(self, obj):
-
-        return self.extends_serializer(obj.marca, 'brand')
-
-    def get_serializers(self):
-        if not self.mapping:
-            self.mapping = {
-                'brand': {
-                    'serializer': BrandV3Serializer,
-                    'kwargs': {
-                        'source': 'id'
-                    }
-                },
-                'brand__details': {
-                    'serializer': BrandV3Serializer,
-                    'kwargs': {
-                    }
-                },
-            }
-
-    class Meta:
-        Modelo = get_model('equipamento', 'Modelo')
-        model = Modelo
-        fields = (
-            'id',
-            'name',
-            'brand'
-        )
-
-        default_fields = (
-            'id',
-            'name'
-        )
-
-
-class EquipmentTypeV3Serializer(DynamicFieldsModelSerializer):
-
-    equipment_type = serializers.Field(source='tipo_equipamento')
-
-    class Meta:
-        TipoEquipamento = get_model('equipamento', 'TipoEquipamento')
-        model = TipoEquipamento
-        fields = (
-            'id',
-            'equipment_type'
-        )
-
-
-class EquipmentV3Serializer(DynamicFieldsModelSerializer):
+class EquipmentV4Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
     ipv4 = serializers.SerializerMethodField('get_ipv4')
@@ -145,6 +20,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     model = serializers.SerializerMethodField('get_model')
     environments = serializers.SerializerMethodField('get_environments')
     groups = serializers.SerializerMethodField('get_groups')
+    id_as = serializers.SerializerMethodField('get_id_as')
 
     class Meta:
         Equipamento = get_model('equipamento', 'Equipamento')
@@ -159,6 +35,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
             'ipv6',
             'environments',
             'groups',
+            'id_as'
         )
 
         basic_fields = (
@@ -194,9 +71,14 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
     def get_ipv6(self, obj):
         return self.extends_serializer(obj, 'ipv6')
 
+    def get_id_as(self, obj):
+        return self.extends_serializer(obj, 'id_as')
+
     def get_serializers(self):
+        eqptv3_slzs = get_app('api_equipment', module_label='serializers')
         ip_slz = get_app('api_ip', module_label='serializers')
         grp_slz = get_app('api_group', module_label='serializers')
+        as_slz = get_app('api_as', module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -204,7 +86,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'modelo_id'
                 },
                 'model__details': {
-                    'serializer': ModelV3Serializer,
+                    'serializer': eqptv3_slzs.ModelV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'modelo'
@@ -213,7 +95,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'tipo_equipamento_id'
                 },
                 'equipment_type__details': {
-                    'serializer': EquipmentTypeV3Serializer,
+                    'serializer': eqptv3_slzs.EquipmentTypeV3Serializer,
                     'kwargs': {
                     },
                     'obj': 'tipo_equipamento'
@@ -304,7 +186,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'groups'
                 },
                 'environments': {
-                    'serializer': EquipmentEnvironmentV3Serializer,
+                    'serializer': eqptv3_slzs.EquipmentEnvironmentV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
@@ -316,7 +198,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'environments'
                 },
                 'environments__details': {
-                    'serializer': EquipmentEnvironmentV3Serializer,
+                    'serializer': eqptv3_slzs.EquipmentEnvironmentV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
@@ -326,6 +208,23 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         ),
                     },
                     'obj': 'environments'
+                },
+                'id_as':{
+                    'obj': 'id_as_id'
+                },
+                'id_as__basic': {
+                    'serializer': as_slz.AsV4Serializer,
+                    'kwargs': {
+
+                    },
+                    'obj': 'id_as'
+                },
+                'id_as__details': {
+                    'serializer': as_slz.AsV4Serializer,
+                    'kwargs': {
+
+                    },
+                    'obj': 'id_as'
                 }
             }
 

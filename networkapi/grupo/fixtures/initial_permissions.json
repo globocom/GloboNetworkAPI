@@ -229,5 +229,12 @@
     "fields": {
       "function": "network_force"
     }
+  },
+  {
+    "pk": 41,
+    "model": "grupo.permission",
+    "fields": {
+      "function": "as_management"
+    }
   }
 ]

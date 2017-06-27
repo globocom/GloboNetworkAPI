@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import get_model
 
-from networkapi.api_as.v3 import exceptions
+from networkapi.api_as.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -28,21 +28,10 @@ class As(BaseModel):
         max_length=200
     )
 
-    def _get_equipment(self):
-        equipment = self.asequipment_set.all()
-        if equipment:
-            return equipment[0].equipment
-        return None
+    def _get_equipments(self):
+        return self.asequipment_set.all()
 
-    equipment = property(_get_equipment)
-
-    def _get_equipment_id(self):
-        equipment = self.asequipment_set.all()
-        if equipment:
-            return equipment[0].equipment.id
-        return None
-
-    equipment_id = property(_get_equipment_id)
+    equipments = property(_get_equipments)
 
     log = logging.getLogger('As')
 
@@ -74,7 +63,7 @@ class As(BaseModel):
             raise exceptions.AsError(
                 e, u'Failure to search the AS.')
 
-    def create_v3(self, as_map):
+    def create_v4(self, as_map):
         """Create AS."""
 
         self.name = as_map.get('name')
@@ -82,7 +71,7 @@ class As(BaseModel):
 
         self.save()
 
-    def update_v3(self, as_map):
+    def update_v4(self, as_map):
         """Update AS."""
 
         self.name = as_map.get('name')
@@ -90,7 +79,7 @@ class As(BaseModel):
 
         self.save()
 
-    def delete_v3(self):
+    def delete_v4(self):
         """Delete AS.
 
         :raise ASAssociatedToEquipmentError: AS cannot be deleted because it
@@ -100,10 +89,14 @@ class As(BaseModel):
         try:
 
             if self.asequipment_set.count() > 0:
-                id_equipment = self.asequipment_set.all()[0].equipment_id
+                ids_equipments = [asequipment.equipment_id
+                                  for asequipment
+                                  in self.asequipment_set.all()]
+
+                ids_equipments = map(int, ids_equipments)
                 msg = u'Cannot delete AS {} because it is associated ' \
-                      u'with Equipment {}.'.\
-                    format(self.id, id_equipment)
+                      u'with Equipments {}.'.\
+                    format(self.id, ids_equipments)
                 raise exceptions.AsAssociatedToEquipmentError(
                     msg
                 )
@@ -115,7 +108,7 @@ class As(BaseModel):
             raise exceptions.AsAssociatedToEquipmentError(e.detail)
         except Exception, e:
             self.log.error(e)
-            raise exceptions.AsErrorV3(e)
+            raise exceptions.AsErrorV4(e)
 
 
 class AsEquipment(BaseModel):
@@ -165,7 +158,7 @@ class AsEquipment(BaseModel):
             raise exceptions.AsEquipmentError(
                 e, u'Failure to search the AS.')
 
-    def create_v3(self, as_equipment):
+    def create_v4(self, as_equipment):
         """Create AsEquipment relationship."""
 
         equipment = get_model('equipamento', 'Equipamento')
@@ -176,7 +169,7 @@ class AsEquipment(BaseModel):
 
         self.save()
 
-    def delete_v3(self):
+    def delete_v4(self):
         """Delete AsEquipment relationship."""
 
         super(AsEquipment, self).delete()
