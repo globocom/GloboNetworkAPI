@@ -25,45 +25,133 @@ class NxApiPlugin(BaseBgpPlugin):
 
         self.equipment_access = self._get_equipment_access()
 
-    def create_neighbor(self, as_number, vrf, ip_neighbor, as_neighbor,
-                        description, interface, route_map_in, route_map_out):
+    def create_neighbor(self, **kwargs):
+        commands = []
 
-        commands = [
-            'router bgp {as_number}'.format(as_number=as_number),
-            'vrf {vrf}'.format(vrf=vrf),
-            'neighbor {ip_neighbor} remote-as {as_neighbor}'.format(
-                ip_neighbor=ip_neighbor, as_neighbor=as_neighbor),
-            'description {description}'.format(description=description),
-            'dynamic-capability',
-            'update-source {interface}'.format(interface=interface),
-            'timers 60 180',
-            'address-family ipv4 unicast',
-            'route-map {route_map_in} in'.format(route_map_in=route_map_in),
+        if kwargs['local_as']:
+            cmd = 'router bgp {local_as}'.format(remote_as=kwargs['local_as'])
+            commands.append(cmd)
+        else:
+            raise Exception('Local AS is needed.')
+
+        if kwargs['vrf']:
+            cmd = 'vrf {vrf}'.format(vrf=kwargs['vrf'])
+            commands.append(cmd)
+        else:
+            raise Exception('VRF is needed.')
+
+        if kwargs['remote_ip']:
+            if kwargs['remote_as']:
+                cmd = 'neighbor {remote_ip} remote-as {remote_as}'.format(
+                    remote_ip=kwargs['remote_ip'],
+                    remote_as=kwargs['remote_as'])
+                commands.append(cmd)
+            else:
+                raise Exception('Remote AS is needed.')
+        else:
+            raise Exception('Remote Ip is needed.')
+
+        if kwargs['description']:
+            cmd = 'description {description}'.format(
+                description=kwargs['description'])
+            commands.append(cmd)
+        else:
+            raise Exception('Description is needed.')
+
+        cmd = 'dynamic-capability'
+
+        if kwargs['virtual_interface']:
+            cmd = 'update-source {virtual_interface}'.format(
+                virtual_interface=kwargs['virtual_interface'])
+            commands.append(cmd)
+        else:
+            raise Exception('Interface is needed.')
+
+        if kwargs['timers']:
+            cmd = 'timers {timer_keepalive}'.format(
+                timer_keepalive=kwargs['timer_keepalive'])
+            if kwargs['timers']:
+                cmd += ' {timer_timeout}'.format(
+                    timer_timeout=kwargs['timer_timeout'])
+                commands.append(cmd)
+            else:
+                raise Exception('Timer timeout is needed.')
+        else:
+            raise Exception('Keep alive is needed.')
+
+        if kwargs['password']:
+            cmd = 'password {password}'.format(password=kwargs['password'])
+            commands.append(cmd)
+
+        if kwargs['maximum_hops']:
+            cmd = 'maximum-hops {maximum_hops}'.format(
+                maximum_hops=kwargs['maximum_hops'])
+            commands.append(cmd)
+
+        cmd = 'address-family {address_family} unicast'.format(
+            address_family=kwargs['address_family'])
+
+        if kwargs['route_map_in']:
+            'route-map {route_map_in} in'.format(
+                route_map_in=kwargs['route_map_in'])
+
+        if kwargs['route_map_out']:
             'route-map {route_map_out} out'.format(
-                route_map_out=route_map_out),
-            'send-community both',
-            'next-hop-self',
-            'next-hop-third-party',
-            'soft-reconfiguration inbound'
-        ]
+                route_map_out=kwargs['route_map_out'])
+
+        if kwargs['community']:
+            cmd = 'send-community both'
+            commands.append(cmd)
+
+        if kwargs['remove_private_as']:
+            cmd = 'remove-private-as'
+            commands.append(cmd)
+
+        if kwargs['next_hop_self']:
+            cmd = 'next-hop-self'
+            commands.append(cmd)
+
+        cmd = 'next-hop-third-party'
+
+        if kwargs['soft_reconfiguration']:
+            cmd = 'soft-reconfiguration inbound'
+            commands.append(cmd)
 
         payload = json.dumps(self._contruct(commands))
 
-        self._request(method='post', data=payload,
+        self._request(data=payload,
                       contentType='json-rpc', path='ins')
 
-    def delete_neighbor(self, as_number, vrf, ip_neighbor, as_neighbor):
+    def delete_neighbor(self, kwargs):
 
-        commands = [
-            'router bgp {as_number}'.format(as_number=as_number),
-            'vrf {vrf}'.format(vrf=vrf),
-            'no neighbor {ip_neighbor} remote-as {as_neighbor}'.format(
-                ip_neighbor=ip_neighbor, as_neighbor=as_neighbor),
-        ]
+        commands = []
+
+        if kwargs['local_as']:
+            cmd = 'router bgp {local_as}'.format(remote_as=kwargs['local_as'])
+            commands.append(cmd)
+        else:
+            raise Exception('Local AS is needed.')
+
+        if kwargs['vrf']:
+            cmd = 'vrf {vrf}'.format(vrf=kwargs['vrf'])
+            commands.append(cmd)
+        else:
+            raise Exception('VRF is needed.')
+
+        if kwargs['remote_ip']:
+            if kwargs['remote_as']:
+                cmd = 'no neighbor {remote_ip} remote-as {remote_as}'.format(
+                    remote_ip=kwargs['remote_ip'],
+                    remote_as=kwargs['remote_as'])
+                commands.append(cmd)
+            else:
+                raise Exception('Remote AS is needed.')
+        else:
+            raise Exception('Remote Ip is needed.')
 
         payload = json.dumps(self._contruct(commands))
 
-        self._request(method='post', data=payload,
+        self._request(data=payload,
                       contentType='json-rpc', path='ins')
 
     def _contruct(self, commands):
@@ -87,7 +175,6 @@ class NxApiPlugin(BaseBgpPlugin):
     def _request(self, **kwargs):
         # Params and default values
         params = {
-            'method': 'get',
             'path': '',
             'data': None,
             'contentType': 'json-rpc',
@@ -110,8 +197,7 @@ class NxApiPlugin(BaseBgpPlugin):
 
         try:
             # Raises AttributeError if method is not valid
-            func = getattr(requests, params['method'])
-            request = func(
+            request = requests.post(
                 uri,
                 auth=self._get_auth(),
                 headers=headers,
@@ -126,9 +212,6 @@ class NxApiPlugin(BaseBgpPlugin):
             except:
                 return
 
-        except AttributeError:
-            log.error('Request method must be valid HTTP request. '
-                      'ie: GET, POST, PUT, DELETE')
         except HTTPError:
             try:
                 response = json.loads(request.text)
