@@ -19,7 +19,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_base.json',
+        'networkapi/api_equipment/v4/fixtures/initial_base.json'
     ]
 
     json_path = 'api_equipment/v4/tests/sanity/json/put/%s'
@@ -256,6 +256,31 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         self.compare_json(name_file, data)
 
+    def test_put_one_equipment_new_as(self):
+        """Test of success to put one equipment with new AS."""
+
+        name_file = self.json_path % 'put_one_equipment_new_as.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v4/equipment/4/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v4/equipment/4/?include=id_as',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        data = response.data
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json(name_file, data)
+
 
 class EquipmentPutErrorTestCase(NetworkApiTestCase):
 
@@ -333,3 +358,22 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         self.compare_values(
             'There is no group with a pk = 10.',
             response.data['detail'])
+
+    def test_put_equipment_with_inexistent_as(self):
+        """Test error of put equipment with inexistent AS."""
+
+        name_file = self.json_path % 'put_one_equipment_new_inexistent_as.json'
+
+        # Does post request
+        response = self.client.put(
+            '/api/v4/equipment/1/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            u'AS 1000 do not exist.',
+            response.data['detail'])
+

@@ -1,0 +1,12 @@
+{
+  "equipments": [
+    {
+      "id": 4,
+      "name": "NEW-AS",
+      "maintenance": false,
+      "equipment_type": 1,
+      "model": 1,
+      "id_as": 2
+    }
+  ]
+}

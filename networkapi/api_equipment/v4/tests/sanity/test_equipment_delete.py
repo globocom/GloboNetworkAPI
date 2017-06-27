@@ -17,8 +17,8 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/fixtures/initial_base.json',
+        'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_base.json',
     ]
 
     def setUp(self):
@@ -31,14 +31,14 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         """Test of success to delete of one equipment."""
 
         response = self.client.delete(
-            '/api/v3/equipment/1/',
+            '/api/v4/equipment/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/equipment/1/',
+            '/api/v4/equipment/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -47,6 +47,40 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         self.compare_values(
             'Dont there is a equipament by pk = 1.',
             response.data['detail'])
+
+    def test_delete_one_equipment_with_associated_as(self):
+        """Test of success to delete equipment with associates AS."""
+
+        response = self.client.delete(
+            '/api/v4/equipment/4/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        response = self.client.get(
+            '/api/v4/equipment/4/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            'Dont there is a equipament by pk = 4.',
+            response.data['detail'])
+        
+        # Check if AS was also deleted
+        response = self.client.get(
+            '/api/v4/as/4/',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'AS 4 do not exist.',
+            response.data['detail']
+        )
 
 
 class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
@@ -72,7 +106,7 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         """Test of error to delete of one inexistent equipment."""
 
         response = self.client.delete(
-            '/api/v3/equipment/10/',
+            '/api/v4/equipment/10/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -81,3 +115,4 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_values(
             'Dont there is a equipament by pk = 10.',
             response.data['detail'])
+

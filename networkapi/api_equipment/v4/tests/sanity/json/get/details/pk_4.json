@@ -1,0 +1,14 @@
+[
+  {
+    "id": 4,
+    "name": "VM-SANITY-TEST-04",
+    "maintenance": false,
+    "equipment_type": 1,
+    "model": 1,
+    "id_as": {
+      "id": 1,
+      "name": "AS-1",
+      "description": "AS-1"
+    }
+  }
+]

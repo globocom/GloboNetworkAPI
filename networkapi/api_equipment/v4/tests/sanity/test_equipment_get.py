@@ -7,6 +7,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 
 log = logging.getLogger(__name__)
 
+json_path = 'api_equipment/v4/tests/sanity/json/%s'
 
 class EquipmentGetTestCase(NetworkApiTestCase):
 
@@ -23,6 +24,7 @@ class EquipmentGetTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
+        self.authorization = self.get_http_authorization('test')
 
     def tearDown(self):
         pass
@@ -35,10 +37,40 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/equipment/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.assertEqual(
             200,
             response.status_code,
             'Status code should be 200 and was %s' % response.status_code
         )
+
+    def test_get_equipment_with_as_id(self):
+        """Test of success to get equipment with as id."""
+
+        name_file = json_path % 'get/basic/pk_4.json'
+
+        # Make a GET request
+        response = self.client.get(
+            '/api/v4/equipment/4/?include=id_as',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json_lists(name_file, response.data['equipments'])
+
+    def test_get_equipment_with_as_details(self):
+        """Test of success to get equipment with as details."""
+
+        name_file = json_path % 'get/details/pk_4.json'
+
+        # Make a GET request
+        response = self.client.get(
+            '/api/v4/equipment/4/?include=id_as__details',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json_lists(name_file, response.data['equipments'])
