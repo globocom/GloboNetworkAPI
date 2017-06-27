@@ -22,6 +22,7 @@ from django.db.models import get_model
 
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.api_as.v4.exceptions import AsNotFoundError
 from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.grupo.models import EGrupo
 from networkapi.grupo.models import EGrupoNotFoundError
@@ -1071,6 +1072,8 @@ class Equipamento(BaseModel):
             raise EquipmentInvalidValueException(e.message)
         except EGrupoNotFoundError, e:
             raise EquipmentInvalidValueException(e.message)
+        except AsNotFoundError, e:
+            raise EquipmentInvalidValueException(e.detail)
         except Exception, e:
             raise EquipamentoError(None, e)
 
@@ -1190,7 +1193,7 @@ class Equipamento(BaseModel):
                     aseqpt.delete()
 
                 # create new AsEquipment association
-                aseqpt_model.create_v4({
+                aseqpt_model().create_v4({
                     'equipment': self.id,
                     'id_as': equipment.get('id_as')
                 })
@@ -1201,6 +1204,8 @@ class Equipamento(BaseModel):
             raise EquipmentInvalidValueException(e.message)
         except EGrupoNotFoundError, e:
             raise EquipmentInvalidValueException(e.message)
+        except AsNotFoundError, e:
+            raise EquipmentInvalidValueException(e.detail)
         except Exception, e:
             raise EquipamentoError(None, e)
 
