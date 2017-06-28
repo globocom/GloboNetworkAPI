@@ -122,32 +122,33 @@ def get_fabric(idt=None, name=None, id_dc=None):
 
 def update_fabric_config(fabric_id, fabric_dict):
 
+    log.info("Update Fabric Config")
     fabric = DatacenterRooms().get_dcrooms(idt=fabric_id)
 
     try:
-        envconfig = ast.literal_eval(fabric.config)
+        fabriconfig = ast.literal_eval(fabric.config)
     except:
-        envconfig = []
+        fabriconfig = dict()
 
     fabric_dict = fabric_dict.get("config")
 
     if fabric_dict.get("Ambiente"):
-        if envconfig.get("Ambiente"):
+        if fabriconfig.get("Ambiente"):
             try:
-                envconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
+                fabriconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
             except:
-                envconfig["Ambiente"] = [envconfig.get("Ambiente")]
-                envconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
+                fabriconfig["Ambiente"] = [fabriconfig.get("Ambiente")]
+                fabriconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
         else:
-            envconfig["Ambiente"] = [fabric_dict.get("Ambiente")]
+            fabriconfig["Ambiente"] = [fabric_dict.get("Ambiente")]
     elif fabric_dict.get("BGP"):
-        envconfig["BGP"] = fabric_dict.get("BGP")
+        fabriconfig["BGP"] = fabric_dict.get("BGP")
     elif fabric_dict.get("VLT"):
-        envconfig["VLT"] = fabric_dict.get("VLT")
+        fabriconfig["VLT"] = fabric_dict.get("VLT")
     elif fabric_dict.get("Gerencia"):
-        envconfig["Gerencia"] = fabric_dict.get("Gerencia")
+        fabriconfig["Gerencia"] = fabric_dict.get("Gerencia")
 
-    fabric.config = envconfig
+    fabric.config = fabriconfig
     fabric.save_dcrooms()
 
     return fabric
