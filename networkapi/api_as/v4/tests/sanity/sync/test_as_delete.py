@@ -168,32 +168,3 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
 
         self.compare_json_lists(name_file, response.data['asns'])
 
-
-    def test_delete_one_existent_and_one_inexistent_as(self):
-        """Error Test of DELETE one existent and one inexistent AS."""
-
-        delete_url = '/api/v4/as/3;1000/'
-
-        response = self.client.delete(
-            delete_url,
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            u'AS 1000 do not exist.',
-            response.data['detail']
-        )
-
-        # Check if AS 3 not changed
-        response = self.client.get(
-            '/api/v4/as/3/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(200, response.status_code)
-
-        name_file = json_path % 'get/basic/pk_3.json'
-
-        self.compare_json_lists(name_file, response.data['asns'])
