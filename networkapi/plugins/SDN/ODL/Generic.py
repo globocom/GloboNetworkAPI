@@ -22,6 +22,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from networkapi.plugins import exceptions
 from networkapi.plugins.SDN.base import BaseSdnPlugin
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -217,10 +219,18 @@ class ODLPlugin(BaseSdnPlugin):
 
     def _get_equipment_access(self):
         try:
-            return EquipamentoAcesso.search(
-                None, self.equipment, 'https').uniqueResult()
+
+            access = None
+            try:
+                access = EquipamentoAcesso.search(
+                    None, self.equipment, 'https').uniqueResult()
+            except ObjectDoesNotExist:
+                access = EquipamentoAcesso.search(
+                    None, self.equipment, 'http').uniqueResult()
+            return access
+
         except Exception:
+
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
-        # TODO: ver o metodo existente, bater com o host (http com http)
