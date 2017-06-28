@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from json import dumps
+from json import loads
+
+from mock import patch
+
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
 
 
 class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
+    """ Test class for ACL flow using sync and async calls """
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -27,13 +33,13 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
 
     ENV_ID = 1
 
-    FLOW_URL = ENV_URL + "flows/%s"
+    FLOW_URL = ENV_URL + "flows/%s/"
 
     def setUp(self):
         self.client = Client()
 
     def test_add_acl_flow(self):
-        """ Should insert a flow using async call """
+        """ Should insert an ACL flow using async call """
         data = {
             "kind": "default#acl",
             "rules": [{
