@@ -12,7 +12,7 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "integer"
+            "type": "string"
           },
           "description": {
             "type": "string"
