@@ -170,16 +170,22 @@ class EnvFlowView(CustomAPIView):
         """"""
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
-        if flow_id:
-            log.error("not allowed yet")
+
+        if not flow_id:
+            log.error("Missing flow ID")
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        facade.insert_flow(environment_id, request.DATA)
+        task = facade.insert_flow(environment_id, request.DATA)
+        response = {
+            'id': flow_id,
+            'task_id': task.id
+        }
 
-        return Response({}, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
 
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
+
         if 'flow_id' not in kwargs:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
         environment_id = kwargs.get('environment_id')
