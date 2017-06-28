@@ -454,6 +454,10 @@ SPECS_V4 = {
     'as_put': 'networkapi/api_as/v4/specs/as_put.json',
     'equipment_post': 'networkapi/api_equipment/v4/specs/equipment_post.json',
     'equipment_put': 'networkapi/api_equipment/v4/specs/equipment_put.json',
+    'ipv4_post': 'networkapi/api_ip/v4/specs/ipv4_post.json',
+    'ipv4_put': 'networkapi/api_ip/v4/specs/ipv4_put.json',
+    'ipv6_post': 'networkapi/api_ip/v4/specs/ipv6_post.json',
+    'ipv6_put': 'networkapi/api_ip/v4/specs/ipv6_put.json',
 }
 
 ##########

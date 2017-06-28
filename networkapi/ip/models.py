@@ -2136,6 +2136,288 @@ class Ip(BaseModel):
             # Destroy locks
             destroy_lock(locks_list)
 
+    ##################
+    # Methods for V4 #
+    ##################
+    def create_v4(self, ip_map, locks_used=[]):
+        """Method V4 to create Ip."""
+
+        models = get_app('equipamento', 'models')
+
+        try:
+
+            self.networkipv4 = NetworkIPv4() \
+                .get_by_pk(ip_map.get('networkipv4'))
+            self.oct1 = ip_map.get('oct1')
+            self.oct2 = ip_map.get('oct2')
+            self.oct3 = ip_map.get('oct3')
+            self.oct4 = ip_map.get('oct4')
+            self.descricao = ip_map.get('description')
+
+            # Get environments related
+            envs = self.networkipv4.vlan \
+                .get_environment_related(use_vrf=True) \
+                .values_list('id', flat=True)
+
+            # Get objects of equipments
+            eqpts = models.Equipamento.objects.filter(
+                id__in=[eqpt.get('id')
+                        for eqpt in ip_map.get('equipments', [])])
+        except Exception, e:
+            raise IpErrorV3(e)
+
+        else:
+
+            locks_name = list()
+
+            # Prepare locks for environment
+            for env in envs:
+                lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+            for eqpt_obj in eqpts:
+                # Prepare locks for ips-equipments
+                lock_name = LOCK_IP_EQUIPMENT_ONE % eqpt_obj.id
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+                # Prepare locks for environments related with equipaments
+                for env in eqpt_obj.environments:
+                    lock_name = LOCK_ENVIRONMENT_ALLOCATES % env.ambiente_id
+                    if lock_name not in locks_used:
+                        locks_name.append(lock_name)
+
+            # Create Locks
+            locks_name = list(set(locks_name))
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+
+            if self.oct1 is None and self.oct2 is None and \
+                            self.oct3 is None and self.oct4 is None:
+                self.allocate_v3()
+            else:
+                net4 = IPv4Network(self.networkipv4.networkv4)
+
+                # Find all ips ralated to network
+                ips = Ip.objects.filter(networkipv4=self.networkipv4)
+
+                ip4_object = IPv4Address(self.ip_formated)
+
+                # Cast all to API class
+                ipsv4 = set([IPv4Address(ip.ip_formated) for ip in ips])
+
+                flag = False
+
+                if ip4_object not in ipsv4:
+
+                    if ip4_object in net4:
+
+                        first_ip_network = int(net4.network)
+                        bcast_ip_network = int(net4.broadcast)
+
+                        ipv4_network = int(ip4_object)
+
+                        # First and last ip are reserved in network
+                        if ipv4_network >= (first_ip_network) and \
+                                        ipv4_network < (bcast_ip_network):
+                            flag = True
+
+                if flag is False:
+                    raise IpNotAvailableError(
+                        None,
+                        u'Ip %s not available for network %s.' %
+                        (self.ip_formated, self.networkipv4.id))
+
+                self.validate_v3(eqpts)
+
+            self.save()
+
+            # Creates relationship between ip and equipment #
+            for eqpt in ip_map.get('equipments', []):
+                ip_equipment = IpEquipamento()
+                ip_equipment.create_v3({
+                    'ip': self.id,
+                    'equipment': eqpt.get('id')
+                })
+
+        except IpErrorV3, e:
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
+
+        except IpNotAvailableError, e:
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
+
+        except Exception, e:
+            msg = u'Error save new IP.: %s' % e
+            self.log.exception(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+    def update_v4(self, ip_map, locks_used=[]):
+        """Method V4 to update Ip."""
+
+        models = get_app('equipamento', 'models')
+
+        try:
+            self.descricao = ip_map.get('description')
+
+            # Get environments related
+            envs = self.networkipv4.vlan.get_environment_related(
+                use_vrf=True) \
+                .values_list('id', flat=True)
+
+            # Get objects of equipments
+            eqpts = models.Equipamento.objects.filter(id__in=[
+                eqpt.get('id') for eqpt in ip_map.get('equipments', [])]
+            )
+        except Exception, e:
+            raise IpErrorV3(e)
+
+        else:
+
+            locks_name = list()
+
+            # Prepare lock for ip
+            lock_name = LOCK_IPV4 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
+            # Prepare locks for environment
+            for env in envs:
+                lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+            for eqpt_obj in eqpts:
+                # Prepare locks for ips-equipments
+                lock_name = LOCK_IP_EQUIPMENT % (self.id, eqpt_obj.id)
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+                # Prepare locks for environments related with equipaments
+                for env in eqpt_obj.environments:
+                    lock_name = LOCK_ENVIRONMENT_ALLOCATES % env.ambiente_id
+                    if lock_name not in locks_used:
+                        locks_name.append(lock_name)
+
+            # Create Locks
+            locks_name = list(set(locks_name))
+            locks_list = create_lock_with_blocking(locks_name)
+        try:
+
+            self.validate_v3(eqpts)
+
+            self.save()
+
+            # Get current associates
+            current = self.ipequipamento_set \
+                .filter(equipamento__in=eqpts) \
+                .values_list('equipamento', flat=True)
+
+            # Creates new associate
+            for eqpt in eqpts:
+                if eqpt.id not in current:
+                    ip_equipment = IpEquipamento()
+                    ip_equipment.create_v3({
+                        'ip': self.id,
+                        'equipment': eqpt.id
+                    })
+
+            # Removes old associates
+            for ip_eqpt in self.ipequipamento_set \
+                    .exclude(equipamento__in=eqpts):
+                ip_eqpt.delete_v3(bypass_ip=True)
+
+        except IpErrorV3, e:
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
+
+        except Exception, e:
+            msg = u'Error edit IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+    def delete_v4(self, locks_used=[]):
+        """
+        Method V4 to remove Ip.
+        Before removing the IP removes all your requests
+        VIP and relationships with equipment.
+
+        @raise IpCantBeRemovedFromVip: Ip is associated with created
+                                       Vip Request.
+        """
+
+        locks_name = list()
+
+        # Prepare lock for ip
+        lock_name = LOCK_IPV4 % self.id
+        if lock_name not in locks_used:
+            locks_name.append(lock_name)
+
+        # Create Locks
+        locks_name = list(set(locks_name))
+        locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            for vip in self.viprequest_set.all():
+                id_vip = vip.id
+                with distributedlock(LOCK_VIP % id_vip):
+                    if vip.created:
+                        raise IpCantBeRemovedFromVip(
+                            str(vip),
+                            'IPv4 can not be removed because it is '
+                            'in use by Vip Request: {}'.format(str(vip)))
+
+                    # Deletes only VIP, Related Ipv6 with VIP is not removed
+                    vip.delete_v3(bypass_ipv4=True, bypass_ipv6=True)
+
+            # Deletes Related Equipment
+            for ip_eqpt in self.ipequipamento_set.all():
+                ip_eqpt.delete_v3(bypass_ip=True)
+
+            # Serializes obj
+            ip_slz = get_app('api_ip', module_label='serializers')
+            serializer = ip_slz.Ipv4V3Serializer(self)
+            data_to_queue = serializer.data
+
+            # Deletes Obj IP
+            super(Ip, self).delete()
+
+            # Sends to Queue
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
+            data_to_queue.update({'description': queue_keys.IPv4_REMOVE})
+            queue_manager.append({
+                'action': queue_keys.IPv4_REMOVE,
+                'kind': queue_keys.IPv4_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+
+        except IpCantBeRemovedFromVip, e:
+            raise IpCantBeRemovedFromVip(e.cause, e.message)
+
+        except Exception, e:
+            msg = u'Error delete IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
     def validate_v3(self, equipments):
         """Validate Ip."""
 
@@ -2508,6 +2790,128 @@ class IpEquipamento(BaseModel):
 
         if self.ip.serverpoolmember_set.count() > 0:
 
+            items = ['{}:{}'.format(
+                svm.server_pool.id,
+                svm.server_pool.identifier
+            ) for svm in self.ip.serverpoolmember_set.all()]
+
+            items = ', '.join(items)
+
+            raise IpCantRemoveFromServerPool(
+                {
+                    'ip': self.ip.ip_formated,
+                    'equip_name': self.equipamento.nome,
+                    'server_pool_identifiers': items
+                },
+                'IPv4 can not be dissociated from the equipment% s because it'
+                'is being using in the Server Pools (id: identifier)%s' %
+                (self.equipamento.nome, items)
+            )
+
+        super(IpEquipamento, self).delete()
+
+        # If IP is not related to any other equipments, its removed
+        if self.ip.ipequipamento_set.count() == 0 and not bypass_ip:
+            self.ip.delete_v3()
+
+    ##################
+    # Methods for V4 #
+    ##################
+    def create_v4(self, ip_equipment):
+        """Inserts a relationship between IP e Equipment.
+        @return: Nothing.
+        @raise IpError: Failure to insert.
+        @raise EquipamentoNotFoundError: Equipment do not registered.
+        @raise IpNotFoundError: Ip do not registered.
+        @raise IpEquipamentoDuplicatedError: IP already registered for the equipment.
+        @raise EquipamentoError: Failure to search equipment.
+        """
+        equipamentoambiente = get_model('equipamento',
+                                        'EquipamentoAmbiente')
+        equipamento = get_model('equipamento', 'Equipamento')
+
+        self.equipamento = equipamento().get_by_pk(
+            ip_equipment.get('equipment'))
+        self.ip = Ip().get_by_pk(ip_equipment.get('ip'))
+
+        # Validate the ip
+        self.__validate_ip()
+
+        try:
+
+            try:
+                equipment_environment = equipamentoambiente()
+                equipment_environment.create_v3({
+                    'equipment': self.equipamento_id,
+                    'environment': self.ip.networkipv4.vlan.ambiente_id
+                })
+            except EquipamentoAmbienteDuplicatedError, e:
+                # If already exists, OK !
+                pass
+
+            self.save()
+        except Exception, e:
+            self.log.error(u'Failure to insert an ip_equipamento.')
+            raise IpError(e, u'Failure to insert an ip_equipamento.')
+
+    def delete_v4(self, bypass_ip=False):
+        """
+        Method V4 to remove Ip and Equipment relationship.
+        If Ip from this Ip-Equipment is associated with created Vip Request,
+            and the Equipment is the last balancer associated, the IpEquipment
+            association cannot be removed.
+        If Ip has no relationship with other Equipments, then Ip is also
+            removed.
+
+        @raise IpCantRemoveFromServerPool: Ip is associated with associated
+                                           Pool Member.
+        @raise IpEquipCantDissociateFromVip: Equipment is the last balanced
+                                             in a created Vip Request
+                                             pointing to ip.
+        """
+        tipoequipamento = get_model('equipamento', 'TipoEquipamento')
+
+        type_eqpt = tipoequipamento.get_tipo_balanceador()
+
+        if self.equipamento.tipo_equipamento == type_eqpt:
+
+            for vip in self.ip.viprequest_set.all():
+
+                # Filter equipments to find another balancer
+                another_balancer = self.ip.ipequipamento_set.exclude(
+                    equipamento=self.equipamento.id
+                ).filter(equipamento__tipo_equipamento=type_eqpt)
+
+                id_vip = vip.id
+
+                if not another_balancer:
+                    with distributedlock(LOCK_VIP % id_vip):
+                        if vip.created:
+                            raise IpEquipCantDissociateFromVip(
+                                {
+                                    'vip_id': id_vip,
+                                    'ip': self.ip.ip_formated,
+                                    'equip_name': self.equipamento.nome
+                                },
+                                'IPv4 can not be dissociated from the '
+                                'equipment %s because it is the last '
+                                'balancer of Vip Request %s.'
+                                % (self.equipamento.nome, id_vip)
+                            )
+                        else:
+                            # Remove ip from vip
+                            if vip.ipv6 is not None:
+                                vip.ipv4 = None
+                                id_vip.save()
+
+                                # SYNC_VIP
+                                syncs.new_to_old(vip)
+                            # Remove vip
+                            else:
+                                vip.delete_v3(bypass_ipv4=True,
+                                              bypass_ipv6=True)
+
+        if self.ip.serverpoolmember_set.count() > 0:
             items = ['{}:{}'.format(
                 svm.server_pool.id,
                 svm.server_pool.identifier
@@ -4529,6 +4933,296 @@ class Ipv6(BaseModel):
             # Destroy locks
             destroy_lock(locks_list)
 
+    ##################
+    # Methods for V4 #
+    ##################
+    def create_v4(self, ip_map, locks_used=[]):
+        """Method V4 to create Ipv6."""
+
+        models = get_app('equipamento', 'models')
+
+        try:
+
+            self.networkipv6_id = NetworkIPv6() \
+                .get_by_pk(ip_map.get('networkipv6')).id
+            self.block1 = ip_map.get('block1')
+            self.block2 = ip_map.get('block2')
+            self.block3 = ip_map.get('block3')
+            self.block4 = ip_map.get('block4')
+            self.block5 = ip_map.get('block5')
+            self.block6 = ip_map.get('block6')
+            self.block7 = ip_map.get('block7')
+            self.block8 = ip_map.get('block8')
+            self.descricao = ip_map.get('description')
+
+            # Get environments related
+            envs = self.networkipv6.vlan \
+                .get_environment_related(use_vrf=True) \
+                .values_list('id', flat=True)
+
+            # Get objects of equipments
+            eqpts = models.Equipamento.objects.filter(
+                id__in=[eqpt.get('id')
+                        for eqpt in ip_map.get('equipments', [])])
+        except Exception, e:
+            raise IpErrorV3(e)
+
+        else:
+
+            locks_name = list()
+
+            # Prepare locks for environment
+            for env in envs:
+                lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+            for eqpt_obj in eqpts:
+                # Prepare locks for ips-equipments
+                lock_name = LOCK_IPV6_EQUIPMENT_ONE % eqpt_obj.id
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+                # Prepare locks for environments related with equipaments
+                for env in eqpt_obj.environments:
+                    lock_name = LOCK_ENVIRONMENT_ALLOCATES % env.ambiente_id
+                    if lock_name not in locks_used:
+                        locks_name.append(lock_name)
+
+            # Create Locks
+            locks_name = list(set(locks_name))
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+
+            if self.block1 is None and self.block2 is None and \
+                            self.block3 is None and self.block4 is None and \
+                            self.block5 is None and self.block6 is None and \
+                            self.block7 is None and self.block8 is None:
+
+                self.allocate_v3()
+
+            else:
+                net6 = IPv6Network(self.networkipv6.networkv6)
+
+                # Find all ips ralated to network
+                ips = Ipv6.objects.filter(networkipv6=self.networkipv6)
+
+                ip6_object = IPv6Address(self.ip_formated)
+
+                # Cast all to API class
+                ipsv6 = set([IPv6Address(ip.ip_formated) for ip in ips])
+
+                flag = False
+
+                if ip6_object not in ipsv6:
+
+                    if ip6_object in net6:
+
+                        first_ip_network = int(net6.network)
+                        bcast_ip_network = int(net6.broadcast)
+
+                        ipv6_network = int(ip6_object)
+
+                        # First and last ip are reserved in network
+                        if ipv6_network >= (first_ip_network) and \
+                                        ipv6_network < (bcast_ip_network):
+                            flag = True
+
+                if flag is False:
+                    raise IpNotAvailableError(
+                        None,
+                        u'Ip %s not available for network %s.' %
+                        (self.ip_formated, self.networkipv6.id))
+
+                self.validate_v3(eqpts)
+
+            self.save()
+
+            # Creates relationship between ip and equipment
+            for eqpt in ip_map.get('equipments', []):
+                ip_equipment = Ipv6Equipament()
+                ip_equipment.create_v3({
+                    'ip': self.id,
+                    'equipment': eqpt.get('id')
+                })
+
+        except IpErrorV3, e:
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
+
+        except IpNotAvailableError, e:
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
+
+        except Exception, e:
+            msg = u'Error save new IPV6.: %s' % e
+            self.log.exception(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+    def update_v4(self, ip_map, locks_used=[]):
+        """Method V4 to update Ipv6."""
+
+        models = get_app('equipamento', 'models')
+
+        try:
+            self.descricao = ip_map.get('description')
+
+            # Get environments related
+            envs = self.networkipv6.vlan.get_environment_related(
+                use_vrf=True) \
+                .values_list('id', flat=True)
+
+            # Get objects of equipments
+            eqpts = models.Equipamento.objects.filter(id__in=[
+                eqpt.get('id') for eqpt in ip_map.get('equipments', [])]
+            )
+        except Exception, e:
+            raise IpErrorV3(e)
+
+        else:
+
+            locks_name = list()
+
+            # Prepare lock for ipv6
+            lock_name = LOCK_IPV6 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
+            # Prepare locks for environment
+            for env in envs:
+                lock_name = LOCK_ENVIRONMENT_ALLOCATES % env
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+            for eqpt_obj in eqpts:
+                # Prepare locks for ips-equipments
+                lock_name = LOCK_IPV6_EQUIPMENT % (self.id, eqpt_obj.id)
+                if lock_name not in locks_used:
+                    locks_name.append(lock_name)
+
+                # Prepare locks for environments related with equipaments
+                for env in eqpt_obj.environments:
+                    lock_name = LOCK_ENVIRONMENT_ALLOCATES % env.ambiente_id
+                    if lock_name not in locks_used:
+                        locks_name.append(lock_name)
+
+            # Create Locks
+            locks_name = list(set(locks_name))
+            locks_list = create_lock_with_blocking(locks_name)
+        try:
+
+            self.validate_v3(eqpts)
+
+            self.save()
+
+            # Get current associates
+            current = self.ipv6equipament_set \
+                .filter(equipamento__in=eqpts) \
+                .values_list('equipamento', flat=True)
+
+            # Creates new associate
+            for eqpt in eqpts:
+                if eqpt.id not in current:
+                    ip_equipment = Ipv6Equipament()
+                    ip_equipment.create_v3({
+                        'ip': self.id,
+                        'equipment': eqpt.id
+                    })
+
+            # Removes old associates
+            for ip_eqpt in self.ipv6equipament_set \
+                    .exclude(equipamento__in=eqpts):
+                ip_eqpt.delete_v3(bypass_ip=True)
+
+        except IpErrorV3, e:
+            self.log.error(e.message)
+            raise IpErrorV3(e.message)
+
+        except Exception, e:
+            msg = u'Error edit IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+    def delete_v4(self, locks_used=[]):
+        """
+        Method V4 to remove Ipv6.
+        Before removing the IP removes all your requests
+        VIP and relationships with equipment.
+
+        @raise IpCantBeRemovedFromVip: Ipv6 is associated with created
+                                       Vip Request.
+        """
+
+        locks_name = list()
+
+        # Prepare lock for ipv6
+        lock_name = LOCK_IPV6 % self.id
+        if lock_name not in locks_used:
+            locks_name.append(lock_name)
+
+        # Create Locks
+        locks_name = list(set(locks_name))
+        locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            for vip in self.viprequest_set.all():
+                id_vip = vip.id
+                with distributedlock(LOCK_VIP % id_vip):
+                    if vip.created:
+                        raise IpCantBeRemovedFromVip(
+                            id_vip,
+                            'IPv6 can not be removed because it is '
+                            'in use by Vip Request %s' % (id_vip))
+
+                    # Deletes only VIP, Related Ipv6 with VIP is not removed
+                    vip.delete_v3(bypass_ipv4=True, bypass_ipv6=True)
+
+            # Deletes Related Equipment
+            for ip_eqpt in self.ipv6equipament_set.all():
+                ip_eqpt.delete_v3(bypass_ip=True)
+
+            # Serializes obj
+            ip_slz = get_app('api_ip', module_label='serializers')
+            serializer = ip_slz.Ipv6V3Serializer(self)
+            data_to_queue = serializer.data
+
+            # Deletes Obj IP
+            super(Ipv6, self).delete()
+
+            # Sends to Queue
+            queue_manager = QueueManager(broker_vhost='tasks',
+                                         queue_name='tasks.aclapi',
+                                         exchange_name='tasks.aclapi',
+                                         routing_key='tasks.aclapi')
+            data_to_queue.update({'description': queue_keys.IPv6_REMOVE})
+            queue_manager.append({
+                'action': queue_keys.IPv6_REMOVE,
+                'kind': queue_keys.IPv6_KEY,
+                'data': data_to_queue
+            })
+            queue_manager.send()
+
+        except IpCantBeRemovedFromVip, e:
+            raise IpCantBeRemovedFromVip(e.cause, e.message)
+
+        except Exception, e:
+            msg = u'Error edit IP.: %s' % e
+            self.log.error(msg)
+            raise IpErrorV3(msg)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
     def validate_v3(self, equipments):
         """Validate Ip."""
 
@@ -4921,6 +5615,130 @@ class Ipv6Equipament(BaseModel):
 
         if self.ip.serverpoolmember_set.count() > 0:
 
+            items = ['{}:{}'.format(
+                svm.server_pool.id,
+                svm.server_pool.identifier
+            ) for svm in self.ip.serverpoolmember_set.all()]
+
+            items = ', '.join(items)
+
+            raise IpCantRemoveFromServerPool(
+                {
+                    'ip': self.ip.ip_formated,
+                    'equip_name': self.equipamento.nome,
+                    'server_pool_identifiers': items
+                },
+                'IPv6 can not be dissociated from the equipment% s because it'
+                'is being using in the Server Pools (id: identifier)%s' %
+                (self.equipamento.nome, items)
+            )
+
+        super(Ipv6Equipament, self).delete()
+
+        # If ip has no other equipment, than he will be removed to
+        if self.ip.ipv6equipament_set.count() == 0 and not bypass_ip:
+            self.ip.delete_v3()
+
+    ##################
+    # Methods for V4 #
+    ##################
+    def create_v4(self, ip_equipment):
+        """Inserts a relationship between IP e Equipment.
+        @return: Nothing.
+        @raise IpError: Failure to insert.
+        @raise EquipamentoNotFoundError: Equipment do not registered.
+        @raise IpNotFoundError: Ip do not registered.
+        @raise IpEquipamentoDuplicatedError: IP already registered for the equipment.
+        @raise EquipamentoError: Failure to search equipment.
+        """
+        equipamento = get_model('equipamento', 'Equipamento')
+        equipamentoambiente = get_model('equipamento',
+                                        'EquipamentoAmbiente')
+
+        self.equipamento = equipamento().get_by_pk(
+            ip_equipment.get('equipment'))
+        self.ip = Ipv6().get_by_pk(ip_equipment.get('ip'))
+
+        # Validate the ip
+        self.validate_ip()
+
+        try:
+
+            # All equipments related with environment of IP
+            eqpts = self.ip.networkipv6.vlan.ambiente \
+                .equipamentoambiente_set.all() \
+                .values_list('equipamento', flat=True)
+
+            if ip_equipment.get('equipment') not in eqpts:
+                ea = equipamentoambiente(
+                    ambiente=self.ip.networkipv6.vlan.ambiente,
+                    equipamento=self.equipamento
+                )
+                ea.save()
+
+            self.save()
+        except Exception, e:
+            self.log.error(u'Failure to insert an ip_equipamento.')
+            raise IpError(e, u'Failure to insert an ip_equipamento.')
+
+    def delete_v4(self, bypass_ip=False):
+        """
+        Method V4 to remove Ipv6 and Equipment relationship.
+        If Ipv6 from this Ipv6-Equipment is associated with created Vip
+            Request and the Equipment is the last balancer associated,
+            the IpEquipment association cannot be removed.
+        If Ipv6 has no relationship with other Equipments, then Ipv6 is
+            also removed.
+
+        @raise IpCantRemoveFromServerPool: Ip is associated with associated
+                                           Pool Member.
+        @raise IpEquipCantDissociateFromVip: Equipment is the last balanced
+                                             in a created Vip Request
+                                             pointing to ip.
+        """
+        tipoequipamento = get_model('equipamento', 'TipoEquipamento')
+
+        type_eqpt = tipoequipamento.get_tipo_balanceador()
+
+        if self.equipamento.tipo_equipamento == type_eqpt:
+
+            for vip in self.ip.viprequest_set.all():
+
+                # Filter equipments to find another balancer
+                another_balancer = self.ip.ipv6equipament_set.exclude(
+                    equipamento=self.equipamento.id
+                ).filter(equipamento__tipo_equipamento=type_eqpt)
+
+                id_vip = vip.id
+
+                if not another_balancer:
+                    with distributedlock(LOCK_VIP % id_vip):
+                        if vip.created:
+                            raise IpEquipCantDissociateFromVip(
+                                {
+                                    'vip_id': id_vip,
+                                    'ip': self.ip.ip_formated,
+                                    'equip_name': self.equipamento.nome
+                                },
+                                'Ipv6 can not be dissociated from the '
+                                'equipment %s because it is the last '
+                                'balancer of Vip Request %s.'
+                                % (self.equipamento.nome, id_vip)
+                            )
+                        else:
+                            # Remove ipv6 from vip
+                            if vip.ipv4 is not None:
+                                vip.ipv6 = None
+                                id_vip.save()
+
+                                # SYNC_VIP
+                                syncs.new_to_old(vip)
+                            # Remove vip
+                            else:
+                                vip.delete_v3(bypass_ipv4=True,
+                                              bypass_ipv6=True)
+
+        if self.ip.serverpoolmember_set.count() > 0:
             items = ['{}:{}'.format(
                 svm.server_pool.id,
                 svm.server_pool.identifier
