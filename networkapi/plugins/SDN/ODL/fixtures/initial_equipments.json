@@ -10,14 +10,14 @@
     "pk": 1,
     "model": "equipamento.marca",
     "fields": {
-      "nome": "Marca-1"
+      "nome": "OpenDaylight"
     }
   },
   {
     "pk": 1,
     "model": "equipamento.modelo",
     "fields": {
-      "nome": "Modelo-1",
+      "nome": "SDN Controller",
       "marca": "1"
     }
   },
@@ -45,7 +45,7 @@
     "pk": 1,
     "model": "tipoacesso.tipoacesso",
     "fields": {
-      "protocolo": "TipoAcesso-1"
+      "protocolo": "http"
     }
   },
   {
