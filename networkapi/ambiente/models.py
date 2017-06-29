@@ -1288,7 +1288,8 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
-            self.dcroom = DatacenterRooms().get_dcrooms(idt=env_map.get('dcroom')) if env_map.get('dcroom') else None
+            self.dcroom = DatacenterRooms().get_dcrooms(idt=env_map.get('fabric_id')) if env_map.get('fabric_id') \
+                else None
             self.validate_v3()
             self.save()
 

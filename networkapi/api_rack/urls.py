@@ -14,7 +14,7 @@ urlpatterns = patterns('',
     url(r'^rack/fabric/(?P<fabric_id>\d+)[/]$', rack_views.RackView.as_view()),
     url(r'^rack/$', rack_views.RackView.as_view()),
     url(r'^rack/config/$', rack_views.RackConfigView.as_view()),
-    url(r'^rack/environmentvlan/$', rack_views.RackEnvironmentView.as_view()),
+    url(r'^rack/environmentvlan/(?P<rack_id>\d+)/$', rack_views.RackEnvironmentView.as_view()),
     url(r'^rack/list/all/$', rack_views.RackView.as_view()),
     url(r'^rack/next/', rack_facade.available_rack_number),
 

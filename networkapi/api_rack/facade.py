@@ -23,6 +23,8 @@ from netaddr import IPNetwork
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
+from networkapi.ambiente import models as models_env
+from networkapi.api_environment import facade as facade_env
 from networkapi.vlan import models as models_vlan
 from networkapi.api_vlan.facade import v3 as facade_vlan_v3
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
@@ -406,69 +408,63 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
 
 def _create_vlans_cloud(rack, env_mngtcloud, user):
 
-    # se cadastrar o ambiente com os ambientes filhos, os ambientes filhos teriam cadastro errado
-    # já que teria que inventar um range para poder cadastrar o prefix e o type
-    #
-    # se não cadastrar o filho, como vou saber como quebrar a rede entre os ambientes filhos?
-    #
-    # pro pop dá pra fazer (prefix iguais), pro dc não dá
+    log.debug("_create_clans_cloud")
 
-    var = sorted(env_mngtcloud, key=operator.itemgetter('father_environment.id'))
-    father = var[0]
-    envs = var.remove(father)
+    try:
+        fabricconfig = ast.literal_eval(rack.dcroom.config).get("Ambiente")
+    except:
+        fabricconfig = list()
 
-    for j in envs:
-        if j.father_environment:
-            if int(j.father_environment) is not int(var[0].id):
-                log.info("Ambientes não cadastrados corretamente")
-                return None
-        else:
-            log.info("Ambientes não cadastrados corretamente")
-            return None
+    try:
+        id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
+    except:
+        grupo_l3_dict = models_env.GrupoL3()
+        grupo_l3_dict.nome = rack.nome
+        grupo_l3_dict.save()
+        id_grupo_l3 = grupo_l3_dict.id
+        pass
 
-    envs = sorted(envs, key=operator.itemgetter('divisao_dc.nome'))
+    environment = None
+    for env in env_mngtcloud:
+        father_id = env.id
 
-    config = list()
-    for net_father in father.configs:
-        config["cidr"] = IPNetwork(net_father.ip_config.subnet)
-        config["type"] = net_father.ip_config.type
-        config["network_type"] = net_father.ip_config.network_type
+        for fab in fabricconfig:
+            if fab.get("id")==father_id:
+                fabenv = fab.get("details")
+                if not fabenv:
+                    return False
 
-    for env in envs:
-        """
-        for conf in env.configs:
-            prefix = conf.ip_config.new_prefix
-            type = conf.ip_config.type
+        for amb in fabenv:
+            try:
+                id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
+            except:
+                div_dict = models_env.DivisaoDc()
+                div_dict.nome = amb.get("name")
+                div_dict.save()
+                id_div = div_dict.id
+                pass
 
-            for net in net_father:
-                config["cidr"] = splitnetworkbyrack(net.get("cidr"), , 0)
-        net_father = net
-        """
-        env_id = env.id
-        vlan_number = env.max_num_vlan_1
-        vlan_name = "DOM_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + rack.nome
-
-        for net in env.configs:
-            prefix = int(net.ip_config.new_prefix)
-            network = {
-                'prefix': prefix,  # str(list(cidr.subnet(prefix))[rack_number]),
-                'network_type': id_network_type
+            obj = {
+                'grupo_l3': id_grupo_l3,
+                'ambiente_logico': env.ambiente_logico.id,
+                'divisao_dc': id_div,
+                'acl_path': env.acl_path,
+                'ipv4_template': env.ipv4_template,
+                'ipv6_template': env.ipv6_template,
+                'link': env.link,
+                'min_num_vlan_2': amb.get("min_num_vlan_1"),
+                'max_num_vlan_2': amb.get("max_num_vlan_1"),
+                'min_num_vlan_1': amb.get("min_num_vlan_1"),
+                'max_num_vlan_1': amb.get("max_num_vlan_1"),
+                'vrf': env.vrf,
+                'father_environment': father_id,
+                'default_vrf': env.default_vrf.id,
+                'configs': amb.get("config")
             }
-            if str(net.ip_config.type)[-1] is "4":
-                create_networkv4 = network
-            elif str(net.ip_config.type)[-1] is "6":
-                create_networkv6 = network
-        obj = {
-            'name': vlan_name,
-            'num_vlan': vlan_number,
-            'environment': env_id,
-            'default_vrf': env.default_vrf.id,
-            'vrf': env.vrf,
-            'create_networkv4': create_networkv4 if create_networkv4 else None,
-            'create_networkv6': create_networkv6 if create_networkv6 else None
-        }
-        log.debug("Vlan object: %s" % str(obj))
-        facade_vlan_v3.create_vlan(obj, user)
+            environment = facade_env.create_environment(obj)
+            log.debug("Environment object: %s" % str(environment))
+
+    return environment
 
 
 def _create_fe_envs(rack, env_fe):
@@ -547,13 +543,15 @@ def _create_oobvlans(rack, env_oob, user):
 
 def rack_environments_vlans(rack_id, user):
 
-    rack = Rack().get_rack(idt=rack_id)
+    log.info("Rack Environments")
 
+    rack = Rack().get_rack(idt=rack_id)
     # get fathers environments
     env_spn = list()
     env_be = list()
     env_fe = list()
     env_oob = list()
+    env_mngtcloud = list()
     environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id))
     for envs in environments:
         if envs.ambiente_logico.nome == "SPINES":
@@ -576,7 +574,7 @@ def rack_environments_vlans(rack_id, user):
     _create_fe_envs(rack, env_fe)
 
     # producao/cloud
-    # _create_vlans_cloud(rack, env_mngtcloud, user)
+    _create_vlans_cloud(rack, env_mngtcloud, user)
 
     # redes de gerencia OOB
     _create_oobvlans(rack, env_oob, user)

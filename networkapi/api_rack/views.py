@@ -123,7 +123,6 @@ class RackDeployView(APIView):
                     # Apply config only in spines. Leaves already have all necessary config in startup
                     if "ADD" in filename_equipments:
                         # Check if equipment in under maintenance. If so, does not aplly on it
-
                         equipment_name = filename_equipments.split('-ADD-')[0]
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
@@ -193,13 +192,8 @@ class RackEnvironmentView(APIView):
         try:
             log = logging.getLogger('Alocando ambientes e vlans do rack')
 
-            if not request.DATA.get('racks'):
-                raise exceptions.InvalidInputException()
-
-            # Validar configuracao
-            response = list()
-            for rack in request.DATA.get('racks'):
-                response.append(facade.rack_environments_vlans(rack, request.user))
+            rack_id = kwargs.get("rack_id")
+            facade.rack_environments_vlans(rack_id, request.user)
 
             data = dict()
 
