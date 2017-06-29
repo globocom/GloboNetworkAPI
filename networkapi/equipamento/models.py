@@ -980,11 +980,11 @@ class Equipamento(BaseModel):
 
         # ipv4
         for ip_equipment in self.ipequipamento_set.all():
-            ip_equipment.delete_v3()
+            ip_equipment.delete_v4()
 
         # ipv6
         for ip_v6_equipment in self.ipv6equipament_set.all():
-            ip_v6_equipment.delete_v3()
+            ip_v6_equipment.delete_v4()
 
         for equipment_access in self.equipamentoacesso_set.all():
             equipment_access.delete()
