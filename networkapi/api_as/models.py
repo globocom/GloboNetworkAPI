@@ -135,7 +135,7 @@ class AsEquipment(BaseModel):
         managed = True
 
     @classmethod
-    def get_by_pk(cls):
+    def get_by_pk(cls, id):
         """Get AsEquipment by id.
 
         :return: AsEquipment.
