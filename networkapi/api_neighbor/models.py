@@ -5,7 +5,7 @@ from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
-from networkapi.api_neighbor.v3 import exceptions
+from networkapi.api_neighbor.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -86,7 +86,7 @@ class Neighbor(BaseModel):
     created = models.BooleanField(db_column='created')
 
     virtual_interface = models.ForeignKey(
-        'ip.NetworkIPv6',
+        'api_virtual_interface.VirtualInterface',
         db_column='id_virtual_interface'
     )
 
