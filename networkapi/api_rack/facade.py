@@ -222,6 +222,7 @@ def _buscar_ip(id_sw):
 
 
 def gerar_arquivo_config(ids):
+    log.debug("gerar_arquivo_config")
 
     for id in ids:
         rack = Rack().get_rack(idt=id)
@@ -298,6 +299,7 @@ def gerar_arquivo_config(ids):
 
 
 def _create_spnlfenv(rack, envfathers):
+    log.debug("_create_spnlfenv")
 
     environment_spn_lf_list = list()
     spines = int(rack.dcroom.spines)
@@ -311,6 +313,7 @@ def _create_spnlfenv(rack, envfathers):
         grupo_l3_dict.save()
         id_grupo_l3 = grupo_l3_dict.id
         pass
+
     for env in envfathers:
         config_subnet = list()
         for net in env.configs:
@@ -329,7 +332,7 @@ def _create_spnlfenv(rack, envfathers):
                 id_amb_log = models_env.AmbienteLogico().get_by_name(amb_log_name).id
             except:
                 amb_log_dict = models_env.AmbienteLogico()
-                amb_log_dict.nome = spine_name
+                amb_log_dict.nome = amb_log_name
                 amb_log_dict.save()
                 id_amb_log = amb_log_dict.id
                 pass
@@ -359,13 +362,14 @@ def _create_spnlfenv(rack, envfathers):
                 'default_vrf': env.default_vrf.id,
                 'configs': config
             }
-            environment_spn_lf = models_env.Ambiente().environment_spn_lf.create_v3(obj)
+            environment_spn_lf = facade_env.create_environment(obj)
             log.debug("Environment object: %s" % str(obj))
             environment_spn_lf_list.append(environment_spn_lf)
     return environment_spn_lf_list
 
 
 def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
+    log.debug("_create_spnlfvlans")
 
     rack_number = int(rack.numero)
     tipo_rede = "Ponto a ponto"
@@ -407,7 +411,6 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
 
 
 def _create_vlans_cloud(rack, env_mngtcloud, user):
-
     log.debug("_create_clans_cloud")
 
     try:
@@ -468,6 +471,7 @@ def _create_vlans_cloud(rack, env_mngtcloud, user):
 
 
 def _create_fe_envs(rack, env_fe):
+    log.debug("_create_fe_envs")
 
     try:
         id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
@@ -507,24 +511,25 @@ def _create_fe_envs(rack, env_fe):
             'default_vrf': env.default_vrf.id,
             'configs': confs
         }
-        environment = models_env.Ambiente().environment.create_v3(obj)
+        environment = facade_env.create_environment(obj)
         log.debug("Environment object: %s" % str(environment))
     return environment
 
 
 def _create_oobvlans(rack, env_oob, user):
+    log.debug("_create_oobvlans")
 
     vlan = None
     for env in env_oob:
         vlan_base = env.min_num_vlan_1
-        vlan_number = int(vlan_base) + int(rack_number)
+        vlan_number = int(vlan_base) + int(rack.numero)
         vlan_name = "VLAN_" + env.ambiente_logico.nome + "_" + rack.nome
 
         network = dict()
         for config in env.configs:
             network = {
                 'new_prefix': str(config.ip_config.new_prefix),
-                'network_type': config.ip_config.network_type
+                'network_type': config.ip_config.network_type.id
             }
         obj = {
             'name': vlan_name,
@@ -542,7 +547,6 @@ def _create_oobvlans(rack, env_oob, user):
 
 
 def rack_environments_vlans(rack_id, user):
-
     log.info("Rack Environments")
 
     rack = Rack().get_rack(idt=rack_id)
@@ -563,7 +567,7 @@ def rack_environments_vlans(rack_id, user):
                 env_fe.append(envs)
         elif envs.ambiente_logico.nome == "HOSTS-CLOUD":
             env_mngtcloud.append(envs)
-        elif envs.ambiente_logico.nome[:3] == "OOB":
+        elif envs.divisao_dc.nome[:3] == "OOB":
             env_oob.append(envs)
 
     # externo:  spine x leaf
@@ -571,7 +575,8 @@ def rack_environments_vlans(rack_id, user):
     _create_spnlfvlans(rack, spn_lf_envs_ids, user)
 
     # interno:  leaf x leaf (tor)
-    _create_fe_envs(rack, env_fe)
+    #_create_be_envs(rack, env_be)
+    #_create_fe_envs(rack, env_fe)
 
     # producao/cloud
     _create_vlans_cloud(rack, env_mngtcloud, user)

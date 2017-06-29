@@ -189,18 +189,18 @@ class RackConfigView(APIView):
 class RackEnvironmentView(APIView):
 
     def post(self, request, *args, **kwargs):
-        try:
-            log = logging.getLogger('Alocando ambientes e vlans do rack')
+        #try:
+        log = logging.getLogger('Alocando ambientes e vlans do rack')
 
-            rack_id = kwargs.get("rack_id")
-            facade.rack_environments_vlans(rack_id, request.user)
+        rack_id = kwargs.get("rack_id")
+        facade.rack_environments_vlans(rack_id, request.user)
 
-            data = dict()
+        data = dict()
 
-            return Response(data, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
-        except Exception, e:
-            raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+        #except Exception, e:
+         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class DataCenterView(APIView):
