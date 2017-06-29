@@ -17,7 +17,7 @@ class NeighborError(APIException):
         self.detail = msg
 
 
-class NeighborErrorV3(Exception):
+class NeighborErrorV4(Exception):
 
     """Generic exception for everything related to Neighbor."""
 
@@ -30,4 +30,4 @@ class NeighborErrorV3(Exception):
 
 class NeighborDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = 'Neighbor doesn not exists.'
+    default_detail = 'Neighbor does not exists.'
