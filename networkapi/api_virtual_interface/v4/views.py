@@ -26,87 +26,85 @@ class VirtualInterfaceDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """Returns a list of AS's by ids ou dict."""
+        """Returns a list of Virtual Interface's by ids ou dict."""
 
-        # if not kwargs.get('obj_ids'):
-        #     obj_model = facade.get_as_by_search(self.search)
-        #     as_s = obj_model['query_set']
-        #     only_main_property = False
-        # else:
-        #     as_ids = kwargs.get('obj_ids').split(';')
-        #     as_s = facade.get_as_by_ids(as_ids)
-        #     only_main_property = True
-        #     obj_model = None
-        #
-        # # serializer AS's
-        # serializer_as = serializers.AsV4Serializer(
-        #     as_s,
-        #     many=True,
-        #     fields=self.fields,
-        #     include=self.include,
-        #     exclude=self.exclude,
-        #     kind=self.kind
-        # )
-        #
-        # # prepare serializer with customized properties
-        # data = render_to_json(
-        #     serializer_as,
-        #     main_property='asns',
-        #     obj_model=obj_model,
-        #     request=request,
-        #     only_main_property=only_main_property
-        # )
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_virtual_interface_by_search(self.search)
+            virtual_interfaces = obj_model['query_set']
+            only_main_property = False
+        else:
+            vi_ids = kwargs.get('obj_ids').split(';')
+            virtual_interfaces = facade.get_virtual_interface_by_ids(vi_ids)
+            only_main_property = True
+            obj_model = None
 
-        # return Response(data, status=status.HTTP_200_OK)
-        return Response({}, status=status.HTTP_200_OK)
+        # serializer Virtual Interface's
+        serializer_vi = serializers.VirtualInterfaceV4Serializer(
+            virtual_interfaces,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        # prepare serializer with customized properties
+        data = render_to_json(
+            serializer_vi,
+            main_property='virtual_interfaces',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('as_post')
+    @raise_json_validate('virtual_interface_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """Create new AS."""
+        """Create new Virtual Interface."""
 
-        # as_s = request.DATA
-        # json_validate(SPECS_V4.get('as_post')).validate(as_s)
-        # response = list()
-        # for as_ in as_s['asns']:
-        #
-        #     as_obj = facade.create_as(as_)
-        #     response.append({'id': as_obj.id})
+        virtual_interfaces = request.DATA
+        json_validate(SPECS_V4.get('virtual_interface_post')).\
+            validate(virtual_interfaces)
+        response = list()
+        for vi_ in virtual_interfaces['virtual_interfaces']:
 
-        # return Response(response, status=status.HTTP_201_CREATED)
-        return Response({}, status=status.HTTP_200_OK)
+            vi_obj = facade.create_virtual_interface(vi_)
+            response.append({'id': vi_obj.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('as_put')
+    @raise_json_validate('virtual_interface_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """Update AS."""
+        """Update Virtual Interface."""
 
-        # as_s = request.DATA
-        # json_validate(SPECS_V4.get('as_put')).validate(as_s)
-        # response = list()
-        # for as_ in as_s['asns']:
-        #
-        #     as_obj = facade.update_as(as_)
-        #     response.append({
-        #         'id': as_obj.id
-        #     })
-        #
-        # return Response(response, status=status.HTTP_200_OK)
-        return Response({}, status=status.HTTP_200_OK)
+        virtual_interfaces = request.DATA
+        json_validate(SPECS_V4.get('virtual_interface_put')).\
+            validate(virtual_interfaces)
+        response = list()
+        for vi_ in virtual_interfaces['virtual_interfaces']:
+
+            vi_obj = facade.update_virtual_interface(vi_)
+            response.append({
+                'id': vi_obj.id
+            })
+
+        return Response(response, status=status.HTTP_200_OK)
 
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """Delete AS."""
+        """Delete Virtual Interface."""
 
-        # obj_ids = kwargs['obj_ids'].split(';')
-        # facade.delete_as(obj_ids)
-        #
-        # return Response({}, status=status.HTTP_200_OK)
+        obj_ids = kwargs['obj_ids'].split(';')
+        facade.delete_virtual_interface(obj_ids)
+
         return Response({}, status=status.HTTP_200_OK)
