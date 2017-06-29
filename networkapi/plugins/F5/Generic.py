@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+f# -*- coding: utf-8 -*-
 import itertools
 import logging
 
