@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+f# -*- coding: utf-8 -*-
 import itertools
 import logging
 
@@ -29,7 +29,7 @@ class Generic(BasePlugin):
             if obj.ipv4 else obj.ipv6.ip_formated
 
         name_vip = 'VIP%s_%s_%s' % (obj.id, address, port)
-        name_vip = str.replace(name_vip, ":", ".")
+        name_vip = str.replace(str(name_vip), ":", ".")
 
         return name_vip
 
