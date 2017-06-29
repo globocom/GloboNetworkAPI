@@ -38,3 +38,9 @@ class VrfRelatedToEnvironment(APIException):
 class VrfAssociatedToVlanEquipment(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Error on deleting Vrf.'
+
+
+class VrfAssociatedToVirtualInterface(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Error on deleting Vrf.'
+
