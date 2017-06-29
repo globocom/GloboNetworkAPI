@@ -77,18 +77,16 @@ class ODLPlugin(BaseSdnPlugin):
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data)
 
-        builder.build()
-        return_flows = []
+            flows_set = builder.build()
 
-        for flow in builder.flows:
-            flow_id = flow['flow']['id']
-            data_to_send = json.dumps(flow)
+            for flows in flows_set:
+                for flow in flows['flow']:
 
-            return_flows.append(
-                self._flow(flow_id=flow_id, method='put', data=data_to_send)
-            )
+                    self._flow(flow_id=flow['id'],
+                               method='put',
+                               data=json.dumps({'flow': [flow]}))
 
-        return return_flows
+        return None
 
     def del_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='delete')
@@ -98,7 +96,7 @@ class ODLPlugin(BaseSdnPlugin):
 
     def _flow(self, flow_id=0, method='', data=None):
 
-        allowed_methods=["get", "put", "delete"]
+        allowed_methods = ["get", "put", "delete"]
 
         if flow_id < 1 or method not in allowed_methods:
             log.error("Invalid parameters in OLDPlugin flow handler")
@@ -159,9 +157,10 @@ class ODLPlugin(BaseSdnPlugin):
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
 
-        log.info("Starting %s request to controller %s at %s. Data to be sent: %s" %
+        log.info(
+            "Starting %s request to controller %s at %s. Data to be sent: %s" %
             (params["method"], self.equipment.nome, uri, params["data"])
-         )
+        )
 
         try:
             # Raises AttributeError if method is not valid
