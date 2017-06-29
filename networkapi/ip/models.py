@@ -299,6 +299,16 @@ class IpCantRemoveFromServerPool(IpError):
         IpError.__init__(self, cause, message)
 
 
+class VirtualInterfaceIsNotNoneAtIpEquip(IpError):
+
+    """Returns exceptions when trying to dissociate Ip, Equipment and
+        Virtual Interface.
+    """
+
+    def __init__(self, cause, message=None):
+        IpError.__init__(self, cause, message)
+
+
 class NetworkIPv4(BaseModel):
 
     id = models.AutoField(
@@ -2383,7 +2393,7 @@ class Ip(BaseModel):
 
             # Deletes Related Equipment
             for ip_eqpt in self.ipequipamento_set.all():
-                ip_eqpt.delete_v3(bypass_ip=True)
+                ip_eqpt.delete_v4(bypass_ip=True)
 
             # Serializes obj
             ip_slz = get_app('api_ip', module_label='serializers')
@@ -2829,10 +2839,14 @@ class IpEquipamento(BaseModel):
         equipamentoambiente = get_model('equipamento',
                                         'EquipamentoAmbiente')
         equipamento = get_model('equipamento', 'Equipamento')
+        virtualinterface = get_model('api_virtual_interface',
+                                     'VirtualInterface')
 
         self.equipamento = equipamento().get_by_pk(
             ip_equipment.get('equipment'))
         self.ip = Ip().get_by_pk(ip_equipment.get('ip'))
+        self.virtual_interface = virtualinterface().get_by_pk(
+            ip_equipment.get('virtual_interface'))
 
         # Validate the ip
         self.__validate_ip()
@@ -2854,6 +2868,25 @@ class IpEquipamento(BaseModel):
             self.log.error(u'Failure to insert an ip_equipamento.')
             raise IpError(e, u'Failure to insert an ip_equipamento.')
 
+    def update_v4(self, ip_equipment):
+
+        try:
+
+            virtualinterface = get_model('api_virtual_interface',
+                                         'VirtualInterface')
+
+            virtualinterface_id = ip_equipment.get('virtual_interface')
+            self.virtual_interface = \
+                virtualinterface().get_by_pk(virtualinterface_id) \
+                    if virtualinterface_id is not None \
+                    else None
+
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Failure to edit an ip_equipamento.')
+            raise IpError(e, u'Failure to edit an ip_equipamento.')
+
     def delete_v4(self, bypass_ip=False):
         """
         Method V4 to remove Ip and Equipment relationship.
@@ -2872,6 +2905,12 @@ class IpEquipamento(BaseModel):
         tipoequipamento = get_model('equipamento', 'TipoEquipamento')
 
         type_eqpt = tipoequipamento.get_tipo_balanceador()
+
+        if self.virtual_interface is not None:
+            raise VirtualInterfaceIsNotNoneAtIpEquip(
+                'It exist a relationship between Ip, Equipment '
+                'and Virtual Interface.'
+            )
 
         if self.equipamento.tipo_equipamento == type_eqpt:
 
@@ -5188,7 +5227,7 @@ class Ipv6(BaseModel):
 
             # Deletes Related Equipment
             for ip_eqpt in self.ipv6equipament_set.all():
-                ip_eqpt.delete_v3(bypass_ip=True)
+                ip_eqpt.delete_v4(bypass_ip=True)
 
             # Serializes obj
             ip_slz = get_app('api_ip', module_label='serializers')
@@ -5643,7 +5682,7 @@ class Ipv6Equipament(BaseModel):
     # Methods for V4 #
     ##################
     def create_v4(self, ip_equipment):
-        """Inserts a relationship between IP e Equipment.
+        """Inserts a relationship between IP, Equipment and Virtual Interface.
         @return: Nothing.
         @raise IpError: Failure to insert.
         @raise EquipamentoNotFoundError: Equipment do not registered.
@@ -5654,10 +5693,14 @@ class Ipv6Equipament(BaseModel):
         equipamento = get_model('equipamento', 'Equipamento')
         equipamentoambiente = get_model('equipamento',
                                         'EquipamentoAmbiente')
+        virtualinterface = get_model('api_virtual_interface',
+                                     'VirtualInterface')
 
         self.equipamento = equipamento().get_by_pk(
             ip_equipment.get('equipment'))
         self.ip = Ipv6().get_by_pk(ip_equipment.get('ip'))
+        self.virtual_interface = virtualinterface().get_by_pk(
+            ip_equipment.get('virtual_interface'))
 
         # Validate the ip
         self.validate_ip()
@@ -5681,6 +5724,25 @@ class Ipv6Equipament(BaseModel):
             self.log.error(u'Failure to insert an ip_equipamento.')
             raise IpError(e, u'Failure to insert an ip_equipamento.')
 
+    def update_v4(self, ip_equipment):
+
+        try:
+
+            virtualinterface = get_model('api_virtual_interface',
+                                         'VirtualInterface')
+
+            virtualinterface_id = ip_equipment.get('virtual_interface')
+            self.virtual_interface = \
+                virtualinterface().get_by_pk(virtualinterface_id) \
+                    if virtualinterface_id is not None \
+                    else None
+
+            self.save()
+
+        except Exception, e:
+            self.log.error(u'Failure to edit an ip_equipamento.')
+            raise IpError(e, u'Failure to edit an ip_equipamento.')
+
     def delete_v4(self, bypass_ip=False):
         """
         Method V4 to remove Ipv6 and Equipment relationship.
@@ -5699,6 +5761,12 @@ class Ipv6Equipament(BaseModel):
         tipoequipamento = get_model('equipamento', 'TipoEquipamento')
 
         type_eqpt = tipoequipamento.get_tipo_balanceador()
+
+        if self.virtual_interface is not None:
+            raise VirtualInterfaceIsNotNoneAtIpEquip(
+                'It exist a relationship between Ip, Equipment '
+                'and Virtual Interface.'
+            )
 
         if self.equipamento.tipo_equipamento == type_eqpt:
 
