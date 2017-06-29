@@ -50,6 +50,7 @@ class AdminPermission(object):
     NETWORK_FORCE = 'network_force'
     AS_MANAGEMENT = 'as_management'
     VIRTUAL_INTERFACE_MANAGEMENT = 'virtual_interface_management'
+    NEIGHBOR_MANAGEMENT = 'neighbor_management'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'
