@@ -38,65 +38,17 @@
           "id": {
             "type": "integer"
           },
-          "ipsv4": {
-            "type": "array",
+          "ipv4": {
             "items": {
-              "type": "object",
-              "properties": {
-                "ipv4": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                },
-                "interface": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              }
-            }
+              "type": "integer"
+            },
+            "type": "array"
           },
-          "ipsv6": {
-            "type": "array",
+          "ipv6": {
             "items": {
-              "type": "object",
-              "properties": {
-                "ipv6": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                },
-                "interface": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              }
-            }
+              "type": "integer"
+            },
+            "type": "array"
           },
           "maintenance": {
             "type": "boolean"
