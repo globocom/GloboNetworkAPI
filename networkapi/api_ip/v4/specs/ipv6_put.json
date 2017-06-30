@@ -49,8 +49,27 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "integer"
+                "equipment": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                },
+                "interface": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
                 }
               }
             }
