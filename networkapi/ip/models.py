@@ -2760,6 +2760,15 @@ class IpEquipamento(BaseModel):
 
         type_eqpt = tipoequipamento.get_tipo_balanceador()
 
+        if self.virtual_interface is not None:
+            raise VirtualInterfaceIsNotNoneAtIpEquip(
+                'Cannot delete IpEquipment relationship because '
+                'Virtual Interface %s is related with Equipment %s '
+                'and Ip %s.' % (self.virtual_interface.id,
+                               self.equipamento.id,
+                               self.ip.id)
+            )
+
         if self.equipamento.tipo_equipamento == type_eqpt:
 
             for vip in self.ip.viprequest_set.all():
@@ -2908,8 +2917,11 @@ class IpEquipamento(BaseModel):
 
         if self.virtual_interface is not None:
             raise VirtualInterfaceIsNotNoneAtIpEquip(
-                'It exist a relationship between Ip, Equipment '
-                'and Virtual Interface.'
+                'Cannot delete IpEquipment relationship because '
+                'Virtual Interface %s is related with Equipment %s '
+                'and Ip %s.' % (self.virtual_interface.id,
+                               self.equipamento.id,
+                               self.ip.id)
             )
 
         if self.equipamento.tipo_equipamento == type_eqpt:
@@ -5614,6 +5626,15 @@ class Ipv6Equipament(BaseModel):
 
         type_eqpt = tipoequipamento.get_tipo_balanceador()
 
+        if self.virtual_interface is not None:
+            raise VirtualInterfaceIsNotNoneAtIpEquip(
+                'Cannot delete IpEquipment relationship because '
+                'Virtual Interface %s is related with Equipment %s '
+                'and Ipv6 %s.' % (self.virtual_interface.id,
+                                self.equipamento.id,
+                                self.ip.id)
+            )
+
         if self.equipamento.tipo_equipamento == type_eqpt:
 
             for vip in self.ip.viprequest_set.all():
@@ -5764,8 +5785,11 @@ class Ipv6Equipament(BaseModel):
 
         if self.virtual_interface is not None:
             raise VirtualInterfaceIsNotNoneAtIpEquip(
-                'It exist a relationship between Ip, Equipment '
-                'and Virtual Interface.'
+                'Cannot delete IpEquipment relationship because '
+                'Virtual Interface %s is related with Equipment %s '
+                'and Ipv6 %s.' % (self.virtual_interface.id,
+                                self.equipamento.id,
+                                self.ip.id)
             )
 
         if self.equipamento.tipo_equipamento == type_eqpt:
