@@ -171,8 +171,8 @@ class EnvFlowView(CustomAPIView):
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
 
-        if not flow_id:
-            log.error("Missing flow ID")
+        if flow_id:
+            log.error("Can not insert flow directly by ID")
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
         task = facade.insert_flow(environment_id, request.DATA)
