@@ -106,7 +106,11 @@ class VirtualServer(F5Base):
                     vip_request['optionsvip']['l4_protocol']['nome_opcao_txt'].lower())
             })
 
-            vip_wildmasks.append('255.255.255.255')
+            #Check VIP type and apply wildmask
+            if ":" in vip_request['address']:
+                vip_wildmasks.append('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')
+            else:
+                vip_wildmasks.append('255.255.255.255')
 
             vip_resources.append({
                 'type': 'RESOURCE_TYPE_POOL',

@@ -354,14 +354,18 @@ def gera_config(rack):
                     switch_cadastrado = 1
 
             if not switch_cadastrado:
-                raise RackConfigError(
-                    None, rack.nome, 'Unknown error. Could not create entry for %s in foreman.' % (switch.nome))
-    # end - Create Foreman entries for rack switches
-    var1 = autoprovision_splf(num_rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3,
-                              name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
+                raise RackConfigError(None, rack.nome, "Unknown error. Could not create entry for %s in foreman." % (switch.nome))
+    #end - Create Foreman entries for rack switches
+    var1 = autoprovision_splf(num_rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4,
+                              name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4,
+                              ip_mgmtlf1, ip_mgmtlf2,
+                              int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,
+                              int_lf1_sp2, int_lf2_sp3, int_lf2_sp4)
 
-    var2 = autoprovision_coreoob(num_rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob,
-                                 name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob)
+    var2 = autoprovision_coreoob(num_rack, FILEINCR1, FILEINCR2, FILEINOOB,
+                                 name_core1, name_core2, name_oob, name_lf1, name_lf2,
+                                 ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob )
+
 
     if var1 and var2:
         return True

@@ -29,6 +29,7 @@ class Generic(BasePlugin):
             if obj.ipv4 else obj.ipv6.ip_formated
 
         name_vip = 'VIP%s_%s_%s' % (obj.id, address, port)
+        name_vip = str.replace(name_vip, ":", ".")
 
         return name_vip
 
