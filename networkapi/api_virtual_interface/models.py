@@ -79,18 +79,10 @@ class VirtualInterface(BaseModel):
                 neighbor.delete()
 
             for ipeqpt in self.ipequipamento_set.all():
-                ipeqpt.update_v4(
-                    {
-                        "virtual_interface": None
-                    }
-                )
+                ipeqpt.update_v4()
 
             for ipv6eqpt in self.ipv6equipament_set.all():
-                ipv6eqpt.update_v4(
-                    {
-                        "virtual_interface": None
-                    }
-                )
+                ipv6eqpt.update_v4()
 
             super(VirtualInterface, self).delete()
 
