@@ -1203,6 +1203,13 @@ class Ip(BaseModel):
 
     equipments = property(_get_equipments)
 
+    def _get_ipv4_equipment_virtual_interface(self):
+
+        return self.ipequipamento_set.all()
+
+    ipv4_equipment_virtual_interface = \
+        property(_get_ipv4_equipment_virtual_interface)
+
     def _get_vips(self):
         """Returns vips list."""
         vips = self.viprequest_set.all()
@@ -4010,6 +4017,13 @@ class Ipv6(BaseModel):
         return eqpts
 
     equipments = property(_get_equipments)
+
+    def _get_ipv6_equipment_virtual_interface(self):
+
+        return self.ipv6equipament_set.all()
+
+    ipv6_equipment_virtual_interface = \
+        property(_get_ipv6_equipment_virtual_interface)
 
     def _get_vips(self):
         """Returns vips list."""
