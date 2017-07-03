@@ -7,7 +7,8 @@ import re
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from netaddr import IPNetwork
-from networkapi.rack.models import RackConfigError
+from networkapi.rack.models import Rack, RackConfigError
+from networkapi.ambiente import models as models_env
 from networkapi.system.facade import get_value as get_variable
 from networkapi.system import exceptions as var_exceptions
 
@@ -163,40 +164,48 @@ def autoprovision_splf(rack, equips):
     envconfig = ast.literal_eval(dcroom.get("config"))
     BASE_RACK = dcroom.get("racks")
     BGP = envconfig.get("BGP")
-    BASE_AS_SPN = int(BGP.get("ASNspn"))
-    CIDREBGP[0] = IPNetwork(BGP.get("cidr"))
-    IBGPToRLxLipv4 = IPNetwork(BGP.get("ibgp_v4"))
-    IBGPToRLxLipv6 = IPNetwork(BGP.get("ibgp_v6"))
+    BASE_AS_SPN = int(BGP.get("spines"))
 
-    for ambiente in envconfig.get("Ambiente"):
-        nome = ambiente.get("nome")
-        vlan_range = ambiente.get("vlans").get("range")[0]
-        vlan_base = int(vlan_range.split("-")[0])
-        net_v4 = ambiente.get("redes").get("cidr_v4")
-        net_v6 = ambiente.get("redes").get("cidr_v6")
-        if nome == "BE":
-            VLANBE = vlan_base
-            CIDRBEipv4 = IPNetwork(net_v4)
-            CIDRBEipv6 = IPNetwork(net_v6)
-        elif nome == "FE":
-            VLANFE = vlan_base
-            CIDRFEipv4[0] = IPNetwork(net_v4)
-            CIDRFEipv6[0] = IPNetwork(net_v6)
-        elif nome == "BO":
-            VLANBORDA = vlan_base
-        elif nome == "BOCA":
-            VLANBORDACACHOS = vlan_base
+    # get fathers environments
+    env_be = list()
+    env_fe = list()
+    env_bo = list()
+    env_boca = list()
+    environments = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"), father_environment__isnull=True)
+    for envs in environments:
+        if envs.ambiente_logico.nome == "SPINES":
+            if envs.divisao_dc.nome[:2] == "BE":
+                env_be.append(envs)
+                VLANBE = envs.min_num_vlan_1
+                for net in envs.configs:
+                    if net.ip_config.type=="v4":
+                        CIDRBEipv4 = IPNetwork(net.ip_config.subnet)
+                    else:
+                        CIDRBEipv6 = IPNetwork(net.ip_config.subnet)
+            elif envs.divisao_dc.nome[:2] == "FE":
+                VLANFE = envs.min_num_vlan_1
+                for net in envs.configs:
+                    if net.ip_config.type=="v4":
+                        CIDRFEipv4[0] = IPNetwork(net.ip_config.subnet)
+                    else:
+                        CIDRFEipv6[0] = IPNetwork(net.ip_config.subnet)
+            elif envs.divisao_dc.nome == "BO":
+                VLANBORDA = envs.min_num_vlan_1
+            elif envs.divisao_dc.nome == "BOCACHOS":
+                VLANBORDACACHOS = envs.min_num_vlan_1
 
-    netv4_spn = IPNetwork(envconfig.get("sala").get("spines_v4"))
+    CIDREBGP[0] = CIDRBEipv4
+    IBGPToRLxLipv4 = CIDRBEipv4
+    IBGPToRLxLipv6 = CIDRBEipv6
 
-    SPINE1ipv4 = splitnetworkbyrack(netv4_spn, 24, 0)
-    SPINE2ipv4 = splitnetworkbyrack(netv4_spn, 24, 1)
-    SPINE3ipv4 = splitnetworkbyrack(netv4_spn, 24, 2)
-    SPINE4ipv4 = splitnetworkbyrack(netv4_spn, 24, 3)
-    SPINE1ipv6 = IPNetwork(envconfig.get("sala").get("spn1_v6"))
-    SPINE2ipv6 = IPNetwork(envconfig.get("sala").get("spn2_v6"))
-    SPINE3ipv6 = IPNetwork(envconfig.get("sala").get("spn3_v6"))
-    SPINE4ipv6 = IPNetwork(envconfig.get("sala").get("spn4_v6"))
+    SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 0)
+    SPINE2ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 1)
+    SPINE3ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 2)
+    SPINE4ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 3)
+    SPINE1ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 0)
+    SPINE2ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 1)
+    SPINE3ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 2)
+    SPINE4ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 3)
 
     id_vlt = [envconfig.get("VLT").get("id_vlt_lf1"), envconfig.get("VLT").get("id_vlt_lf2")]
     priority_vlt = [envconfig.get("VLT").get("priority_vlt_lf1"), envconfig.get("VLT").get("priority_vlt_lf2")]
