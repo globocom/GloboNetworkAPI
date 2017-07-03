@@ -470,8 +470,8 @@ def _create_vlans_cloud(rack, env_mngtcloud, user):
     return environment
 
 
-def _create_fe_envs(rack, env_fe):
-    log.debug("_create_fe_envs")
+def _create_be_envs(rack, env_be):
+    log.debug("_create_be_envs")
 
     try:
         id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
@@ -483,7 +483,7 @@ def _create_fe_envs(rack, env_fe):
         pass
 
     environment = None
-    for env in env_fe:
+    for env in env_be:
         confs = list()
         for config in env.configs:
             net = IPNetwork(config.ip_config.subnet)

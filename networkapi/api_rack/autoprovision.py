@@ -27,7 +27,7 @@ def replace(filein, fileout, dicionario):
     try:
         for key in dicionario:
             # Use RE package to allow for replacement (also allowing for (multiline) REGEX)
-            log.info("variavel: %s, valor: %s" % (str(key), str(dicionario[key])))
+            log.debug("variavel: %s, valor: %s" % (str(key), str(dicionario[key])))
             file_string = (re.sub(key, dicionario[key], file_string))
     except:
         raise RackConfigError(None, None, "Erro atualizando as variáveis no roteiro: %s." % filein)
@@ -167,34 +167,51 @@ def autoprovision_splf(rack, equips):
     BASE_AS_SPN = int(BGP.get("spines"))
 
     # get fathers environments
-    env_be = list()
-    env_fe = list()
-    env_bo = list()
-    env_boca = list()
     environments = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"), father_environment__isnull=True)
     for envs in environments:
         if envs.ambiente_logico.nome == "SPINES":
             if envs.divisao_dc.nome[:2] == "BE":
-                env_be.append(envs)
                 VLANBE = envs.min_num_vlan_1
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
-                        CIDRBEipv4 = IPNetwork(net.ip_config.subnet)
+                        log.debug(str(net.ip_config.subnet))
+                        log.debug(str(type(net.ip_config.subnet)))
+                        CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
                     else:
-                        CIDRBEipv6 = IPNetwork(net.ip_config.subnet)
+                        CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
             elif envs.divisao_dc.nome[:2] == "FE":
                 VLANFE = envs.min_num_vlan_1
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
-                        CIDRFEipv4[0] = IPNetwork(net.ip_config.subnet)
+                        CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
                     else:
-                        CIDRFEipv6[0] = IPNetwork(net.ip_config.subnet)
+                        CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
             elif envs.divisao_dc.nome == "BO":
                 VLANBORDA = envs.min_num_vlan_1
             elif envs.divisao_dc.nome == "BOCACHOS":
                 VLANBORDACACHOS = envs.min_num_vlan_1
+        elif envs.ambiente_logico.nome == "INTERNO-RACK":
+            if envs.divisao_dc.nome[:2] == "BE":
+                for net in envs.configs:
+                    if net.ip_config.type=="v4":
+                        log.debug(str(net.ip_config.subnet))
+                        log.debug(str(type(net.ip_config.subnet)))
+                        CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
+                        prefixInternoV4 = int(net.ip_config.new_prefix)
+                    else:
+                        CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
+                        prefixInternoV6 = int(net.ip_config.new_prefix)
+            elif envs.divisao_dc.nome[:2] == "FE":
+                for net in envs.configs:
+                    if net.ip_config.type=="v4":
+                        log.debug(str(net.ip_config.subnet))
+                        log.debug(str(type(net.ip_config.subnet)))
+                        CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
+                        prefixInternoFEV4 = int(net.ip_config.new_prefix)
+                    else:
+                        CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
+                        prefixInternoFEV6 = int(net.ip_config.new_prefix)
 
-    CIDREBGP[0] = CIDRBEipv4
     IBGPToRLxLipv4 = CIDRBEipv4
     IBGPToRLxLipv6 = CIDRBEipv6
 
@@ -271,14 +288,14 @@ def autoprovision_splf(rack, equips):
     ASLEAF[numero_rack].append(BASE_AS_SPN+numero_rack)
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
     # Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
-    subnetsRackBEipv4[numero_rack] = splitnetworkbyrack(CIDRBEipv4, 19, numero_rack)
-    subnetsRackBEipv6[numero_rack] = splitnetworkbyrack(CIDRBEipv6, 55, numero_rack)
+    subnetsRackBEipv4[numero_rack] = splitnetworkbyrack(CIDRBEipv4interno, prefixInternoV4, numero_rack)
+    subnetsRackBEipv6[numero_rack] = splitnetworkbyrack(CIDRBEipv6interno, prefixInternoV6, numero_rack)
     # PODS BE => /20
     #    ::::::::::::::::::::::::::::::::::: FRONTEND
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
     # Sumário do rack => 172.20.0.0/21
-    subnetsRackFEipv4[numero_rack] = splitnetworkbyrack(CIDRFEipv4[0], 21, numero_rack)
-    subnetsRackFEipv6[numero_rack] = splitnetworkbyrack(CIDRFEipv6[0], 57, numero_rack)
+    subnetsRackFEipv4[numero_rack] = splitnetworkbyrack(CIDRFEipv4interno, prefixInternoFEV4, numero_rack)
+    subnetsRackFEipv6[numero_rack] = splitnetworkbyrack(CIDRFEipv6interno, prefixInternoFEV6, numero_rack)
     #          ::::::: SUBNETING EACH RACK NETWORK:::::::
     # PODS FE => 128 redes /28 ; 128 redes /64
     redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
@@ -392,6 +409,7 @@ def autoprovision_coreoob(rack, equips):
 
     prefixlf = "LF-"
     prefixoob = "OOB"
+    vlan_base = None
 
     try:
         path_to_guide = get_variable("path_to_guide")
@@ -399,8 +417,17 @@ def autoprovision_coreoob(rack, equips):
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_GUIDE")
 
-    envconfig = ast.literal_eval(rack.dcroom.config)
-    vlan_base = envconfig.get("sala").get("gerencia_vlan")
+    # get fathers environments
+    environments = models_env.Ambiente.objects.filter(dcroom=rack.dcroom.id, father_environment__isnull=True)
+    for envs in environments:
+        if envs.ambiente_logico.nome == "GERENCIA":
+            if envs.divisao_dc.nome[:3] == "OOB":
+                log.debug(str(envs.min_num_vlan_1))
+                vlan_base = envs.min_num_vlan_1
+
+    if not vlan_base:
+        raise Exception("Range de Vlans do ambiente pai de gerencia do DC não encontrado.")
+
     variablestochangeoob["VLAN_SO"] = str(int(vlan_base)+int(rack.numero))
 
     equips_sorted = sorted(equips, key=operator.itemgetter('sw'))
@@ -409,11 +436,13 @@ def autoprovision_coreoob(rack, equips):
     variablestochangeoob["OWN_IP_MGMT"] = oob.get("ip_mngt")
     variablestochangeoob["HOSTNAME_OOB"] = oob.get("nome")
     variablestochangeoob["HOSTNAME_RACK"] = rack.nome
+    log.debug(str())
     fileinoob = path_to_guide + oob.get("roteiro")
     fileoutoob = path_to_add_config + oob.get("nome") + ".cfg"
 
     for equip in oob.get("interfaces"):
         nome = equip.get("nome")
+        log.debug(str(nome))
         roteiro = equip.get("roteiro")
         if nome[:3] == prefixlf:
             if nome[-1] == 1:

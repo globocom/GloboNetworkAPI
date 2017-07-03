@@ -165,16 +165,16 @@ class RackConfigView(APIView):
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        #try:
-        log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
+        try:
+            log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
 
-        rack_id = kwargs.get("rack_id")
-        facade.gerar_arquivo_config([rack_id])
+            rack_id = kwargs.get("rack_id")
+            facade.gerar_arquivo_config([rack_id])
 
-        data = dict()
-        return Response(data, status=status.HTTP_200_OK)
-        #except Exception, e:
-         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+            data = dict()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class RackEnvironmentView(APIView):
