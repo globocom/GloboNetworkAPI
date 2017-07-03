@@ -2271,7 +2271,7 @@ class Ip(BaseModel):
                 ip_equipment.create_v4({
                     'ip': self.id,
                     'equipment': eqpt.get('equipment').get('id'),
-                    'virtual_interface': eqpt.get('interface').get('id')
+                    'interface': eqpt.get('interface').get('id')
                 })
 
         except IpErrorV3, e:
@@ -2375,7 +2375,7 @@ class Ip(BaseModel):
                     ip_equipment.create_v4({
                         'ip': self.id,
                         'equipment': eqpt_id,
-                        'virtual_interface': interface_id
+                        'interface': interface_id
                     })
 
             # Removes old associates
@@ -2891,11 +2891,13 @@ class IpEquipamento(BaseModel):
         virtualinterface = get_model('api_virtual_interface',
                                      'VirtualInterface')
 
+        interface = ip_equipment.get('interface')
+
         self.equipamento = equipamento().get_by_pk(
             ip_equipment.get('equipment'))
         self.ip = Ip().get_by_pk(ip_equipment.get('ip'))
-        self.virtual_interface = virtualinterface().get_by_pk(
-            ip_equipment.get('virtual_interface'))
+        self.virtual_interface = virtualinterface().get_by_pk(interface) \
+            if interface is not None else None
 
         # Validate the ip
         self.__validate_ip()
@@ -5148,7 +5150,7 @@ class Ipv6(BaseModel):
                 ip_equipment.create_v4({
                     'ip': self.id,
                     'equipment': eqpt.get('equipment').get('id'),
-                    'virtual_interface': eqpt.get('interface').get('id')
+                    'interface': eqpt.get('interface').get('id')
                 })
 
         except IpErrorV3, e:
@@ -5252,7 +5254,7 @@ class Ipv6(BaseModel):
                     ip_equipment.create_v4({
                         'ip': self.id,
                         'equipment': eqpt_id,
-                        'virtual_interface': interface_id
+                        'interface': interface_id
                     })
 
             # Removes old associates
@@ -5774,7 +5776,7 @@ class Ipv6Equipament(BaseModel):
     # Methods for V4 #
     ##################
     def create_v4(self, ip_equipment):
-        """Inserts a relationship between IP, Equipment and Virtual Interface.
+        """Inserts a relationship between IPv6, Equipment and Virtual Interface.
         @return: Nothing.
         @raise IpError: Failure to insert.
         @raise EquipamentoNotFoundError: Equipment do not registered.
@@ -5788,11 +5790,13 @@ class Ipv6Equipament(BaseModel):
         virtualinterface = get_model('api_virtual_interface',
                                      'VirtualInterface')
 
+        interface = ip_equipment.get('interface')
+
         self.equipamento = equipamento().get_by_pk(
             ip_equipment.get('equipment'))
         self.ip = Ipv6().get_by_pk(ip_equipment.get('ip'))
-        self.virtual_interface = virtualinterface().get_by_pk(
-            ip_equipment.get('virtual_interface'))
+        self.virtual_interface = virtualinterface().get_by_pk(interface) \
+            if interface is not None else None
 
         # Validate the ip
         self.validate_ip()

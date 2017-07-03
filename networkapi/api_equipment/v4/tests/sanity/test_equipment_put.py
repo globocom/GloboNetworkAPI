@@ -22,7 +22,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         'networkapi/api_equipment/v4/fixtures/initial_base.json'
     ]
 
-    json_path = 'api_equipment/v4/tests/sanity/json/put/%s'
+    json_path = 'api_equipment/v4/tests/sanity/json/%s'
 
     def setUp(self):
         self.client = Client()
@@ -33,7 +33,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_success(self):
         """Test of success to put of one equipment."""
 
-        name_file = self.json_path % 'put_one_equipment.json'
+        name_file = self.json_path % 'put/put_one_equipment.json'
 
         # Does put request
         response = self.client.put(
@@ -57,7 +57,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_add_groups(self):
         """Test of success to put of one equipment adding one group."""
 
-        name_file = self.json_path % 'put_one_equipment_add_groups.json'
+        name_file = self.json_path % 'put/put_one_equipment_add_groups.json'
 
         # Does put request
         response = self.client.put(
@@ -81,7 +81,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_update_groups(self):
         """Test of success to put of one equipment update group."""
 
-        name_file = self.json_path % 'put_one_equipment_update_groups.json'
+        name_file = self.json_path % 'put/put_one_equipment_update_groups.json'
 
         # Does put request
         response = self.client.put(
@@ -105,7 +105,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_new_groups(self):
         """Test of success to put of one equipment with new group."""
 
-        name_file = self.json_path % 'put_one_equipment_new_groups.json'
+        name_file = self.json_path % 'put/put_one_equipment_new_groups.json'
 
         # Does put request
         response = self.client.put(
@@ -129,7 +129,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_add_environments(self):
         """Test of success to put of one equipment adding one environment."""
 
-        name_file = self.json_path % 'put_one_equipment_add_environments.json'
+        name_file = self.json_path % 'put/put_one_equipment_add_environments.json'
 
         # Does put request
         response = self.client.put(
@@ -153,7 +153,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_update_environments(self):
         """Test of success to put of one equipment update environment."""
 
-        name_file = self.json_path % 'put_one_equipment_update_environments.json'
+        name_file = self.json_path % 'put/put_one_equipment_update_environments.json'
 
         # Does put request
         response = self.client.put(
@@ -177,7 +177,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_new_environments(self):
         """Test of success to put of one equipment with new environment."""
 
-        name_file = self.json_path % 'put_one_equipment_new_environments.json'
+        name_file = self.json_path % 'put/put_one_equipment_new_environments.json'
 
         # Does put request
         response = self.client.put(
@@ -201,7 +201,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
     def test_put_one_equipment_new_ipv4s(self):
         """Test of success to put one equipment with new IPv4s."""
 
-        name_file = self.json_path % 'put_one_equipment_new_ipv4s.json'
+        name_file = self.json_path % 'put/put_one_equipment_new_ipv4s.json'
 
         # Does put request
         response = self.client.put(
@@ -214,23 +214,21 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v4/equipment/3/?include=ipv4',
+            '/api/v4/equipment/3/?include=ipsv4',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
         data = response.data
 
-        ipv4s = data['equipments'][0]['ipv4']
-
-        data['equipments'][0]['ipv4'] = [ipv4['id'] for ipv4 in ipv4s]
-
         self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/equip_with_ipsv4_2;3.json'
 
         self.compare_json(name_file, data)
 
     def test_put_one_equipment_new_ipv6s(self):
         """Test of success to put one equipment with new IPv6s."""
 
-        name_file = self.json_path % 'put_one_equipment_new_ipv6s.json'
+        name_file = self.json_path % 'put/put_one_equipment_new_ipv6s.json'
 
         # Does put request
         response = self.client.put(
@@ -243,23 +241,21 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v4/equipment/3/?include=ipv6',
+            '/api/v4/equipment/3/?include=ipsv6',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
         data = response.data
 
-        ipv6s = data['equipments'][0]['ipv6']
-
-        data['equipments'][0]['ipv6'] = [ipv6['id'] for ipv6 in ipv6s]
-
         self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/equip_with_ipsv6_2;3.json'
 
         self.compare_json(name_file, data)
 
     def test_put_one_equipment_new_as(self):
         """Test of success to put one equipment with new AS."""
 
-        name_file = self.json_path % 'put_one_equipment_new_as.json'
+        name_file = self.json_path % 'put/put_one_equipment_new_as.json'
 
         # Does put request
         response = self.client.put(

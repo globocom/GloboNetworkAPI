@@ -22,7 +22,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_equipment/v4/fixtures/initial_base.json'
     ]
 
-    json_path = 'api_equipment/v4/tests/sanity/json/post/%s'
+    json_path = 'api_equipment/v4/tests/sanity/json/%s'
 
     def setUp(self):
         self.client = Client()
@@ -33,7 +33,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
     def test_post_one_equipment(self):
         """Test of success to post one equipment."""
 
-        name_file = self.json_path % 'post_one_equipment.json'
+        name_file = self.json_path % 'post/post_one_equipment.json'
 
         # Does post request
         response = self.client.post(
@@ -62,7 +62,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
     def test_post_one_equipment_with_groups(self):
         """Test of success to post one equipment with groups."""
 
-        name_file = self.json_path % 'post_one_equipment_with_groups.json'
+        name_file = self.json_path % 'post/post_one_equipment_with_groups.json'
 
         # Does post request
         response = self.client.post(
@@ -91,7 +91,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
     def test_post_one_equipment_with_environments(self):
         """Test of success to post one equipment with environments."""
 
-        name_file = self.json_path % 'post_one_equipment_with_environments.json'
+        name_file = self.json_path % 'post/post_one_equipment_with_environments.json'
 
         # Does post request
         response = self.client.post(
@@ -120,7 +120,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
     def test_post_one_equipment_with_ipv4s(self):
         """Test of success to post one equipment with new IPv4s."""
 
-        name_file = self.json_path % 'post_one_equipment_with_ipv4s.json'
+        name_file = self.json_path % 'post/post_one_equipment_with_ipv4s.json'
 
         # Does post request
         response = self.client.post(
@@ -135,7 +135,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v4/equipment/%s/?include=ipv4' % id_env,
+            '/api/v4/equipment/%s/?include=ipsv4' % id_env,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -144,16 +144,13 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['equipments'][0]['id']
 
-        ipv4s = data['equipments'][0]['ipv4']
-
-        data['equipments'][0]['ipv4'] = [ipv4['id'] for ipv4 in ipv4s]
-
+        name_file = self.json_path % 'get/basic/equip_with_ipsv4_1;2.json'
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_ipv6s(self):
         """Test of success to post one equipment with new IPv6s."""
 
-        name_file = self.json_path % 'post_one_equipment_with_ipv6s.json'
+        name_file = self.json_path % 'post/post_one_equipment_with_ipv6s.json'
 
         # Does post request
         response = self.client.post(
@@ -168,7 +165,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v4/equipment/%s/?include=ipv6' % id_env,
+            '/api/v4/equipment/%s/?include=ipsv6' % id_env,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -177,16 +174,13 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['equipments'][0]['id']
 
-        ipv6s = data['equipments'][0]['ipv6']
-
-        data['equipments'][0]['ipv6'] = [ipv6['id'] for ipv6 in ipv6s]
-
+        name_file = self.json_path % 'get/basic/equip_with_ipsv6_1;2.json'
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_as(self):
         """Test of success to post one equipment with AS."""
 
-        name_file = self.json_path % 'post_one_equipment_with_as.json'
+        name_file = self.json_path % 'post/post_one_equipment_with_as.json'
 
         # Does post request
         response = self.client.post(
@@ -225,7 +219,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
         'networkapi/api_equipment/v4/fixtures/initial_base.json',
     ]
 
-    json_path = 'api_equipment/v4/tests/sanity/json/post/%s'
+    json_path = 'api_equipment/v4/tests/sanity/json/%s'
 
     def setUp(self):
         self.client = Client()
@@ -236,7 +230,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
     def test_post_duplicated_equipment(self):
         """Test of error to post of one equipment with name already existent."""
 
-        name_file = self.json_path % 'post_one_duplicated_equipment.json'
+        name_file = self.json_path % 'post/post_one_duplicated_equipment.json'
 
         # Does post request
         response = self.client.post(
@@ -255,7 +249,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
         """Test of error to post of one equipment with environment non existent.
         """
 
-        name_file = self.json_path % 'post_one_equipment_invalid_env.json'
+        name_file = self.json_path % 'post/post_one_equipment_invalid_env.json'
 
         # Does post request
         response = self.client.post(
@@ -274,7 +268,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
         """Test of error to post of one equipment with group non existent.
         """
 
-        name_file = self.json_path % 'post_one_equipment_invalid_group.json'
+        name_file = self.json_path % 'post/post_one_equipment_invalid_group.json'
 
         # Does post request
         response = self.client.post(
@@ -292,7 +286,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
     def test_post_equipment_with_inexistent_as(self):
         """Test error of post equipment with inexistent AS."""
 
-        name_file = self.json_path % 'post_one_equipment_with_inexistent_as.json'
+        name_file = self.json_path % 'post/post_one_equipment_with_inexistent_as.json'
 
         # Does post request
         response = self.client.post(

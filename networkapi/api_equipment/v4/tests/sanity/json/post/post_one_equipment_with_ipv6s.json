@@ -5,9 +5,17 @@
       "maintenance": false,
       "equipment_type": 1,
       "model": 1,
-      "ipv6": [
-        1,
-        2
+      "ipsv6": [
+        {
+          "ipv6": {
+            "id": 1
+          }
+        },
+        {
+          "ipv6": {
+            "id": 2
+          }
+        }
       ]
     }
   ]

@@ -1062,7 +1062,7 @@ class Equipamento(BaseModel):
                 ipeqpt_model().create_v4({
                     'equipment': self.id,
                     'ip': ipv4['ipv4']['id'],
-                    'virtual_interface': ipv4['interface']['id']
+                    'interface': ipv4.get('interface', {}).get('id')
                 })
 
             # ipv6s
@@ -1071,7 +1071,7 @@ class Equipamento(BaseModel):
                 ipeqpt_model().create_v4({
                     'equipment': self.id,
                     'ip': ipv6['ipv6']['id'],
-                    'virtual_interface': ipv6['interface']['id']
+                    'interface': ipv6.get('interface', {}).get('id')
                 })
 
             # as
@@ -1171,14 +1171,16 @@ class Equipamento(BaseModel):
 
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
-                    if ipv4 not in ips_db_ids:
+                    ipv4_id = ipv4['ipv4']['id']
+                    if ipv4_id not in ips_db_ids:
                         ipeqpt_model().create_v4({
                             'equipment': self.id,
                             'ip': ipv4['ipv4']['id'],
-                            'virtual_interface': ipv4['interface']['id']
+                            'interface': ipv4.get('interface', {}).get('id')
                         })
 
                 # delete relashionship with ipv4 not sended
+                ipv4_ids = [ipv4['ipv4']['id'] for ipv4 in ipv4_ids]
                 ips_db_ids_old = list(set(ips_db_ids) - set(ipv4_ids))
                 ips_db.filter(ip__in=ips_db_ids_old).delete()
 
@@ -1191,14 +1193,16 @@ class Equipamento(BaseModel):
 
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
-                    if ipv6 not in ipv6s_db_ids:
+                    ipv6_id = ipv6['ipv6']['id']
+                    if ipv6_id not in ipv6s_db_ids:
                         ipeqpt_model().create_v4({
                             'equipment': self.id,
                             'ip': ipv6['ipv6']['id'],
-                            'virtual_interface': ipv6['interface']['id']
+                            'interface': ipv6.get('interface', {}).get('id')
                         })
 
                 # delete relashionship with ipv6 not sended
+                ipv6_ids = [ipv6['ipv6']['id'] for ipv6 in ipv6_ids]
                 ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
 
