@@ -143,11 +143,11 @@ def update_fabric_config(fabric_id, fabric_dict):
                 fabriconfig.get("Ambiente").append(fabric_dict.get("Ambiente"))
         else:
             fabriconfig["Ambiente"] = [fabric_dict.get("Ambiente")]
-    elif fabric_dict.get("BGP"):
+    if fabric_dict.get("BGP"):
         fabriconfig["BGP"] = fabric_dict.get("BGP")
-    elif fabric_dict.get("VLT"):
+    if fabric_dict.get("VLT"):
         fabriconfig["VLT"] = fabric_dict.get("VLT")
-    elif fabric_dict.get("Gerencia"):
+    if fabric_dict.get("Gerencia"):
         fabriconfig["Gerencia"] = fabric_dict.get("Gerencia")
 
     fabric.config = fabriconfig

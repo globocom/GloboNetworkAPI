@@ -165,42 +165,31 @@ class RackConfigView(APIView):
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        try:
-            log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
+        #try:
+        log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
 
-            if not request.DATA.get('racks'):
-                raise exceptions.InvalidInputException()
+        rack_id = kwargs.get("rack_id")
+        facade.gerar_arquivo_config([rack_id])
 
-            rack = facade.gerar_arquivo_config(request.DATA.get('racks'))
-
-            data = dict()
-
-            return Response(data, status=status.HTTP_201_CREATED)
-
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        data = dict()
+        return Response(data, status=status.HTTP_200_OK)
+        #except Exception, e:
+         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class RackEnvironmentView(APIView):
 
     def post(self, request, *args, **kwargs):
-        #try:
-        log = logging.getLogger('Alocando ambientes e vlans do rack')
+        try:
+            log = logging.getLogger('Alocando ambientes e vlans do rack')
 
-        rack_id = kwargs.get("rack_id")
-        facade.rack_environments_vlans(rack_id, request.user)
+            rack_id = kwargs.get("rack_id")
+            facade.rack_environments_vlans(rack_id, request.user)
 
-        data = dict()
-
-        return Response(data, status=status.HTTP_200_OK)
-
-        #except Exception, e:
-         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+            data = dict()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class DataCenterView(APIView):
