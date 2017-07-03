@@ -2554,6 +2554,7 @@ class IpEquipamento(BaseModel):
         managed = True
         unique_together = ('ip', 'equipamento')
 
+
     @classmethod
     def get_by_ip(cls, ip_id):
         """Get IP by id_ip
@@ -5429,6 +5430,7 @@ class Ipv6Equipament(BaseModel):
         db_table = u'ipsv6_dos_equipamentos'
         managed = True
         unique_together = ('ip', 'equipamento')
+        
 
     @classmethod
     def list_by_equip(cls, equip_id):
