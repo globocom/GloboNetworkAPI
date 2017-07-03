@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +13,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
 import logging
-from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
-from networkapi.vlan.models import Vlan, VlanError, VlanNameDuplicatedError, VlanNumberNotAvailableError
-from networkapi.exception import InvalidValueError
-from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError, AmbienteError
-from networkapi import settings
+
 from django.forms.models import model_to_dict
-from networkapi.distributedlock import distributedlock, LOCK_ENVIRONMENT
-from networkapi.filterequiptype.models import FilterEquipType
+
+from networkapi import settings
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteError
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.equipamento.models import Equipamento
+from networkapi.exception import InvalidValueError
+from networkapi.filterequiptype.models import FilterEquipType
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.vlan.models import Vlan
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNameDuplicatedError
+from networkapi.vlan.models import VlanNumberNotAvailableError
 
 
 class VlanAllocateResource(RestResource):
@@ -88,7 +97,7 @@ class VlanAllocateResource(RestResource):
                 self.log.error(
                     u'Parameter description is invalid. Value: %s.', description)
                 raise InvalidValueError(None, 'description', description)
-                
+
             # vrf can NOT be greater than 100
             if not is_valid_string_maxsize(vrf, 100, False):
                 self.log.error(
@@ -133,10 +142,11 @@ class VlanAllocateResource(RestResource):
                 min_num_02 = settings.MIN_VLAN_NUMBER_02
                 max_num_02 = settings.MAX_VLAN_NUMBER_02
 
-            #To avoid allocation same vlan number twice for different environments in same equipments
-            #Lock all environments related to this environment when allocating vlan number
-            #select all equipments from this environment that are not part of a filter
-            # and them selects all environments from all these equipments and lock them out
+            # To avoid allocation same vlan number twice for different environments in same equipments
+            # Lock all environments related to this environment when allocating vlan number
+            # select all equipments from this environment that are not part of a filter
+            # and them selects all environments from all these equipments and
+            # lock them out
             filtered_equipment_type_ids = list()
 
             env_filter = None
@@ -144,16 +154,17 @@ class VlanAllocateResource(RestResource):
                 env_filter = env.filter.id
             except:
                 pass
-                
+
             for fet in FilterEquipType.objects.filter(filter=env_filter):
                 filtered_equipment_type_ids.append(fet.equiptype.id)
 
             filtered_environment_equips = Equipamento.objects.filter(equipamentoambiente__ambiente=env).exclude(
                 tipo_equipamento__in=filtered_equipment_type_ids)
 
-            #select all environments from the equips that were not filtered
+            # select all environments from the equips that were not filtered
             locks_list = list()
-            environments_list = Ambiente.objects.filter(equipamentoambiente__equipamento__in=filtered_environment_equips).distinct().order_by('id')
+            environments_list = Ambiente.objects.filter(
+                equipamentoambiente__equipamento__in=filtered_environment_equips).distinct().order_by('id')
             for environment in environments_list:
                 lock = distributedlock(LOCK_ENVIRONMENT % environment.id)
                 lock.__enter__()
@@ -162,13 +173,13 @@ class VlanAllocateResource(RestResource):
             # Persist
             try:
                 vlan.create_new(user,
-                            min_num_01,
-                            max_num_01,
-                            min_num_02,
-                            max_num_02
-                            )
+                                min_num_01,
+                                max_num_01,
+                                min_num_02,
+                                max_num_02
+                                )
             except Exception, e:
-                #release all the locks if failed
+                # release all the locks if failed
                 for lock in locks_list:
                     lock.__exit__('', '', '')
                 raise e

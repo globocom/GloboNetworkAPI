@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.rest import RestResource
-from networkapi.filter.models import Filter, FilterError, FilterDuplicateError
-from networkapi.auth import has_perm
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads
+
 import logging
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
+from networkapi.filter.models import Filter
+from networkapi.filter.models import FilterDuplicateError
+from networkapi.filter.models import FilterError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.rest import RestResource
 
 
 class FilterAddResource(RestResource):
 
-    '''Class that receives requests to add new Filters.'''
+    """Class that receives requests to add new Filters."""
 
     log = logging.getLogger('FilterAddResource')
 
@@ -39,7 +42,7 @@ class FilterAddResource(RestResource):
 
         try:
 
-            self.log.info("Add Filter")
+            self.log.info('Add Filter')
             # Commons Validations
 
             # User permission

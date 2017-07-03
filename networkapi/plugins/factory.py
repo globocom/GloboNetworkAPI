@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -62,8 +62,11 @@ class PluginFactory(object):
             if re.search('DELL', marca.upper(), re.DOTALL):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
+            if re.search('OPENDAYLIGHT', marca.upper(), re.DOTALL):
+                from .SDN.ODL.Generic import ODLPlugin
+                return ODLPlugin
 
-        raise NotImplementedError("plugin not implemented")
+        raise NotImplementedError('plugin not implemented')
 
     @classmethod
     def factory(cls, equipment):

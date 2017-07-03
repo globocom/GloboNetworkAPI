@@ -197,7 +197,7 @@ class FTOS(BasePlugin):
                     raise exceptions.InvalidCommandException(file_name_string)
                 elif re.search(wait_str_ok_regex, output_line):
                     log.debug('Equipment output: %s' % output_line)
-                    #test bug switch copying 0 bytes
+                    # test bug switch copying 0 bytes
                     if output_line == '0 bytes successfully copied':
                         log.debug('Switch copied 0 bytes, need to try again.')
                         raise exceptions.CurrentlyBusyErrorException()

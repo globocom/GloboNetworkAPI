@@ -1,0 +1,21 @@
+{
+  "ips": [
+    {
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0007",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001",
+      "description": "IP",
+      "equipments": [
+        {
+          "id": 1
+        }
+      ],
+      "networkipv6": 8
+    }
+  ]
+}

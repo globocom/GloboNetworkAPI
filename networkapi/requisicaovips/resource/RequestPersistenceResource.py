@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
 
 import logging
@@ -22,24 +20,45 @@ import logging
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.auth import has_perm
-from networkapi.distributedlock import distributedlock, LOCK_VIP
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_VIP
 from networkapi.equipamento.models import EquipamentoError
-from networkapi.exception import EquipmentGroupsNotAuthorizedError, InvalidValueError, RequestVipsNotBeenCreatedError
+from networkapi.exception import EquipmentGroupsNotAuthorizedError
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
 from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
-from networkapi.infrastructure.script_utils import exec_script, ScriptError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.ip.models import IpError, IpNotFoundByEquipAndVipError
-from networkapi.requisicaovips.models import RequisicaoVips, \
-    RequisicaoVipsNotFoundError, RequisicaoVipsError, \
-    InvalidFinalidadeValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, \
-    InvalidClienteValueError, InvalidAmbienteValueError, InvalidCacheValueError, \
-    InvalidHealthcheckTypeValueError, InvalidHealthcheckValueError, \
-    InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, \
-    InvalidServicePortValueError, InvalidRealValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidPriorityValueError
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import clone, is_valid_int_greater_zero_param
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.script_utils import exec_script
+from networkapi.infrastructure.script_utils import ScriptError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidPriorityValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import clone
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class RequestPersistenceResource(RestResource):

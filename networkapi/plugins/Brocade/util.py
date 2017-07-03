@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 import logging
 from functools import wraps
 
@@ -16,7 +16,8 @@ log = logging.getLogger(__name__)
 def logger(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
-        log.info('%s.%s: %s,%s' % (self.__class__.__name__, func.__name__, args, kwargs))
+        log.info('%s.%s: %s,%s' %
+                 (self.__class__.__name__, func.__name__, args, kwargs))
         return func(self, *args, **kwargs)
 
     return inner
@@ -25,17 +26,19 @@ def logger(func):
 def connection(func):
     @wraps(func)
     def inner(self, *args, **kwargs):
-        log.debug("decorator")
+        log.debug('decorator')
         try:
-            access = args[0].get('access').filter(tipo_acesso__protocolo='ssh').uniqueResult()
+            access = args[0].get('access').filter(
+                tipo_acesso__protocolo='ssh').uniqueResult()
             self._lb = lb.Lb(access.fqdn, access.user, access.password)
-            self.baddi = BrocadeAdxDeviceDriverImpl(service_clients=self._lb.service_clients)
+            self.baddi = BrocadeAdxDeviceDriverImpl(
+                service_clients=self._lb.service_clients)
             return func(self, *args, **kwargs)
         except Exception, e:
             log.error(e)
             raise base_exceptions.CommandErrorException(e)
         else:
-            log.info("writing in mem")
+            log.info('writing in mem')
             self.baddi.write_mem()
     return inner
 
@@ -104,7 +107,8 @@ def trata_param_pool(pools):
             pls['pools_healthcheck'].append(p['healthcheck'])
 
         if p.get('action'):
-            pls['pools_actions'].append(get_service_down_action_name(p['action']))
+            pls['pools_actions'].append(
+                get_service_down_action_name(p['action']))
 
         member_status_monitor = []
         member_status_session = []
@@ -167,22 +171,25 @@ def trata_param_vip(vips):
         vip_filter = dict()
         ports = vip_request.get('ports')
         for port in ports:
-            address = vip_request['ipv4']['ip_formated'] if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
+            address = vip_request['ipv4']['ip_formated'] if vip_request[
+                'ipv4'] else vip_request['ipv6']['ip_formated']
 
             vip_filter['pool'] = list()
             vip_filter['name'] = '%s_%s' % (vip_request['name'], port['port'])
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
             vip_filter['optionsvip'] = vip_request['options']
-            vip_filter['optionsvip']['l7_protocol'] = port['options']['l7_protocol']
-            vip_filter['optionsvip']['l4_protocol'] = port['options']['l4_protocol']
+            vip_filter['optionsvip']['l7_protocol'] = port[
+                'options']['l7_protocol']
+            vip_filter['optionsvip']['l4_protocol'] = port[
+                'options']['l4_protocol']
 
             conf = vip_request['conf']['conf']
             vip_filter['optionsvip_extended'] = conf['optionsvip_extended']
             pools = port.get('pools')
             for pool in pools:
                 if not pool.get('l7_rule') in ['', 'default']:
-                    raise NotImplementedError("l7_rule missing")
+                    raise NotImplementedError('l7_rule missing')
 
                 server_pool = pool.get('server_pool')
                 if not server_pool.get('pool_created'):

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.ambiente.models import EnvironmentVip
 from networkapi.auth import has_perm
+from networkapi.config.models import Configuration
+from networkapi.equipamento.models import EquipamentoAmbiente
+from networkapi.exception import EnvironmentVipNotFoundError
+from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4, NetworkIPv4AddressNotAvailableError,\
-    IpNotAvailableError
-import logging
+from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV4
+from networkapi.infrastructure.ip_subnet_utils import MAX_IPV4_HOSTS
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4AddressNotAvailableError
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
-from networkapi.vlan.models import TipoRede, NetworkTypeNotFoundError, VlanNotFoundError
-from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
-from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironmentInvalidError
-from networkapi.ip.models import Ip, IpEquipamento
-from networkapi.equipamento.models import EquipamentoAmbiente
-from networkapi.infrastructure.ip_subnet_utils import get_prefix_IPV4,MAX_IPV4_HOSTS
-from networkapi.config.models import Configuration
+from networkapi.vlan.models import NetworkTypeNotFoundError
+from networkapi.vlan.models import TipoRede
+from networkapi.vlan.models import VlanNotFoundError
 
 
 class NetworkIPv4AddResource(RestResource):
@@ -39,10 +46,10 @@ class NetworkIPv4AddResource(RestResource):
     log = logging.getLogger('NetworkIPv4AddResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''
+        """
             Treat requests POST to add a network IPv4
             URL: network/ipv4/add/
-        '''
+        """
 
         # Commons Validations
 
@@ -83,10 +90,10 @@ class NetworkIPv4AddResource(RestResource):
         return self.network_ipv4_add(user, vlan_id, network_type, environment_vip, prefix)
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''
+        """
             Treat requests PUT to add a network IPv4 with num hosts param
             URL: network/ipv4/add/
-        '''
+        """
 
         # Commons Validations
 
@@ -180,9 +187,11 @@ class NetworkIPv4AddResource(RestResource):
 
             # New NetworkIPv4
             network_ipv4 = NetworkIPv4()
-            vlan_map = network_ipv4.add_network_ipv4(user, vlan_id, net, evip, prefix)
+            vlan_map = network_ipv4.add_network_ipv4(
+                user, vlan_id, net, evip, prefix)
 
-            list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(vlan_map['vlan']['id_ambiente'])
+            list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(
+                vlan_map['vlan']['id_ambiente'])
 
             if list_equip_routers_ambient:
 
@@ -211,14 +220,16 @@ class NetworkIPv4AddResource(RestResource):
                     IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ip.get_first_available_ip(vlan_map['vlan']['id_network'], True)
+                        router_ip = Ip.get_first_available_ip(
+                            vlan_map['vlan']['id_network'], True)
                         router_ip = str(router_ip).split('.')
                         ip_model2 = Ip()
                         ip_model2.oct1 = router_ip[0]
                         ip_model2.oct2 = router_ip[1]
                         ip_model2.oct3 = router_ip[2]
                         ip_model2.oct4 = router_ip[3]
-                        ip_model2.networkipv4_id = vlan_map['vlan']['id_network']
+                        ip_model2.networkipv4_id = vlan_map[
+                            'vlan']['id_network']
                         ip_model2.save()
                         IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 

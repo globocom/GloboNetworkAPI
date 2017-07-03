@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,31 +13,53 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
-from networkapi.grupo.models import GrupoError
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.infrastructure.ipaddr import IPAddress
-from networkapi.ip.models import Ip, IpEquipamento, IpNotFoundError, IpEquipamentoDuplicatedError, IpError, \
-    NetworkIPv4NotFoundError, IpNotAvailableError, IpEquipmentNotFoundError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
-    IpCantRemoveFromServerPool
+
 import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.vlan.models import VlanNotFoundError, VlanError
-from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_ipv4,\
-    is_valid_string_maxsize, is_valid_string_minsize, destroy_cache_function, mount_ipv4_string
-from networkapi.exception import InvalidValueError
-from networkapi.distributedlock import distributedlock, LOCK_IP_EQUIPMENT
+
 from django.db.utils import IntegrityError
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.ambiente.models import Ambiente
+from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_IP_EQUIPMENT
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.ipaddr import IPAddress
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpCantBeRemovedFromVip
+from networkapi.ip.models import IpCantRemoveFromServerPool
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpEquipamentoDuplicatedError
+from networkapi.ip.models import IpEquipCantDissociateFromVip
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import NetworkIPv4NotFoundError
 from networkapi.requisicaovips.models import ServerPoolMember
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_ipv4
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.util import mount_ipv4_string
+from networkapi.vlan.models import VlanError
+from networkapi.vlan.models import VlanNotFoundError
 
 
 def insert_ip(ip_map, user):
-    '''Insere um IP e o relacionamento entre o IP e o equipamento.
+    """Insere um IP e o relacionamento entre o IP e o equipamento.
 
     @param ip_map: Map com as chaves: id_equipamento, id_vlan e descricao
     @param user: Usuário autenticado na API.
@@ -47,14 +68,14 @@ def insert_ip(ip_map, user):
             Em caso de sucesso retorna a tupla: (0, <mapa com os dados do IP>)
 
     @raise VlanNotFoundError: VLAN não cadastrada.
-    @raise VlanError: Falha ao pesquisar a VLAN. 
+    @raise VlanError: Falha ao pesquisar a VLAN.
     @raise EquipamentoNotFoundError: Equipamento não cadastrado.
-    @raise EquipamentoError: Falha ao pesquisar o Equipamento. 
+    @raise EquipamentoError: Falha ao pesquisar o Equipamento.
     @raise IpNotAvailableError: Não existe um IP disponível para a VLAN.
     @raise IpError: Falha ao inserir no banco de dados.
-    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
+    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.
 
-    '''
+    """
     log = logging.getLogger('insert_ip')
 
     equip_id = ip_map.get('id_equipamento')
@@ -105,21 +126,21 @@ def insert_ip(ip_map, user):
 
 
 def insert_ip_equipment(ip_id, equip_id, user):
-    '''Insere o relacionamento entre o IP e o equipamento.
+    """Insere o relacionamento entre o IP e o equipamento.
 
     @param ip_id: Identificador do IP.
     @param equip_id: Identificador do equipamento.
-    @param user: Usuário autenticado.   
+    @param user: Usuário autenticado.
 
     @return: O ip_equipamento criado.
 
     @raise IpError: Falha ao inserir.
-    @raise EquipamentoNotFoundError: Equipamento não cadastrado.  
+    @raise EquipamentoNotFoundError: Equipamento não cadastrado.
     @raise IpNotFoundError: Ip não cadastrado.
     @raise IpEquipamentoDuplicatedError: IP já cadastrado para o equipamento.
     @raise EquipamentoError: Falha ao pesquisar o equipamento.
     @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.
-    '''
+    """
     if not has_perm(user,
                     AdminPermission.IPS,
                     AdminPermission.WRITE_OPERATION,
@@ -136,7 +157,7 @@ def insert_ip_equipment(ip_id, equip_id, user):
 
 
 def remove_ip_equipment(ip_id, equipment_id, user):
-    ''' Remove o relacionamento entre um ip e um equipamento.
+    """ Remove o relacionamento entre um ip e um equipamento.
 
     @param ip_id: Identificador do IP.
     @param equipment_id: Identificador do equipamento.
@@ -144,12 +165,12 @@ def remove_ip_equipment(ip_id, equipment_id, user):
 
     @return: Nothing.
 
-    @raise IpEquipmentNotFoundError: Relacionamento não cadastrado. 
+    @raise IpEquipmentNotFoundError: Relacionamento não cadastrado.
     @raise IpEquipCantDissociateFromVip: Equip is the last balancer in a created Vip Request, the relationship cannot be removed.
     @raise EquipamentoNotFoundError: Equipamento não cadastrado.
     @raise IpError, GrupoError: Falha na pesquisa dos dados ou na operação de remover.
-    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.  
-    '''
+    @raise UserNotAuthorizedError: Usuário sem autorização para executar a operação.
+    """
     if not has_perm(user,
                     AdminPermission.IPS,
                     AdminPermission.WRITE_OPERATION,
@@ -167,10 +188,10 @@ class IpResource(RestResource):
     log = logging.getLogger('IpResource')
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Trata as requisições de PUT para inserir o relacionamento entre IP e Equipamento.
+        """Trata as requisições de PUT para inserir o relacionamento entre IP e Equipamento.
 
         URL: ip/<id_ip>/equipamento/<id_equipamento>/$
-        '''
+        """
         try:
 
             ip_id = kwargs.get('id_ip')
@@ -212,10 +233,10 @@ class IpResource(RestResource):
             return self.response_error(1)
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Trata as requisições de POST para inserir um IP e associá-lo a um equipamento.
+        """Trata as requisições de POST para inserir um IP e associá-lo a um equipamento.
 
         URL: ip/
-        '''
+        """
 
         try:
             xml_map, attrs_map = loads(request.raw_post_data)
@@ -255,10 +276,10 @@ class IpResource(RestResource):
             return self.response_error(1, e)
 
     def handle_delete(self, request, user, *args, **kwargs):
-        '''Treat DELETE requests to remove IP and Equipment relationship.
+        """Treat DELETE requests to remove IP and Equipment relationship.
 
         URL: ip/<id_ip>/equipamento/<id_equipamento>/$
-        '''
+        """
         try:
 
             ip_id = kwargs.get('id_ip')
@@ -288,7 +309,8 @@ class IpResource(RestResource):
                 # delete equipment's cache
                 destroy_cache_function([equip_id], True)
 
-                server_pool_member_list = ServerPoolMember.objects.filter(ip=ipv4)
+                server_pool_member_list = ServerPoolMember.objects.filter(
+                    ip=ipv4)
 
                 if server_pool_member_list.count() != 0:
                     # IP associated with Server Pool
@@ -296,14 +318,15 @@ class IpResource(RestResource):
                     server_pool_name_list = set()
 
                     for member in server_pool_member_list:
-                        item = '{}: {}'.format(member.server_pool.id, member.server_pool.identifier)
+                        item = '{}: {}'.format(
+                            member.server_pool.id, member.server_pool.identifier)
                         server_pool_name_list.add(item)
 
                     server_pool_name_list = list(server_pool_name_list)
                     server_pool_identifiers = ', '.join(server_pool_name_list)
 
                     raise IpCantRemoveFromServerPool({'ip': mount_ipv4_string(ipv4), 'equip_name': equipament.nome, 'server_pool_identifiers': server_pool_identifiers},
-                                               "Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s" % (equipament.nome, server_pool_identifiers))
+                                                     'Ipv4 não pode ser disassociado do equipamento %s porque ele está sendo utilizando nos Server Pools (id:identifier) %s' % (equipament.nome, server_pool_identifiers))
 
                 remove_ip_equipment(ip_id, equip_id, user)
 
@@ -320,7 +343,7 @@ class IpResource(RestResource):
         except IpNotFoundError:
             return self.response_error(119)
         except IpCantBeRemovedFromVip, e:
-            return self.response_error(319, "ip", 'ipv4', ip_id)
+            return self.response_error(319, 'ip', 'ipv4', ip_id)
         except IpEquipCantDissociateFromVip, e:
             return self.response_error(352, e.cause['ip'], e.cause['equip_name'], e.cause['vip_id'])
         except UserNotAuthorizedError:
@@ -340,7 +363,7 @@ class IpResource(RestResource):
         URLs:  /ip/<ip>/ambiente/<id_amb>
         """
 
-        self.log.info("GET to verify that the IP belongs to environment")
+        self.log.info('GET to verify that the IP belongs to environment')
 
         try:
 

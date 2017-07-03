@@ -13,6 +13,7 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAmbiente
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.equipamento.models import AmbienteController
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.util.geral import create_lock
 from networkapi.util.geral import destroy_lock
@@ -100,6 +101,17 @@ def get_equipments(**kwargs):
                 '__ugrupo__usuario': kwargs.get('user')
             }
             eqpts = eqpts.filter(Q(**q_filter_user))
+        if kwargs.get('name', None) is not None:
+            q_filter_name = {
+                'nome': kwargs.get('name')
+            }
+            eqpts = eqpts.filter(Q(**q_filter_name))
+
+        if kwargs.get('environment', None) is not None:
+            q_filter_environment = {
+                'equipamentoambiente__ambiente': kwargs.get('environment')
+            }
+            eqpts = eqpts.filter(Q(**q_filter_environment))
 
         if kwargs.get('rights_write', None) is not None:
             q_filter_rights = {
@@ -119,26 +131,11 @@ def get_equipments(**kwargs):
             }
             eqpts = eqpts.filter(Q(**q_filter_router))
 
-        if kwargs.get('name', None) is not None:
-            q_filter_router = {
-                'nome': kwargs.get('name')
+        if kwargs.get('environment_sdn_controller', None) is not None:
+            q_filter_controller = {
+                'equipamentoambiente__is_controller': kwargs.get('environment_sdn_controller')
             }
-            eqpts = eqpts.filter(Q(**q_filter_router))
-
-        if kwargs.get('environment', None) is not None:
-            q_filters = [{
-                'ipequipamento__ip__networkipv4__vlan__ambiente__environmentenvironmentvip'
-                '__environment_vip__networkipv4__vlan__ambiente': kwargs.get('environment')
-            },
-                {
-                'ipv6equipament__ip__networkipv6__vlan__ambiente__environmentenvironmentvip'
-                '__environment_vip__networkipv6__vlan__ambiente': kwargs.get('environment')
-            }]
-
-            eqpts = eqpts.filter(
-                reduce(lambda x, y: x | y, [Q(**q_filter)
-                                            for q_filter in q_filters])
-            )
+            eqpts = eqpts.filter(Q(**q_filter_controller))
 
         eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
     except FieldError as e:

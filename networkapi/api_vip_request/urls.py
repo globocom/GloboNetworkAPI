@@ -19,11 +19,13 @@ urlpatterns = patterns(
     # Vip Resquest V3
     ########################
 
-    url(r'^v3/vip-request/details/((?P<vip_request_ids>[;\w]+)/)?$',
+    url(r'^v3/vip-request/details/((?P<obj_ids>[;\w]+)/)?$',
         views.VipRequestDBDetailsView.as_view()),
-    url(r'^v3/vip-request/deploy/((?P<vip_request_ids>[;\w]+)/)?$',
+    url(r'^v3/vip-request/deploy/async/((?P<obj_ids>[;\w]+)/)?$',
+        views.VipRequestAsyncDeployView.as_view()),
+    url(r'^v3/vip-request/deploy/((?P<obj_ids>[;\w]+)/)?$',
         views.VipRequestDeployView.as_view()),
-    url(r'^v3/vip-request/((?P<vip_request_ids>[;\w]+)/)?$',
+    url(r'^v3/vip-request/((?P<obj_ids>[;\w]+)/)?$',
         views.VipRequestDBView.as_view()),
     url(r'^v3/vip-request/pool/(?P<pool_id>[^/]+)/$',
         views.VipRequestPoolView.as_view()),  # GET

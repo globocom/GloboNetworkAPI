@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,20 +13,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
+import logging
+import re
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.blockrules.models import BlockRules, Rule, RuleContent
-from networkapi.exception import InvalidValueError, RequestVipsNotBeenCreatedError, AddBlockOverrideNotDefined
+from networkapi.blockrules.models import BlockRules
+from networkapi.blockrules.models import Rule
+from networkapi.blockrules.models import RuleContent
+from networkapi.exception import AddBlockOverrideNotDefined
+from networkapi.exception import InvalidValueError
+from networkapi.exception import RequestVipsNotBeenCreatedError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
-import logging
-from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError, \
-    RequisicaoVips, VipRequestNoBlockInRule, VipRequestBlockAlreadyInRule
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.requisicaovips.models import VipRequestBlockAlreadyInRule
+from networkapi.requisicaovips.models import VipRequestNoBlockInRule
 from networkapi.rest import RestResource
-from networkapi.util import is_valid_int_greater_zero_param, \
-    is_valid_boolean_param, convert_string_or_int_to_boolean, clear_newline_chr
-import copy
-import re
+from networkapi.util import clear_newline_chr
+from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_zero_param
 
 
 class RequestVipRuleResource(RestResource):
@@ -193,8 +200,9 @@ class RequestVipRuleResource(RestResource):
             is_add = False
             for b in blocks_envs:
                 if clear_newline_chr(b.content) == clear_newline_chr(content_rule.content):
-                    block_in_rules.append(
-                        {'content_block_id': b.id, 'content': content_rule.content})
+                    block_in_rules.append({
+                        'content_block_id': b.id,
+                        'content': content_rule.content})
                     is_add = True
                     break
 
@@ -202,13 +210,15 @@ class RequestVipRuleResource(RestResource):
                 block_in_rules.append(
                     {'content_block_id': 0, 'content': content_rule.content})
             # try:
-                #content_block = BlockRules.objects.get(content=content_rule.content, environment=content_rule.rule.environment)
-                #content_block_id = content_block.id
+                # content_block = BlockRules.objects.get(content=content_rule.
+                # content, environment=content_rule.rule.environment)
+                # content_block_id = content_block.id
             # except Exception:
                 # Isn't a block, is a custom content
                 # pass
             # finally:
-                #block_in_rules.append({'content_block_id': content_block_id, 'content': content_rule.content})
+                # block_in_rules.append({'content_block_id': content_block_id,
+                # 'content': content_rule.content})
         block = BlockRules.objects.get(
             pk=id_block, environment=rule_applied.environment)
 
@@ -219,7 +229,7 @@ class RequestVipRuleResource(RestResource):
 
             if block.id == content_block_id:
                 raise VipRequestBlockAlreadyInRule(
-                    None, "Block is already in rule")
+                    None, 'Block is already in rule')
 
             if content_block_id != 0:
                 # is a block, not a custom content
@@ -296,7 +306,7 @@ class RequestVipRuleResource(RestResource):
         has_block_in_filter = False
         if clear_newline_chr(new_block.content) in clear_newline_chr(filter_applied):
             raise VipRequestBlockAlreadyInRule(
-                None, "Block is already in rule")
+                None, 'Block is already in rule')
         for block_env in blocks:
             if clear_newline_chr(block_env.content) in clear_newline_chr(filter_applied):
                 new_blocks_rule.append(

@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -78,11 +78,11 @@ class RequestVipsRealResource(RestResource):
 
     @deprecated(new_uri='api/pool/check_status|save/')
     def handle_post(self, request, user, *args, **kwargs):
-        """Treat requests POST to Add/Del/Enable/Disable/Check  requestIP - Real.
+        """Treat requests POST to Add/Del/Enable/Disable/Check requestIP - Real.
 
-URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
-"""
-        self.log.info("Add/Del/Ena/Dis/Chk request VIP - Real")
+        URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
+        """
+        self.log.info('Add/Del/Ena/Dis/Chk request VIP - Real')
 
         try:
             parameter = request.path.split('/')[2]
@@ -164,9 +164,9 @@ URLs: /vip/real/ or /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
     @deprecated(new_uri='api/pool/check_status|save/')
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to Enable/Disable/ request VIP - Real.
-URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
-"""
-        self.log.info("Ena/Dis/ request VIP - Real")
+        URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
+        """
+        self.log.info('Ena/Dis/ request VIP - Real')
 
         try:
             parameter = request.path.split('/')[2]
@@ -217,9 +217,9 @@ URLs: /real/<status>/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>)/
     def handle_delete(self, request, user, *args, **kwargs):
         """Treat requests POST to Del request VIP - Real.
 
-URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
-"""
-        self.log.info("Del request VIP - Real")
+        URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
+        """
+        self.log.info('Del request VIP - Real')
 
         try:
             parameter = request.path.split('/')[2]
@@ -329,7 +329,8 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
         # Valid variables
         # vip.set_variables(variables_map)
 
-        evip = EnvironmentVip.get_by_values(variables_map.get('finalidade'), variables_map.get('cliente'), variables_map.get('ambiente'))
+        evip = EnvironmentVip.get_by_values(variables_map.get(
+            'finalidade'), variables_map.get('cliente'), variables_map.get('ambiente'))
 
         # Valid network_version - IPv4
         if network_version == IP_VERSION.IPv4[0]:
@@ -338,11 +339,12 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             IpEquip = IpEquipamento().get_by_ip_equipment(ip_id, equip_id)
 
             real_name = IpEquip.equipamento.nome
-            end_ip = "%s.%s.%s.%s" % (
+            end_ip = '%s.%s.%s.%s' % (
                 IpEquip.ip.oct1, IpEquip.ip.oct2, IpEquip.ip.oct3, IpEquip.ip.oct4)
 
             # Valid Real
-            RequisicaoVips.valid_real_server(end_ip, IpEquip.equipamento, evip, False)
+            RequisicaoVips.valid_real_server(
+                end_ip, IpEquip.equipamento, evip, False)
 
         # Valid network_version - IPv6
         elif network_version == IP_VERSION.IPv6[0]:
@@ -351,11 +353,12 @@ URLs: /real/equip/<id_equip>/vip/<id_vip>/ip/<id_ip>/
             Ipv6Equip = Ipv6Equipament().get_by_ip_equipment(ip_id, equip_id)
 
             real_name = Ipv6Equip.equipamento.nome
-            end_ip = "%s:%s:%s:%s:%s:%s:%s:%s" % (Ipv6Equip.ip.block1, Ipv6Equip.ip.block2, Ipv6Equip.ip.block3,
+            end_ip = '%s:%s:%s:%s:%s:%s:%s:%s' % (Ipv6Equip.ip.block1, Ipv6Equip.ip.block2, Ipv6Equip.ip.block3,
                                                   Ipv6Equip.ip.block4, Ipv6Equip.ip.block5, Ipv6Equip.ip.block6, Ipv6Equip.ip.block7, Ipv6Equip.ip.block8)
 
             # Valid Real
-            RequisicaoVips.valid_real_server(end_ip, Ipv6Equip.equipamento, evip, False)
+            RequisicaoVips.valid_real_server(
+                end_ip, Ipv6Equip.equipamento, evip, False)
 
         if (operation == 'chk'):
 

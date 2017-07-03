@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-
-from networkapi.rest import RestResource
-
-from networkapi.admin_permission import AdminPermission
-
-from networkapi.auth import has_perm
-
-from networkapi.grupo.models import *
 
 import logging
 
-from networkapi.distributedlock import distributedlock, LOCK_GROUP_USER, LOCK_GROUP_EQUIPMENT, LOCK_PERM, LOCK_GROUP_RIGHTS
-
-from networkapi.util import is_valid_string_maxsize, is_valid_int_greater_zero_param,\
-    destroy_cache_function
-
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_GROUP_EQUIPMENT
+from networkapi.distributedlock import LOCK_GROUP_RIGHTS
+from networkapi.distributedlock import LOCK_GROUP_USER
+from networkapi.distributedlock import LOCK_PERM
 from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import *
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
 
 
 class GrupoEquipamentoResource(RestResource):
@@ -41,10 +40,10 @@ class GrupoEquipamentoResource(RestResource):
     log = logging.getLogger('GrupoEquipamentoResource')
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Trata as requisições de GET para listar todos os grupos de equipamento.
+        """Trata as requisições de GET para listar todos os grupos de equipamento.
 
         URL: egrupo/$
-        '''
+        """
         try:
             if not has_perm(user, AdminPermission.EQUIPMENT_GROUP_MANAGEMENT, AdminPermission.READ_OPERATION):
                 return self.not_authorized()
@@ -211,13 +210,13 @@ class DireitoGrupoEquipamentoResource(RestResource):
         return direito_map
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Trata as requisições de GET para listar os direitos de grupo de usuários em grupo de equipamentos.
+        """Trata as requisições de GET para listar os direitos de grupo de usuários em grupo de equipamentos.
 
         URLs: direitosgrupoequipamento/$
               direitosgrupoequipamento/ugrupo/<id_grupo_usuario>/$
               direitosgrupoequipamento/egrupo/<id_grupo_equipamento>/$
               direitosgrupoequipamento/<id_direito>/$
-        '''
+        """
 
         try:
             if not has_perm(user, AdminPermission.USER_ADMINISTRATION, AdminPermission.READ_OPERATION):
@@ -312,9 +311,9 @@ class DireitoGrupoEquipamentoResource(RestResource):
         read = direito_map.get('leitura')
         if read is None:
             raise InvalidValueError(None, 'leitura', read)
-        elif (read == "0"):
+        elif (read == '0'):
             direito_map['leitura'] = False
-        elif (read == "1"):
+        elif (read == '1'):
             direito_map['leitura'] = True
         else:
             raise InvalidValueError(None, 'leitura', read)
@@ -322,9 +321,9 @@ class DireitoGrupoEquipamentoResource(RestResource):
         write = direito_map.get('escrita')
         if write is None:
             raise InvalidValueError(None, 'escrita', write)
-        elif (write == "0"):
+        elif (write == '0'):
             direito_map['escrita'] = False
-        elif (write == "1"):
+        elif (write == '1'):
             direito_map['escrita'] = True
         else:
             raise InvalidValueError(None, 'escrita', write)
@@ -332,9 +331,9 @@ class DireitoGrupoEquipamentoResource(RestResource):
         update_config = direito_map.get('alterar_config')
         if update_config is None:
             raise InvalidValueError(None, 'alterar_config', update_config)
-        elif (update_config == "0"):
+        elif (update_config == '0'):
             direito_map['alterar_config'] = False
-        elif (update_config == "1"):
+        elif (update_config == '1'):
             direito_map['alterar_config'] = True
         else:
             raise InvalidValueError(None, 'alterar_config', update_config)
@@ -342,9 +341,9 @@ class DireitoGrupoEquipamentoResource(RestResource):
         delete = direito_map.get('exclusao')
         if delete is None:
             raise InvalidValueError(None, 'exclusao', delete)
-        elif (delete == "0"):
+        elif (delete == '0'):
             direito_map['exclusao'] = False
-        elif (delete == "1"):
+        elif (delete == '1'):
             direito_map['exclusao'] = True
         else:
             raise InvalidValueError(None, 'exclusao', delete)

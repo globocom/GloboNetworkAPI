@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,34 +13,59 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 # from _ast import For
-
 import logging
-
-# from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.api_vip_request.syncs import old_to_new
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import Equipamento, EquipamentoError
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
-from networkapi.healthcheckexpect.models import HealthcheckExpectError, HealthcheckExpectNotFoundError
-from networkapi.infrastructure.xml_utils import dumps_networkapi, loads, XMLError
-from networkapi.ip.models import Ip, IpError, IpNotFoundByEquipAndVipError, IpNotFoundError
-from networkapi.requisicaovips.models import OptionVip, RequisicaoVips, InvalidFinalidadeValueError, InvalidClienteValueError, InvalidAmbienteValueError, \
-    InvalidCacheValueError, InvalidMetodoBalValueError, InvalidPersistenciaValueError, InvalidHealthcheckTypeValueError, EnvironmentVipNotFoundError, \
-    InvalidHealthcheckValueError, InvalidTimeoutValueError, InvalidHostNameError, InvalidMaxConValueError, InvalidBalAtivoValueError, \
-    InvalidTransbordoValueError, InvalidServicePortValueError, InvalidRealValueError, RequisicaoVipsError, RequisicaoVipsNotFoundError, RequisicaoVipsAlreadyCreatedError
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.util import is_valid_int_greater_equal_zero_param, is_valid_int_greater_zero_param, \
-    convert_boolean_to_int, is_valid_string_minsize, is_valid_string_maxsize
+from networkapi.healthcheckexpect.models import HealthcheckExpectError
+from networkapi.healthcheckexpect.models import HealthcheckExpectNotFoundError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotFoundByEquipAndVipError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.requisicaovips.models import EnvironmentVipNotFoundError
+from networkapi.requisicaovips.models import InvalidAmbienteValueError
+from networkapi.requisicaovips.models import InvalidBalAtivoValueError
+from networkapi.requisicaovips.models import InvalidCacheValueError
+from networkapi.requisicaovips.models import InvalidClienteValueError
+from networkapi.requisicaovips.models import InvalidFinalidadeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckTypeValueError
+from networkapi.requisicaovips.models import InvalidHealthcheckValueError
+from networkapi.requisicaovips.models import InvalidHostNameError
+from networkapi.requisicaovips.models import InvalidMaxConValueError
+from networkapi.requisicaovips.models import InvalidMetodoBalValueError
+from networkapi.requisicaovips.models import InvalidPersistenciaValueError
+from networkapi.requisicaovips.models import InvalidRealValueError
+from networkapi.requisicaovips.models import InvalidServicePortValueError
+from networkapi.requisicaovips.models import InvalidTimeoutValueError
+from networkapi.requisicaovips.models import InvalidTransbordoValueError
+from networkapi.requisicaovips.models import OptionVip
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.requisicaovips.models import RequisicaoVipsAlreadyCreatedError
+from networkapi.requisicaovips.models import RequisicaoVipsError
+from networkapi.requisicaovips.models import RequisicaoVipsNotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import convert_boolean_to_int
+from networkapi.util import is_valid_int_greater_equal_zero_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+# from django.forms.models import model_to_dict
 
 
 def insert_vip_request(vip_map, user):
-    '''Insere uma requisição de VIP.
+    """Insere uma requisição de VIP.
 
     @param vip_map: Mapa com os dados da requisição.
     @param user: Usuário autenticado.
@@ -92,7 +116,7 @@ def insert_vip_request(vip_map, user):
     @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
 
     @raise UserNotAuthorizedError:
-    '''
+    """
 
     log = logging.getLogger('insert_vip_request')
 
@@ -163,7 +187,7 @@ def insert_vip_request(vip_map, user):
             u'The maxcon parameter is not a valid value: %s.', vip_map.get('maxcon'))
         raise InvalidValueError(None, 'maxcon', vip_map.get('maxcon'))
 
-    if vip_map.get("reals") is not None:
+    if vip_map.get('reals') is not None:
 
         for real in vip_map.get('reals').get('real'):
             ip_aux_error = real.get('real_ip')
@@ -269,7 +293,7 @@ class RequisicaoVipsResource(RestResource):
     log = logging.getLogger('RequisicaoVipsResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Trata as requisições de POST para inserir uma requisição de VIP.'''
+        """Trata as requisições de POST para inserir uma requisição de VIP."""
 
         try:
             xml_map, attrs_map = loads(
@@ -379,7 +403,8 @@ class RequisicaoVipsResource(RestResource):
             request_vip_map = request_vip.variables_to_map()
 
             """"""
-            vip_port_list, reals_list, reals_priority, reals_weight = request_vip.get_vips_and_reals(request_vip.id)
+            vip_port_list, reals_list, reals_priority, reals_weight = request_vip.get_vips_and_reals(
+                request_vip.id)
 
             if reals_list:
                 request_vip_map['reals'] = {'real': reals_list}

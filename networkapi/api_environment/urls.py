@@ -10,4 +10,8 @@ urlpatterns = patterns(
         views.EnvironmentDBView.as_view()),
     url(r'^v3/environment/environment-vip/((?P<environment_vip_id>\d+)/)?$',
         views.EnvEnvVipRelatedView.as_view()),
+    # url(r'^v3/environment/((?P<environment_id>\d+)/)?flows/$',
+    #     views.EnvFlowView.as_view()),
+    url(r'^v3/environment/((?P<environment_id>\d+)/)?flows/((?P<flow_id>\d+)/)?$',
+        views.EnvFlowView.as_view()),
 )

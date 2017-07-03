@@ -34,5 +34,41 @@
     "change_config": 1,
     "delete": 1
     }
+  },
+  {
+  "pk": 4,
+  "model": "api_ogp.objectgrouppermissiongeneral",
+  "fields": {
+    "user_group": 3,
+    "object_type": 1,
+    "read": 1,
+    "write": 1,
+    "change_config": 1,
+    "delete": 1
+    }
+  },
+  {
+  "pk": 5,
+  "model": "api_ogp.objectgrouppermissiongeneral",
+  "fields": {
+    "user_group": 3,
+    "object_type": 2,
+    "read": 1,
+    "write": 1,
+    "change_config": 1,
+    "delete": 1
+    }
+  },
+  {
+  "pk": 6,
+  "model": "api_ogp.objectgrouppermissiongeneral",
+  "fields": {
+    "user_group": 3,
+    "object_type": 3,
+    "read": 1,
+    "write": 1,
+    "change_config": 1,
+    "delete": 1
+    }
   }
 ]

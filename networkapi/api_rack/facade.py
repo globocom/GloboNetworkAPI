@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,14 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
-from networkapi.equipamento.models import Equipamento
-from networkapi.rack.models import Rack
-from networkapi.api_rack import exceptions
+
 from django.core.exceptions import ObjectDoesNotExist
 
+from networkapi.api_rack import exceptions
+from networkapi.equipamento.models import Equipamento
+from networkapi.rack.models import Rack
+
 log = logging.getLogger(__name__)
+
 
 def save_rack(user, rack_dict):
 
@@ -36,7 +37,8 @@ def save_rack(user, rack_dict):
     id_sw3 = rack_dict.get('sw3_id')
 
     if not rack_dict.get('name'):
-        raise exceptions.InvalidInputException("O nome do Rack não foi informado.")
+        raise exceptions.InvalidInputException(
+            'O nome do Rack não foi informado.')
     elif rack_dict.get('name') is not 0:
         rack.nome = rack_dict.get('name')
     try:
@@ -54,27 +56,32 @@ def save_rack(user, rack_dict):
         try:
             rack.id_sw1 = Equipamento.get_by_pk(int(id_sw1))
         except:
-            raise exceptions.InvalidInputException("O Leaf de id %s não existe." % id_sw1)
+            raise exceptions.InvalidInputException(
+                'O Leaf de id %s não existe.' % id_sw1)
     if id_sw2 is not None:
         try:
             rack.id_sw2 = Equipamento.get_by_pk(int(id_sw2))
         except:
-            raise exceptions.InvalidInputException("O Leaf de id %s não existe." % id_sw2)
+            raise exceptions.InvalidInputException(
+                'O Leaf de id %s não existe.' % id_sw2)
     if id_sw3 is not None:
         try:
             rack.id_ilo = Equipamento.get_by_pk(int(id_sw3))
         except:
-            raise exceptions.InvalidInputException("O OOB de id %s não existe." % id_sw3)
+            raise exceptions.InvalidInputException(
+                'O OOB de id %s não existe.' % id_sw3)
 
     rack.save(user)
     return rack
+
 
 def get_by_pk(user, idt):
 
     try:
         return Rack.objects.filter(id=idt).uniqueResult()
     except ObjectDoesNotExist, e:
-        raise exceptions.RackNumberNotFoundError("Rack id %s nao foi encontrado" % (idt))
+        raise exceptions.RackNumberNotFoundError(
+            'Rack id %s nao foi encontrado' % (idt))
     except Exception, e:
         log.error(u'Failure to search the Rack.')
-        raise exceptions.RackError("Failure to search the Rack. %s" % (e))
+        raise exceptions.RackError('Failure to search the Rack. %s' % (e))

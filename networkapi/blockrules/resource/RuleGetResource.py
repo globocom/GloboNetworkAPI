@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
 
 import logging
-from networkapi.blockrules.models import Rule, BlockRules
+
 from django.forms.models import model_to_dict
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.infrastructure.xml_utils import dumps_networkapi
+
+from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import Ambiente
 from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
+from networkapi.blockrules.models import BlockRules
+from networkapi.blockrules.models import Rule
 from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
 
@@ -35,11 +37,12 @@ class RuleGetResource(RestResource):
 
     URL: environment/rule/all/<id_environment>/
     """
+
     log = logging.getLogger('RuleResource')
 
     def handle_get(self, request, user, *args, **kwargs):
         try:
-            self.log.info("Get rules in Environment")
+            self.log.info('Get rules in Environment')
 
             # User permission
             if not has_perm(user, AdminPermission.VIP_VALIDATION, AdminPermission.WRITE_OPERATION):

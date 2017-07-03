@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -43,10 +43,10 @@ class VlanValidateResource(RestResource):
     log = logging.getLogger('VlanValidateResource')
 
     def handle_put(self, request, user, *args, **kwargs):
-        '''Treat PUT requests to Validate a vlan
+        """Treat PUT requests to Validate a vlan
 
         URL: vlan/<id_vlan>/validate/<network>
-        '''
+        """
 
         try:
 
@@ -101,10 +101,10 @@ class VlanValidateResource(RestResource):
             return self.response_error(1)
 
     def handle_get(self, request, user, *args, **kwargs):
-        '''Treat GET requests to check if a vlan need confimation to insert
+        """Treat GET requests to check if a vlan need confimation to insert
 
         URL: vlan/confirm/
-        '''
+        """
 
         try:
 
@@ -198,13 +198,13 @@ class VlanValidateResource(RestResource):
 
                 # Check subnet's
                 network = str(network)
-                prefix = split(network, "/")
+                prefix = split(network, '/')
                 net_explode = prefix[0]
 
                 if version == IP_VERSION.IPv4[0]:
-                    expl = split(net_explode, ".")
+                    expl = split(net_explode, '.')
                 else:
-                    expl = split(net_explode, ":")
+                    expl = split(net_explode, ':')
 
                 expl.append(str(prefix[1]))
 
@@ -262,10 +262,10 @@ def verify_subnet(vlan, network_ip, version):
     for net in vlan_net:
 
         if version == IP_VERSION.IPv4[0]:
-            ip = "%s.%s.%s.%s/%s" % (net.oct1,
+            ip = '%s.%s.%s.%s/%s' % (net.oct1,
                                      net.oct2, net.oct3, net.oct4, net.block)
         else:
-            ip = "%s:%s:%s:%s:%s:%s:%s:%s/%d" % (net.block1, net.block2, net.block3,
+            ip = '%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net.block1, net.block2, net.block3,
                                                  net.block4, net.block5, net.block6, net.block7, net.block8, net.block)
 
         ip_net = IPNetwork(ip)

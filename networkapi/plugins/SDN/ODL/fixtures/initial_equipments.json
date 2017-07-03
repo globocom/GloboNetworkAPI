@@ -1,0 +1,53 @@
+[
+  {
+    "pk": 1,
+    "model": "equipamento.tipoequipamento",
+    "fields": {
+      "tipo_equipamento": "Switch"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.marca",
+    "fields": {
+      "nome": "Marca-1"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.modelo",
+    "fields": {
+      "nome": "Modelo-1",
+      "marca": "1"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "tipo_equipamento": "1",
+      "modelo": 1,
+      "nome": "OVS Controller 0",
+      "maintenance": false
+    }
+  },
+  {
+    "pk": 1,
+    "model": "tipoacesso.tipoacesso",
+    "fields": {
+      "protocolo": "TipoAcesso-1"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamentoacesso",
+    "fields": {
+      "equipamento": 1,
+      "fqdn": "http://172.19.0.2:8181",
+      "user": "admin",
+      "password": "admin",
+      "tipo_acesso": 1,
+      "enable_pass": "---"
+    }
+  }
+]

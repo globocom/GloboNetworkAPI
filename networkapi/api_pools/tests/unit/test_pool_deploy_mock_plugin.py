@@ -55,7 +55,7 @@ class PoolDeployMockPluginTestCase(NetworkApiTestCase):
         dp = self.load_json_file(
             'api_pools/tests/unit/json/test_pool_put_created.json')
         test_patch.return_value = MockPlugin()
-        log.info(dp)
+        dp = dp.get('server_pools')
         facade_pool_deploy.update_real_pool(dp, self.user)
 
     @patch('networkapi.plugins.factory.PluginFactory.factory')

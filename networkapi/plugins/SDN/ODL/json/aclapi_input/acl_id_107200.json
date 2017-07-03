@@ -1,0 +1,14 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "destination": "10.130.64.0/27",
+      "id": "107200",
+      "owner": "networkapi",
+      "protocol": "ip",
+      "sequence": 2,
+      "source": "10.129.192.32/27"
+    }
+  ]
+}

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,24 +13,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
+import logging
+
+from django.forms.models import model_to_dict
+
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
-from networkapi.grupo.models import GrupoError
-from networkapi.filterequiptype.models import FilterEquipType
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
-from networkapi.ip.models import NetworkIPv4NotFoundError, Ip, IpNotAvailableError, IpError, NetworkIPv4Error, NetworkIPv4, \
-    IpEquipmentAlreadyAssociation, IpEquipamento, IpEquipmentNotFoundError, IpNotFoundError, IpRangeAlreadyAssociation
-import logging
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_NETWORK_IPV4
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize, is_valid_int_param,\
-    destroy_cache_function
-from django.forms.models import model_to_dict
+from networkapi.filterequiptype.models import FilterEquipType
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import IpEquipmentAlreadyAssociation
+from networkapi.ip.models import IpEquipmentNotFoundError
+from networkapi.ip.models import IpError
+from networkapi.ip.models import IpNotAvailableError
+from networkapi.ip.models import IpNotFoundError
+from networkapi.ip.models import IpRangeAlreadyAssociation
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv4Error
+from networkapi.ip.models import NetworkIPv4NotFoundError
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_int_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 from networkapi.vlan.models import VlanNumberNotAvailableError
-from networkapi.distributedlock import distributedlock, LOCK_NETWORK_IPV4
 
 
 class IPv4SaveResource(RestResource):
@@ -39,10 +58,10 @@ class IPv4SaveResource(RestResource):
     log = logging.getLogger('IPv4SaveResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to add an IP and associate it to an equipment.
+        """Handles POST requests to add an IP and associate it to an equipment.
 
         URL: ipv4/save/
-        '''
+        """
 
         self.log.info('Add an IP and associate it to an equipment')
 
@@ -116,11 +135,11 @@ class IPv4SaveResource(RestResource):
                 ip_error = ip4
 
                 # verificação se foi passado algo errado no ip
-                ip4 = ip4.split(".")
+                ip4 = ip4.split('.')
                 for oct in ip4:
                     if not is_valid_int_param(oct):
                         raise InvalidValueError(None, 'ip4', ip_error)
-                        #raise IndexError
+                        # raise IndexError
 
                 # Ip passado de forma invalida
                 if len(ip4) is not 4:
@@ -174,18 +193,18 @@ class IPv4SaveResource(RestResource):
                                 if equip.tipo_equipamento not in tp_equip_list_one or equip.tipo_equipamento not in tp_equip_list_two:
                                     flag_vlan_error = True
 
-                            ## Filter case 3 - end ##
+                            # Filter case 3 - end #
 
                             if flag_vlan_error:
                                 ambiente_aux = vlan.ambiente
                                 vlan_aux = vlan
-                                nome_ambiente = "%s - %s - %s" % (
+                                nome_ambiente = '%s - %s - %s' % (
                                     vlan.ambiente.divisao_dc.nome, vlan.ambiente.ambiente_logico.nome, vlan.ambiente.grupo_l3.nome)
                                 raise VlanNumberNotAvailableError(None,
-                                                                  '''O ip informado não pode ser cadastrado, pois o equipamento %s, faz parte do ambiente %s (id %s), 
-                                                                    que possui a Vlan de id %s, que também possui o número %s, e não é permitido que vlans que compartilhem o mesmo ambiente 
+                                                                  """O ip informado não pode ser cadastrado, pois o equipamento %s, faz parte do ambiente %s (id %s),
+                                                                    que possui a Vlan de id %s, que também possui o número %s, e não é permitido que vlans que compartilhem o mesmo ambiente
                                                                     por meio de equipamentos, possuam o mesmo número, edite o número de uma das Vlans ou adicione um filtro no ambiente para efetuar o cadastro desse IP no Equipamento Informado.
-                                                                    ''' % (equip.nome, nome_ambiente, ambiente_aux.id, vlan_aux.id, vlan_atual.num_vlan))
+                                                                    """ % (equip.nome, nome_ambiente, ambiente_aux.id, vlan_aux.id, vlan_atual.num_vlan))
 
                 # Persist
                 ip.save_ipv4(equip_id, user, net)

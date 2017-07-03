@@ -88,6 +88,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['name']
         del data['environments'][0]['configs'][0]['id']
+        del data['environments'][0]['sdn_controlled']
 
         self.compare_json(name_file, data)
 
@@ -117,6 +118,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['name']
         del data['environments'][0]['configs'][1]['id']
+        del data['environments'][0]['sdn_controlled']
 
         self.compare_json(name_file, data)
 
@@ -145,6 +147,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         # Removes property name
         data = response.data
         del data['environments'][0]['name']
+        del data['environments'][0]['sdn_controlled']
 
         self.compare_json(name_file, data)
 

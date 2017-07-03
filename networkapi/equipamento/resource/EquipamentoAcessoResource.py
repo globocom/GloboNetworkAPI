@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,25 +13,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.rest import RestResource
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
-from networkapi.grupo.models import GrupoError
-from networkapi.equipamento.models import Equipamento, EquipamentoAcesso, EquipamentoAccessDuplicatedError, EquipamentoNotFoundError, EquipamentoError
-from networkapi.tipoacesso.models import TipoAcesso
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT_ACCESS
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_maxsize, is_valid_string_minsize
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_EQUIPMENT_ACCESS
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoAccessDuplicatedError
+from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNotFoundError
 from networkapi.exception import InvalidValueError
+from networkapi.grupo.models import GrupoError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.rest import RestResource
 from networkapi.tipoacesso.models import AccessTypeNotFoundError
+from networkapi.tipoacesso.models import TipoAcesso
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
 
 
 class EquipamentoAcessoResource(RestResource):
 
-    '''Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela equiptos_acesso.'''
+    """Classe que trata as requisições de PUT,POST,GET e DELETE para a tabela equiptos_acesso."""
 
     log = logging.getLogger('EquipamentoAcessoResource')
 
@@ -41,7 +50,7 @@ class EquipamentoAcessoResource(RestResource):
 
         Permite a consulta de Informações de Acesso a Equipamentos existentes.
 
-        URL: /equipamentoacesso/ 
+        URL: /equipamentoacesso/
         """
 
         try:
@@ -71,7 +80,7 @@ class EquipamentoAcessoResource(RestResource):
     def handle_post(self, request, user, *args, **kwargs):
         """Trata as requisições de POST para criar Informações de Acesso a Equipamentos.
 
-        URL: /equipamentoacesso 
+        URL: /equipamentoacesso
 
         """
 
@@ -201,7 +210,7 @@ class EquipamentoAcessoResource(RestResource):
     def handle_put(self, request, user, *args, **kwargs):
         """Trata uma requisição PUT para alterar informações de acesso a equipamentos.
 
-        URL: /equipamentoacesso/id_equipamento/id_tipo_acesso/ 
+        URL: /equipamentoacesso/id_equipamento/id_tipo_acesso/
 
         """
 
@@ -286,7 +295,7 @@ class EquipamentoAcessoResource(RestResource):
     def handle_delete(self, request, user, *args, **kwargs):
         """Trata uma requisição DELETE para excluir uma informação de acesso a equipamento
 
-        URL: /equipamentoacesso/id_equipamento/id_tipo_acesso/ 
+        URL: /equipamentoacesso/id_equipamento/id_tipo_acesso/
 
         """
 

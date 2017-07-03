@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,22 +13,45 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
-from networkapi.rest import RestResource, UserNotAuthorizedError
-from networkapi.auth import has_perm
-from networkapi.admin_permission import AdminPermission
-from networkapi.infrastructure.xml_utils import loads, XMLError, dumps_networkapi
+
 import logging
-from networkapi.equipamento.models import Equipamento, TipoEquipamento, Modelo, TipoEquipamentoNotFoundError, ModeloNotFoundError, EquipamentoNotFoundError, EquipamentoNameDuplicatedError, EquipamentoError, EquipTypeCantBeChangedError
-from networkapi.exception import InvalidValueError
-from networkapi.util import is_valid_int_greater_zero_param, is_valid_string_minsize, is_valid_string_maxsize, is_valid_regex,\
-    destroy_cache_function, is_valid_boolean_param
-from networkapi.distributedlock import distributedlock, LOCK_EQUIPMENT
-from networkapi.ip.models import NetworkIPv4, NetworkIPv6, Ip, Ipv6, IpEquipamento, Ipv6Equipament
-from networkapi.vlan.models import Vlan
-from networkapi.requisicaovips.models import RequisicaoVips
+
 from django.db.models import Count
+
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
+from networkapi.distributedlock import distributedlock
+from networkapi.distributedlock import LOCK_EQUIPMENT
+from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import EquipamentoError
+from networkapi.equipamento.models import EquipamentoNameDuplicatedError
+from networkapi.equipamento.models import EquipamentoNotFoundError
+from networkapi.equipamento.models import EquipTypeCantBeChangedError
+from networkapi.equipamento.models import Modelo
+from networkapi.equipamento.models import ModeloNotFoundError
+from networkapi.equipamento.models import TipoEquipamento
+from networkapi.equipamento.models import TipoEquipamentoNotFoundError
+from networkapi.exception import InvalidValueError
+from networkapi.infrastructure.xml_utils import dumps_networkapi
+from networkapi.infrastructure.xml_utils import loads
+from networkapi.infrastructure.xml_utils import XMLError
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.ip.models import Ipv6
+from networkapi.ip.models import Ipv6Equipament
+from networkapi.ip.models import NetworkIPv4
+from networkapi.ip.models import NetworkIPv6
+from networkapi.requisicaovips.models import RequisicaoVips
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
+from networkapi.util import destroy_cache_function
+from networkapi.util import is_valid_boolean_param
+from networkapi.util import is_valid_int_greater_zero_param
+from networkapi.util import is_valid_regex
+from networkapi.util import is_valid_string_maxsize
+from networkapi.util import is_valid_string_minsize
+from networkapi.vlan.models import Vlan
 
 
 class EquipamentoEditResource(RestResource):
@@ -84,10 +106,9 @@ class EquipamentoEditResource(RestResource):
                     None, 'id_tipo_equipamento', id_tipo_equipamento)
 
             # Valid nome
-            if not is_valid_string_minsize(nome, 3) or not is_valid_string_maxsize(nome, 80) or not is_valid_regex(nome, "^[A-Z0-9-_]+$"):
+            if not is_valid_string_minsize(nome, 3) or not is_valid_string_maxsize(nome, 80) or not is_valid_regex(nome, '^[A-Z0-9-_]+$'):
                 self.log.error(u'Parameter nome is invalid. Value: %s', nome)
                 raise InvalidValueError(None, 'nome', nome)
-
 
             # Business Rules
 
@@ -95,19 +116,20 @@ class EquipamentoEditResource(RestResource):
             equip = Equipamento()
             equip = equip.get_by_pk(equip_id)
 
-            #maintenance is a new feature. Check existing value if not defined in request
-            #Old calls does not send this field
+            # maintenance is a new feature. Check existing value if not defined in request
+            # Old calls does not send this field
             if maintenance is None:
                 maintenance = equip.maintenance
             if not is_valid_boolean_param(maintenance):
-                self.log.error(u'The maintenance parameter is not a valid value: %s.', maintenance)
+                self.log.error(
+                    u'The maintenance parameter is not a valid value: %s.', maintenance)
                 raise InvalidValueError(None, 'maintenance', maintenance)
 
             if maintenance in ['1', 'True', True]:
                 maintenance = True
             else:
                 maintenance = False
-            
+
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip_id, AdminPermission.EQUIP_WRITE_OPERATION):
                 raise UserNotAuthorizedError(

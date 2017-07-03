@@ -12,6 +12,9 @@
                 },
                 "is_router": {
                   "type": "boolean"
+                },
+                "is_controller": {
+                  "type": "boolean"
                 }
               },
               "type": "object"

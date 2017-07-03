@@ -1,5 +1,4 @@
-# encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,69 +13,77 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from django.test import Client
-from django.test import TransactionTestCase
-import pytest
 import httplib
 
-# exporting
-from networkapi.test.utils import show_sql, xml2dict, dict2xml, permute, mock_login, load_json
-from networkapi.test.assertions import *
-from networkapi.test.mock_scripts import *
-
-from django.db import connections, DEFAULT_DB_ALIAS
-from django.core.management import call_command
+import pytest
 from django.core import mail
-
-
-from networkapi.test.functions import valid_content, valid_response, is_valid_attr, valid_get_all, CodeError
+from django.core.management import call_command
+from django.db import connections
+from django.db import DEFAULT_DB_ALIAS
+from django.test import Client
+from django.test import TransactionTestCase
 from django.test.client import MULTIPART_CONTENT
+
+from networkapi.test.assertions import *
+from networkapi.test.functions import CodeError
+from networkapi.test.functions import is_valid_attr
+from networkapi.test.functions import valid_content
+from networkapi.test.functions import valid_get_all
+from networkapi.test.functions import valid_response
+from networkapi.test.mock_scripts import *
+from networkapi.test.utils import dict2xml
+from networkapi.test.utils import load_json
+from networkapi.test.utils import mock_login
+from networkapi.test.utils import permute
+from networkapi.test.utils import show_sql
+from networkapi.test.utils import xml2dict
+# exporting
 
 skipTest = pytest.mark.skipTest
 me = pytest.mark.me
 bug = pytest.mark.bug
 
-__all__ = ['log', 'show_sql', 'xml2dict', 'dict2xml', 'BasicTestCase', 'me', 'skipTest',
-           'bug', 'mock_script', 'assert_response_error', 'assert_response_success', 'permute']
+__all__ = ('log', 'show_sql', 'xml2dict', 'dict2xml', 'BasicTestCase', 'me',
+           'skipTest', 'bug', 'mock_script', 'assert_response_error',
+           'assert_response_success', 'permute')
 
-log.info(u"Desligando logging de queries")
+log.info(u'Desligando logging de queries')
 show_sql(False)
 
 CONTENT_APPLICATION_XML = 'application/xml'
 
 
 class CLIENT_TYPES():
-    TEST = "TEST"
-    NO_PERMISSION = "NO_PERMISSION"
-    NO_WRITE_PERMISSION = "NO_WRITE_PERMISSION"
-    NO_READ_PERMISSION = "NO_READ_PERMISSION"
-    NO_ACTIVE = "NO_ACTIVE"
+    TEST = 'TEST'
+    NO_PERMISSION = 'NO_PERMISSION'
+    NO_WRITE_PERMISSION = 'NO_WRITE_PERMISSION'
+    NO_READ_PERMISSION = 'NO_READ_PERMISSION'
+    NO_ACTIVE = 'NO_ACTIVE'
 
 
 class BasicTestCase(TransactionTestCase):
 
-    URL_SAVE = ""
-    URL_ALTER = ""
-    URL_REMOVE = ""
-    URL_GET_BY_ID = ""
-    URL_GET_ALL = ""
+    URL_SAVE = ''
+    URL_ALTER = ''
+    URL_REMOVE = ''
+    URL_GET_BY_ID = ''
+    URL_GET_ALL = ''
 
     ID_NONEXISTENT = 9999
 
     @classmethod
     def setUpClass(cls):
-        '''
+        """
           Call static method to load fixtures once per class,
           making tests faster
-        '''
+        """
         cls._fixture_load()
 
     @classmethod
     def _fixture_load(cls):
-        '''
+        """
           Method used to load fixtures once for class, instead of once for test.
-        '''
+        """
 
         # If the test case has a multi_db=True flag, flush all databases.
         # Otherwise, just flush default.
@@ -230,7 +237,7 @@ class FakePayload(object):
     def read(self, num_bytes=None):
         if num_bytes is None:
             num_bytes = self.__len or 0
-        assert self.__len >= num_bytes, "Cannot read more than the available bytes from the HTTP incoming data."
+        assert self.__len >= num_bytes, 'Cannot read more than the available bytes from the HTTP incoming data.'
         content = self.__content.read(num_bytes)
         self.__len -= num_bytes
         return content
@@ -272,18 +279,18 @@ class NetworkAPITestClient(Client):
 
     def delete_request(self, path, data={}, content_type=MULTIPART_CONTENT,
                        **extra):
-        "Construct a POST request."
+        'Construct a POST request.'
 
         post_data = self._encode_data(data, content_type)
 
         parsed = urlparse(path)
         r = {
             'CONTENT_LENGTH': len(post_data),
-            'CONTENT_TYPE':   content_type,
-            'PATH_INFO':      self._get_path(parsed),
-            'QUERY_STRING':   parsed[4],
+            'CONTENT_TYPE': content_type,
+            'PATH_INFO': self._get_path(parsed),
+            'QUERY_STRING': parsed[4],
             'REQUEST_METHOD': 'DELETE',
-            'wsgi.input':     FakePayload(post_data),
+            'wsgi.input': FakePayload(post_data),
         }
         r.update(extra)
         return self.request(**r)
@@ -416,13 +423,13 @@ class CodeError(CodeError):
 
 class BasicTest():
 
-    KEY_ATTR = ""
+    KEY_ATTR = ''
     CODE_ERROR_NOT_FOUND = 0
 
-    NEGATIVE_ATTR = "-1"
-    LETTER_ATTR = "anb"
+    NEGATIVE_ATTR = '-1'
+    LETTER_ATTR = 'anb'
     ZERO_ATTR = 0
-    EMPTY_ATTR = "  "
+    EMPTY_ATTR = '  '
     NONE_ATTR = None
 
     def _not_found(self, response, code_error=None):

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,18 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import with_statement
+
 import hashlib
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import logging
-from networkapi.models.BaseModel import BaseModel
-from networkapi.distributedlock import distributedlock, LOCK_USER_GROUP
-from networkapi.system.facade import get_value
+
 import ldap
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+
+from networkapi.models.BaseModel import BaseModel
 from networkapi.system import exceptions
+from networkapi.system.facade import get_value
 from networkapi.util import convert_string_or_int_to_boolean
+
 
 class UsuarioError(Exception):
 
@@ -91,6 +93,7 @@ class Usuario(BaseModel):
     grupos = models.ManyToManyField('grupo.UGrupo', through='UsuarioGrupo')
     user_ldap = models.CharField(
         unique=True, max_length=45, null=True, blank=True)
+
     log = logging.getLogger('Usuario')
 
     class Meta(BaseModel.Meta):
@@ -105,13 +108,6 @@ class Usuario(BaseModel):
             user=self.user.lower(),
             pwd=self.pwd,
             ativo=1
-        )
-
-    @property
-    def is_staff(self):
-        return UsuarioGrupo.objects.filter(
-            usuario__id=self.id,
-            ugrupo__nome__iexact='Administradores'
         )
 
     @classmethod
@@ -161,7 +157,7 @@ class Usuario(BaseModel):
 
     @classmethod
     def get_by_ldap_user(cls, ldap_usr, active=False):
-        """"Get User by ldap username.
+        """Get User by ldap username.
 
         @return: User.
 
@@ -181,15 +177,16 @@ class Usuario(BaseModel):
             raise UsuarioError(e, u'Failure to search the User.')
 
     def get_enabled_user(self, username, password):
-        '''
+        """
         Busca o usuário de acordo com o login e a senha.
 
         Retorna apenas usuário ativo.
-        '''
+        """
         bypass = 0
         try:
             try:
-                use_ldap = convert_string_or_int_to_boolean(get_value('use_ldap'))
+                use_ldap = convert_string_or_int_to_boolean(
+                    get_value('use_ldap'))
                 if use_ldap:
                     ldap_param = get_value('ldap_config')
                     ldap_server = get_value('ldap_server')
@@ -197,28 +194,30 @@ class Usuario(BaseModel):
                 else:
                     bypass = 1
             except exceptions.VariableDoesNotExistException, e:
-                self.log.error("Error getting LDAP config variables (use_ldap). Trying local authentication")
+                self.log.error(
+                    'Error getting LDAP config variables (use_ldap). Trying local authentication')
                 bypass = 1
             except UsuarioNotFoundError, e:
-                self.log.debug("Using local authentication for user \'%s\'" % username)
+                self.log.debug(
+                    "Using local authentication for user \'%s\'" % username)
                 bypass = 1
 
-            #local auth
+            # local auth
             if bypass:
                 password = Usuario.encode_password(password)
                 return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
 
-            #ldap auth
+            # ldap auth
             try:
                 connect = ldap.open(ldap_server)
-                user_dn = "cn="+username+","+ldap_param
+                user_dn = 'cn=' + username + ',' + ldap_param
                 connect.simple_bind_s(user_dn, password)
                 return return_user
             except ldap.INVALID_CREDENTIALS, e:
                 self.log.error('LDAP authentication error %s' % e)
             except exceptions.VariableDoesNotExistException, e:
-                self.log.error("Error getting LDAP config variables (ldap_server, ldap_param).")
-            
+                self.log.error(
+                    'Error getting LDAP config variables (ldap_server, ldap_param).')
 
         except ObjectDoesNotExist:
             self.log.error(u'Usuário não autenticado ou inativo: %s', username)
@@ -244,7 +243,7 @@ class UsuarioGrupo(BaseModel):
         unique_together = ('usuario', 'ugrupo')
 
     @classmethod
-    def list_by_user_id(self, user_id):
+    def list_by_user_id(cls, user_id):
         """"Get UserGroup by user.
 
         @return: UserGroup.
@@ -258,7 +257,7 @@ class UsuarioGrupo(BaseModel):
             raise UsuarioNotFoundError(
                 e, u'Dont there is a UserGroup by user = %s.' % user_id)
         except Exception, e:
-            self.log.error(u'Failure to search the UserGroup.')
+            cls.log.error(u'Failure to search the UserGroup.')
             raise UsuarioError(e, u'Failure to search the UserGroup.')
 
     @classmethod
