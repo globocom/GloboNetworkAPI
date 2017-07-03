@@ -38,7 +38,7 @@ class VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
     def get_serializers(self):
         # serializers
 
-        vrf_slz = get_app('api_vrf', module_label='v4.serializers')
+        vrf_slz = get_app('api_vrf', module_label='serializers')
 
         if not self.mapping:
             self.mapping = {

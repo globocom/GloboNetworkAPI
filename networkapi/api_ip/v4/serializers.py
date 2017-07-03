@@ -15,11 +15,6 @@ class Ipv4V4Serializer(DynamicFieldsModelSerializer):
     ip_formated = serializers.Field(source='ip_formated')
     description = serializers.Field(source='descricao')
 
-    equipments = serializers.RelatedField(source='equipments')
-    vips = serializers.RelatedField(source='vips')
-    server_pool_members = serializers.RelatedField(
-        source='server_pool_members')
-
     server_pool_members = serializers.\
         SerializerMethodField('get_server_pool_members')
     vips = serializers.SerializerMethodField('get_vips')
@@ -87,7 +82,6 @@ class Ipv4V4Serializer(DynamicFieldsModelSerializer):
         # serializers
         net_slz = get_app('api_network', module_label='serializers.v3')
         vip_slz = get_app('api_vip_request', module_label='serializers.v3')
-        eqpt_slz = get_app('api_equipment', module_label='serializers')
         pool_slz = get_app('api_pools', module_label='serializers.v3')
 
         if not self.mapping:
@@ -112,20 +106,26 @@ class Ipv4V4Serializer(DynamicFieldsModelSerializer):
                     'eager_loading': self.setup_eager_loading_networkipv4
                 },
                 'equipments': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'serializer': Ipv4EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': ('id',)
+                        'fields': (
+                            'equipment',
+                            'virtual_interface',
+                        )
                     },
-                    'obj': 'equipments'
+                    'obj': 'ipv4_equipment_virtual_interface'
                 },
                 'equipments__details': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'serializer': Ipv4EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'fields': (
+                            'equipment__details',
+                            'virtual_interface__details',
+                        )
                     },
-                    'obj': 'equipments'
+                    'obj': 'ipv4_equipment_virtual_interface'
                 },
                 'vips': {
                     'serializer': vip_slz.VipRequestV3Serializer,
@@ -183,11 +183,6 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.Field()
     ip_formated = serializers.Field(source='ip_formated')
-
-    server_pool_members = serializers.RelatedField(
-        source='server_pool_members')
-    vips = serializers.RelatedField(source='vips')
-    equipments = serializers.RelatedField(source='equipments')
 
     networkipv6 = serializers.SerializerMethodField('get_networkipv6')
     server_pool_members = serializers.SerializerMethodField(
@@ -268,7 +263,7 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
 
         net_slz = get_app('api_network', module_label='serializers.v3')
         vip_slz = get_app('api_vip_request', module_label='serializers.v3')
-        eqpt_slz = get_app('api_equipment', module_label='serializers')
+        eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
         pool_slz = get_app('api_pools', module_label='serializers.v3')
 
         if not self.mapping:
@@ -293,20 +288,26 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
                     'eager_loading': self.setup_eager_loading_networkipv6
                 },
                 'equipments': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'serializer': Ipv6EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': ('id',)
+                        'fields': (
+                            'equipment',
+                            'virtual_interface',
+                        )
                     },
-                    'obj': 'equipments'
+                    'obj': 'ipv6_equipment_virtual_interface'
                 },
                 'equipments__details': {
-                    'serializer': eqpt_slz.EquipmentV3Serializer,
+                    'serializer': Ipv6EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'fields': (
+                            'equipment__details',
+                            'virtual_interface__details',
+                        )
                     },
-                    'obj': 'equipments'
+                    'obj': 'ipv6_equipment_virtual_interface'
                 },
                 'vips': {
                     'serializer': vip_slz.VipRequestV3Serializer,
@@ -350,3 +351,132 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
             'networkipv6',
         )
         return queryset
+
+
+class Ipv4EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
+
+    ip = serializers.SerializerMethodField('get_ip')
+    equipment = serializers.SerializerMethodField('get_equipment')
+    virtual_interface = serializers.\
+        SerializerMethodField('get_virtual_interface')
+
+    class Meta:
+        model = get_model('ip', 'IpEquipamento')
+
+        fields = (
+            'ip',
+            'equipment',
+            'virtual_interface'
+        )
+
+    def get_equipment(self, obj):
+        return self.extends_serializer(obj, 'equipment')
+
+    def get_ip(self, obj):
+        return self.extends_serializer(obj, 'ip')
+
+    def get_virtual_interface(self, obj):
+        return self.extends_serializer(obj, 'virtual_interface')
+
+    def get_serializers(self):
+        # serializers
+        eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
+        vi_slz = get_app('api_virtual_interface', module_label='v4.serializers')
+
+        if not self.mapping:
+            self.mapping = {
+                'ip': {
+                    'obj': 'ip_id'
+                },
+                'ip__details': {
+                    'serializer': Ipv4V4Serializer,
+                    'kwargs': {
+                    },
+                    'obj': 'ip'
+                },
+                'equipment': {
+                    'obj': 'equipamento_id'
+                },
+                'equipment__details': {
+                    'serializer': eqpt_slz.EquipmentV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'equipamento'
+                },
+                'virtual_interface': {
+                    'obj': 'virtual_interface_id'
+                },
+                'virtual_interface__details': {
+                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'virtual_interface'
+                }
+            }
+
+
+class Ipv6EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
+
+    ip = serializers.SerializerMethodField('get_ip')
+    equipment = serializers.SerializerMethodField('get_equipment')
+    virtual_interface = serializers. \
+        SerializerMethodField('get_virtual_interface')
+
+    class Meta:
+        model = get_model('ip', 'Ipv6Equipament')
+
+        fields = (
+            'ip',
+            'equipment',
+            'virtual_interface'
+        )
+
+    def get_equipment(self, obj):
+        return self.extends_serializer(obj, 'equipment')
+
+    def get_ip(self, obj):
+        return self.extends_serializer(obj, 'ip')
+
+    def get_virtual_interface(self, obj):
+        return self.extends_serializer(obj, 'virtual_interface')
+
+    def get_serializers(self):
+        # serializers
+        eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
+        vi_slz = get_app('api_virtual_interface', module_label='v4.serializers')
+
+        if not self.mapping:
+            self.mapping = {
+                'ip': {
+                    'obj': 'ip_id'
+                },
+                'ip__details': {
+                    'serializer': Ipv6V4Serializer,
+                    'kwargs': {
+                    },
+                    'obj': 'ip'
+                },
+                'equipment': {
+                    'obj': 'equipamento_id'
+                },
+                'equipment__details': {
+                    'serializer': eqpt_slz.EquipmentV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'equipamento'
+                },
+                'virtual_interface': {
+                    'obj': 'virtual_interface_id'
+                },
+                'virtual_interface__details': {
+                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'virtual_interface'
+                }
+            }
+

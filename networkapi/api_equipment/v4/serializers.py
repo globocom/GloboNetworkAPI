@@ -14,8 +14,8 @@ log = logging.getLogger(__name__)
 class EquipmentV4Serializer(DynamicFieldsModelSerializer):
 
     name = serializers.Field(source='nome')
-    ipv4 = serializers.SerializerMethodField('get_ipv4')
-    ipv6 = serializers.SerializerMethodField('get_ipv6')
+    ipsv4 = serializers.SerializerMethodField('get_ipsv4')
+    ipsv6 = serializers.SerializerMethodField('get_ipsv6')
     equipment_type = serializers.SerializerMethodField('get_equipment_type')
     model = serializers.SerializerMethodField('get_model')
     environments = serializers.SerializerMethodField('get_environments')
@@ -23,16 +23,16 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
     id_as = serializers.SerializerMethodField('get_id_as')
 
     class Meta:
-        Equipamento = get_model('equipamento', 'Equipamento')
-        model = Equipamento
+        Equipment = get_model('equipamento', 'Equipamento')
+        model = Equipment
         fields = (
             'id',
             'name',
             'maintenance',
             'equipment_type',
             'model',
-            'ipv4',
-            'ipv6',
+            'ipsv4',
+            'ipsv6',
             'environments',
             'groups',
             'id_as'
@@ -65,18 +65,18 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
     def get_environments(self, obj):
         return self.extends_serializer(obj, 'environments')
 
-    def get_ipv4(self, obj):
-        return self.extends_serializer(obj, 'ipv4')
+    def get_ipsv4(self, obj):
+        return self.extends_serializer(obj, 'ipsv4')
 
-    def get_ipv6(self, obj):
-        return self.extends_serializer(obj, 'ipv6')
+    def get_ipsv6(self, obj):
+        return self.extends_serializer(obj, 'ipsv6')
 
     def get_id_as(self, obj):
         return self.extends_serializer(obj, 'id_as')
 
     def get_serializers(self):
         eqptv3_slzs = get_app('api_equipment', module_label='serializers')
-        ip_slz = get_app('api_ip', module_label='serializers')
+        v4_ip_slz = get_app('api_ip', module_label='v4.serializers')
         grp_slz = get_app('api_group', module_label='serializers')
         as_slz = get_app('api_as', module_label='v4.serializers')
 
@@ -100,73 +100,49 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'tipo_equipamento'
                 },
-                'ipv4': {
-                    'serializer': ip_slz.Ipv4V3Serializer,
+                'ipsv4': {
+                    'serializer': v4_ip_slz.Ipv4EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
-                            'id',
+                            'ip',
+                            'virtual_interface',
                         )
                     },
-                    'obj': 'ipv4'
+                    'obj': 'ipv4_equipment_virtual_interface'
                 },
-                'ipv4__basic': {
-                    'serializer': ip_slz.Ipv4V3Serializer,
+                'ipsv4__details': {
+                    'serializer': v4_ip_slz.Ipv4EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
-                            'id',
-                            'ip_formated',
-                            'description',
-                        ),
-                        'exclude': ('equipments',),
-                    },
-                    'obj': 'ipv4',
-                    'eager_loading': self.setup_eager_loading_ipv4
-                },
-                'ipv4__details': {
-                    'serializer': ip_slz.Ipv4V3Serializer,
-                    'kwargs': {
-                        'many': True,
-                        'include': ('networkipv4',),
-                        'exclude': ('equipments',),
-                    },
-                    'obj': 'ipv4',
-                    'eager_loading': self.setup_eager_loading_ipv4
-                },
-                'ipv6': {
-                    'serializer': ip_slz.Ipv6V3Serializer,
-                    'kwargs': {
-                        'many': True,
-                        'fields': (
-                            'id',
+                            'ip__details',
+                            'virtual_interface__details',
                         )
                     },
-                    'obj': 'ipv6'
+                    'obj': 'ipv4_equipment_virtual_interface',
                 },
-                'ipv6__basic': {
-                    'serializer': ip_slz.Ipv6V3Serializer,
+                'ipsv6': {
+                    'serializer': v4_ip_slz.Ipv6EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
-                            'id',
-                            'ip_formated',
-                            'description',
-                        ),
-                        'exclude': ('equipments',),
+                            'ip',
+                            'virtual_interface',
+                        )
                     },
-                    'obj': 'ipv6',
-                    'eager_loading': self.setup_eager_loading_ipv6
+                    'obj': 'ipv6_equipment_virtual_interface'
                 },
-                'ipv6__details': {
-                    'serializer': ip_slz.Ipv6V3Serializer,
+                'ipsv6__details': {
+                    'serializer': v4_ip_slz.Ipv6EquipmentVirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'include': ('networkipv6',),
-                        'exclude': ('equipments',),
+                        'fields': (
+                            'ip__details',
+                            'virtual_interface__details',
+                        )
                     },
-                    'obj': 'ipv6',
-                    'eager_loading': self.setup_eager_loading_ipv6
+                    'obj': 'ipv6_equipment_virtual_interface',
                 },
                 'groups': {
                     'serializer': grp_slz.EquipmentGroupV3Serializer,
@@ -227,23 +203,3 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'id_as'
                 }
             }
-
-    @staticmethod
-    def setup_eager_loading_ipv4(queryset):
-
-        log.info('Using setup_eager_loading_ipv4')
-        queryset = queryset.prefetch_related(
-            'ipequipamento_set',
-            'ipequipamento_set__ip',
-        )
-        return queryset
-
-    @staticmethod
-    def setup_eager_loading_ipv6(queryset):
-
-        log.info('Using setup_eager_loading_ipv6')
-        queryset = queryset.prefetch_related(
-            'ipv6equipament_set',
-            'ipv6equipament_set__ip',
-        )
-        return queryset

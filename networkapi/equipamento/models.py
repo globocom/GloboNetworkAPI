@@ -504,6 +504,20 @@ class Equipamento(BaseModel):
 
     environments = property(_get_environments)
 
+    def _get_ipv4_equipment_virtual_interface(self):
+
+        return self.ipequipamento_set.all()
+
+    ipv4_equipment_virtual_interface = \
+        property(_get_ipv4_equipment_virtual_interface)
+
+    def _get_ipv6_equipment_virtual_interface(self):
+
+        return self.ipv6equipament_set.all()
+
+    ipv6_equipment_virtual_interface = \
+        property(_get_ipv6_equipment_virtual_interface)
+
     def _get_ipv4(self):
         ips = self.ipequipamento_set.all()
         ips = [ip.ip for ip in ips]
