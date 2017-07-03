@@ -458,6 +458,12 @@ SPECS_V4 = {
     'ipv4_put': 'networkapi/api_ip/v4/specs/ipv4_put.json',
     'ipv6_post': 'networkapi/api_ip/v4/specs/ipv6_post.json',
     'ipv6_put': 'networkapi/api_ip/v4/specs/ipv6_put.json',
+    'virtual_interface_post': 'networkapi/api_virtual_interface/v4/specs/'
+                              'virtual_interface_post.json',
+    'virtual_interface_put': 'networkapi/api_virtual_interface/v4/specs/'
+                             'virtual_interface_put.json',
+    'neighbor_post': 'networkapi/api_neighbor/v4/specs/neighbor_post.json',
+    'neighbor_put': 'networkapi/api_neighbor/v4/specs/neighbor_put.json'
 }
 
 ##########
