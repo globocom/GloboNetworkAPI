@@ -5430,7 +5430,7 @@ class Ipv6Equipament(BaseModel):
         db_table = u'ipsv6_dos_equipamentos'
         managed = True
         unique_together = ('ip', 'equipamento')
-        
+
 
     @classmethod
     def list_by_equip(cls, equip_id):
