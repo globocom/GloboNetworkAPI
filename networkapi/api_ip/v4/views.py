@@ -14,7 +14,7 @@ from networkapi.api_ip.permissions import Read
 from networkapi.api_ip.permissions import Write
 from networkapi.api_ip.permissions import write_objv4_permission
 from networkapi.api_ip.permissions import write_objv6_permission
-from networkapi.settings import SPECS_V4
+from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -68,7 +68,7 @@ class IPv4V4View(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('ipv4_post')
+    @raise_json_validate('ipv4_post_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
@@ -76,7 +76,7 @@ class IPv4V4View(CustomAPIView):
         """Create Ipv4."""
 
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv4_post')).validate(ips)
+        json_validate(SPECS.get('ipv4_post_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
             ret = facade_v4.create_ipv4(ip, request.user)
@@ -85,7 +85,7 @@ class IPv4V4View(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('ipv4_put')
+    @raise_json_validate('ipv4_put_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
@@ -93,7 +93,7 @@ class IPv4V4View(CustomAPIView):
         """Edit Ipv4."""
 
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv4_put')).validate(ips)
+        json_validate(SPECS.get('ipv4_put_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
             ret = facade_v4.update_ipv4(ip, request.user)
@@ -120,7 +120,7 @@ class IPv4V4View(CustomAPIView):
 class IPv4V4AsyncView(CustomAPIView):
 
     @logs_method_apiview
-    @raise_json_validate('ipv4_post')
+    @raise_json_validate('ipv4_post_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
@@ -129,7 +129,7 @@ class IPv4V4AsyncView(CustomAPIView):
 
         response = list()
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv4_post')).validate(ips)
+        json_validate(SPECS.get('ipv4_post_v4')).validate(ips)
 
         user = request.user
 
@@ -146,7 +146,7 @@ class IPv4V4AsyncView(CustomAPIView):
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
-    @raise_json_validate('ipv4_put')
+    @raise_json_validate('ipv4_put_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv4_permission])
     @commit_on_success
@@ -155,7 +155,7 @@ class IPv4V4AsyncView(CustomAPIView):
 
         response = list()
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv4_put')).validate(ips)
+        json_validate(SPECS.get('ipv4_put_v4')).validate(ips)
 
         user = request.user
 
@@ -236,7 +236,7 @@ class IPv6V4View(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('ipv6_post')
+    @raise_json_validate('ipv6_post_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
@@ -244,7 +244,7 @@ class IPv6V4View(CustomAPIView):
         """Save Ipv6."""
 
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv6_post')).validate(ips)
+        json_validate(SPECS.get('ipv6_post_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
             ret = facade_v4.create_ipv6(ip, request.user)
@@ -253,7 +253,7 @@ class IPv6V4View(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('ipv6_put')
+    @raise_json_validate('ipv6_put_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
@@ -261,7 +261,7 @@ class IPv6V4View(CustomAPIView):
         """Edit Ipv6."""
 
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv6_put')).validate(ips)
+        json_validate(SPECS.get('ipv6_put_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
             ret = facade_v4.update_ipv6(ip, request.user)
@@ -288,7 +288,7 @@ class IPv6V4View(CustomAPIView):
 class IPv6V4AsyncView(CustomAPIView):
 
     @logs_method_apiview
-    @raise_json_validate('ipv6_post')
+    @raise_json_validate('ipv6_post_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
@@ -297,7 +297,7 @@ class IPv6V4AsyncView(CustomAPIView):
 
         response = list()
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv6_post')).validate(ips)
+        json_validate(SPECS.get('ipv6_post_v4')).validate(ips)
 
         user = request.user
 
@@ -314,7 +314,7 @@ class IPv6V4AsyncView(CustomAPIView):
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
-    @raise_json_validate('ipv6_put')
+    @raise_json_validate('ipv6_put_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @permission_obj_apiview([write_objv6_permission])
     @commit_on_success
@@ -323,7 +323,7 @@ class IPv6V4AsyncView(CustomAPIView):
 
         response = list()
         ips = request.DATA
-        json_validate(SPECS_V4.get('ipv6_put')).validate(ips)
+        json_validate(SPECS.get('ipv6_put_v4')).validate(ips)
 
         user = request.user
 

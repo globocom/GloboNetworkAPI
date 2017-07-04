@@ -60,14 +60,14 @@ class VirtualInterfaceDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('virtual_interface_post')
+    @raise_json_validate('virtual_interface_post_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Create new Virtual Interface."""
 
         virtual_interfaces = request.DATA
-        json_validate(SPECS_V4.get('virtual_interface_post')).\
+        json_validate(SPECS_V4.get('virtual_interface_post_v4')).\
             validate(virtual_interfaces)
         response = list()
         for vi_ in virtual_interfaces['virtual_interfaces']:
@@ -78,14 +78,14 @@ class VirtualInterfaceDBView(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('virtual_interface_put')
+    @raise_json_validate('virtual_interface_put_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Update Virtual Interface."""
 
         virtual_interfaces = request.DATA
-        json_validate(SPECS_V4.get('virtual_interface_put')).\
+        json_validate(SPECS_V4.get('virtual_interface_put_v4')).\
             validate(virtual_interfaces)
         response = list()
         for vi_ in virtual_interfaces['virtual_interfaces']:

@@ -24,7 +24,7 @@ from networkapi.api_equipment.v4 import facade as facade_v4
 from networkapi.api_equipment import facade as facade_v3
 from networkapi.api_equipment.permissions import Read
 from networkapi.api_equipment.permissions import Write
-from networkapi.settings import SPECS_V4
+from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -110,27 +110,27 @@ class EquipmentV4View(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('equipment_post')
+    @raise_json_validate('equipment_post_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Creates list of equipments."""
 
         data = request.DATA
-        json_validate(SPECS_V4.get('equipment_post')).validate(data)
+        json_validate(SPECS.get('equipment_post_v4')).validate(data)
         response = facade_v4.create_equipment(data['equipments'], request.user)
 
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('equipment_put')
+    @raise_json_validate('equipment_put_v4')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
         """Updates list of equipments."""
 
         data = request.DATA
-        json_validate(SPECS_V4.get('equipment_put')).validate(data)
+        json_validate(SPECS.get('equipment_put_v4')).validate(data)
         response = facade_v4.update_equipment(data['equipments'], request.user)
 
         return Response(response, status=status.HTTP_200_OK)
