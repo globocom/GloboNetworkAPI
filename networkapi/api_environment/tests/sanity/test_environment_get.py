@@ -54,6 +54,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
+        import ipdb; ipdb.set_trace()   
         self.compare_status(200, response.status_code)
 
         self.compare_json(name_file, response.data)
