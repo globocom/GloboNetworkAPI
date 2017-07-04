@@ -4,7 +4,9 @@
       "description": "IP",
       "equipments": [
         {
-          "id": 1
+          "equipment": {
+            "id": 1
+          }
         }
       ],
       "networkipv4": 5,

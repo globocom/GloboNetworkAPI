@@ -4,7 +4,7 @@ import logging
 from django.test.client import Client
 from mock import patch
 
-from networkapi.api_ip.tasks import update_ipv6
+from networkapi.api_ip.v4.tasks import update_ipv6
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
@@ -20,10 +20,10 @@ class IPv6AsyncPutSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    @patch('networkapi.api_ip.facade.update_ipv6')
+    @patch('networkapi.api_ip.v4.facade.update_ipv6')
     @patch('networkapi.api_ip.facade.get_ipv6_by_id')
     @patch('networkapi.usuario.models.Usuario.objects.get')
-    @patch('networkapi.api_ip.tasks.update_ipv6.update_state')
+    @patch('networkapi.api_ip.v4.tasks.update_ipv6.update_state')
     def test_task_id_create_in_put_one_ipv6_success(self, *args):
         """Test success of id task generate for ipv6 put success."""
 

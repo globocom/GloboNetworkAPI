@@ -22,10 +22,10 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/fixtures/initial_base.json',
-        'networkapi/api_ip/fixtures/initial_base_v6.json',
-        'networkapi/api_ip/fixtures/initial_pool.json',
-        'networkapi/api_ip/fixtures/initial_vip_request_v6.json',
+        'networkapi/api_ip/v4/fixtures/initial_base.json',
+        'networkapi/api_ip/v4/fixtures/initial_base_v6.json',
+        'networkapi/api_ip/v4/fixtures/initial_pool.json',
+        'networkapi/api_ip/v4/fixtures/initial_vip_request_v6.json',
     ]
 
     def setUp(self):
@@ -38,7 +38,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """Tests if NAPI can delete a existent IPv6 Address."""
 
         response = self.client.delete(
-            '/api/v3/ipv6/1/',
+            '/api/v4/ipv6/1/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
@@ -46,7 +46,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/ipv6/1/',
+            '/api/v4/ipv6/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -63,7 +63,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/1000/',
+            '/api/v4/ipv6/1000/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
@@ -80,7 +80,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/1000;1001/',
+            '/api/v4/ipv6/1000;1001/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
@@ -97,7 +97,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/1;1001/',
+            '/api/v4/ipv6/1;1001/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
@@ -110,7 +110,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/ipv6/1/',
+            '/api/v4/ipv6/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -122,13 +122,13 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/2/',
+            '/api/v4/ipv6/2/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/ipv6/2/',
+            '/api/v4/ipv6/2/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -145,7 +145,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/1;2/',
+            '/api/v4/ipv6/1;2/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
@@ -153,7 +153,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/ipv6/1;2/',
+            '/api/v4/ipv6/1;2/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -170,7 +170,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/4/',
+            '/api/v4/ipv6/4/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
@@ -178,7 +178,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/ipv6/4/',
+            '/api/v4/ipv6/4/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -208,7 +208,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/ipv6/5/',
+            '/api/v4/ipv6/5/',
             HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 

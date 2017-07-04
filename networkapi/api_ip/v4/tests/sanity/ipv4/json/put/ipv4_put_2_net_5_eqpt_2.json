@@ -3,7 +3,9 @@
     {
       "equipments": [
         {
-          "id": 2
+          "equipment": {
+            "id": 2
+          }
         }
       ],
       "id": 2

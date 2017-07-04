@@ -4,7 +4,7 @@ import logging
 from django.test.client import Client
 from mock import patch
 
-from networkapi.api_ip.tasks import create_ipv4
+from networkapi.api_ip.v4.tasks import create_ipv4
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
@@ -20,9 +20,9 @@ class IPv4AsyncPostSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    @patch('networkapi.api_ip.facade.create_ipv4')
+    @patch('networkapi.api_ip.v4.facade.create_ipv4')
     @patch('networkapi.usuario.models.Usuario.objects.get')
-    @patch('networkapi.api_ip.tasks.create_ipv4.update_state')
+    @patch('networkapi.api_ip.v4.tasks.create_ipv4.update_state')
     def test_task_id_create_in_post_one_ipv4_success(self, *args):
         """Test success of id task generate for ipv4 post success."""
 

@@ -2165,7 +2165,6 @@ class Ip(BaseModel):
                                       'VirtualInterface')
 
         try:
-
             self.networkipv4 = NetworkIPv4() \
                 .get_by_pk(ip_map.get('networkipv4'))
             self.oct1 = ip_map.get('oct1')
@@ -2185,7 +2184,7 @@ class Ip(BaseModel):
                         for eqpt in ip_map.get('equipments', [])])
 
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface').get('id')
+                id__in=[eqpt.get('interface', {}).get('id')
                         for eqpt in ip_map.get('equipments', [])])
 
         except Exception, e:
@@ -2271,7 +2270,7 @@ class Ip(BaseModel):
                 ip_equipment.create_v4({
                     'ip': self.id,
                     'equipment': eqpt.get('equipment').get('id'),
-                    'interface': eqpt.get('interface').get('id')
+                    'interface': eqpt.get('interface', {}).get('id')
                 })
 
         except IpErrorV3, e:
@@ -2307,13 +2306,14 @@ class Ip(BaseModel):
                 .values_list('id', flat=True)
 
             # Get objects of equipments
-            eqpts = models.Equipamento.objects.filter(id__in=[
-                eqpt.get('id') for eqpt in ip_map.get('equipments', [])]
+            eqpts = models.Equipamento.objects.filter(
+                id__in=[eqpt.get('equipment').get('id')
+                        for eqpt in ip_map.get('equipments', [])]
             )
 
             # Get objects of virtual interfaces
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface').get('id')
+                id__in=[eqpt.get('interface', {}).get('id')
                         for eqpt in ip_map.get('equipments', [])])
 
         except Exception, e:
@@ -2369,7 +2369,7 @@ class Ip(BaseModel):
             # Creates new associate
             for eqpt in ip_map.get('equipments', []):
                 eqpt_id = eqpt.get('equipment').get('id')
-                interface_id = eqpt.get('interface').get('id')
+                interface_id = eqpt.get('interface', {}).get('id')
                 if eqpt_id not in current:
                     ip_equipment = IpEquipamento()
                     ip_equipment.create_v4({
@@ -5061,7 +5061,7 @@ class Ipv6(BaseModel):
                         for eqpt in ip_map.get('equipments', [])])
 
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface').get('id')
+                id__in=[eqpt.get('interface', {}).get('id')
                     for eqpt in ip_map.get('equipments', [])])
         except Exception, e:
             raise IpErrorV3(e)
@@ -5150,7 +5150,7 @@ class Ipv6(BaseModel):
                 ip_equipment.create_v4({
                     'ip': self.id,
                     'equipment': eqpt.get('equipment').get('id'),
-                    'interface': eqpt.get('interface').get('id')
+                    'interface': eqpt.get('interface', {}).get('id')
                 })
 
         except IpErrorV3, e:
@@ -5186,13 +5186,14 @@ class Ipv6(BaseModel):
                 .values_list('id', flat=True)
 
             # Get objects of equipments
-            eqpts = models.Equipamento.objects.filter(id__in=[
-                eqpt.get('id') for eqpt in ip_map.get('equipments', [])]
+            eqpts = models.Equipamento.objects.filter(
+                id__in=[eqpt.get('equipment').get('id')
+                        for eqpt in ip_map.get('equipments', [])]
             )
 
             # Get objects of virtual interfaces
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface').get('id')
+                id__in=[eqpt.get('interface', {}).get('id')
                         for eqpt in ip_map.get('equipments', [])])
 
         except Exception, e:
@@ -5248,7 +5249,7 @@ class Ipv6(BaseModel):
             # Creates new associate
             for eqpt in ip_map.get('equipments', []):
                 eqpt_id = eqpt.get('equipment').get('id')
-                interface_id = eqpt.get('interface').get('id')
+                interface_id = eqpt.get('interface', {}).get('id')
                 if eqpt_id not in current:
                     ip_equipment = Ipv6Equipament()
                     ip_equipment.create_v4({

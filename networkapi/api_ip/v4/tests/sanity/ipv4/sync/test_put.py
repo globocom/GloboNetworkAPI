@@ -21,8 +21,8 @@ class IPv4PutTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/fixtures/initial_base.json',
-        'networkapi/api_ip/fixtures/initial_base_v4.json',
+        'networkapi/api_ip/v4/fixtures/initial_base.json',
+        'networkapi/api_ip/v4/fixtures/initial_base_v4.json',
     ]
 
     def setUp(self):
@@ -34,10 +34,10 @@ class IPv4PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_associating_to_equipment(self):
         """Tests if NAPI can update IPv4 associating it to equipment."""
 
-        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_1_net_5_eqpt_1.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_1_net_5_eqpt_1.json'
 
         response = self.client.put(
-            '/api/v3/ipv4/1/',
+            '/api/v4/ipv4/1/',
             data=json.dumps(self.load_json_file(name_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
@@ -46,7 +46,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         # Does get request
-        url = prepare_url('/api/v3/ipv4/1/', fields=['id', 'equipments'])
+        url = prepare_url('/api/v4/ipv4/1/', fields=['id', 'equipments'])
         response = self.client.get(
             url,
             content_type='application/json',
@@ -54,6 +54,11 @@ class IPv4PutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
+        del response.data['ips'][0]['equipments'][0]['virtual_interface']
+
+        eqpt_id = response.data['ips'][0]['equipments'][0]['equipment']
+        response.data['ips'][0]['equipments'][0]['equipment'] =  \
+            {'id': eqpt_id}
         self.compare_json(name_file, response.data)
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
@@ -61,10 +66,10 @@ class IPv4PutTestCase(NetworkApiTestCase):
         keep this IPv4.
         """
 
-        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_2_net_5_eqpt_none.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_2_net_5_eqpt_none.json'
 
         response = self.client.put(
-            '/api/v3/ipv4/2/',
+            '/api/v4/ipv4/2/',
             data=json.dumps(self.load_json_file(name_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
@@ -73,7 +78,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         # Does get request
-        url = prepare_url('/api/v3/ipv4/2/', fields=['id', 'equipments'])
+        url = prepare_url('/api/v4/ipv4/2/', fields=['id', 'equipments'])
         response = self.client.get(
             url,
             content_type='application/json',
@@ -86,10 +91,10 @@ class IPv4PutTestCase(NetworkApiTestCase):
         and at same time associating it to other equipment.
         """
 
-        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_2_net_5_eqpt_2.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_2_net_5_eqpt_2.json'
 
         response = self.client.put(
-            '/api/v3/ipv4/2/',
+            '/api/v4/ipv4/2/',
             data=json.dumps(self.load_json_file(name_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
@@ -98,7 +103,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         # Does get request
-        url = prepare_url('/api/v3/ipv4/2/', fields=['id', 'equipments'])
+        url = prepare_url('/api/v4/ipv4/2/', fields=['id', 'equipments'])
         response = self.client.get(
             url,
             content_type='application/json',
@@ -106,15 +111,20 @@ class IPv4PutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
+        del response.data['ips'][0]['equipments'][0]['virtual_interface']
+
+        eqpt_id = response.data['ips'][0]['equipments'][0]['equipment']
+        response.data['ips'][0]['equipments'][0]['equipment'] = \
+            {'id': eqpt_id}
         self.compare_json(name_file, response.data)
 
     def test_try_update_ip_changing_network(self):
         """Tests if NAPI deny or ignore update of IPv4 Address changing its network."""
 
-        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_1_net_6.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_1_net_6.json'
 
         response = self.client.put(
-            '/api/v3/ipv4/1/',
+            '/api/v4/ipv4/1/',
             data=json.dumps(self.load_json_file(name_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
@@ -123,7 +133,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         # Does get request
-        url = prepare_url('/api/v3/ipv4/1/', fields=['id', 'networkipv4'])
+        url = prepare_url('/api/v4/ipv4/1/', fields=['id', 'networkipv4'])
         response = self.client.get(
             url,
             content_type='application/json',
@@ -136,10 +146,10 @@ class IPv4PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_changing_octets(self):
         """Tests if NAPI deny or ignore update of IPv4 Address changing its octets."""
 
-        name_file = 'api_ip/tests/sanity/ipv4/json/put/ipv4_put_1_10_0_0_10_net_5.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_1_10_0_0_10_net_5.json'
 
         response = self.client.put(
-            '/api/v3/ipv4/1/',
+            '/api/v4/ipv4/1/',
             data=json.dumps(self.load_json_file(name_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
@@ -148,7 +158,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         # Does get request
-        url = prepare_url('/api/v3/ipv4/1/', fields=['id', 'ip_formated'])
+        url = prepare_url('/api/v4/ipv4/1/', fields=['id', 'ip_formated'])
         response = self.client.get(
             url,
             content_type='application/json',

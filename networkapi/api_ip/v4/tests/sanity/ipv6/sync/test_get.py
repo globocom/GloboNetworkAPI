@@ -21,8 +21,8 @@ class IPv6GetTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/fixtures/initial_base.json',
-        'networkapi/api_ip/fixtures/initial_base_v6.json',
+        'networkapi/api_ip/v4/fixtures/initial_base.json',
+        'networkapi/api_ip/v4/fixtures/initial_base_v6.json',
     ]
 
     def setUp(self):
@@ -34,11 +34,11 @@ class IPv6GetTestCase(NetworkApiTestCase):
     def test_try_get_existent_ipv6_by_id(self):
         """Tests if NAPI can return an existing IPv6 by id."""
 
-        name_file = 'api_ip/tests/sanity/ipv6/json/get/ipv6_1_net_5.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/ipv6_1_net_5.json'
 
         # Does get request
         response = self.client.get(
-            '/api/v3/ipv6/1/',
+            '/api/v4/ipv6/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -52,7 +52,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         """
 
         response = self.client.get(
-            '/api/v3/ipv6/1000/',
+            '/api/v4/ipv6/1000/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -66,11 +66,11 @@ class IPv6GetTestCase(NetworkApiTestCase):
     def test_try_get_two_existent_ipv6_by_id(self):
         """Tests if NAPI can return two existent IPv6's by ids."""
 
-        name_file = 'api_ip/tests/sanity/ipv6/json/get/ipv6_1_2_net_5.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/ipv6_1_2_net_5.json'
 
         # Does get request
         response = self.client.get(
-            '/api/v3/ipv6/1;2/',
+            '/api/v4/ipv6/1;2/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -84,7 +84,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         """
 
         response = self.client.get(
-            '/api/v3/ipv6/1000;1001/',
+            '/api/v4/ipv6/1000;1001/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -101,7 +101,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         """
 
         response = self.client.get(
-            '/api/v3/ipv6/1;1001/',
+            '/api/v4/ipv6/1;1001/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -135,7 +135,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
 
         fields = ['ip_formated']
 
-        url = prepare_url('/api/v3/ipv6/', search=search, fields=fields)
+        url = prepare_url('/api/v4/ipv6/', search=search, fields=fields)
         response = self.client.get(
             url,
             content_type='application/json',
@@ -182,7 +182,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
 
         fields = ['ip_formated']
 
-        url = prepare_url('/api/v3/ipv6/', search=search, fields=fields)
+        url = prepare_url('/api/v4/ipv6/', search=search, fields=fields)
         response = self.client.get(
             url,
             content_type='application/json',
@@ -221,7 +221,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
             }]
         }
 
-        url = prepare_url('/api/v3/ipv6/', search=search)
+        url = prepare_url('/api/v4/ipv6/', search=search)
         response = self.client.get(
             url,
             content_type='application/json',
