@@ -2,7 +2,8 @@
 from celery.utils.log import get_task_logger
 
 from networkapi import celery_app
-from networkapi.api_ip.v4 import facade
+from networkapi.api_ip import facade as facade_v3
+from networkapi.api_ip.v4 import facade as facade_v4
 from networkapi.api_task.classes import BaseTask
 from networkapi.usuario.models import Usuario
 
@@ -25,7 +26,7 @@ def create_ipv4(self, ip_dict, user_id):
     user = Usuario.objects.get(id=user_id)
 
     try:
-        ip = facade.create_ipv4(ip_dict, user)
+        ip = facade_v4.create_ipv4(ip_dict, user)
 
     except Exception, exception:
         msg['message'] = 'IPv4 {} was not allocated.'.format(ip)
@@ -53,12 +54,12 @@ def update_ipv4(self, ip_dict, user_id):
         meta=msg
     )
 
-    ip_obj = facade.get_ipv4_by_id(ip_dict.get('id'))
+    ip_obj = facade_v3.get_ipv4_by_id(ip_dict.get('id'))
 
     user = Usuario.objects.get(id=user_id)
 
     try:
-        facade.update_ipv4(ip_dict, user)
+        facade_v4.update_ipv4(ip_dict, user)
 
     except Exception, exception:
         msg['message'] = 'IPv4 {} was not updated.'.format(ip_obj)
@@ -85,10 +86,10 @@ def delete_ipv4(self, ip_id, user_id):
         meta=msg
     )
 
-    ip_obj = facade.get_ipv4_by_id(ip_id)
+    ip_obj = facade_v3.get_ipv4_by_id(ip_id)
 
     try:
-        facade.delete_ipv4(ip_id)
+        facade_v4.delete_ipv4(ip_id)
 
     except Exception, exception:
         msg['message'] = 'IPv4 {} was not deallocated.'.format(ip_obj)
