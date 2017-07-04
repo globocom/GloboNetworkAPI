@@ -27,6 +27,21 @@ class VirtualInterface(BaseModel):
         db_table = u'virtual_interface'
         managed = True
 
+
+    def _get_ipv4_equipment_virtual_interface(self):
+
+        return self.ipequipamento_set.all()
+
+    ipv4_equipment_virtual_interface = \
+        property(_get_ipv4_equipment_virtual_interface)
+
+    def _get_ipv6_equipment_virtual_interface(self):
+
+        return self.ipv6equipament_set.all()
+
+    ipv6_equipment_virtual_interface = \
+        property(_get_ipv6_equipment_virtual_interface)
+
     @classmethod
     def get_by_pk(cls, id):
         """Get Virtual Interface by id.
