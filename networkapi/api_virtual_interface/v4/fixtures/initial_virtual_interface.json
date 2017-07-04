@@ -1,0 +1,34 @@
+[
+  {
+  "pk": 1,
+  "model": "api_virtual_interface.VirtualInterface",
+  "fields": {
+    "vrf": 1,
+    "name": "VIRTUAL-INTERFACE-1"
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_virtual_interface.VirtualInterface",
+  "fields": {
+    "vrf": 1,
+    "name": "VIRTUAL-INTERFACE-2"
+    }
+  },
+  {
+  "pk": 3,
+  "model": "api_virtual_interface.VirtualInterface",
+  "fields": {
+    "vrf": 2,
+    "name": "VIRTUAL-INTERFACE-3"
+    }
+  },
+  {
+  "pk": 4,
+  "model": "api_virtual_interface.VirtualInterface",
+  "fields": {
+    "vrf": 2,
+    "name": "VIRTUAL-INTERFACE-4"
+    }
+  }
+]

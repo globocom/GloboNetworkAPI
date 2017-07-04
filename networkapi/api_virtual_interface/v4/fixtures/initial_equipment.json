@@ -1,0 +1,64 @@
+[
+  {
+    "fields": {
+      "tipo_equipamento": "VM"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "Generic Brand"
+    },
+    "model": "equipamento.marca",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "marca": 1,
+      "nome": "Generic Model"
+    },
+    "model": "equipamento.modelo",
+    "pk": 1
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-1",
+      "tipo_equipamento": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-2",
+      "tipo_equipamento": 1
+    }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-3",
+      "tipo_equipamento": 1
+    }
+  },
+  {
+    "pk": 4,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-4",
+      "tipo_equipamento": 1
+    }
+  }
+]

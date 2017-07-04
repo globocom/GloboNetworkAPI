@@ -1,0 +1,90 @@
+[
+  {
+    "fields": {
+      "active": "1",
+      "ambient_vip": null,
+      "block": "64",
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "cluster_unit": null,
+      "mask1": "ffff",
+      "mask2": "ffff",
+      "mask3": "ffff",
+      "mask4": "ffff",
+      "mask5": "0000",
+      "mask6": "0000",
+      "mask7": "0000",
+      "mask8": "0000",
+      "network_type": 1,
+      "vlan": 1
+    },
+    "model": "ip.networkipv6",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001",
+      "networkipv6": 1
+    },
+    "model": "ip.ipv6",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0002",
+      "networkipv6": 1
+    },
+    "model": "ip.ipv6",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0003",
+      "networkipv6": 1
+    },
+    "model": "ip.ipv6",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0004",
+      "networkipv6": 1
+    },
+    "model": "ip.ipv6",
+    "pk": 4
+  }
+]
