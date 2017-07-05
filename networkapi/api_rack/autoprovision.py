@@ -210,7 +210,7 @@ def autoprovision_splf(rack, equips):
                         CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
                         prefixInternoFEV6 = int(net.ip_config.new_prefix)
 
-    IBGPToRLxLipv4 = CIDRBEipv4
+    IBGPToRLxLipv4 = CIDRBEipv4 # vlan 3921
     IBGPToRLxLipv6 = CIDRBEipv6
 
     SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 0)

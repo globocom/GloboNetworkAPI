@@ -416,13 +416,8 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
             log.debug("Vlan object: %s" % str(obj))
 
 
-def _create_vlans_cloud(rack, env_mngtcloud, user):
-    log.debug("_create_vlans_cloud")
-
-    try:
-        fabricconfig = ast.literal_eval(rack.dcroom.config).get("Ambiente")
-    except:
-        fabricconfig = list()
+def _create_hosts_envs(rack, env_mngtcloud, user):
+    log.debug("_create_hosts_envs")
 
     try:
         id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
@@ -433,46 +428,116 @@ def _create_vlans_cloud(rack, env_mngtcloud, user):
         id_grupo_l3 = grupo_l3_dict.id
         pass
 
-    environment = None
+    environment = list()
     for env in env_mngtcloud:
         father_id = env.id
 
-        for fab in fabricconfig:
-            if fab.get("id")==father_id:
-                fabenv = fab.get("details")
-                if not fabenv:
-                    return False
-
-        for amb in fabenv:
-            try:
-                id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
-            except:
-                div_dict = models_env.DivisaoDc()
-                div_dict.nome = amb.get("name")
-                div_dict.save()
-                id_div = div_dict.id
-                pass
-
-            obj = {
-                'grupo_l3': id_grupo_l3,
-                'ambiente_logico': env.ambiente_logico.id,
-                'divisao_dc': id_div,
-                'acl_path': env.acl_path,
-                'ipv4_template': env.ipv4_template,
-                'ipv6_template': env.ipv6_template,
-                'link': env.link,
-                'min_num_vlan_2': amb.get("min_num_vlan_1"),
-                'max_num_vlan_2': amb.get("max_num_vlan_1"),
-                'min_num_vlan_1': amb.get("min_num_vlan_1"),
-                'max_num_vlan_1': amb.get("max_num_vlan_1"),
-                'vrf': env.vrf,
-                'father_environment': father_id,
-                'default_vrf': env.default_vrf.id,
-                'configs': amb.get("config"),
-                'fabric_id': rack.dcroom.id
+        config_subnet = list()
+        for net in env.configs:
+            cidr = IPNetwork(net.ip_config.subnet)
+            prefix = int(net.ip_config.new_prefix)
+            bloco = list(cidr.subnet(int(prefix)))[int(rack.numero)]
+            network = {
+                'subnet': str(bloco),
+                'type': net.ip_config.type,
+                'network_type': net.ip_config.network_type.id,
+                'new_prefix': 20
             }
-            environment = facade_env.create_environment(obj)
-            log.debug("Environment object: %s" % str(environment))
+            config_subnet.append(network)
+
+        obj = {
+            'grupo_l3': id_grupo_l3,
+            'ambiente_logico': env.ambiente_logico.id,
+            'divisao_dc': env.divisao_dc.id,
+            'acl_path': env.acl_path,
+            'ipv4_template': env.ipv4_template,
+            'ipv6_template': env.ipv6_template,
+            'link': env.link,
+            'min_num_vlan_2': env.min_num_vlan_1,
+            'max_num_vlan_2': env.max_num_vlan_1,
+            'min_num_vlan_1': env.min_num_vlan_1,
+            'max_num_vlan_1': env.max_num_vlan_1,
+            'vrf': env.vrf,
+            'father_environment': father_id,
+            'default_vrf': env.default_vrf.id,
+            'configs': config_subnet,
+            'fabric_id': rack.dcroom.id
+        }
+        environment.append(facade_env.create_environment(obj))
+        log.debug("Environment object: %s" % str(environment))
+
+    return environment
+
+
+def _create_vlans_cloud(rack, envs, user):
+    log.debug("_create_vlans_cloud")
+
+    try:
+        fabricconfig = ast.literal_eval(rack.dcroom.config).get("Ambiente")
+    except:
+        log.debug("sem configuracoes do fabric")
+        fabricconfig = list()
+
+    for env_be in envs:
+        if env_be.divisao_dc.nome=="BE":
+            env = env_be
+
+    environment = None
+    father_id = env.id
+    fabenv = None
+    for fab in fabricconfig:
+        log.debug(str(fab.get("id")))
+        if int(fab.get("id"))==int(env.father_environment.id):
+            fabenv = fab.get("details")
+    if not fabenv:
+        log.debug("Sem configuracoes para os ambientes filhos - BE, BEFE, BEBO, BECA do ambiente id=%s" %str())
+        return 0
+
+    for amb in fabenv:
+        try:
+            id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
+        except:
+            div_dict = models_env.DivisaoDc()
+            div_dict.nome = amb.get("name")
+            div_dict.save()
+            id_div = div_dict.id
+            pass
+
+        config_subnet = list()
+        for net in env.configs:
+            for net_dict in amb.get("config"):
+                if net_dict.get("type")==net.ip_config.type:
+                    cidr = IPNetwork(net.ip_config.subnet)
+                    prefixo = net_dict.get("subnet").split('/')[-1]
+                    bloco = list(cidr.subnet(int(prefixo)))[-2]
+                    network = {
+                        'subnet': bloco,
+                        'type': net.ip_config.type,
+                        'network_type': net.ip_config.network_type.id,
+                        'new_prefix': int(net_dict.get("new_prefix"))
+                    }
+                    config_subnet.append(network)
+
+        obj = {
+            'grupo_l3': env.grupo_l3.id,
+            'ambiente_logico': env.ambiente_logico.id,
+            'divisao_dc': id_div,
+            'acl_path': env.acl_path,
+            'ipv4_template': env.ipv4_template,
+            'ipv6_template': env.ipv6_template,
+            'link': env.link,
+            'min_num_vlan_2': amb.get("min_num_vlan_1"),
+            'max_num_vlan_2': amb.get("max_num_vlan_1"),
+            'min_num_vlan_1': amb.get("min_num_vlan_1"),
+            'max_num_vlan_1': amb.get("max_num_vlan_1"),
+            'vrf': env.vrf,
+            'father_environment': father_id,
+            'default_vrf': env.default_vrf.id,
+            'configs': config_subnet,
+            'fabric_id': rack.dcroom.id
+        }
+        environment = facade_env.create_environment(obj)
+        log.debug("Environment object: %s" % str(environment))
 
     return environment
 
@@ -564,7 +629,7 @@ def rack_environments_vlans(rack_id, user):
     env_fe = list()
     env_oob = list()
     env_mngtcloud = list()
-    environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id))
+    environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id), father_environment__isnull=True)
     for envs in environments:
         if envs.ambiente_logico.nome == "SPINES":
             env_spn.append(envs)
@@ -596,7 +661,9 @@ def rack_environments_vlans(rack_id, user):
     #_create_fe_envs(rack, env_fe)
 
     # producao/cloud
-    _create_vlans_cloud(rack, env_mngtcloud, user)
+    envs_prod = _create_hosts_envs(rack, env_mngtcloud, user)
+    if envs_prod:
+        envs_prod_rack = _create_vlans_cloud(rack, envs_prod, user)
 
     # redes de gerencia OOB
     _create_oobvlans(rack, env_oob, user)
