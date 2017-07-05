@@ -322,7 +322,7 @@
     }
   },
   {
-    "pk": 31,
+    "pk": 33,
     "model": "grupo.permissaoadministrativa",
     "fields": {
       "ugrupo": 1,
@@ -332,7 +332,7 @@
     }
   },
   {
-    "pk": 32,
+    "pk": 34,
     "model": "grupo.permissaoadministrativa",
     "fields": {
       "ugrupo": 3,
@@ -342,7 +342,7 @@
     }
   },
   {
-    "pk": 31,
+    "pk": 35,
     "model": "grupo.permissaoadministrativa",
     "fields": {
       "ugrupo": 1,
@@ -352,7 +352,7 @@
     }
   },
   {
-    "pk": 32,
+    "pk": 36,
     "model": "grupo.permissaoadministrativa",
     "fields": {
       "ugrupo": 3,
