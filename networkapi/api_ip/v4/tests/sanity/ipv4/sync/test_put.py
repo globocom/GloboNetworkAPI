@@ -32,7 +32,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         pass
 
     def test_try_update_ip_associating_to_equipment(self):
-        """Tests if NAPI can update IPv4 associating it to equipment."""
+        """V4 Tests if NAPI can update IPv4 associating it to equipment."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_1_net_5_eqpt_1.json'
 
@@ -62,7 +62,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
-        """Tests if NAPI can update IPv4 disassociating it of equipment and
+        """V4 Tests if NAPI can update IPv4 disassociating it of equipment and
         keep this IPv4.
         """
 
@@ -87,7 +87,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
     def test_try_update_ip_disassociating_it_of_some_equipments(self):
-        """Tests if NAPI can update IPv4 disassociating it of equipment
+        """V4 Tests if NAPI can update IPv4 disassociating it of equipment
         and at same time associating it to other equipment.
         """
 
@@ -119,7 +119,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_update_ip_changing_network(self):
-        """Tests if NAPI deny or ignore update of IPv4 Address changing its network."""
+        """V4 Tests if NAPI deny or ignore update of IPv4 Address changing its network."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_1_net_6.json'
 
@@ -144,7 +144,7 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_values(5, response.data['ips'][0]['networkipv4'])
 
     def test_try_update_ip_changing_octets(self):
-        """Tests if NAPI deny or ignore update of IPv4 Address changing its octets."""
+        """V4 Tests if NAPI deny or ignore update of IPv4 Address changing its octets."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/ipv4_put_1_10_0_0_10_net_5.json'
 

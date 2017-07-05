@@ -34,7 +34,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         pass
 
     def test_try_create_auto_ip(self):
-        """Tests if NAPI can allocate automatically an IPv4 Address
+        """V4 Tests if NAPI can allocate automatically an IPv4 Address
         in a Network with available addresses.
         """
 
@@ -60,7 +60,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         self.compare_values('10.0.1.2', response.data['ips'][0]['ip_formated'])
 
     def test_try_create_invalid_ip(self):
-        """Tests if NAPI deny manually creation of invalid IPv4 Address
+        """V4 Tests if NAPI deny manually creation of invalid IPv4 Address
         (e.g.: 10.0.0.430).
         """
 
@@ -77,7 +77,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_try_create_ip_associating_to_equipment(self):
-        """Tests if NAPI can allocate an IPv4 Address manually and associate
+        """V4 Tests if NAPI can allocate an IPv4 Address manually and associate
         it to an equipment in a Network with available addresses.
         """
 
@@ -102,7 +102,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
                             response.data['ips'][0]['ip_formated'])
 
     def test_try_create_ip_in_full_network(self):
-        """Tests if NAPI deny an IPv4 manually creation in a full network."""
+        """V4 Tests if NAPI deny an IPv4 manually creation in a full network."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/ipv4_10_0_4_1_net_8.json'
         response = self.client.post(
@@ -117,7 +117,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_try_create_out_of_range_ip_in_network(self):
-        """Tests if NAPI deny out of range network IPv4 manually creation."""
+        """V4 Tests if NAPI deny out of range network IPv4 manually creation."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/out_of_range_ipv4_172_0_0_5_net_5.json'
         response = self.client.post(

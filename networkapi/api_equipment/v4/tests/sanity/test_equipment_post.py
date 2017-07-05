@@ -31,7 +31,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         pass
 
     def test_post_one_equipment(self):
-        """Test of success to post one equipment."""
+        """V4 Test of success to post one equipment."""
 
         name_file = self.json_path % 'post/post_one_equipment.json'
 
@@ -60,7 +60,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_groups(self):
-        """Test of success to post one equipment with groups."""
+        """V4 Test of success to post one equipment with groups."""
 
         name_file = self.json_path % 'post/post_one_equipment_with_groups.json'
 
@@ -89,7 +89,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_environments(self):
-        """Test of success to post one equipment with environments."""
+        """V4 Test of success to post one equipment with environments."""
 
         name_file = self.json_path % 'post/post_one_equipment_with_environments.json'
 
@@ -118,7 +118,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_ipv4s(self):
-        """Test of success to post one equipment with new IPv4s."""
+        """V4 Test of success to post one equipment with new IPv4s."""
 
         name_file = self.json_path % 'post/post_one_equipment_with_ipv4s.json'
 
@@ -148,7 +148,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_ipv6s(self):
-        """Test of success to post one equipment with new IPv6s."""
+        """V4 Test of success to post one equipment with new IPv6s."""
 
         name_file = self.json_path % 'post/post_one_equipment_with_ipv6s.json'
 
@@ -178,7 +178,7 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_post_one_equipment_with_as(self):
-        """Test of success to post one equipment with AS."""
+        """V4 Test of success to post one equipment with AS."""
 
         name_file = self.json_path % 'post/post_one_equipment_with_as.json'
 
@@ -228,7 +228,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_post_duplicated_equipment(self):
-        """Test of error to post of one equipment with name already existent."""
+        """V4 Test of error to post of one equipment with name already existent."""
 
         name_file = self.json_path % 'post/post_one_duplicated_equipment.json'
 
@@ -246,7 +246,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_post_equipment_invalid_env(self):
-        """Test of error to post of one equipment with environment non existent.
+        """V4 Test of error to post of one equipment with environment non existent.
         """
 
         name_file = self.json_path % 'post/post_one_equipment_invalid_env.json'
@@ -265,7 +265,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_post_equipment_invalid_group(self):
-        """Test of error to post of one equipment with group non existent.
+        """V4 Test of error to post of one equipment with group non existent.
         """
 
         name_file = self.json_path % 'post/post_one_equipment_invalid_group.json'
@@ -284,7 +284,7 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_post_equipment_with_inexistent_as(self):
-        """Test error of post equipment with inexistent AS."""
+        """V4 Test error of post equipment with inexistent AS."""
 
         name_file = self.json_path % 'post/post_one_equipment_with_inexistent_as.json'
 

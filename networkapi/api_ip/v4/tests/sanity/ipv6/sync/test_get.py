@@ -32,7 +32,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         pass
 
     def test_try_get_existent_ipv6_by_id(self):
-        """Tests if NAPI can return an existing IPv6 by id."""
+        """V4 Tests if NAPI can return an existing IPv6 by id."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/ipv6_1_net_5.json'
 
@@ -47,7 +47,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_get_non_existent_ipv6_by_id(self):
-        """Tests if NAPI returns error when ask to return not existing IPv6 by
+        """V4 Tests if NAPI returns error when ask to return not existing IPv6 by
         id.
         """
 
@@ -64,7 +64,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         )
 
     def test_try_get_two_existent_ipv6_by_id(self):
-        """Tests if NAPI can return two existent IPv6's by ids."""
+        """V4 Tests if NAPI can return two existent IPv6's by ids."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/ipv6_1_2_net_5.json'
 
@@ -79,7 +79,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_get_two_non_existent_ipv6_by_id(self):
-        """Tests if NAPI returns a error when ask to
+        """V4 Tests if NAPI returns a error when ask to
         return two non existing IPv6's by ids.
         """
 
@@ -96,7 +96,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         )
 
     def test_try_get_one_existent_and_non_existent_ipv6_by_id(self):
-        """Tests if NAPI returns a error when ask to
+        """V4 Tests if NAPI returns a error when ask to
         return a existing and not existing IPv6's by ids.
         """
 
@@ -112,7 +112,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         )
 
     def test_try_get_one_existent_ipv6_by_search(self):
-        """Tests if NAPI returns a dict with one IPv6 Addresses
+        """V4 Tests if NAPI returns a dict with one IPv6 Addresses
         given a search one existing IPv6 Addresses.
         """
 
@@ -150,7 +150,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
             response.data['ips'])
 
     def test_try_get_two_existent_ipv6_by_search(self):
-        """Tests if NAPI returns a dict with two IPv6 Addresses
+        """V4 Tests if NAPI returns a dict with two IPv6 Addresses
         given a search making OR by two IPv6 Addresses.
         """
 
@@ -200,7 +200,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
             response.data['ips'])
 
     def test_try_get_non_existent_ipv6_by_search(self):
-        """Tests if NAPI returns a dict with zero IPv6 Addresses
+        """V4 Tests if NAPI returns a dict with zero IPv6 Addresses
         given a search by not existent IPv6 Address.
         """
 

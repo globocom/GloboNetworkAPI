@@ -24,7 +24,7 @@ class IPv4AsyncDeleteSuccessTestCase(NetworkApiTestCase):
     @patch('networkapi.api_ip.facade.get_ipv4_by_id')
     @patch('networkapi.api_ip.v4.tasks.delete_ipv4.update_state')
     def test_task_id_create_in_delete_one_ipv4_success(self, *args):
-        """Test success of id task generate for ipv4 delete success."""
+        """V4 Test success of id task generate for ipv4 delete success."""
 
         mock_get_ipv4 = args[1]
         mock_delete_ipv4 = args[2]
@@ -49,6 +49,6 @@ class IPv4AsyncDeleteErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_task_id_create_in_delete_one_ipv4_error(self):
-        """Test success of id task generate for ipv4 delete error."""
+        """V4 Test success of id task generate for ipv4 delete error."""
 
         pass

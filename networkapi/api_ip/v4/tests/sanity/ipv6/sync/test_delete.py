@@ -35,7 +35,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         pass
 
     def test_try_delete_existent_ipv6(self):
-        """Tests if NAPI can delete a existent IPv6 Address."""
+        """V4 Tests if NAPI can delete a existent IPv6 Address."""
 
         response = self.client.delete(
             '/api/v4/ipv6/1/',
@@ -58,7 +58,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_non_existent_ipv6(self):
-        """Tests if NAPI returns error on deleting
+        """V4 Tests if NAPI returns error on deleting
         a not existing IPv6 Addresses.
         """
 
@@ -75,7 +75,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_two_non_existent_ipv6(self):
-        """Tests if NAPI returns error on deleting
+        """V4 Tests if NAPI returns error on deleting
         two not existing IPv6 Addresses.
         """
 
@@ -92,7 +92,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_one_existent_and_non_existent_ipv6(self):
-        """Tests if NAPI deny delete at same time an existent
+        """V4 Tests if NAPI deny delete at same time an existent
         and a not existent IPv6 Address.
         """
 
@@ -117,7 +117,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
     def test_try_delete_ipv6_assoc_to_equipment(self):
-        """Tests if NAPI can delete an IPv6 Address associated
+        """V4 Tests if NAPI can delete an IPv6 Address associated
         to some equipment.
         """
 
@@ -140,7 +140,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_two_existent_ipv6(self):
-        """Tests of NAPI can delete at same time
+        """V4 Tests of NAPI can delete at same time
         two existent IPv6 Addresses.
         """
 
@@ -165,7 +165,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_ipv6_used_by_not_created_vip_request(self):
-        """Tests if NAPI can delete an IPv6 Address used
+        """V4 Tests if NAPI can delete an IPv6 Address used
         in a not deployed VIP Request.
         """
 
@@ -203,7 +203,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_ipv6_used_by_created_vip_request(self):
-        """Tests if NAPI deny deleting of IPv6 Address used
+        """V4 Tests if NAPI deny deleting of IPv6 Address used
         in deployed VIP Request.
         """
 

@@ -31,7 +31,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         pass
 
     def test_put_one_equipment_success(self):
-        """Test of success to put of one equipment."""
+        """V4 Test of success to put of one equipment."""
 
         name_file = self.json_path % 'put/put_one_equipment.json'
 
@@ -55,7 +55,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_add_groups(self):
-        """Test of success to put of one equipment adding one group."""
+        """V4 Test of success to put of one equipment adding one group."""
 
         name_file = self.json_path % 'put/put_one_equipment_add_groups.json'
 
@@ -79,7 +79,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_update_groups(self):
-        """Test of success to put of one equipment update group."""
+        """V4 Test of success to put of one equipment update group."""
 
         name_file = self.json_path % 'put/put_one_equipment_update_groups.json'
 
@@ -103,7 +103,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_new_groups(self):
-        """Test of success to put of one equipment with new group."""
+        """V4 Test of success to put of one equipment with new group."""
 
         name_file = self.json_path % 'put/put_one_equipment_new_groups.json'
 
@@ -127,7 +127,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_add_environments(self):
-        """Test of success to put of one equipment adding one environment."""
+        """V4 Test of success to put of one equipment adding one environment."""
 
         name_file = self.json_path % 'put/put_one_equipment_add_environments.json'
 
@@ -151,7 +151,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_update_environments(self):
-        """Test of success to put of one equipment update environment."""
+        """V4 Test of success to put of one equipment update environment."""
 
         name_file = self.json_path % 'put/put_one_equipment_update_environments.json'
 
@@ -175,7 +175,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_new_environments(self):
-        """Test of success to put of one equipment with new environment."""
+        """V4 Test of success to put of one equipment with new environment."""
 
         name_file = self.json_path % 'put/put_one_equipment_new_environments.json'
 
@@ -199,7 +199,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_put_one_equipment_new_ipv4s(self):
-        """Test of success to put one equipment with new IPv4s."""
+        """V4 Test of success to put one equipment with new IPv4s."""
 
         name_file = self.json_path % 'put/put_one_equipment_new_ipv4s.json'
 
@@ -226,7 +226,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_one_equipment_new_ipv6s(self):
-        """Test of success to put one equipment with new IPv6s."""
+        """V4 Test of success to put one equipment with new IPv6s."""
 
         name_file = self.json_path % 'put/put_one_equipment_new_ipv6s.json'
 
@@ -253,7 +253,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, data)
 
     def test_put_one_equipment_new_as(self):
-        """Test of success to put one equipment with new AS."""
+        """V4 Test of success to put one equipment with new AS."""
 
         name_file = self.json_path % 'put/put_one_equipment_new_as.json'
 
@@ -300,7 +300,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_put_duplicated_equipment(self):
-        """Test of error to put of one equipment with name already existent."""
+        """V4 Test of error to put of one equipment with name already existent."""
 
         name_file = self.json_path % 'put_one_duplicated_equipment.json'
 
@@ -318,7 +318,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_put_equipment_invalid_env(self):
-        """Test of error to put of one equipment with environment non existent.
+        """V4 Test of error to put of one equipment with environment non existent.
         """
 
         name_file = self.json_path % 'put_one_equipment_invalid_env.json'
@@ -337,7 +337,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_put_equipment_invalid_group(self):
-        """Test of error to put of one equipment with group non existent.
+        """V4 Test of error to put of one equipment with group non existent.
         """
 
         name_file = self.json_path % 'put_one_equipment_invalid_group.json'
@@ -356,7 +356,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_put_equipment_with_inexistent_as(self):
-        """Test error of put equipment with inexistent AS."""
+        """V4 Test error of put equipment with inexistent AS."""
 
         name_file = self.json_path % 'put_one_equipment_new_inexistent_as.json'
 

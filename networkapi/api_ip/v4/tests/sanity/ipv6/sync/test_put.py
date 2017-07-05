@@ -31,7 +31,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         pass
 
     def test_try_update_ip_associating_to_equipment(self):
-        """Tests if NAPI can update IPv6 associating it to equipment."""
+        """V4 Tests if NAPI can update IPv6 associating it to equipment."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_1_net_5_eqpt_1.json'
 
@@ -61,7 +61,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
-        """Tests if NAPI can update IPv6 disassociating it of equipment and
+        """V4 Tests if NAPI can update IPv6 disassociating it of equipment and
         keep this IPv6.
         """
 
@@ -86,7 +86,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
     def test_try_update_ip_disassociating_it_of_equipments_and_associating_to_others_after(self):
-        """Tests if NAPI can update IPv6 disassociating it of equipment
+        """V4 Tests if NAPI can update IPv6 disassociating it of equipment
         and at same time associating it to other equipment.
         """
 
@@ -118,7 +118,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_update_ip_changing_network(self):
-        """Tests if NAPI deny or ignore update of IPv6 Address changing its network."""
+        """V4 Tests if NAPI deny or ignore update of IPv6 Address changing its network."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_1_net_6.json'
 
@@ -143,7 +143,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         self.compare_values(5, response.data['ips'][0]['networkipv6'])
 
     def test_try_update_ip_changing_octets(self):
-        """Tests if NAPI deny or ignore update of IPv6 Address changing its octets."""
+        """V4 Tests if NAPI deny or ignore update of IPv6 Address changing its octets."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_1_change_block_net_5.json'
 

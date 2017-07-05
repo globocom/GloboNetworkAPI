@@ -37,7 +37,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
     # DELETE functional tests
 
     def test_try_delete_existent_ipv4(self):
-        """Tests if NAPI can delete a existent IPv4 Address."""
+        """V4 Tests if NAPI can delete a existent IPv4 Address."""
 
         response = self.client.delete(
             '/api/v4/ipv4/1/',
@@ -60,7 +60,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_non_existent_ipv4(self):
-        """Tests if NAPI returns error on deleting
+        """V4 Tests if NAPI returns error on deleting
         a not existing IPv4 Addresses.
         """
 
@@ -77,7 +77,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_two_non_existent_ipv4(self):
-        """Tests if NAPI returns error on deleting
+        """V4 Tests if NAPI returns error on deleting
         two not existing IPv4 Addresses.
         """
 
@@ -94,7 +94,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_one_existent_and_non_existent_ipv4(self):
-        """Tests if NAPI deny delete at same time an existent
+        """V4 Tests if NAPI deny delete at same time an existent
         and a not existent IPv4 Address.
         """
 
@@ -119,7 +119,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
     def test_try_delete_ipv4_assoc_to_equipment(self):
-        """Tests if NAPI can delete an IPv4 Address associated to some
+        """V4 Tests if NAPI can delete an IPv4 Address associated to some
         equipment.
         """
 
@@ -142,7 +142,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_two_existent_ipv4(self):
-        """Tests of NAPI can delete at same time
+        """V4 Tests of NAPI can delete at same time
         two existent IPv4 Addresses.
         """
 
@@ -167,7 +167,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_ipv4_used_by_not_created_vip_request(self):
-        """Tests if NAPI can delete an IPv4 Address used
+        """V4 Tests if NAPI can delete an IPv4 Address used
         in a not deployed VIP Request.
         """
 
@@ -205,7 +205,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         )
 
     def test_try_delete_ipv4_used_by_created_vip_request(self):
-        """Tests if NAPI deny deleting of IPv4 Address used
+        """V4 Tests if NAPI deny deleting of IPv4 Address used
         in deployed VIP Request.
         """
         response = self.client.delete(

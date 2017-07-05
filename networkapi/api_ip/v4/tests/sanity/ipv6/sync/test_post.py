@@ -32,7 +32,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
         pass
 
     def test_try_create_auto_ip(self):
-        """Tests if NAPI can allocate automatically an IPv6 Address
+        """V4 Tests if NAPI can allocate automatically an IPv6 Address
         in a Network with available addresses.
         """
 
@@ -60,7 +60,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
             response.data['ips'][0]['ip_formated'])
 
     def test_try_create_invalid_ip(self):
-        """Tests if NAPI deny manually creation of invalid IPv6 Address
+        """V4 Tests if NAPI deny manually creation of invalid IPv6 Address
         (e.g.: fc00:0000:0000:0004:0000:0000:0000:gggg).
         """
 
@@ -77,7 +77,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_try_create_ip_associating_to_equipment(self):
-        """Tests if NAPI can allocate an IPv6 Address manually and associate it to
+        """V4 Tests if NAPI can allocate an IPv6 Address manually and associate it to
         an equipment in a Network with available addresses.
         """
 
@@ -102,7 +102,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
                             response.data['ips'][0]['ip_formated'])
 
     def test_try_create_ip_in_full_network(self):
-        """Tests if NAPI deny an IPv6 manually creation in a full network."""
+        """V4 Tests if NAPI deny an IPv6 manually creation in a full network."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/post/ipv6_new_ip_manual_net_8_full.json'
         response = self.client.post(
@@ -117,7 +117,7 @@ class IPv6PostTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_try_create_out_of_range_ip_in_network(self):
-        """Tests if NAPI deny out of range network IPv6 manually creation."""
+        """V4 Tests if NAPI deny out of range network IPv6 manually creation."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv6/json/post/out_of_range_ipv6_fc00_0000_0000_0005_0000_0000_0000_0005_net_5.json'
         response = self.client.post(

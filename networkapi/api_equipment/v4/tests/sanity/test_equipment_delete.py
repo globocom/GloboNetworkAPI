@@ -28,7 +28,7 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         pass
 
     def test_delete_one_equipment_success(self):
-        """Test of success to delete of one equipment."""
+        """V4 Test of success to delete of one equipment."""
 
         response = self.client.delete(
             '/api/v4/equipment/1/',
@@ -49,7 +49,7 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
             response.data['detail'])
 
     def test_delete_one_equipment_with_associated_as(self):
-        """Test of success to delete equipment with associates AS."""
+        """V4 Test of success to delete equipment with associates AS."""
 
         response = self.client.delete(
             '/api/v4/equipment/4/',
@@ -103,7 +103,7 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_delete_one_inexistent_equipment(self):
-        """Test of error to delete of one inexistent equipment."""
+        """V4 Test of error to delete of one inexistent equipment."""
 
         response = self.client.delete(
             '/api/v4/equipment/10/',

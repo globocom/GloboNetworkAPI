@@ -24,7 +24,7 @@ class IPv6AsyncPostSuccessTestCase(NetworkApiTestCase):
     @patch('networkapi.usuario.models.Usuario.objects.get')
     @patch('networkapi.api_ip.v4.tasks.create_ipv6.update_state')
     def test_task_id_create_in_post_one_ipv6_success(self, *args):
-        """Test success of id task generate for ipv6 post success."""
+        """V4 Test success of id task generate for ipv6 post success."""
 
         mock_get_user = args[1]
         mock_create_ipv6 = args[2]
@@ -49,6 +49,6 @@ class IPv6AsyncPostErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_task_id_create_in_post_one_ipv6_error(self):
-        """Test success of id task generate for ipv6 post error."""
+        """V4 Test success of id task generate for ipv6 post error."""
 
         pass

@@ -30,8 +30,7 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         pass
 
     def test_get_success_list_equipment(self):
-        """
-        Test of success to get equipment list
+        """V4 Test of success to get equipment list
         """
 
         response = self.client.get(
@@ -46,7 +45,7 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         )
 
     def test_get_equipment_with_as_id(self):
-        """Test of success to get equipment with as id."""
+        """V4 Test of success to get equipment with as id."""
 
         name_file = json_path % 'get/basic/pk_4.json'
 
@@ -61,7 +60,7 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['equipments'])
 
     def test_get_equipment_with_as_details(self):
-        """Test of success to get equipment with as details."""
+        """V4 Test of success to get equipment with as details."""
 
         name_file = json_path % 'get/details/pk_4.json'
 

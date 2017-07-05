@@ -31,7 +31,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         pass
 
     def test_try_get_existent_ipv4_by_id(self):
-        """Tests if NAPI can return an existing IPv4 by id."""
+        """V4 Tests if NAPI can return an existing IPv4 by id."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/get/ipv4_1_net_5.json'
 
@@ -46,7 +46,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_get_non_existent_ipv4_by_id(self):
-        """Tests if NAPI returns error when ask
+        """V4 Tests if NAPI returns error when ask
         to return not existing IPv4 by id.
         """
 
@@ -63,7 +63,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         )
 
     def test_try_get_two_existent_ipv4_by_id(self):
-        """Tests if NAPI can return two existent IPv4's by ids."""
+        """V4 Tests if NAPI can return two existent IPv4's by ids."""
 
         name_file = 'api_ip/v4/tests/sanity/ipv4/json/get/ipv4_1_2_net_5.json'
 
@@ -78,7 +78,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         self.compare_json(name_file, response.data)
 
     def test_try_get_two_non_existent_ipv4_by_id(self):
-        """Tests if NAPI returns a error when ask to
+        """V4 Tests if NAPI returns a error when ask to
         return two non existing IPv4's by ids.
         """
 
@@ -95,7 +95,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         )
 
     def test_try_get_one_existent_and_non_existent_ipv4_by_id(self):
-        """Tests if NAPI returns a error when ask to
+        """V4 Tests if NAPI returns a error when ask to
         return a existing and not existing IPv4's by ids.
         """
 
@@ -111,7 +111,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         )
 
     def test_try_get_one_existent_ipv4_by_search(self):
-        """Tests if NAPI returns a dict with one IPv4 Addresses
+        """V4 Tests if NAPI returns a dict with one IPv4 Addresses
         given a search one existing IPv4 Addresses.
         """
 
@@ -143,7 +143,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         self.assertIn({'ip_formated': '10.0.0.1'}, response.data['ips'])
 
     def test_try_get_two_existent_ipv4_by_search(self):
-        """Tests if NAPI returns a dict with two IPv4 Addresses
+        """V4 Tests if NAPI returns a dict with two IPv4 Addresses
         given a search making OR by two IPv4 Addresses.
         """
 
@@ -181,7 +181,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         self.assertIn({'ip_formated': '10.0.0.2'}, response.data['ips'])
 
     def test_try_get_non_existent_ipv4_by_search(self):
-        """Tests if NAPI returns a dict with zero IPv4 Addresses
+        """V4 Tests if NAPI returns a dict with zero IPv4 Addresses
         given a search by not existent IPv4 Address.
         """
 
