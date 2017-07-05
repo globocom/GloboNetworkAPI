@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from networkapi.api_virtual_interface.v4 import facade
 from networkapi.api_virtual_interface.v4 import serializers
-from networkapi.settings import SPECS_V4
+from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
@@ -67,7 +67,7 @@ class VirtualInterfaceDBView(CustomAPIView):
         """Create new Virtual Interface."""
 
         virtual_interfaces = request.DATA
-        json_validate(SPECS_V4.get('virtual_interface_post_v4')).\
+        json_validate(SPECS.get('virtual_interface_post_v4')).\
             validate(virtual_interfaces)
         response = list()
         for vi_ in virtual_interfaces['virtual_interfaces']:
@@ -85,7 +85,7 @@ class VirtualInterfaceDBView(CustomAPIView):
         """Update Virtual Interface."""
 
         virtual_interfaces = request.DATA
-        json_validate(SPECS_V4.get('virtual_interface_put_v4')).\
+        json_validate(SPECS.get('virtual_interface_put_v4')).\
             validate(virtual_interfaces)
         response = list()
         for vi_ in virtual_interfaces['virtual_interfaces']:
