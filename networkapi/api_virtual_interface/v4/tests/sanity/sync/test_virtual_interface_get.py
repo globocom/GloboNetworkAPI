@@ -24,7 +24,7 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
+        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
 
     ]
@@ -69,11 +69,11 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
     def test_get_one_virtual_interface_with_ipv4_equipment_field(self):
         """Success Test of GET one Virtual Interface with ipv4_equipment field."""
 
-        name_file = json_path % 'get/basic/pk_1_eqpts.json'
+        name_file = json_path % 'get/basic/pk_1_with_ipv4_equipment.json'
 
         # Make a GET request
         response = self.client.get(
-            '/api/v4/virtual-interface/1/?include=equipments',
+            '/api/v4/virtual-interface/1/?include=ipv4_equipment',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -84,11 +84,11 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
     def test_get_one_virtual_interface_with_ipv6_equipment_field(self):
         """Success Test of GET one Virtual Interface with ipv6_equipment field."""
 
-        name_file = json_path % 'get/basic/pk_1_eqpts.json'
+        name_file = json_path % 'get/basic/pk_1_with_ipv6_equipment.json'
 
         # Make a GET request
         response = self.client.get(
-            '/api/v4/virtual-interface/1/?include=equipments',
+            '/api/v4/virtual-interface/1/?include=ipv6_equipment',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -96,10 +96,10 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
 
         self.compare_json_lists(name_file, response.data['virtual_interfaces'])
 
-    def test_get_two_virtual_interface_by_search(self):
-        """Success Test of GET basic Virtual Interfaces."""
+    def test_get_one_virtual_interface_by_search(self):
+        """Success Test of GET basic Virtual Interface."""
 
-        name_file = json_path % 'get/basic/pk_1;2.json'
+        name_file = json_path % 'get/basic/pk_1.json'
 
         search = {
             'start_record': 0,
@@ -107,7 +107,7 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'ipequipamento__equipamento__in': [1,2,3,4],
+                'ipequipamento__equipamento__in': [1,2],
             }]
         }
 
@@ -139,12 +139,6 @@ class VirtualInterfaceGetErrorTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_base.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_vrf.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_virtual_interface.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_neighbor.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     def setUp(self):

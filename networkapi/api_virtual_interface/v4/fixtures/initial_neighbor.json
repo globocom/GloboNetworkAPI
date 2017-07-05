@@ -9,8 +9,8 @@
     "timer_timeout": 180,
     "soft_reconfiguration": 1,
     "community": 1,
-    "remote_private_as": 0,
-    "next_hop_self": 2,
+    "remove_private_as": 0,
+    "next_hop_self": 1,
     "kind": "I",
     "created": 0
     }
@@ -25,8 +25,8 @@
     "timer_timeout": 180,
     "soft_reconfiguration": 1,
     "community": 1,
-    "remote_private_as": 0,
-    "next_hop_self": 2,
+    "remove_private_as": 0,
+    "next_hop_self": 1,
     "kind": "I",
     "created": 0
     }

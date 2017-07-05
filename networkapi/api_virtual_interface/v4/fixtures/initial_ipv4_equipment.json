@@ -9,12 +9,22 @@
     }
   },
   {
-    "pk": 1,
+    "pk": 2,
     "model": "ip.ipequipamento",
     "fields": {
       "ip": 1,
-      "equipamento": 1,
+      "equipamento": 2,
       "virtual_interface": 1
     }
+  },
+  {
+    "pk": 3,
+    "model": "ip.ipequipamento",
+    "fields": {
+      "ip": 2,
+      "equipamento": 3,
+      "virtual_interface": 3
+    }
   }
+
 ]

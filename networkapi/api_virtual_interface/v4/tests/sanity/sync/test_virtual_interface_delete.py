@@ -25,7 +25,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
+        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
 
     ]
@@ -37,8 +37,12 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_delete_one_virtual_interface(self):
-        """Success Test of DELETE one Virtual Interface."""
+    def test_delete_virt_interf_related_to_ipv4_v6_equipment_and_neighbor(self):
+        """Success Test of DELETE one Virtual Interface present in IpEquipment,
+           Ipv6Equipment relationships and related to Neighbor."""
+
+        # Test delete Virtual Interface 3 that is associated to Neighbor 2 and
+        # has relationship Ip-Equipment 1-3 and Ipv6-Equipment 1-3
 
         response = self.client.delete(
             '/api/v4/virtual-interface/3/',
@@ -59,28 +63,78 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
             response.data['detail']
         )
 
-    def test_delete_two_virtual_interface(self):
-        """Success Test of DELETE two Virtual Interface."""
+        # Check if neighbor was deleted
+        response = self.client.get(
+            '/api/v4/neighbor/2/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
 
-        response = self.client.delete(
-            '/api/v4/virtual-interface/3;4/',
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'Neighbor 2 do not exist.',
+            response.data['detail']
+        )
+
+        # Chech if in Ip-Equipment 2-3, Virtual-Interface was changed to None
+        response = self.client.get(
+            '/api/v4/ipv4/2/?include=equipments',
             HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
 
-        for id_ in xrange(3, 4+1):
-            response = self.client.get(
-                '/api/v4/virtual-interface/%s/' % id_,
-                HTTP_AUTHORIZATION=self.authorization
-            )
+        expected = {'equipment': 3, 'virtual_interface': None}
+        equipments = response.data['ips'][0]['equipments'][0]
+        self.assertEqual(expected, equipments)
 
-            self.compare_status(404, response.status_code)
+        # Chech if in Ipv6-Equipment 2-3, Virtual-Interface was changed to None
+        response = self.client.get(
+            '/api/v4/ipv6/2/?include=equipments',
+            HTTP_AUTHORIZATION=self.authorization
+        )
 
-            self.compare_values(
-                u'Virtual Interface %s do not exist.' % id_,
-                response.data['detail']
-            )
+        self.compare_status(200, response.status_code)
+
+        expected = {'equipment': 3, 'virtual_interface': None}
+        equipments = response.data['ips'][0]['equipments'][0]
+        self.assertEqual(expected, equipments)
+
+    def test_delete_two_virtual_interface(self):
+        """Success Test of DELETE two Virtual Interface."""
+
+        # Test delete Virtual Interface
+
+        response = self.client.delete(
+            '/api/v4/virtual-interface/2;4/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        response = self.client.get(
+            '/api/v4/virtual-interface/2/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'Virtual Interface 2 do not exist.',
+            response.data['detail']
+        )
+
+        response = self.client.get(
+            '/api/v4/virtual-interface/4/',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(404, response.status_code)
+
+        self.compare_values(
+            u'Virtual Interface 4 do not exist.',
+            response.data['detail']
+        )
 
 
 class VirtualInterfaceDeleteErrorTestCase(NetworkApiTestCase):
@@ -97,12 +151,6 @@ class VirtualInterfaceDeleteErrorTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_base.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_vrf.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_virtual_interface.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_neighbor.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
 
     ]
 

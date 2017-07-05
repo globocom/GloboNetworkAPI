@@ -23,13 +23,6 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_base.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_vrf.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_virtual_interface.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_neighbor.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
-
     ]
 
     def setUp(self):
@@ -55,8 +48,6 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
 
         get_url = '/api/v4/virtual-interface/%s/?kind=basic' % response.data[0]['id']
 
-        name_file_get = json_path % 'get/basic/pk_1.json'
-
         response = self.client.get(
             get_url,
             content_type='application/json',
@@ -64,8 +55,8 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        response.data['virtual_interfaces'][0]['id'] = 1
-        self.compare_json(name_file_get, response.data['virtual_interfaces'])
+        del response.data['virtual_interfaces'][0]['id']
+        self.compare_json(name_file, response.data)
 
     def test_post_two_virtual_interface(self):
         """Success Test of POST two Virtual Interface."""
@@ -85,8 +76,6 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
                   % (response.data[0]['id'],
                      response.data[1]['id'])
 
-        name_file_get = json_path % 'get/basic/pk_1;2.json'
-
         response = self.client.get(
             get_url,
             content_type='application/json',
@@ -94,8 +83,7 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        response.data['virtual_interfaces'][0]['id'] = 1
-        response.data['virtual_interfaces'][1]['id'] = 2
-
-        self.compare_json(name_file_get, response.data['virtual_interfaces'])
+        del response.data['virtual_interfaces'][0]['id']
+        del response.data['virtual_interfaces'][1]['id']
+        self.compare_json(name_file, response.data)
 

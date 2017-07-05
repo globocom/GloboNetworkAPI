@@ -22,12 +22,6 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_base.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_vrf.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_virtual_interface.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_neighbor.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     def setUp(self):
@@ -53,8 +47,6 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
 
         get_url = '/api/v4/virtual-interface/1/?kind=basic'
 
-        name_file_get = json_path % 'get/basic/pk_1_updated.json'
-
         response = self.client.get(
             get_url,
             content_type='application/json',
@@ -62,7 +54,7 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        self.compare_json(name_file_get, response.data['virtual_interfaces'])
+        self.compare_json(name_file, response.data)
 
     def test_put_two_virtual_interface(self):
         """Success Test of PUT two Virtual Interface."""
@@ -80,8 +72,6 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
 
         get_url = '/api/v4/virtual-interface/1;2/?kind=basic'
 
-        name_file_get = json_path % 'get/basic/pk_1;2_updated.json'
-
         response = self.client.get(
             get_url,
             content_type='application/json',
@@ -89,7 +79,7 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        self.compare_json(name_file_get, response.data['virtual_interfaces'])
+        self.compare_json(name_file, response.data)
 
 
 class VirtualInterfacePutErrorTestCase(NetworkApiTestCase):
@@ -106,12 +96,6 @@ class VirtualInterfacePutErrorTestCase(NetworkApiTestCase):
         'networkapi/api_virtual_interface/v4/fixtures/initial_base.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_vrf.json',
         'networkapi/api_virtual_interface/v4/fixtures/initial_virtual_interface.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_neighbor.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv4_equipment.json',
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6.json'
-        'networkapi/api_virtual_interface/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     def setUp(self):
