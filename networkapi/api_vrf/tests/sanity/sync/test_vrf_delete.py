@@ -32,16 +32,16 @@ class VrfDeleteErrorTestCase(NetworkApiTestCase):
     def test_delete_one_vrf_associated_to_virtual_interfaces(self):
         """Error Test of DELETE one VRF associated to two Virtual Interfaces."""
 
-        delete_url = '/api/v3/vrf/1/'
+        delete_url = '/api/v3/vrf/2/'
 
         response = self.client.delete(
             delete_url,
             HTTP_AUTHORIZATION=self.authorization
         )
 
-        self.compare_status(400, response.status_code)
+        self.compare_status(500, response.status_code)
 
         self.compare_values(
-            u'Vrf with pk = %s is associated to Virtual Interfaces.',
+            u'Vrf with pk = 2 is associated to Virtual Interfaces [1, 2].',
             response.data['detail']
         )

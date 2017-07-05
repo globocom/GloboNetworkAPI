@@ -134,9 +134,12 @@ class Vrf(BaseModel):
 
         if len(entry_virtual_interface) > 0:
             cls.log.error(u'Fail to remove Vrf.')
+            interfaces = map(int, [interface.id
+                                   for interface in entry_virtual_interface])
             raise VrfAssociatedToVirtualInterface(
-                u'Vrf with pk = %s is associated to Virtual Interfaces.' %
-                pk)
+                u'Vrf with pk = %s is associated to Virtual Interfaces %s.' %
+                (pk, interfaces)
+            )
 
         # Remove assoc between Vrf and Equipment
         VrfEquipment.objects.filter(vrf=pk).delete()
