@@ -59,5 +59,17 @@
       "tipo_acesso": 1,
       "enable_pass": "---"
     }
+  },
+  {
+    "pk": 1,
+    "model": "ip.ip",
+    "fields": {
+        "oct4": 42,
+        "oct2": 0,
+        "oct3": 0,
+        "oct1": 10,
+        "networkipv4": 1,
+        "descricao": "IP of SDN Controller"
+    }
   }
 ]
