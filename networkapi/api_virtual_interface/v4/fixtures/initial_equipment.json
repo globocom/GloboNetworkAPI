@@ -50,15 +50,5 @@
       "nome": "VM-SANITY-TEST-3",
       "tipo_equipamento": 1
     }
-  },
-  {
-    "pk": 4,
-    "model": "equipamento.equipamento",
-    "fields": {
-      "maintenance": false,
-      "modelo": 1,
-      "nome": "VM-SANITY-TEST-4",
-      "tipo_equipamento": 1
-    }
   }
 ]

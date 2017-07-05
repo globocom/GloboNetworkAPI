@@ -43,29 +43,5 @@
     },
     "model": "ip.ip",
     "pk": 2
-  },
-  {
-    "fields": {
-      "descricao": "IP",
-      "networkipv4": 1,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "3"
-    },
-    "model": "ip.ip",
-    "pk": 3
-  },
-  {
-    "fields": {
-      "descricao": "IP",
-      "networkipv4": 1,
-      "oct1": "10",
-      "oct2": "0",
-      "oct3": "0",
-      "oct4": "4"
-    },
-    "model": "ip.ip",
-    "pk": 4
   }
 ]
