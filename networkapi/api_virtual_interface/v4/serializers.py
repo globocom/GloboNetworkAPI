@@ -36,11 +36,13 @@ class VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         basic_fields = (
             'id',
             'name',
+            'vrf'
         )
 
         default_fields = (
             'id',
             'name',
+            'vrf'
         )
 
         details_fields = fields
