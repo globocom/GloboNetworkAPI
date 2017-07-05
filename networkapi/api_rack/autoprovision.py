@@ -174,10 +174,9 @@ def autoprovision_splf(rack, equips):
                 VLANBE = envs.min_num_vlan_1
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
-                        log.debug(str(net.ip_config.subnet))
-                        log.debug(str(type(net.ip_config.subnet)))
                         CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
                     else:
+                        log.debug(str(net.ip_config.subnet))
                         CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
             elif envs.divisao_dc.nome[:2] == "FE":
                 VLANFE = envs.min_num_vlan_1
@@ -185,27 +184,26 @@ def autoprovision_splf(rack, equips):
                     if net.ip_config.type=="v4":
                         CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
                     else:
+                        log.debug(str(net.ip_config.subnet))
                         CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
             elif envs.divisao_dc.nome == "BO":
                 VLANBORDA = envs.min_num_vlan_1
             elif envs.divisao_dc.nome == "BOCACHOS":
                 VLANBORDACACHOS = envs.min_num_vlan_1
-        elif envs.ambiente_logico.nome == "INTERNO-RACK":
+        elif envs.ambiente_logico.nome == "HOSTS-CLOUD":
             if envs.divisao_dc.nome[:2] == "BE":
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
-                        log.debug(str(net.ip_config.subnet))
-                        log.debug(str(type(net.ip_config.subnet)))
                         CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
                         prefixInternoV4 = int(net.ip_config.new_prefix)
+
                     else:
+                        log.debug(str(net.ip_config.subnet))
                         CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
                         prefixInternoV6 = int(net.ip_config.new_prefix)
             elif envs.divisao_dc.nome[:2] == "FE":
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
-                        log.debug(str(net.ip_config.subnet))
-                        log.debug(str(type(net.ip_config.subnet)))
                         CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
                         prefixInternoFEV4 = int(net.ip_config.new_prefix)
                     else:

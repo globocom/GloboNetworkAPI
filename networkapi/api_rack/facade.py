@@ -360,11 +360,14 @@ def _create_spnlfenv(rack, envfathers):
                 'vrf': env.vrf,
                 'father_environment': env.id,
                 'default_vrf': env.default_vrf.id,
-                'configs': config
+                'configs': config,
+                'fabric_id': rack.dcroom.id
             }
-            environment_spn_lf = facade_env.create_environment(obj)
-            log.debug("Environment object: %s" % str(obj))
-            environment_spn_lf_list.append(environment_spn_lf)
+            try:
+                environment_spn_lf = facade_env.create_environment(obj)
+                environment_spn_lf_list.append(environment_spn_lf)
+            except:
+                log.debug("Environment object: %s" % str(obj))
     return environment_spn_lf_list
 
 
@@ -382,6 +385,7 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
         id_network_type = network_type.id
         pass
     for env in spn_lf_envs_ids:
+        log.debug(str(env))
         env_id = env.id
         vlan_base = env.min_num_vlan_1
         vlan_number = int(vlan_base) + int(rack_number)
@@ -406,12 +410,14 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
             'create_networkv4': create_networkv4 if create_networkv4 else None,
             'create_networkv6': create_networkv6 if create_networkv6 else None
         }
-        log.debug("Vlan object: %s" % str(obj))
-        facade_vlan_v3.create_vlan(obj, user)
+        try:
+            facade_vlan_v3.create_vlan(obj, user)
+        except:
+            log.debug("Vlan object: %s" % str(obj))
 
 
 def _create_vlans_cloud(rack, env_mngtcloud, user):
-    log.debug("_create_clans_cloud")
+    log.debug("_create_vlans_cloud")
 
     try:
         fabricconfig = ast.literal_eval(rack.dcroom.config).get("Ambiente")
@@ -462,7 +468,8 @@ def _create_vlans_cloud(rack, env_mngtcloud, user):
                 'vrf': env.vrf,
                 'father_environment': father_id,
                 'default_vrf': env.default_vrf.id,
-                'configs': amb.get("config")
+                'configs': amb.get("config"),
+                'fabric_id': rack.dcroom.id
             }
             environment = facade_env.create_environment(obj)
             log.debug("Environment object: %s" % str(environment))
@@ -509,7 +516,8 @@ def _create_be_envs(rack, env_be):
             'vrf': env.vrf,
             'father_environment': env.id,
             'default_vrf': env.default_vrf.id,
-            'configs': confs
+            'configs': confs,
+            'fabric_id': rack.dcroom.id
         }
         environment = facade_env.create_environment(obj)
         log.debug("Environment object: %s" % str(environment))
@@ -572,7 +580,16 @@ def rack_environments_vlans(rack_id, user):
 
     # externo:  spine x leaf
     spn_lf_envs_ids = _create_spnlfenv(rack, env_spn)
-    _create_spnlfvlans(rack, spn_lf_envs_ids, user)
+    if spn_lf_envs_ids:
+        _create_spnlfvlans(rack, spn_lf_envs_ids, user)
+    else:
+        ids = list()
+        for i in env_spn:
+            ids.append(int(i.id))
+        env_spn_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id), father_environment__in=ids)
+        if env_spn_lf:
+            log.debug(str(env_spn_lf))
+            _create_spnlfvlans(rack, env_spn_lf, user)
 
     # interno:  leaf x leaf (tor)
     #_create_be_envs(rack, env_be)
