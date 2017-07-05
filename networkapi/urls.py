@@ -27,6 +27,7 @@ urlpatterns = patterns(
     # url(api_prefix, include('networkapi.api_healthcheck.urls')),
     url(api_prefix, include('networkapi.api_interface.urls')),
     url(api_prefix, include('networkapi.api_ip.urls')),
+    url(api_prefix, include('networkapi.api_neighbor.urls')),
     url(api_prefix, include('networkapi.api_network.urls')),
     url(api_prefix, include('networkapi.api_ogp.urls')),
     url(api_prefix, include('networkapi.api_pools.urls')),
