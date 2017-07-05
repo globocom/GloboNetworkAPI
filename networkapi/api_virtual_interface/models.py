@@ -69,16 +69,20 @@ class VirtualInterface(BaseModel):
     def create_v4(self, vi_map):
         """Create Virtual Interface."""
 
+        vrf_model = get_model('api_vrf', 'Vrf')
+
         self.name = vi_map.get('name')
-        self.vrf = vi_map.get('vrf')
+        self.vrf = vrf_model().get_by_pk(vi_map.get('vrf'))
 
         self.save()
 
     def update_v4(self, vi_map):
         """Update Virtual Interface."""
 
+        vrf_model = get_model('api_vrf', 'Vrf')
+
         self.name = vi_map.get('name')
-        self.vrf = vi_map.get('vrf')
+        self.vrf = vrf_model().get_by_pk(vi_map.get('vrf'))
 
         self.save()
 
@@ -101,9 +105,6 @@ class VirtualInterface(BaseModel):
 
             super(VirtualInterface, self).delete()
 
-        # except exceptions.AsAssociatedToEquipmentError, e:
-        #     self.log.error(e)
-        #     raise exceptions.AsAssociatedToEquipmentError(e.detail)
         except Exception, e:
             self.log.error(e)
             raise exceptions.VirtualInterfaceErrorV4(e)
