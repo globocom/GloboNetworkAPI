@@ -207,11 +207,20 @@ def autoprovision_splf(rack, equips):
                         CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
                         prefixInternoFEV4 = int(net.ip_config.new_prefix)
                     else:
+                        log.debug(str(net.ip_config.subnet))
                         CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
                         prefixInternoFEV6 = int(net.ip_config.new_prefix)
 
-    IBGPToRLxLipv4 = CIDRBEipv4 # vlan 3921
-    IBGPToRLxLipv6 = CIDRBEipv6
+    lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
+                                                divisao_dc__nome="BE",
+                                                grupo_l3__nome=str(rack.dcroom.name),
+                                                ambiente_logico__nome="LEAF-LEAF").uniqueResult()
+    log.debug(str(lf_env))
+    for netlf in lf_env.configs:
+        if netlf.ip_config.type=="v4":
+            IBGPToRLxLipv4 = IPNetwork(str(netlf.ip_config.subnet))
+        else:
+            IBGPToRLxLipv6 = IPNetwork(str(netlf.ip_config.subnet))
 
     SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 0)
     SPINE2ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 1)

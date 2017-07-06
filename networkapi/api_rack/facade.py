@@ -441,7 +441,7 @@ def _create_hosts_envs(rack, env_mngtcloud, user):
                 'subnet': str(bloco),
                 'type': net.ip_config.type,
                 'network_type': net.ip_config.network_type.id,
-                'new_prefix': 20
+                'new_prefix': 20 if str(net.ip_config.type)=="v4" else 64
             }
             config_subnet.append(network)
 
@@ -486,7 +486,6 @@ def _create_vlans_cloud(rack, envs, user):
     father_id = env.id
     fabenv = None
     for fab in fabricconfig:
-        log.debug(str(fab.get("id")))
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
     if not fabenv:
@@ -511,9 +510,9 @@ def _create_vlans_cloud(rack, envs, user):
                     prefixo = net_dict.get("subnet").split('/')[-1]
                     bloco = list(cidr.subnet(int(prefixo)))[-2]
                     network = {
-                        'subnet': bloco,
-                        'type': net.ip_config.type,
-                        'network_type': net.ip_config.network_type.id,
+                        'subnet': str(bloco),
+                        'type': str(net.ip_config.type),
+                        'network_type': int(net.ip_config.network_type.id),
                         'new_prefix': int(net_dict.get("new_prefix"))
                     }
                     config_subnet.append(network)
@@ -542,51 +541,50 @@ def _create_vlans_cloud(rack, envs, user):
     return environment
 
 
-def _create_be_envs(rack, env_be):
-    log.debug("_create_be_envs")
+def _create_lflf_vlans(rack, env_lf, user):
+    log.debug("_create_lflf_vlans")
 
+    rack_number = int(rack.numero)
+
+    tipo_rede = "Ponto a ponto"
     try:
-        id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
+        id_network_type = models_vlan.TipoRede().get_by_name(tipo_rede).id
     except:
-        grupo_l3_dict = models_env.GrupoL3()
-        grupo_l3_dict.nome = rack.nome
-        grupo_l3_dict.save()
-        id_grupo_l3 = grupo_l3_dict.id
+        network_type = models_vlan.TipoRede()
+        network_type.tipo_rede = tipo_rede
+        network_type.save()
+        id_network_type = network_type.id
         pass
 
-    environment = None
-    for env in env_be:
-        confs = list()
-        for config in env.configs:
-            net = IPNetwork(config.ip_config.subnet)
+    for env in env_lf:
+        env_id = env.id
+        vlan_number = int(env.min_num_vlan_1)
+        vlan_name = "VLAN_LFxLF" + env.divisao_dc.nome + "_" + env.grupo_l3.nome
+
+        for net in env.configs:
+            bloco = net.ip_config.subnet
+            prefix = bloco.split('/')[-1]
             network = {
-                'subnet': list(net.subnet(config.ip_config.new_prefix))[int(rack.numero)],
-                'new_prefix': str(27) if str(sub.get("type"))[-1] is "4" else str(64),
-                'type': config.ip_config.type,
-                'network_type': config.ip_config.network_type
+                'prefix': prefix,
+                'network_type': id_network_type
             }
-            confs.append(network)
+            if str(net.ip_config.type)[-1] is "4":
+                create_networkv4 = network
+            elif str(net.ip_config.type)[-1] is "6":
+                create_networkv6 = network
         obj = {
-            'grupo_l3': id_grupo_l3,
-            'ambiente_logico': env.ambiente_logico,
-            'divisao_dc': env.divisao_dc.id,
-            'acl_path': env.acl_path,
-            'ipv4_template': env.ipv4_template,
-            'ipv6_template': env.ipv6_template,
-            'link': env.link,
-            'min_num_vlan_2': env.min_num_vlan_2,
-            'max_num_vlan_2': env.max_num_vlan_2,
-            'min_num_vlan_1': env.min_num_vlan_1,
-            'max_num_vlan_1': env.max_num_vlan_1,
-            'vrf': env.vrf,
-            'father_environment': env.id,
+            'name': vlan_name,
+            'num_vlan': vlan_number,
+            'environment': env_id,
             'default_vrf': env.default_vrf.id,
-            'configs': confs,
-            'fabric_id': rack.dcroom.id
+            'vrf': env.vrf,
+            'create_networkv4': create_networkv4 if create_networkv4 else None,
+            'create_networkv6': create_networkv6 if create_networkv6 else None
         }
-        environment = facade_env.create_environment(obj)
-        log.debug("Environment object: %s" % str(environment))
-    return environment
+        try:
+            facade_vlan_v3.create_vlan(obj, user)
+        except:
+            log.debug("Vlan object: %s" % str(obj))
 
 
 def _create_oobvlans(rack, env_oob, user):
@@ -625,19 +623,15 @@ def rack_environments_vlans(rack_id, user):
     rack = Rack().get_rack(idt=rack_id)
     # get fathers environments
     env_spn = list()
-    env_be = list()
-    env_fe = list()
+    env_lf = list()
     env_oob = list()
     env_mngtcloud = list()
     environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id), father_environment__isnull=True)
     for envs in environments:
         if envs.ambiente_logico.nome == "SPINES":
             env_spn.append(envs)
-        elif envs.ambiente_logico.nome == "INTERNO-RACK":
-            if envs.divisao_dc.nome[:2] == "BE":
-                env_be.append(envs)
-            elif envs.divisao_dc.nome[:2] == "FE":
-                env_fe.append(envs)
+        elif envs.ambiente_logico.nome == "LEAF-LEAF":
+            env_lf.append(envs)
         elif envs.ambiente_logico.nome == "HOSTS-CLOUD":
             env_mngtcloud.append(envs)
         elif envs.divisao_dc.nome[:3] == "OOB":
@@ -657,8 +651,7 @@ def rack_environments_vlans(rack_id, user):
             _create_spnlfvlans(rack, env_spn_lf, user)
 
     # interno:  leaf x leaf (tor)
-    #_create_be_envs(rack, env_be)
-    #_create_fe_envs(rack, env_fe)
+    _create_lflf_vlans(rack, env_lf, user)
 
     # producao/cloud
     envs_prod = _create_hosts_envs(rack, env_mngtcloud, user)
