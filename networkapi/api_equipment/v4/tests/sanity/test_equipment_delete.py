@@ -17,8 +17,17 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_base.json',
+        'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
+        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     def setUp(self):
@@ -101,8 +110,17 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_equipment/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/fixtures/initial_base.json',
+        
+        'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
+        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     def setUp(self):
