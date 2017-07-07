@@ -1,0 +1,19 @@
+[
+  {
+    "fields": {
+      "ip": 1,
+      "equipamento": 3,
+      "virtual_interface": 1
+    },
+    "model": "ip.ipequipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ip": 2,
+      "equipamento": 3
+    },
+    "model": "ip.ipequipamento",
+    "pk": 2
+  }
+]

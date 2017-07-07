@@ -18,8 +18,17 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_base.json',
+        'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
+        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     def setUp(self):
@@ -67,6 +76,40 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/equipment/4/?include=id_as__details',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json_lists(name_file, response.data['equipments'])
+
+    def test_get_equipment_with_two_ipsv4_relationships(self):
+        """V4 Test of success to get equipment with two ipsv4 relationships,
+           one with virtual interface None and other not None.
+        """
+
+        name_file = json_path % 'get/basic/pk_3_with_ipsv4.json'
+
+        # Make a GET request
+        response = self.client.get(
+            '/api/v4/equipment/3/?include=ipsv4',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json_lists(name_file, response.data['equipments'])
+
+    def test_get_equipment_with_two_ipsv6_relationships(self):
+        """V4 Test of success to get equipment with two ipsv6 relationships,
+           one with virtual interface None and other not None.
+        """
+
+        name_file = json_path % 'get/basic/pk_3_with_ipsv6.json'
+
+        # Make a GET request
+        response = self.client.get(
+            '/api/v4/equipment/3/?include=ipsv6',
             HTTP_AUTHORIZATION=self.authorization
         )
 

@@ -82,6 +82,15 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
             response.data['detail']
         )
 
+    def test_delete_one_equipment_with_ipsv4_and_virtual_interface_none(self):
+        """V4 Test of success to delete equipment with ipsv6 and virtual
+            interface none.
+        """
+
+    def test_delete_one_equipment_with_ipsv6_and_virtual_interface_none(self):
+        """V4 Test of success to delete equipment with ipsv6 and virtual
+           interface none.
+        """
 
 class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
 
@@ -115,4 +124,14 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_values(
             'Dont there is a equipament by pk = 10.',
             response.data['detail'])
+
+    def test_delete_one_equipment_with_ipsv4_and_virtual_interface_not_none(self):
+        """V4 Test of success to delete equipment with ipsv6 and virtual
+            interface not none.
+        """
+
+    def test_delete_one_equipment_with_ipsv6_and_virtual_interface_not_none(self):
+        """V4 Test of success to delete equipment with ipsv6 and virtual
+           interface not none.
+        """
 

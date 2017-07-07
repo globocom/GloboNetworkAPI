@@ -1,0 +1,42 @@
+[
+  {
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST",
+      "tipo_equipamento": 1
+    },
+    "model": "equipamento.equipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-02",
+      "tipo_equipamento": 1
+    },
+    "model": "equipamento.equipamento",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-03",
+      "tipo_equipamento": 1
+    },
+    "model": "equipamento.equipamento",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST-04",
+      "tipo_equipamento": 1
+    },
+    "model": "equipamento.equipamento",
+    "pk": 4
+  }
+]

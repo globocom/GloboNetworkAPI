@@ -18,8 +18,17 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_base.json'
+        'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
+        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
     json_path = 'api_equipment/v4/tests/sanity/json/%s'
@@ -277,6 +286,62 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         self.compare_json(name_file, data)
 
+    def test_put_equipment_with_two_ipsv4_relationships(self):
+        """V4 Test of success to put equipment with two ipsv4 relationships,
+           one with virtual interface None and other not None.
+        """
+
+        name_file = self.json_path % 'put/put_one_equipment_with_two_ipsv4.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v4/equipment/3/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v4/equipment/3/?include=ipsv4',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/pk_3_with_ipsv4_updated.json'
+
+        self.compare_json(name_file, response.data)
+
+    def test_put_equipment_with_two_ipsv6_relationships(self):
+        """V4 Test of success to put equipment with two ipsv6 relationships,
+           one with virtual interface None and other not None.
+        """
+
+        name_file = self.json_path % 'put/put_one_equipment_with_two_ipsv6.json'
+
+        # Does put request
+        response = self.client.put(
+            '/api/v4/equipment/3/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v4/equipment/3/?include=ipsv6',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = self.json_path % 'get/basic/pk_3_with_ipsv6_updated.json'
+
+        self.compare_json(name_file, response.data)
+
 
 class EquipmentPutErrorTestCase(NetworkApiTestCase):
 
@@ -287,11 +352,20 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_base.json',
+        'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as.json',
+        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
+        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
+        'networkapi/api_equipment/v4/fixtures/initial_ipv6_equipment.json',
     ]
 
-    json_path = 'api_equipment/v4/tests/sanity/json/put/%s'
+    json_path = 'api_equipment/v4/tests/sanity/json/%s'
 
     def setUp(self):
         self.client = Client()
@@ -302,7 +376,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
     def test_put_duplicated_equipment(self):
         """V4 Test of error to put of one equipment with name already existent."""
 
-        name_file = self.json_path % 'put_one_duplicated_equipment.json'
+        name_file = self.json_path % 'put/put_one_duplicated_equipment.json'
 
         # Does put request
         response = self.client.put(
@@ -321,7 +395,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         """V4 Test of error to put of one equipment with environment non existent.
         """
 
-        name_file = self.json_path % 'put_one_equipment_invalid_env.json'
+        name_file = self.json_path % 'put/put_one_equipment_invalid_env.json'
 
         # Does put request
         response = self.client.put(
@@ -340,7 +414,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         """V4 Test of error to put of one equipment with group non existent.
         """
 
-        name_file = self.json_path % 'put_one_equipment_invalid_group.json'
+        name_file = self.json_path % 'put/put_one_equipment_invalid_group.json'
 
         # Does put request
         response = self.client.put(
@@ -358,9 +432,10 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
     def test_put_equipment_with_inexistent_as(self):
         """V4 Test error of put equipment with inexistent AS."""
 
-        name_file = self.json_path % 'put_one_equipment_new_inexistent_as.json'
+        name_file = self.json_path % 'put/put_one_equipment_new_' \
+                                     'inexistent_as.json'
 
-        # Does post request
+        # Does put request
         response = self.client.put(
             '/api/v4/equipment/1/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -372,4 +447,5 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         self.compare_values(
             u'AS 1000 do not exist.',
             response.data['detail'])
+
 

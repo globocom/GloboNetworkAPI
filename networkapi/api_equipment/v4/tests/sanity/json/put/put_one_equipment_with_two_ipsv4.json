@@ -1,0 +1,26 @@
+{
+  "equipments": [
+    {
+      "id": 3,
+      "name": "VM-SANITY-TEST-NEW",
+      "maintenance": false,
+      "equipment_type": 1,
+      "model": 1,
+      "ipsv4": [
+        {
+          "ipv4": {
+            "id": 2
+          },
+          "interface": {
+            "id": 1
+          }
+        },
+        {
+          "ipv4": {
+            "id": 3
+          }
+        }
+      ]
+    }
+  ]
+}
