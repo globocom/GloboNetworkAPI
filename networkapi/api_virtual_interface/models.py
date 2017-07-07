@@ -89,7 +89,6 @@ class VirtualInterface(BaseModel):
     def delete_v4(self):
         """Delete Virtual Interface.
 
-
         """
         try:
 
