@@ -1163,6 +1163,7 @@ class Equipamento(BaseModel):
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
             # ipv4s
+            # TODO Update relationship where virtual interface is null
             if equipment.get('ipsv4'):
                 ipeqpt_model = get_model('ip', 'IpEquipamento')
                 ips_db = ipeqpt_model.list_by_equip(self.id)
@@ -1172,12 +1173,15 @@ class Equipamento(BaseModel):
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
                     ipv4_id = ipv4['ipv4']['id']
+                    id_interface = ipv4.get('interface', {}).get('id')
                     if ipv4_id not in ips_db_ids:
                         ipeqpt_model().create_v4({
                             'equipment': self.id,
                             'ip': ipv4['ipv4']['id'],
-                            'interface': ipv4.get('interface', {}).get('id')
+                            'interface': id_interface
                         })
+                    else:
+                        ipeqpt_model.get_by_ip(ipv4_id).update_v4(id_interface)
 
                 # delete relashionship with ipv4 not sended
                 ipv4_ids = [ipv4['ipv4']['id'] for ipv4 in ipv4_ids]
@@ -1194,12 +1198,15 @@ class Equipamento(BaseModel):
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
                     ipv6_id = ipv6['ipv6']['id']
+                    id_interface = ipv6.get('interface', {}).get('id')
                     if ipv6_id not in ipv6s_db_ids:
                         ipeqpt_model().create_v4({
                             'equipment': self.id,
                             'ip': ipv6['ipv6']['id'],
-                            'interface': ipv6.get('interface', {}).get('id')
+                            'interface': id_interface
                         })
+                    else:
+                        ipeqpt_model.get_by_ip6(ipv6_id).update_v4(id_interface)
 
                 # delete relashionship with ipv6 not sended
                 ipv6_ids = [ipv6['ipv6']['id'] for ipv6 in ipv6_ids]

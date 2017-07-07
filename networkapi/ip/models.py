@@ -2896,8 +2896,9 @@ class IpEquipamento(BaseModel):
         self.equipamento = equipamento().get_by_pk(
             ip_equipment.get('equipment'))
         self.ip = Ip().get_by_pk(ip_equipment.get('ip'))
-        self.virtual_interface = virtualinterface().get_by_pk(interface) \
-            if interface is not None else None
+
+        if interface is not None:
+            self.virtual_interface = virtualinterface().get_by_pk(interface)
 
         # Validate the ip
         self.__validate_ip()
@@ -2919,11 +2920,18 @@ class IpEquipamento(BaseModel):
             self.log.error(u'Failure to insert an ip_equipamento.')
             raise IpError(e, u'Failure to insert an ip_equipamento.')
 
-    def update_v4(self):
-        """Changes VirtualInterface foreign key to None."""
+    def update_v4(self, interface):
+        """Changes only VirtualInterface foreign key."""
 
         try:
-            self.virtual_interface = None
+
+            virtualinterface = get_model('api_virtual_interface',
+                                         'VirtualInterface')
+
+            if self.virtual_interface is None and interface is not None:
+                self.virtual_interface = virtualinterface.get_by_pk(interface)
+            else:
+                self.virtual_interface = None
 
             self.save()
 
@@ -5796,8 +5804,9 @@ class Ipv6Equipament(BaseModel):
         self.equipamento = equipamento().get_by_pk(
             ip_equipment.get('equipment'))
         self.ip = Ipv6().get_by_pk(ip_equipment.get('ip'))
-        self.virtual_interface = virtualinterface().get_by_pk(interface) \
-            if interface is not None else None
+
+        if interface is not None:
+            self.virtual_interface = virtualinterface().get_by_pk(interface)
 
         # Validate the ip
         self.validate_ip()
@@ -5821,11 +5830,18 @@ class Ipv6Equipament(BaseModel):
             self.log.error(u'Failure to insert an ip_equipamento.')
             raise IpError(e, u'Failure to insert an ip_equipamento.')
 
-    def update_v4(self):
-        """Changes VirtualInterface foreign key to None."""
+    def update_v4(self, interface):
+        """Changes only VirtualInterface foreign key."""
 
         try:
-            self.virtual_interface = None
+
+            virtualinterface = get_model('api_virtual_interface',
+                                         'VirtualInterface')
+
+            if self.virtual_interface is None and interface is not None:
+                self.virtual_interface = virtualinterface.get_by_pk(interface)
+            else:
+                self.virtual_interface = None
 
             self.save()
 
