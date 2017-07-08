@@ -53,6 +53,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v4/virtual-interface/3/',
+            content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -66,6 +67,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
         # Check if neighbor was deleted
         response = self.client.get(
             '/api/v4/neighbor/2/',
+            content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -79,6 +81,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
         # Chech if in Ip-Equipment 2-3, Virtual-Interface was changed to None
         response = self.client.get(
             '/api/v4/ipv4/2/?include=equipments',
+            content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -91,6 +94,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
         # Chech if in Ipv6-Equipment 2-3, Virtual-Interface was changed to None
         response = self.client.get(
             '/api/v4/ipv6/2/?include=equipments',
+            content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -114,6 +118,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v4/virtual-interface/2/',
+            content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization
         )
 
@@ -126,6 +131,7 @@ class VirtualInterfaceDeleteSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v4/virtual-interface/4/',
+            content_type='application/json',
             HTTP_AUTHORIZATION=self.authorization
         )
 
