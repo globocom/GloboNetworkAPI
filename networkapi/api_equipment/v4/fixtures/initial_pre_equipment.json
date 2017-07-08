@@ -8,6 +8,13 @@
   },
   {
     "fields": {
+      "tipo_equipamento": "balanceador"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 2
+  },
+  {
+    "fields": {
       "nome": "Generic Brand"
     },
     "model": "equipamento.marca",

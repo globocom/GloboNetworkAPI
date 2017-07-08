@@ -15,5 +15,14 @@
     },
     "model": "ip.ipequipamento",
     "pk": 2
+  },
+  {
+    "fields": {
+      "ip": 1,
+      "equipamento": 5,
+      "virtual_interface": 1
+    },
+    "model": "ip.ipequipamento",
+    "pk": 3
   }
 ]
