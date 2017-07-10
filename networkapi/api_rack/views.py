@@ -76,12 +76,9 @@ class RackView(APIView):
         try:
             log.info('List all Racks')
 
-            fabric_id = kwargs.get("fabric_id")
+            fabric_id = kwargs.get("fabric_id") if kwargs.get("fabric_id") else None
 
-            if fabric_id:
-                racks = facade.get_rack(fabric_id=fabric_id)
-            else:
-                racks = facade.get_rack()
+            racks = facade.get_rack(fabric_id=fabric_id)
 
             data = dict()
             data['racks'] = racks
@@ -279,13 +276,13 @@ class FabricView(APIView):
             fabric = request.DATA.get('fabric')
 
             if fabric.get("flag"):
-                dcrooms = facade.update_fabric_config(fabric_id, fabric)
+                fabrics = facade.update_fabric_config(fabric_id, fabric)
             else:
-                dcrooms = facade.edit_dcrooms(fabric_id, fabric)
+                fabrics = facade.edit_dcrooms(fabric_id, fabric)
 
-            dcroom_serializer = DCRoomSerializer(dcrooms)
+            fabric_serializer = DCRoomSerializer(fabrics)
             data = dict()
-            data['dcroom'] = dcroom_serializer.data
+            data['dcroom'] = fabric_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -303,19 +300,11 @@ class FabricView(APIView):
         try:
             log.info("GET Fabric")
 
-            fabric_id = kwargs.get('fabric_id')
-            fabric_name = kwargs.get('fabric_name')
-            fabric_dc = kwargs.get('dc_id')
+            fabric_id = kwargs.get('fabric_id') if kwargs.get('fabric_id') else None
+            fabric_name = kwargs.get('fabric_name') if kwargs.get('fabric_name') else None
+            fabric_dc = kwargs.get('dc_id') if kwargs.get('dc_id') else None
 
-            if  fabric_id:
-                fabric = facade.get_fabric(idt=fabric_id)
-            elif  fabric_name:
-                fabric = facade.get_fabric(name=fabric_name)
-            elif  fabric_dc:
-                fabric = facade.get_fabric(id_dc=fabric_dc)
-            else:
-                fabric = facade.get_fabric()
-
+            fabric = facade.get_fabric(idt=fabric_id, name=fabric_name, id_dc=fabric_dc)
             data = dict()
             data['fabric'] = fabric
 

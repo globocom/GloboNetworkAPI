@@ -159,8 +159,8 @@ def save_rack_dc(rack_dict):
 
     rack = Rack()
 
-    rack.nome = rack_dict.get('name')
-    rack.numero = rack_dict.get('number')
+    rack.nome = rack_dict.get('nome')
+    rack.numero = rack_dict.get('numero')
     rack.mac_sw1 = rack_dict.get('mac_sw1')
     rack.mac_sw2 = rack_dict.get('mac_sw2')
     rack.mac_ilo = rack_dict.get('mac_ilo')
@@ -621,6 +621,9 @@ def rack_environments_vlans(rack_id, user):
     log.info("Rack Environments")
 
     rack = Rack().get_rack(idt=rack_id)
+    if rack.create_vlan_amb:
+        raise Exception("Os ambientes e Vlans já foram alocados.")
+
     # get fathers environments
     env_spn = list()
     env_lf = list()
