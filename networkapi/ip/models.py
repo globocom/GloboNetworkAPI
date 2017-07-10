@@ -5863,6 +5863,8 @@ class Ipv6Equipament(BaseModel):
                 # in IpEquipment relationships to None
                 self.virtual_interface = None
 
+            self.save()
+
         except Exception, e:
             self.log.error(u'Failure to edit an ip_equipamento.')
             raise IpError(e, u'Failure to edit an ip_equipamento.')
