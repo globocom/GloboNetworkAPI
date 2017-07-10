@@ -39,7 +39,7 @@
         "is_router": false
     },
     "model": "equipamento.equipamentoambiente",
-    "pk": 1
+    "pk": 3
   },
   {
     "pk": 1,
