@@ -24,6 +24,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_base_environment.json',
         'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
     ]
 
     json_path = 'api_environment/tests/sanity/json/get/%s'
@@ -54,7 +55,6 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        import ipdb; ipdb.set_trace()   
         self.compare_status(200, response.status_code)
 
         self.compare_json(name_file, response.data)
