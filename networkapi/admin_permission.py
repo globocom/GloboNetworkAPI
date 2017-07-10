@@ -49,6 +49,7 @@ class AdminPermission(object):
     POOL_ALTER_SCRIPT = 'script_alterar_pool'
     NETWORK_FORCE = 'network_force'
     AS_MANAGEMENT = 'as_management'
+    NEIGHBOR_MANAGEMENT = 'neighbor_management'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'
@@ -74,4 +75,3 @@ class AdminPermission(object):
     OBJ_TYPE_VLAN = 'Vlan'
     OBJ_TYPE_POOL = 'ServerPool'
     OBJ_TYPE_VIP = 'VipRequest'
-

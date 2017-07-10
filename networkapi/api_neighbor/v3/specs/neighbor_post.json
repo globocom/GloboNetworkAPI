@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "networks": {
+      "items": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "equipments": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "networkipv4": {
+            "type": "integer"
+          },
+          "oct1": {
+            "type": "integer"
+          },
+          "oct2": {
+            "type": "integer"
+          },
+          "oct3": {
+            "type": "integer"
+          },
+          "oct4": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "ips"
+  ],
+  "title": "IPv4 Put",
+  "type": "object"
+}
