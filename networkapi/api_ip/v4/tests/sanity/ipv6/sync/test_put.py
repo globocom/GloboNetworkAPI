@@ -33,7 +33,8 @@ class IPv6PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_associating_to_equipment(self):
         """V4 Tests if NAPI can update IPv6 associating it to equipment."""
 
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_1_net_5_eqpt_1.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/' \
+                    'ipv6_put_1_net_5_eqpt_1.json'
 
         response = self.client.put(
             '/api/v4/ipv6/1/',
@@ -62,10 +63,11 @@ class IPv6PutTestCase(NetworkApiTestCase):
 
     def test_try_update_ip_disassociating_it_of_all_equipments(self):
         """V4 Tests if NAPI can update IPv6 disassociating it of equipment and
-        keep this IPv6.
+           keep this IPv6.
         """
 
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_2_net_5_eqpt_none.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/' \
+                    'ipv6_put_2_net_5_eqpt_none.json'
 
         response = self.client.put(
             '/api/v4/ipv6/2/',
@@ -90,7 +92,8 @@ class IPv6PutTestCase(NetworkApiTestCase):
         and at same time associating it to other equipment.
         """
 
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_2_net_5_eqpt_2.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/' \
+                    'ipv6_put_2_net_5_eqpt_2.json'
 
         response = self.client.put(
             '/api/v4/ipv6/2/',
@@ -145,7 +148,8 @@ class IPv6PutTestCase(NetworkApiTestCase):
     def test_try_update_ip_changing_octets(self):
         """V4 Tests if NAPI deny or ignore update of IPv6 Address changing its octets."""
 
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/ipv6_put_1_change_block_net_5.json'
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/' \
+                    'ipv6_put_1_change_block_net_5.json'
 
         response = self.client.put(
             '/api/v4/ipv6/1/',
@@ -167,3 +171,33 @@ class IPv6PutTestCase(NetworkApiTestCase):
 
         self.compare_values('fc00:0000:0000:0004:0000:0000:0000:0001',
                             response.data['ips'][0]['ip_formated'])
+
+    def test_try_update_ip_change_associations_to_eqpts_and_virt_interfaces(self):
+        """V4 Tests if NAPI can update IPv6 changing existing associations
+           to Equipments and Virtual Interfaces.
+        """
+
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/' \
+                    'ipv6_put_2_net_5_two_eqpts_and_virt_interface.json'
+
+        response = self.client.put(
+            '/api/v4/ipv6/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # API will return success but network will not be changed
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        url = prepare_url('/api/v4/ipv6/2/', include=['equipments'])
+        response = self.client.get(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/' \
+                    'ipv6_updated_with_eqpts_and_virtual_interface.json'
+        self.compare_json(name_file, response.data)

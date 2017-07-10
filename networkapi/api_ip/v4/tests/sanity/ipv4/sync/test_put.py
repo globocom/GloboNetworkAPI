@@ -167,3 +167,33 @@ class IPv4PutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         self.compare_values('10.0.0.1', response.data['ips'][0]['ip_formated'])
+
+    def test_try_update_ip_change_associations_to_eqpts_and_virt_interfaces(self):
+        """V4 Tests if NAPI can update IPv4 changing existing associations
+           to Equipments and Virtual Interfaces.
+        """
+
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/put/' \
+                    'ipv4_put_2_net_5_two_eqpts_and_virt_interface.json'
+
+        response = self.client.put(
+            '/api/v4/ipv4/2/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # API will return success but network will not be changed
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        url = prepare_url('/api/v4/ipv4/2/', include=['equipments'])
+        response = self.client.get(
+            url,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        name_file = 'api_ip/v4/tests/sanity/ipv4/json/get/' \
+                    'ipv4_updated_with_eqpts_and_virtual_interface.json'
+        self.compare_json(name_file, response.data)
