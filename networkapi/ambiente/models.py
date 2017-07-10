@@ -922,16 +922,13 @@ class Ambiente(BaseModel):
 
     vlans = property(_get_vlan)
 
-    def _sdn_controlled(self):
-        controllers = self.equipamentoambiente_set\
+    def _get_sdn_controllers(self):
+        ctrls = self.equipamentoambiente_set.prefetch_related('equipamento')\
             .filter(is_controller=True)
 
-        if controllers:
-            return True
+        return [eqpt.equipamento for eqpt in ctrls]
 
-        return False
-
-    sdn_controlled = property(_sdn_controlled)
+    sdn_controllers = property(_get_sdn_controllers)
 
     def _get_routers(self):
         """Returns routers of environment."""
