@@ -1181,7 +1181,8 @@ class Equipamento(BaseModel):
                             'interface': id_interface
                         })
                     else:
-                        ipeqpt_model.get_by_ip(ipv4_id).update_v4(id_interface)
+                        ipeqpt_model.get_by_ip_equipment(ipv4_id, self.id).\
+                            update_v4(id_interface)
 
                 # delete relashionship with ipv4 not sended
                 ipv4_ids = [ipv4['ipv4']['id'] for ipv4 in ipv4_ids]
@@ -1206,7 +1207,8 @@ class Equipamento(BaseModel):
                             'interface': id_interface
                         })
                     else:
-                        ipeqpt_model.get_by_ip6(ipv6_id).update_v4(id_interface)
+                        ipeqpt_model.get_by_ip_equipment(ipv6_id, self.id).\
+                            update_v4(id_interface)
 
                 # delete relashionship with ipv6 not sended
                 ipv6_ids = [ipv6['ipv6']['id'] for ipv6 in ipv6_ids]

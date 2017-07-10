@@ -2369,14 +2369,17 @@ class Ip(BaseModel):
             # Creates new associate
             for eqpt in ip_map.get('equipments', []):
                 eqpt_id = eqpt.get('equipment').get('id')
-                interface_id = eqpt.get('interface', {}).get('id')
+                id_interface = eqpt.get('interface', {}).get('id')
+                ip_equipment = IpEquipamento()
                 if eqpt_id not in current:
-                    ip_equipment = IpEquipamento()
                     ip_equipment.create_v4({
                         'ip': self.id,
                         'equipment': eqpt_id,
-                        'interface': interface_id
+                        'interface': id_interface
                     })
+                else:
+                    ip_equipment.get_by_ip_equipment(self.id, eqpt_id). \
+                        update_v4(id_interface)
 
             # Removes old associates
             for ip_eqpt in self.ipequipamento_set \
@@ -2929,8 +2932,15 @@ class IpEquipamento(BaseModel):
                                          'VirtualInterface')
 
             if self.virtual_interface is None and interface is not None:
+                # Only allowed if in the already existing relationship between
+                # Ip and equipment, the virtual interface is null
                 self.virtual_interface = virtualinterface.get_by_pk(interface)
             else:
+                # If in the already existing relationship between Ip and Equip-
+                # ment the virtual interface is not Null, it cannot be changed
+                # to other Virtual Interface. What can be done is delete the
+                # Virtual Interface and in this process set all foreign keys
+                # in IpEquipment relationships to None
                 self.virtual_interface = None
 
             self.save()
@@ -5257,14 +5267,17 @@ class Ipv6(BaseModel):
             # Creates new associate
             for eqpt in ip_map.get('equipments', []):
                 eqpt_id = eqpt.get('equipment').get('id')
-                interface_id = eqpt.get('interface', {}).get('id')
+                id_interface = eqpt.get('interface', {}).get('id')
+                ip_equipment = Ipv6Equipament()
                 if eqpt_id not in current:
-                    ip_equipment = Ipv6Equipament()
                     ip_equipment.create_v4({
                         'ip': self.id,
                         'equipment': eqpt_id,
-                        'interface': interface_id
+                        'interface': id_interface
                     })
+                else:
+                    ip_equipment.get_by_ip_equipment(self.id, eqpt_id). \
+                        update_v4(id_interface)
 
             # Removes old associates
             for ip_eqpt in self.ipv6equipament_set \
@@ -5839,11 +5852,16 @@ class Ipv6Equipament(BaseModel):
                                          'VirtualInterface')
 
             if self.virtual_interface is None and interface is not None:
+                # Only allowed if in the already existing relationship between
+                # Ip and equipment, the virtual interface is null
                 self.virtual_interface = virtualinterface.get_by_pk(interface)
             else:
+                # If in the already existing relationship between Ip and Equip-
+                # ment the virtual interface is not Null, it cannot be changed
+                # to other Virtual Interface. What can be done is delete the
+                # Virtual Interface and in this process set all foreign keys
+                # in IpEquipment relationships to None
                 self.virtual_interface = None
-
-            self.save()
 
         except Exception, e:
             self.log.error(u'Failure to edit an ip_equipamento.')
