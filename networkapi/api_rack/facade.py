@@ -159,8 +159,8 @@ def save_rack_dc(rack_dict):
 
     rack = Rack()
 
-    rack.nome = rack_dict.get('nome')
-    rack.numero = rack_dict.get('numero')
+    rack.nome = rack_dict.get('name')
+    rack.numero = rack_dict.get('number')
     rack.mac_sw1 = rack_dict.get('mac_sw1')
     rack.mac_sw2 = rack_dict.get('mac_sw2')
     rack.mac_ilo = rack_dict.get('mac_ilo')
@@ -472,11 +472,18 @@ def _create_hosts_envs(rack, env_mngtcloud, user):
 def _create_vlans_cloud(rack, envs, user):
     log.debug("_create_vlans_cloud")
 
-    try:
-        fabricconfig = ast.literal_eval(rack.dcroom.config).get("Ambiente")
-    except:
-        log.debug("sem configuracoes do fabric")
+    if rack.dcroom.config:
+        fabricconfig = rack.dcroom.config
+        log.debug(str(fabricconfig))
+    else:
+        log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
         fabricconfig = list()
+
+    try:
+        fabricconfig = ast.literal_eval(fabricconfig)
+        log.debug(str(fabricconfig))
+    except:
+        pass
 
     for env_be in envs:
         if env_be.divisao_dc.nome=="BE":
@@ -485,7 +492,8 @@ def _create_vlans_cloud(rack, envs, user):
     environment = None
     father_id = env.id
     fabenv = None
-    for fab in fabricconfig:
+
+    for fab in fabricconfig.get("Ambiente"):
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
     if not fabenv:
@@ -615,7 +623,6 @@ def _create_oobvlans(rack, env_oob, user):
         vlan = facade_vlan_v3.create_vlan(obj, user)
 
     return vlan
-
 
 def rack_environments_vlans(rack_id, user):
     log.info("Rack Environments")
