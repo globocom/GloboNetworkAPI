@@ -51,17 +51,17 @@ def get_neighbor_by_ids(neighbor_ids):
         neighbor_ids: List of Ids of Neighbors.
     """
 
-    neighbor_ids = list()
+    ids = list()
     for neighbor_id in neighbor_ids:
         try:
             neighbor = get_neighbor_by_id(neighbor_id).id
-            neighbor_ids.append(neighbor)
+            ids.append(neighbor)
         except exceptions.NeighborDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
 
-    neighbors = Neighbor.objects.filter(id__in=neighbor_ids)
+    neighbors = Neighbor.objects.filter(id__in=ids)
 
     return neighbors
 
