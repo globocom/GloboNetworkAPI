@@ -463,13 +463,6 @@ SPECS = {
     'neighbor_put_v4': 'networkapi/api_neighbor/v4/specs/neighbor_put.json'
 }
 
-SPECS_V4 = {
-
-
-
-
-}
-
 ##########
 # Scripts
 
