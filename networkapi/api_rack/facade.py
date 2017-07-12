@@ -500,8 +500,19 @@ def _create_vlans_cloud(rack, envs, user):
     father_id = env.id
     fabenv = None
 
-    log.debug(str(fabricconfig))
-    for fab in fabricconfig.get("Ambiente"):
+    try:
+        ambiente = json.dumps(fabricconfig.get("Ambiente"))
+        log.debug("config -dumps: %s" % str(ambiente))
+    except:
+        pass
+
+    try:
+        ambiente = ast.literal_eval(fabricconfig.get("Ambiente"))
+        log.debug("config -ast: %s" % str(ambiente))
+    except:
+        pass
+
+    for fab in ambiente:
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
     if not fabenv:
