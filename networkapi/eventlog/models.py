@@ -123,15 +123,15 @@ class EventLogQueue(object):
             queue_name='tasks.eventlog',
             exchange_name='tasks.eventlog',
             routing_key='tasks.eventlog')
+
         queue_manager.append({
             'action': evento['acao'],
             'kind': evento['funcionalidade'],
             'data': {
                 'id_object': evento['id_objeto'],
-                'usuario': usuario.user,
+                'user': usuario.id,
                 'old_value': evento['parametro_anterior'],
-                'new_value': evento['parametro_atual'],
-                'audit_request': evento['audit_request']
+                'new_value': evento['parametro_atual']
             }
         })
         queue_manager.send()
