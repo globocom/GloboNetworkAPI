@@ -26,7 +26,7 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
         'get_virtual_interface')
 
     class Meta:
-        Neighbor = get_model('neighbor', 'Neighbor')
+        Neighbor = get_model('api_neighbor', 'Neighbor')
         model = Neighbor
         fields = (
             'id',
@@ -43,6 +43,7 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
             'next_hop_self',
             'kind',
             'created',
+            'virtual_interface'
         )
 
         default_fields = fields
@@ -56,7 +57,8 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
 
     def get_serializers(self):
         # serializers
-        neg_slz = get_app('api_neighbor', module_label='serializers.v3')
+        vi_slz = get_app('api_virtual_interface',
+                          module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -64,7 +66,7 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'virtual_interface_id'
                 },
                 'virtual_interface__details': {
-                    'serializer': neg_slz.VirtualInterfaceV3Serializer,
+                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
                     'kwargs': {
                         'kind': 'details'
                     },
@@ -72,7 +74,7 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
                     'eager_loading': self.setup_eager_loading_interface
                 },
                 'virtual_interface__basic': {
-                    'serializer': neg_slz.VirtualInterfaceV3Serializer,
+                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
