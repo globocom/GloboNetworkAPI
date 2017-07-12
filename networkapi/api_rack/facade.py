@@ -476,14 +476,14 @@ def _create_vlans_cloud(rack, envs, user):
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
-        log.debug(str(str("fabricconfig")))
+        log.debug(str(type(fabricconfig)))
     else:
         log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
         fabricconfig = list()
 
     try:
-        fabricconfig = json.dumps(fabricconfig)
-        log.debug("config -dumps: %s" % str(fabricconfig))
+        fabricconfig = json.loads(fabricconfig)
+        log.debug("type -ast: %s" % str(type(fabricconfig)))
     except:
         pass
 
