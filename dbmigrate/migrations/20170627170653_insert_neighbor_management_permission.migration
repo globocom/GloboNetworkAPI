@@ -1,8 +1,0 @@
-#-*- coding:utf-8 -*-
-SQL_UP = u"""
-INSERT INTO `permissions` (function) VALUES ('neighbor_management');
-"""
-
-SQL_DOWN = u"""
-DELETE FROM `permissions` where function='neighbor_management';
-"""
