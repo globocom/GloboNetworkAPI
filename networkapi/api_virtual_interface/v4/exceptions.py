@@ -16,17 +16,6 @@ class VirtualInterfaceError(APIException):
     def __init__(self, msg):
         self.detail = msg
 
-#
-# class AsAssociatedToEquipmentError(APIException):
-#     status_code = status.HTTP_400_BAD_REQUEST
-#     default_detail = 'Virtual Interface is associated with at least one Equipment.'
-#
-#     def __init__(self, msg=None):
-#         if msg:
-#             self.detail = msg
-#         else:
-#             self.detail = self.default_detail
-
 
 class VirtualInterfaceErrorV4(Exception):
 
@@ -42,17 +31,3 @@ class VirtualInterfaceErrorV4(Exception):
 class VirtualInterfaceDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Virtual Interface does not exists.'
-
-
-# class AsEquipmentNotFoundError(APIException):
-#     status_code = status.HTTP_404_NOT_FOUND
-#
-#     def __init__(self, msg):
-#         self.detail = u'Virtual Interface %s do not exist.' % (msg)
-#
-#
-# class AsEquipmentError(APIException):
-#     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-#
-#     def __init__(self, msg):
-#         self.detail = msg
