@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
 from django.db.transaction import commit_on_success
+from networkapi.util.geral import destroy_lock
+
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.distributedlock import LOCK_NEIGHBOR
+
+from networkapi.util.geral import create_lock
+
 from networkapi.api_neighbor.v4.permissions import Read
 from networkapi.api_neighbor.v4.permissions import Write
+from networkapi.api_neighbor.v4.permissions import DeployCreate
+from networkapi.api_neighbor.v4.permissions import DeployDelete
+from networkapi.api_neighbor.v4.permissions import deploy_obj_permission
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,11 +23,15 @@ from networkapi.api_neighbor.v4 import serializers
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
+from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class NeighborDBView(CustomAPIView):
@@ -106,3 +121,61 @@ class NeighborDBView(CustomAPIView):
         facade.delete_neighbor(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+class NeighborDeployView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    def post(self, request, *args, **kwargs):
+        """
+        Creates list of neighbor in equipments
+        :url /api/v4/neighbor/deploy/<neighbor_ids>/
+        :param neighbor_ids=<neighbor_ids>
+        """
+
+        neighbor_ids = kwargs['obj_ids'].split(';')
+        neighbors = facade.get_neighbor_by_ids(neighbor_ids)
+        neighbor_serializer = serializers.NeighborV4Serializer(neighbors,
+                                                               many=True)
+
+        locks_list = create_lock(neighbor_serializer.data, LOCK_NEIGHBOR)
+        try:
+            response = facade.create_real_neighbor(neighbor_serializer.data,
+                                                   request.user)
+        except Exception, exception:
+            log.error(exception)
+            raise NetworkAPIException(exception)
+        finally:
+            destroy_lock(locks_list)
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    def delete(self, request, *args, **kwargs):
+        """
+        Deletes list of neighbor in equipments
+        :url /api/v4/neighbor/deploy/<neighbor_ids>/
+        :param neighbor_ids=<neighbor_ids>
+        """
+
+        neighbor_ids = kwargs['obj_ids'].split(';')
+        neighbors = facade.get_neighbor_by_ids(neighbor_ids)
+        neighbor_serializer = serializers.NeighborV4Serializer(neighbors,
+                                                               many=True)
+
+        locks_list = create_lock(neighbor_serializer.data, LOCK_NEIGHBOR)
+        try:
+            response = facade.delete_real_neighbor(neighbor_serializer.data,
+                                                   request.user)
+        except Exception, exception:
+            log.error(exception)
+            raise NetworkAPIException(exception)
+        finally:
+            destroy_lock(locks_list)
+
+        return Response(response, status=status.HTTP_200_OK)
+
