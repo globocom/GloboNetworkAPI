@@ -481,20 +481,14 @@ def _create_vlans_cloud(rack, envs, user):
         fabricconfig = list()
 
     try:
-        fabricconfig = ast.literal_eval(fabricconfig)
-        log.debug("config -ast: %s" % str(fabricconfig))
-    except:
-        pass
-
-    try:
-        fabricconfig = json.dumps(fabricconfig.get("Ambiente"))
+        fabricconfig = json.dumps(fabricconfig)
         log.debug("config -dumps: %s" % str(fabricconfig))
     except:
         pass
 
     try:
-        fabricconfig = json.loads(fabricconfig)
-        log.debug("config -loads: %s" % str(fabricconfig))
+        fabricconfig = ast.literal_eval(fabricconfig)
+        log.debug("config -ast: %s" % str(fabricconfig))
     except:
         pass
 
