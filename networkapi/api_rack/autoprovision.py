@@ -162,7 +162,22 @@ def autoprovision_splf(rack, equips):
     equips_sorted = sorted(equips, key=operator.itemgetter('sw'))
 
     dcroom = model_to_dict(rack.dcroom)
-    envconfig = json.loads(dcroom.get("config"))
+    log.debug("type: %s" %str(type(dcroom.get("config"))))
+    fabricconfig = dcroom.get("config")
+
+    try:
+        fabricconfig = json.loads(fabricconfig)
+        log.debug("type -ast: %s" % str(type(fabricconfig)))
+    except:
+        pass
+
+    try:
+        fabricconfig = ast.literal_eval(fabricconfig)
+        log.debug("config -ast: %s" % str(fabricconfig))
+    except:
+        pass
+
+    envconfig = fabricconfig
     BASE_RACK = dcroom.get("racks")
     BGP = envconfig.get("BGP")
     BASE_AS_SPN = int(BGP.get("spines"))
