@@ -473,24 +473,30 @@ def _create_hosts_envs(rack, env_mngtcloud, user):
 
 def _create_vlans_cloud(rack, envs, user):
     log.debug("_create_vlans_cloud")
-    log.debug("envs")
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
     else:
         log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
         fabricconfig = list()
-    """
-    fabricconfig = ast.literal_eval(fabricconfig)
-    log.debug(str(fabricconfig))
 
     try:
-        ambiente = json.dumps(fabricconfig.get("Ambiente"))
-        log.debug(str(fabricconfig))
+        fabricconfig = ast.literal_eval(fabricconfig)
+        log.debug("config -ast: %s" % str(fabricconfig))
     except:
-        ambiente = fabricconfig.get("Ambiente")
         pass
-    """
+
+    try:
+        fabricconfig = json.dumps(fabricconfig.get("Ambiente"))
+        log.debug("config -dumps: %s" % str(fabricconfig))
+    except:
+        pass
+
+    try:
+        fabricconfig = json.loads(fabricconfig)
+        log.debug("config -loads: %s" % str(fabricconfig))
+    except:
+        pass
 
     for env_be in envs:
         if env_be.divisao_dc.nome=="BE":
@@ -500,7 +506,7 @@ def _create_vlans_cloud(rack, envs, user):
     father_id = env.id
     fabenv = None
 
-    fabricconfig = json.loads(fabricconfig)
+    log.debug(str(fabricconfig))
     for fab in fabricconfig.get("Ambiente"):
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
@@ -508,6 +514,7 @@ def _create_vlans_cloud(rack, envs, user):
         log.debug("Sem configuracoes para os ambientes filhos - BE, BEFE, BEBO, BECA do ambiente id=%s" %str())
         return 0
 
+    log.debug(str(fabenv))
     for amb in fabenv:
         try:
             id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
