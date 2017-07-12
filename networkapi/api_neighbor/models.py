@@ -4,6 +4,7 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from networkapi.util.geral import get_model
 
 from networkapi.api_neighbor.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
@@ -123,10 +124,48 @@ class Neighbor(BaseModel):
     def create_v4(self, neighbor_map):
         """Create Neighbor."""
 
+        vi_model = get_model('api_virtual_interface', 'VirtualInterface')
+
+        self.remote_as = neighbor_map.get('remote_as')
+        self.remote_ip = neighbor_map.get('remote_ip')
+        self.password =  neighbor_map.get('password')
+        self.maximum_hops =  neighbor_map.get('maximum_hops')
+        self.timer_keepalive = neighbor_map.get('timer_keepalive')
+        self.timer_timeout = neighbor_map.get('timer_timeout')
+        self.description = neighbor_map.get('description')
+        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
+        self.community = neighbor_map.get('community')
+        self.remove_private_as = neighbor_map.get('remove_private_as')
+        self.next_hop_self = neighbor_map.get('next_hop_self')
+        self.kind = neighbor_map.get('kind')
+        # self.created =  neighbor_map.get('created')
+        self.virtual_interface = vi_model.get_by_pk(
+            neighbor_map.get('virtual_interface')
+        )
+
         self.save()
 
     def update_v4(self, neighbor_map):
         """Update Neighbor."""
+
+        vi_model = get_model('api_virtual_interface', 'VirtualInterface')
+
+        self.remote_as = neighbor_map.get('remote_as')
+        self.remote_ip = neighbor_map.get('remote_ip')
+        self.password = neighbor_map.get('password')
+        self.maximum_hops = neighbor_map.get('maximum_hops')
+        self.timer_keepalive = neighbor_map.get('timer_keepalive')
+        self.timer_timeout = neighbor_map.get('timer_timeout')
+        self.description = neighbor_map.get('description')
+        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
+        self.community = neighbor_map.get('community')
+        self.remove_private_as = neighbor_map.get('remove_private_as')
+        self.next_hop_self = neighbor_map.get('next_hop_self')
+        self.kind = neighbor_map.get('kind')
+        # self.created =  neighbor_map.get('created')
+        self.virtual_interface = vi_model.get_by_pk(
+            neighbor_map.get('virtual_interface')
+        )
 
         self.save()
 
