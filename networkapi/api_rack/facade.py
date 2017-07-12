@@ -476,6 +476,7 @@ def _create_vlans_cloud(rack, envs, user):
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
+        log.debug(str(str("fabricconfig")))
     else:
         log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
         fabricconfig = list()
@@ -500,19 +501,9 @@ def _create_vlans_cloud(rack, envs, user):
     father_id = env.id
     fabenv = None
 
-    try:
-        ambiente = json.dumps(fabricconfig.get("Ambiente"))
-        log.debug("config -dumps: %s" % str(ambiente))
-    except:
-        pass
-
-    try:
-        ambiente = ast.literal_eval(fabricconfig.get("Ambiente"))
-        log.debug("config -ast: %s" % str(ambiente))
-    except:
-        pass
-
-    for fab in ambiente:
+    log.debug("debug")
+    for fab in fabricconfig.get("Ambiente"):
+        log.debug("debug for fab")
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
     if not fabenv:
@@ -663,7 +654,8 @@ def rack_environments_vlans(rack_id, user):
         elif envs.ambiente_logico.nome == "LEAF-LEAF":
             env_lf.append(envs)
         elif envs.ambiente_logico.nome == "HOSTS-CLOUD":
-            env_mngtcloud.append(envs)
+            if envs.divisao_dc.nome[:2] == "BE":
+                env_mngtcloud.append(envs)
         elif envs.divisao_dc.nome[:3] == "OOB":
             env_oob.append(envs)
 
