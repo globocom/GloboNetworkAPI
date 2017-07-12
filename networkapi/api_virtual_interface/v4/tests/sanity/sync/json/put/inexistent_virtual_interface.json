@@ -1,0 +1,9 @@
+{
+  "virtual_interfaces": [
+    {
+      "id": 1000,
+      "name": "VIRTUAL-INTERFACE-UPDATED",
+      "vrf": 2
+    }
+  ]
+}

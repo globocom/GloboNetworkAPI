@@ -128,34 +128,3 @@ class AsPutErrorTestCase(NetworkApiTestCase):
             u'AS 1000 do not exist.',
             response.data['detail']
         )
-
-    def test_put_one_existent_and_one_inexistent_as(self):
-        """Error Test of PUT one existent and one inexistent AS."""
-
-        name_file = json_path % 'put/existent_and_inexistent_as.json'
-
-        response = self.client.put(
-            '/api/v4/as/1;1000/',
-            data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            u'AS 1000 do not exist.',
-            response.data['detail']
-        )
-
-        name_file = json_path % 'get/basic/pk_1.json'
-
-        # Check if AS 1 was not modified
-        response = self.client.get(
-            '/api/v4/as/1/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(200, response.status_code)
-
-        self.compare_json_lists(name_file, response.data['asns'])
-

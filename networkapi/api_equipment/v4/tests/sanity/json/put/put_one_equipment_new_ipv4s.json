@@ -6,9 +6,17 @@
       "maintenance": false,
       "equipment_type": 1,
       "model": 1,
-      "ipv4": [
-        2,
-        3
+      "ipsv4": [
+        {
+          "ipv4": {
+            "id": 2
+          }
+        },
+        {
+          "ipv4": {
+            "id": 3
+          }
+        }
       ]
     }
   ]

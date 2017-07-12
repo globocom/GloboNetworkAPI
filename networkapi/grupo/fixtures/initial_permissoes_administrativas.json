@@ -320,5 +320,45 @@
       "escrita": true,
       "permission": 41
     }
+  },
+  {
+    "pk": 33,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
+      "permission": 42
+    }
+  },
+  {
+    "pk": 34,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 3,
+      "leitura": true,
+      "escrita": true,
+      "permission": 42
+    }
+  },
+  {
+    "pk": 35,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 1,
+      "leitura": true,
+      "escrita": true,
+      "permission": 43
+    }
+  },
+  {
+    "pk": 36,
+    "model": "grupo.permissaoadministrativa",
+    "fields": {
+      "ugrupo": 3,
+      "leitura": true,
+      "escrita": true,
+      "permission": 43
+    }
   }
 ]

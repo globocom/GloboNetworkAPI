@@ -1,0 +1,24 @@
+{
+  "ips": [
+    {
+      "id": 2,
+      "networkipv4": 5,
+      "description": null,
+      "oct1": 10,
+      "oct2": 0,
+      "oct3": 0,
+      "oct4": 2,
+      "equipments": [
+        {
+          "equipment": 1,
+          "virtual_interface": 1
+        },
+        {
+          "equipment": 3,
+          "virtual_interface": null
+        }
+      ]
+    }
+  ]
+}
+

@@ -236,5 +236,19 @@
     "fields": {
       "function": "as_management"
     }
+  },
+  {
+    "pk": 42,
+    "model": "grupo.permission",
+    "fields": {
+      "function": "virtual_interface_management"
+    }
+  },
+  {
+    "pk": 43,
+    "model": "grupo.permission",
+    "fields": {
+      "function": "neighbor_management"
+    }
   }
 ]

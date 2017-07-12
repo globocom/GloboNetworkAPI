@@ -1,0 +1,35 @@
+[
+  {
+  "pk": 1,
+  "model": "api_neighbor.Neighbor",
+  "fields": {
+    "description": "NEIGHBOR-1",
+    "virtual_interface": 1,
+    "timer_keepalive": 30,
+    "timer_timeout": 180,
+    "soft_reconfiguration": 1,
+    "community": 1,
+    "remove_private_as": 0,
+    "next_hop_self": 1,
+    "kind": "I",
+    "created": 0
+    }
+  },
+  {
+  "pk": 2,
+  "model": "api_neighbor.Neighbor",
+  "fields": {
+    "description": "NEIGHBOR-2",
+    "virtual_interface": 3,
+    "timer_keepalive": 30,
+    "timer_timeout": 180,
+    "soft_reconfiguration": 1,
+    "community": 1,
+    "remove_private_as": 0,
+    "next_hop_self": 1,
+    "kind": "I",
+    "created": 0
+    }
+  }
+
+]

@@ -17,8 +17,8 @@
             "id": 1,
             "name": "Generic Model"
           },
-          "ipv4": [],
-          "ipv6": [],
+          "ipsv4": [],
+          "ipsv6": [],
           "environments": [],
           "groups": [
           ],
@@ -42,8 +42,8 @@
             "id": 1,
             "name": "Generic Model"
           },
-          "ipv4": [],
-          "ipv6": [],
+          "ipsv4": [],
+          "ipsv6": [],
           "environments": [],
           "groups": [
           ],

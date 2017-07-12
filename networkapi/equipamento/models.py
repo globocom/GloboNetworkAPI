@@ -504,6 +504,20 @@ class Equipamento(BaseModel):
 
     environments = property(_get_environments)
 
+    def _get_ipv4_equipment_virtual_interface(self):
+
+        return self.ipequipamento_set.all()
+
+    ipv4_equipment_virtual_interface = \
+        property(_get_ipv4_equipment_virtual_interface)
+
+    def _get_ipv6_equipment_virtual_interface(self):
+
+        return self.ipv6equipament_set.all()
+
+    ipv6_equipment_virtual_interface = \
+        property(_get_ipv6_equipment_virtual_interface)
+
     def _get_ipv4(self):
         ips = self.ipequipamento_set.all()
         ips = [ip.ip for ip in ips]
@@ -980,11 +994,11 @@ class Equipamento(BaseModel):
 
         # ipv4
         for ip_equipment in self.ipequipamento_set.all():
-            ip_equipment.delete_v3()
+            ip_equipment.delete_v4()
 
         # ipv6
         for ip_v6_equipment in self.ipv6equipament_set.all():
-            ip_v6_equipment.delete_v3()
+            ip_v6_equipment.delete_v4()
 
         for equipment_access in self.equipamentoacesso_set.all():
             equipment_access.delete()
@@ -1044,18 +1058,20 @@ class Equipamento(BaseModel):
 
             # ipv4s
             ipeqpt_model = get_model('ip', 'IpEquipamento')
-            for ipv4 in equipment.get('ipv4', []):
-                ipeqpt_model().create_v3({
+            for ipv4 in equipment.get('ipsv4', []):
+                ipeqpt_model().create_v4({
                     'equipment': self.id,
-                    'ip': ipv4
+                    'ip': ipv4['ipv4']['id'],
+                    'interface': ipv4.get('interface', {}).get('id')
                 })
 
             # ipv6s
             ipeqpt_model = get_model('ip', 'Ipv6Equipament')
-            for ipv6 in equipment.get('ipv6', []):
-                ipeqpt_model().create_v3({
+            for ipv6 in equipment.get('ipsv6', []):
+                ipeqpt_model().create_v4({
                     'equipment': self.id,
-                    'ip': ipv6
+                    'ip': ipv6['ipv6']['id'],
+                    'interface': ipv6.get('interface', {}).get('id')
                 })
 
             # as
@@ -1147,40 +1163,55 @@ class Equipamento(BaseModel):
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
             # ipv4s
-            if equipment.get('ipv4'):
+            # TODO Update relationship where virtual interface is null
+            if equipment.get('ipsv4'):
                 ipeqpt_model = get_model('ip', 'IpEquipamento')
                 ips_db = ipeqpt_model.list_by_equip(self.id)
                 ips_db_ids = ips_db.values_list('ip', flat=True)
-                ipv4_ids = equipment.get('ipv4')
+                ipv4_ids = equipment.get('ipsv4')
 
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
-                    if ipv4 not in ips_db_ids:
-                        ipeqpt_model().create_v3({
+                    ipv4_id = ipv4['ipv4']['id']
+                    id_interface = ipv4.get('interface', {}).get('id')
+                    if ipv4_id not in ips_db_ids:
+                        ipeqpt_model().create_v4({
                             'equipment': self.id,
-                            'ip': ipv4
+                            'ip': ipv4['ipv4']['id'],
+                            'interface': id_interface
                         })
+                    else:
+                        ipeqpt_model.get_by_ip_equipment(ipv4_id, self.id).\
+                            update_v4(id_interface)
 
                 # delete relashionship with ipv4 not sended
+                ipv4_ids = [ipv4['ipv4']['id'] for ipv4 in ipv4_ids]
                 ips_db_ids_old = list(set(ips_db_ids) - set(ipv4_ids))
                 ips_db.filter(ip__in=ips_db_ids_old).delete()
 
             # ipv6s
-            if equipment.get('ipv6'):
+            if equipment.get('ipsv6'):
                 ipeqpt_model = get_model('ip', 'Ipv6Equipament')
                 ipv6s_db = ipeqpt_model.list_by_equip(self.id)
                 ipv6s_db_ids = ipv6s_db.values_list('ip', flat=True)
-                ipv6_ids = equipment.get('ipv6')
+                ipv6_ids = equipment.get('ipsv6')
 
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
-                    if ipv6 not in ipv6s_db_ids:
-                        ipeqpt_model().create_v3({
+                    ipv6_id = ipv6['ipv6']['id']
+                    id_interface = ipv6.get('interface', {}).get('id')
+                    if ipv6_id not in ipv6s_db_ids:
+                        ipeqpt_model().create_v4({
                             'equipment': self.id,
-                            'ip': ipv6
+                            'ip': ipv6['ipv6']['id'],
+                            'interface': id_interface
                         })
+                    else:
+                        ipeqpt_model.get_by_ip_equipment(ipv6_id, self.id).\
+                            update_v4(id_interface)
 
                 # delete relashionship with ipv6 not sended
+                ipv6_ids = [ipv6['ipv6']['id'] for ipv6 in ipv6_ids]
                 ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
 

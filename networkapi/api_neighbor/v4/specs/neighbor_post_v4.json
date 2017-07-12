@@ -1,0 +1,64 @@
+{
+  "title": "Neighbor Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "neighbors"
+  ],
+  "properties": {
+    "networks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "remote_as": {
+            "type": "string"
+          },
+          "remote_ip": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "maximum_hops": {
+            "type": "string"
+          },
+          "timer_keepalive": {
+            "type": "string"
+          },
+          "timer_timeout": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "soft_reconfiguration": {
+            "type": "boolean"
+          },
+          "community": {
+            "type": "boolean"
+          },
+          "remote_private_as": {
+            "type": "boolean"
+          },
+          "next_hop_self": {
+            "type": "boolean"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "virtual_interface": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "virtual_interface"
+        ]
+      }
+    }
+  }
+}
