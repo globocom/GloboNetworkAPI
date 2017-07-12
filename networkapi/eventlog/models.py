@@ -128,7 +128,7 @@ class EventLogQueue(object):
             'kind': evento['funcionalidade'],
             'data': {
                 'id_object': evento['id_objeto'],
-                'evento': usuario.usuario,
+                'usuario': usuario.user,
                 'old_value': evento['parametro_anterior'],
                 'new_value': evento['parametro_atual'],
                 'audit_request': evento['audit_request']
