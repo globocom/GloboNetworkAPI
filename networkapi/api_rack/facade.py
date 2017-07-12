@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import ast
+import json
 import logging
 import operator
 import re
@@ -418,6 +419,7 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
 
 def _create_hosts_envs(rack, env_mngtcloud, user):
     log.debug("_create_hosts_envs")
+    log.debug(str(env_mngtcloud))
 
     try:
         id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
@@ -471,19 +473,24 @@ def _create_hosts_envs(rack, env_mngtcloud, user):
 
 def _create_vlans_cloud(rack, envs, user):
     log.debug("_create_vlans_cloud")
+    log.debug("envs")
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
-        log.debug(str(fabricconfig))
     else:
         log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
         fabricconfig = list()
+    """
+    fabricconfig = ast.literal_eval(fabricconfig)
+    log.debug(str(fabricconfig))
 
     try:
-        fabricconfig = ast.literal_eval(fabricconfig)
+        ambiente = json.dumps(fabricconfig.get("Ambiente"))
         log.debug(str(fabricconfig))
     except:
+        ambiente = fabricconfig.get("Ambiente")
         pass
+    """
 
     for env_be in envs:
         if env_be.divisao_dc.nome=="BE":
@@ -493,6 +500,7 @@ def _create_vlans_cloud(rack, envs, user):
     father_id = env.id
     fabenv = None
 
+    fabricconfig = json.loads(fabricconfig)
     for fab in fabricconfig.get("Ambiente"):
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
@@ -515,7 +523,7 @@ def _create_vlans_cloud(rack, envs, user):
             for net_dict in amb.get("config"):
                 if net_dict.get("type")==net.ip_config.type:
                     cidr = IPNetwork(net.ip_config.subnet)
-                    prefixo = net_dict.get("subnet").split('/')[-1]
+                    prefixo = net_dict.get("new_prefix")
                     bloco = list(cidr.subnet(int(prefixo)))[-2]
                     network = {
                         'subnet': str(bloco),

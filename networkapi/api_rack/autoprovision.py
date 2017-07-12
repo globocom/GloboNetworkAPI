@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ast
+import json
 import logging
 import operator
 import re
@@ -161,7 +162,7 @@ def autoprovision_splf(rack, equips):
     equips_sorted = sorted(equips, key=operator.itemgetter('sw'))
 
     dcroom = model_to_dict(rack.dcroom)
-    envconfig = ast.literal_eval(dcroom.get("config"))
+    envconfig = json.loads(dcroom.get("config"))
     BASE_RACK = dcroom.get("racks")
     BGP = envconfig.get("BGP")
     BASE_AS_SPN = int(BGP.get("spines"))
@@ -175,17 +176,21 @@ def autoprovision_splf(rack, equips):
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
                         CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
+                        prefixBEV4 = int(net.ip_config.new_prefix)
                     else:
                         log.debug(str(net.ip_config.subnet))
                         CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
+                        prefixBEV6 = int(net.ip_config.new_prefix)
             elif envs.divisao_dc.nome[:2] == "FE":
                 VLANFE = envs.min_num_vlan_1
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
                         CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
+                        prefixFEV4 = int(net.ip_config.new_prefix)
                     else:
                         log.debug(str(net.ip_config.subnet))
                         CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
+                        prefixFEV6 = int(net.ip_config.new_prefix)
             elif envs.divisao_dc.nome == "BO":
                 VLANBORDA = envs.min_num_vlan_1
             elif envs.divisao_dc.nome == "BOCACHOS":
@@ -222,14 +227,14 @@ def autoprovision_splf(rack, equips):
         else:
             IBGPToRLxLipv6 = IPNetwork(str(netlf.ip_config.subnet))
 
-    SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 0)
-    SPINE2ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 1)
-    SPINE3ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 2)
-    SPINE4ipv4 = splitnetworkbyrack(CIDRBEipv4, 24, 3)
-    SPINE1ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 0)
-    SPINE2ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 1)
-    SPINE3ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 2)
-    SPINE4ipv6 = splitnetworkbyrack(CIDRBEipv6, 120, 3)
+    SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 0)
+    SPINE2ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 1)
+    SPINE3ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 2)
+    SPINE4ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 3)
+    SPINE1ipv6 = splitnetworkbyrack(CIDRBEipv6, prefixBEV6, 0)
+    SPINE2ipv6 = splitnetworkbyrack(CIDRBEipv6, prefixBEV6, 1)
+    SPINE3ipv6 = splitnetworkbyrack(CIDRBEipv6, prefixBEV6, 2)
+    SPINE4ipv6 = splitnetworkbyrack(CIDRBEipv6, prefixBEV6, 3)
 
     id_vlt = [envconfig.get("VLT").get("id_vlt_lf1"), envconfig.get("VLT").get("id_vlt_lf2")]
     priority_vlt = [envconfig.get("VLT").get("priority_vlt_lf1"), envconfig.get("VLT").get("priority_vlt_lf2")]

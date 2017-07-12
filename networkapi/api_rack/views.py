@@ -162,7 +162,7 @@ class RackConfigView(APIView):
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        try:
+        #try:
             log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
 
             rack_id = kwargs.get("rack_id")
@@ -170,14 +170,15 @@ class RackConfigView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
-            raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+        #except Exception, e:
+         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class RackEnvironmentView(APIView):
 
+    @commit_on_success
     def post(self, request, *args, **kwargs):
-        try:
+        #try:
             log = logging.getLogger('Alocando ambientes e vlans do rack')
 
             rack_id = kwargs.get("rack_id")
@@ -185,8 +186,8 @@ class RackEnvironmentView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
-            raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+        #except Exception, e:
+         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
 
 
 class DataCenterView(APIView):
