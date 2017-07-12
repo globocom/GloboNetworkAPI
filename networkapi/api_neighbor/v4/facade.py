@@ -20,8 +20,7 @@ def get_neighbor_by_search(search=dict()):
 
     try:
         neighbors = Neighbor.objects.filter()
-        neighbor_map = build_query_to_datatable_v3(neighbors,
-                                                            search)
+        neighbor_map = build_query_to_datatable_v3(neighbors, search)
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
@@ -38,11 +37,11 @@ def get_neighbor_by_id(neighbor_id):
     """
 
     try:
-        neighbor_ = Neighbor.get_by_pk(id=neighbor_id)
+        neighbor = Neighbor.get_by_pk(id=neighbor_id)
     except NeighborNotFoundError, e:
         raise exceptions.NeighborDoesNotExistException(str(e))
 
-    return neighbor_
+    return neighbor
 
 
 def get_neighbor_by_ids(neighbor_ids):
@@ -52,27 +51,27 @@ def get_neighbor_by_ids(neighbor_ids):
         neighbor_ids: List of Ids of Neighbors.
     """
 
-    vi_ids = list()
-    for vi_id in neighbor_ids:
+    neighbor_ids = list()
+    for neighbor_id in neighbor_ids:
         try:
-            neighbor_ = get_neighbor_by_id(vi_id).id
-            vi_ids.append(neighbor_)
+            neighbor = get_neighbor_by_id(neighbor_id).id
+            neighbor_ids.append(neighbor)
         except exceptions.NeighborDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
 
-    neighbors = Neighbor.objects.filter(id__in=vi_ids)
+    neighbors = Neighbor.objects.filter(id__in=neighbor_ids)
 
     return neighbors
 
 
-def update_neighbor(vi_):
+def update_neighbor(neighbor):
     """Update Neighbor."""
 
     try:
-        vi_obj = get_neighbor_by_id(vi_.get('id'))
-        vi_obj.update_v4(vi_)
+        neighbor_obj = get_neighbor_by_id(neighbor.get('id'))
+        neighbor_obj.update_v4(neighbor)
     except NeighborErrorV4, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
@@ -82,15 +81,15 @@ def update_neighbor(vi_):
     except Exception, e:
         raise NetworkAPIException(str(e))
 
-    return vi_obj
+    return neighbor_obj
 
 
-def create_neighbor(vi_):
+def create_neighbor(neighbor):
     """Create Neighbor."""
 
     try:
-        vi_obj = Neighbor()
-        vi_obj.create_v4(vi_)
+        neighbor_obj = Neighbor()
+        neighbor_obj.create_v4(neighbor)
     except NeighborErrorV4, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
@@ -98,16 +97,16 @@ def create_neighbor(vi_):
     except Exception, e:
         raise NetworkAPIException(str(e))
 
-    return vi_obj
+    return neighbor_obj
 
 
-def delete_neighbor(vi_ids):
+def delete_neighbor(neighbor_ids):
     """Delete Neighbor."""
 
-    for vi_id in vi_ids:
+    for neighbor_id in neighbor_ids:
         try:
-            vi_obj = get_neighbor_by_id(vi_id)
-            vi_obj.delete_v4()
+            neighbor_obj = get_neighbor_by_id(neighbor_id)
+            neighbor_obj.delete_v4()
         except exceptions.NeighborDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
         # except exceptions.AsAssociatedToEquipmentError, e:
