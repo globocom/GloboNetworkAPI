@@ -8,6 +8,9 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 class NeighborV4Serializer(DynamicFieldsModelSerializer):
 
+    virtual_interface = serializers.\
+        SerializerMethodField('get_virtual_interface')
+
     class Meta:
         Neighbor = get_model('api_neighbor',
                              'Neighbor')
@@ -16,6 +19,7 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
         fields = (
             'id',
             'description',
+            'virtual_interface'
         )
 
         basic_fields = (
@@ -29,3 +33,24 @@ class NeighborV4Serializer(DynamicFieldsModelSerializer):
         )
 
         details_fields = fields
+
+    def get_virtual_interface(self, obj):
+        return self.extends_serializer(obj, 'virtual_interface')
+
+    def get_serializers(self):
+        vi_slz = get_app('api_virtual_interface', 'v4.serializers')
+
+        if not self.mapping:
+
+            self.mapping = {
+                'virtual_interface': {
+                    'obj': 'virtual_interface_id'
+                },
+                'virtual_interface__details': {
+                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
+                    'kwargs': {
+
+                    },
+                    'obj': 'virtual_interface'
+                },
+            }
