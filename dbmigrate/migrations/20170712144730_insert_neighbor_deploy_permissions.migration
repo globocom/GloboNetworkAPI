@@ -1,0 +1,13 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `permissions` (function) VALUES ('neighbor_create_script');
+INSERT INTO `permissions` (function) VALUES ('neighbor_remove_script');
+
+"""
+
+SQL_DOWN = u"""
+DELETE FROM `permissions` where function='neighbor_create_script';
+DELETE FROM `permissions` where function='neighbor_remove_script';
+
+"""
+
