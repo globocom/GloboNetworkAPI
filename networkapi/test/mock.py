@@ -87,6 +87,29 @@ class MockPluginNetwork(object):
             raise Exception('Error')
 
 
+class MockPluginBgp(object):
+
+    _status = True
+
+    @classmethod
+    def status(cls, status=True):
+        cls._status = status
+
+    @classmethod
+    def create_neighbor(cls, kwargs):
+        if cls._status:
+            log.info('Mock Bgp Create Neighbor')
+        else:
+            raise Exception('Error')
+
+    @classmethod
+    def delete_neighbor(cls, kwargs):
+        if cls._status:
+            log.info('Mock Bgp Delete Neighbor')
+        else:
+            raise Exception('Error')
+
+
 class MockPluginVip(object):
 
     _status = True

@@ -250,5 +250,19 @@
     "fields": {
       "function": "neighbor_management"
     }
+  },
+  {
+    "pk": 44,
+    "model": "grupo.permission",
+    "fields": {
+      "function": "neighbor_create_script"
+    }
+  },
+  {
+    "pk": 45,
+    "model": "grupo.permission",
+    "fields": {
+      "function": "neighbor_remove_script"
+    }
   }
 ]
