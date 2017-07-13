@@ -2,23 +2,13 @@
 # Create your views here.
 from django.db.transaction import commit_on_success
 from networkapi.util.geral import destroy_lock
-
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.distributedlock import LOCK_NEIGHBOR
-
 from networkapi.util.geral import create_lock
-
-from networkapi.api_neighbor.v4.permissions import Read
-from networkapi.api_neighbor.v4.permissions import Write
-from networkapi.api_neighbor.v4.permissions import DeployCreate
-from networkapi.api_neighbor.v4.permissions import DeployDelete
-from networkapi.api_neighbor.v4.permissions import deploy_obj_permission
-
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from networkapi.api_neighbor.v4 import facade
-
 from networkapi.api_neighbor.v4 import serializers
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
@@ -29,6 +19,10 @@ from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+from networkapi.api_neighbor.v4.permissions import Read
+from networkapi.api_neighbor.v4.permissions import Write
+from networkapi.api_neighbor.v4.permissions import DeployCreate
+from networkapi.api_neighbor.v4.permissions import DeployDelete
 import logging
 
 log = logging.getLogger(__name__)
