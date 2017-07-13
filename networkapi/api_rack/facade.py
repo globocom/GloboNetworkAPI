@@ -417,9 +417,9 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
             log.debug("Vlan object: %s" % str(obj))
 
 
-def _create_hosts_envs(rack, env_mngtcloud, user):
-    log.debug("_create_hosts_envs")
-    log.debug(str(env_mngtcloud))
+def _create_prod_envs(rack, prod_envs, user):
+    log.debug("_create_prod_envs")
+    log.debug(str(prod_envs))
 
     try:
         id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
@@ -431,7 +431,7 @@ def _create_hosts_envs(rack, env_mngtcloud, user):
         pass
 
     environment = list()
-    for env in env_mngtcloud:
+    for env in prod_envs:
         father_id = env.id
 
         config_subnet = list()
@@ -471,8 +471,8 @@ def _create_hosts_envs(rack, env_mngtcloud, user):
     return environment
 
 
-def _create_vlans_cloud(rack, envs, user):
-    log.debug("_create_vlans_cloud")
+def _create_prod_vlans(rack, envs, user):
+    log.debug("_create_prod_vlans")
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
@@ -646,16 +646,16 @@ def rack_environments_vlans(rack_id, user):
     env_spn = list()
     env_lf = list()
     env_oob = list()
-    env_mngtcloud = list()
+    prod_envs = list()
     environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id), father_environment__isnull=True)
     for envs in environments:
         if envs.ambiente_logico.nome == "SPINES":
             env_spn.append(envs)
         elif envs.ambiente_logico.nome == "LEAF-LEAF":
             env_lf.append(envs)
-        elif envs.ambiente_logico.nome == "HOSTS-CLOUD":
+        elif envs.ambiente_logico.nome == "PRODUCAO":
             if envs.divisao_dc.nome[:2] == "BE":
-                env_mngtcloud.append(envs)
+                prod_envs.append(envs)
         elif envs.divisao_dc.nome[:3] == "OOB":
             env_oob.append(envs)
 
@@ -676,9 +676,9 @@ def rack_environments_vlans(rack_id, user):
     _create_lflf_vlans(rack, env_lf, user)
 
     # producao/cloud
-    envs_prod = _create_hosts_envs(rack, env_mngtcloud, user)
+    envs_prod = _create_prod_envs(rack, prod_envs, user)
     if envs_prod:
-        envs_prod_rack = _create_vlans_cloud(rack, envs_prod, user)
+        envs_prod_rack = _create_prod_vlans(rack, envs_prod, user)
 
     # redes de gerencia OOB
     _create_oobvlans(rack, env_oob, user)

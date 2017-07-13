@@ -210,7 +210,7 @@ def autoprovision_splf(rack, equips):
                 VLANBORDA = envs.min_num_vlan_1
             elif envs.divisao_dc.nome == "BOCACHOS":
                 VLANBORDACACHOS = envs.min_num_vlan_1
-        elif envs.ambiente_logico.nome == "HOSTS-CLOUD":
+        elif envs.ambiente_logico.nome == "PRODUCAO":
             if envs.divisao_dc.nome[:2] == "BE":
                 for net in envs.configs:
                     if net.ip_config.type=="v4":
