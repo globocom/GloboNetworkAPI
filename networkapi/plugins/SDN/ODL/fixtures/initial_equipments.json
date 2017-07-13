@@ -32,6 +32,18 @@
     }
   },
   {
+    "model": "ambiente.ambiente",
+    "pk": 1,
+    "fields": {
+        "ambiente_logico": 1,
+        "default_vrf": 1,
+        "divisao_dc": 1,
+        "filter": 1,
+        "grupo_l3": 1,
+        "father_environment": 4
+    }
+  },
+  {
     "fields": {
         "ambiente": 1,
         "equipamento": 1,
