@@ -18,6 +18,7 @@ from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.equipamento.models import Equipamento
 
 log = logging.getLogger(__name__)
 
@@ -122,8 +123,7 @@ def delete_neighbor(neighbor_ids):
 
 
 @commit_on_success
-def create_real_neighbor(neighbors):
-    eqpt_model = get_model('equipamento', 'Equipamento')
+def deploy_neighbor(neighbors):
 
     deployed_ids = list()
     for neighbor in neighbors:
@@ -132,8 +132,7 @@ def create_real_neighbor(neighbors):
         if neighbor['created'] is True:
             raise NeighborAlreadyCreated(id_)
 
-        bgp_plugin = PluginFactory.factory(eqpt_model())
-        bgp_plugin.create_neighbor(neighbor)
+        # TODO Implement plugin call
         deployed_ids.append(id_)
 
     neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
@@ -141,9 +140,7 @@ def create_real_neighbor(neighbors):
 
 
 @commit_on_success
-def delete_real_neighbor(neighbors):
-
-    eqpt_model = get_model('equipamento', 'Equipamento')
+def undeploy_neighbor(neighbors):
 
     undeployed_ids = list()
     for neighbor in neighbors:
@@ -152,9 +149,7 @@ def delete_real_neighbor(neighbors):
         if neighbor['created'] is False:
             raise NeighborNotCreated(id_)
 
-        bgp_plugin = PluginFactory.factory(eqpt_model())
-
-        bgp_plugin.delete_neighbor(neighbor)
+        # TODO Implement plugin call
         undeployed_ids.append(id_)
 
     neighbors_obj = Neighbor.objects.filter(id__in=undeployed_ids)
