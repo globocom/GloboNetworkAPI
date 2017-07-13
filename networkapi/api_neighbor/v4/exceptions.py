@@ -38,7 +38,7 @@ class NeighborAlreadyCreated(APIException):
     default_detail = 'Neighbor already created.'
 
     def __init__(self, msg=None):
-        self.detail = u'Neighbor <<%s>> already created.' % msg
+        self.detail = u'Neighbor %s already created.' % msg
 
 
 class NeighborNotCreated(APIException):
@@ -46,4 +46,4 @@ class NeighborNotCreated(APIException):
     default_detail = 'Neighbor not created.'
 
     def __init__(self, msg=None):
-        self.detail = u'Neighbor <<%s>> not created.' % msg
+        self.detail = u'Neighbor %s not created.' % msg

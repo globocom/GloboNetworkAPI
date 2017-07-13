@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
+from networkapi.api_rest.exceptions import ValidationAPIException
 from django.db.transaction import commit_on_success
+
+from networkapi.api_neighbor.v4.exceptions import NeighborAlreadyCreated
+from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
 from networkapi.util.geral import destroy_lock
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.distributedlock import LOCK_NEIGHBOR
@@ -121,7 +125,7 @@ class NeighborDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
     def post(self, request, *args, **kwargs):
         """
         Creates list of neighbor in equipments
@@ -136,8 +140,9 @@ class NeighborDeployView(CustomAPIView):
 
         locks_list = create_lock(neighbor_serializer.data, LOCK_NEIGHBOR)
         try:
-            response = facade.create_real_neighbor(neighbor_serializer.data,
-                                                   request.user)
+            response = facade.create_real_neighbor(neighbor_serializer.data)
+        except NeighborAlreadyCreated as e:
+            raise ValidationAPIException(str(e))
         except Exception, exception:
             log.error(exception)
             raise NetworkAPIException(exception)
@@ -148,7 +153,7 @@ class NeighborDeployView(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    @permission_classes_apiview((IsAuthenticated, Write))
+    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of neighbor in equipments
@@ -163,8 +168,9 @@ class NeighborDeployView(CustomAPIView):
 
         locks_list = create_lock(neighbor_serializer.data, LOCK_NEIGHBOR)
         try:
-            response = facade.delete_real_neighbor(neighbor_serializer.data,
-                                                   request.user)
+            response = facade.delete_real_neighbor(neighbor_serializer.data)
+        except NeighborNotCreated as e:
+            raise ValidationAPIException(str(e))
         except Exception, exception:
             log.error(exception)
             raise NetworkAPIException(exception)

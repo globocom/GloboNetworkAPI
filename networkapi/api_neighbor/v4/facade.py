@@ -3,6 +3,8 @@ import logging
 
 from django.core.exceptions import FieldError
 from django.db.transaction import commit_on_success
+from networkapi.plugins.factory import PluginFactory
+
 from networkapi.util.geral import get_model
 
 from networkapi.api_neighbor.models import Neighbor
@@ -16,7 +18,6 @@ from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-from networkapi.plugins.BGP.NXAPI.Generic import NxApiPlugin
 
 log = logging.getLogger(__name__)
 
@@ -123,25 +124,38 @@ def delete_neighbor(neighbor_ids):
 @commit_on_success
 def create_real_neighbor(neighbors):
     eqpt_model = get_model('equipamento', 'Equipamento')
+
+    deployed_ids = list()
     for neighbor in neighbors:
+        id_ = neighbor['id']
 
         if neighbor['created'] is True:
-            raise NeighborAlreadyCreated(neighbor['id'])
+            raise NeighborAlreadyCreated(id_)
 
-        bgp_plugin = NxApiPlugin(equipment=eqpt_model())
-
+        bgp_plugin = PluginFactory.factory(eqpt_model())
         bgp_plugin.create_neighbor(neighbor)
+        deployed_ids.append(id_)
+
+    neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
+    neighbors_obj.update(created=True)
 
 
 @commit_on_success
 def delete_real_neighbor(neighbors):
 
     eqpt_model = get_model('equipamento', 'Equipamento')
+
+    undeployed_ids = list()
     for neighbor in neighbors:
+        id_ = neighbor['id']
 
         if neighbor['created'] is False:
-            raise NeighborNotCreated(neighbor['id'])
+            raise NeighborNotCreated(id_)
 
-        bgp_plugin = NxApiPlugin(equipment=eqpt_model())
+        bgp_plugin = PluginFactory.factory(eqpt_model())
 
         bgp_plugin.delete_neighbor(neighbor)
+        undeployed_ids.append(id_)
+
+    neighbors_obj = Neighbor.objects.filter(id__in=undeployed_ids)
+    neighbors_obj.update(created=False)
