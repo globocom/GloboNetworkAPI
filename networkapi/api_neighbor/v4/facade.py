@@ -114,8 +114,6 @@ def delete_neighbor(neighbor_ids):
             neighbor_obj.delete_v4()
         except exceptions.NeighborDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
-        # except exceptions.AsAssociatedToEquipmentError, e:
-        #     raise ValidationAPIException(str(e))
         except NeighborError, e:
             raise NetworkAPIException(str(e))
         except Exception, e:
