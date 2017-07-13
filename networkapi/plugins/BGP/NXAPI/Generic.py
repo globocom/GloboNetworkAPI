@@ -25,7 +25,7 @@ class NxApiPlugin(BaseBgpPlugin):
 
         self.equipment_access = self._get_equipment_access()
 
-    def create_neighbor(self, **kwargs):
+    def create_neighbor(self, kwargs):
         commands = []
 
         if kwargs['local_as']:
