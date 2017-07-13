@@ -1,6 +1,6 @@
 FROM globocom/networkapi:1.0.0
 
-RUN mkdir /netapi
+RUN mkdir -p /netapi
 WORKDIR /netapi
 
 ADD . /netapi/
