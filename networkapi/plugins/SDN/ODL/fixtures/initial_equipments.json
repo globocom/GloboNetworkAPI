@@ -38,7 +38,6 @@
         "ambiente_logico": 1,
         "default_vrf": 1,
         "divisao_dc": 1,
-        "filter": 1,
         "grupo_l3": 1,
         "father_environment": 4
     }
@@ -82,6 +81,15 @@
         "oct1": 10,
         "networkipv4": 1,
         "descricao": "IP of SDN Controller"
+    }
+  },
+  {
+  "pk": 1,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 1,
+    "nome": "VLAN 1 - AMBIENTE 1",
+    "num_vlan": "1"
     }
   },
   {
