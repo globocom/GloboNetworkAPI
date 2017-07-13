@@ -73,6 +73,8 @@ class PoolMemberStateView(CustomAPIView):
                 many=True
             )
 
+            locks_list = create_lock(serializer_server_pool.data, LOCK_POOL)
+
             mbr_state = facade_pool_deploy.get_poolmember_state(
                 serializer_server_pool.data)
 
@@ -93,6 +95,8 @@ class PoolMemberStateView(CustomAPIView):
             # get pools updated
             server_pools = models_vips.ServerPool.objects.filter(
                 id__in=pool_ids)
+
+            destroy_lock(locks_list)
 
         serializer_server_pool = serializers.PoolV3Serializer(
             server_pools,
