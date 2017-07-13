@@ -31,3 +31,19 @@ class NeighborErrorV4(Exception):
 class NeighborDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Neighbor does not exists.'
+
+
+class NeighborAlreadyCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Neighbor already created.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Neighbor <<%s>> already created.' % msg
+
+
+class NeighborNotCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Neighbor not created.'
+
+    def __init__(self, msg=None):
+        self.detail = u'Neighbor <<%s>> not created.' % msg
