@@ -11,7 +11,7 @@
           "ipv6": {
             "id": 2
           },
-          "interface": {
+          "virtual_interface": {
             "id": 1
           }
         },

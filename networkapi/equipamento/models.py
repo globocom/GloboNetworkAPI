@@ -1062,7 +1062,7 @@ class Equipamento(BaseModel):
                 ipeqpt_model().create_v4({
                     'equipment': self.id,
                     'ip': ipv4['ipv4']['id'],
-                    'interface': ipv4.get('interface', {}).get('id')
+                    'interface': ipv4.get('virtual_interface', {}).get('id')
                 })
 
             # ipv6s
@@ -1071,7 +1071,7 @@ class Equipamento(BaseModel):
                 ipeqpt_model().create_v4({
                     'equipment': self.id,
                     'ip': ipv6['ipv6']['id'],
-                    'interface': ipv6.get('interface', {}).get('id')
+                    'interface': ipv6.get('virtual_interface', {}).get('id')
                 })
 
             # as
@@ -1173,7 +1173,7 @@ class Equipamento(BaseModel):
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
                     ipv4_id = ipv4['ipv4']['id']
-                    id_interface = ipv4.get('interface', {}).get('id')
+                    id_interface = ipv4.get('virtual_interface', {}).get('id')
                     if ipv4_id not in ips_db_ids:
                         ipeqpt_model().create_v4({
                             'equipment': self.id,
@@ -1199,7 +1199,7 @@ class Equipamento(BaseModel):
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
                     ipv6_id = ipv6['ipv6']['id']
-                    id_interface = ipv6.get('interface', {}).get('id')
+                    id_interface = ipv6.get('virtual_interface', {}).get('id')
                     if ipv6_id not in ipv6s_db_ids:
                         ipeqpt_model().create_v4({
                             'equipment': self.id,

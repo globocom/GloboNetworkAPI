@@ -2184,7 +2184,7 @@ class Ip(BaseModel):
                         for eqpt in ip_map.get('equipments', [])])
 
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface', {}).get('id')
+                id__in=[eqpt.get('virtual_interface', {}).get('id')
                         for eqpt in ip_map.get('equipments', [])])
 
         except Exception, e:
@@ -2270,7 +2270,7 @@ class Ip(BaseModel):
                 ip_equipment.create_v4({
                     'ip': self.id,
                     'equipment': eqpt.get('equipment').get('id'),
-                    'interface': eqpt.get('interface', {}).get('id')
+                    'interface': eqpt.get('virtual_interface', {}).get('id')
                 })
 
         except IpErrorV3, e:
@@ -2313,7 +2313,7 @@ class Ip(BaseModel):
 
             # Get objects of virtual interfaces
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface', {}).get('id')
+                id__in=[eqpt.get('virtual_interface', {}).get('id')
                         for eqpt in ip_map.get('equipments', [])])
 
         except Exception, e:
@@ -2369,7 +2369,7 @@ class Ip(BaseModel):
             # Creates new associate
             for eqpt in ip_map.get('equipments', []):
                 eqpt_id = eqpt.get('equipment').get('id')
-                id_interface = eqpt.get('interface', {}).get('id')
+                id_interface = eqpt.get('virtual_interface', {}).get('id')
                 ip_equipment = IpEquipamento()
                 if eqpt_id not in current:
                     ip_equipment.create_v4({
@@ -5079,7 +5079,7 @@ class Ipv6(BaseModel):
                         for eqpt in ip_map.get('equipments', [])])
 
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface', {}).get('id')
+                id__in=[eqpt.get('virtual_interface', {}).get('id')
                     for eqpt in ip_map.get('equipments', [])])
         except Exception, e:
             raise IpErrorV3(e)
@@ -5168,7 +5168,7 @@ class Ipv6(BaseModel):
                 ip_equipment.create_v4({
                     'ip': self.id,
                     'equipment': eqpt.get('equipment').get('id'),
-                    'interface': eqpt.get('interface', {}).get('id')
+                    'interface': eqpt.get('virtual_interface', {}).get('id')
                 })
 
         except IpErrorV3, e:
@@ -5211,7 +5211,7 @@ class Ipv6(BaseModel):
 
             # Get objects of virtual interfaces
             virtual_interfaces = virtual_interface.objects.filter(
-                id__in=[eqpt.get('interface', {}).get('id')
+                id__in=[eqpt.get('virtual_interface', {}).get('id')
                         for eqpt in ip_map.get('equipments', [])])
 
         except Exception, e:
@@ -5267,7 +5267,7 @@ class Ipv6(BaseModel):
             # Creates new associate
             for eqpt in ip_map.get('equipments', []):
                 eqpt_id = eqpt.get('equipment').get('id')
-                id_interface = eqpt.get('interface', {}).get('id')
+                id_interface = eqpt.get('virtual_interface', {}).get('id')
                 ip_equipment = Ipv6Equipament()
                 if eqpt_id not in current:
                     ip_equipment.create_v4({

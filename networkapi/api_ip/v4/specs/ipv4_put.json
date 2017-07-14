@@ -48,7 +48,7 @@
                     "id"
                   ]
                 },
-                "interface": {
+                "virtual_interface": {
                   "type": "object",
                   "properties": {
                     "id": {

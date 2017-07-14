@@ -10,7 +10,7 @@
           "ipv4": {
             "id": 1
           },
-          "interface": {
+          "virtual_interface": {
             "id": 1
           }
         },

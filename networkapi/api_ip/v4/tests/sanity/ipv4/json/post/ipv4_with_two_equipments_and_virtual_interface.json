@@ -11,7 +11,7 @@
           "equipment": {
             "id": 1
           },
-          "interface": {
+          "virtual_interface": {
             "id": 1
           }
         },
