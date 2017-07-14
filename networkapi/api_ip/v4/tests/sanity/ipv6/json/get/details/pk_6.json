@@ -1,0 +1,163 @@
+{
+  "ips": [
+    {
+      "id": 6,
+      "ip_formated": "fc00:0000:0000:0009:0000:0000:0000:0001",
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0009",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0001",
+      "networkipv6": {
+        "id": 9,
+        "block1": "fc00",
+        "block2": "0000",
+        "block3": "0000",
+        "block4": "0009",
+        "block5": "0000",
+        "block6": "0000",
+        "block7": "0000",
+        "block8": "0000",
+        "prefix": 64,
+        "networkv6": "fc00:0000:0000:0009:0000:0000:0000:0000/64",
+        "mask1": "ffff",
+        "mask2": "ffff",
+        "mask3": "ffff",
+        "mask4": "ffff",
+        "mask5": "0000",
+        "mask6": "0000",
+        "mask7": "0000",
+        "mask8": "0000",
+        "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+        "vlan": {
+          "id": 4,
+          "name": "VLAN 1 - ENVIRONMENT EQPT",
+          "num_vlan": 4,
+          "environment": 1,
+          "description": "",
+          "acl_file_name": "",
+          "acl_valida": false,
+          "acl_file_name_v6": "",
+          "acl_valida_v6": false,
+          "active": false,
+          "vrf": null,
+          "acl_draft": null,
+          "acl_draft_v6": null
+        },
+        "network_type": {
+          "id": 1,
+          "tipo_rede": "Network of Equipments"
+        },
+        "environmentvip": null,
+        "active": true,
+        "dhcprelay": [],
+        "cluster_unit": null
+      },
+      "description": null,
+      "equipments": [
+        {
+          "equipment": {
+            "id": 1,
+            "name": "VM-SANITY-TEST-1",
+            "maintenance": false,
+            "equipment_type": {
+              "id": 2,
+              "equipment_type": "Balanceador"
+            },
+            "model": {
+              "id": 1,
+              "name": "Generic Model"
+            },
+            "environments": [
+              {
+                "is_router": false,
+                "is_controller": false,
+                "environment": {
+                  "id": 1,
+                  "name": "BE - SANITY-TEST-1 - RACK-1",
+                  "grupo_l3": 1,
+                  "ambiente_logico": 1,
+                  "divisao_dc": 1,
+                  "filter": 1,
+                  "acl_path": null,
+                  "ipv4_template": null,
+                  "ipv6_template": null,
+                  "link": "",
+                  "min_num_vlan_1": null,
+                  "max_num_vlan_1": null,
+                  "min_num_vlan_2": null,
+                  "max_num_vlan_2": null,
+                  "default_vrf": 1,
+                  "father_environment": null,
+                  "sdn_controlled": false
+                }
+              }
+            ],
+            "groups": [
+              {
+                "id": 1,
+                "name": "Group of VM"
+              }
+            ],
+            "id_as": null
+          },
+          "virtual_interface": {
+            "id": 1,
+            "name": "VIRTUAL-INTERFACE-1",
+            "vrf": {
+              "id": 1,
+              "internal_name": "default",
+              "vrf": "default"
+            }
+          }
+        },
+        {
+          "equipment": {
+            "id": 3,
+            "name": "VM-SANITY-TEST-3",
+            "maintenance": false,
+            "equipment_type": {
+              "id": 2,
+              "equipment_type": "Balanceador"
+            },
+            "model": {
+              "id": 1,
+              "name": "Generic Model"
+            },
+            "environments": [
+              {
+                "is_router": false,
+                "is_controller": false,
+                "environment": {
+                  "id": 1,
+                  "name": "BE - SANITY-TEST-1 - RACK-1",
+                  "grupo_l3": 1,
+                  "ambiente_logico": 1,
+                  "divisao_dc": 1,
+                  "filter": 1,
+                  "acl_path": null,
+                  "ipv4_template": null,
+                  "ipv6_template": null,
+                  "link": "",
+                  "min_num_vlan_1": null,
+                  "max_num_vlan_1": null,
+                  "min_num_vlan_2": null,
+                  "max_num_vlan_2": null,
+                  "default_vrf": 1,
+                  "father_environment": null,
+                  "sdn_controlled": false
+                }
+              }
+            ],
+            "groups": [],
+            "id_as": null
+          },
+          "virtual_interface": null
+        }
+      ]
+    }
+  ]
+}

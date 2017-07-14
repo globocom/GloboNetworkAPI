@@ -116,3 +116,17 @@ class EquipmentGetTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         self.compare_json_lists(name_file, response.data['equipments'])
+
+    def test_get_equipment_by_kind_details(self):
+        """V4 Test of success to get equipment with kind details."""
+
+        name_file = json_path % 'get/details/pk_3.json'
+
+        response = self.client.get(
+            '/api/v4/equipment/3/?kind=details',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json(name_file, response.data)

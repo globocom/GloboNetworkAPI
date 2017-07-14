@@ -124,6 +124,20 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
 
         self.compare_json_lists(name_file, response.data['virtual_interfaces'])
 
+    def test_get_virtual_interface_by_kind_details(self):
+        """V4 Test of success to get Virtual Interface with kind details."""
+
+        name_file = json_path % 'get/details/pk_1.json'
+
+        response = self.client.get(
+            '/api/v4/virtual-interface/1/?kind=details',
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json(name_file, response.data)
+
 
 class VirtualInterfaceGetErrorTestCase(NetworkApiTestCase):
     """Class for Test Virtual Interface package Error GET cases."""
