@@ -299,8 +299,14 @@ def gerar_arquivo_config(ids):
     return 1
 
 
-def _create_spnlfenv(rack, envfathers):
+def _create_spnlfenv(rack):
     log.debug("_create_spnlfenv")
+
+    envfathers = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                    father_environment__isnull=True,
+                                                    grupo_l3__nome=str(rack.dcroom.name),
+                                                    ambiente_logico__nome="SPINES")
+    log.debug(str(envfathers))
 
     environment_spn_lf_list = list()
     spines = int(rack.dcroom.spines)
@@ -372,8 +378,17 @@ def _create_spnlfenv(rack, envfathers):
     return environment_spn_lf_list
 
 
-def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
+def _create_spnlfvlans(rack, user):
     log.debug("_create_spnlfvlans")
+
+    spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                     father_environment__isnull=False,
+                                                     grupo_l3__nome=str(rack.nome),
+                                                     ambiente_logico__nome__in=["SPINE01LEAF",
+                                                                                "SPINE02LEAF",
+                                                                                "SPINE03LEAF",
+                                                                                "SPINE04LEAF"])
+    log.debug(str(spn_lf_envs))
 
     rack_number = int(rack.numero)
     tipo_rede = "Ponto a ponto"
@@ -385,7 +400,7 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
         network_type.save()
         id_network_type = network_type.id
         pass
-    for env in spn_lf_envs_ids:
+    for env in spn_lf_envs:
         log.debug(str(env))
         env_id = env.id
         vlan_base = env.min_num_vlan_1
@@ -417,8 +432,15 @@ def _create_spnlfvlans(rack, spn_lf_envs_ids, user):
             log.debug("Vlan object: %s" % str(obj))
 
 
-def _create_prod_envs(rack, prod_envs, user):
+def _create_prod_envs(rack, user):
     log.debug("_create_prod_envs")
+
+    prod_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                   father_environment__isnull=True,
+                                                   grupo_l3__nome=str(rack.dcroom.name),
+                                                   ambiente_logico__nome="PRODUCAO"
+                                                   ).exclude(divisao_dc__nome="BO_DMZ")
+
     log.debug(str(prod_envs))
 
     try:
@@ -433,17 +455,18 @@ def _create_prod_envs(rack, prod_envs, user):
     environment = list()
     for env in prod_envs:
         father_id = env.id
-
         config_subnet = list()
         for net in env.configs:
-            cidr = IPNetwork(net.ip_config.subnet)
+            log.debug(str(net.ip_config.subnet))
+            log.debug(str(type(net.ip_config.subnet)))
+            cidr = IPNetwork(str(net.ip_config.subnet))
             prefix = int(net.ip_config.new_prefix)
             bloco = list(cidr.subnet(int(prefix)))[int(rack.numero)]
             network = {
                 'subnet': str(bloco),
                 'type': net.ip_config.type,
                 'network_type': net.ip_config.network_type.id,
-                'new_prefix': 20 if str(net.ip_config.type)=="v4" else 64
+                'new_prefix': 31 if str(net.ip_config.type)=="v4" else 127
             }
             config_subnet.append(network)
 
@@ -471,8 +494,15 @@ def _create_prod_envs(rack, prod_envs, user):
     return environment
 
 
-def _create_prod_vlans(rack, envs, user):
+def _create_prod_vlans(rack, user):
     log.debug("_create_prod_vlans")
+
+    env = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                              divisao_dc__nome="BE",
+                                              grupo_l3__nome=str(rack.dcroom.name),
+                                              ambiente_logico__nome="PRODUCAO").uniqueResult()
+
+    log.debug(str(env))
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
@@ -492,10 +522,6 @@ def _create_prod_vlans(rack, envs, user):
         log.debug("config -ast: %s" % str(fabricconfig))
     except:
         pass
-
-    for env_be in envs:
-        if env_be.divisao_dc.nome=="BE":
-            env = env_be
 
     environment = None
     father_id = env.id
@@ -560,9 +586,14 @@ def _create_prod_vlans(rack, envs, user):
     return environment
 
 
-def _create_lflf_vlans(rack, env_lf, user):
+def _create_lflf_vlans(rack, user):
     log.debug("_create_lflf_vlans")
 
+    env_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                father_environment__isnull=True,
+                                                divisao_dc__nome=str(rack.dcroom.name),
+                                                ambiente_logico__nome="LEAF-LEAF")
+    log.debug(str(env_lf))
     rack_number = int(rack.numero)
 
     tipo_rede = "Ponto a ponto"
@@ -606,11 +637,16 @@ def _create_lflf_vlans(rack, env_lf, user):
             log.debug("Vlan object: %s" % str(obj))
 
 
-def _create_oobvlans(rack, env_oob, user):
+def _create_oobvlans(rack, user):
     log.debug("_create_oobvlans")
 
+    env_oob = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                 divisao_dc__nome="OOB",
+                                                 grupo_l3__nome=str(rack.dcroom.name),
+                                                 ambiente_logico__nome="GERENCIA").uniqueResult()
+    log.debug(str(env_oob))
     vlan = None
-    for env in env_oob:
+    for env in [env_oob]:
         vlan_base = env.min_num_vlan_1
         vlan_number = int(vlan_base) + int(rack.numero)
         vlan_name = "VLAN_" + env.ambiente_logico.nome + "_" + rack.nome
@@ -642,46 +678,19 @@ def rack_environments_vlans(rack_id, user):
     if rack.create_vlan_amb:
         raise Exception("Os ambientes e Vlans já foram alocados.")
 
-    # get fathers environments
-    env_spn = list()
-    env_lf = list()
-    env_oob = list()
-    prod_envs = list()
-    environments = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id), father_environment__isnull=True)
-    for envs in environments:
-        if envs.ambiente_logico.nome == "SPINES":
-            env_spn.append(envs)
-        elif envs.ambiente_logico.nome == "LEAF-LEAF":
-            env_lf.append(envs)
-        elif envs.ambiente_logico.nome == "PRODUCAO":
-            if envs.divisao_dc.nome[:2] == "BE":
-                prod_envs.append(envs)
-        elif envs.divisao_dc.nome[:3] == "OOB":
-            env_oob.append(envs)
+    # spine x leaf
+    _create_spnlfenv(rack)
+    _create_spnlfvlans(rack, user)
 
-    # externo:  spine x leaf
-    spn_lf_envs_ids = _create_spnlfenv(rack, env_spn)
-    if spn_lf_envs_ids:
-        _create_spnlfvlans(rack, spn_lf_envs_ids, user)
-    else:
-        ids = list()
-        for i in env_spn:
-            ids.append(int(i.id))
-        env_spn_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id), father_environment__in=ids)
-        if env_spn_lf:
-            log.debug(str(env_spn_lf))
-            _create_spnlfvlans(rack, env_spn_lf, user)
-
-    # interno:  leaf x leaf (tor)
-    _create_lflf_vlans(rack, env_lf, user)
+    # leaf x leaf
+    _create_lflf_vlans(rack, user)
 
     # producao/cloud
-    envs_prod = _create_prod_envs(rack, prod_envs, user)
-    if envs_prod:
-        envs_prod_rack = _create_prod_vlans(rack, envs_prod, user)
+    _create_prod_envs(rack, user)
+    _create_prod_vlans(rack, user)
 
     # redes de gerencia OOB
-    _create_oobvlans(rack, env_oob, user)
+    _create_oobvlans(rack, user)
 
     rack.__dict__.update(id=rack.id, create_vlan_amb=True)
     rack.save()
