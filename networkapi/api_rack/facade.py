@@ -498,9 +498,10 @@ def _create_prod_vlans(rack, user):
     log.debug("_create_prod_vlans")
 
     env = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                              divisao_dc__nome="BE",
-                                              grupo_l3__nome=str(rack.dcroom.name),
-                                              ambiente_logico__nome="PRODUCAO").uniqueResult()
+                                             divisao_dc__nome="BE",
+                                             grupo_l3__nome=str(rack.nome),
+                                             ambiente_logico__nome="PRODUCAO"
+                                             ).uniqueResult()
 
     log.debug(str(env))
 
