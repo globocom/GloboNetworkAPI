@@ -64,6 +64,7 @@ class Ipv4V4Serializer(DynamicFieldsModelSerializer):
             'ip_formated',
             'networkipv4',
             'description',
+            'equipments',
         )
 
     def get_networkipv4(self, obj):
@@ -123,7 +124,7 @@ class Ipv4V4Serializer(DynamicFieldsModelSerializer):
                         'fields': (
                             'equipment__details',
                             'virtual_interface__details',
-                        )
+                        ),
                     },
                     'obj': 'ipv4_equipment_virtual_interface'
                 },
@@ -245,6 +246,7 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
             'ip_formated',
             'networkipv6',
             'description',
+            'equipments',
         )
 
     def get_networkipv6(self, obj):
@@ -294,7 +296,7 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
                         'fields': (
                             'equipment',
                             'virtual_interface',
-                        )
+                        ),
                     },
                     'obj': 'ipv6_equipment_virtual_interface'
                 },
@@ -305,7 +307,7 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
                         'fields': (
                             'equipment__details',
                             'virtual_interface__details',
-                        )
+                        ),
                     },
                     'obj': 'ipv6_equipment_virtual_interface'
                 },
@@ -400,7 +402,11 @@ class Ipv4EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
                 'equipment__details': {
                     'serializer': eqpt_slz.EquipmentV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'ipsv4__details',
+                            'ipsv6__details',
+                        )
                     },
                     'obj': 'equipamento'
                 },
@@ -410,7 +416,11 @@ class Ipv4EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
                 'virtual_interface__details': {
                     'serializer': vi_slz.VirtualInterfaceV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'ipv4_equipment__details',
+                            'ipv6_equipment__details',
+                        )
                     },
                     'obj': 'virtual_interface'
                 }
@@ -464,7 +474,11 @@ class Ipv6EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
                 'equipment__details': {
                     'serializer': eqpt_slz.EquipmentV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'ipsv4__details',
+                            'ipsv6__details',
+                        )
                     },
                     'obj': 'equipamento'
                 },
@@ -474,7 +488,11 @@ class Ipv6EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
                 'virtual_interface__details': {
                     'serializer': vi_slz.VirtualInterfaceV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'ipv4_equipment__details',
+                            'ipv6_equipment__details',
+                        )
                     },
                     'obj': 'virtual_interface'
                 }

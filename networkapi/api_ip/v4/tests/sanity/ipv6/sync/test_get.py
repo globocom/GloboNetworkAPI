@@ -27,6 +27,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
+        self.authorization = self.get_http_authorization('test')
 
     def tearDown(self):
         pass
@@ -40,7 +41,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
 
@@ -54,7 +55,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1000/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(404, response.status_code)
 
@@ -72,7 +73,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1;2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
 
@@ -86,7 +87,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1000;1001/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(404, response.status_code)
 
@@ -103,7 +104,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1;1001/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(404, response.status_code)
         self.compare_values(
@@ -139,7 +140,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
 
@@ -186,7 +187,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
 
@@ -225,7 +226,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
         self.compare_values(0, response.data['total'])
@@ -242,7 +243,22 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/6/?include=equipments',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+
+        self.compare_json(name_file, response.data)
+
+    def test_get_ipv6_by_kind_details(self):
+        """V4 Test of success to get IPv6 with kind details."""
+
+        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/' \
+                    'details/pk_6.json'
+
+        response = self.client.get(
+            '/api/v4/ipv6/6/?kind=details',
+            HTTP_AUTHORIZATION=self.authorization
+        )
 
         self.compare_status(200, response.status_code)
 
