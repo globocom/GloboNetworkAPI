@@ -383,7 +383,7 @@ def _create_spnlfvlans(rack, user):
 
     spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
                                                      father_environment__isnull=False,
-                                                     grupo_l3__nome=str(rack.nome),
+                                                     grupo_l3__nome=str(rack.dcroom.name),
                                                      ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                 "SPINE02LEAF",
                                                                                 "SPINE03LEAF",
@@ -452,9 +452,34 @@ def _create_prod_envs(rack, user):
         id_grupo_l3 = grupo_l3_dict.id
         pass
 
+    if rack.dcroom.config:
+        fabricconfig = rack.dcroom.config
+        log.debug(str(type(fabricconfig)))
+    else:
+        log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
+        fabricconfig = list()
+
+    try:
+        fabricconfig = json.loads(fabricconfig)
+        log.debug("type -ast: %s" % str(type(fabricconfig)))
+    except:
+        pass
+
+    try:
+        fabricconfig = ast.literal_eval(fabricconfig)
+        log.debug("config -ast: %s" % str(fabricconfig))
+    except:
+        pass
+
     environment = list()
     for env in prod_envs:
+
         father_id = env.id
+
+        for fab in fabricconfig.get("Ambiente"):
+            if int(fab.get("id"))==int(father_id):
+                details = fab.get("details")
+
         config_subnet = list()
         for net in env.configs:
             log.debug(str(net.ip_config.subnet))
@@ -462,11 +487,17 @@ def _create_prod_envs(rack, user):
             cidr = IPNetwork(str(net.ip_config.subnet))
             prefix = int(net.ip_config.new_prefix)
             bloco = list(cidr.subnet(int(prefix)))[int(rack.numero)]
+            log.debug(str(details))
+            if details[0].get(str(net.ip_config.type)):
+                log.debug("if")
+                new_prefix = details[0].get(str(net.ip_config.type)).get("new_prefix")
+            else:
+                new_prefix = 31 if net.ip_config.type=="v4" else 127
             network = {
                 'subnet': str(bloco),
                 'type': net.ip_config.type,
                 'network_type': net.ip_config.network_type.id,
-                'new_prefix': 31 if str(net.ip_config.type)=="v4" else 127
+                'new_prefix': new_prefix
             }
             config_subnet.append(network)
 
@@ -553,7 +584,7 @@ def _create_prod_vlans(rack, user):
             for net_dict in amb.get("config"):
                 if net_dict.get("type")==net.ip_config.type:
                     cidr = IPNetwork(net.ip_config.subnet)
-                    prefixo = net_dict.get("new_prefix")
+                    prefixo = net_dict.get("mask")
                     bloco = list(cidr.subnet(int(prefixo)))[-2]
                     network = {
                         'subnet': str(bloco),
@@ -592,7 +623,7 @@ def _create_lflf_vlans(rack, user):
 
     env_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
                                                 father_environment__isnull=True,
-                                                divisao_dc__nome=str(rack.dcroom.name),
+                                                grupo_l3__nome=str(rack.dcroom.name),
                                                 ambiente_logico__nome="LEAF-LEAF")
     log.debug(str(env_lf))
     rack_number = int(rack.numero)
@@ -610,7 +641,7 @@ def _create_lflf_vlans(rack, user):
     for env in env_lf:
         env_id = env.id
         vlan_number = int(env.min_num_vlan_1)
-        vlan_name = "VLAN_LFxLF" + env.divisao_dc.nome + "_" + env.grupo_l3.nome
+        vlan_name = "VLAN_LFxLF_" + env.divisao_dc.nome + "_" + env.grupo_l3.nome
 
         for net in env.configs:
             bloco = net.ip_config.subnet

@@ -283,7 +283,7 @@ class FabricView(APIView):
 
             fabric_serializer = DCRoomSerializer(fabrics)
             data = dict()
-            data['dcroom'] = fabric_serializer.data
+            data['fabric'] = fabric_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
 

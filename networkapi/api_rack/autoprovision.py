@@ -183,63 +183,73 @@ def autoprovision_splf(rack, equips):
     BASE_AS_SPN = int(BGP.get("spines"))
 
     # get fathers environments
-    environments = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"), father_environment__isnull=True)
-    for envs in environments:
-        if envs.ambiente_logico.nome == "SPINES":
-            if envs.divisao_dc.nome[:2] == "BE":
-                VLANBE = envs.min_num_vlan_1
-                for net in envs.configs:
-                    if net.ip_config.type=="v4":
-                        CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
-                        prefixBEV4 = int(net.ip_config.new_prefix)
-                    else:
-                        log.debug(str(net.ip_config.subnet))
-                        CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
-                        prefixBEV6 = int(net.ip_config.new_prefix)
-            elif envs.divisao_dc.nome[:2] == "FE":
-                VLANFE = envs.min_num_vlan_1
-                for net in envs.configs:
-                    if net.ip_config.type=="v4":
-                        CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
-                        prefixFEV4 = int(net.ip_config.new_prefix)
-                    else:
-                        log.debug(str(net.ip_config.subnet))
-                        CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
-                        prefixFEV6 = int(net.ip_config.new_prefix)
-            elif envs.divisao_dc.nome == "BO":
-                VLANBORDA = envs.min_num_vlan_1
-            elif envs.divisao_dc.nome == "BOCACHOS":
-                VLANBORDACACHOS = envs.min_num_vlan_1
-        elif envs.ambiente_logico.nome == "PRODUCAO":
-            if envs.divisao_dc.nome[:2] == "BE":
-                for net in envs.configs:
-                    if net.ip_config.type=="v4":
-                        CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
-                        prefixInternoV4 = int(net.ip_config.new_prefix)
+    spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
+                                                  father_environment__isnull=True,
+                                                  ambiente_logico__nome="SPINES")
 
-                    else:
-                        log.debug(str(net.ip_config.subnet))
-                        CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
-                        prefixInternoV6 = int(net.ip_config.new_prefix)
-            elif envs.divisao_dc.nome[:2] == "FE":
-                for net in envs.configs:
-                    if net.ip_config.type=="v4":
-                        CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
-                        prefixInternoFEV4 = int(net.ip_config.new_prefix)
-                    else:
-                        log.debug(str(net.ip_config.subnet))
-                        CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
-                        prefixInternoFEV6 = int(net.ip_config.new_prefix)
+    prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
+                                                   father_environment__isnull=True,
+                                                   ambiente_logico__nome="PRODUCAO",
+                                                   divisao_dc__nome__in=["BE", "FE"])
 
     lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
                                                 divisao_dc__nome="BE",
                                                 grupo_l3__nome=str(rack.dcroom.name),
                                                 ambiente_logico__nome="LEAF-LEAF").uniqueResult()
+    for spn in spn_envs:
+        if spn.divisao_dc.nome[:2] == "BE":
+            VLANBE = spn.min_num_vlan_1
+            for net in spn.configs:
+                if net.ip_config.type=="v4":
+                    CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
+                    prefixBEV4 = int(net.ip_config.new_prefix)
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
+                    prefixBEV6 = int(net.ip_config.new_prefix)
+        elif spn.divisao_dc.nome[:2] == "FE":
+            VLANFE = spn.min_num_vlan_1
+            for net in spn.configs:
+                if net.ip_config.type=="v4":
+                    CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
+                    prefixFEV4 = int(net.ip_config.new_prefix)
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
+                    prefixFEV6 = int(net.ip_config.new_prefix)
+        elif spn.divisao_dc.nome == "BO":
+            VLANBORDA = spn.min_num_vlan_1
+        elif spn.divisao_dc.nome == "BOCACHOS-A":
+            VLANBORDACACHOS = spn.min_num_vlan_1
+        elif spn.divisao_dc.nome == "BOCACHOS-B":
+            VLANBORDACACHOSB = spn.min_num_vlan_1
+
+    for prod in prod_envs:
+        if prod.divisao_dc.nome[:2] == "BE":
+            for net in prod.configs:
+                if net.ip_config.type=="v4":
+                    CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoV4 = int(net.ip_config.new_prefix)
+
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoV6 = int(net.ip_config.new_prefix)
+        elif prod.divisao_dc.nome[:2] == "FE":
+            for net in prod.configs:
+                if net.ip_config.type=="v4":
+                    CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoFEV4 = int(net.ip_config.new_prefix)
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoFEV6 = int(net.ip_config.new_prefix)
+
     log.debug(str(lf_env))
     for netlf in lf_env.configs:
         if netlf.ip_config.type=="v4":
             IBGPToRLxLipv4 = IPNetwork(str(netlf.ip_config.subnet))
-        else:
+        elif netlf.ip_config.type=="v6":
             IBGPToRLxLipv6 = IPNetwork(str(netlf.ip_config.subnet))
 
     SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 0)
@@ -444,16 +454,15 @@ def autoprovision_coreoob(rack, equips):
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_GUIDE")
 
-    # get fathers environments
-    environments = models_env.Ambiente.objects.filter(dcroom=rack.dcroom.id, father_environment__isnull=True)
-    for envs in environments:
-        if envs.ambiente_logico.nome == "GERENCIA":
-            if envs.divisao_dc.nome[:3] == "OOB":
-                log.debug(str(envs.min_num_vlan_1))
-                vlan_base = envs.min_num_vlan_1
+    environment = models_env.Ambiente.objects.filter(dcroom=rack.dcroom.id,
+                                                      father_environment__isnull=True,
+                                                      ambiente_logico__nome="GERENCIA",
+                                                      divisao_dc__nome="OOB").uniqueResult()
+    log.debug(str(environment))
+    vlan_base = environment.min_num_vlan_1
 
     if not vlan_base:
-        raise Exception("Range de Vlans do ambiente pai de gerencia do DC não encontrado.")
+        raise Exception("Range de Vlans do ambiente pai de gerencia OOB do fabric, não encontrado.")
 
     variablestochangeoob["VLAN_SO"] = str(int(vlan_base)+int(rack.numero))
 
@@ -463,7 +472,6 @@ def autoprovision_coreoob(rack, equips):
     variablestochangeoob["OWN_IP_MGMT"] = oob.get("ip_mngt")
     variablestochangeoob["HOSTNAME_OOB"] = oob.get("nome")
     variablestochangeoob["HOSTNAME_RACK"] = rack.nome
-    log.debug(str())
     fileinoob = path_to_guide + oob.get("roteiro")
     fileoutoob = path_to_add_config + oob.get("nome") + ".cfg"
 
