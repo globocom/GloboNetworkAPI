@@ -539,6 +539,10 @@ CELERY_QUEUES = {
     'napi.vip': {
         'exchange': 'napi.vip',
         'binding_key': 'napi.vip',
+    },
+    'napi.odl_flow': {
+        'exchange': 'napi.odl_flow',
+        'binding_key': 'napi.odl_flow',
     }
 }
 CELERY_DEFAULT_QUEUE = 'napi.default'
