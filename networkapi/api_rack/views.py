@@ -115,18 +115,20 @@ class RackDeployView(APIView):
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
                 rel_filename = "../../" + REL_PATH_TO_ADD_CONFIG + filename_equipments
+                log.debug("rel_filename: %s" % rel_filename)
                 # Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
                     # Apply config only in spines. Leaves already have all necessary config in startup
                     if "ADD" in filename_equipments:
                         # Check if equipment in under maintenance. If so, does not aplly on it
                         equipment_name = filename_equipments.split('-ADD-')[0]
+                        log.debug("equipment_name: %s" % equipment_name)
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
                             if not equip.maintenance:
                                 (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w "
                                                                           "300" % (rel_filename, equipment_name))
-
+                                log.debug("erro: %s, result: %s" % (str(erro), str(result)))
                                 if erro:
                                     raise exceptions.RackAplError()
                         except exceptions.RackAplError, e:
