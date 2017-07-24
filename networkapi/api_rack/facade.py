@@ -34,6 +34,7 @@ from networkapi.ip.models import IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
+from networkapi.system.facade import get_value as get_variable
 
 
 log = logging.getLogger(__name__)
