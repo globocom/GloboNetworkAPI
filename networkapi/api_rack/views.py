@@ -110,7 +110,6 @@ class RackDeployView(APIView):
 
             path_config = PATH_TO_ADD_CONFIG + '*' + rack.nome + '*'
             arquivos = glob.glob(path_config)
-            log.debug("arquivos: " % str(arquivos))
 
             # Get all files and search for equipments of the rack
             for var in arquivos:
