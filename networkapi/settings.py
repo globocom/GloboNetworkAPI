@@ -523,7 +523,7 @@ BROKER_URL = os.getenv('NETWORKAPI_BROKER_URL',
 
 CELERYD_PREFETCH_MULTIPLIER = 1
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_ACCEPT_CONTENT = ['json']
+CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TASK_RESULT_EXPIRES = 720  # 720 seconds.
 CELERY_RESULT_SERIALIZER = 'json'
@@ -539,6 +539,10 @@ CELERY_QUEUES = {
     'napi.vip': {
         'exchange': 'napi.vip',
         'binding_key': 'napi.vip',
+    },
+    'napi.odl_flow': {
+        'exchange': 'napi.odl_flow',
+        'binding_key': 'napi.odl_flow',
     }
 }
 CELERY_DEFAULT_QUEUE = 'napi.default'
