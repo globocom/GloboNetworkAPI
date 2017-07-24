@@ -16,10 +16,12 @@
 
 import glob
 import logging
-
+import re
 import commands
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import commit_on_success
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
@@ -30,12 +32,15 @@ from networkapi.api_rack.permissions import Read, Write
 from networkapi.api_rack import facade, exceptions
 from networkapi.api_rack.serializers import RackSerializer, DCSerializer, DCRoomSerializer
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 from networkapi.system.facade import get_value as get_variable
 from networkapi.system.facade import save_variable as save_variable
-from django.core.exceptions import ObjectDoesNotExist
 from networkapi.system import exceptions as var_exceptions
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
-from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
 
 
 log = logging.getLogger(__name__)

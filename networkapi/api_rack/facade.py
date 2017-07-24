@@ -21,20 +21,27 @@ import operator
 import re
 from django.core.exceptions import ObjectDoesNotExist
 from netaddr import IPNetwork
+from requests.exceptions import RequestException
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
+from networkapi.admin_permission import AdminPermission
+from networkapi.auth import has_perm
 from networkapi.ambiente import models as models_env
 from networkapi.api_environment import facade as facade_env
+from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.vlan import models as models_vlan
 from networkapi.api_vlan.facade import v3 as facade_vlan_v3
 from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
-from networkapi.interface.models import Interface
-from networkapi.ip.models import IpEquipamento
-from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
+from networkapi.interface.models import Interface, InterfaceNotFoundError
+from networkapi.ip.models import IpEquipamento, Ip
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError, RackError, RackNumberNotFoundError
+from networkapi.rest import RestResource, UserNotAuthorizedError
 from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
+from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
+
 
 if int(get_variable('use_foreman')):
     from foreman.client import Foreman, ForemanException
