@@ -50,6 +50,26 @@ if int(get_variable('use_foreman')):
 log = logging.getLogger(__name__)
 
 
+def buscar_ip(id_sw):
+    """Retuns switch IP that is registered in a management environment
+    """
+
+    ip_sw = None
+
+    ips = IpEquipamento()
+    ips_equip = ips.list_by_equip(id_sw)
+    regexp = re.compile(r'GERENCIA')
+
+    mgnt_ip = None
+    for ip_equip in ips_equip:
+        ip_sw = ip_equip.ip
+        if ip_sw is not None:
+            if regexp.search(ip_sw.networkipv4.vlan.ambiente.ambiente_logico.nome) is not None:
+                mgnt_ip = str(ip_sw.oct1) + '.' + str(ip_sw.oct2) + \
+                    '.' + str(ip_sw.oct3) + '.' + str(ip_sw.oct4)
+
+    return mgnt_ip
+
 def save_dc(dc_dict):
 
     dc = Datacenter()
