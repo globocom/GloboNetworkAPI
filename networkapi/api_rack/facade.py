@@ -36,6 +36,9 @@ from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
 from networkapi.system.facade import get_value as get_variable
 
+if int(get_variable('use_foreman')):
+    from foreman.client import Foreman, ForemanException
+
 
 log = logging.getLogger(__name__)
 
