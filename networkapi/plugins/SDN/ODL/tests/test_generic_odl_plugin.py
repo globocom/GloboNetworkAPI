@@ -7,6 +7,7 @@ import random
 from json import dumps
 
 from django.test.utils import override_settings
+from mock import patch
 
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -36,6 +37,24 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         )
 
         self.flow_key = "flow-node-inventory:flow"
+
+    @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._get_nodes")
+    def test_get_nodes_ids_empty(self, *args):
+        """Test get nodes with a empty result"""
+
+        fake_get_nodes = args[0]
+        fake_get_nodes.return_value=[]
+
+        self.assertEqual(self.odl._get_nodes_ids(), [])
+
+    @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._get_nodes")
+    def test_get_nodes_ids_one_id(self, *args):
+        """Test get nodes ids with one result"""
+
+        fake_get_nodes = args[0]
+        fake_get_nodes.return_value=[{'id':'fake_id'}]
+
+        self.assertEqual(self.odl._get_nodes_ids(), ['fake_id'])
 
     def test_add_flow_checking_if_persisted_in_all_ovss(self):
         """Test add flow checking if ACL was persisted at all OVS's."""
