@@ -57,23 +57,6 @@ class ODLPlugin(BaseSdnPlugin):
             # If AttributeError raised, equipment_access do not exists
             self.equipment_access = self._get_equipment_access()
 
-    def get_flows(self):
-        """
-        :return: All flows for table 0
-        """
-        nodes_ids = self._get_nodes_ids()
-
-        flows_list_by_switch = []
-        for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
-                   % (node_id)
-
-            flows_list_by_switch.append(
-                self._request(method="get", path=path, contentType='json')
-            )
-
-        return flows_list_by_switch
-
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
 
         if flow_type == FlowTypes.ACL:
@@ -105,6 +88,8 @@ class ODLPlugin(BaseSdnPlugin):
             raise exceptions.ValueInvalid()
 
         nodes_ids = self._get_nodes_ids()
+        if len(nodes_ids)<1:
+            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         return_flows = []
         for node_id in nodes_ids:
@@ -119,6 +104,24 @@ class ODLPlugin(BaseSdnPlugin):
 
         return return_flows
 
+    def get_flows(self):
+        """
+        :return: All flows for table 0
+        """
+        nodes_ids = self._get_nodes_ids()
+        if len(nodes_ids)<1:
+            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+
+        flows_list_by_switch = []
+        for node_id in nodes_ids:
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
+                   % (node_id)
+
+            flows_list_by_switch.append(
+                self._request(method="get", path=path, contentType='json')
+            )
+
+        return flows_list_by_switch
     def _get_nodes_ids(self):
         """
         Returns a list of nodes ids controlled by ODL
@@ -133,9 +136,10 @@ class ODLPlugin(BaseSdnPlugin):
         path = "/restconf/operational/opendaylight-inventory:nodes/"
         nodes = self._request(method='get', path=path, contentType='json')
         retorno = []
-        for node in nodes['nodes']['node']:
-            if node["id"] not in ["controller-config"]:
-                retorno.append(node)
+        if nodes['nodes'].has_key('node'):
+            for node in nodes['nodes']['node']:
+                if node["id"] not in ["controller-config"]:
+                    retorno.append(node)
         return retorno
 
     def _request(self, **kwargs):
