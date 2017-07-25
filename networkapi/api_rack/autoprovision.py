@@ -23,7 +23,7 @@ def replace(filein, fileout, dicionario):
         file_string = file_handle.read()
         file_handle.close()
     except:
-        raise RackConfigError(None, None, "Erro abrindo roteiro: %s." % filein)
+        raise RackConfigError(None, None, "Erro abrindo roteiro: %s." % str(filein))
 
     try:
         for key in dicionario:
@@ -468,7 +468,8 @@ def autoprovision_coreoob(rack, equips):
                                                       father_environment__isnull=True,
                                                       ambiente_logico__nome="GERENCIA",
                                                       divisao_dc__nome="OOB").uniqueResult()
-    log.debug(str(environment))
+    log.debug("environment: %s " % str(environment))
+    log.debug("equips: %s" % str(equips))
     vlan_base = environment.min_num_vlan_1
 
     if not vlan_base:
