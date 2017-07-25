@@ -232,7 +232,6 @@ def autoprovision_splf(rack, equips):
                 if net.ip_config.type=="v4":
                     CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
                     prefixInternoV4 = int(net.ip_config.new_prefix)
-
                 else:
                     log.debug(str(net.ip_config.subnet))
                     CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
@@ -472,10 +471,19 @@ def autoprovision_coreoob(rack, equips):
     log.debug("equips: %s" % str(equips))
     vlan_base = environment.min_num_vlan_1
 
-    if not vlan_base:
-        raise Exception("Range de Vlans do ambiente pai de gerencia OOB do fabric, não encontrado.")
+    for net in environment.configs:
+        if net.ip_config.type == "v4":
+            redev4 = IPNetwork(str(net.ip_config.subnet))
+            prefixv4 = int(net.ip_config.new_prefix)
+            subredev4 = list(redev4.subnet(prefixv4))
 
-    variablestochangeoob["VLAN_SO"] = str(int(vlan_base)+int(rack.numero))
+    if not vlan_base:
+        raise Exception("Range de Vlans do ambiente de gerencia do fabric não encontrado.")
+    if not subredev4:
+        raise Exception("Rede ipv4 do ambiente OOB do fabric não encontrado.")
+
+    vlan_so = str(int(vlan_base)+int(rack.numero))
+    variablestochangeoob["VLAN_SO"] = vlan_so
 
     equips_sorted = sorted(equips, key=operator.itemgetter('sw'))
     oob = equips_sorted[-1]
@@ -502,6 +510,8 @@ def autoprovision_coreoob(rack, equips):
                 log.info("oob01")
                 log.info(str(nome))
                 hostname_core1 = nome
+                core = int(hostname_core1.split('-')[-1])
+                ip = 124 + core
                 variablestochangeoob["INT_OOBC1_UPLINK"] = intoob
                 variablestochangeoob["INTERFACE_CORE1"] = intcore
                 variablestochangeoob["HOSTNAME_CORE1"] = nome
@@ -509,6 +519,10 @@ def autoprovision_coreoob(rack, equips):
                 variablestochangecore1["INTERFACE_CORE"] = intcore
                 variablestochangecore1["HOSTNAME_RACK"] = rack.nome
                 variablestochangecore1["SO_HOSTNAME_OOB"] = "SO_" + str(rack.nome)
+                variablestochangecore1["VLAN_SO"] = vlan_so
+                variablestochangecore1['IPCORE'] = str(subredev4[rack.numero][ip])
+                variablestochangecore1['IPHSRP'] = str(subredev4[rack.numero][1])
+                variablestochangecore1['NUM_CHANNEL'] = str(int(vlan_base) + int(rack.numero))
                 if (1+int(rack.numero)) % 2 == 0:
                     variablestochangecore1["HSRP_PRIORITY"] = "100"
                 else:
@@ -519,6 +533,8 @@ def autoprovision_coreoob(rack, equips):
                 log.info("oob02")
                 log.info(str(nome))
                 hostname_core2 = nome
+                core = int(hostname_core2.split('-')[-1])
+                ip = 124 + core
                 variablestochangeoob["INT_OOBC2_UPLINK"] = intoob
                 variablestochangeoob["INTERFACE_CORE2"] = intcore
                 variablestochangeoob["HOSTNAME_CORE2"] = nome
@@ -526,6 +542,10 @@ def autoprovision_coreoob(rack, equips):
                 variablestochangecore2["INTERFACE_CORE"] = intcore
                 variablestochangecore2["HOSTNAME_RACK"] = rack.nome
                 variablestochangecore2["SO_HOSTNAME_OOB"] = "SO_" + str(rack.nome)
+                variablestochangecore2["VLAN_SO"] = vlan_so
+                variablestochangecore2['IPCORE'] = str(subredev4[rack.numero][ip])
+                variablestochangecore2['IPHSRP'] = str(subredev4[rack.numero][1])
+                variablestochangecore2['NUM_CHANNEL'] = str(int(vlan_base) + int(rack.numero))
                 if (2+int(rack.numero)) % 2 == 0:
                     variablestochangecore2["HSRP_PRIORITY"] = "100"
                 else:
