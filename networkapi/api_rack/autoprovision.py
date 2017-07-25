@@ -71,6 +71,7 @@ def autoprovision_splf(rack, equips):
     VLANFELEAF = dict()
     VLANBORDALEAF = dict()
     VLANBORDACACHOSLEAF = dict()
+    VLANBORDACACHOSBLEAF = dict()
     #
     PODSBEipv4 = dict()
     redesPODSBEipv4 = dict()
@@ -107,6 +108,7 @@ def autoprovision_splf(rack, equips):
     VLANFELEAF[numero_rack] = list()
     VLANBORDALEAF[numero_rack] = list()
     VLANBORDACACHOSLEAF[numero_rack] = list()
+    VLANBORDACACHOSBLEAF[numero_rack] = list()
     ASLEAF[numero_rack] = list()
     #
     PODSBEipv4[numero_rack] = list()
@@ -322,6 +324,11 @@ def autoprovision_splf(rack, equips):
     VLANBORDACACHOSLEAF[numero_rack].append(VLANBORDACACHOS+numero_rack+2*BASE_RACK)
     VLANBORDACACHOSLEAF[numero_rack].append(VLANBORDACACHOS+numero_rack+3*BASE_RACK)
     #
+    VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB+numero_rack)
+    VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB+numero_rack+BASE_RACK)
+    VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB+numero_rack+2*BASE_RACK)
+    VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB+numero_rack+3*BASE_RACK)
+    #
     ASLEAF[numero_rack].append(BASE_AS_SPN+numero_rack)
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
     # Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
@@ -356,6 +363,8 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["VLANBORDALEAFSP2"] = str(VLANBORDALEAF[numero_rack][spn+1])
         variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"] = str(VLANBORDACACHOSLEAF[numero_rack][spn])
         variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"] = str(VLANBORDACACHOSLEAF[numero_rack][spn+1])
+        variablestochangeleaf1["VLANBORDACACHOSBLEAFSP1"] = str(VLANBORDACACHOSBLEAF[numero_rack][spn])
+        variablestochangeleaf1["VLANBORDACACHOSBLEAFSP2"] = str(VLANBORDACACHOSBLEAF[numero_rack][spn+1])
 
         variablestochangeleaf1["ASLEAF"] = str(ASLEAF[numero_rack][0])
 
@@ -405,6 +414,7 @@ def autoprovision_splf(rack, equips):
                 variablestochangespine1["VLANFELEAF"] = str(VLANFELEAF[numero_rack][spine_num-1])
                 variablestochangespine1["VLANBORDALEAF"] = str(VLANBORDALEAF[numero_rack][spine_num-1])
                 variablestochangespine1["VLANBORDACACHOSLEAF"] = str(VLANBORDACACHOSLEAF[numero_rack][spine_num-1])
+                variablestochangespine1["VLANBORDACACHOSBLEAF"] = str(VLANBORDACACHOSBLEAF[numero_rack][spine_num-1])
                 variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
                 variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num-1])
                 variablestochangespine1["IPNEIGHLEAFIPV6"] = str(IPLEAFipv6[numero_rack][spine_num-1])
