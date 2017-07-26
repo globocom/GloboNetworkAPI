@@ -7,7 +7,7 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
     """ Class to test flows that have tcp flags on it """
 
     def test_flow_with_ack_flag(self):
-        """ Sends a flow with ACK flag """
+        """ Try to send a flow with ACK flag """
 
         acl = {
             "kind": "acl_with_tcp_flags",
@@ -29,12 +29,12 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
 
         flows = AclFlowBuilder(acl)
         flow = flows.build().next()
-        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
 
         assert tcp_flag == 16
 
     def test_flow_with_RST_flag(self):
-        """ Sends a flow with RST flag """
+        """ Try to send a flow with RST flag """
         acl = {
             "kind": "acl_with_tcp_flags",
             "rules": [{
@@ -55,6 +55,6 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
 
         flows = AclFlowBuilder(acl)
         flow = flows.build().next()
-        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
 
         assert tcp_flag == 4
