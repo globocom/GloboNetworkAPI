@@ -493,8 +493,8 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["PRIORITY_VLT"] = str(priority_vlt[j])
 
         fileinleaf1 = path_to_guide + equip.get("roteiro")
+        fileoutleaf1 = path_to_config + equip.get("nome")+".cfg"
 
-        fileoutleaf1 = path_to_guide + equip.get("nome")+".cfg"
         replace(fileinleaf1, fileoutleaf1, variablestochangeleaf1)
         variablestochangeleaf1 = dict()
 
