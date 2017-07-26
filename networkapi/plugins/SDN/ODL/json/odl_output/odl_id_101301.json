@@ -28,8 +28,8 @@
           "type": 2048
         }
       },
-      "tcp-flags-match": {
-        "tcp-flags": 4
+      "tcp-flag-match": {
+        "tcp-flag": 4
       },
       "ip-match": {
         "ip-protocol": 6
