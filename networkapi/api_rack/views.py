@@ -158,7 +158,7 @@ class RackDeployView(APIView):
             raise exceptions.NetworkAPIException(e)
         except var_exceptions.VariableDoesNotExistException, e:
             log.error(e)
-            raise var_exceptions.NetworkAPIException(
+            raise api_exceptions.NetworkAPIException(
                 'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG. Erro: %s' % e)
         except Exception, e:
             log.exception(e)
