@@ -183,6 +183,7 @@ def autoprovision_splf(rack, equips):
     BASE_RACK = dcroom.get("racks")
     BGP = envconfig.get("BGP")
     BASE_AS_SPN = int(BGP.get("spines"))
+    BASE_AS_LFS = int(BGP.get("leafs"))
 
     # get fathers environments
     spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
@@ -192,7 +193,7 @@ def autoprovision_splf(rack, equips):
     prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
                                                    father_environment__isnull=True,
                                                    ambiente_logico__nome="PRODUCAO",
-                                                   divisao_dc__nome__in=["BE", "FE"])
+                                                   divisao_dc__nome__in=["BE", "FE", "BO_DSR", "BOCACHOS-A", "BOCACHOS-B"])
 
     lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
                                                 divisao_dc__nome="BE",
@@ -245,6 +246,33 @@ def autoprovision_splf(rack, equips):
                     log.debug(str(net.ip_config.subnet))
                     CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
                     prefixInternoFEV6 = int(net.ip_config.new_prefix)
+        elif prod.divisao_dc.nome == "BO_DSR":
+            for net in prod.configs:
+                if net.ip_config.type=="v4":
+                    CIDRBO_DSRipv4interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoBO_DSRV4 = int(net.ip_config.new_prefix)
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRBO_DSRipv6interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoBO_DSRV6 = int(net.ip_config.new_prefix)
+        elif prod.divisao_dc.nome == "BOCACHOS-A":
+            for net in prod.configs:
+                if net.ip_config.type=="v4":
+                    CIDRBOCAAipv4interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoBOCAAV4 = int(net.ip_config.new_prefix)
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRBOCAAipv6interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoBOCAAV6 = int(net.ip_config.new_prefix)
+        elif prod.divisao_dc.nome == "BOCACHOS-B":
+            for net in prod.configs:
+                if net.ip_config.type=="v4":
+                    CIDRBOCABipv4interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoBOCABV4 = int(net.ip_config.new_prefix)
+                else:
+                    log.debug(str(net.ip_config.subnet))
+                    CIDRBOCABipv6interno = IPNetwork(str(net.ip_config.subnet))
+                    prefixInternoBOCABV6 = int(net.ip_config.new_prefix)
 
     log.debug(str(lf_env))
     for netlf in lf_env.configs:
@@ -328,7 +356,7 @@ def autoprovision_splf(rack, equips):
     VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB+numero_rack+2*BASE_RACK)
     VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB+numero_rack+3*BASE_RACK)
     #
-    ASLEAF[numero_rack].append(BASE_AS_SPN+numero_rack)
+    ASLEAF[numero_rack].append(BASE_AS_LFS+numero_rack)
     #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
     # Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
     subnetsRackBEipv4[numero_rack] = splitnetworkbyrack(CIDRBEipv4interno, prefixInternoV4, numero_rack)
@@ -339,10 +367,20 @@ def autoprovision_splf(rack, equips):
     # Sumário do rack => 172.20.0.0/21
     subnetsRackFEipv4[numero_rack] = splitnetworkbyrack(CIDRFEipv4interno, prefixInternoFEV4, numero_rack)
     subnetsRackFEipv6[numero_rack] = splitnetworkbyrack(CIDRFEipv6interno, prefixInternoFEV6, numero_rack)
+    #
+    subnetsRackBO_DSRipv4[numero_rack] = splitnetworkbyrack(CIDRBO_DSRipv4interno, prefixInternoBO_DSRV4, numero_rack)
+    subnetsRackBO_DSRipv6[numero_rack] = splitnetworkbyrack(CIDRBO_DSRipv6interno, prefixInternoBO_DSRV6, numero_rack)
+    #
+    subnetsRackBOCAAipv4[numero_rack] = splitnetworkbyrack(CIDRBOCAAipv4interno, prefixInternoBOCAAV4, numero_rack)
+    subnetsRackBOCAAipv6[numero_rack] = splitnetworkbyrack(CIDRBOCAAipv6interno, prefixInternoBOCAAV6, numero_rack)
+    #
+    subnetsRackBOCABipv4[numero_rack] = splitnetworkbyrack(CIDRBOCABipv4interno, prefixInternoBOCABV4, numero_rack)
+    subnetsRackBOCABipv6[numero_rack] = splitnetworkbyrack(CIDRBOCABipv6interno, prefixInternoBOCABV6, numero_rack)
     #          ::::::: SUBNETING EACH RACK NETWORK:::::::
     # PODS FE => 128 redes /28 ; 128 redes /64
-    redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
-    redesPODSBEipv6[numero_rack] = list(subnetsRackFEipv6[numero_rack].subnet(64))
+    #redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
+    #redesPODSBEipv6[numero_rack] = list(subnetsRackFEipv6[numero_rack].subnet(64))
+
 
     for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
         # lf 1/2
@@ -381,11 +419,17 @@ def autoprovision_splf(rack, equips):
 
         variablestochangeleaf1["NET_HOST_BE_IPV4"] = str(subnetsRackBEipv4[numero_rack])
         variablestochangeleaf1["NET_HOST_FE_IPV4"] = str(subnetsRackFEipv4[numero_rack])
+        variablestochangeleaf1["NET_HOST_BO_DSR_IPV4"] = str(subnetsRackBO_DSRipv4[numero_rack])
+        variablestochangeleaf1["NET_HOST_BOCAA_IPV4"] = str(subnetsRackBOCAAipv4[numero_rack])
+        variablestochangeleaf1["NET_HOST_BOCAB_IPV4"] = str(subnetsRackBOCABipv4[numero_rack])
         variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(subSPINE1ipv4[numero_rack])
         variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(subSPINE2ipv4[numero_rack])
         variablestochangeleaf1["NET_LF_LF_IPV4"] = str(subIBGPToRLxLipv4[numero_rack])
         variablestochangeleaf1["NET_HOST_BE_IPV6"] = str(subnetsRackBEipv6[numero_rack])
         variablestochangeleaf1["NET_HOST_FE_IPV6"] = str(subnetsRackFEipv6[numero_rack])
+        variablestochangeleaf1["NET_HOST_BO_DSR_IPV6"] = str(subnetsRackBO_DSRipv6[numero_rack])
+        variablestochangeleaf1["NET_HOST_BOCAA_IPV6"] = str(subnetsRackBOCAAipv6[numero_rack])
+        variablestochangeleaf1["NET_HOST_BOCAB_IPV6"] = str(subnetsRackBOCABipv6[numero_rack])
         variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(subSPINE1ipv6[numero_rack])
         variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(subSPINE2ipv6[numero_rack])
         variablestochangeleaf1["NET_LF_LF_IPV6"] = str(subIBGPToRLxLipv6[numero_rack])
@@ -403,7 +447,7 @@ def autoprovision_splf(rack, equips):
                 variablestochangeleaf1["LFNEIGH_IP_MGMT"] = i.get("ip_mngt")
             elif i.get("nome")[:3] == prefixspn:
                 spine_num = int(i.get("nome")[-1])
-                variablestochangespine1["ASSPINE"] = str(BASE_AS_SPN+spine_num)
+                variablestochangespine1["ASSPINE"] = str(BASE_AS_SPN+spine_num-1)
                 variablestochangespine1["INTERFACE"] = i.get("interface")
                 variablestochangespine1["LEAFNAME"] = equip.get("nome")
                 variablestochangespine1["INT_LF_UPLINK"] = i.get("eq_interface")
@@ -420,11 +464,11 @@ def autoprovision_splf(rack, equips):
                 if spine_num in [1, 3]:
                     variablestochangeleaf1["SP1_HOSTNAME"] = i.get("nome")
                     variablestochangeleaf1["INTERFACE_SP1"] = i.get("interface")
-                    variablestochangeleaf1["ASSPINE1"] = str(BASE_AS_SPN+spine_num)
+                    variablestochangeleaf1["ASSPINE1"] = str(BASE_AS_SPN+spine_num-1)
                 else:
                     variablestochangeleaf1["SP2_HOSTNAME"] = i.get("nome")
                     variablestochangeleaf1["INTERFACE_SP2"] = i.get("interface")
-                    variablestochangeleaf1["ASSPINE2"] = str(BASE_AS_SPN+spine_num)
+                    variablestochangeleaf1["ASSPINE2"] = str(BASE_AS_SPN+spine_num-1)
                 fileinspine1 = path_to_guide+i.get("roteiro")
                 fileoutspine1 = path_to_add_config+i.get("nome")+"-ADD-"+rack.nome+".cfg"
                 replace(fileinspine1, fileoutspine1, variablestochangespine1)
@@ -522,7 +566,7 @@ def autoprovision_coreoob(rack, equips):
                 variablestochangecore1["VLAN_SO"] = vlan_so
                 variablestochangecore1['IPCORE'] = str(subredev4[rack.numero][ip])
                 variablestochangecore1['IPHSRP'] = str(subredev4[rack.numero][1])
-                variablestochangecore1['NUM_CHANNEL'] = str(int(vlan_base) + int(rack.numero))
+                variablestochangecore1['NUM_CHANNEL'] = str(10 + int(rack.numero))
                 if (1+int(rack.numero)) % 2 == 0:
                     variablestochangecore1["HSRP_PRIORITY"] = "100"
                 else:
@@ -545,7 +589,7 @@ def autoprovision_coreoob(rack, equips):
                 variablestochangecore2["VLAN_SO"] = vlan_so
                 variablestochangecore2['IPCORE'] = str(subredev4[rack.numero][ip])
                 variablestochangecore2['IPHSRP'] = str(subredev4[rack.numero][1])
-                variablestochangecore2['NUM_CHANNEL'] = str(int(vlan_base) + int(rack.numero))
+                variablestochangecore2['NUM_CHANNEL'] = str(10 + int(rack.numero))
                 if (2+int(rack.numero)) % 2 == 0:
                     variablestochangecore2["HSRP_PRIORITY"] = "100"
                 else:
