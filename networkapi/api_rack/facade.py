@@ -236,7 +236,6 @@ def delete_rack(rack_id):
 
     try:
         facade_env.delete_environment(envs_ids)
-        log.debug()
     except (models_env.AmbienteUsedByEquipmentVlanError,
             models_env.AmbienteError,
             Exception), e:
