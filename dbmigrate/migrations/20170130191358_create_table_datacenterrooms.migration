@@ -1,0 +1,31 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+CREATE TABLE `datacenterrooms` (
+  `id_dcroom` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(200) NOT NULL,
+  `config` longtext,
+  `id_dc` int(10) unsigned NOT NULL,
+  `racks` int(10) unsigned,
+  `spines` int(10) unsigned,
+  `leafs` int(10) unsigned,
+  PRIMARY KEY  (`id_dcroom`),
+  UNIQUE KEY `dcrooms_uni` (`name`,`id_dc`),
+  KEY `fk_datacenterrooms_datacenter` (`id_dc`),
+  CONSTRAINT `fk_datacenterrooms_datacenter`
+    FOREIGN KEY (`id_dc`)
+    REFERENCES `datacenter` (`id_dc`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARSET=utf8;
+
+"""
+
+SQL_DOWN = u"""
+
+DROP TABLE datacenterrooms;
+
+"""

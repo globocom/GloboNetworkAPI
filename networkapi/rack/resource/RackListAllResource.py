@@ -35,14 +35,14 @@ class RackListAllResource(RestResource):
         URLs: /rack/find/
         """
 
-        self.log.info('Find all Racks')
+        self.log.info('List all Racks')
 
         try:
 
             # User permission
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                self.log.error(
-                    u'User does not have permission to perform the operation.')
+            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT , AdminPermission.READ_OPERATION):
+                self.log.error( u'User does not have permission to perform the operation.')
+
                 return self.not_authorized()
 
             rack_list = []

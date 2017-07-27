@@ -4,7 +4,7 @@
     "priority": 65000,
     "table_id": 0,
     "flow-name": "generic",
-    "cookie": 435084750487552,
+    "cookie": 435084482052096,
     "instructions": {
       "instruction": [
         {
@@ -28,8 +28,8 @@
           "type": 2048
         }
       },
-      "tcp-flags-match": {
-        "tcp-flags": 4
+      "tcp-flag-match": {
+        "tcp-flag": 4
       },
       "ip-match": {
         "ip-protocol": 6

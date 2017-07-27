@@ -27,7 +27,7 @@ services:
             - some-elasticsearch:elasticsearch
         ports:
             - "9000:9000"
-            - "12201/udp:12201/udp"
+            - "12201:12201/udp"
         networks:
             - netapi_net
 

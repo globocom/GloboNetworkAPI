@@ -24,22 +24,24 @@ from networkapi.system.models import Variable
 log = logging.getLogger(__name__)
 
 
-def save_variable(user, name, value, description):
+def save_variable(name, value, description):
 
-    if name is None or name == '':
+    if not name:
         raise exceptions.InvalidIdNameException()
-    if value is None or name == '':
+    if not value:
         raise exceptions.InvalidIdValueException()
 
     var = Variable()
     var.name = name
     var.value = value
     var.description = description
+
     try:
-        var.save(user)
+        var.save()
     except Exception, e:
-        log.info('Erro inserindo variavel: %s' % (e))
-        raise exceptions.VariableError()
+        log.info("Erro inserindo variavel: %s" % (e))
+        raise Exception("Erro inserindo variavel: %s" % (e))
+
     return var
 
 

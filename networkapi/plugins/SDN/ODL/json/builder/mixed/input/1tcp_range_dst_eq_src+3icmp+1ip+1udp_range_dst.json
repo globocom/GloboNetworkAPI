@@ -1,0 +1,84 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.0.0.0/8",
+      "id": "200001",
+      "l4-options": {
+        "src-port-start": "911",
+        "src-port-op": "eq",
+        "dest-port-start": "901",
+        "dest-port-op": "range",
+        "dest-port-end": "905"
+      },
+      "owner": "networkapi",
+      "protocol": "tcp",
+      "sequence": 214,
+      "source": "10.129.199.192/27"
+    },
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "172.10.1.0/24",
+      "icmp-options": {
+        "icmp-code": "0",
+        "icmp-type": "8"
+      },
+      "id": "200002",
+      "owner": "networkapi",
+      "protocol": "icmp",
+      "source": "10.10.1.0/24"
+    },
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "172.10.2.0/24",
+      "icmp-options": {
+        "icmp-code": "0",
+        "icmp-type": "8"
+      },
+      "id": "200003",
+      "owner": "networkapi",
+      "protocol": "icmp",
+      "source": "10.10.2.0/24"
+    },
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "172.10.3.0/24",
+      "icmp-options": {
+        "icmp-code": "0",
+        "icmp-type": "8"
+      },
+      "id": "200004",
+      "owner": "networkapi",
+      "protocol": "icmp",
+      "source": "10.10.3.0/24"
+    },
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.254.0.0/16",
+      "id": "200005",
+      "owner": "networkapi",
+      "protocol": "ip",
+      "source": "0.0.0.0/0"
+    },
+    {
+      "action": "permit",
+      "description": "generic",
+      "destination": "10.0.10.0/24",
+      "id": "200006",
+      "l4-options": {
+        "dest-port-start": "901",
+        "dest-port-op": "range",
+        "dest-port-end": "905"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "source": "172.110.200.0/24"
+    }
+  ]
+}

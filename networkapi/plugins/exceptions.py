@@ -129,3 +129,10 @@ class ValueInvalid(APIException):
 
     def __init__(self, msg=None):
         self.detail = u'Value is invalid: <<%s>>' % (msg)
+
+class ControllerInventoryIsEmpty(APIException):
+    """Returno message error: No Nodes on Controller Inventory"""
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = u'SDN Controller\'s inventory is empty'
+    def __init__(self, msg=None):
+        self.detail = u'SDN Controller\'s inventory is empty: <<%s>>' % (msg)

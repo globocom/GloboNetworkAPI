@@ -1,0 +1,20 @@
+{
+  "kind": "default#acl",
+  "rules": [
+    {
+      "action": "permit",
+      "destination": "10.130.70.224/27",
+      "id": "200002",
+      "l4-options": {
+        "src-port-start": "911",
+        "src-port-op": "eq",
+        "dest-port-start": "901",
+        "dest-port-op": "eq"
+      },
+      "owner": "networkapi",
+      "protocol": "tcp",
+      "sequence": 17,
+      "source": "10.129.193.32/27"
+    }
+  ]
+}

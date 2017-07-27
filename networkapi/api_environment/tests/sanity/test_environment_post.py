@@ -61,7 +61,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['name']
-        del data['environments'][0]['sdn_controlled']
+        del data['environments'][0]['sdn_controllers']
 
         self.compare_json(name_file, data)
 
@@ -93,7 +93,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['name']
-        del data['environments'][0]['sdn_controlled']
+        del data['environments'][0]['sdn_controllers']
 
         self.compare_json(name_file, data)
 
@@ -121,12 +121,12 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        # Removes property id/name/sdn_controlled
+        # Removes property id/name/sdn_controllers
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['configs'][0]['id']
         del data['environments'][0]['name']
-        del data['environments'][0]['sdn_controlled']
+        del data['environments'][0]['sdn_controllers']
 
         self.compare_json(name_file, data)
 
@@ -184,11 +184,11 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['name']
-        del data['environments'][0]['sdn_controlled']
+        del data['environments'][0]['sdn_controllers']
 
         del data['environments'][1]['id']
         del data['environments'][1]['name']
-        del data['environments'][1]['sdn_controlled']
+        del data['environments'][1]['sdn_controllers']
 
         self.compare_json(name_file, data)
 
@@ -217,14 +217,14 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        # Removes property id/name/sdn_controlled in each dict
+        # Removes property id/name/sdn_controllers in each dict
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['name']
-        del data['environments'][0]['sdn_controlled']
+        del data['environments'][0]['sdn_controllers']
         del data['environments'][1]['id']
         del data['environments'][1]['name']
-        del data['environments'][1]['sdn_controlled']
+        del data['environments'][1]['sdn_controllers']
 
         self.compare_json(name_file, data)
 
@@ -254,16 +254,16 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        # Removes property id/name/sdn_controlled in each dict
+        # Removes property id/name/sdn_controllers in each dict
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['configs'][0]['id']
         del data['environments'][0]['name']
-        del data['environments'][0]['sdn_controlled']
+        del data['environments'][0]['sdn_controllers']
         del data['environments'][1]['id']
         del data['environments'][1]['configs'][0]['id']
         del data['environments'][1]['name']
-        del data['environments'][1]['sdn_controlled']
+        del data['environments'][1]['sdn_controllers']
 
 
         self.compare_json(name_file, data)

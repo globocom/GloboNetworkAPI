@@ -20,8 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import get_model
 
-from networkapi.ambiente.models import Ambiente
-from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
 from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.grupo.models import EGrupo
 from networkapi.grupo.models import EGrupoNotFoundError
@@ -1525,13 +1524,3 @@ class ModeloRoteiro(BaseModel):
                 e, u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
 
 
-class AmbienteController(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id')
-    equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
-    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
-
-    log = logging.getLogger('AmbienteController')
-
-    class Meta(BaseModel.Meta):
-        db_table = u'controller_environment_xref'
-        managed = True
