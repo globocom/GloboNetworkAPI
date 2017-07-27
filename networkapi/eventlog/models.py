@@ -117,6 +117,10 @@ class EventLogQueue(object):
     def log(cls, usuario, evento):
         """Send the eventlog to queues"""
 
+        usuarioId="NoUser"
+        if usuario:
+            usuarioId=usuario.id
+
         # Send to Queue
         queue_manager = QueueManager(
             broker_vhost='tasks',
@@ -129,7 +133,7 @@ class EventLogQueue(object):
             'kind': evento['funcionalidade'],
             'data': {
                 'id_object': evento['id_objeto'],
-                'user': usuario.id,
+                'user': usuarioId,
                 'old_value': evento['parametro_anterior'],
                 'new_value': evento['parametro_atual']
             }
