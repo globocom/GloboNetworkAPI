@@ -94,6 +94,26 @@ class RackView(APIView):
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
+    def delete(self, user, *args, **kwargs):
+        """Handles DELETE requests to list all Racks
+        URLs: /api/rack/<rack_id>
+        """
+
+        try:
+            log.info('Delete Rack')
+
+            rack_id = kwargs.get("rack_id")
+
+            facade.delete_rack(rack_id)
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
+
 
 class RackDeployView(APIView):
 

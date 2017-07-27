@@ -73,26 +73,35 @@ class PoolMemberStateView(CustomAPIView):
                 many=True
             )
 
-            mbr_state = facade_pool_deploy.get_poolmember_state(
-                serializer_server_pool.data)
+            try:
 
-            for server_pool in server_pools:
+                locks_list = create_lock(serializer_server_pool.data, LOCK_POOL)
 
-                if mbr_state.get(server_pool.id):
-                    query_pools = models_vips.ServerPoolMember.objects.filter(
-                        server_pool=server_pool)
+                mbr_state = facade_pool_deploy.get_poolmember_state(
+                    serializer_server_pool.data)
 
-                    for pm in query_pools:
+                for server_pool in server_pools:
 
-                        member_checked_status = mbr_state[
-                            server_pool.id][pm.id]
-                        pm.member_status = member_checked_status
-                        pm.last_status_update = datetime.now()
-                        pm.save(request.user)
+                    if mbr_state.get(server_pool.id):
+                        query_pools = models_vips.ServerPoolMember.objects.filter(
+                            server_pool=server_pool)
 
-            # get pools updated
-            server_pools = models_vips.ServerPool.objects.filter(
-                id__in=pool_ids)
+                        for pm in query_pools:
+
+                            member_checked_status = mbr_state[
+                                server_pool.id][pm.id]
+                            pm.member_status = member_checked_status
+                            pm.last_status_update = datetime.now()
+                            pm.save(request.user)
+
+                # get pools updated
+                server_pools = models_vips.ServerPool.objects.filter(
+                    id__in=pool_ids)
+            except Exception, exception:
+                log.error(exception)
+                raise rest_exceptions.NetworkAPIException(exception)
+            finally:
+                destroy_lock(locks_list)
 
         serializer_server_pool = serializers.PoolV3Serializer(
             server_pools,

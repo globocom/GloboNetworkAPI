@@ -41,6 +41,7 @@ from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
+from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
 
 
 if int(get_variable('use_foreman')):
@@ -201,6 +202,54 @@ def get_rack(fabric_id=None):
     rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
 
     return rack_list
+
+
+def delete_rack(rack_id):
+
+    rack_obj = Rack()
+    rack = rack_obj.get_rack(idt=rack_id)
+
+    error_vlans = list()
+    error_envs = list()
+
+    envs_ids = models_env.Ambiente.objects.filter(dcroom=rack.dcroom.id,
+                                                  grupo_l3__nome=str(rack.nome)
+                                                  ).values_list('id', flat=True)
+
+    log.debug("rack envs. Qtd: %s - Envs: %s" % (str(len(envs_ids)), str(envs_ids)))
+
+    vlans_ids = models_vlan.Vlan.objects.filter(nome__icontains=rack.nome
+                                                ).values_list('id', flat=True)
+
+    log.debug("rack vlan. Qtd: %s - VLans: %s" % (str(len(vlans_ids)), str(vlans_ids)))
+
+    for idt in vlans_ids:
+        try:
+            facade_vlan_v3.delete_vlan(idt)
+        except (models_vlan.VlanError,
+                models_vlan.VlanErrorV3,
+                ValidationAPIException,
+                ObjectDoesNotExistException,
+                Exception,
+                NetworkAPIException), e:
+            error_vlans.append({'vlan_id': idt, 'error': e})
+
+    try:
+        facade_env.delete_environment(envs_ids)
+    except (models_env.AmbienteUsedByEquipmentVlanError,
+            models_env.AmbienteError,
+            Exception), e:
+        error_envs.append({'env_error': e})
+
+    if error_vlans:
+        log.debug("Vlans não removidas: %s" % str(error_vlans))
+        raise Exception("Vlans não removidas: %s" % str(error_vlans))
+    if error_envs:
+        log.debug("Envs não removidos: %s" % str(error_envs))
+        raise Exception("Envs não removidos: %s" % str(error_envs))
+
+    rack.del_rack()
+
 
 
 def _buscar_roteiro(id_sw, tipo):
