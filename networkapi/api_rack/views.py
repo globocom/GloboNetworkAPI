@@ -69,9 +69,9 @@ class RackView(APIView):
                 exceptions.InvalidInputException) as exception:
             log.exception(exception)
             raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
 
     def get(self, user, *args, **kwargs):
         """Handles GET requests to list all Racks
@@ -90,9 +90,9 @@ class RackView(APIView):
 
             return Response(data, status=status.HTTP_200_OK)
 
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
 
 
 class RackDeployView(APIView):
@@ -153,23 +153,23 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except exceptions.RackNumberNotFoundError, exception:
-            log.exception(exception)
-            raise exceptions.RackNumberNotFoundError()
-        except var_exceptions.VariableDoesNotExistException, exception:
-            log.error(exception)
-            raise var_exceptions.VariableDoesNotExistException(
-                'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.')
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException(exception)
+        except exceptions.RackNumberNotFoundError, e:
+            log.exception(e)
+            raise exceptions.NetworkAPIException(e)
+        except var_exceptions.VariableDoesNotExistException, e:
+            log.error(e)
+            raise api_exceptions.NetworkAPIException(
+                'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG. Erro: %s' % e)
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
 
 
 class RackConfigView(APIView):
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        #try:
+        try:
             log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
 
             rack_id = kwargs.get("rack_id")
@@ -177,15 +177,15 @@ class RackConfigView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        #except Exception, e:
-         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
 
 
 class RackEnvironmentView(APIView):
 
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        #try:
+        try:
             log = logging.getLogger('Alocando ambientes e vlans do rack')
 
             rack_id = kwargs.get("rack_id")
@@ -193,8 +193,8 @@ class RackEnvironmentView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        #except Exception, e:
-         #   raise Exception("Os ambientes e Vlans não foram alocados. Erro: %s" % e)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
 
 
 class DataCenterView(APIView):
@@ -215,13 +215,8 @@ class DataCenterView(APIView):
 
             return Response(data, status=status.HTTP_201_CREATED)
 
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
 
 
     @commit_on_success
@@ -235,14 +230,8 @@ class DataCenterView(APIView):
             data['dc'] = dc
 
             return Response(data, status=status.HTTP_200_OK)
-
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
 
 
 class FabricView(APIView):
@@ -262,14 +251,8 @@ class FabricView(APIView):
             data['dcroom'] = dcroom_serializer.data
 
             return Response(data, status=status.HTTP_201_CREATED)
-
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
 
     @commit_on_success
     def put(self, request, *args, **kwargs):
@@ -293,14 +276,8 @@ class FabricView(APIView):
             data['fabric'] = fabric_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
-
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
 
 
     @commit_on_success
@@ -317,11 +294,5 @@ class FabricView(APIView):
             data['fabric'] = fabric
 
             return Response(data, status=status.HTTP_200_OK)
-
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)

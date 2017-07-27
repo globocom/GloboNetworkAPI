@@ -160,6 +160,8 @@ def update_fabric_config(fabric_id, fabric_dict):
         fabriconfig["VLT"] = fabric_dict.get("VLT")
     if fabric_dict.get("Gerencia"):
         fabriconfig["Gerencia"] = fabric_dict.get("Gerencia")
+    if fabric_dict.get("Channel"):
+        fabriconfig["Channel"] = fabric_dict.get("Channel")
 
     fabric.config = fabriconfig
     fabric.save_dcrooms()
@@ -306,7 +308,7 @@ def gerar_arquivo_config(ids):
         autoprovision.autoprovision_splf(rack, equips)
         autoprovision.autoprovision_coreoob(rack, equips)
 
-    return 1
+    return True
 
 
 def _create_spnlfenv(rack):

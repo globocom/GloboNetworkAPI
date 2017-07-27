@@ -94,8 +94,14 @@ def autoprovision_splf(rack, equips):
     redeHostsFILERipv6 = dict()
     subnetsRackBEipv6 = dict()
     subnetsRackFEipv4 = dict()
+    subnetsRackBO_DSRipv4 = dict()
+    subnetsRackBOCAAipv4 = dict()
+    subnetsRackBOCABipv4 = dict()
     redesPODSFEipv4 = dict()
     subnetsRackFEipv6 = dict()
+    subnetsRackBO_DSRipv6 = dict()
+    subnetsRackBOCAAipv6 = dict()
+    subnetsRackBOCABipv6 = dict()
     redesPODSFEipv6 = dict()
     #
     IPSPINEipv4[numero_rack] = list()
@@ -132,8 +138,14 @@ def autoprovision_splf(rack, equips):
     redeHostsFILERipv6[numero_rack] = list()
     subnetsRackBEipv6[numero_rack] = list()
     subnetsRackFEipv4[numero_rack] = list()
+    subnetsRackBO_DSRipv4[numero_rack] = list()
+    subnetsRackBOCAAipv4[numero_rack] = list()
+    subnetsRackBOCABipv4[numero_rack] = list()
     redesPODSFEipv4[numero_rack] = list()
     subnetsRackFEipv6[numero_rack] = list()
+    subnetsRackBO_DSRipv6[numero_rack] = list()
+    subnetsRackBOCAAipv6[numero_rack] = list()
+    subnetsRackBOCABipv6[numero_rack] = list()
     redesPODSFEipv6[numero_rack] = list()
 
     CIDRFEipv4 = dict()
@@ -481,8 +493,8 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["PRIORITY_VLT"] = str(priority_vlt[j])
 
         fileinleaf1 = path_to_guide + equip.get("roteiro")
+        fileoutleaf1 = path_to_config + equip.get("nome")+".cfg"
 
-        fileoutleaf1 = path_to_guide + equip.get("nome")+".cfg"
         replace(fileinleaf1, fileoutleaf1, variablestochangeleaf1)
         variablestochangeleaf1 = dict()
 
@@ -500,6 +512,25 @@ def autoprovision_coreoob(rack, equips):
     prefixlf = "LF-"
     prefixoob = "OOB"
     vlan_base = None
+
+    dcroom = model_to_dict(rack.dcroom)
+    log.debug("type: %s" %str(type(dcroom.get("config"))))
+    fabricconfig = dcroom.get("config")
+
+    try:
+        fabricconfig = json.loads(fabricconfig)
+        log.debug("type -ast: %s" % str(type(fabricconfig)))
+    except:
+        pass
+
+    try:
+        fabricconfig = ast.literal_eval(fabricconfig)
+        log.debug("config -ast: %s" % str(fabricconfig))
+    except:
+        pass
+
+    envconfig = fabricconfig
+    BASE_CHANNEL = int(envconfig.get("Channel").get("channel")) if envconfig.get("Channel") else 10
 
     try:
         path_to_guide = get_variable("path_to_guide")
@@ -566,7 +597,7 @@ def autoprovision_coreoob(rack, equips):
                 variablestochangecore1["VLAN_SO"] = vlan_so
                 variablestochangecore1['IPCORE'] = str(subredev4[rack.numero][ip])
                 variablestochangecore1['IPHSRP'] = str(subredev4[rack.numero][1])
-                variablestochangecore1['NUM_CHANNEL'] = str(10 + int(rack.numero))
+                variablestochangecore1['NUM_CHANNEL'] = str(BASE_CHANNEL + int(rack.numero))
                 if (1+int(rack.numero)) % 2 == 0:
                     variablestochangecore1["HSRP_PRIORITY"] = "100"
                 else:
@@ -589,7 +620,7 @@ def autoprovision_coreoob(rack, equips):
                 variablestochangecore2["VLAN_SO"] = vlan_so
                 variablestochangecore2['IPCORE'] = str(subredev4[rack.numero][ip])
                 variablestochangecore2['IPHSRP'] = str(subredev4[rack.numero][1])
-                variablestochangecore2['NUM_CHANNEL'] = str(10 + int(rack.numero))
+                variablestochangecore2['NUM_CHANNEL'] = str(BASE_CHANNEL + int(rack.numero))
                 if (2+int(rack.numero)) % 2 == 0:
                     variablestochangecore2["HSRP_PRIORITY"] = "100"
                 else:
