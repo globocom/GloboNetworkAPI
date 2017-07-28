@@ -180,13 +180,12 @@ def list_flows_by_envid(env_id, flow_id=0):
 
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to communicate with Controller "
+        raise NetworkAPIException("Failed to list flow(s)"
                                   "plugin. %s" % e)
 
 
 def insert_flow(env_id, data):
     eqpt = get_controller_by_envid(env_id)
-
     plugin = PluginFactory.factory(eqpt)
 
     try:
@@ -195,7 +194,7 @@ def insert_flow(env_id, data):
                 )
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to communicate with Controller "
+        raise NetworkAPIException("Failed to insert flow(s) "
                                   "plugin. %s" % e)
 
 
@@ -207,5 +206,16 @@ def delete_flow(env_id, flow_id):
         return plugin.del_flow(flow_id=flow_id)
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to communicate with Controller "
+        raise NetworkAPIException("Failed to delete flow "
+                                  "plugin. %s" % e)
+
+def flush_flows(env_id):
+    eqpt = get_controller_by_envid(env_id)
+    plugin = PluginFactory.factory(eqpt)
+
+    try:
+        return plugin.flush_flows()
+    except Exception as e:
+        log.error(e)
+        raise NetworkAPIException("Failed to flush Controller "
                                   "plugin. %s" % e)
