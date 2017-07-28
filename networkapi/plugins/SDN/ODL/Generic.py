@@ -81,21 +81,21 @@ class ODLPlugin(BaseSdnPlugin):
         if len(nodes_ids) < 1:
             raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
-        try:
-            for node_id in nodes_ids:
+        for node_id in nodes_ids:
+            try:
                 path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/" \
                        % node_id
 
                 self._request(
                         method="delete", path=path, contentType='json'
                     )
-        except HTTPError as e:
-            if e.response.status_code==404:
-                pass
-            else:
-                raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
-        except Exception as e:
-            raise e
+            except HTTPError as e:
+                if e.response.status_code==404:
+                    pass
+                else:
+                    raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
+            except Exception as e:
+                raise e
 
     def _parse_errors(self, err_json):
         sep = ""
@@ -142,20 +142,20 @@ class ODLPlugin(BaseSdnPlugin):
             raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         flows_list_by_switch = {}
-        try:
-            for node_id in nodes_ids:
+        for node_id in nodes_ids:
+            try:
                 path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
                        % (node_id)
 
                 flows_list_by_switch[node_id] = self._request(method="get", path=path, contentType='json')["flow-node-inventory:table"]
 
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                pass
-            else:
-                raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
-        except Exception as e:
-            raise e
+            except HTTPError as e:
+                if e.response.status_code == 404:
+                    flows_list_by_switch[node_id] =[]
+                else:
+                    raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
+            except Exception as e:
+                raise e
 
 
         return flows_list_by_switch
