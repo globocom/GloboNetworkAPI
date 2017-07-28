@@ -181,7 +181,7 @@ def list_flows_by_envid(env_id, flow_id=0):
     except Exception as e:
         log.error(e)
         raise NetworkAPIException("Failed to communicate with Controller "
-                                  "plugin. See log for details.")
+                                  "plugin. %s" % e)
 
 
 def insert_flow(env_id, data):
@@ -193,9 +193,10 @@ def insert_flow(env_id, data):
         return async_add_flow.apply_async(
                     args=[plugin, data], queue="napi.odl_flow"
                 )
-    except:
+    except Exception as e:
+        log.error(e)
         raise NetworkAPIException("Failed to communicate with Controller "
-                                  "plugin. See log for details.")
+                                  "plugin. %s" % e)
 
 
 def delete_flow(env_id, flow_id):
@@ -204,6 +205,7 @@ def delete_flow(env_id, flow_id):
 
     try:
         return plugin.del_flow(flow_id=flow_id)
-    except:
+    except Exception as e:
+        log.error(e)
         raise NetworkAPIException("Failed to communicate with Controller "
-                                  "plugin. See log for details.")
+                                  "plugin. %s" % e)

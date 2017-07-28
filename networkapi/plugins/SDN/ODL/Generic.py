@@ -163,7 +163,7 @@ class ODLPlugin(BaseSdnPlugin):
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
 
-        log.info(
+        log.debug(
             "Starting %s request to controller %s at %s. Data to be sent: %s" %
             (params["method"], self.equipment.nome, uri, params["data"])
         )
@@ -197,7 +197,7 @@ class ODLPlugin(BaseSdnPlugin):
             except:
                 log.error("Unknown error during request to ODL Controller")
 
-            raise HTTPError(request.status_code)
+            raise HTTPError("Error during request to ODL Controller. Code %s" % request.status_code)
 
     def _get_auth(self):
         return self._basic_auth()
