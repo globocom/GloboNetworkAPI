@@ -17,7 +17,7 @@ services:
         container_name: netapi_queue
         image: rabbitmq:3.6.9
         ports:
-            - "5672"
+            - "5672:5672"
             - "15672:15672"
         volumes:
             - ./docker-start-queue.sh:/docker-start-queue.sh:ro
