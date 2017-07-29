@@ -24,6 +24,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_base_environment.json',
         'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
     ]
 
     json_path = 'api_environment/tests/sanity/json/get/%s'

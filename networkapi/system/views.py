@@ -43,7 +43,7 @@ class VariableView(APIView):
     @commit_on_success
     def post(self, *args, **kwargs):
         try:
-            log.info('POST VARIABLE')
+            log.info("VariableView")
 
             data = self.request.DATA
 

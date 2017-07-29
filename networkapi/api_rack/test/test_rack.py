@@ -93,7 +93,7 @@ class RackTestCase(NetworkApiTestCase):
         pass
 
     def test_post_success(self):
-        """ resultado esperado status 201"""
+        """ Should post a new Rack """
         response = self.client.post(
             '/api/rack/',
             self.load_rack_json('rack.json'),

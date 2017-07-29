@@ -572,8 +572,8 @@ def dic_fe_prod(rack):
     ipv6['REDE'] = str(subnetsRackFEipv6[rack])
     return redes, ranges, ipv6
 
-
-def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2, ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob):
+def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, name_core2, name_oob, name_lf1, name_lf2,
+                          ip_mgmtoob, int_oob_core1, int_oob_core2, int_core1_oob, int_core2_oob ):
 
     # gerando dicionarios para substituir paravras chaves do roteiro
     variablestochangecore1 = {}
@@ -660,12 +660,13 @@ def autoprovision_coreoob(rack, FILEINCR1, FILEINCR2, FILEINOOB, name_core1, nam
 
     return True
 
-
-def autoprovision_splf(rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4, name_lf1, name_lf2, name_oob, name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2, int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1, int_lf1_sp2, int_lf2_sp3, int_lf2_sp4):
+def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3, FILEINSP4,name_lf1, name_lf2, name_oob,
+                       name_sp1, name_sp2, name_sp3, name_sp4, ip_mgmtlf1, ip_mgmtlf2, int_oob_mgmtlf1, int_oob_mgmtlf2,
+                       int_sp1, int_sp2, int_sp3, int_sp4, int_lf1_sp1,int_lf1_sp2,int_lf2_sp3,int_lf2_sp4):
 
     # STRUCTURE: IPSPINE[rack][spine]: ip a configurar no spine 'spine' relativo à leaf do rack 'rack'
-    # STRUCTURE: IPLEAF[rack][spine]: ip a configurar na leaf do rack 'rack'
-    # relativo ao spine 'spine'
+    # STRUCTURE: IPLEAF[rack][spine]: ip a configurar no leaf do rack 'rack' relativo ao spine 'spine'
+
     CIDREBGP = {}
     CIDRBE = {}
     IPSPINEipv4 = {}
@@ -754,18 +755,21 @@ def autoprovision_splf(rack, FILEINLF1, FILEINLF2, FILEINSP1, FILEINSP2, FILEINS
     variablestochangeleaf2 = {}
 
     try:
-        fileinleaf1 = get_variable('path_to_guide') + FILEINLF1
-        fileinleaf2 = get_variable('path_to_guide') + FILEINLF2
-        fileinspine1 = get_variable('path_to_guide') + FILEINSP1
-        fileinspine2 = get_variable('path_to_guide') + FILEINSP2
-        fileinspine3 = get_variable('path_to_guide') + FILEINSP3
-        fileinspine4 = get_variable('path_to_guide') + FILEINSP4
-        BASE_RACK = int(get_variable('base_rack'))
-        BASE_AS = int(get_variable('base_as'))
-        VLANBE = int(get_variable('vlanbe'))
-        VLANFE = int(get_variable('vlanfe'))
-        VLANBORDA = int(get_variable('vlanborda'))
-        VLANBORDACACHOS = int(get_variable('vlanbordacachos'))
+        fileinleaf1=get_variable("path_to_guide")+FILEINLF1
+        fileinleaf2=get_variable("path_to_guide")+FILEINLF2
+        fileinspine1=get_variable("path_to_guide")+FILEINSP1
+        fileinspine2=get_variable("path_to_guide")+FILEINSP2
+        fileinspine3=get_variable("path_to_guide")+FILEINSP3
+        fileinspine4=get_variable("path_to_guide")+FILEINSP4
+        ###
+        BASE_RACK = int(get_variable("base_rack"))
+        BASE_AS = int(get_variable("base_as"))
+        VLANBE = int(get_variable("vlanbe"))
+        VLANFE = int(get_variable("vlanfe"))
+        VLANBORDA = int(get_variable("vlanborda"))
+        VLANBORDACACHOS = int(get_variable("vlanbordacachos"))
+        ###
+
     except ObjectDoesNotExist, exception:
         log.error(exception)
         raise var_exceptions.VariableDoesNotExistException(
