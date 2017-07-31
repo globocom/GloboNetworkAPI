@@ -17,6 +17,6 @@ SQL_DOWN = u"""
 ALTER TABLE `racks`
 DROP FOREIGN KEY `fk_racks_datacenterrooms`;
 ALTER TABLE `racks`
-DROP COLUMN `id_dcroom`;
+DROP COLUMN `dcroom`;
 
 """
