@@ -535,6 +535,7 @@ def autoprovision_coreoob(rack, equips):
     try:
         path_to_guide = get_variable("path_to_guide")
         path_to_add_config = get_variable("path_to_add_config")
+        path_to_config = get_variable("path_to_config")
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_GUIDE")
 
