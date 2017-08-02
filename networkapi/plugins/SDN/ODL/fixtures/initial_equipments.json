@@ -10,19 +10,19 @@
     "pk": 1,
     "model": "equipamento.marca",
     "fields": {
-      "nome": "Marca-1"
+      "nome": "OpenDaylight"
     }
   },
   {
     "pk": 1,
     "model": "equipamento.modelo",
     "fields": {
-      "nome": "Modelo-1",
+      "nome": "SDN Controller",
       "marca": "1"
     }
   },
   {
-    "pk": 1,
+    "pk": 10,
     "model": "equipamento.equipamento",
     "fields": {
       "tipo_equipamento": "1",
@@ -32,22 +32,93 @@
     }
   },
   {
+    "model": "ambiente.ambiente",
+    "pk": 1,
+    "fields": {
+        "ambiente_logico": 1,
+        "default_vrf": 1,
+        "divisao_dc": 1,
+        "grupo_l3": 1,
+        "father_environment": 4
+    }
+  },
+  {
+    "fields": {
+        "ambiente": 1,
+        "equipamento": 10,
+        "is_controller": true,
+        "is_router": false
+    },
+    "model": "equipamento.equipamentoambiente",
+    "pk": 3
+  },
+  {
     "pk": 1,
     "model": "tipoacesso.tipoacesso",
     "fields": {
-      "protocolo": "TipoAcesso-1"
+      "protocolo": "http"
     }
   },
   {
     "pk": 1,
     "model": "equipamento.equipamentoacesso",
     "fields": {
-      "equipamento": 1,
+      "equipamento": 10,
       "fqdn": "http://172.19.0.2:8181",
       "user": "admin",
       "password": "admin",
       "tipo_acesso": 1,
       "enable_pass": "---"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ip.ip",
+    "fields": {
+        "oct4": 42,
+        "oct2": 0,
+        "oct3": 0,
+        "oct1": 10,
+        "networkipv4": 1,
+        "descricao": "IP of SDN Controller"
+    }
+  },
+  {
+  "pk": 1,
+  "model": "vlan.vlan",
+  "fields": {
+    "ambiente": 1,
+    "nome": "VLAN 1 - AMBIENTE 1",
+    "num_vlan": "1"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ip.networkipv4",
+    "fields": {
+        "mask_oct1": 255,
+        "mask_oct2": 255,
+        "mask_oct3": 255,
+        "mask_oct4": 0,
+        "oct4": 0,
+        "vlan": 1,
+        "oct2": 0,
+        "oct3": 0,
+        "cluster_unit": null,
+        "oct1": 10,
+        "broadcast": "10.0.0.255",
+        "ambient_vip": null,
+        "active": true,
+        "network_type": 2,
+        "block": 24
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ip.ipequipamento",
+    "fields": {
+        "ip": 1,
+        "equipamento": 10
     }
   }
 ]

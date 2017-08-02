@@ -17,6 +17,7 @@ from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_environment.tasks.flows import async_add_flow
 
 
 log = logging.getLogger(__name__)
@@ -157,6 +158,7 @@ def delete_environment(env_ids):
         except Exception, e:
             raise NetworkAPIException(str(e))
 
+
 def get_controller_by_envid(env_id):
     q_filter_environment = {
         'equipamentoambiente__ambiente': env_id,
@@ -164,6 +166,7 @@ def get_controller_by_envid(env_id):
     }
 
     return Equipamento.objects.filter(Q(**q_filter_environment)).uniqueResult()
+
 
 def list_flows_by_envid(env_id, flow_id=0):
     eqpt = get_controller_by_envid(env_id)
@@ -177,16 +180,23 @@ def list_flows_by_envid(env_id, flow_id=0):
 
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
+        raise NetworkAPIException("Failed to list flow(s)"
+                                  "plugin. %s" % e)
+
 
 def insert_flow(env_id, data):
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
     try:
-        return plugin.add_flow(data=data)
-    except:
-        raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
+        return async_add_flow.apply_async(
+                    args=[plugin, data], queue="napi.odl_flow"
+                )
+    except Exception as e:
+        log.error(e)
+        raise NetworkAPIException("Failed to insert flow(s) "
+                                  "plugin. %s" % e)
+
 
 def delete_flow(env_id, flow_id):
     eqpt = get_controller_by_envid(env_id)
@@ -194,14 +204,18 @@ def delete_flow(env_id, flow_id):
 
     try:
         return plugin.del_flow(flow_id=flow_id)
-    except:
-        raise NetworkAPIException("Failed to communicate with Controller plugin. See log for details.")
+    except Exception as e:
+        log.error(e)
+        raise NetworkAPIException("Failed to delete flow "
+                                  "plugin. %s" % e)
 
+def flush_flows(env_id):
+    eqpt = get_controller_by_envid(env_id)
+    plugin = PluginFactory.factory(eqpt)
 
-
-
-
-
-
-
-
+    try:
+        return plugin.flush_flows()
+    except Exception as e:
+        log.error(e)
+        raise NetworkAPIException("Failed to flush Controller "
+                                  "plugin. %s" % e)

@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+UPDATE `racks` SET `dcroom`=1;
+
+"""
+
+SQL_DOWN = u"""
+
+UPDATE `racks` SET `dcroom`=NULL;
+
+
+"""

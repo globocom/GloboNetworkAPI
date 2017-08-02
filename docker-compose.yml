@@ -34,7 +34,7 @@ services:
 
     odl:
         container_name: netapi_odl
-        image: opendaylight/odl:5.2.0
+        image: opendaylight/odl:4.4.0
         volumes:
             - ./docker-start-opendaylight.sh:/opt/opendaylight/docker-start-opendaylight.sh:ro
         command: bash /opt/opendaylight/docker-start-opendaylight.sh
@@ -44,6 +44,23 @@ services:
             - "8101:8101"
         networks:
             - netapi_net
+
+    celery:
+        container_name: netapi_celery
+        build:
+          context: .
+          dockerfile: Dockerfile
+        command: sh docker-start-celery.sh
+        volumes:
+          - .:/netapi
+        networks:
+            - netapi_net
+        links:
+            - db:netapi_db
+            - queue:netapi_queue
+            - cache:netapi_cache
+        depends_on:
+          - queue
 
     netapi:
         container_name: netapi_app

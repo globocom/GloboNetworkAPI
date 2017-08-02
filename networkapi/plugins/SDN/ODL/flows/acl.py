@@ -330,8 +330,8 @@ class AclFlowBuilder(object):
             flags = l4_options[Tokens.flags]
             tcp_flags = TCPControlBits(flags).to_int()
 
-            self.flows["flow"][0]["match"]["tcp-flags-match"] = {
-                "tcp-flags": tcp_flags,
+            self.flows["flow"][0]["match"]["tcp-flag-match"] = {
+                "tcp-flag": tcp_flags,
             }
 
     def _build_simple_range(self, rule, protocol, start, end):

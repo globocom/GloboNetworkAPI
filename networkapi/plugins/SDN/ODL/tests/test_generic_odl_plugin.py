@@ -6,6 +6,9 @@ from requests.exceptions import HTTPError
 import random
 from json import dumps
 
+from django.test.utils import override_settings
+from mock import patch
+
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
@@ -24,7 +27,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     json_odl_output_path = 'plugins/SDN/ODL/json/odl_output/%s'
 
     def setUp(self):
-        self.equipment = Equipamento.objects.filter(id=1)[0]
+        self.equipment = Equipamento.objects.filter(id=10)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
 
@@ -34,6 +37,24 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         )
 
         self.flow_key = "flow-node-inventory:flow"
+
+    @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._get_nodes")
+    def test_get_nodes_ids_empty(self, *args):
+        """Test get nodes with a empty result"""
+
+        fake_get_nodes = args[0]
+        fake_get_nodes.return_value=[]
+
+        self.assertEqual(self.odl._get_nodes_ids(), [])
+
+    @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._get_nodes")
+    def test_get_nodes_ids_one_id(self, *args):
+        """Test get nodes ids with one result"""
+
+        fake_get_nodes = args[0]
+        fake_get_nodes.return_value=[{'id':'fake_id'}]
+
+        self.assertEqual(self.odl._get_nodes_ids(), ['fake_id'])
 
     def test_add_flow_checking_if_persisted_in_all_ovss(self):
         """Test add flow checking if ACL was persisted at all OVS's."""
@@ -287,7 +308,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         flow_id = data['rules'][0]['id']
         flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
-
     def test_remove_flow(self):
         """Test of success to remove flow."""
 
@@ -352,7 +372,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     utils = OpenDaylightTestUtils()
 
     def setUp(self):
-        self.equipment = Equipamento.objects.filter(id=1)[0]
+        self.equipment = Equipamento.objects.filter(id=10)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
 

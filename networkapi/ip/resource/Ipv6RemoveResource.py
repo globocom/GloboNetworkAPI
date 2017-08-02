@@ -43,10 +43,10 @@ class Ipv6RemoveResource(RestResource):
 
         URL: ipv6/<id_ipv6>/equipment/<id_equip>/remove/
         """
-        from networkapi.ip.models import Equipamento, Ipv6, Ipv6Equipament, IpNotFoundError, IpEquipmentNotFoundError, IpEquipamentoDuplicatedError, IpError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
+        from networkapi.ip.models import Ipv6, Ipv6Equipament, IpNotFoundError, IpEquipmentNotFoundError, IpEquipamentoDuplicatedError, IpError, IpCantBeRemovedFromVip, IpEquipCantDissociateFromVip, \
             IpCantRemoveFromServerPool
 
-        from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError
+        from networkapi.equipamento.models import Equipamento, EquipamentoNotFoundError, EquipamentoError
         self.log.info('Remove an IPv6 to a equipament.')
 
         try:

@@ -20,6 +20,8 @@ from datetime import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from networkapi.queue_tools.rabbitmq import QueueManager
+
 LOG = logging.getLogger(__name__)
 
 
@@ -107,6 +109,36 @@ class EventLog(models.Model):
                 u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario))
             raise EventLogError(
                 e, u'Falha ao salvar o log: evento = %s, id do usuario = %s.' % (evento, usuario))
+
+
+class EventLogQueue(object):
+
+    @classmethod
+    def log(cls, usuario, evento):
+        """Send the eventlog to queues"""
+
+        usuarioId="NoUser"
+        if usuario:
+            usuarioId=usuario.id
+
+        # Send to Queue
+        queue_manager = QueueManager(
+            broker_vhost='tasks',
+            queue_name='tasks.eventlog',
+            exchange_name='tasks.eventlog',
+            routing_key='tasks.eventlog')
+
+        queue_manager.append({
+            'action': evento['acao'],
+            'kind': evento['funcionalidade'],
+            'data': {
+                'id_object': evento['id_objeto'],
+                'user': usuarioId,
+                'old_value': evento['parametro_anterior'],
+                'new_value': evento['parametro_atual']
+            }
+        })
+        queue_manager.send()
 
 
 class AuditRequest(models.Model):

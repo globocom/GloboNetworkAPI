@@ -13,7 +13,6 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAmbiente
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.equipamento.models import EquipamentoNotFoundError
-from networkapi.equipamento.models import AmbienteController
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.util.geral import create_lock
 from networkapi.util.geral import destroy_lock

@@ -1,0 +1,23 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `racks`
+DROP INDEX numero;
+ALTER TABLE `racks`
+DROP INDEX nome;
+
+ALTER TABLE `racks`
+ADD UNIQUE INDEX `uniquekey` (`numero`, `nome`, `dcroom`)
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `racks`
+DROP INDEX `uniquekey`;
+
+ALTER TABLE `racks`
+ADD UNIQUE KEY `nome` (`nome`);
+
+ALTER TABLE `racks`
+ADD UNIQUE KEY `numero` (`numero`);
+
+"""
