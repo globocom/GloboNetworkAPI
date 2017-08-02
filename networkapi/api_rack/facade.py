@@ -190,6 +190,37 @@ def save_rack_dc(rack_dict):
     return rack
 
 
+def update_rack(rack_id, rack):
+
+    try:
+        rack_obj = Rack()
+        rack_obj = rack_obj.get_rack(idt=rack_id)
+
+        rack_obj.nome = rack.get("name")
+        rack_obj.numero = rack.get("number")
+        rack_obj.mac_sw1 = rack.get("mac_sw1")
+        rack_obj.mac_sw2 = rack.get("mac_sw2")
+        rack_obj.mac_ilo = rack.get("mac_ilo")
+        rack_obj.id_sw1 = Equipamento().get_by_pk(int(rack.get("id_sw1")))
+        rack_obj.id_sw2 = Equipamento().get_by_pk(int(rack.get("id_sw2")))
+        rack_obj.id_ilo = Equipamento().get_by_pk(int(rack.get("id_ilo")))
+        rack_obj.dcroom = DatacenterRooms().get_dcrooms(idt=rack.get('fabric_id')) if rack.get('fabric_id') \
+            else None
+
+        rack_obj.save()
+
+        return rack_obj
+
+    except (exceptions.RackNumberDuplicatedValueError,
+            exceptions.RackNameDuplicatedError,
+            exceptions.InvalidInputException) as e:
+        log.exception(e)
+        raise Exception(e)
+    except Exception, e:
+        log.exception(e)
+        raise Exception(e)
+
+
 def get_rack(fabric_id=None, rack_id=None):
 
     rack_obj = Rack()

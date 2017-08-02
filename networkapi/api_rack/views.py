@@ -76,6 +76,7 @@ class RackView(APIView):
 
     @commit_on_success
     def put(self, request, *args, **kwargs):
+
         try:
             log.info("PUT Rack")
 
@@ -84,18 +85,13 @@ class RackView(APIView):
             if not request.DATA.get('rack'):
                 raise exceptions.InvalidInputException()
 
-            #rack = facade.save_rack_dc(request.DATA.get('rack'))
+            rack = facade.update_rack(rack_id, request.DATA.get('rack'))
 
             data = dict()
-            #rack_serializer = RackSerializer(rack)
-            data['rack'] = request.DATA.get('rack') #rack_serializer.data
+            rack_serializer = RackSerializer(rack)
+            data['rack'] = rack_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
-
-        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
-                exceptions.InvalidInputException) as exception:
-            log.exception(exception)
-            raise exception
         except Exception, e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
