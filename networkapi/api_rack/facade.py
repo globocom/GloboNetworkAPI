@@ -190,19 +190,25 @@ def save_rack_dc(rack_dict):
     return rack
 
 
-def get_rack(fabric_id=None):
+def get_rack(fabric_id=None, rack_id=None):
 
     rack_obj = Rack()
 
-    if fabric_id:
-        rack = rack_obj.get_rack(dcroom_id=fabric_id)
-    else:
-        rack = rack_obj.get_rack()
+    try:
+        if fabric_id:
+            rack = rack_obj.get_rack(dcroom_id=fabric_id)
+            rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+        elif rack_id:
+            rack = rack_obj.get_rack(idt=rack_id)
+            rack_list = [rack_serializers.RackSerializer(rack).data] if rack else list()
+        else:
+            rack = rack_obj.get_rack()
+            rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
 
-    rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+        return rack_list
 
-    return rack_list
-
+    except (ObjectDoesNotExist, Exception), e:
+        raise Exception(e)
 
 def delete_rack(rack_id):
 

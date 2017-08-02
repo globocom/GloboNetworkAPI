@@ -73,18 +73,49 @@ class RackView(APIView):
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
+
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        try:
+            log.info("PUT Rack")
+
+            rack_id = kwargs.get("rack_id") if kwargs.get("rack_id") else None
+
+            if not request.DATA.get('rack'):
+                raise exceptions.InvalidInputException()
+
+            #rack = facade.save_rack_dc(request.DATA.get('rack'))
+
+            data = dict()
+            #rack_serializer = RackSerializer(rack)
+            data['rack'] = request.DATA.get('rack') #rack_serializer.data
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
+                exceptions.InvalidInputException) as exception:
+            log.exception(exception)
+            raise exception
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
+
+
     def get(self, user, *args, **kwargs):
-        """Handles GET requests to list all Racks
-        URLs: /api/rack/list/all/
-        """
+        """Handles GET requests to list all Racks"""
 
         try:
             log.info('List all Racks')
 
             fabric_id = kwargs.get("fabric_id") if kwargs.get("fabric_id") else None
+            rack_id = kwargs.get("rack_id") if kwargs.get("rack_id") else None
 
-            racks = facade.get_rack(fabric_id=fabric_id)
-
+            if fabric_id:
+                racks = facade.get_rack(fabric_id=fabric_id)
+            elif rack_id:
+                racks = facade.get_rack(rack_id=rack_id)
+            else:
+                racks = facade.get_rack()
             data = dict()
             data['racks'] = racks
 
