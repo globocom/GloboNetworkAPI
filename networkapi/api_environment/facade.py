@@ -210,7 +210,9 @@ def delete_flow(env_id, flow_id):
         raise NetworkAPIException("Failed to delete flow "
                                   "plugin. %s" % e)
 
+
 def flush_flows(env_id):
+    """ Flushes flow from a environment without restore it """
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
