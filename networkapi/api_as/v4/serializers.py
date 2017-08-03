@@ -24,11 +24,7 @@ class AsV4Serializer(DynamicFieldsModelSerializer):
             'equipments'
         )
 
-        basic_fields = (
-            'id',
-            'name',
-            'description'
-        )
+        basic_fields = fields
 
         default_fields = (
             'id',
@@ -50,6 +46,16 @@ class AsV4Serializer(DynamicFieldsModelSerializer):
                         'many': True,
                         'fields': (
                             'equipment',
+                        )
+                    },
+                    'obj': 'equipments'
+                },
+                'equipments__basic': {
+                    'serializer': AsEquipmentV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'equipment__basic',
                         )
                     },
                     'obj': 'equipments'
@@ -107,6 +113,14 @@ class AsEquipmentV4Serializer(DynamicFieldsModelSerializer):
                 },
                 'equipment': {
                     'obj': 'equipment_id'
+                },
+                'equipment__basic': {
+                    'serializer': eqpt_slz.EquipmentV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+
+                    },
+                    'obj': 'equipment'
                 },
                 'equipment__details': {
                     'serializer': eqpt_slz.EquipmentV4Serializer,
