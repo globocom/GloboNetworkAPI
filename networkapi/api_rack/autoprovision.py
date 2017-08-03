@@ -571,7 +571,7 @@ def autoprovision_coreoob(rack, equips):
     variablestochangeoob["HOSTNAME_OOB"] = oob.get("nome")
     variablestochangeoob["HOSTNAME_RACK"] = rack.nome
     fileinoob = path_to_guide + oob.get("roteiro")
-    fileoutoob = path_to_add_config + oob.get("nome") + ".cfg"
+    fileoutoob = path_to_config + oob.get("nome") + ".cfg"
 
     for equip in oob.get("interfaces"):
         nome = equip.get("nome")
