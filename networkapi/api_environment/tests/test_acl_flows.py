@@ -51,7 +51,7 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
             }]
         }
 
-        response = self.client.put(
+        response = self.client.post(
             self.FLOW_URL % (self.ENV_ID, data['rules'][0]['id']),
             dumps(data),
             HTTP_AUTHORIZATION=self.get_http_authorization('test'),
