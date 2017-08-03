@@ -189,7 +189,7 @@ class EnvFlowView(CustomAPIView):
         if flow_id:
             facade.delete_flow(environment_id, flow_id)
         else:
-            #Flush all the flows
+            # Flush all the flows
             facade.flush_flows(environment_id)
 
         return Response({}, status=status.HTTP_200_OK)
