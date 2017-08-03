@@ -166,22 +166,19 @@ class EnvFlowView(CustomAPIView):
         return Response(flows, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    def put(self, request, *args, **kwargs):
-        """"""
+    def post(self, request, *args, **kwargs):
+        """ Inserts new SDN flows on the remote Controller """
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
 
-        if not flow_id:
-            log.error("Missing flow ID")
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
-
         task = facade.insert_flow(environment_id, request.DATA)
+
         response = {
-            'id': flow_id,
+            'id': flow_id or environment_id,
             'task_id': task.id
         }
 
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
@@ -196,3 +193,21 @@ class EnvFlowView(CustomAPIView):
             facade.flush_flows(environment_id)
 
         return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    def put(self, request, *args, **kwargs):
+        """ Updates an Environment by flushing it and then inserting flows """
+        environment_id = kwargs.get('environment_id')
+        flow_id = kwargs.get('flow_id')
+
+        if flow_id:
+            task = facade.insert_flow(environment_id, request.DATA)
+        else:
+            task = facade.flush_environment(environment_id, request.DATA)
+
+        response = {
+            'id': flow_id or environment_id,
+            'task_id': task.id
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
