@@ -423,7 +423,7 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["IPNEIGHSPINE1IPV6"] = str(IPSPINEipv6[numero_rack][spn])
         variablestochangeleaf1["IPNEIGHSPINE2IPV6"] = str(IPSPINEipv6[numero_rack][spn+1])
 
-        if equip.get("nome")[-1] is 1:
+        if equip.get("nome")[-1] == 1:
             variablestochangeleaf1["IPNEIGHIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][1])
             variablestochangeleaf1["IPNEIGHIBGPIPV6"] = str(IPSIBGPipv6[numero_rack][1])
         else:
