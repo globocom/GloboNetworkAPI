@@ -38,8 +38,8 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_add_acl_flow(self):
-        """ Should insert an ACL flow using async call """
+    def test_add_acl_flow_with_flow_id(self):
+        """ Should insert an ACL flow using async call with flow id """
         data = {
             "kind": "default#acl",
             "rules": [{
