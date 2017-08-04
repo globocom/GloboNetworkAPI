@@ -83,17 +83,18 @@ class ODLPlugin(BaseSdnPlugin):
 
         for node_id in nodes_ids:
             try:
-                path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/" \
-                       % node_id
+                path = "/restconf/config/opendaylight-inventory:nodes/node/" \
+                       "%s/flow-node-inventory:table/0/" % node_id
 
                 self._request(
-                        method="delete", path=path, contentType='json'
-                    )
+                    method="delete", path=path, contentType='json'
+                )
             except HTTPError as e:
-                if e.response.status_code==404:
+                if e.response.status_code == 404:
                     pass
                 else:
-                    raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
+                    raise exceptions.CommandErrorException(
+                        msh=self._parse_errors(e.response.json()))
             except Exception as e:
                 raise e
 
