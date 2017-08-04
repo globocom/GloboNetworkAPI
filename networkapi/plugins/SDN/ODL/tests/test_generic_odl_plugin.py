@@ -73,9 +73,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             output = self.json_odl_output_path % 'odl_id_83000.json'
             self.compare_json_lists(output, flow[self.flow_key])
 
-    def test_add_two_flows(self):
-        pass
-
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
         """Test add flow with tcp protocol and dest eq in l4 options."""
 
