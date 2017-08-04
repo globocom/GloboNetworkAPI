@@ -210,9 +210,6 @@ class ODLPlugin(BaseSdnPlugin):
             if param in kwargs:
                 params[param] = kwargs.get(param)
 
-        # if isinstance(params["data"], basestring):
-        #     params["data"] = params["data"].replace(" ","")
-
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
 
