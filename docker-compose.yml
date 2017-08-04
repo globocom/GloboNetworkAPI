@@ -45,6 +45,23 @@ services:
         networks:
             - netapi_net
 
+    celery:
+        container_name: netapi_celery
+        build:
+          context: .
+          dockerfile: Dockerfile
+        command: sh docker-start-celery.sh
+        volumes:
+          - .:/netapi
+        networks:
+            - netapi_net
+        links:
+            - db:netapi_db
+            - queue:netapi_queue
+            - cache:netapi_cache
+        depends_on:
+          - queue
+
     netapi:
         container_name: netapi_app
         build: .

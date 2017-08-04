@@ -76,6 +76,35 @@ class ODLPlugin(BaseSdnPlugin):
     def del_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='delete')
 
+    def flush_flows(self):
+        nodes_ids = self._get_nodes_ids()
+        if len(nodes_ids) < 1:
+            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+
+        for node_id in nodes_ids:
+            try:
+                path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/" \
+                       % node_id
+
+                self._request(
+                        method="delete", path=path, contentType='json'
+                    )
+            except HTTPError as e:
+                if e.response.status_code==404:
+                    pass
+                else:
+                    raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
+            except Exception as e:
+                raise e
+
+    def _parse_errors(self, err_json):
+        sep = ""
+        msg = ""
+        for error in err_json["errors"]["error"]:
+            msg = msg + sep + error["error-message"]
+            sep = ". "
+        return msg
+
     def get_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='get')
 
@@ -112,14 +141,22 @@ class ODLPlugin(BaseSdnPlugin):
         if len(nodes_ids)<1:
             raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
-        flows_list_by_switch = []
+        flows_list_by_switch = {}
         for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
-                   % (node_id)
+            try:
+                path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
+                       % (node_id)
 
-            flows_list_by_switch.append(
-                self._request(method="get", path=path, contentType='json')
-            )
+                flows_list_by_switch[node_id] = self._request(method="get", path=path, contentType='json')["flow-node-inventory:table"]
+
+            except HTTPError as e:
+                if e.response.status_code == 404:
+                    flows_list_by_switch[node_id] =[]
+                else:
+                    raise exceptions.CommandErrorException(msh=self._parse_errors(e.response.json()))
+            except Exception as e:
+                raise e
+
 
         return flows_list_by_switch
     def _get_nodes_ids(self):
@@ -133,7 +170,7 @@ class ODLPlugin(BaseSdnPlugin):
         return nodes_ids
 
     def _get_nodes(self):
-        path = "/restconf/operational/opendaylight-inventory:nodes/"
+        path = "/restconf/config/opendaylight-inventory:nodes/"
         nodes = self._request(method='get', path=path, contentType='json')
         retorno = []
         if nodes['nodes'].has_key('node'):
@@ -163,7 +200,7 @@ class ODLPlugin(BaseSdnPlugin):
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
 
-        log.info(
+        log.debug(
             "Starting %s request to controller %s at %s. Data to be sent: %s" %
             (params["method"], self.equipment.nome, uri, params["data"])
         )
@@ -189,15 +226,16 @@ class ODLPlugin(BaseSdnPlugin):
         except AttributeError:
             log.error('Request method must be valid HTTP request. '
                       'ie: GET, POST, PUT, DELETE')
-        except HTTPError:
-            try:
-                response = json.loads(request.text)
-                for error in response["errors"]["error"]:
-                    log.error(error["error-message"])
-            except:
-                log.error("Unknown error during request to ODL Controller")
-
-            raise HTTPError(request.status_code)
+        # except HTTPError as e:
+        #
+        #     try:
+        #         response = json.loads(request.text)
+        #         for error in response["errors"]["error"]:
+        #             log.error(error["error-message"])
+        #     except:
+        #         log.error("Unknown error during request to ODL Controller")
+        #
+        #     raise HTTPError("Error during request to ODL Controller. Code %s" % request.status_code)
 
     def _get_auth(self):
         return self._basic_auth()

@@ -94,6 +94,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         expected_data = [
             {'id': 1},
             {'id': 2},
+            {'id': 10},
             {'id': 7},
             {'id': 8}
         ]

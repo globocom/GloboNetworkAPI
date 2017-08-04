@@ -190,19 +190,56 @@ def save_rack_dc(rack_dict):
     return rack
 
 
-def get_rack(fabric_id=None):
+def update_rack(rack_id, rack):
+
+    try:
+        rack_obj = Rack()
+        rack_obj = rack_obj.get_rack(idt=rack_id)
+
+        rack_obj.nome = rack.get("name")
+        rack_obj.numero = rack.get("number")
+        rack_obj.mac_sw1 = rack.get("mac_sw1")
+        rack_obj.mac_sw2 = rack.get("mac_sw2")
+        rack_obj.mac_ilo = rack.get("mac_ilo")
+        rack_obj.id_sw1 = Equipamento().get_by_pk(int(rack.get("id_sw1")))
+        rack_obj.id_sw2 = Equipamento().get_by_pk(int(rack.get("id_sw2")))
+        rack_obj.id_ilo = Equipamento().get_by_pk(int(rack.get("id_ilo")))
+        rack_obj.dcroom = DatacenterRooms().get_dcrooms(idt=rack.get('fabric_id')) if rack.get('fabric_id') \
+            else None
+
+        rack_obj.save()
+
+        return rack_obj
+
+    except (exceptions.RackNumberDuplicatedValueError,
+            exceptions.RackNameDuplicatedError,
+            exceptions.InvalidInputException) as e:
+        log.exception(e)
+        raise Exception(e)
+    except Exception, e:
+        log.exception(e)
+        raise Exception(e)
+
+
+def get_rack(fabric_id=None, rack_id=None):
 
     rack_obj = Rack()
 
-    if fabric_id:
-        rack = rack_obj.get_rack(dcroom_id=fabric_id)
-    else:
-        rack = rack_obj.get_rack()
+    try:
+        if fabric_id:
+            rack = rack_obj.get_rack(dcroom_id=fabric_id)
+            rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+        elif rack_id:
+            rack = rack_obj.get_rack(idt=rack_id)
+            rack_list = [rack_serializers.RackSerializer(rack).data] if rack else list()
+        else:
+            rack = rack_obj.get_rack()
+            rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
 
-    rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+        return rack_list
 
-    return rack_list
-
+    except (ObjectDoesNotExist, Exception), e:
+        raise Exception(e)
 
 def delete_rack(rack_id):
 

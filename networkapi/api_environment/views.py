@@ -185,12 +185,14 @@ class EnvFlowView(CustomAPIView):
 
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
-
-        if 'flow_id' not in kwargs:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        """"""
         environment_id = kwargs.get('environment_id')
-        flow_id = kwargs.get('flow_id')
+        flow_id = None if not kwargs.get('flow_id') else kwargs.get('flow_id')
 
-        facade.delete_flow(environment_id, flow_id)
+        if flow_id:
+            facade.delete_flow(environment_id, flow_id)
+        else:
+            #Flush all the flows
+            facade.flush_flows(environment_id)
 
         return Response({}, status=status.HTTP_200_OK)
