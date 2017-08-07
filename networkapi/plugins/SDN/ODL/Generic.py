@@ -135,9 +135,7 @@ class ODLPlugin(BaseSdnPlugin):
         return return_flows
 
     def get_flows(self):
-        """
-        :return: All flows for table 0
-        """
+        """ Returns All flows for table 0 of all switches of a environment """
 
         nodes_ids = self._get_nodes_ids()
         if len(nodes_ids) < 1:
