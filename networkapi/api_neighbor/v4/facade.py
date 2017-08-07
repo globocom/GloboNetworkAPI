@@ -4,6 +4,7 @@ import logging
 from django.core.exceptions import FieldError
 from django.db.transaction import commit_on_success
 from networkapi.plugins.factory import PluginFactory
+from networkapi.infrastructure.ipaddr import IPAddress
 
 from networkapi.util.geral import get_model
 
@@ -17,6 +18,7 @@ from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.equipamento.models import Equipamento
 
@@ -132,8 +134,23 @@ def deploy_neighbor(neighbors):
         if neighbor['created'] is True:
             raise NeighborAlreadyCreated(id_)
 
+        remote_ip = neighbor['remote_ip']
+
+        version_ip = IPAddress(remote_ip).version
+
+        if version_ip == 4:
+            equipment = Equipamento.objects.filter(
+                id__ipequipamento__virtual_interface__neighbor=id_)
+        else:
+            pass
+
+        plugin = PluginFactory.factory(equipment)
+        plugin.BGP.deploy_neighbor(neighbor)
+
         # TODO Implement plugin call
         deployed_ids.append(id_)
+
+
 
     neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
     neighbors_obj.update(created=True)

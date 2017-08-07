@@ -21,6 +21,7 @@ from ... import exceptions
 from ...base import BasePlugin
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.util.decorators import mock_return
+from networkapi.plugins.Dell.FTOS.BGP.Generic import Generic as BGP
 
 
 log = logging.getLogger(__name__)
@@ -38,6 +39,10 @@ class FTOS(BasePlugin):
 
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
+
+    def bgp(self):
+
+        return BGP
 
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
         """
