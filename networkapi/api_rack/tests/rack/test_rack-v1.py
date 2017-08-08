@@ -11,6 +11,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 
 log = logging.getLogger(__name__)
 
+
 def setup():
     call_command(
         'loaddata',
@@ -22,21 +23,20 @@ def setup():
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_rack/fixtures/initial_datacenter.json',
         verbosity=0
     )
 
-class FabricTestCase(NetworkApiTestCase):
+class RackTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
 
-    def test_fabric_post(self):
+    def test_post_success(self):
+        """ Should post a new Rack """
 
-        response = self.client.post('/api/dcrooms/',
+        response = self.client.post('/api/rack/',
                                     data=json.dumps(self.load_json_file(
-                                        "api_rack/tests/fabric/json/post_fabric.json")),
+                                        "api_rack/tests/rack/json/rack.json")),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.compare_status(201, response.status_code)
