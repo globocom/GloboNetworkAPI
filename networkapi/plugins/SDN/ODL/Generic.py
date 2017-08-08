@@ -99,6 +99,8 @@ class ODLPlugin(BaseSdnPlugin):
                 raise e
 
     def _parse_errors(self, err_json):
+        """ Generic message creator to format errors """
+
         sep = ""
         msg = ""
         for error in err_json["errors"]["error"]:
@@ -107,9 +109,14 @@ class ODLPlugin(BaseSdnPlugin):
         return msg
 
     def get_flow(self, flow_id=0):
+        """ HTTP GET method to request flows by id """
+
         return self._flow(flow_id=flow_id, method='get')
 
     def _flow(self, flow_id=0, method='', data=None):
+        """ Generic implementation of the plugin communication with the
+        remote controller through HTTP requests
+        """
 
         allowed_methods = ["get", "put", "delete"]
 
