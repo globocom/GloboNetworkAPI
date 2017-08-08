@@ -578,7 +578,7 @@ def autoprovision_coreoob(rack, equips):
         log.debug(str(nome))
         roteiro = equip.get("roteiro")
         if nome[:3] == prefixlf:
-            if nome[-1] == 1:
+            if nome[-1] == "1":
                 variablestochangeoob["HOSTNAME_LF1"] = nome
             else:
                 variablestochangeoob["HOSTNAME_LF2"] = nome

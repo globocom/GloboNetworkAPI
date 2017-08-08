@@ -1,0 +1,56 @@
+[
+  {
+    "pk": 87,
+    "model": "system.variable",
+    "fields": {
+      "name": "foreman_username",
+      "value": "admin",
+      "description": "username"
+    }
+  },
+  {
+    "pk": 88,
+    "model": "system.variable",
+    "fields": {
+      "name": "foreman_password",
+      "value": "password",
+      "description": "password"
+    }
+  },
+  {
+    "pk": 89,
+    "model": "system.variable",
+    "fields": {
+      "name": "foreman_hosts_environment_id",
+      "value": "1",
+      "description": "environment id"
+    }
+  },
+  {
+    "pk": 98,
+    "model": "system.variable",
+    "fields": {
+      "name": "foreman_url",
+      "value": "http://foreman_server",
+      "description": "fo"
+    }
+  },
+  {
+    "pk": 97,
+    "model": "system.variable",
+    "fields": {
+      "name": "use_foreman",
+      "value": "0",
+      "description": "use foreman"
+    }
+  },
+  {
+    "pk": 208,
+    "model": "system.variable",
+    "fields": {
+      "name": "use_ldap",
+      "value": "0",
+      "description": ""
+    }
+  }
+]
