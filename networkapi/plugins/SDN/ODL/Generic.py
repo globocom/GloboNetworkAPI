@@ -192,6 +192,16 @@ class ODLPlugin(BaseSdnPlugin):
 
         nodes_list = []
         if 'node' in nodes['nodes']:
+
+            # TODO: The following lines corrects a bug on Beryllium version of
+            # OpenDaylight that sometimes do not return connected switches
+            # throught config route. We need to remove this lines as soon as
+            # we update OpenDaylight version to Boron.
+            if len(nodes["nodes"]["node"]) <= 1:
+                path = "/restconf/operational/opendaylight-inventory:nodes/"
+                nodes = self._request(method='get', path=path,
+                                      contentType='json')
+
             for node in nodes['nodes']['node']:
                 if node["id"] not in ["controller-config"]:
                     nodes_list.append(node)
