@@ -128,6 +128,9 @@ def delete_neighbor(neighbor_ids):
 def deploy_neighbor(neighbors):
 
     deployed_ids = list()
+    import ipdb;
+    ipdb.set_trace()
+
     for neighbor in neighbors:
         id_ = neighbor['id']
 
@@ -139,13 +142,20 @@ def deploy_neighbor(neighbors):
         version_ip = IPAddress(remote_ip).version
 
         if version_ip == 4:
-            equipment = Equipamento.objects.filter(
-                id__ipequipamento__virtual_interface__neighbor=id_)
+            # equipment = Equipamento.objects.filter(
+            #    id__ipequipamento__virtual_interface__neighbor=id_)
+            pass
         else:
             pass
 
+        equipment = Equipamento.get_by_pk(1)
+
         plugin = PluginFactory.factory(equipment)
-        plugin.BGP.deploy_neighbor(neighbor)
+
+        try:
+            plugin.bgp(neighbor).deploy_neighbor()
+        except:
+            raise NetworkAPIException('Failed to communication with ')
 
         # TODO Implement plugin call
         deployed_ids.append(id_)
