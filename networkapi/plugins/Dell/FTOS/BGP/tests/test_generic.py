@@ -9,10 +9,6 @@ from django.test import TestCase
 
 class GenericPluginTestCaseSuccess(TestCase):
 
-    def test_json_to_xml(self):
-
-        pass
-
     def test_factory_bgp(self):
         equipment = self._mock_equipment()
         plugin = PluginFactory.factory(equipment)
@@ -35,20 +31,32 @@ class GenericPluginTestCaseSuccess(TestCase):
 
         return equipment
 
-    def test_treat_neighbor_invalid(self):
+    def test_validate_invalid_neighbors(self):
         """Tests what happens when not valid Neighbors are passed as input."""
 
-        self.treat_neighbor_help({})
-        self.treat_neighbor_help('')
-        self.treat_neighbor_help(1)
-        self.treat_neighbor_help([])
+        self.validate_invalid_neighbor_help({})
+        self.validate_invalid_neighbor_help('')
+        self.validate_invalid_neighbor_help(1)
+        self.validate_invalid_neighbor_help([])
+        self.validate_invalid_neighbor_help({
+                                     'remote_ip': '10.10.10.1',
+                                     'remote_as': 200,
+                                     'soft_reconfiguration': 1})
+        self.validate_invalid_neighbor_help({
+                                     'remote_ip': '10.10.10.1',
+                                     'remote_as': 200,
+                                     'community': 1})
+        self.validate_invalid_neighbor_help({
+                                     'remote_ip': '10.10.10.1',
+                                     'remote_as': 200,
+                                     'timer_timeout': 'x'})
 
-    def treat_neighbor_help(self, neighbor):
+    def validate_invalid_neighbor_help(self, neighbor):
 
         plugin = Generic(neighbor=neighbor)
 
         with self.assertRaises(InvalidNeighborException):
-            plugin._process_neighbor()
+            plugin._validate_neighbor()
 
     def test_treat_soft_reconfiguration_true(self):
 
@@ -82,22 +90,73 @@ class GenericPluginTestCaseSuccess(TestCase):
 
         self.assertEquals(plugin.neighbor, {})
 
-    def test_treat_neighbor_without_soft_reconfiguration(self):
+    def test_treat_soft_reconfiguration_without_this_field(self):
 
-        plugin = Generic(neighbor={'remote_ip': '10.10.10.1'})
+        plugin = Generic(neighbor={'remote_ip': '10.10.10.1',
+                                   'remote_as': 200})
 
-        plugin._process_neighbor()
+        plugin._treat_soft_reconfiguration()
 
-        self.assertEquals(plugin.neighbor, {'remote_ip': '10.10.10.1'})
+        self.assertEquals(plugin.neighbor, {'remote_ip': '10.10.10.1',
+                                            'remote_as': 200})
 
-    def test_treat_neighbor_with_invalid_soft_reconfiguration(self):
+    def test_treat_community_without_this_field(self):
 
-        self.treat_neighbor_help(
-            {'remote_ip': '10.10.10.1', 'soft_reconfiguration': 1})
+        plugin = Generic(neighbor={'remote_ip': '10.10.10.1',
+                                   'remote_as': 200})
 
-    def test_treat_neighbor_with_invalid_community(self):
+        plugin._treat_community()
 
-        self.treat_neighbor_help({'remote_ip': '10.10.10.1', 'community': 1})
+        self.assertEquals(plugin.neighbor, {'remote_ip': '10.10.10.1',
+                                            'remote_as': 200})
+
+    def test_remote_ip_appears_as_a_last_in_generated_ordered_dict(self):
+
+        plugin = Generic(neighbor={'community': True,
+                                   'remote_as': 200,
+                                   'remote_ip': '10.10.10.1',
+                                   'maximum_hops': 10,
+                                   'description': 'NAPI'
+                                   })
+
+        plugin._order_neighbor()
+
+        neighbor_size = len(plugin.neighbor.items())
+
+        self.assertEquals(('remote_ip', '10.10.10.1'),
+                          plugin.neighbor.items()[neighbor_size-1])
+
+    def test_generate_xml_from_valid_dict(self):
+
+        plugin = Generic(neighbor={'remote_as': 200,
+                                   'remote_ip': '11.1.1.155',
+                                   'password': 'ABC',
+                                   'maximum_hops': '5',
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': False})
+
+        xml_expected = '<bgp><as-name>65114</as-name><neighbor>' \
+                       '<neighbor-router>11.1.1.155</neighbor-router>' \
+                       '<timers><keepalive>3</keepalive>' \
+                       '<hold-time>60</hold-time></timers>' \
+                       '<ebgp-multihop>5</ebgp-multihop>' \
+                       '<remote-as>200</remote-as>' \
+                       '<password><password-value>' \
+                       'ABC</password-value></password>' \
+                       '<remove-private-as>false</remove-private-as>' \
+                       '<next-hop-self>false</next-hop-self>' \
+                       '<send-community />' \
+                       '<soft-reconfiguration>inbound</soft-reconfiguration>' \
+                       '<description>desc</description></neighbor></bgp>'
+
+        self.assertEquals(plugin._dict_to_xml(), xml_expected)
+
+
 
 
 
