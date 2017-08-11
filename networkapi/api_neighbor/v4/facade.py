@@ -150,8 +150,8 @@ def deploy_neighbor(neighbors):
 
         try:
             plugin.bgp(neighbor).deploy_neighbor()
-        except:
-            raise NetworkAPIException('Failed to communication with ')
+        except Exception as e:
+            raise NetworkAPIException(e.message)
 
         # TODO Implement plugin call
         deployed_ids.append(id_)

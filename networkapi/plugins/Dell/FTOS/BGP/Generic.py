@@ -205,7 +205,7 @@ class Generic(object):
             except:
                 log.error("Unknown error during request to Dell Equipment.")
 
-            raise HTTPError(request.status_code)
+            raise HTTPError("%s - %s" % (request.status_code, request.text))
 
     def _get_auth(self):
         return self._basic_auth()
