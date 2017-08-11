@@ -12,6 +12,7 @@ from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from schema import Schema
 from schema import SchemaError
+from schema import SchemaWrongKeyError
 from schema import And
 from schema import Use
 from schema import Optional
@@ -54,18 +55,19 @@ class Generic(object):
         self._validate_neighbor()
         self._treat_soft_reconfiguration()
         self._treat_community()
+        self._order_neighbor()
 
     def _validate_neighbor(self):
         """Validate neighbor against Schema."""
 
         neighbor_schema = Schema({
-            'remote_ip': str,
-            Optional('remote_as'): lambda n: 0 <= int(n) <= 4294967295,
-            Optional('password'): str,
+            'remote_ip': basestring,
+            'remote_as': lambda n: 0 <= int(n) <= 4294967295,
+            Optional('password'): basestring,
             Optional('maximum_hops'): lambda n: 1 <= int(n) <= 255,
             Optional('timer_keepalive'): lambda n: 1 <= int(n) <= 65535,
             Optional('timer_timeout'): lambda n: 3 <= int(n) <= 65536,
-            Optional('description'): str,
+            Optional('description'): basestring,
             Optional('soft_reconfiguration'): bool,
             Optional('community'): bool,
             Optional('remove_private_as'): bool,
@@ -74,7 +76,8 @@ class Generic(object):
 
         try:
             neighbor_schema.validate(self.neighbor)
-
+        except SchemaWrongKeyError:
+            pass
         except SchemaError as e:
             raise InvalidNeighborException(e.code)
 
@@ -101,27 +104,17 @@ class Generic(object):
            in an OrderedDict.
         """
 
-        # TODO test tomorrow
-
         remote_ip = self.neighbor['remote_ip']
         del self.neighbor['remote_ip']
 
-        remote_as = self.neighbor['remote_as']
-        del self.neighbor['remote_as']
-
         self.neighbor = OrderedDict(self.neighbor)
 
-        # When generate XML, remote_ip should be the first, and remote_as
-        # the second.
-        self.neighbor.update({'remote_as': remote_as})
+        # When generate XML, remote_ip should be the first
         self.neighbor.update({'remote_ip': remote_ip})
 
-        return self.neighbor
-
-    def dict_to_xml(self):
+    def _dict_to_xml(self):
 
         self._process_neighbor()
-        self._order_neighbor()
 
         bgp_xml = Element('bgp')
 
@@ -133,17 +126,17 @@ class Generic(object):
         # remote_ip in first position and remote_as in second position.
         for field in reversed(self.neighbor):
 
-            if isinstance(map_fields[field], basestring):
+            if isinstance(map_fields.get(field), basestring):
 
                 child_xml = SubElement(neighbor_xml, map_fields[field])
                 child_xml.text = self._to_str(self.neighbor[field])
 
-            elif isinstance(map_fields[field], dict):
+            elif isinstance(map_fields.get(field), dict):
 
                 for child in map_fields[field]:
 
                     child_xml = self._create_or_get_element(neighbor_xml,
-                                                                child)
+                                                            child)
 
                     child_of_child_xml = SubElement(child_xml,
                                                     map_fields[field][child])
@@ -154,7 +147,7 @@ class Generic(object):
     def deploy_neighbor(self):
 
         path = "api/running/dell/router/bgp/"
-        data = self.dict_to_xml()
+        data = self._dict_to_xml()
         self._request(method='patch', path=path, data=data, content_type='xml')
 
     def undeploy_neighbor(self):
@@ -187,6 +180,7 @@ class Generic(object):
         try:
             # Raises AttributeError if method is not valid
             func = getattr(requests, params['method'])
+
             request = func(
                 uri,
                 auth=self._get_auth(),
@@ -222,9 +216,6 @@ class Generic(object):
             self.equipment_access.password
         )
 
-    def _o_auth(self):
-        pass
-
     def _get_headers(self, content_type):
         types = {
             'xml':  'application/vnd.yang.data+xml',
@@ -233,31 +224,30 @@ class Generic(object):
 
         return {'Content-Type': types[content_type]}
 
-    def _get_equipment_access(self):
+    def _get_equipment_access(self, protocol):
         try:
             return EquipamentoAcesso.search(
-                None, self.equipment, 'http').uniqueResult()
+                None, self.equipment, protocol).uniqueResult()
         except Exception:
             log.error('Access type %s not found for equipment %s.' %
                       ('http', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
-        # TODO: ver o metodo existente, bater com o host (http com http)
 
     def _get_host(self):
 
-        if not hasattr(self, 'host') or self.host is None:
+        protocol = 'http'
+        self.equipment_access = self._get_equipment_access(protocol)
+        if not isinstance(self.equipment_access, EquipamentoAcesso):
 
-            if not isinstance(self.equipment_access, EquipamentoAcesso):
+            log.error('No fqdn could be found for equipment %s .' %
+                      (self.equipment.nome))
+            raise exceptions.InvalidEquipmentAccessException()
 
-                log.error('No fqdn could be found for equipment %s .' %
-                          (self.equipment.nome))
-                raise exceptions.InvalidEquipmentAccessException()
+        host = self.equipment_access.fqdn.strip()
+        if host.find('://') < 0:
+            host = protocol + '://' + host + ':8008'
 
-            self.host = self.equipment_access.fqdn.strip()
-            if self.host.find('://') < 0:
-                self.host = self.protocol + '://' + self.host
-
-        return self.host
+        return host
 
     def _get_uri(self, host=None, path=""):
 
@@ -274,7 +264,6 @@ class Generic(object):
         self.uri = host + '/' + path
 
         return self.uri
-
 
     @staticmethod
     def _create_or_get_element(root, tag):

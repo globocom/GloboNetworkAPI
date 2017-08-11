@@ -128,8 +128,6 @@ def delete_neighbor(neighbor_ids):
 def deploy_neighbor(neighbors):
 
     deployed_ids = list()
-    import ipdb;
-    ipdb.set_trace()
 
     for neighbor in neighbors:
         id_ = neighbor['id']
@@ -142,13 +140,11 @@ def deploy_neighbor(neighbors):
         version_ip = IPAddress(remote_ip).version
 
         if version_ip == 4:
-            # equipment = Equipamento.objects.filter(
-            #    id__ipequipamento__virtual_interface__neighbor=id_)
-            pass
+            equipment = Equipamento.objects.filter(
+                ipequipamento__virtual_interface__neighbor=id_)[0]
         else:
-            pass
-
-        equipment = Equipamento.get_by_pk(1)
+            equipment = Equipamento.objects.filter(
+                ipv6equipament__virtual_interface__neighbor=id_)[0]
 
         plugin = PluginFactory.factory(equipment)
 
