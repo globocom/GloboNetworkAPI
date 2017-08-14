@@ -63,15 +63,17 @@ class ODLPlugin(BaseSdnPlugin):
             builder = AclFlowBuilder(data)
 
             flows_set = builder.build()
-
+        try:
             for flows in flows_set:
                 for flow in flows['flow']:
 
                     self._flow(flow_id=flow['id'],
                                method='put',
                                data=json.dumps({'flow': [flow]}))
+        except HTTPError as e:
+            raise exceptions.CommandErrorException(
+                                msg=self._parse_errors(e.response.json()))
 
-        return None
 
     def del_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='delete')
@@ -94,7 +96,7 @@ class ODLPlugin(BaseSdnPlugin):
                     pass
                 else:
                     raise exceptions.CommandErrorException(
-                        msh=self._parse_errors(e.response.json()))
+                        msg=self._parse_errors(e.response.json()))
             except Exception as e:
                 raise e
 
@@ -167,7 +169,7 @@ class ODLPlugin(BaseSdnPlugin):
                     flows_list[node_id] = []
                 else:
                     raise exceptions.CommandErrorException(
-                        msh=self._parse_errors(e.response.json()))
+                        msg=self._parse_errors(e.response.json()))
             except Exception as e:
                 raise e
 
@@ -211,8 +213,6 @@ class ODLPlugin(BaseSdnPlugin):
         path="/restconf/operational/network-topology:network-topology/topology/flow:1/"
         nodes_ids=[]
         try:
-            # import pdb;
-            # pdb.set_trace()
             topo=self._request(method='get', path=path, contentType='json')['topology'][0]
             if topo.has_key('node'):
                 for node in topo['node']:
@@ -273,6 +273,7 @@ class ODLPlugin(BaseSdnPlugin):
         except AttributeError:
             log.error('Request method must be valid HTTP request. '
                       'ie: GET, POST, PUT, DELETE')
+
 
     def _get_auth(self):
         return self._basic_auth()
