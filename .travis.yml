@@ -17,4 +17,4 @@ before_script:
   - mysql -e 'create database networkapi;'
   - python manage.py syncdb --noinput
 script:
-  - python manage.py test networkapi/plugins/
+  - python manage.py test
