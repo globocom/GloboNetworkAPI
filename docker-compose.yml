@@ -36,7 +36,7 @@ services:
         container_name: netapi_celery
         build:
           context: .
-          dockerfile: Dockerfile
+          dockerfile: scripts/docker/Dockerfile
         command: sh scripts/docker/docker-start-celery.sh
         volumes:
           - .:/netapi
@@ -51,7 +51,9 @@ services:
 
     netapi:
         container_name: netapi_app
-        build: .
+        build:
+          context: .
+          dockerfile: scripts/docker/Dockerfile
         ports:
             - "127.0.0.1:8000:8000"
         command: sh scripts/docker/docker-start-netapi.sh
