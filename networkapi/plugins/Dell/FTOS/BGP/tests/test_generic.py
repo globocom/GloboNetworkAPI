@@ -31,32 +31,32 @@ class GenericPluginTestCaseSuccess(TestCase):
 
         return equipment
 
-    def test_validate_invalid_neighbors(self):
-        """Tests what happens when not valid Neighbors are passed as input."""
-
-        self.validate_invalid_neighbor_help({})
-        self.validate_invalid_neighbor_help('')
-        self.validate_invalid_neighbor_help(1)
-        self.validate_invalid_neighbor_help([])
-        self.validate_invalid_neighbor_help({
-                                     'remote_ip': '10.10.10.1',
-                                     'remote_as': 200,
-                                     'soft_reconfiguration': 1})
-        self.validate_invalid_neighbor_help({
-                                     'remote_ip': '10.10.10.1',
-                                     'remote_as': 200,
-                                     'community': 1})
-        self.validate_invalid_neighbor_help({
-                                     'remote_ip': '10.10.10.1',
-                                     'remote_as': 200,
-                                     'timer_timeout': 'x'})
-
-    def validate_invalid_neighbor_help(self, neighbor):
+    def _validate_invalid_neighbor_help(self, neighbor):
 
         plugin = Generic(neighbor=neighbor)
 
         with self.assertRaises(InvalidNeighborException):
             plugin._validate_neighbor()
+
+    def test_validate_invalid_neighbors(self):
+        """Tests what happens when not valid Neighbors are passed as input."""
+
+        self._validate_invalid_neighbor_help({})
+        self._validate_invalid_neighbor_help('')
+        self._validate_invalid_neighbor_help(1)
+        self._validate_invalid_neighbor_help([])
+        self._validate_invalid_neighbor_help({
+                                     'remote_ip': '10.10.10.1',
+                                     'remote_as': '200',
+                                     'soft_reconfiguration': 1})
+        self._validate_invalid_neighbor_help({
+                                     'remote_ip': '10.10.10.1',
+                                     'remote_as': '200',
+                                     'community': 1})
+        self._validate_invalid_neighbor_help({
+                                     'remote_ip': '10.10.10.1',
+                                     'remote_as': '200',
+                                     'timer_timeout': 'x'})
 
     def test_treat_soft_reconfiguration_true(self):
 
@@ -74,6 +74,16 @@ class GenericPluginTestCaseSuccess(TestCase):
 
         self.assertEquals(plugin.neighbor, {})
 
+    def test_treat_soft_reconfiguration_without_this_field(self):
+
+        plugin = Generic(neighbor={'remote_ip': '10.10.10.1',
+                                   'remote_as': '200'})
+
+        plugin._treat_soft_reconfiguration()
+
+        self.assertEquals(plugin.neighbor, {'remote_ip': '10.10.10.1',
+                                            'remote_as': '200'})
+
     def test_treat_community_true(self):
 
         plugin = Generic(neighbor={'community': True})
@@ -90,32 +100,22 @@ class GenericPluginTestCaseSuccess(TestCase):
 
         self.assertEquals(plugin.neighbor, {})
 
-    def test_treat_soft_reconfiguration_without_this_field(self):
-
-        plugin = Generic(neighbor={'remote_ip': '10.10.10.1',
-                                   'remote_as': 200})
-
-        plugin._treat_soft_reconfiguration()
-
-        self.assertEquals(plugin.neighbor, {'remote_ip': '10.10.10.1',
-                                            'remote_as': 200})
-
     def test_treat_community_without_this_field(self):
 
         plugin = Generic(neighbor={'remote_ip': '10.10.10.1',
-                                   'remote_as': 200})
+                                   'remote_as': '200'})
 
         plugin._treat_community()
 
         self.assertEquals(plugin.neighbor, {'remote_ip': '10.10.10.1',
-                                            'remote_as': 200})
+                                            'remote_as': '200'})
 
     def test_remote_ip_appears_as_a_last_in_generated_ordered_dict(self):
 
         plugin = Generic(neighbor={'community': True,
-                                   'remote_as': 200,
+                                   'remote_as': '200',
                                    'remote_ip': '10.10.10.1',
-                                   'maximum_hops': 10,
+                                   'maximum_hops': '10',
                                    'description': 'NAPI'
                                    })
 
@@ -128,7 +128,7 @@ class GenericPluginTestCaseSuccess(TestCase):
 
     def test_generate_xml_from_valid_dict(self):
 
-        plugin = Generic(neighbor={'remote_as': 200,
+        plugin = Generic(neighbor={'remote_as': '200',
                                    'remote_ip': '11.1.1.155',
                                    'password': 'ABC',
                                    'maximum_hops': '5',
@@ -155,6 +155,74 @@ class GenericPluginTestCaseSuccess(TestCase):
                        '<description>desc</description></neighbor></bgp>'
 
         self.assertEquals(plugin._dict_to_xml(), xml_expected)
+
+    def test_generate_xml_from_dict_missing_remote_as(self):
+
+        plugin = Generic(neighbor={'remote_ip': '11.1.1.155',
+                                   'password': 'ABC',
+                                   'maximum_hops': '5',
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': False})
+
+        with self.assertRaises(InvalidNeighborException):
+            plugin._dict_to_xml()
+
+    def test_generate_xml_from_dict_missing_remote_ip(self):
+
+        plugin = Generic(neighbor={'remote_as': '200',
+                                   'password': 'ABC',
+                                   'maximum_hops': '5',
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': False})
+
+        with self.assertRaises(InvalidNeighborException):
+            plugin._dict_to_xml()
+
+    def test_generate_xml_from_dict_with_next_hop_self_in_wrong_format(self):
+
+        plugin = Generic(neighbor={'remote_as': '200',
+                                   'remote_ip': '11.1.1.155',
+                                   'password': 'ABC',
+                                   'maximum_hops': '5',
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': 'false'})
+
+        with self.assertRaises(InvalidNeighborException):
+            plugin._dict_to_xml()
+
+    def test_generate_xml_from_dict_with_maximum_hops_in_wrong_format(self):
+
+        plugin = Generic(neighbor={'remote_as': '200',
+                                   'remote_ip': '11.1.1.155',
+                                   'password': 'ABC',
+                                   'maximum_hops': True,
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': False})
+
+        with self.assertRaises(InvalidNeighborException):
+            plugin._dict_to_xml()
+
+
 
 
 
