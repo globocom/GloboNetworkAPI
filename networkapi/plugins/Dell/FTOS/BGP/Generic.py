@@ -62,11 +62,14 @@ class Generic(object):
 
         neighbor_schema = Schema({
             'remote_ip': basestring,
-            'remote_as': lambda n: 0 <= int(n) <= 4294967295,
+            'remote_as': And(basestring, lambda n: 0 <= int(n) <= 4294967295),
             Optional('password'): basestring,
-            Optional('maximum_hops'): lambda n: 1 <= int(n) <= 255,
-            Optional('timer_keepalive'): lambda n: 1 <= int(n) <= 65535,
-            Optional('timer_timeout'): lambda n: 3 <= int(n) <= 65536,
+            Optional('maximum_hops'): And(basestring,
+                                          lambda n: 1 <= int(n) <= 255),
+            Optional('timer_keepalive'): And(basestring,
+                                             lambda n: 1 <= int(n) <= 65535),
+            Optional('timer_timeout'): And(basestring,
+                                           lambda n: 3 <= int(n) <= 65536),
             Optional('description'): basestring,
             Optional('soft_reconfiguration'): bool,
             Optional('community'): bool,
@@ -77,6 +80,7 @@ class Generic(object):
         try:
             neighbor_schema.validate(self.neighbor)
         except SchemaWrongKeyError:
+            # It doesn't matter if neighbor dict has other keys besides these.
             pass
         except SchemaError as e:
             raise InvalidNeighborException(e.code)
@@ -152,7 +156,11 @@ class Generic(object):
 
     def undeploy_neighbor(self):
 
-        pass
+        path = "api/running/dell/router/bgp/{}/neighbor/{}/".\
+            format(65114,
+                   self.neighbor['remote_ip'])
+        data = self._dict_to_xml()
+        self._request(method='delete', path=path, data=data, content_type='xml')
 
     def _request(self, **kwargs):
 
