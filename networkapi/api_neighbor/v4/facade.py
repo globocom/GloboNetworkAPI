@@ -124,11 +124,22 @@ def delete_neighbor(neighbor_ids):
             raise NetworkAPIException(str(e))
 
 
+def get_equipment(id_, remote_ip):
+
+    version_ip = IPAddress(remote_ip).version
+
+    if version_ip == 4:
+        return Equipamento.objects.filter(
+            ipequipamento__virtual_interface__neighbor=id_)[0]
+    else:
+        return Equipamento.objects.filter(
+            ipv6equipament__virtual_interface__neighbor=id_)[0]
+
+
 @commit_on_success
 def deploy_neighbor(neighbors):
 
     deployed_ids = list()
-
     for neighbor in neighbors:
         id_ = neighbor['id']
 
@@ -137,14 +148,7 @@ def deploy_neighbor(neighbors):
 
         remote_ip = neighbor['remote_ip']
 
-        version_ip = IPAddress(remote_ip).version
-
-        if version_ip == 4:
-            equipment = Equipamento.objects.filter(
-                ipequipamento__virtual_interface__neighbor=id_)[0]
-        else:
-            equipment = Equipamento.objects.filter(
-                ipv6equipament__virtual_interface__neighbor=id_)[0]
+        equipment = get_equipment(id_, remote_ip)
 
         plugin = PluginFactory.factory(equipment)
 
@@ -153,10 +157,7 @@ def deploy_neighbor(neighbors):
         except Exception as e:
             raise NetworkAPIException(e.message)
 
-        # TODO Implement plugin call
         deployed_ids.append(id_)
-
-
 
     neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
     neighbors_obj.update(created=True)
@@ -172,7 +173,17 @@ def undeploy_neighbor(neighbors):
         if neighbor['created'] is False:
             raise NeighborNotCreated(id_)
 
-        # TODO Implement plugin call
+        remote_ip = neighbor['remote_ip']
+
+        equipment = get_equipment(id_, remote_ip)
+
+        plugin = PluginFactory.factory(equipment)
+
+        try:
+            plugin.bgp(neighbor).undeploy_neighbor()
+        except Exception as e:
+            raise NetworkAPIException(e.message)
+
         undeployed_ids.append(id_)
 
     neighbors_obj = Neighbor.objects.filter(id__in=undeployed_ids)
