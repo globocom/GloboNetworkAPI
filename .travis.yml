@@ -6,13 +6,15 @@ python:
 services: mysql
 env:
   - DJANGO=1.5
+branches:
+  only:
+    - master
+    - develop
 install:
   - pip install -q -r requirements.txt
   - pip install -q -r requirements_test.txt
 before_script:
-#   - "pep8 --exclude=migrations --ignore=E501,E225 src"
-#   - pyflakes -x W src
-  - mysql -e 'create database telecom;'
+  - mysql -e 'create database networkapi;'
   - python manage.py syncdb --noinput
 script:
   - python manage.py test
