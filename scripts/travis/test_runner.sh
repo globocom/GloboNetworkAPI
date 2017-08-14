@@ -1,11 +1,7 @@
 #!/bin/bash
-if [ ! -d test_venv ]; then
-    virtualenv test_venv
-fi
-
-source test_venv/bin/activate
 
 # Database configuration
+echo "Setting up database"
 mysql -u root -h localhost -e 'DROP DATABASE IF EXISTS networkapi;'
 mysql -u root -h localhost -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 

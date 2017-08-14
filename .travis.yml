@@ -14,6 +14,5 @@ install:
   - pip install -r requirements.txt
   - pip install -r requirements_test.txt
   - pip install -r requirements_debug.txt
-
 script:
   - ./scripts/travis/test_runner.sh
