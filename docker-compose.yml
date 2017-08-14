@@ -56,7 +56,7 @@ services:
             - "127.0.0.1:8000:8000"
         command: sh scripts/docker/docker-start-netapi.sh
         env_file:
-            - netapi.env
+            - scripts/docker/netapi.env
         volumes:
             - .:/netapi
         networks:
