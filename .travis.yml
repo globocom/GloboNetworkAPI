@@ -13,8 +13,5 @@ branches:
 install:
   - pip install -q -r requirements.txt
   - pip install -q -r requirements_test.txt
-before_script:
-  - mysql -e 'create database networkapi;'
-  - python manage.py syncdb --noinput
 script:
-  - python manage.py test
+  - ./scripts/travis/test_runner.sh
