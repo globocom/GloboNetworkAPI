@@ -20,7 +20,7 @@ services:
             - "5672"
             - "15672:15672"
         volumes:
-            - ./docker-start-queue.sh:/docker-start-queue.sh:ro
+            - ./scripts/docker/docker-start-queue.sh:/docker-start-queue.sh:ro
         networks:
             - netapi_net
 
@@ -32,25 +32,12 @@ services:
         networks:
             - netapi_net
 
-    odl:
-        container_name: netapi_odl
-        image: opendaylight/odl:4.4.0
-        volumes:
-            - ./docker-start-opendaylight.sh:/opt/opendaylight/docker-start-opendaylight.sh:ro
-        command: bash /opt/opendaylight/docker-start-opendaylight.sh
-        ports:
-            - "6653:6653"
-            - "8181:8181"
-            - "8101:8101"
-        networks:
-            - netapi_net
-
     celery:
         container_name: netapi_celery
         build:
           context: .
           dockerfile: Dockerfile
-        command: sh docker-start-celery.sh
+        command: sh scripts/docker/docker-start-celery.sh
         volumes:
           - .:/netapi
         networks:
@@ -67,7 +54,7 @@ services:
         build: .
         ports:
             - "127.0.0.1:8000:8000"
-        command: sh docker-start.sh
+        command: sh scripts/docker/docker-start-netapi.sh
         env_file:
             - netapi.env
         volumes:
@@ -78,7 +65,6 @@ services:
             - db
             - queue
             - cache
-            - odl
         links:
             - db:netapi_db
         external_links:

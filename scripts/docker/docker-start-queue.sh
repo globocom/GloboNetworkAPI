@@ -1,3 +1,5 @@
+sleep 15
+
 rabbitmq-plugins enable rabbitmq_management
 rabbitmqctl add_user networkapi networkapi
 rabbitmqctl add_vhost tasks
