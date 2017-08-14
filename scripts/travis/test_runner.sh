@@ -5,9 +5,11 @@ fi
 
 source test_venv/bin/activate
 
-pip install -r requirements.txt
-pip install -r requirements_test.txt
-pip install -r requirements_debug.txt
+# Database configuration
+mysql -u root -h localhost -e 'DROP DATABASE IF EXISTS networkapi;'
+mysql -u root -h localhost -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
+cd dbmigrate && db-migrate --show-sql
+mysql -u root -h localhost networkapi < dev/load_example_environment.sql
 
 echo "exporting NETWORKAPI_DEBUG"
 export NETWORKAPI_DEBUG='DEBUG'
