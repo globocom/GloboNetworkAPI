@@ -8,7 +8,11 @@ source test_venv/bin/activate
 # Database configuration
 mysql -u root -h localhost -e 'DROP DATABASE IF EXISTS networkapi;'
 mysql -u root -h localhost -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
-cd dbmigrate && db-migrate --show-sql
+
+cd dbmigrate
+db-migrate --show-sql
+cd ..
+
 mysql -u root -h localhost networkapi < dev/load_example_environment.sql
 
 echo "exporting NETWORKAPI_DEBUG"
