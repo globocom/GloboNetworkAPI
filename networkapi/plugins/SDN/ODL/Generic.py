@@ -173,9 +173,8 @@ class ODLPlugin(BaseSdnPlugin):
 
         return flows_list
 
-    def _get_nodes_ids(self):
+    def _get_nodes_ids2(self):
         """ Returns a list of nodes ids controlled by ODL """
-
         nodes = self._get_nodes()
 
         nodes_ids = []
@@ -207,6 +206,25 @@ class ODLPlugin(BaseSdnPlugin):
                     nodes_list.append(node)
 
         return nodes_list
+
+    def _get_nodes_ids(self):
+        path="/restconf/operational/network-topology:network-topology/topology/flow:1/"
+        nodes_ids=[]
+        try:
+            # import pdb;
+            # pdb.set_trace()
+            topo=self._request(method='get', path=path, contentType='json')['topology'][0]
+            if topo.has_key('node'):
+                for node in topo['node']:
+                    if node["node-id"] not in ["controller-config"]:
+                        nodes_ids.append(node["node-id"])
+        except HTTPError as e:
+            if e.response.status_code==404:
+                return []
+            raise e
+
+        return nodes_ids
+
 
     def _request(self, **kwargs):
         """ Sends request to controller """
