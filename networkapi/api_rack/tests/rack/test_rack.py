@@ -23,62 +23,51 @@ def setup():
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
         'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_equipment/fixtures/initial_equipments_switches.json',
         verbosity=0
     )
 
 
-class FabricGetTest(NetworkApiTestCase):
+class RackGetTest(NetworkApiTestCase):
 
     fixtures = [
-        'networkapi/api_rack/fixtures/initial_fabric.json'
+        'networkapi/api_rack/fixtures/initial_rack.json'
     ]
 
     def setUp(self):
         self.client = Client()
 
-    def test_list_fabric(self):
-        """Test of success to list all fabrics."""
+    def test_list_rack(self):
+        """Test of success to list all racks."""
 
-        expected_file = 'api_rack/tests/fabric/json/list_fabric.json'
+        expected_file = 'api_rack/tests/rack/json/list_rack.json'
 
-        response = self.client.get('/api/dcrooms/',
+        response = self.client.get('/api/rack/',
                                    content_type='application/json',
                                    HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
 
-    def test_getfabricbyid(self):
-        """Test of success to get a fabric by idt."""
+    def test_getbyid_rack(self):
+        """Test of success to list all racks."""
 
-        expected_file = 'api_rack/tests/fabric/json/get_fabric.json'
+        expected_file = 'api_rack/tests/rack/json/get_rack.json'
 
-        response = self.client.get('/api/dcrooms/id/1/',
+        response = self.client.get('/api/rack/10/',
                                    content_type='application/json',
                                    HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
 
-    def test_getfabricbydcid(self):
-        """Test of success to get a fabric by datacenter id."""
+    def test_getbyfabricid_rack(self):
+        """Test of success to list all racks."""
 
-        expected_file = 'api_rack/tests/fabric/json/get_fabric.json'
+        expected_file = 'api_rack/tests/rack/json/get_rack.json'
 
-        response = self.client.get('/api/dcrooms/dc/1/',
-                                   content_type='application/json',
-                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-        self.compare_json(expected_file, response.data)
-
-    def test_getfabricbyname(self):
-        """Test of success to get a fabric by name."""
-
-        expected_file = 'api_rack/tests/fabric/json/get_fabric.json'
-        uri = '/api/dcrooms/name/%s' % "FabricTest"
-
-        response = self.client.get(uri,
+        response = self.client.get('/api/rack/fabric/1/',
                                    content_type='application/json',
                                    HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -86,42 +75,67 @@ class FabricGetTest(NetworkApiTestCase):
         self.compare_json(expected_file, response.data)
 
 
-class FabricPostTest(NetworkApiTestCase):
+class RackPostTest(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
 
-    def test_fabric_post(self):
-        """Test of success to insert a new fabric."""
+    def test_post_rack(self):
+        """Test of success to insert a new rack."""
 
-        response = self.client.post('/api/dcrooms/',
+        response = self.client.post('/api/rack/',
                                     data=json.dumps(self.load_json_file(
-                                        "api_rack/tests/fabric/json/post_fabric.json")),
+                                        "api_rack/tests/rack/json/post_rack.json")),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(201, response.status_code)
 
 
-class FabricPutTest(NetworkApiTestCase):
+class RackPutTest(NetworkApiTestCase):
 
     fixtures = [
-        'networkapi/api_rack/fixtures/initial_fabric.json'
+        'networkapi/api_rack/fixtures/initial_rack.json'
     ]
 
     def setUp(self):
         self.client = Client()
 
-    def test_put_fabric(self):
-        """Test of success to edit a fabric."""
+    def test_put_rack(self):
+        """Test of success to edit a Rack."""
 
-        expected_file = 'api_rack/tests/fabric/json/put_fabric.json'
+        expected_file = 'api_rack/tests/rack/json/expected_file_put_rack.json'
 
-        response = self.client.put('/api/dcrooms/id/1/',
+        response = self.client.put('/api/rack/10/',
                                    data=json.dumps(self.load_json_file(
-                                        "api_rack/tests/fabric/json/put_fabric.json")),
+                                        "api_rack/tests/rack/json/put_rack.json")),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
+
+class RackDeleteTest(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/api_rack/fixtures/initial_rack.json'
+    ]
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_delete_rack(self):
+        """Test of success for delete one rack."""
+
+        response = self.client.delete('/api/rack/10/',
+                                      content_type='application/json',
+                                      HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # check if the rack was deleted
+        response = self.client.get('/api/rack/10/',
+                                   content_type='application/json',
+                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(500, response.status_code)

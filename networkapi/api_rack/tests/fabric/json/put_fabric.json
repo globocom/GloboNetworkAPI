@@ -1,7 +1,8 @@
 {
-  "dcrooms": {
+  "fabric": {
+    "id": 1,
     "dc": 1,
-    "name":"POST Fabric",
+    "name":"PUT Fabric",
     "racks": 4,
     "spines": 4,
     "leafs": 2,

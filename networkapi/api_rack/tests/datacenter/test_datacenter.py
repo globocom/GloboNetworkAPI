@@ -25,13 +25,13 @@ def setup():
         verbosity=0
     )
 
-class DatacenterTest(NetworkApiTestCase):
-
+class DatacenterPostTest(NetworkApiTestCase):
 
     def setUp(self):
         self.client = Client()
 
     def test_datacenter_post(self):
+        """Test of success to insert a new datacenter."""
 
         response = self.client.post('/api/dc/',
                                     data=json.dumps(self.load_json_file(
@@ -40,3 +40,24 @@ class DatacenterTest(NetworkApiTestCase):
                                     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(201, response.status_code)
+
+
+class DatacenterGetTest(NetworkApiTestCase):
+    fixtures = [
+        'networkapi/api_rack/fixtures/initial_datacenter.json'
+    ]
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_list_datacenter(self):
+        """Test of success to list all datacenters."""
+
+        expected_file = 'api_rack/tests/datacenter/json/listdc.json'
+
+        response = self.client.get('/api/dc/',
+                                   content_type='application/json',
+                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+        self.compare_json(expected_file, response.data)

@@ -73,7 +73,6 @@ class RackView(APIView):
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
-
     @commit_on_success
     def put(self, request, *args, **kwargs):
 
@@ -95,7 +94,6 @@ class RackView(APIView):
         except Exception, e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
-
 
     def get(self, user, *args, **kwargs):
         """Handles GET requests to list all Racks"""

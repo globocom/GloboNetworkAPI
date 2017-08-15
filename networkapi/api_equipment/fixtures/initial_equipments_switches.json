@@ -1,0 +1,68 @@
+[
+  {
+    "fields": {
+      "nome": "Generic Brand"
+    },
+    "model": "equipamento.marca",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "marca": 1,
+      "nome": "Generic Model"
+    },
+    "model": "equipamento.modelo",
+    "pk": 1
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.tipoequipamento",
+    "fields": {
+      "tipo_equipamento": "switch"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.tipoequipamento",
+    "fields": {
+      "tipo_equipamento": "Balanceador"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.tipoequipamento",
+    "fields": {
+      "tipo_equipamento": "VM"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LF-CM-TE01-1",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "LF-CM-TE01-2",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "nome": "OOB-CM-TE01",
+      "tipo_equipamento": "1",
+      "modelo": "1",
+      "maintenance": "False"
+    }
+  }
+]
