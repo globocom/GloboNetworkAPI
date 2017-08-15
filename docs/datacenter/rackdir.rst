@@ -1,5 +1,5 @@
-/api/rack/
-##########
+Racks /api/rack/
+####################
 
 .. toctree::
     get

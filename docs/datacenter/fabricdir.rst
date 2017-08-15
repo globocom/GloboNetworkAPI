@@ -1,8 +1,8 @@
-/api/dcrooms/
-##########
+Fabric /api/dcrooms/
+####################
 
 .. toctree::
-    get
-    post
-    put
-    delete
+    fabricdir/post
+    fabricdir/get
+    fabricdir/put
+    fabricdir/delete

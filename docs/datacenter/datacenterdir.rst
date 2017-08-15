@@ -1,8 +1,8 @@
-/api/dc/
-##########
+Data Center /api/dc/
+####################
 
 .. toctree::
-    get
-    post
-    put
-    delete
+    datacenterdir/post
+    datacenterdir/put
+    datacenterdir/get
+    datacenterdir/delete
