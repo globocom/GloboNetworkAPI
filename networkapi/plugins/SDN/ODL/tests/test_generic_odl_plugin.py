@@ -40,36 +40,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.flow_key = "flow-node-inventory:flow"
 
-    #@patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._get_nodes")
-    def test_get_nodes_ids_empty(self, *args):
-        """Test get nodes with a empty result"""
-        # import pdb;
-        # pdb.set_trace()
-
-        #mock
-
-        def fake_method(**kwargs):
-            e = HTTPError('Fake 404')
-            e.response = Response()
-            setattr(e.response, 'status_code', 404)
-            raise e
-        original = self.odl._request
-        self.odl._request=fake_method
-
-        # fake_get_nodes = args[0]
-        # fake_get_nodes.return_value=[]
-
-        self.assertEqual(self.odl._get_nodes_ids(), [])
-        self.odl._request=original
-
-    # @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._get_nodes")
-    # def test_get_nodes_ids_one_id(self, *args):
-    #     """Test get nodes ids with one result"""
-    #
-    #     fake_get_nodes = args[0]
-    #     fake_get_nodes.return_value=[{'id':'fake_id'}]
-    #
-    #     self.assertEqual(self.odl._get_nodes_ids(), ['fake_id'])
 
     def test_add_flow_checking_if_persisted_in_all_ovss(self):
         """Test add flow checking if ACL was persisted at all OVS's."""
@@ -372,6 +342,33 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             flow = self.odl.get_flow(flow_id + '_%s' % id_)[random_idx][self.flow_key]
             output = self.json_odl_output_path % 'odl_id_141239_%s.json' % id_
             self.compare_json_lists(output, flow)
+
+    def test_flush_flows(self,):
+        """test delete all flows"""
+
+        self.odl.flush_flows()
+        flows=self.odl.get_flows()
+        for k in flows:
+            self.assertEqual(flows[k], [])
+
+    def test_get_nodes_ids(self):
+        """Test get nodes ids"""
+
+        self.assertEqual(type(self.odl._get_nodes_ids()), type([]))
+
+    def test_get_nodes_ids_empty(self):
+        """Test get nodes with a empty result"""
+
+        def fake_method(**kwargs):
+            e = HTTPError('Fake 404')
+            e.response = Response()
+            setattr(e.response, 'status_code', 404)
+            raise e
+        original = self.odl._request
+        self.odl._request=fake_method
+
+        self.assertEqual(self.odl._get_nodes_ids(), [])
+        self.odl._request=original
 
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
