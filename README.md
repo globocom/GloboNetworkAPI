@@ -2,6 +2,7 @@ GloboNetworkAPI
 ===============
 
 [![Build Status](https://travis-ci.org/globocom/GloboNetworkAPI.svg)](https://travis-ci.org/globocom/GloboNetworkAPI)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Globo NetworkAPI is a REST API that manages IP networking resources. It is supposed to be not just an IPAM, but a centralized point of network control, allowing documentation from physical and logical network and starting configuration requests to equipments.
 
