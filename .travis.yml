@@ -19,5 +19,6 @@ script:
   - docker-compose --file docker-compose-sdn.yml up -d
   - docker-compose up -d
   - docker-compose ps
+  - sleep 20
   - docker logs netapi_app
   - docker exec -it netapi_app ./fast_start_test.sh networkapi/plugins/SDN/ODL/
