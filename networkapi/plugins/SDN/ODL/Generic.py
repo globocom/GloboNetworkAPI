@@ -210,20 +210,30 @@ class ODLPlugin(BaseSdnPlugin):
         return nodes_list
 
     def _get_nodes_ids(self):
-        path="/restconf/operational/network-topology:network-topology/topology/flow:1/"
-        nodes_ids=[]
+        path1 = "/restconf/config/network-topology:network-topology/topology/flow:1/"
+        path2 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
+        nodes_ids={}
         try:
-            topo=self._request(method='get', path=path, contentType='json')['topology'][0]
-            if topo.has_key('node'):
-                for node in topo['node']:
+            topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
+            if topo1.has_key('node'):
+                for node in topo1['node']:
                     if node["node-id"] not in ["controller-config"]:
-                        nodes_ids.append(node["node-id"])
+                        nodes_ids[node["node-id"]] = 1
         except HTTPError as e:
-            if e.response.status_code==404:
-                return []
-            raise e
-
-        return nodes_ids
+            if e.response.status_code!=404:
+                raise e
+        try:
+            topo2 = self._request(method='get', path=path2, contentType='json')['topology'][0]
+            if topo2.has_key('node'):
+                for node in topo2['node']:
+                    if node["node-id"] not in ["controller-config"]:
+                        nodes_ids[node["node-id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code!=404:
+                raise e
+        nodes_ids_list = nodes_ids.keys()
+        nodes_ids_list.sort()
+        return nodes_ids_list
 
 
     def _request(self, **kwargs):
