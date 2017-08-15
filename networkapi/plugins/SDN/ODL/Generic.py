@@ -175,41 +175,9 @@ class ODLPlugin(BaseSdnPlugin):
 
         return flows_list
 
-    def _get_nodes_ids2(self):
-        """ Returns a list of nodes ids controlled by ODL """
-        nodes = self._get_nodes()
-
-        nodes_ids = []
-        for node in nodes:
-            nodes_ids.append(node["id"])
-
-        return nodes_ids
-
-    def _get_nodes(self):
-        """ Request the list of all controlled nodes from the environment """
-
-        path = "/restconf/config/opendaylight-inventory:nodes/"
-        nodes = self._request(method='get', path=path, contentType='json')
-
-        nodes_list = []
-        if 'node' in nodes['nodes']:
-
-            # TODO: The following lines corrects a bug on Beryllium version of
-            # OpenDaylight that sometimes do not return connected switches
-            # throught config route. We need to remove this lines as soon as
-            # we update OpenDaylight version to Boron.
-            if len(nodes["nodes"]["node"]) <= 1:
-                path = "/restconf/operational/opendaylight-inventory:nodes/"
-                nodes = self._request(method='get', path=path,
-                                      contentType='json')
-
-            for node in nodes['nodes']['node']:
-                if node["id"] not in ["controller-config"]:
-                    nodes_list.append(node)
-
-        return nodes_list
-
     def _get_nodes_ids(self):
+        #TODO: We need to check on newer versions (later to Berylliun) if the
+        # check on both config and operational is still necessary
         path1 = "/restconf/config/network-topology:network-topology/topology/flow:1/"
         path2 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
         nodes_ids={}
