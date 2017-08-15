@@ -3,16 +3,18 @@ notifications:
   email: false
 python:
   - "2.7"
-services: mysql
-env:
-  - DJANGO=1.5
 branches:
   only:
     - master
     - develop
 install:
+  - curl -sSL https://get.docker.com/ | sudo sh
+  - sudo pip install docker-compose
   - pip install -r requirements.txt
   - pip install -r requirements_test.txt
   - pip install -r requirements_debug.txt
 script:
-  - ./scripts/travis/test_runner.sh
+  - docker-compose up -d
+  - docker-compose --file docker-compose-sdn.yml up -d
+  - docker-compose ps
+  - docker exec -it netapi_app ./fast_start_test.sh networkapi/plugins/SDN/ODL/
