@@ -38,10 +38,10 @@ script:
   - docker-compose --file docker-compose-sdn.yml up -d
   - docker-compose up -d
   - docker ps --all
-  - sleep 20
+  - sleep 60
   - docker exec -it ovs1 ovs-vsctl show
   - docker exec -it ovs1 ovs-ofctl dump-flows br0
   - docker logs --tail 100 netapi_odl
   - curl http://localhost:8181/index.html
-  - curl --verbose --user admin:admin -H 'Content-type: application/json' http://localhost:8181/restconf/operational/network-topology:network-topology/topology/flow:1/
+  - curl --verbose --user admin:admin -H 'Content-type: application/json' 'http://localhost:8181/restconf/operational/network-topology:network-topology/topology/flow:1/'
   - docker exec -it netapi_app ./fast_start_test.sh networkapi/plugins/SDN/ODL/
