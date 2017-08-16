@@ -1,15 +1,30 @@
 #!/bin/bash
 
-# Database configuration
-echo "Setting up database"
-mysql -u root -h localhost -e 'DROP DATABASE IF EXISTS networkapi;'
-mysql -u root -h localhost -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
+echo "Waiting for ODL to go up"
 
-cd dbmigrate
-db-migrate --show-sql
-cd ..
+MAX_RETRY=18
+SLEEP_TIME=10
 
-mysql -u root -h localhost networkapi < dev/load_example_environment.sql
+for i in $(seq 1  ${MAX_RETRY}); do
+
+    docker exec ovs1 ovs-vsctl show | grep is_connected > /dev/null
+
+    # If the port is open we continue with the script
+    if [ "$?" -eq "0" ]; then
+        break;
+    fi
+
+    # When maximum retries is achieved we exit with an error message
+    if [ "$i" -eq "${MAX_RETRY}" ]; then
+        echo "Max retry achieved"
+        exit 1;
+    fi
+
+    echo "Retrying ${i}.."
+    sleep ${SLEEP_TIME}
+done
+
+echo "ODL server is up"
 
 echo "exporting NETWORKAPI_DEBUG"
 export NETWORKAPI_DEBUG='DEBUG'
