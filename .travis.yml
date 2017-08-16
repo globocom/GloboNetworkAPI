@@ -32,7 +32,6 @@ install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - sudo apt-get install telnet
 
 script:
   - docker-compose --file docker-compose-sdn.yml up -d
@@ -40,7 +39,7 @@ script:
   - docker ps --all
   - ./scripts/travis/wait_for_containers.sh
   - docker exec -it ovs1 ovs-vsctl show
-  - docker exec -it ovs1 ping netapi_odl
   - docker exec -it netapi_odl netstat -ntal
+  - docker exec -it ovs1 apt-get -y install telnet
   - docker exec -it ovs1 telnet netapi_odl 6653
   - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/
