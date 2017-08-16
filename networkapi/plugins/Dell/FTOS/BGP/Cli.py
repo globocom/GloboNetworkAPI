@@ -17,17 +17,26 @@ import logging
 import re
 from time import sleep
 
-from ... import exceptions
-from ...base import BasePlugin
+from networkapi.api_deploy.facade import deploy_config_in_equipment
+from networkapi.equipamento import models as eqpt_models
+from networkapi.settings import BGP_CONFIG_FILES_PATH
+from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
+from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
+from networkapi.extra_logging import local
+from networkapi.extra_logging import NO_REQUEST_ID
+from django.template import Template
+from django.template import Context
+from .... import exceptions
+from ....base import BasePlugin
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.util.decorators import mock_return
-from networkapi.plugins.Dell.FTOS.BGP.Cli import Generic as BGP
 
 
 log = logging.getLogger(__name__)
 
+TEMPLATE_NEIGHBOR_V4 = 'neighbor_v4_dell'
+TEMPLATE_NEIGHBOR_V4_REMOVE = 'template_neighbor_v4_remove_dell.django'
 
-class FTOS(BasePlugin):
+class Generic(BasePlugin):
 
     MAX_TRIES = 10
     RETRY_WAIT_TIME = 5
@@ -40,18 +49,131 @@ class FTOS(BasePlugin):
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
 
-    def bgp(self, neighbor, asn=None, vrf=None):
+    def __init__(self, equipment=None, neighbor=None, asn=None, vrf=None):
 
-        return BGP(equipment=self.equipment,
-                   neighbor=neighbor, asn=asn, vrf=vrf)
+        self.equipment = equipment
+        self.neighbor = neighbor
+        self.equipment_access = None
+        self.asn = asn
+        self.vrf = vrf
 
-    def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
+    def deploy_neighbor(self):
+
+        self.connect()
+        self.ensure_privilege_level()
+        file_to_deploy = self.generate_config_file(TEMPLATE_NEIGHBOR_V4)
+
+        import ipdb; ipdb.set_trace()
+        status_deploy = deploy_config_in_equipment(file_to_deploy,
+                                                   self.equipment)
+        self.close()
+
+    def generate_config_file(self, template_type):
+        """Load a template and write a file with the rended output.
+
+        Args: 2-dimension dictionary with equipments information for template
+              rendering equipment to render template to template type to load.
+
+        Returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
+        """
+
+        config_to_be_saved = ''
+        request_id = getattr(local, 'request_id', NO_REQUEST_ID)
+
+        filename_out = 'network_equip%s_config_%s' % (self.equipment.id,
+                                                      request_id)
+
+        filename_to_save = BGP_CONFIG_FILES_PATH + filename_out
+        rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
+
+        try:
+            template_file = self.load_template_file(template_type)
+            key_dict = self.generate_template_dict()
+            config_to_be_saved += template_file.render(Context(key_dict))
+        except KeyError, exception:
+            log.error('Erro: %s ' % exception)
+            raise exceptions.InvalidKeyException(exception)
+
+        # Save new file
+        try:
+            file_handle = open(filename_to_save, 'w')
+            file_handle.write(config_to_be_saved)
+            file_handle.close()
+        except IOError, e:
+            log.error('Error writing to config file: %s' % filename_to_save)
+            raise e
+
+        return rel_file_to_deploy
+
+    def load_template_file(self, template_type):
+        """Load template file with specific type related to equipment.
+
+        Args: equipment: Equipamento object
+        template_type: Type of template to be loaded
+
+        Returns: template string
+        """
+
+        try:
+            equipment_template = (eqpt_models.EquipamentoRoteiro.search(
+                None, self.equipment.id, template_type)).uniqueResult()
+        except:
+            log.error('Template type %s not found.' % template_type)
+            raise exceptions.BGPTemplateException()
+
+        filename_in = BGP_CONFIG_TEMPLATE_PATH + \
+                      '/' + equipment_template.roteiro.roteiro
+
+        # Read contents from file
+        try:
+            file_handle = open(filename_in, 'r')
+            template_file = Template(file_handle.read())
+            file_handle.close()
+        except IOError, e:
+            log.error('Error opening template file for read: %s' % filename_in)
+            raise Exception(e)
+        except Exception, e:
+            log.error('Syntax error when parsing template: %s ' % e)
+            raise Exception(e)
+            # TemplateSyntaxError
+
+        return template_file
+
+    def generate_template_dict(self):
+        """Creates a 1-dimension dictionary from a 2 dimension with equipment
+        information.
+
+        Args: dict_ips dictionary for template rendering
+        equipment to create dictionary to
+
+        Returns: 1-dimension dictionary to use in template rendering for equipment
+        """
+
+        key_dict = {}
+        key_dict['AS_NUMBER'] = self.asn.get('name')
+        key_dict['VRF_NAME'] = self.vrf.get('vrf')
+        key_dict['REMOTE_IP'] = self.neighbor.get('remote_ip')
+        key_dict['REMOTE_AS'] = self.neighbor.get('remote_as')
+        key_dict['PASSWORD'] = self.neighbor.get('password')
+        key_dict['TIMER_KEEPALIVE'] = self.neighbor.get('timer_keepalive')
+        key_dict['TIMER_TIMEOUT'] = self.neighbor.get('timer_timeout')
+        key_dict['DESCRIPTION'] = self.neighbor.get('description')
+        key_dict['SOFT_RECONFIGURATION'] = self.neighbor.get('soft_reconfiguration')
+        key_dict['NEXT_HOP_SELF'] = self.neighbor.get('next_hop_self')
+        key_dict['REMOVE_PRIVATE_AS'] = self.neighbor.get('remove_private_as')
+        key_dict['COMMUNITY'] = self.neighbor.get('community')
+
+        return key_dict
+
+    def exec_command(self, command, success_regex='', invalid_regex=None,
+                     error_regex=None):
         """
         Send single command to equipment and than closes connection channel
         """
         if self.channel is None:
             log.error(
-                'No channel connection to the equipment %s. Was the connect() funcion ever called?' % self.equipment.nome)
+                'No channel connection to the equipment %s. '
+                'Was the connect() funcion ever called?' % self.equipment.nome)
             raise exceptions.PluginNotConnected()
 
         try:
@@ -79,26 +201,15 @@ class FTOS(BasePlugin):
         else:
             raise exceptions.UnableToVerifyResponse()
 
-    @mock_return('')
-    def create_svi(self, svi_number, svi_description='no description'):
-        """
-        Create SVI in switch
-        """
-        self.ensure_privilege_level(self)
-        self.channel.send('terminal length 0\nconfigure terminal\n \
-            interface Vlan%s \n description %s \n end \n' % (svi_number, svi_description))
-        recv = self.waitString('#')
-
-        return recv
-
-    @mock_return('')
-    def copyScriptFileToConfig(self, filename, use_vrf=None, destination='running-config'):
+    def copyScriptFileToConfig(self, filename, use_vrf=None,
+                               destination='running-config'):
         """
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
         """
         if use_vrf is None:
             use_vrf = self.management_vrf
+
 
         command = 'copy tftp://%s/%s %s %s\n\n' % (
             self.tftpserver, filename, destination, use_vrf)
@@ -123,7 +234,6 @@ class FTOS(BasePlugin):
 
         return recv
 
-    @mock_return('')
     def ensure_privilege_level(self, privilege_level=None):
 
         if privilege_level is None:
@@ -143,34 +253,8 @@ class FTOS(BasePlugin):
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
             recv = self.waitString('#')
 
-    @mock_return('')
-    def remove_svi(self, svi_number):
-        """
-        Delete SVI from switch
-        """
-        return ''
-        self.ensure_privilege_level()
-        self.channel.send('terminal length 0\n')
-
-        self.channel.send('show run interface Vlan %s\n' % (svi_number))
-        recv = self.waitString('#')
-
-        conf = 'nconfigure terminal\n interface Vlan %s\n' % (svi_number)
-        for output_line in recv.splitlines():
-            if re.search('(un)?tagged', output_line):
-                conf = conf + 'no ' + output_line + '\n'
-
-        conf = conf + ' end\n'
-        self.channel.send(conf)
-        recv = self.waitString('#')
-
-        self.channel.send('\nconfigure terminal\n \
-            no interface Vlan%s \n end \n' % (svi_number))
-        recv = self.waitString('#')
-
-        return recv
-
-    def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
+    def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
+                   wait_str_failed_regex=None):
 
         if wait_str_invalid_regex is None:
             wait_str_invalid_regex = self.INVALID_REGEX
