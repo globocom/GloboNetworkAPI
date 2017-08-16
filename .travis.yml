@@ -37,4 +37,5 @@ script:
   - docker-compose --file docker-compose-sdn.yml up -d
   - docker-compose up -d
   - docker ps --all
+  - ./scripts/travis/wait_for_containers.sh
   - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/
