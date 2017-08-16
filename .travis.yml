@@ -32,14 +32,16 @@ install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - sudo apt-get install curl
 
 script:
   - docker-compose --file docker-compose-sdn.yml up -d
   - docker-compose up -d
-  - docker-compose ps
+  - docker ps --all
   - sleep 20
-  - docker logs --tail 100 netapi_app
-  - docker exec -it netapi_app dig netapi_db
-  - docker exec -it netapi_app ping -c 1 netapi_db
-  - docker logs --tail 150 netapi_db
+  - docker exec -it ovs1 ovs-vsctl show
+  - docker exec -it ovs1 ovs-ofctl dump-flows br0
+  - docker logs --tail 100 netapi_odl
+  - curl http://localhost:8181/index.html
+  - curl --verbose --user admin:admin -H 'Content-type: application/json' http://localhost:8181/restconf/operational/network-topology:network-topology/topology/flow:1/
   - docker exec -it netapi_app ./fast_start_test.sh networkapi/plugins/SDN/ODL/
