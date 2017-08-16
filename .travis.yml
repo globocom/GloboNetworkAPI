@@ -11,6 +11,14 @@ branches:
     - master
     - develop
 
+sudo: required
+
+services:
+  - docker
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.11.2
+
 before_install:
   # Disable services enabled by default
   # http://docs.travis-ci.com/user/database-setup/#MySQL
@@ -18,9 +26,12 @@ before_install:
   - sudo apt-get update
 
 install:
-  - netstat -antl
   - curl -sSL https://get.docker.com/ | sudo sh
   - sudo pip install docker-compose
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 script:
   - docker-compose --file docker-compose-sdn.yml up -d
@@ -30,5 +41,5 @@ script:
   - docker logs --tail 100 netapi_app
   - docker exec -it netapi_app dig netapi_db
   - docker exec -it netapi_app ping -c 1 netapi_db
-  - docker logs --tail 100 netapi_db
+  - docker logs --tail 150 netapi_db
   - docker exec -it netapi_app ./fast_start_test.sh networkapi/plugins/SDN/ODL/
