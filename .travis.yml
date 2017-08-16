@@ -1,30 +1,27 @@
 language: python
+
 notifications:
   email: false
+
 python:
   - "2.7"
+
 branches:
   only:
     - master
     - develop
+
 before_install:
   # Disable services enabled by default
   # http://docs.travis-ci.com/user/database-setup/#MySQL
   - sudo /etc/init.d/mysql stop
   - sudo apt-get update
+
 install:
-  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
-
-  - docker-compose --version
-
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-
   - netstat -antl
-    # - curl -sSL https://get.docker.com/ | sudo sh
-    # - sudo pip install docker-compose
+  - curl -sSL https://get.docker.com/ | sudo sh
+  - sudo pip install docker-compose
+
 script:
   - docker-compose --file docker-compose-sdn.yml up -d
   - docker-compose up -d
