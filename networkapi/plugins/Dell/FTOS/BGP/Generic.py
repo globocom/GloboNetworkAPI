@@ -41,11 +41,13 @@ map_fields = {
 
 class Generic(object):
 
-    def __init__(self, equipment=None, neighbor=None):
+    def __init__(self, equipment=None, neighbor=None, asn=None, vrf=None):
 
         self.equipment = equipment
         self.neighbor = neighbor
         self.equipment_access = None
+        self.asn = asn
+        self.vrf = vrf
 
     def _process_neighbor(self):
         """Validate and Change Neighbor input because some tags can't might be
@@ -123,7 +125,7 @@ class Generic(object):
         bgp_xml = Element('bgp')
 
         as_xml = SubElement(bgp_xml, 'as-name')
-        as_xml.text = '65114'
+        as_xml.text = self.asn['id']
         neighbor_xml = SubElement(bgp_xml, 'neighbor')
 
         # Walk the OrderedDict neighbor in Reversed Order to generate XML with

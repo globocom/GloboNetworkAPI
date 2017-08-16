@@ -1,6 +1,7 @@
 from networkapi.plugins.Dell.FTOS.BGP.Generic import Generic
 from networkapi.plugins.factory import PluginFactory
-from mock import Mock, MagicMock
+from mock import Mock
+from mock import MagicMock
 
 from networkapi.plugins.Dell.FTOS.BGP.exceptions import \
     InvalidNeighborException
@@ -222,14 +223,40 @@ class GenericPluginTestCaseSuccess(TestCase):
         with self.assertRaises(InvalidNeighborException):
             plugin._dict_to_xml()
 
+    def test_deploy_neighbor_with_success(self):
+
+        plugin = Generic(neighbor={'remote_as': '200',
+                                   'remote_ip': '11.1.1.155',
+                                   'password': 'ABC',
+                                   'maximum_hops': '5',
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': False})
 
 
 
 
+    def test_deploy_neighbor_with_error(self):
 
+        plugin = Generic(neighbor={'remote_as': '200',
+                                   'remote_ip': '11.1.1.155',
+                                   'password': 'ABC',
+                                   'maximum_hops': '5',
+                                   'timer_keepalive': '3',
+                                   'timer_timeout': '60',
+                                   'description': 'desc',
+                                   'soft_reconfiguration': True,
+                                   'community': True,
+                                   'remove_private_as': False,
+                                   'next_hop_self': False})
 
+    def test_undeploy_neighbor(self):
 
-
+        pass
 
 
 
