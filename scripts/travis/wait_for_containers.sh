@@ -4,7 +4,7 @@
 
 echo "Waiting for ODL to go up"
 
-MAX_RETRY=18
+MAX_RETRY=200
 SLEEP_TIME=10
 
 for i in $(seq 1  ${MAX_RETRY}); do
