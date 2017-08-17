@@ -29,7 +29,9 @@ It was not created to be and inventory database, so it does not have CMDB functi
 ## Documentation
 [Documentation](http://globonetworkapi.readthedocs.org/)
 
+## How to contribute
+Check this out at
+[Contributing](https://github.com/globocom/GloboNetworkAPI/blob/master/CONTRIBUTING.md) file.
+
 ## Authors
 [Authors](./AUTHORS.md)
-
-
