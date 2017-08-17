@@ -90,6 +90,16 @@ class EventLog(models.Model):
         }
         """
 
+        parametro_anterior = [
+            '{0} : {1}'.format(key, evento['parametro_anterior'][key])
+            for key in evento['parametro_anterior']]
+        parametro_anterior = u'\n'.join(parametro_anterior)
+
+        parametro_atual = [
+            '{0} : {1}'.format(key, evento['parametro_atual'][key])
+            for key in evento['parametro_atual']]
+        parametro_atual = u'\n'.join(parametro_atual)
+
         try:
             functionality = Functionality()
             event_log = EventLog()
@@ -98,8 +108,8 @@ class EventLog(models.Model):
             event_log.acao = evento['acao']
             event_log.funcionalidade = functionality.exist(
                 evento['funcionalidade'])
-            event_log.parametro_anterior = evento['parametro_anterior']
-            event_log.parametro_atual = evento['parametro_atual']
+            event_log.parametro_anterior = parametro_anterior
+            event_log.parametro_atual = parametro_atual
             event_log.id_objeto = evento['id_objeto']
             event_log.audit_request = evento['audit_request']
             event_log.evento = ''
