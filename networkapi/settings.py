@@ -39,6 +39,8 @@ NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_TAGS_DEPLOY',
 NETWORKAPI_GELF_HOST = os.getenv('NETWORKAPI_GELF_HOST',
                                  'netapi_graylog2')
 
+LOG_QUEUE = os.getenv('NETWORKAPI_LOG_QUEUE', '0') == '1'
+
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 

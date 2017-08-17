@@ -1,0 +1,13 @@
+{
+  "rack":{
+    "name":"TE01",
+    "number":2,
+    "mac_sw1":"1F:FF:FF:FF:FF:FF",
+    "mac_sw2":"2F:FF:FF:FF:FF:FF",
+    "mac_ilo":"3F:FF:FF:FF:FF:FF",
+    "id_sw1":1,
+    "id_sw2":2,
+    "id_ilo":3,
+    "dcroom": 16
+  }
+}

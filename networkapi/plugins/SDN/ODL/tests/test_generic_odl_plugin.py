@@ -21,7 +21,12 @@ from networkapi.test.test_case import NetworkApiTestCase
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for success cases."""
     fixtures = [
-        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/api_network/fixtures/integration/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/integration/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/integration/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
     ]
 
     utils = OpenDaylightTestUtils()
@@ -375,7 +380,12 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for error cases."""
 
     fixtures = [
-        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
+        'networkapi/vlan/fixtures/initial_tipo_rede.json',
+        'networkapi/api_network/fixtures/integration/initial_environment_envlog.json',
+        'networkapi/api_network/fixtures/integration/initial_environment_dc.json',
+        'networkapi/api_network/fixtures/integration/initial_environment_gl3.json',
+        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
     ]
 
     utils = OpenDaylightTestUtils()

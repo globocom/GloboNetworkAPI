@@ -1,0 +1,16 @@
+{
+  "rack": {
+    "config": false,
+    "create_vlan_amb": false,
+    "dcroom": 1,
+    "id": 10,
+    "id_ilo": "OOB-CM-TE01",
+    "id_sw1": "LF-CM-TE01-1",
+    "id_sw2": "LF-CM-TE01-2",
+    "mac_ilo": "3F:FF:FF:FF:FF:FF",
+    "mac_sw1": "1F:FF:FF:FF:FF:FF",
+    "mac_sw2": "2F:FF:FF:FF:FF:FF",
+    "nome": null,
+    "numero": null
+  }
+}

@@ -39,7 +39,7 @@
         "default_vrf": 1,
         "divisao_dc": 1,
         "grupo_l3": 1,
-        "father_environment": 4
+        "father_environment": null
     }
   },
   {

@@ -17,7 +17,7 @@ services:
         container_name: netapi_queue
         image: rabbitmq:3.6.9
         ports:
-            - "5672"
+            - "5672:5672"
             - "15672:15672"
         command: sh -c "rabbitmq-plugins enable rabbitmq_management; rabbitmq-server"
         volumes:

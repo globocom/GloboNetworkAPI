@@ -1,0 +1,13 @@
+{
+  "fabric": [
+    {
+      "id": 1,
+      "name": "FabricTest",
+      "dc": 1,
+      "racks": 32,
+      "spines": 2,
+      "leafs": 2,
+      "config": {}
+    }
+  ]
+}
