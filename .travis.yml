@@ -40,6 +40,7 @@ script:
   - ./scripts/travis/wait_for_containers.sh
   - docker exec -it ovs1 ovs-vsctl show
   - docker exec -it netapi_odl netstat -ntal
-  - docker exec -it ovs1 apt-get -y install telnet
   - docker exec -it ovs1 telnet netapi_odl 6653
-  - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/
+  - docker restart ovs1
+  - ./scripts/travis/wait_for_containers.sh
+  - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/tests/test_generic_odl_plugin.py:GenericOpenDayLightTestCaseSuccess.test_add_a_list_of_acls_in_one_request
