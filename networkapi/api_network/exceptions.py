@@ -63,11 +63,6 @@ class NetworkTemplateException(APIException):
     default_detail = 'No network configuration templates found for equipments.'
 
 
-class BGPTemplateException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'No BGP configuration templates found for equipments.'
-
-
 class NoEnvironmentRoutersFoundException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No environment routers found for network configuration.'
