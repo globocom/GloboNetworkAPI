@@ -29,14 +29,16 @@ from django.template import Context
 from .... import exceptions
 from ....base import BasePlugin
 from networkapi.api_rest import exceptions as api_exceptions
-
+from networkapi.infrastructure.ipaddr import IPAddress
 
 log = logging.getLogger(__name__)
 
-TEMPLATE_NEIGHBOR_V4 = 'neighbor_v4_dell'
-TEMPLATE_NEIGHBOR_V4_REMOVE = 'template_neighbor_v4_remove_dell.django'
-
 class Generic(BasePlugin):
+
+    TEMPLATE_NEIGHBOR_V4_ADD = 'neighbor_v4_add'
+    TEMPLATE_NEIGHBOR_V4_REMOVE = 'neighbor_v4_remove'
+    TEMPLATE_NEIGHBOR_V6_ADD = 'neighbor_v6_add'
+    TEMPLATE_NEIGHBOR_V6_REMOVE = 'neighbor_v6_remove'
 
     MAX_TRIES = 10
     RETRY_WAIT_TIME = 5
@@ -57,13 +59,40 @@ class Generic(BasePlugin):
         self.asn = asn
         self.vrf = vrf
 
+    def _get_template_deploy_name(self):
+
+        ip_version = IPAddress(self.neighbor.get('remote_ip')).version
+
+        if ip_version == 4:
+            return self.TEMPLATE_NEIGHBOR_V4_ADD
+        return self.TEMPLATE_NEIGHBOR_V6_ADD
+
+    def _get_template_undeploy_name(self):
+
+        ip_version = IPAddress(self.neighbor.get('remote_ip')).version
+
+        if ip_version == 4:
+            return self.TEMPLATE_NEIGHBOR_V4_REMOVE
+        return self.TEMPLATE_NEIGHBOR_V6_REMOVE
+
     def deploy_neighbor(self):
 
         self.connect()
         self.ensure_privilege_level()
-        file_to_deploy = self.generate_config_file(TEMPLATE_NEIGHBOR_V4)
 
-        import ipdb; ipdb.set_trace()
+        template_name = self._get_template_deploy_name()
+        file_to_deploy = self.generate_config_file(template_name)
+        status_deploy = deploy_config_in_equipment(file_to_deploy,
+                                                   self.equipment)
+        self.close()
+
+    def undeploy_neighbor(self):
+
+        self.connect()
+        self.ensure_privilege_level()
+
+        template_name = self._get_template_undeploy_name()
+        file_to_deploy = self.generate_config_file(template_name)
         status_deploy = deploy_config_in_equipment(file_to_deploy,
                                                    self.equipment)
         self.close()
@@ -108,7 +137,6 @@ class Generic(BasePlugin):
     def load_template_file(self, template_type):
         """Load template file with specific type related to equipment.
 
-        Args: equipment: Equipamento object
         template_type: Type of template to be loaded
 
         Returns: template string
@@ -140,14 +168,6 @@ class Generic(BasePlugin):
         return template_file
 
     def generate_template_dict(self):
-        """Creates a 1-dimension dictionary from a 2 dimension with equipment
-        information.
-
-        Args: dict_ips dictionary for template rendering
-        equipment to create dictionary to
-
-        Returns: 1-dimension dictionary to use in template rendering for equipment
-        """
 
         key_dict = {}
         key_dict['AS_NUMBER'] = self.asn.get('name')
