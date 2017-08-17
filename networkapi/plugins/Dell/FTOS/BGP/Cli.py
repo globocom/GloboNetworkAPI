@@ -30,6 +30,19 @@ from .... import exceptions
 from ....base import BasePlugin
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.infrastructure.ipaddr import IPAddress
+from networkapi.api_deploy import exceptions
+from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
+from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.distributedlock import distributedlock
+from networkapi.equipamento.models import Equipamento
+from networkapi.extra_logging import local
+from networkapi.extra_logging import NO_REQUEST_ID
+from networkapi.plugins.factory import PluginFactory
+from networkapi.settings import CONFIG_FILES_PATH
+from networkapi.settings import CONFIG_FILES_REL_PATH
+from networkapi.settings import TFTP_SERVER_ADDR
+from networkapi.settings import TFTPBOOT_FILES_PATH
+import os
 
 log = logging.getLogger(__name__)
 
@@ -82,8 +95,7 @@ class Generic(BasePlugin):
 
         template_name = self._get_template_deploy_name()
         file_to_deploy = self.generate_config_file(template_name)
-        status_deploy = deploy_config_in_equipment(file_to_deploy,
-                                                   self.equipment)
+        status_deploy = self.deploy_config_in_equipment(file_to_deploy)
         self.close()
 
     def undeploy_neighbor(self):
@@ -93,8 +105,7 @@ class Generic(BasePlugin):
 
         template_name = self._get_template_undeploy_name()
         file_to_deploy = self.generate_config_file(template_name)
-        status_deploy = deploy_config_in_equipment(file_to_deploy,
-                                                   self.equipment)
+        status_deploy = self.deploy_config_in_equipment(file_to_deploy)
         self.close()
 
     def generate_config_file(self, template_type):
@@ -167,6 +178,29 @@ class Generic(BasePlugin):
 
         return template_file
 
+    def deploy_config_in_equipment(self, rel_filename):
+
+        # validate filename
+        path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
+        if not path.startswith(TFTPBOOT_FILES_PATH):
+            raise exceptions.InvalidFilenameException(rel_filename)
+
+        if type(self.equipment) is not Equipamento:
+            log.error('Invalid data for equipment')
+            raise api_exceptions.NetworkAPIException()
+
+        if self.equipment.maintenance:
+            raise AllEquipmentsAreInMaintenanceException()
+
+        return self._applyconfig(rel_filename)
+
+    def _applyconfig(self, filename):
+
+        if self.equipment.maintenance is True:
+            return 'Equipment is in maintenance mode. No action taken.'
+
+        self.copyScriptFileToConfig(filename)
+
     def generate_template_dict(self):
 
         key_dict = {}
@@ -185,41 +219,41 @@ class Generic(BasePlugin):
 
         return key_dict
 
-    def exec_command(self, command, success_regex='', invalid_regex=None,
-                     error_regex=None):
-        """
-        Send single command to equipment and than closes connection channel
-        """
-        if self.channel is None:
-            log.error(
-                'No channel connection to the equipment %s. '
-                'Was the connect() funcion ever called?' % self.equipment.nome)
-            raise exceptions.PluginNotConnected()
-
-        try:
-            stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
-        except Exception, e:
-            log.error('Error in connection. Cannot send command %s: %s' %
-                      (command, e))
-            raise api_exceptions.NetworkAPIException
-
-        equip_output_lines = stdout.readlines()
-        output_text = ''.join(equip_output_lines)
-
-        for output_line in output_text.splitlines():
-            if re.search(self.INVALID_REGEX, output_line):
-                raise exceptions.InvalidCommandException(output_text)
-            elif re.search(error_regex, output_line):
-                if re.seatch(self.WARNING_REGEX, output_line):
-                    log.warning('This is threated as a warning: %s' %
-                                output_line)
-                else:
-                    raise exceptions.CommandErrorException
-
-        if re.search(success_regex, output_text, re.DOTALL):
-            return output_text
-        else:
-            raise exceptions.UnableToVerifyResponse()
+    # def exec_command(self, command, success_regex='', invalid_regex=None,
+    #                  error_regex=None):
+    #     """
+    #     Send single command to equipment and than closes connection channel
+    #     """
+    #     if self.channel is None:
+    #         log.error(
+    #             'No channel connection to the equipment %s. '
+    #             'Was the connect() funcion ever called?' % self.equipment.nome)
+    #         raise exceptions.PluginNotConnected()
+    #
+    #     try:
+    #         stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
+    #     except Exception, e:
+    #         log.error('Error in connection. Cannot send command %s: %s' %
+    #                   (command, e))
+    #         raise api_exceptions.NetworkAPIException
+    #
+    #     equip_output_lines = stdout.readlines()
+    #     output_text = ''.join(equip_output_lines)
+    #
+    #     for output_line in output_text.splitlines():
+    #         if re.search(self.INVALID_REGEX, output_line):
+    #             raise exceptions.InvalidCommandException(output_text)
+    #         elif re.search(error_regex, output_line):
+    #             if re.search(self.WARNING_REGEX, output_line):
+    #                 log.warning('This is threated as a warning: %s' %
+    #                             output_line)
+    #             else:
+    #                 raise exceptions.CommandErrorException
+    #
+    #     if re.search(success_regex, output_text, re.DOTALL):
+    #         return output_text
+    #     else:
+    #         raise exceptions.UnableToVerifyResponse()
 
     def copyScriptFileToConfig(self, filename, use_vrf=None,
                                destination='running-config'):
