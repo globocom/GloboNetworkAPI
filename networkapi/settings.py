@@ -48,6 +48,7 @@ ALLOWED_HOSTS = os.getenv('NETWORKAPI_ALLOWED_HOSTS',
 # Configuração do arquivo de log do projeto.
 LOG_FILE = os.getenv('NETWORKAPI_LOG_FILE', '/tmp/networkapi.log')
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
+LOG_HANDLER = os.getenv('NETWORKAPI_LOG_HANDLER', 'log_file').split(',')
 LOG_DAYS = 10
 LOG_SHOW_SQL = os.getenv('NETWORKAPI_LOG_SHOW_SQL', '0') == '1'
 LOG_DB_LEVEL = logging.DEBUG if LOG_SHOW_SQL else logging.INFO
@@ -190,38 +191,38 @@ LOGGING = {
         'default': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file', 'gelf'],
+            'handlers': LOG_HANDLER,
         },
         'django': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file', 'gelf'],
+            'handlers': LOG_HANDLER,
         },
         'django.request': {
             'level': LOG_LEVEL,
             'propagate': False,
-            'handlers': ['log_file', 'gelf'],
+            'handlers': LOG_HANDLER,
         },
         'bigsuds': {
             'level': logging.INFO,
             'propagate': False,
-            'handlers': ['log_file', 'gelf'],
+            'handlers': LOG_HANDLER,
         },
         'suds': {
             'level': logging.INFO,
             'propagate': True,
-            'handlers': ['log_file', 'gelf'],
+            'handlers': LOG_HANDLER,
         },
         'django.db.backends': {
             'level': LOG_DB_LEVEL,
             'propagate': False,
-            'handlers': ['log_file', 'gelf'],
+            'handlers': LOG_HANDLER,
         },
     },
     'root': {
         'level': LOG_LEVEL,
         'propagate': False,
-        'handlers': ['log_file', 'console', 'gelf'],
+        'handlers': ['console'] + LOG_HANDLER,
     },
 }
 
