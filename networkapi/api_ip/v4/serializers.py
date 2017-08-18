@@ -366,6 +366,7 @@ class Ipv4EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         model = get_model('ip', 'IpEquipamento')
 
         fields = (
+            'id',
             'ip',
             'equipment',
             'virtual_interface'
@@ -383,7 +384,8 @@ class Ipv4EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
     def get_serializers(self):
         # serializers
         eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
-        vi_slz = get_app('api_virtual_interface', module_label='v4.serializers')
+        vi_slz = get_app('api_virtual_interface',
+                         module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -438,6 +440,7 @@ class Ipv6EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         model = get_model('ip', 'Ipv6Equipament')
 
         fields = (
+            'id',
             'ip',
             'equipment',
             'virtual_interface'
@@ -455,7 +458,8 @@ class Ipv6EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
     def get_serializers(self):
         # serializers
         eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
-        vi_slz = get_app('api_virtual_interface', module_label='v4.serializers')
+        vi_slz = get_app('api_virtual_interface',
+                         module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -497,4 +501,3 @@ class Ipv6EquipmentVirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'virtual_interface'
                 }
             }
-
