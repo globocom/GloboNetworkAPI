@@ -13,36 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from .... import exceptions
+from ....base import BasePlugin
+from time import sleep
+from django.template import Template
+from django.template import Context
 import logging
 import re
-from time import sleep
-
-from networkapi.api_deploy.facade import deploy_config_in_equipment
+import os
 from networkapi.equipamento import models as eqpt_models
 from networkapi.settings import BGP_CONFIG_FILES_PATH
 from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
 from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
-from networkapi.extra_logging import local
-from networkapi.extra_logging import NO_REQUEST_ID
-from django.template import Template
-from django.template import Context
-from .... import exceptions
-from ....base import BasePlugin
-from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.infrastructure.ipaddr import IPAddress
 from networkapi.api_deploy import exceptions
-from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
-from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.distributedlock import distributedlock
-from networkapi.equipamento.models import Equipamento
+from networkapi.api_equipment.exceptions import \
+    AllEquipmentsAreInMaintenanceException
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
-from networkapi.plugins.factory import PluginFactory
-from networkapi.settings import CONFIG_FILES_PATH
-from networkapi.settings import CONFIG_FILES_REL_PATH
-from networkapi.settings import TFTP_SERVER_ADDR
 from networkapi.settings import TFTPBOOT_FILES_PATH
-import os
 
 log = logging.getLogger(__name__)
 
@@ -66,11 +56,30 @@ class Generic(BasePlugin):
 
     def __init__(self, equipment=None, neighbor=None, asn=None, vrf=None):
 
+        super(Generic, self).__init__()
+
         self.equipment = equipment
         self.neighbor = neighbor
         self.equipment_access = None
         self.asn = asn
         self.vrf = vrf
+        
+    def _operate_equipment(self, _get_template_name):
+
+        self.connect()
+        self._ensure_privilege_level()
+        template_name = _get_template_name()
+        file_to_deploy = self._generate_config_file(template_name)
+        self._deploy_config_in_equipment(file_to_deploy)
+        self.close()
+        
+    def deploy_neighbor(self):
+
+        self._operate_equipment(self._get_template_deploy_name)
+
+    def undeploy_neighbor(self):
+
+        self._operate_equipment(self._get_template_undeploy_name)
 
     def _get_template_deploy_name(self):
 
@@ -88,27 +97,7 @@ class Generic(BasePlugin):
             return self.TEMPLATE_NEIGHBOR_V4_REMOVE
         return self.TEMPLATE_NEIGHBOR_V6_REMOVE
 
-    def deploy_neighbor(self):
-
-        self.connect()
-        self.ensure_privilege_level()
-
-        template_name = self._get_template_deploy_name()
-        file_to_deploy = self.generate_config_file(template_name)
-        status_deploy = self.deploy_config_in_equipment(file_to_deploy)
-        self.close()
-
-    def undeploy_neighbor(self):
-
-        self.connect()
-        self.ensure_privilege_level()
-
-        template_name = self._get_template_undeploy_name()
-        file_to_deploy = self.generate_config_file(template_name)
-        status_deploy = self.deploy_config_in_equipment(file_to_deploy)
-        self.close()
-
-    def generate_config_file(self, template_type):
+    def _generate_config_file(self, template_type):
         """Load a template and write a file with the rended output.
 
         Args: 2-dimension dictionary with equipments information for template
@@ -127,8 +116,8 @@ class Generic(BasePlugin):
         rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
 
         try:
-            template_file = self.load_template_file(template_type)
-            key_dict = self.generate_template_dict()
+            template_file = self._load_template_file(template_type)
+            key_dict = self._generate_template_dict()
             config_to_be_saved += template_file.render(Context(key_dict))
         except KeyError, exception:
             log.error('Erro: %s ' % exception)
@@ -145,7 +134,16 @@ class Generic(BasePlugin):
 
         return rel_file_to_deploy
 
-    def load_template_file(self, template_type):
+    def _get_equipment_template(self, template_type):
+
+        try:
+            return eqpt_models.EquipamentoRoteiro.search(
+                None, self.equipment.id, template_type).uniqueResult()
+        except:
+            log.error('Template type %s not found.' % template_type)
+            raise exceptions.BGPTemplateException()
+
+    def _load_template_file(self, template_type):
         """Load template file with specific type related to equipment.
 
         template_type: Type of template to be loaded
@@ -153,12 +151,7 @@ class Generic(BasePlugin):
         Returns: template string
         """
 
-        try:
-            equipment_template = (eqpt_models.EquipamentoRoteiro.search(
-                None, self.equipment.id, template_type)).uniqueResult()
-        except:
-            log.error('Template type %s not found.' % template_type)
-            raise exceptions.BGPTemplateException()
+        equipment_template = self._get_equipment_template(template_type)
 
         filename_in = BGP_CONFIG_TEMPLATE_PATH + \
                       '/' + equipment_template.roteiro.roteiro
@@ -178,16 +171,16 @@ class Generic(BasePlugin):
 
         return template_file
 
-    def deploy_config_in_equipment(self, rel_filename):
+    def _deploy_config_in_equipment(self, rel_filename):
 
         # validate filename
         path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
         if not path.startswith(TFTPBOOT_FILES_PATH):
             raise exceptions.InvalidFilenameException(rel_filename)
 
-        if type(self.equipment) is not Equipamento:
-            log.error('Invalid data for equipment')
-            raise api_exceptions.NetworkAPIException()
+        # if type(self.equipment) is not Equipamento:
+        #     log.error('Invalid data for equipment')
+        #     raise api_exceptions.NetworkAPIException()
 
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
@@ -199,9 +192,9 @@ class Generic(BasePlugin):
         if self.equipment.maintenance is True:
             return 'Equipment is in maintenance mode. No action taken.'
 
-        self.copyScriptFileToConfig(filename)
+        self._copy_script_file_to_config(filename)
 
-    def generate_template_dict(self):
+    def _generate_template_dict(self):
 
         key_dict = {}
         key_dict['AS_NUMBER'] = self.asn.get('name')
@@ -212,50 +205,15 @@ class Generic(BasePlugin):
         key_dict['TIMER_KEEPALIVE'] = self.neighbor.get('timer_keepalive')
         key_dict['TIMER_TIMEOUT'] = self.neighbor.get('timer_timeout')
         key_dict['DESCRIPTION'] = self.neighbor.get('description')
-        key_dict['SOFT_RECONFIGURATION'] = self.neighbor.get('soft_reconfiguration')
+        key_dict['SOFT_RECONFIGURATION'] = \
+            self.neighbor.get('soft_reconfiguration')
         key_dict['NEXT_HOP_SELF'] = self.neighbor.get('next_hop_self')
         key_dict['REMOVE_PRIVATE_AS'] = self.neighbor.get('remove_private_as')
         key_dict['COMMUNITY'] = self.neighbor.get('community')
 
         return key_dict
 
-    # def exec_command(self, command, success_regex='', invalid_regex=None,
-    #                  error_regex=None):
-    #     """
-    #     Send single command to equipment and than closes connection channel
-    #     """
-    #     if self.channel is None:
-    #         log.error(
-    #             'No channel connection to the equipment %s. '
-    #             'Was the connect() funcion ever called?' % self.equipment.nome)
-    #         raise exceptions.PluginNotConnected()
-    #
-    #     try:
-    #         stdin, stdout, stderr = self.channel.exec_command('%s' % (command))
-    #     except Exception, e:
-    #         log.error('Error in connection. Cannot send command %s: %s' %
-    #                   (command, e))
-    #         raise api_exceptions.NetworkAPIException
-    #
-    #     equip_output_lines = stdout.readlines()
-    #     output_text = ''.join(equip_output_lines)
-    #
-    #     for output_line in output_text.splitlines():
-    #         if re.search(self.INVALID_REGEX, output_line):
-    #             raise exceptions.InvalidCommandException(output_text)
-    #         elif re.search(error_regex, output_line):
-    #             if re.search(self.WARNING_REGEX, output_line):
-    #                 log.warning('This is threated as a warning: %s' %
-    #                             output_line)
-    #             else:
-    #                 raise exceptions.CommandErrorException
-    #
-    #     if re.search(success_regex, output_text, re.DOTALL):
-    #         return output_text
-    #     else:
-    #         raise exceptions.UnableToVerifyResponse()
-
-    def copyScriptFileToConfig(self, filename, use_vrf=None,
+    def _copy_script_file_to_config(self, filename, use_vrf=None,
                                destination='running-config'):
         """
         Copy file from TFTP server to destination
@@ -277,7 +235,7 @@ class Generic(BasePlugin):
             try:
                 log.info('try: %s - sending command: %s' % (retries, command))
                 self.channel.send('%s\n' % command)
-                recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+                recv = self._wait_string(self.VALID_TFTP_PUT_MESSAGE)
                 file_copied = 1
             except exceptions.CurrentlyBusyErrorException:
                 retries += 1
@@ -288,26 +246,26 @@ class Generic(BasePlugin):
 
         return recv
 
-    def ensure_privilege_level(self, privilege_level=None):
+    def _ensure_privilege_level(self, privilege_level=None):
 
         if privilege_level is None:
             privilege_level = self.admin_privileges
 
         self.channel.send('\n')
-        recv = self.waitString('>|#')
+        recv = self._wait_string('>|#')
         self.channel.send('show privilege\n')
-        recv = self.waitString('Current privilege level is')
+        recv = self._wait_string('Current privilege level is')
         level = re.search(
             'Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
 
         level = (level.split(' '))[-1]
         if int(level) < privilege_level:
             self.channel.send('enable\n')
-            recv = self.waitString('Password:')
+            recv = self._wait_string('Password:')
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
-            recv = self.waitString('#')
+            recv = self._wait_string('#')
 
-    def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
+    def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
                    wait_str_failed_regex=None):
 
         if wait_str_invalid_regex is None:
