@@ -11,7 +11,7 @@ services:
             - "8181:8181"
             - "8101:8101"
         networks:
-            - netapi_net
+            - globonetworkapi_netapi_net
 
     ovs1:
         container_name: ovs1
