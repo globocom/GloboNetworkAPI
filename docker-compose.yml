@@ -74,8 +74,8 @@ services:
             - db:netapi_db
         external_links:
             - netapi_graylog2
+            - netapi_odl
             - cache:netapi_cache
-            - odl:netapi_odl
             - queue:netapi_queue
 
 volumes:
