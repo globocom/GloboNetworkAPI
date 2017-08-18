@@ -25,7 +25,7 @@ services:
             - NET_ADMIN
             - SYS_MODULE
         networks:
-            - netapi_net
+            - globonetworkapi_netapi_net
         depends_on:
             - odl
 
@@ -41,7 +41,7 @@ services:
             - NET_ADMIN
             - SYS_MODULE
         networks:
-            - netapi_net
+            - globonetworkapi_netapi_net
         depends_on:
             - odl
 
@@ -57,10 +57,10 @@ services:
             - NET_ADMIN
             - SYS_MODULE
         networks:
-            - netapi_net
+            - globonetworkapi_netapi_net
         depends_on:
             - odl
 
-
 networks:
-    netapi_net:
+    globonetworkapi_netapi_net:
+        external: true
