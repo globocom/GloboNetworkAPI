@@ -18,7 +18,7 @@ services:
         image: socketplane/openvswitch
         tty: true
         volumes:
-            - ./lib/modules:/lib/modules:rw
+            - /lib/modules:/lib/modules:rw
             - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
         command: sh docker-start-openvswitch.sh
         cap_add:
@@ -34,7 +34,7 @@ services:
         image: socketplane/openvswitch
         tty: true
         volumes:
-            - ./lib/modules:/lib/modules:rw
+            - /lib/modules:/lib/modules:rw
             - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
         command: sh docker-start-openvswitch.sh
         cap_add:
@@ -50,7 +50,7 @@ services:
         image: socketplane/openvswitch
         tty: true
         volumes:
-            - ./lib/modules:/lib/modules:rw
+            - /lib/modules:/lib/modules:rw
             - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
         command: sh docker-start-openvswitch.sh
         cap_add:
