@@ -135,9 +135,9 @@ class EventLogQueue(object):
         # Send to Queue
         queue_manager = QueueManager(
             broker_vhost='tasks',
-            queue_name='tasks.eventlog',
-            exchange_name='tasks.eventlog',
-            routing_key='tasks.eventlog')
+            exchange_name='eventslog',
+            routing_key='eventslog'
+        )
 
         queue_manager.append({
             'action': evento['acao'],
