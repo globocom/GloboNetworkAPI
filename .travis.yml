@@ -34,8 +34,8 @@ install:
   - sudo mv docker-compose /usr/local/bin
 
 script:
-  - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
   - sudo docker-compose up -d
+  - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
   - docker ps --all
   - ./scripts/travis/wait_for_containers.sh
   - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/tests/test_generic_odl_plugin.py:GenericOpenDayLightTestCaseSuccess.test_add_a_list_of_acls_in_one_request
