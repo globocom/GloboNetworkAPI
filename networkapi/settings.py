@@ -31,8 +31,6 @@ def local_files(path):
     return '{}/networkapi/{}'.format(os.getcwd(), path)
 
 
-NETWORKAPI_USE_NEWRELIC = os.getenv('NETWORKAPI_USE_NEWRELIC', '0') == 1
-
 NETWORKAPI_TAGS_DEPLOY = os.getenv('NETWORKAPI_TAGS_DEPLOY',
                                    'networkapi,app-local')
 
@@ -62,13 +60,6 @@ RQ_SHOW_ADMIN_LINK = True
 # O segundo parâmetro é o número de dias que os arquivos ficarão mantidos.
 # O terceiro parâmetro é o nível de detalhamento do Log.
 # Log.init_log(LOG_FILE, LOG_DAYS, LOG_LEVEL, use_stdout=LOG_USE_STDOUT)
-
-if NETWORKAPI_USE_NEWRELIC:
-    import newrelic.agent
-    config_file_path = os.environ.get('NETWORKAPI_NEW_RELIC_CONFIG')
-    if config_file_path is not None:
-        newrelic.agent.initialize(config_file_path, os.environ.get(
-            'NETWORKAPI_NEW_RELIC_ENV', 'local'))
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -417,38 +408,67 @@ MAX_OCT4 = 250
 # SPECS #
 #########
 SPECS = {
-    'environment_post': 'networkapi/api_environment/specs/env_post.json',
-    'environment_put': 'networkapi/api_environment/specs/env_put.json',
-    'environment_vip_post': 'networkapi/api_environment_vip/specs/env_post.json',
-    'environment_vip_put': 'networkapi/api_environment_vip/specs/env_put.json',
-    'equipment_post': 'networkapi/api_equipment/specs/equipment_post.json',
-    'equipment_put': 'networkapi/api_equipment/specs/equipment_put.json',
-    'ipv4_post': 'networkapi/api_ip/specs/ipv4_post.json',
-    'ipv4_put': 'networkapi/api_ip/specs/ipv4_put.json',
-    'ipv6_post': 'networkapi/api_ip/specs/ipv6_post.json',
-    'ipv6_put': 'networkapi/api_ip/specs/ipv6_put.json',
-    'networkv4_post': 'networkapi/api_network/specs/netv4_post.json',
-    'networkv4_put': 'networkapi/api_network/specs/netv4_put.json',
-    'networkv6_post': 'networkapi/api_network/specs/netv6_post.json',
-    'networkv6_put': 'networkapi/api_network/specs/netv6_put.json',
-    'pool_member_status': 'networkapi/api_pools/specs/pool_member_status.json',
-    'pool_post': 'networkapi/api_pools/specs/pool_post.json',
-    'pool_put': 'networkapi/api_pools/specs/pool_put.json',
-    'vip_request_patch': 'networkapi/api_vip_request/specs/vip_patch.json',
-    'vip_request_post': 'networkapi/api_vip_request/specs/vip_post.json',
-    'vip_request_put': 'networkapi/api_vip_request/specs/vip_put.json',
-    'vlan_post': 'networkapi/api_vlan/specs/vlan_post.json',
-    'vlan_put': 'networkapi/api_vlan/specs/vlan_put.json',
-    'vrf_post': 'networkapi/api_vrf/specs/vrf_post.json',
-    'vrf_put': 'networkapi/api_vrf/specs/vrf_put.json',
-    'ogp_post': 'networkapi/api_ogp/specs/ogp_post.json',
-    'ogp_put': 'networkapi/api_ogp/specs/ogp_put.json',
-    'ogpg_post': 'networkapi/api_ogp/specs/ogpg_post.json',
-    'ogpg_put': 'networkapi/api_ogp/specs/ogpg_put.json'}
+    'environment_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_environment/specs/env_post.json'),
+    'environment_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_environment/specs/env_put.json'),
+    'environment_vip_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_environment_vip/specs/env_post.json'),
+    'environment_vip_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_environment_vip/specs/env_put.json'),
+    'equipment_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_equipment/specs/equipment_post.json'),
+    'equipment_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_equipment/specs/equipment_put.json'),
+    'ipv4_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ip/specs/ipv4_post.json'),
+    'ipv4_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ip/specs/ipv4_put.json'),
+    'ipv6_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ip/specs/ipv6_post.json'),
+    'ipv6_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ip/specs/ipv6_put.json'),
+    'networkv4_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_network/specs/netv4_post.json'),
+    'networkv4_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_network/specs/netv4_put.json'),
+    'networkv6_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_network/specs/netv6_post.json'),
+    'networkv6_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_network/specs/netv6_put.json'),
+    'pool_member_status': os.path.join(
+        PROJECT_ROOT_PATH, 'api_pools/specs/pool_member_status.json'),
+    'pool_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_pools/specs/pool_post.json'),
+    'pool_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_pools/specs/pool_put.json'),
+    'vip_request_patch': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vip_request/specs/vip_patch.json'),
+    'vip_request_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vip_request/specs/vip_post.json'),
+    'vip_request_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vip_request/specs/vip_put.json'),
+    'vlan_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vlan/specs/vlan_post.json'),
+    'vlan_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vlan/specs/vlan_put.json'),
+    'vrf_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vrf/specs/vrf_post.json'),
+    'vrf_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_vrf/specs/vrf_put.json'),
+    'ogp_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ogp/specs/ogp_post.json'),
+    'ogp_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ogp/specs/ogp_put.json'),
+    'ogpg_post': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ogp/specs/ogpg_post.json'),
+    'ogpg_put': os.path.join(
+        PROJECT_ROOT_PATH, 'api_ogp/specs/ogpg_put.json')
+}
 
 ##########
 # Scripts
-
+# TODO: Remove old Scripts
 # VLAN
 VLAN_REMOVE = 'navlan -i %d --remove'
 VLAN_CREATE = 'navlan -I %d -L2 --cria'
@@ -566,18 +586,29 @@ PATH_ACL = os.path.join(PROJECT_ROOT_PATH, 'ACLS/')
 KICKSTART_SO_LF = 'n6000-uk9-kickstart.7.1.0.N1.1b.bin'
 IMAGE_SO_LF = 'n6000-uk9.7.1.0.N1.1b.bin'
 
-PATH_TO_GUIDE = os.getenv('NETWORKAPI_PATH_TO_GUIDE',
-                          '/vagrant/networkapi/rack/roteiros/')
+PATH_TO_GUIDE = os.getenv(
+    'NETWORKAPI_PATH_TO_GUIDE',
+    os.path.join(PROJECT_ROOT_PATH, 'rack/roteiros/'))
+
 PATH_TO_ADD_CONFIG = os.getenv(
-    'NETWORKAPI_PATH_TO_ADD_GUIDE', '/vagrant/networkapi/rack/configuracao/')
-PATH_TO_CONFIG = os.getenv('NETWORKAPI_PATH_TO_CONFIG',
-                           '/vagrant/networkapi/rack/roteiros/')
+    'NETWORKAPI_PATH_TO_ADD_GUIDE',
+    os.path.join(PROJECT_ROOT_PATH, 'rack/configuracao/'))
+
+PATH_TO_CONFIG = os.getenv(
+    'NETWORKAPI_PATH_TO_CONFIG',
+    os.path.join(PROJECT_ROOT_PATH, 'rack/roteiros/'))
+
 REL_PATH_TO_CONFIG = os.getenv(
-    'NETWORKAPI_REL_PATH_TO_CONFIG', 'networkapi/rack/roteiros/')
+    'NETWORKAPI_REL_PATH_TO_CONFIG',
+    os.path.join(PROJECT_ROOT_PATH, 'rack/roteiros/'))
+
 REL_PATH_TO_ADD_CONFIG = os.getenv(
-    'NETWORKAPI_REL_PATH_TO_ADD_CONFIG', 'networkapi/rack/configuracao/')
-PATH_TO_MV = os.getenv('NETWORKAPI_PATH_TO_MV',
-                       '/vagrant/networkapi/rack/roteiros/')
+    'NETWORKAPI_REL_PATH_TO_ADD_CONFIG',
+    os.path.join(PROJECT_ROOT_PATH, 'rack/configuracao/'))
+
+PATH_TO_MV = os.getenv(
+    'NETWORKAPI_PATH_TO_MV',
+    os.path.join(PROJECT_ROOT_PATH, 'rack/roteiros/'))
 
 LEAF = 'LF-CM'
 OOB = 'OOB-CM'
@@ -610,6 +641,32 @@ FOREMAN_HOSTS_ENVIRONMENT_ID = 1
 ###################
 # TEMPLATE CONFIG #
 ###################
+# TODO: CHANGE TO THIS:
+# NETWORKAPI_TFTP_SERVER_ADDR = os.getenv('NETWORKAPI_TFTP_SERVER_ADDR', '')
+
+# TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
+
+# TFTPBOOT_FILES_PATH = os.getenv(
+#     'NETWORKAPI_TFTPBOOT_FILES_PATH', PROJECT_ROOT_PATH)
+
+# CONFIG_TEMPLATE_PATH = os.getenv(
+#     'NETWORKAPI_CONFIG_TEMPLATE_PATH',
+#     os.path.join(PROJECT_ROOT_PATH, 'config_templates/'))
+
+# CONFIG_TEMPLATE_PATH = os.getenv(
+#     'NETWORKAPI_CONFIG_TEMPLATE_PATH',
+#     os.path.join(PROJECT_ROOT_PATH, 'config_templates/'))
+# CONFIG_FILES_PATH = os.path.join(TFTPBOOT_FILES_PATH, 'generated_config/')
+
+# NETWORK_CONFIG_TEMPLATE_PATH = os.path.join(CONFIG_TEMPLATE_PATH, 'network/')
+
+# INTERFACE_CONFIG_TEMPLATE_PATH = os.path.join(
+#     CONFIG_TEMPLATE_PATH, 'interface/')
+
+# INTERFACE_CONFIG_FILES_PATH = os.path.join(CONFIG_FILES_PATH, 'interface/')
+
+# NETWORK_CONFIG_FILES_PATH = os.path.join(CONFIG_FILES_PATH, 'network/')
+
 NETWORKAPI_TFTP_SERVER_ADDR = os.getenv('NETWORKAPI_TFTP_SERVER_ADDR', '')
 
 TFTP_SERVER_ADDR = NETWORKAPI_TFTP_SERVER_ADDR
