@@ -18,6 +18,7 @@ from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
 from networkapi.api_environment.tasks.flows import async_add_flow
+from networkapi.api_environment.tasks.flows import async_flush_environment
 
 
 log = logging.getLogger(__name__)
@@ -209,7 +210,9 @@ def delete_flow(env_id, flow_id):
         raise NetworkAPIException("Failed to delete flow "
                                   "plugin. %s" % e)
 
+
 def flush_flows(env_id):
+    """ Flushes flow from a environment without restore it """
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt)
 
@@ -219,3 +222,19 @@ def flush_flows(env_id):
         log.error(e)
         raise NetworkAPIException("Failed to flush Controller "
                                   "plugin. %s" % e)
+
+
+def flush_environment(env_id, data):
+    """ Call equipment plugin to asynchronously flush the environment """
+
+    eqpt = get_controller_by_envid(env_id)
+    plugin = PluginFactory.factory(eqpt)
+
+    try:
+        return async_flush_environment.apply_async(
+                    args=[plugin, data], queue="napi.odl_flow"
+                )
+    except Exception as e:
+        log.error(e)
+        raise NetworkAPIException("Failed to flush flow(s) "
+                                  "from environment: %s \n%s" % (env_id, e))

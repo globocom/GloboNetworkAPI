@@ -1,3 +1,8 @@
+#
+# Globo Network API base docker image
+# Check it at https://hub.docker.com/r/globocom/networkapi/
+#
+
 FROM ubuntu:14.04
 
 RUN apt-get update

@@ -1,0 +1,60 @@
+version: '3'
+services:
+
+    odl:
+        container_name: netapi_odl
+        image: globocom/odl:4.4.0
+        command: "/opt/opendaylight/bin/karaf server"
+        ports:
+            - "6653:6653"
+            - "6633:6633"
+            - "8181:8181"
+            - "8101:8101"
+        networks:
+            - netapi_net
+
+    ovs1:
+        container_name: ovs1
+        image: socketplane/openvswitch
+        tty: true
+        volumes:
+            - ./scripts/docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
+        cap_add:
+            - NET_ADMIN
+        networks:
+            - netapi_net
+        depends_on:
+            - odl
+    
+    ovs2:
+        container_name: ovs2
+        image: socketplane/openvswitch
+        tty: true
+        volumes:
+            - ./scripts/docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
+        cap_add:
+            - NET_ADMIN
+        networks:
+            - netapi_net
+        depends_on:
+            - odl
+
+    ovs3:
+        container_name: ovs3
+        image: socketplane/openvswitch
+        tty: true
+        volumes:
+            - ./scripts/docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh docker-start-openvswitch.sh
+        cap_add:
+            - NET_ADMIN
+        networks:
+            - netapi_net
+        depends_on:
+            - odl
+
+
+networks:
+    netapi_net:
