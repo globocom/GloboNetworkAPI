@@ -40,15 +40,8 @@ class CliPluginTestCaseSuccess(TestCase):
         asn = {'name': '65114'}
         vrf = {'vrf': 'BEVrf'}
 
-        plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
-                         asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin)
-
-        roteiro = 'template_neighbor_v4_add_dell'
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        plugin.deploy_neighbor()
-
+        self._generate_config_helper_add(neighbor, asn, vrf,
+                                         'template_neighbor_v4_add_dell')
 
     def test_generate_config_for_neighbor_v6_add(self):
 
@@ -67,14 +60,8 @@ class CliPluginTestCaseSuccess(TestCase):
         asn = {'name': '65114'}
         vrf = {'vrf': 'BEVrf'}
 
-        plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
-                         asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin)
-
-        roteiro = 'template_neighbor_v6_add_dell'
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        plugin.deploy_neighbor()
+        self._generate_config_helper_add(neighbor, asn, vrf,
+                                         'template_neighbor_v6_add_dell')
 
     def test_generate_config_for_neighbor_v4_remove(self):
 
@@ -93,14 +80,8 @@ class CliPluginTestCaseSuccess(TestCase):
         asn = {'name': '65114'}
         vrf = {'vrf': 'BEVrf'}
 
-        plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
-                         asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin)
-
-        roteiro = 'template_neighbor_v4_remove_dell'
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        plugin.deploy_neighbor()
+        self._generate_config_helper_remove(neighbor, asn, vrf,
+                                            'template_neighbor_v4_remove_dell')
 
     def test_generate_config_for_neighbor_v6_remove(self):
 
@@ -119,14 +100,8 @@ class CliPluginTestCaseSuccess(TestCase):
         asn = {'name': '65114'}
         vrf = {'vrf': 'BEVrf'}
 
-        plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
-                         asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin)
-
-        roteiro = 'template_neighbor_v6_remove_dell'
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        plugin.deploy_neighbor()
+        self._generate_config_helper_remove(neighbor, asn, vrf,
+                                            'template_neighbor_v6_remove_dell')
 
     def _mock_equipment(self):
 
@@ -152,3 +127,22 @@ class CliPluginTestCaseSuccess(TestCase):
         plugin._copy_script_file_to_config = MagicMock()
 
         return plugin
+
+    def _generate_config_helper_add(self, neighbor, asn, vrf, roteiro):
+
+        plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
+                         asn=asn, vrf=vrf)
+        plugin = self._mock_plugin(plugin)
+
+        plugin._get_equipment_template = self._mock_roteiro(roteiro)
+
+        plugin.deploy_neighbor()
+
+    def _generate_config_helper_remove(self, neighbor, asn, vrf, roteiro):
+        plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
+                         asn=asn, vrf=vrf)
+        plugin = self._mock_plugin(plugin)
+
+        plugin._get_equipment_template = self._mock_roteiro(roteiro)
+
+        plugin.undeploy_neighbor()
