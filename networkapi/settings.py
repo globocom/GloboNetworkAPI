@@ -647,6 +647,8 @@ USER_SCRIPTS_REL_PATH = 'user_scripts/'
 
 NETWORK_CONFIG_REL_PATH = 'network/'
 
+BGP_CONFIG_REL_PATH = 'bgp/'
+
 # /vagrant/networkapi/generated_config/
 CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + CONFIG_FILES_REL_PATH
 
@@ -658,12 +660,17 @@ NETWORK_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + \
 # networkapi/generated_config/interface/
 INTERFACE_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + \
     INTERFACE_CONFIG_REL_PATH
+# networkapi/generated_config/bgp/
+BGP_CONFIG_TOAPPLY_REL_PATH = CONFIG_FILES_REL_PATH + \
+    BGP_CONFIG_REL_PATH
 
 # /vagrant/networkapi/config_templates/network/
 NETWORK_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + NETWORK_CONFIG_REL_PATH
 # /vagrant/networkapi/config_templates/interface/
 INTERFACE_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + \
     INTERFACE_CONFIG_REL_PATH
+# /vagrant/networkapi/config_templates/bgp/
+BGP_CONFIG_TEMPLATE_PATH = CONFIG_TEMPLATE_PATH + BGP_CONFIG_REL_PATH
 
 # /vagrant/networkapi/generated_config/interface/
 INTERFACE_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
@@ -673,3 +680,7 @@ USER_SCRIPTS_FILES_PATH = TFTPBOOT_FILES_PATH + USER_SCRIPTS_TOAPPLY_REL_PATH
 # /vagrant/networkapi/generated_config/interface/
 NETWORK_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
     NETWORK_CONFIG_TOAPPLY_REL_PATH
+# /vagrant/networkapi/generated_config/bgp/
+BGP_CONFIG_FILES_PATH = TFTPBOOT_FILES_PATH + \
+    BGP_CONFIG_TOAPPLY_REL_PATH
+

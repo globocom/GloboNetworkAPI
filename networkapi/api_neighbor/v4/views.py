@@ -140,7 +140,7 @@ class NeighborDeployView(CustomAPIView):
 
         locks_list = create_lock(neighbor_serializer.data, LOCK_NEIGHBOR)
         try:
-            response = facade.deploy_neighbor(neighbor_serializer.data)
+            response = facade.deploy_neighbors(neighbor_serializer.data)
         except NeighborAlreadyCreated as e:
             raise ValidationAPIException(str(e))
         except Exception, exception:
@@ -168,7 +168,7 @@ class NeighborDeployView(CustomAPIView):
 
         locks_list = create_lock(neighbor_serializer.data, LOCK_NEIGHBOR)
         try:
-            response = facade.undeploy_neighbor(neighbor_serializer.data)
+            response = facade.undeploy_neighbors(neighbor_serializer.data)
         except NeighborNotCreated as e:
             raise ValidationAPIException(str(e))
         except Exception, exception:

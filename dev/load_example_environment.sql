@@ -10,7 +10,10 @@
 -- Dumping data for table `config`
 
 SET @id_as_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'as_management');
-
+SET @id_neighbor_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_management');
+SET @id_virtual_interface_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'virtual_interface_management');
+SET @id_neighbor_create_script_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_create_script');
+SET @id_neighbor_remove_script_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_remove_script');
 
 INSERT INTO
    `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max)
@@ -1541,6 +1544,38 @@ VALUES
 ,
    (
       36, 1, 1, 2, @id_as_management_perm
+   )
+,
+   (
+      37, 1, 1, 1, @id_neighbor_management_perm
+   )
+,
+   (
+      38, 1, 1, 2, @id_neighbor_management_perm
+   )
+,
+   (
+      39, 1, 1, 1, @id_virtual_interface_management_perm
+   )
+,
+   (
+      40, 1, 1, 2, @id_virtual_interface_management_perm
+   )
+,
+   (
+      41, 1, 1, 1, @id_neighbor_create_script_perm
+   )
+,
+   (
+      42, 1, 1, 2, @id_neighbor_create_script_perm
+   )
+,
+   (
+      43, 1, 1, 1, @id_neighbor_remove_script_perm
+   )
+,
+   (
+      44, 1, 1, 2, @id_neighbor_remove_script_perm
    )
 ;
 

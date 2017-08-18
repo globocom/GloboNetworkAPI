@@ -4,9 +4,10 @@ import logging
 from django.core.exceptions import FieldError
 from django.db.transaction import commit_on_success
 from networkapi.plugins.factory import PluginFactory
+from networkapi.infrastructure.ipaddr import IPAddress
 
-from networkapi.util.geral import get_model
-
+from networkapi.api_vrf.models import Vrf
+from networkapi.api_as.models import As
 from networkapi.api_neighbor.models import Neighbor
 from networkapi.api_neighbor.v4 import exceptions
 from networkapi.api_neighbor.v4.exceptions import NeighborErrorV4
@@ -17,6 +18,9 @@ from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.api_as.v4.serializers import AsV4Serializer
+from networkapi.api_vrf.serializers import VrfV3Serializer
+
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.equipamento.models import Equipamento
 
@@ -122,8 +126,20 @@ def delete_neighbor(neighbor_ids):
             raise NetworkAPIException(str(e))
 
 
+def get_equipment(id_, remote_ip):
+
+    version_ip = IPAddress(remote_ip).version
+
+    if version_ip == 4:
+        return Equipamento.objects.filter(
+            ipequipamento__virtual_interface__neighbor=id_)[0]
+    else:
+        return Equipamento.objects.filter(
+            ipv6equipament__virtual_interface__neighbor=id_)[0]
+
+
 @commit_on_success
-def deploy_neighbor(neighbors):
+def deploy_neighbors(neighbors):
 
     deployed_ids = list()
     for neighbor in neighbors:
@@ -132,7 +148,23 @@ def deploy_neighbor(neighbors):
         if neighbor['created'] is True:
             raise NeighborAlreadyCreated(id_)
 
-        # TODO Implement plugin call
+        remote_ip = neighbor['remote_ip']
+
+        equipment = get_equipment(id_, remote_ip)
+
+        plugin = PluginFactory.factory(equipment)
+
+        asn = As.objects.filter(asequipment__equipment=equipment.id)
+        vrf = Vrf.objects.filter(virtualinterface__id=1)
+
+        asn = AsV4Serializer(asn[0]).data
+        vrf = VrfV3Serializer(vrf[0]).data
+
+        try:
+            plugin.bgp(neighbor, asn, vrf).deploy_neighbor()
+        except Exception as e:
+            raise NetworkAPIException(e.message)
+
         deployed_ids.append(id_)
 
     neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
@@ -140,7 +172,7 @@ def deploy_neighbor(neighbors):
 
 
 @commit_on_success
-def undeploy_neighbor(neighbors):
+def undeploy_neighbors(neighbors):
 
     undeployed_ids = list()
     for neighbor in neighbors:
@@ -149,7 +181,17 @@ def undeploy_neighbor(neighbors):
         if neighbor['created'] is False:
             raise NeighborNotCreated(id_)
 
-        # TODO Implement plugin call
+        remote_ip = neighbor['remote_ip']
+
+        equipment = get_equipment(id_, remote_ip)
+
+        plugin = PluginFactory.factory(equipment)
+
+        try:
+            plugin.bgp(neighbor).undeploy_neighbor()
+        except Exception as e:
+            raise NetworkAPIException(e.message)
+
         undeployed_ids.append(id_)
 
     neighbors_obj = Neighbor.objects.filter(id__in=undeployed_ids)
