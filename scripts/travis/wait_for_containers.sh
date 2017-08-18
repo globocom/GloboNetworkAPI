@@ -4,11 +4,12 @@
 
 echo "Waiting for ODL to go up"
 
-MAX_RETRY=20
+MAX_RETRY=30
 SLEEP_TIME=10
 
 for i in $(seq 1  ${MAX_RETRY}); do
-
+    
+    sleep ${SLEEP_TIME}
     docker exec ovs1 ovs-vsctl show | grep is_connected > /dev/null
 
     # If the port is open we continue with the script
@@ -23,7 +24,6 @@ for i in $(seq 1  ${MAX_RETRY}); do
     fi
 
     echo "Retrying ${i}.."
-    sleep ${SLEEP_TIME}
 done
 
 echo "ODL server is up"
