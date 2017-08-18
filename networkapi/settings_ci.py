@@ -211,7 +211,7 @@ NOSE_ARGS = [
     #     '-d',
     '-s',
     '--with-fixture-bundling',
-    # '--rednose',
+    '--rednose',
 ]
 
 INSTALLED_APPS += (
