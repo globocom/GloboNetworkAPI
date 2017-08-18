@@ -154,7 +154,7 @@ class DatacenterRooms(BaseModel):
     racks = models.IntegerField(blank=True, null=True)
     spines = models.IntegerField(blank=True, null=True)
     leafs = models.IntegerField(blank=True, null=True)
-    config = models.CharField(max_length=255, unique=True)
+    config = models.CharField(max_length=255)
 
 
     class Meta(BaseModel.Meta):

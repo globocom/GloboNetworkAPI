@@ -43,12 +43,11 @@ from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
 
-
 if int(get_variable('use_foreman')):
     from foreman.client import Foreman, ForemanException
 
-
 log = logging.getLogger(__name__)
+
 
 def save_dc(dc_dict):
 
@@ -59,7 +58,6 @@ def save_dc(dc_dict):
 
     dc.save_dc()
     return dc
-
 
 def listdc():
 
@@ -92,7 +90,6 @@ def save_dcrooms(dcrooms_dict):
     dcrooms.save_dcrooms()
     return dcrooms
 
-
 def edit_dcrooms(dcroom_id, dcrooms_dict):
 
     dcrooms = DatacenterRooms().get_dcrooms(idt=dcroom_id)
@@ -110,7 +107,6 @@ def edit_dcrooms(dcroom_id, dcrooms_dict):
 
     dcrooms.save_dcrooms()
     return dcrooms
-
 
 def get_fabric(idt=None, name=None, id_dc=None):
 
@@ -132,7 +128,6 @@ def get_fabric(idt=None, name=None, id_dc=None):
         fabric_list.append(rack_serializers.DCRoomSerializer(i).data)
 
     return fabric_list
-
 
 def update_fabric_config(fabric_id, fabric_dict):
 
@@ -189,20 +184,55 @@ def save_rack_dc(rack_dict):
     rack.save_rack()
     return rack
 
+def update_rack(rack_id, rack):
 
-def get_rack(fabric_id=None):
+    try:
+        rack_obj = Rack()
+        rack_obj = rack_obj.get_rack(idt=rack_id)
+
+        rack_obj.nome = rack.get("name")
+        rack_obj.numero = rack.get("number")
+        rack_obj.mac_sw1 = rack.get("mac_sw1")
+        rack_obj.mac_sw2 = rack.get("mac_sw2")
+        rack_obj.mac_ilo = rack.get("mac_ilo")
+        rack_obj.id_sw1 = Equipamento().get_by_pk(int(rack.get("id_sw1")))
+        rack_obj.id_sw2 = Equipamento().get_by_pk(int(rack.get("id_sw2")))
+        rack_obj.id_ilo = Equipamento().get_by_pk(int(rack.get("id_ilo")))
+        rack_obj.dcroom = DatacenterRooms().get_dcrooms(idt=rack.get('fabric_id')) if rack.get('fabric_id') \
+            else None
+
+        rack_obj.save()
+
+        return rack_obj
+
+    except (exceptions.RackNumberDuplicatedValueError,
+            exceptions.RackNameDuplicatedError,
+            exceptions.InvalidInputException) as e:
+        log.exception(e)
+        raise Exception(e)
+    except Exception, e:
+        log.exception(e)
+        raise Exception(e)
+
+def get_rack(fabric_id=None, rack_id=None):
 
     rack_obj = Rack()
 
-    if fabric_id:
-        rack = rack_obj.get_rack(dcroom_id=fabric_id)
-    else:
-        rack = rack_obj.get_rack()
+    try:
+        if fabric_id:
+            rack = rack_obj.get_rack(dcroom_id=fabric_id)
+            rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+        elif rack_id:
+            rack = rack_obj.get_rack(idt=rack_id)
+            rack_list = [rack_serializers.RackSerializer(rack).data] if rack else list()
+        else:
+            rack = rack_obj.get_rack()
+            rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
 
-    rack_list = rack_serializers.RackSerializer(rack, many=True).data if rack else list()
+        return rack_list
 
-    return rack_list
-
+    except (ObjectDoesNotExist, Exception), e:
+        raise Exception(e)
 
 def delete_rack(rack_id):
 
@@ -250,8 +280,6 @@ def delete_rack(rack_id):
 
     rack.del_rack()
 
-
-
 def _buscar_roteiro(id_sw, tipo):
 
     roteiro_eq = None
@@ -264,7 +292,6 @@ def _buscar_roteiro(id_sw, tipo):
         roteiro_eq = roteiro_eq + ".txt"
 
     return roteiro_eq
-
 
 def _buscar_ip(id_sw):
     """
@@ -281,7 +308,6 @@ def _buscar_ip(id_sw):
                 return str(ip_sw.oct1) + '.' + str(ip_sw.oct2) + '.' + str(ip_sw.oct3) + '.' + str(ip_sw.oct4)
 
     return ""
-
 
 def gerar_arquivo_config(ids):
     log.debug("gerar_arquivo_config")
@@ -358,7 +384,6 @@ def gerar_arquivo_config(ids):
         autoprovision.autoprovision_coreoob(rack, equips)
 
     return True
-
 
 def _create_spnlfenv(rack):
     log.debug("_create_spnlfenv")
@@ -438,7 +463,6 @@ def _create_spnlfenv(rack):
                 log.debug("Environment object: %s" % str(obj))
     return environment_spn_lf_list
 
-
 def _create_spnlfvlans(rack, user):
     log.debug("_create_spnlfvlans")
 
@@ -491,7 +515,6 @@ def _create_spnlfvlans(rack, user):
             facade_vlan_v3.create_vlan(obj, user)
         except:
             log.debug("Vlan object: %s" % str(obj))
-
 
 def _create_prod_envs(rack, user):
     log.debug("_create_prod_envs")
@@ -585,7 +608,6 @@ def _create_prod_envs(rack, user):
 
     return environment
 
-
 def _create_prod_vlans(rack, user):
     log.debug("_create_prod_vlans")
 
@@ -678,7 +700,6 @@ def _create_prod_vlans(rack, user):
 
     return environment
 
-
 def _create_lflf_vlans(rack, user):
     log.debug("_create_lflf_vlans")
 
@@ -728,7 +749,6 @@ def _create_lflf_vlans(rack, user):
             facade_vlan_v3.create_vlan(obj, user)
         except:
             log.debug("Vlan object: %s" % str(obj))
-
 
 def _create_oobvlans(rack, user):
     log.debug("_create_oobvlans")
@@ -789,7 +809,6 @@ def rack_environments_vlans(rack_id, user):
     rack.save()
 
     return rack
-
 
 def api_foreman(rack):
 
@@ -889,7 +908,6 @@ def save_rack(rack_dict):
     rack.save()
     return rack
 
-
 def get_by_pk(user, idt):
 
     try:
@@ -899,7 +917,6 @@ def get_by_pk(user, idt):
     except Exception, e:
         log.error(u'Failure to search the Rack.')
         raise exceptions.RackError("Failure to search the Rack. %s" % e)
-
 
 @api_view(['GET'])
 def available_rack_number(request):

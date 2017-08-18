@@ -64,6 +64,7 @@ from settings import local_files
 from settings import LOG_DAYS
 from settings import LOG_DB_LEVEL
 from settings import LOG_FILE
+from settings import LOG_LEVEL
 from settings import LOG_SHOW_SQL
 from settings import LOG_SHOW_TRACEBACK
 from settings import LOG_USE_STDOUT
@@ -173,9 +174,6 @@ from settings import VLAN_CREATE
 from settings import VLAN_REMOVE
 # import sys
 
-NETWORKAPI_DEBUG = os.getenv('NETWORKAPI_DEBUG', 'INFO')
-LOG_LEVEL = getattr(logging, NETWORKAPI_DEBUG.upper())
-
 # Third party apps
 INSTALLED_APPS = (
     # 'bootstrap_admin',
@@ -213,7 +211,7 @@ NOSE_ARGS = [
     #     '-d',
     '-s',
     '--with-fixture-bundling',
-    '--rednose',
+    # '--rednose',
 ]
 
 INSTALLED_APPS += (

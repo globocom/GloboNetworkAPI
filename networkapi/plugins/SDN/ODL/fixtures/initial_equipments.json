@@ -22,7 +22,7 @@
     }
   },
   {
-    "pk": 1,
+    "pk": 10,
     "model": "equipamento.equipamento",
     "fields": {
       "tipo_equipamento": "1",
@@ -39,13 +39,13 @@
         "default_vrf": 1,
         "divisao_dc": 1,
         "grupo_l3": 1,
-        "father_environment": 4
+        "father_environment": null
     }
   },
   {
     "fields": {
         "ambiente": 1,
-        "equipamento": 1,
+        "equipamento": 10,
         "is_controller": true,
         "is_router": false
     },
@@ -63,7 +63,7 @@
     "pk": 1,
     "model": "equipamento.equipamentoacesso",
     "fields": {
-      "equipamento": 1,
+      "equipamento": 10,
       "fqdn": "http://172.19.0.2:8181",
       "user": "admin",
       "password": "admin",
@@ -118,7 +118,7 @@
     "model": "ip.ipequipamento",
     "fields": {
         "ip": 1,
-        "equipamento": 1
+        "equipamento": 10
     }
   }
 ]

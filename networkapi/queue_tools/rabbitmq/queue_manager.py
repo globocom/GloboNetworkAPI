@@ -44,8 +44,7 @@ class QueueManager(object):
 
         self._msgs = []
         self._broker_timeout = BROKER_CONNECT_TIMEOUT
-        self._queue_name = queue_name if queue_name is not None else \
-            BROKER_DESTINATION
+        self._queue_name = queue_name
         self._exchange_name = exchange_name if exchange_name is not None \
             else BROKER_DESTINATION
         self._routing_key = routing_key if routing_key is not None else \
@@ -94,11 +93,13 @@ class QueueManager(object):
             # Exchange
             task_exchange = Exchange(self._exchange_name,
                                      type=self._queue_type)
+
             # Queues
-            queue = Queue(name=self._queue_name, channel=channel,
-                          exchange=task_exchange,
-                          routing_key=self._routing_key)
-            queue.declare()
+            if self._queue_name:
+                queue = Queue(name=self._queue_name, channel=channel,
+                              exchange=task_exchange,
+                              routing_key=self._routing_key)
+                queue.declare()
 
             # Producer
             producer = Producer(exchange=task_exchange, channel=channel,

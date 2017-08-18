@@ -19,11 +19,12 @@ from rest_framework.exceptions import APIException
 
 class CommandErrorException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Error: Error applying command on equipment. Equipment returned error status.'
+    default_detail = 'Error: Error applying command on equipment.' \
+                     ' Equipment returned error status.'
 
     def __init__(self, msg=None):
-        self.detail = u'Error: Error applying command on equipment. Equipment returned error status. <<%s>>' % (
-            msg)
+        self.detail = 'Error: Error applying command on equipment. ' \
+                      'Equipment returned error status. <<%s>>' % (msg)
 
 
 class ConnectionException(APIException):
@@ -33,16 +34,18 @@ class ConnectionException(APIException):
 
 class CurrentlyBusyErrorException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    default_detail = 'Equipment is currenlty busy. Failed trying to configure equipment.'
+    default_detail = 'Equipment is currenlty busy. ' \
+                     'Failed trying to configure equipment.'
 
 
 class InvalidCommandException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Error: Invalid command sent to equipment. Please check template syntax or module used.'
+    default_detail = 'Error: Invalid command sent to equipment. ' \
+                     'Please check template syntax or module used.'
 
     def __init__(self, msg=None):
-        self.detail = u'Error: Invalid command sent to equipment. Check syntax. Equipment msg: <<%s>>' % (
-            msg)
+        self.detail = 'Error: Invalid command sent to equipment. ' \
+                      'Check syntax. Equipment msg: <<%s>>' % (msg)
 
 
 class InvalidEquipmentAccessException(APIException):
@@ -78,17 +81,18 @@ class LoadEquipmentModuleException(APIException):
 
 class UnableToVerifyResponse(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Error: Could not match equipment response in any known behavior. Please check config for status.'
+    default_detail = 'Error: Could not match equipment response in any ' \
+                     'known behavior. Please check config for status.'
 
 
 class UnsupportedEquipmentException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Tryed to apply configuration on unsupported equipment interface.'
+    default_detail = 'Tryed to apply configuration on unsupported ' \
+                     'equipment interface.'
 
 
 class UnsupportedVersion(APIException):
-
-    """Return message error: Version unsupported by plugin"""
+    """ Return message error: Version unsupported by plugin """
 
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'Version unsupported by plugin'
@@ -98,7 +102,6 @@ class UnsupportedVersion(APIException):
 
 
 class PluginUninstanced(APIException):
-
     """Return message error: Plugin uninstanced"""
 
     status_code = status.HTTP_400_BAD_REQUEST
@@ -109,7 +112,6 @@ class PluginUninstanced(APIException):
 
 
 class PluginNotConnected(APIException):
-
     """Return message error: Plugin uninstanced"""
 
     status_code = status.HTTP_400_BAD_REQUEST
@@ -120,7 +122,6 @@ class PluginNotConnected(APIException):
 
 
 class NamePropertyInvalid(APIException):
-
     """Return message error: Property Name is invalid"""
 
     status_code = status.HTTP_400_BAD_REQUEST
@@ -131,7 +132,6 @@ class NamePropertyInvalid(APIException):
 
 
 class ValueInvalid(APIException):
-
     """Return message error: value is invalid"""
 
     status_code = status.HTTP_400_BAD_REQUEST
@@ -140,9 +140,11 @@ class ValueInvalid(APIException):
     def __init__(self, msg=None):
         self.detail = u'Value is invalid: <<%s>>' % (msg)
 
+
 class ControllerInventoryIsEmpty(APIException):
     """Returno message error: No Nodes on Controller Inventory"""
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = u'SDN Controller\'s inventory is empty'
+
     def __init__(self, msg=None):
         self.detail = u'SDN Controller\'s inventory is empty: <<%s>>' % (msg)
