@@ -10,7 +10,8 @@ pip install -r requirements.txt
 pip install -r requirements_test.txt
 pip install -r requirements_debug.txt
 
-export NETWORKAPI_DEBUG=DEBUG
+export NETWORKAPI_DEBUG=0
+export NETWORKAPI_LOG_QUEUE=0
 export CI=1
 export NETWORKAPI_DATABASE_OPTIONS='{"init_command": "SET default_storage_engine=INNODB"}'
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ci'

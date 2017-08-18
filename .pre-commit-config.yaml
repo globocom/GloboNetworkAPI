@@ -41,14 +41,3 @@
     sha: 726322761e33581fcc0886d49a693945dece8594
     hooks:
     -   id: autopep8
--   repo: git://github.com/FalconSocial/pre-commit-mirrors-pep257
-    sha: 149e61b7a717945143fe51f010fe1c576e729a9f
-    hooks:
-    -   id: pep257
-        args:
-        - '-'
-        - --ignore=D100,D101,D102,D103,D104,D105,D200,D201,D202,D205,D208,D209,D210,D211,D302,D400,D401
-# -   repo: git://github.com/pre-commit/mirrors-pylint
-#     sha: 2df876752b109411416b68489bc26bf52293714e
-#     hooks:
-#     -   id: pylint
