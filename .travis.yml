@@ -34,11 +34,8 @@ install:
   - sudo mv docker-compose /usr/local/bin
 
 script:
-  - docker-compose --file docker-compose-sdn.yml up -d
-  - docker-compose up -d
+  - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
+  - sudo docker-compose up -d
   - docker ps --all
   - ./scripts/travis/wait_for_containers.sh
-  - docker exec -it ovs1 ovs-vsctl show
-  - docker exec -it netapi_odl netstat -ntal
-  - docker exec -it ovs1 telnet netapi_odl 6653
   - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/tests/test_generic_odl_plugin.py:GenericOpenDayLightTestCaseSuccess.test_add_a_list_of_acls_in_one_request
