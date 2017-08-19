@@ -13,6 +13,8 @@ branches:
 
 sudo: required
 
+dist: precise
+
 services:
   - docker
 
