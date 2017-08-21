@@ -10,12 +10,10 @@ MAX_RETRY=30
 SLEEP_TIME=5
 
 for i in $(seq 1  ${MAX_RETRY}); do
-    
-    sleep ${SLEEP_TIME}
 
     # -- ODL
     if [ "$ODL_READY" -eq "0" ]; then
-        docker exec sh -c "ovs1 ovs-vsctl show" 2>/dev/null | grep "is_connected" >/dev/null
+        docker exec ovs1 sh -c "ovs-vsctl show" 2>/dev/null | grep "is_connected" >/dev/null
         if [ "$?" -eq "0" ]; then
             echo "ODL is ready";
             ODL_READY=1;
@@ -41,6 +39,7 @@ for i in $(seq 1  ${MAX_RETRY}); do
         exit 1;
     fi
 
+    sleep ${SLEEP_TIME}
     echo "Retrying ${i}.."
 done
 
