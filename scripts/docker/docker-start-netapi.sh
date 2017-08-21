@@ -1,17 +1,18 @@
 # initial vars
 SLEEP_TIME=5
-MAX_RETRIES=10
+MAX_RETRIES=30
 PIDFILE=/var/run/netapi_main.pid
-
-echo "Starting netapi_app ..."
+DB_READY=0
 
 # DB
-for i in $(seq 1  ${MAX_RETRY}); do
+echo "Starting netapi_app ..."
+for i in $(seq 1  ${MAX_RETRIES}); do
 
   mysql -u root -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
 
   if [ "$?" -eq "0" ]; then
     echo "Dropping old networkapi database"
+    DB_READY=1;
     break;
   fi
 
@@ -19,6 +20,11 @@ for i in $(seq 1  ${MAX_RETRY}); do
   sleep ${SLEEP_TIME}
   echo "Retrying ${i}.."
 done
+
+if [ "$DB_READY" -eq "0" ]; then
+  echo "Fatal error: Could not connect to DB"
+  exit 1;
+fi
 
 echo "Creating networkapi database"
 mysql -u root -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
