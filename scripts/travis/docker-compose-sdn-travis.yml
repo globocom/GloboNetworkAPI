@@ -19,8 +19,8 @@ services:
         tty: true
         volumes:
             - /lib/modules:/lib/modules:rw
-            - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:rw
-        command: sh docker-start-openvswitch.sh
+            - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh -c "modprobe openvswitch; sh docker-start-openvswitch.sh"
         cap_add:
             - NET_ADMIN
             - SYS_MODULE
@@ -35,8 +35,8 @@ services:
         tty: true
         volumes:
             - /lib/modules:/lib/modules:rw
-            - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:rw
-        command: sh docker-start-openvswitch.sh
+            - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh -c "modprobe openvswitch; sh docker-start-openvswitch.sh"
         cap_add:
             - NET_ADMIN
             - SYS_MODULE
@@ -51,8 +51,8 @@ services:
         tty: true
         volumes:
             - /lib/modules:/lib/modules:rw
-            - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:rw
-        command: sh docker-start-openvswitch.sh
+            - ../docker/docker-start-openvswitch.sh:/docker-start-openvswitch.sh:ro
+        command: sh -c "modprobe openvswitch; sh docker-start-openvswitch.sh"
         cap_add:
             - NET_ADMIN
             - SYS_MODULE

@@ -64,7 +64,7 @@
     "model": "equipamento.equipamentoacesso",
     "fields": {
       "equipamento": 10,
-      "fqdn": "http://172.19.0.2:8181",
+      "fqdn": "http://odl.controller:8181",
       "user": "admin",
       "password": "admin",
       "tipo_acesso": 1,
