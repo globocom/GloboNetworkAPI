@@ -2,7 +2,7 @@ Racks /api/rack/
 ####################
 
 .. toctree::
-    get
-    post
-    put
-    delete
+    rackdir/get
+    rackdir/post
+    rackdir/put
+    rackdir/delete
