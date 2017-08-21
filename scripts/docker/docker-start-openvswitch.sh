@@ -6,7 +6,7 @@
 set -m;
 
 # Sleep time to wait for ODL to start
-SLEEP_TIME=5
+SLEEP_TIME=10
 
 # Maximum retry attempts
 MAX_RETRY=30
