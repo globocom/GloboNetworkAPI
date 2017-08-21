@@ -1,0 +1,16 @@
+{
+  "dc": [
+    {
+      "address": "City",
+      "dcname": "DCTest",
+      "fabric": [],
+      "id": 1
+    },
+    {
+      "address": "City 2",
+      "dcname": "DCTest 2",
+      "fabric": [],
+      "id": 2
+    }
+  ]
+}

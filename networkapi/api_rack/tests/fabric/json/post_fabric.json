@@ -1,0 +1,10 @@
+{
+  "dcrooms": {
+    "dc": 1,
+    "name":"POST Fabric",
+    "racks": 4,
+    "spines": 4,
+    "leafs": 2,
+    "config": {}
+  }
+}

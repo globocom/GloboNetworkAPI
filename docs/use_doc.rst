@@ -3,6 +3,7 @@ Using GloboNetworkAPI V3
 
 .. toctree::
    tool-tips/tool-tips
+   datacenter/datacenter
    environment/environment
    environment-vip/environment-vip
    equipment/equipment

@@ -423,10 +423,13 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["IPNEIGHSPINE1IPV6"] = str(IPSPINEipv6[numero_rack][spn])
         variablestochangeleaf1["IPNEIGHSPINE2IPV6"] = str(IPSPINEipv6[numero_rack][spn+1])
 
-        if equip.get("nome")[-1] == 1:
+
+        if equip.get("nome")[-1] == "1":
+            log.debug("lf-name: %s. Ip: %s" % (equip.get("nome"), IPSIBGPipv4[numero_rack][1]))
             variablestochangeleaf1["IPNEIGHIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][1])
             variablestochangeleaf1["IPNEIGHIBGPIPV6"] = str(IPSIBGPipv6[numero_rack][1])
         else:
+            log.debug("lf-name: %s. Ip: %s" % (equip.get("nome"), IPSIBGPipv4[numero_rack][0]))
             variablestochangeleaf1["IPNEIGHIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][0])
             variablestochangeleaf1["IPNEIGHIBGPIPV6"] = str(IPSIBGPipv6[numero_rack][0])
 
@@ -569,14 +572,14 @@ def autoprovision_coreoob(rack, equips):
     variablestochangeoob["HOSTNAME_OOB"] = oob.get("nome")
     variablestochangeoob["HOSTNAME_RACK"] = rack.nome
     fileinoob = path_to_guide + oob.get("roteiro")
-    fileoutoob = path_to_add_config + oob.get("nome") + ".cfg"
+    fileoutoob = path_to_config + oob.get("nome") + ".cfg"
 
     for equip in oob.get("interfaces"):
         nome = equip.get("nome")
         log.debug(str(nome))
         roteiro = equip.get("roteiro")
         if nome[:3] == prefixlf:
-            if nome[-1] == 1:
+            if nome[-1] == "1":
                 variablestochangeoob["HOSTNAME_LF1"] = nome
             else:
                 variablestochangeoob["HOSTNAME_LF2"] = nome
