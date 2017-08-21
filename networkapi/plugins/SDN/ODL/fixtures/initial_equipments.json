@@ -39,7 +39,7 @@
         "default_vrf": 1,
         "divisao_dc": 1,
         "grupo_l3": 1,
-        "father_environment": null
+        "father_environment": 4
     }
   },
   {
@@ -64,7 +64,7 @@
     "model": "equipamento.equipamentoacesso",
     "fields": {
       "equipamento": 10,
-      "fqdn": "http://172.19.0.2:8181",
+      "fqdn": "http://odl.controller:8181",
       "user": "admin",
       "password": "admin",
       "tipo_acesso": 1,

@@ -1,15 +1,21 @@
 # Waits for other containers availability
-sleep 20
+sleep 5
 
 # DB
-mysql -u root -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
+while true; do
+  mysql -u root -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
+  if [ "$?" -eq "0" ]; then
+    break;
+  fi
+done
+
 mysql -u root -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 cd /netapi/dbmigrate; db-migrate --show-sql
 mysql -u root -h netapi_db networkapi < /netapi/dev/load_example_environment.sql
 
 # Updates the SDN controller ip address
 REMOTE_CTRL=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $2}')
-mysql -uroot -h netapi_db -b networkapi -e "UPDATE equiptos_access SET fqdn = 'http://${REMOTE_CTRL}:8181' WHERE id_equiptos_access = 1;"
+echo "$REMOTE_CTRL  odl.controller" >> /etc/hosts
 
 echo -e "PYTHONPATH=\"/netapi/networkapi:/netapi/$PYTHONPATH\"" >> /etc/environment
 

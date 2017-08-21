@@ -21,12 +21,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for success cases."""
     fixtures = [
-        'networkapi/vlan/fixtures/initial_tipo_rede.json',
-        'networkapi/api_network/fixtures/integration/initial_environment_envlog.json',
-        'networkapi/api_network/fixtures/integration/initial_environment_dc.json',
-        'networkapi/api_network/fixtures/integration/initial_environment_gl3.json',
-        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
-        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
     ]
 
     utils = OpenDaylightTestUtils()
@@ -34,8 +29,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     json_odl_output_path = 'plugins/SDN/ODL/json/odl_output/%s'
 
     def setUp(self):
-        self.equipment = Equipamento.objects.filter(id=10)[0]
-        self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
+        self.equipment = Equipamento.objects.filter(id=10).uniqueResult()
+        self.equipment_access = EquipamentoAcesso.objects.filter(id=1).uniqueResult()
         self.utils.set_controller_endpoint(self.equipment_access)
 
         self.odl = ODLPlugin(
@@ -360,6 +355,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         """Test get nodes ids"""
 
         self.assertEqual(type(self.odl._get_nodes_ids()), type([]))
+        self.assertEqual(len(self.odl._get_nodes_ids()), 3)
 
     def test_get_nodes_ids_empty(self):
         """Test get nodes with a empty result"""
@@ -380,12 +376,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for error cases."""
 
     fixtures = [
-        'networkapi/vlan/fixtures/initial_tipo_rede.json',
-        'networkapi/api_network/fixtures/integration/initial_environment_envlog.json',
-        'networkapi/api_network/fixtures/integration/initial_environment_dc.json',
-        'networkapi/api_network/fixtures/integration/initial_environment_gl3.json',
-        'networkapi/api_network/fixtures/sanity/initial_vrf.json',
-        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
     ]
 
     utils = OpenDaylightTestUtils()
