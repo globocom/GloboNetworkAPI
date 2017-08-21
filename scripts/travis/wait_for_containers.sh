@@ -1,18 +1,37 @@
 #!/bin/bash
 
-# NETAPI_ODL
-echo "Waiting for ODL to go up"
+APP_PIDFILE=/var/run/netapi_main.pid
+APP_READY=0
+ODL_READY=0
+
+echo "Checking if containers are ready"
 
 MAX_RETRY=30
-SLEEP_TIME=10
+SLEEP_TIME=5
 
 for i in $(seq 1  ${MAX_RETRY}); do
     
     sleep ${SLEEP_TIME}
-    docker exec ovs1 ovs-vsctl show | grep is_connected > /dev/null
 
-    # If the port is open we continue with the script
-    if [ "$?" -eq "0" ]; then
+    # -- ODL
+    if [ "$ODL_READY" -eq "0" ]; then
+        docker exec sh -c "ovs1 ovs-vsctl show" 2>/dev/null | grep "is_connected" >/dev/null
+        if [ "$?" -eq "0" ]; then
+            echo "ODL is ready";
+            ODL_READY=1;
+        fi
+    fi
+
+    # -- APP
+    if [ "$APP_READY" -eq "0" ]; then
+        docker exec netapi_app bash -c "ls $APP_PIDFILE" >/dev/null 2>&1
+        if [ "$?" -eq "0" ]; then
+            echo "App is ready";
+            APP_READY=1;
+        fi
+    fi
+
+    if [ "$ODL_READY" -eq "1" ] && [ "$APP_READY" -eq "1" ]; then
         break;
     fi
 
@@ -25,4 +44,4 @@ for i in $(seq 1  ${MAX_RETRY}); do
     echo "Retrying ${i}.."
 done
 
-echo "ODL server is up"
+echo "Environment ready"
