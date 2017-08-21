@@ -14,10 +14,11 @@ cd /netapi/dbmigrate; db-migrate --show-sql
 mysql -u root -h netapi_db networkapi < /netapi/dev/load_example_environment.sql
 
 # Updates the SDN controller ip address
+# TODO: to remove REMOTE_CTRL
 REMOTE_CTRL=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $2}')
 echo "$REMOTE_CTRL  odl.controller" >> /etc/hosts
 
-echo -e "PYTHONPATH=\"/netapi/networkapi:/netapi/$PYTHONPATH\"" >> /etc/environment
+echo -e "PYTHONPATH=\"/netapi/\"" >> /etc/environment
 
 cat > /etc/init.d/gunicorn_networkapi <<- EOM
 #!/bin/bash
@@ -36,7 +37,7 @@ EOM
 
 chmod 777 /etc/init.d/gunicorn_networkapi
 update-rc.d gunicorn_networkapi defaults
-export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
+export PYTHONPATH="/netapi/"
 
 echo "starting gunicorn"
 /etc/init.d/gunicorn_networkapi start
