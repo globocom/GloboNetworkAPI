@@ -1,7 +1,4 @@
-#!/bin/bash -e
-
-dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-$dir/wait_for_containers.sh
+#!/bin/bash
 
 echo "exporting NETWORKAPI_DEBUG"
 export NETWORKAPI_DEBUG='DEBUG'

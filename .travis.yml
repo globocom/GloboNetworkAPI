@@ -29,6 +29,7 @@ script:
   - sudo docker-compose up -d
   - sleep 5
   - docker ps --all
+  - ./scripts/travis/wait_for_containers.sh
   - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/
   
 after_failure:
