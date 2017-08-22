@@ -47,7 +47,8 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(201, response.status_code)
 
-        get_url = '/api/v4/as/%s/?kind=basic' % response.data[0]['id']
+        get_url = '/api/v4/as/%s/?kind=basic&exclude=equipments' % \
+                  response.data[0]['id']
 
         name_file_get = json_path % 'get/basic/pk_1.json'
 
@@ -75,8 +76,8 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(201, response.status_code)
 
-        get_url = '/api/v4/as/%s;%s/?kind=basic' % (response.data[0]['id'],
-                                                    response.data[1]['id'])
+        get_url = '/api/v4/as/%s;%s/?kind=basic&exclude=equipments' \
+                  % (response.data[0]['id'], response.data[1]['id'])
 
         name_file_get = json_path % 'get/basic/pk_1;2.json'
 
