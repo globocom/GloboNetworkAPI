@@ -139,7 +139,8 @@ class GenericPluginTestCaseSuccess(TestCase):
                                    'soft_reconfiguration': True,
                                    'community': True,
                                    'remove_private_as': False,
-                                   'next_hop_self': False})
+                                   'next_hop_self': False},
+                         asn={'name': '65114'})
 
         xml_expected = '<bgp><as-name>65114</as-name><neighbor>' \
                        '<neighbor-router>11.1.1.155</neighbor-router>' \
