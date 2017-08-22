@@ -2,9 +2,9 @@ from networkapi.plugins.Dell.FTOS.BGP.Cli import Generic
 from networkapi.plugins.factory import PluginFactory
 from mock import Mock
 from mock import MagicMock
+from random import randint
 
 from django.test import TestCase
-
 
 class CliPluginTestCaseSuccess(TestCase):
 
@@ -109,6 +109,7 @@ class CliPluginTestCaseSuccess(TestCase):
         marca = MagicMock(nome='DELL')
         equipment.modelo = MagicMock(nome='FTOS', marca=marca)
         equipment.maintenance = False
+        equipment.id = randint(0,1000)
 
         return equipment
 
@@ -119,30 +120,30 @@ class CliPluginTestCaseSuccess(TestCase):
 
         return Mock(return_value=roteiro_mock)
 
-    def _mock_plugin(self, plugin):
+    def _mock_plugin(self, plugin, roteiro):
 
         plugin.connect = MagicMock()
         plugin._ensure_privilege_level = MagicMock()
         plugin.close = MagicMock()
         plugin._copy_script_file_to_config = MagicMock()
+        plugin._get_equipment_template = self._mock_roteiro(roteiro)
 
         return plugin
 
-    def _generate_config_helper_add(self, neighbor, asn, vrf, roteiro):
+    def _generate_config_helper_add(self, neighbor, asn, vrf, roteiro, ):
 
         plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
                          asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin)
+        plugin = self._mock_plugin(plugin, roteiro)
 
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        plugin.deploy_neighbor()
+        template_name = plugin._get_template_deploy_name()
+        file_to_deploy = plugin._generate_config_file(template_name)
 
     def _generate_config_helper_remove(self, neighbor, asn, vrf, roteiro):
+
         plugin = Generic(equipment=self._mock_equipment(), neighbor=neighbor,
                          asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin)
+        plugin = self._mock_plugin(plugin, roteiro)
 
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        plugin.undeploy_neighbor()
+        template_name = plugin._get_template_undeploy_name()
+        file_to_deploy = plugin._generate_config_file(template_name)

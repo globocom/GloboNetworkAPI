@@ -222,7 +222,6 @@ class Generic(BasePlugin):
         if use_vrf is None:
             use_vrf = self.management_vrf
 
-
         command = 'copy tftp://%s/%s %s %s\n\n' % (
             self.tftpserver, filename, destination, use_vrf)
 
