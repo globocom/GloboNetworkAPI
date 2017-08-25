@@ -39,12 +39,14 @@ class PluginFactory(object):
             # TODO create a table in networkapi to specify wich plugin to load for
             # each equipment configuration
             if re.search('NEXUS', modelo.upper(), re.DOTALL):
-                if 'bgp' in kwargs:
-                    from .BGP.NXAPI.Generic import NxApiPlugin
-                    return NxApiPlugin
-                else:
-                    from .Cisco.NXOS.plugin import NXOS
-                    return NXOS
+                # if 'bgp' in kwargs:
+                #     from .BGP.NXAPI.Generic import NxApiPlugin
+                #     return NxApiPlugin
+                # else:
+                #     from .Cisco.NXOS.plugin import NXOS
+                #     return NXOS
+                from .Cisco.NXOS.plugin import NXOS
+                return NXOS
             if re.search('WS-|C65', modelo.upper(), re.DOTALL):
                 from .Cisco.IOS.plugin import IOS
                 return IOS

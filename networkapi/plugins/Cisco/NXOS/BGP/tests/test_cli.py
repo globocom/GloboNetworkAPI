@@ -40,8 +40,9 @@ class CliPluginTestCaseSuccess(TestCase):
         asn = {'name': '25114'}
         vrf = {'vrf': 'Vrf-Test'}
         virtual_interface = {'name': 'VirtInt-Test'}
+
         # self._generate_config_helper_add(neighbor, virtual_interface, asn, vrf,
-        #                                  'template_neighbor_v4_add_dell')
+        #                                  'template_neighbor_v4_add_cisco')
 
     def test_generate_config_for_neighbor_v6_add(self):
 
@@ -62,7 +63,7 @@ class CliPluginTestCaseSuccess(TestCase):
         virtual_interface = {'name': 'VirtInt-Test'}
 
         # self._generate_config_helper_add(neighbor, virtual_interface, asn, vrf,
-        #                                  'template_neighbor_v6_add_dell')
+        #                                  'template_neighbor_v6_add_cisco')
 
     def test_generate_config_for_neighbor_v4_remove(self):
 
@@ -83,7 +84,7 @@ class CliPluginTestCaseSuccess(TestCase):
         virtual_interface = {'name': 'VirtInt-Test'}
 
         # self._generate_config_helper_remove(neighbor, virtual_interface, asn, vrf,
-        #                                     'template_neighbor_v4_remove_dell')
+        #                                     'template_neighbor_v4_remove_cisco')
 
     def test_generate_config_for_neighbor_v6_remove(self):
 
@@ -104,13 +105,13 @@ class CliPluginTestCaseSuccess(TestCase):
         virtual_interface = {'name': 'VirtInt-Test'}
 
         # self._generate_config_helper_remove(neighbor, virtual_interface, asn, vrf,
-        #                                     'template_neighbor_v6_remove_dell')
+        #                                     'template_neighbor_v6_remove_cisco')
 
     def _mock_equipment(self):
 
         equipment = Mock()
-        marca = MagicMock(nome='DELL')
-        equipment.modelo = MagicMock(nome='FTOS', marca=marca)
+        marca = MagicMock(nome='CISCO')
+        equipment.modelo = MagicMock(nome='NXOS', marca=marca)
         equipment.maintenance = False
         equipment.id = randint(0,100000)
 

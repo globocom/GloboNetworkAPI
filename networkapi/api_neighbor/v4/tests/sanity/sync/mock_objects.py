@@ -27,3 +27,12 @@ def _mock_asn():
     asn.description = 'ASN_640404'
 
     return asn
+
+def _mock_virtual_interface():
+    virtual_interface = Mock()
+    virtual_interface.id = 1
+    virtual_interface.vrf_id = 1
+    virtual_interface.name = 'Virt-Test'
+    virtual_interface.description = 'ASN_640404'
+
+    return virtual_interface
