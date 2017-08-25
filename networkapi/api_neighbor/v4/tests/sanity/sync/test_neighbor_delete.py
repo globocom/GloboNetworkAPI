@@ -156,7 +156,7 @@ class NeighborUnDeploySuccessTestCase(NetworkApiTestCase):
     def test_try_undeploy_created_neighbor_v4(self, test_patch, eqpt_filter,
                                               virtint_filter, asn_filter,
                                               vrf_filter):
-        """Test of success to undeploy a Neighbor IPv4."""
+        """Test of success to undeploy a created Neighbor IPv4."""
 
         mock = MockPluginBgpGeneric()
         test_patch.return_value = mock
@@ -191,7 +191,7 @@ class NeighborUnDeploySuccessTestCase(NetworkApiTestCase):
     def test_try_undeploy_created_neighbor_v6(self, test_patch, eqpt_filter,
                                               virtint_filter, asn_filter,
                                               vrf_filter):
-        """Test of success to undeploy a Neighbor IPv6."""
+        """Test of success to undeploy a created Neighbor IPv6."""
 
         mock = MockPluginBgpGeneric()
         test_patch.return_value = mock
