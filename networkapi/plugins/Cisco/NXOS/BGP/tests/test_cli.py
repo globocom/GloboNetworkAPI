@@ -111,7 +111,7 @@ class CliPluginTestCaseSuccess(TestCase):
 
         equipment = Mock()
         marca = MagicMock(nome='CISCO')
-        equipment.modelo = MagicMock(nome='NXOS', marca=marca)
+        equipment.modelo = MagicMock(nome='NEXUS', marca=marca)
         equipment.maintenance = False
         equipment.id = randint(0,100000)
 
