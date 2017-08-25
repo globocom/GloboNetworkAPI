@@ -72,6 +72,7 @@ class FabricGetTest(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
 
+    """
     def test_getfabricbyname(self):
         """Test of success to get a fabric by name."""
 
@@ -84,7 +85,7 @@ class FabricGetTest(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
-
+    """
 
 class FabricPostTest(NetworkApiTestCase):
 
