@@ -1,0 +1,20 @@
+{
+  "neighbors": [
+    {
+      "remote_as": "99999999993",
+      "remote_ip": "REMOTE-IP-4",
+      "password": "PASSWORD-4",
+      "maximum_hops": "45",
+      "timer_keepalive": "30",
+      "timer_timeout": "180",
+      "description": "DESCRIPTION-4",
+      "soft_reconfiguration": true,
+      "community": true,
+      "remove_private_as": false,
+      "next_hop_self": true,
+      "kind": "I",
+      "created": false,
+      "virtual_interface": 1
+    }
+  ]
+}

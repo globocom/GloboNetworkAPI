@@ -1,0 +1,133 @@
+{
+  "virtual_interfaces": [
+    {
+      "id": 1,
+      "name": "VIRTUAL-INTERFACE-1",
+      "vrf": {
+        "id": 1,
+        "internal_name": "VRF-1",
+        "vrf": "VRF-1"
+      },
+      "ipv4_equipment": [
+        {
+          "ip": {
+            "id": 1,
+            "oct4": 1,
+            "oct3": 0,
+            "oct2": 0,
+            "oct1": 10,
+            "networkipv4": 1,
+            "description": "IP"
+          },
+          "equipment": {
+            "id": 1,
+            "name": "VM-SANITY-TEST-1",
+            "maintenance": false,
+            "equipment_type": {
+              "id": 1,
+              "equipment_type": "VM"
+            },
+            "model": {
+              "id": 1,
+              "name": "Generic Model"
+            },
+            "environments": [],
+            "groups": [],
+            "id_as": null
+          }
+        },
+        {
+          "ip": {
+            "id": 1,
+            "oct4": 1,
+            "oct3": 0,
+            "oct2": 0,
+            "oct1": 10,
+            "networkipv4": 1,
+            "description": "IP"
+          },
+          "equipment": {
+            "id": 2,
+            "name": "VM-SANITY-TEST-2",
+            "maintenance": false,
+            "equipment_type": {
+              "id": 1,
+              "equipment_type": "VM"
+            },
+            "model": {
+              "id": 1,
+              "name": "Generic Model"
+            },
+            "environments": [],
+            "groups": [],
+            "id_as": null
+          }
+        }
+      ],
+      "ipv6_equipment": [
+        {
+          "ip": {
+            "id": 1,
+            "block1": "fc00",
+            "block2": "0000",
+            "block3": "0000",
+            "block4": "0004",
+            "block5": "0000",
+            "block6": "0000",
+            "block7": "0000",
+            "block8": "0001",
+            "networkipv6": 1,
+            "description": null
+          },
+          "equipment": {
+            "id": 1,
+            "name": "VM-SANITY-TEST-1",
+            "maintenance": false,
+            "equipment_type": {
+              "id": 1,
+              "equipment_type": "VM"
+            },
+            "model": {
+              "id": 1,
+              "name": "Generic Model"
+            },
+            "environments": [],
+            "groups": [],
+            "id_as": null
+          }
+        },
+        {
+          "ip": {
+            "id": 1,
+            "block1": "fc00",
+            "block2": "0000",
+            "block3": "0000",
+            "block4": "0004",
+            "block5": "0000",
+            "block6": "0000",
+            "block7": "0000",
+            "block8": "0001",
+            "networkipv6": 1,
+            "description": null
+          },
+          "equipment": {
+            "id": 2,
+            "name": "VM-SANITY-TEST-2",
+            "maintenance": false,
+            "equipment_type": {
+              "id": 1,
+              "equipment_type": "VM"
+            },
+            "model": {
+              "id": 1,
+              "name": "Generic Model"
+            },
+            "environments": [],
+            "groups": [],
+            "id_as": null
+          }
+        }
+      ]
+    }
+  ]
+}

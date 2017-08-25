@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "equipments": {
+      "items": {
+        "properties": {
+          "environments": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "is_router": {
+                  "type": "boolean"
+                },
+                "is_controller": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "equipment_type": {
+            "type": "integer"
+          },
+          "groups": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "null"
+          },
+          "ipsv4": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ipv4": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                },
+                "virtual_interface": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          },
+          "ipsv6": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ipv6": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                },
+                "virtual_interface": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          },
+          "maintenance": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "id_as": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "maintenance",
+          "equipment_type",
+          "model"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "equipments"
+  ],
+  "title": "Equipment Post",
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+{
+  "equipments": [
+    {
+      "id": 3,
+      "equipment_type": 1,
+      "ipsv6": [
+        {
+          "ip": 2,
+          "virtual_interface": null
+        },
+        {
+          "ip": 3,
+          "virtual_interface": null
+        }
+      ],
+      "maintenance": false,
+      "model": 1,
+      "name": "EQUIPMENT-TEST-V3"
+    }
+  ]
+}
+

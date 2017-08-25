@@ -4,21 +4,21 @@ import logging
 from django.core.exceptions import FieldError
 from django.db.models import Q
 
-from networkapi.equipamento.models import Equipamento
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import EnvironmentErrorV3
+from networkapi.api_environment.tasks.flows import async_add_flow
+from networkapi.api_environment.tasks.flows import async_flush_environment
 from networkapi.api_environment_vip.facade import get_environmentvip_by_id
 from networkapi.api_pools import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.equipamento.models import Equipamento
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
-from networkapi.api_environment.tasks.flows import async_add_flow
-from networkapi.api_environment.tasks.flows import async_flush_environment
 
 
 log = logging.getLogger(__name__)
@@ -181,8 +181,8 @@ def list_flows_by_envid(env_id, flow_id=0):
 
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to list flow(s)"
-                                  "plugin. %s" % e)
+        raise NetworkAPIException('Failed to list flow(s)'
+                                  'plugin. %s' % e)
 
 
 def insert_flow(env_id, data):
@@ -191,12 +191,12 @@ def insert_flow(env_id, data):
 
     try:
         return async_add_flow.apply_async(
-                    args=[plugin, data], queue="napi.odl_flow"
-                )
+            args=[plugin, data], queue='napi.odl_flow'
+        )
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to insert flow(s) "
-                                  "plugin. %s" % e)
+        raise NetworkAPIException('Failed to insert flow(s) '
+                                  'plugin. %s' % e)
 
 
 def delete_flow(env_id, flow_id):
@@ -207,8 +207,8 @@ def delete_flow(env_id, flow_id):
         return plugin.del_flow(flow_id=flow_id)
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to delete flow "
-                                  "plugin. %s" % e)
+        raise NetworkAPIException('Failed to delete flow '
+                                  'plugin. %s' % e)
 
 
 def flush_flows(env_id):
@@ -220,8 +220,8 @@ def flush_flows(env_id):
         return plugin.flush_flows()
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to flush Controller "
-                                  "plugin. %s" % e)
+        raise NetworkAPIException('Failed to flush Controller '
+                                  'plugin. %s' % e)
 
 
 def flush_environment(env_id, data):
@@ -232,9 +232,9 @@ def flush_environment(env_id, data):
 
     try:
         return async_flush_environment.apply_async(
-                    args=[plugin, data], queue="napi.odl_flow"
-                )
+            args=[plugin, data], queue='napi.odl_flow'
+        )
     except Exception as e:
         log.error(e)
-        raise NetworkAPIException("Failed to flush flow(s) "
-                                  "from environment: %s \n%s" % (env_id, e))
+        raise NetworkAPIException('Failed to flush flow(s) '
+                                  'from environment: %s \n%s' % (env_id, e))

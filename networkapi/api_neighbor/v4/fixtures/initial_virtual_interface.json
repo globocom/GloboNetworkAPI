@@ -1,0 +1,18 @@
+[
+  {
+    "fields": {
+      "name": "VIRTUAL-INTERFACE-1",
+      "vrf": 1
+    },
+    "model": "api_virtual_interface.VirtualInterface",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "VIRTUAL-INTERFACE-2",
+      "vrf": 1
+    },
+    "model": "api_virtual_interface.VirtualInterface",
+    "pk": 2
+  }
+]

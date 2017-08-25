@@ -1,0 +1,23 @@
+{
+  "equipments": [
+    {
+      "id": 3,
+      "name": "EQUIPMENT-TEST-V3",
+      "maintenance": false,
+      "equipment_type": 1,
+      "model": 1,
+      "ipsv4": [
+        {
+          "ipv4": {
+            "id": 2
+          }
+        },
+        {
+          "ipv4": {
+            "id": 3
+          }
+        }
+      ]
+    }
+  ]
+}

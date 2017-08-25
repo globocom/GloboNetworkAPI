@@ -1,0 +1,96 @@
+{
+  "equipments": [
+    {
+      "id": 3,
+      "name": "VM-SANITY-TEST-03",
+      "maintenance": false,
+      "equipment_type": {
+        "id": 1,
+        "equipment_type": "VM"
+      },
+      "model": {
+        "id": 1,
+        "name": "Generic Model"
+      },
+      "ipsv4": [
+        {
+          "ip": {
+            "id": 1,
+            "oct4": 1,
+            "oct3": 0,
+            "oct2": 0,
+            "oct1": 10,
+            "networkipv4": 1,
+            "description": "IP"
+          },
+          "virtual_interface": {
+            "id": 1,
+            "name": "VIRTUAL-INTERFACE-1",
+            "vrf": {
+              "id": 1,
+              "internal_name": "default",
+              "vrf": "default"
+            }
+          }
+        },
+        {
+          "ip": {
+            "id": 2,
+            "oct4": 2,
+            "oct3": 0,
+            "oct2": 0,
+            "oct1": 10,
+            "networkipv4": 1,
+            "description": "IP"
+          },
+          "virtual_interface": null
+        }
+      ],
+      "ipsv6": [
+        {
+          "ip": {
+            "id": 1,
+            "block1": "fc00",
+            "block2": "0000",
+            "block3": "0000",
+            "block4": "0004",
+            "block5": "0000",
+            "block6": "0000",
+            "block7": "0000",
+            "block8": "0001",
+            "networkipv6": 1,
+            "description": null
+          },
+          "virtual_interface": {
+            "id": 1,
+            "name": "VIRTUAL-INTERFACE-1",
+            "vrf": {
+              "id": 1,
+              "internal_name": "default",
+              "vrf": "default"
+            }
+          }
+        },
+        {
+          "ip": {
+            "id": 2,
+            "block1": "fc00",
+            "block2": "0000",
+            "block3": "0000",
+            "block4": "0004",
+            "block5": "0000",
+            "block6": "0000",
+            "block7": "0000",
+            "block8": "0002",
+            "networkipv6": 1,
+            "description": null
+          },
+          "virtual_interface": null
+        }
+      ],
+      "environments": [],
+      "groups": [],
+      "id_as": null
+    }
+  ]
+}

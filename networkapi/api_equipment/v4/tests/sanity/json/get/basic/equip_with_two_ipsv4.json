@@ -1,0 +1,21 @@
+{
+  "equipments": [
+    {
+      "equipment_type": 1,
+      "ipsv4": [
+        {
+          "ip": 1,
+          "virtual_interface": 1
+        },
+        {
+          "ip": 2,
+          "virtual_interface": null
+        }
+      ],
+      "maintenance": false,
+      "model": 1,
+      "name": "EQUIPMENT-TEST-V3"
+    }
+  ]
+}
+

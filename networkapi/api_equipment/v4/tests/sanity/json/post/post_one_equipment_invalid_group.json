@@ -1,0 +1,15 @@
+{
+  "equipments": [
+    {
+      "equipment_type": 1,
+      "groups": [
+        {
+          "id": 10
+        }
+      ],
+      "maintenance": true,
+      "model": 1,
+      "name": "VM-SANITY-TEST-2"
+    }
+  ]
+}

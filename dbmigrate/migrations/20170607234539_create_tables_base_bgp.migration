@@ -1,0 +1,77 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+CREATE TABLE IF NOT EXISTS `as` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(45) NOT NULL COMMENT '',
+  `description` VARCHAR(200) NULL COMMENT '',
+  PRIMARY KEY (`id`));
+
+CREATE TABLE IF NOT EXISTS `as_equipment` (
+  `id` INT NOT NULL COMMENT '',
+  `id_as` INT UNSIGNED NOT NULL COMMENT '',
+  `id_equipment` INT(10) UNSIGNED NOT NULL COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_as_equipment_as_idx` (`id_as` ASC),
+  INDEX `fk_as_equipment_equipamentos1_idx` (`id_equipment` ASC),
+  CONSTRAINT `fk_as_equipment_as`
+    FOREIGN KEY (`id_as`)
+    REFERENCES `as` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_as_equipment_equipamentos1`
+    FOREIGN KEY (`id_equipment`)
+    REFERENCES `equipamentos` (`id_equip`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE IF NOT EXISTS `virtual_interface` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(45) NULL COMMENT '',
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+ADD COLUMN `id_virtual_interface` INT UNSIGNED NULL AFTER `id_equip`,
+ADD INDEX `fk_ipsv6_dos_equipamentos_virtual_interface1_idx` (`id_virtual_interface` ASC);
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+ADD CONSTRAINT `fk_ipsv6_dos_equipamentos_virtual_interface1`
+  FOREIGN KEY (`id_virtual_interface`)
+  REFERENCES `virtual_interface` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+ALTER TABLE `ips_dos_equipamentos`
+ADD COLUMN `id_virtual_interface` INT UNSIGNED NULL AFTER `id_equip`,
+ADD INDEX `fk_ips_dos_equipamentos_virtual_interface1_idx` (`id_virtual_interface` ASC);
+
+ALTER TABLE `ips_dos_equipamentos`
+ADD CONSTRAINT `fk_ips_dos_equipamentos_virtual_interface1`
+  FOREIGN KEY (`id_virtual_interface`)
+  REFERENCES `virtual_interface` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `ips_dos_equipamentos`
+DROP FOREIGN KEY `fk_ips_dos_equipamentos_virtual_interface1`;
+
+ALTER TABLE `ips_dos_equipamentos`
+DROP COLUMN `id_virtual_interface`,
+DROP INDEX `fk_ips_dos_equipamentos_virtual_interface1_idx` ;
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+DROP FOREIGN KEY `fk_ipsv6_dos_equipamentos_virtual_interface1`;
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+DROP COLUMN `id_virtual_interface`,
+DROP INDEX `fk_ipsv6_dos_equipamentos_virtual_interface1_idx` ;
+
+DROP TABLE `virtual_interface`;
+DROP TABLE `as_equipment`;
+DROP TABLE `as`;
+
+"""

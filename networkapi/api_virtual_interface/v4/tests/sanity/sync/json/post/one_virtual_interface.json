@@ -1,0 +1,8 @@
+{
+  "virtual_interfaces": [
+    {
+      "vrf": 1,
+      "name": "VIRTUAL-INTERFACE-POST-1"
+    }
+  ]
+}

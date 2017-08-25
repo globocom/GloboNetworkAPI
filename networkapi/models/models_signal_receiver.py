@@ -40,8 +40,10 @@ def get_value(obj, attr):
     Returns the value of an attribute. First it tries to return the unicode value.
     """
     if hasattr(obj, attr):
+
         try:
-            return getattr(obj, attr).__unicode__()
+            value = getattr(obj, attr).__unicode__()
+            return {'id': getattr(obj, attr).id, 'value': value}
         except:
             value = getattr(obj, attr)
             if hasattr(value, 'all'):

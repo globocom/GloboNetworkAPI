@@ -1,0 +1,72 @@
+{
+  "title": "IPv4 Put",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "ips"
+  ],
+  "properties": {
+    "networks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "oct1": {
+            "type": "integer"
+          },
+          "oct2": {
+            "type": "integer"
+          },
+          "oct3": {
+            "type": "integer"
+          },
+          "oct4": {
+            "type": "integer"
+          },
+          "networkipv4": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "equipments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "equipment": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                },
+                "virtual_interface": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    }
+  }
+}

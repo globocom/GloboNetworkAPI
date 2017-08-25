@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "VIRTUAL-INTERFACE-1",
+    "vrf": 1,
+    "ipv4_equipment": [
+      {
+        "ip": 1,
+        "equipment": 1
+      },
+      {
+        "ip": 1,
+        "equipment": 2
+      }
+    ]
+  }
+]

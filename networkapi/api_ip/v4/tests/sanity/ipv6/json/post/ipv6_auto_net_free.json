@@ -1,0 +1,8 @@
+{
+  "ips": [
+    {
+      "description": "Auto IP Alloc",
+      "networkipv6": 5
+    }
+  ]
+}

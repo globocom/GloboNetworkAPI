@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.api_vrf.exceptions import VrfAssociatedToVlanEquipment
+from networkapi.api_vrf.exceptions import VrfAssociatedToVirtualInterface
 from networkapi.api_vrf.exceptions import VrfError
 from networkapi.api_vrf.exceptions import VrfNotFoundError
 from networkapi.api_vrf.exceptions import VrfRelatedToEnvironment
@@ -106,6 +107,9 @@ class Vrf(BaseModel):
         @raise VrfAssociatedToVlanEquipment: At least one Vlan and Equipment are
                                              associated together to this Vrf
 
+        @raise VrfAssociatedToVirtualInterface: At least one Virtual Interface
+                                                is associated to this Vrf
+
         """
 
         vrf = Vrf().get_by_pk(pk)
@@ -125,6 +129,17 @@ class Vrf(BaseModel):
             raise VrfAssociatedToVlanEquipment(
                 u'Vrf with pk = %s is associated to some Vlan and Equipment.' %
                 pk)
+
+        entry_virtual_interface = vrf.virtualinterface_set.all()
+
+        if len(entry_virtual_interface) > 0:
+            cls.log.error(u'Fail to remove Vrf.')
+            interfaces = map(int, [interface.id
+                                   for interface in entry_virtual_interface])
+            raise VrfAssociatedToVirtualInterface(
+                u'Vrf with pk = %s is associated to Virtual Interfaces %s.' %
+                (pk, interfaces)
+            )
 
         # Remove assoc between Vrf and Equipment
         VrfEquipment.objects.filter(vrf=pk).delete()

@@ -53,6 +53,16 @@ class InvalidEquipmentAccessException(APIException):
     default_detail = 'No access or multiple accesses found for equipment.'
 
 
+class BGPTemplateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'No BGP configuration templates found for equipments.'
+
+
+class InvalidKeyException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid key Exception.'
+
+
 class InvalidFilenameException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid filename.'

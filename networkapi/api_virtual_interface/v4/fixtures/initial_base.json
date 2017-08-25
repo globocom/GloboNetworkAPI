@@ -1,0 +1,49 @@
+[
+  {
+    "fields": {
+      "nome": "SANITY-TEST-1"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "RACK-1"
+    },
+    "model": "ambiente.grupol3",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "RACK-2"
+    },
+    "model": "ambiente.grupol3",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "grupo_l3": 1
+    },
+    "model": "ambiente.ambiente",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "tipo_rede": "Network of Equipments"
+    },
+    "model": "vlan.tiporede",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente": 1,
+      "nome": "VLAN 1",
+      "num_vlan": "1"
+    },
+    "model": "vlan.vlan",
+    "pk": 1
+  }
+]
