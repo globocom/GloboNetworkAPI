@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
-import os
 import logging
+import os
 
 from django.core.management import call_command
 from django.test.client import Client
@@ -10,6 +10,7 @@ from networkapi.rack.models import Datacenter
 from networkapi.test.test_case import NetworkApiTestCase
 
 log = logging.getLogger(__name__)
+
 
 def setup():
     call_command(
@@ -72,20 +73,19 @@ class FabricGetTest(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
 
-    """
-    def test_getfabricbyname(self):
-        """Test of success to get a fabric by name."""
+    # def test_getfabricbyname(self):
+    #     """Test of success to get a fabric by name."""
 
-        expected_file = 'api_rack/tests/fabric/json/get_fabric.json'
-        uri = '/api/dcrooms/name/%s' % "FabricTest"
+    #     expected_file = 'api_rack/tests/fabric/json/get_fabric.json'
+    #     uri = '/api/dcrooms/name/%s' % "FabricTest"
 
-        response = self.client.get(uri,
-                                   content_type='application/json',
-                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+    #     response = self.client.get(uri,
+    #                                content_type='application/json',
+    #                                HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.compare_status(200, response.status_code)
-        self.compare_json(expected_file, response.data)
-    """
+    #     self.compare_status(200, response.status_code)
+    #     self.compare_json(expected_file, response.data)
+
 
 class FabricPostTest(NetworkApiTestCase):
 
@@ -97,7 +97,7 @@ class FabricPostTest(NetworkApiTestCase):
 
         response = self.client.post('/api/dcrooms/',
                                     data=json.dumps(self.load_json_file(
-                                        "api_rack/tests/fabric/json/post_fabric.json")),
+                                        'api_rack/tests/fabric/json/post_fabric.json')),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -120,9 +120,9 @@ class FabricPutTest(NetworkApiTestCase):
 
         response = self.client.put('/api/dcrooms/id/1/',
                                    data=json.dumps(self.load_json_file(
-                                        "api_rack/tests/fabric/json/put_fabric.json")),
-                                    content_type='application/json',
-                                    HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+                                       'api_rack/tests/fabric/json/put_fabric.json')),
+                                   content_type='application/json',
+                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
         self.compare_json(expected_file, response.data)
