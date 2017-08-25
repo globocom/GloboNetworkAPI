@@ -36,8 +36,8 @@ from networkapi.settings import TFTPBOOT_FILES_PATH
 
 log = logging.getLogger(__name__)
 
-class Generic(BasePlugin):
 
+class Generic(BasePlugin):
     TEMPLATE_NEIGHBOR_V4_ADD = 'neighbor_v4_add'
     TEMPLATE_NEIGHBOR_V4_REMOVE = 'neighbor_v4_remove'
     TEMPLATE_NEIGHBOR_V6_ADD = 'neighbor_v6_add'
@@ -65,7 +65,7 @@ class Generic(BasePlugin):
         self.virtual_interface = virtual_interface
         self.asn = asn
         self.vrf = vrf
-        
+
     def _operate_equipment(self, _get_template_name):
 
         self.connect()
@@ -74,7 +74,7 @@ class Generic(BasePlugin):
         file_to_deploy = self._generate_config_file(template_name)
         self._deploy_config_in_equipment(file_to_deploy)
         self.close()
-        
+
     def deploy_neighbor(self):
 
         self._operate_equipment(self._get_template_deploy_name)
@@ -199,24 +199,24 @@ class Generic(BasePlugin):
     def _generate_template_dict(self):
 
         key_dict = {}
-        key_dict['AS_NUMBER'] = self.asn.get('name')
-        key_dict['VRF_NAME'] = self.vrf.get('vrf')
-        key_dict['REMOTE_IP'] = self.neighbor.get('remote_ip')
-        key_dict['REMOTE_AS'] = self.neighbor.get('remote_as')
-        key_dict['PASSWORD'] = self.neighbor.get('password')
-        key_dict['TIMER_KEEPALIVE'] = self.neighbor.get('timer_keepalive')
-        key_dict['TIMER_TIMEOUT'] = self.neighbor.get('timer_timeout')
-        key_dict['DESCRIPTION'] = self.neighbor.get('description')
-        key_dict['SOFT_RECONFIGURATION'] = \
-            self.neighbor.get('soft_reconfiguration')
-        key_dict['NEXT_HOP_SELF'] = self.neighbor.get('next_hop_self')
-        key_dict['REMOVE_PRIVATE_AS'] = self.neighbor.get('remove_private_as')
-        key_dict['COMMUNITY'] = self.neighbor.get('community')
-
+        # key_dict['AS_NUMBER'] = self.asn.get('name')
+        # key_dict['VRF_NAME'] = self.vrf.get('vrf')
+        # key_dict['REMOTE_IP'] = self.neighbor.get('remote_ip')
+        # key_dict['REMOTE_AS'] = self.neighbor.get('remote_as')
+        # key_dict['PASSWORD'] = self.neighbor.get('password')
+        # key_dict['TIMER_KEEPALIVE'] = self.neighbor.get('timer_keepalive')
+        # key_dict['TIMER_TIMEOUT'] = self.neighbor.get('timer_timeout')
+        # key_dict['DESCRIPTION'] = self.neighbor.get('description')
+        # key_dict['SOFT_RECONFIGURATION'] = \
+        #     self.neighbor.get('soft_reconfiguration')
+        # key_dict['NEXT_HOP_SELF'] = self.neighbor.get('next_hop_self')
+        # key_dict['REMOVE_PRIVATE_AS'] = self.neighbor.get('remove_private_as')
+        # key_dict['COMMUNITY'] = self.neighbor.get('community')
+        #
         return key_dict
 
     def _copy_script_file_to_config(self, filename, use_vrf=None,
-                               destination='running-config'):
+                                    destination='running-config'):
         """
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
@@ -229,7 +229,7 @@ class Generic(BasePlugin):
 
         file_copied = 0
         retries = 0
-        while(not file_copied and retries < self.MAX_TRIES):
+        while (not file_copied and retries < self.MAX_TRIES):
             if retries is not 0:
                 sleep(self.RETRY_WAIT_TIME)
 
@@ -267,7 +267,7 @@ class Generic(BasePlugin):
             recv = self._wait_string('#')
 
     def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
-                   wait_str_failed_regex=None):
+                     wait_str_failed_regex=None):
 
         if wait_str_invalid_regex is None:
             wait_str_invalid_regex = self.INVALID_REGEX

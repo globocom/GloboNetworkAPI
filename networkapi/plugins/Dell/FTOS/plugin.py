@@ -40,10 +40,11 @@ class FTOS(BasePlugin):
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
 
-    def bgp(self, neighbor, asn=None, vrf=None):
+    def bgp(self, neighbor, virtual_interface=None, asn=None, vrf=None):
 
         return BGP(equipment=self.equipment,
-                   neighbor=neighbor, asn=asn, vrf=vrf)
+                   neighbor=neighbor, virtual_interface=virtual_interface,
+                   asn=asn, vrf=vrf)
 
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
         """

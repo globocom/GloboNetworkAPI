@@ -9,6 +9,8 @@ from networkapi.api_neighbor.v4.tests.sanity.sync.mock_objects import _mock_vrf
 from networkapi.api_neighbor.v4.tests.sanity.sync.mock_objects import _mock_asn
 from networkapi.api_neighbor.v4.tests.sanity.sync.mock_objects import \
     _mock_equipment
+from networkapi.api_neighbor.v4.tests.sanity.sync.mock_objects import \
+    _mock_virtual_interface
 
 json_path = 'api_neighbor/v4/tests/sanity/sync/json/%s'
 
@@ -145,20 +147,24 @@ class NeighborUnDeploySuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    @patch('networkapi.api_vrf.models.Vrf.objects.filter')
-    @patch('networkapi.api_as.models.As.objects.filter')
-    @patch('networkapi.equipamento.models.Equipamento.objects.filter')
+    @patch('networkapi.api_vrf.models.Vrf.objects.get')
+    @patch('networkapi.api_as.models.As.objects.get')
+    @patch('networkapi.api_virtual_interface.models.VirtualInterface.'
+           'objects.get')
+    @patch('networkapi.equipamento.models.Equipamento.objects.get')
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def test_try_undeploy_neighbor_v4(self, test_patch, eqpt_filter,
-                                      asn_filter, vrf_filter):
-        """Test of success to undeploy a Neighbor IPv4."""
+    def test_try_undeploy_created_neighbor_v4(self, test_patch, eqpt_filter,
+                                              virtint_filter, asn_filter,
+                                              vrf_filter):
+        """Test of success to undeploy a created Neighbor IPv4."""
 
         mock = MockPluginBgpGeneric()
         test_patch.return_value = mock
 
-        eqpt_filter.return_value = [_mock_equipment()]
-        asn_filter.return_value = [_mock_asn()]
-        vrf_filter.return_value = [_mock_vrf()]
+        eqpt_filter.return_value = _mock_equipment()
+        virtint_filter.return_value = _mock_virtual_interface()
+        asn_filter.return_value = _mock_asn()
+        vrf_filter.return_value = _mock_vrf()
 
         response = self.client.delete(
             '/api/v4/neighbor/deploy/6/',
@@ -176,20 +182,24 @@ class NeighborUnDeploySuccessTestCase(NetworkApiTestCase):
         created = response.data['neighbors'][0]['created']
         self.compare_values(False, created)
 
-    @patch('networkapi.api_vrf.models.Vrf.objects.filter')
-    @patch('networkapi.api_as.models.As.objects.filter')
-    @patch('networkapi.equipamento.models.Equipamento.objects.filter')
+    @patch('networkapi.api_vrf.models.Vrf.objects.get')
+    @patch('networkapi.api_as.models.As.objects.get')
+    @patch('networkapi.api_virtual_interface.models.VirtualInterface.'
+           'objects.get')
+    @patch('networkapi.equipamento.models.Equipamento.objects.get')
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def test_try_undeploy_neighbor_v6(self, test_patch, eqpt_filter,
-                                      asn_filter, vrf_filter):
-        """Test of success to undeploy a Neighbor IPv6."""
+    def test_try_undeploy_created_neighbor_v6(self, test_patch, eqpt_filter,
+                                              virtint_filter, asn_filter,
+                                              vrf_filter):
+        """Test of success to undeploy a created Neighbor IPv6."""
 
         mock = MockPluginBgpGeneric()
         test_patch.return_value = mock
 
-        eqpt_filter.return_value = [_mock_equipment()]
-        asn_filter.return_value = [_mock_asn()]
-        vrf_filter.return_value = [_mock_vrf()]
+        eqpt_filter.return_value = _mock_equipment()
+        virtint_filter.return_value = _mock_virtual_interface()
+        asn_filter.return_value = _mock_asn()
+        vrf_filter.return_value = _mock_vrf()
 
         response = self.client.delete(
             '/api/v4/neighbor/deploy/7/',

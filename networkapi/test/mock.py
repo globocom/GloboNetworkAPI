@@ -111,7 +111,7 @@ class MockPluginBgpDell(object):
 class MockPluginBgpGeneric(object):
 
     @classmethod
-    def bgp(cls, neighbor, asn, vrf):
+    def bgp(cls, neighbor, virtual_interface, asn, vrf):
 
         return MockPluginBgpDell()
 
