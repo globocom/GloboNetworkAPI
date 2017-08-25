@@ -32,13 +32,9 @@
         "min_num_vlan_1": null,
         "min_num_vlan_2": null,
         "name": "BE - SANITY-TEST-1 - GENERAL",
-        "sdn_controlled": false
+        "sdn_controllers": null
       },
-      "filter": {
-        "description": "Servidores",
-        "id": 1,
-        "name": "Servidores"
-      },
+      "filter": null,
       "grupo_l3": {
         "id": 1,
         "name": "RACK-1"
@@ -52,7 +48,18 @@
       "min_num_vlan_1": null,
       "min_num_vlan_2": null,
       "name": "BE - SANITY-TEST-1 - RACK-1",
-      "sdn_controlled": false
+      "sdn_controllers": [
+        {
+          "grupos": [3],
+          "id": 10,
+          "ipv4": ["10.0.0.42/24", "192.168.2.3/24"],
+          "ipv6": [],
+          "maintenance": false,
+          "modelo": 1,
+          "nome": "OVS Controller 0",
+          "tipo_equipamento": 1
+        }
+      ]
     }
   ]
 }

@@ -20,8 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import get_model
 
-from networkapi.ambiente.models import Ambiente
-from networkapi.ambiente.models import AmbienteNotFoundError
+from networkapi.ambiente.models import Ambiente, AmbienteNotFoundError
 from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.grupo.models import EGrupo
 from networkapi.grupo.models import EGrupoNotFoundError
@@ -819,7 +818,7 @@ class Equipamento(BaseModel):
             # ipv4s
             ipeqpt_model = get_model('ip', 'IpEquipamento')
             for ipv4 in equipment.get('ipv4', []):
-                ipeqpt_model.create_v3({
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv4
                 })
@@ -827,7 +826,7 @@ class Equipamento(BaseModel):
             # ipv6s
             ipeqpt_model = get_model('ip', 'Ipv6Equipament')
             for ipv6 in equipment.get('ipv6', []):
-                ipeqpt_model.create_v3({
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv6
                 })
@@ -920,7 +919,7 @@ class Equipamento(BaseModel):
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
                     if ipv4 not in ips_db_ids:
-                        ipeqpt_model.create_v3({
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
                             'ip': ipv4
                         })
@@ -939,7 +938,7 @@ class Equipamento(BaseModel):
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
                     if ipv6 not in ipv6s_db_ids:
-                        ipeqpt_model.create_v3({
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
                             'ip': ipv6
                         })
@@ -1525,13 +1524,3 @@ class ModeloRoteiro(BaseModel):
                 e, u'Falha ao remover uma associação entre um Modelo e um Roteiro.')
 
 
-class AmbienteController(BaseModel):
-    id = models.AutoField(primary_key=True, db_column='id')
-    equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
-    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
-
-    log = logging.getLogger('AmbienteController')
-
-    class Meta(BaseModel.Meta):
-        db_table = u'controller_environment_xref'
-        managed = True

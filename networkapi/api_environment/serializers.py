@@ -81,7 +81,28 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     routers = serializers.SerializerMethodField('get_routers')
     equipments = serializers.SerializerMethodField('get_equipments')
     name = serializers.SerializerMethodField('get_name')
-    sdn_controlled = serializers.BooleanField()
+    sdn_controllers = serializers.SerializerMethodField('get_sdn_controllers')
+
+    def get_sdn_controllers(self, obj):
+        from django.forms.models import model_to_dict
+
+        controllers = []
+        for i, ctrl in enumerate(obj.sdn_controllers):
+            controllers.insert(i, model_to_dict(ctrl))
+
+            controllers[i]["ipv4"] = []
+            controllers[i]["ipv6"] = []
+
+            for ipv4 in ctrl.ipv4:
+                controllers[i]["ipv4"].append(
+                    "%s/%d" % (str(ipv4), ipv4.networkipv4.block)
+                )
+            for ipv6 in ctrl.ipv6:
+                controllers[i]["ipv6"].append(
+                    "%s/%d" % (str(ipv6), ipv6.networkipv6.block)
+                )
+
+        return self.extends_serializer(controllers, 'sdn_controllers')
 
     def get_name(self, obj):
         return self.extends_serializer(obj, 'name')
@@ -139,7 +160,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'configs',
             'routers',
             'equipments',
-            'sdn_controlled',
+            'sdn_controllers',
         )
         default_fields = (
             'id',
@@ -158,7 +179,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'max_num_vlan_2',
             'default_vrf',
             'father_environment',
-            'sdn_controlled',
+            'sdn_controllers',
         )
 
         basic_fields = (

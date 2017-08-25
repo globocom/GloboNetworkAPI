@@ -116,6 +116,71 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
 
         self.compare_json(name_file, data)
 
+    def test_post_one_equipment_with_ipv4s(self):
+        """Test of success to post one equipment with new IPv4s."""
+
+        name_file = self.json_path % 'post_one_equipment_with_ipv4s.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_env = response.data[0]['id']
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/equipment/%s/?include=ipv4' % id_env,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+        del data['equipments'][0]['id']
+
+        ipv4s = data['equipments'][0]['ipv4']
+
+        data['equipments'][0]['ipv4'] = [ipv4['id'] for ipv4 in ipv4s]
+
+        self.compare_json(name_file, data)
+
+    def test_post_one_equipment_with_ipv6s(self):
+        """Test of success to post one equipment with new IPv6s."""
+
+        name_file = self.json_path % 'post_one_equipment_with_ipv6s.json'
+
+        # Does post request
+        response = self.client.post(
+            '/api/v3/equipment/',
+            data=json.dumps(self.load_json_file(name_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_env = response.data[0]['id']
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/equipment/%s/?include=ipv6' % id_env,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        data = response.data
+        del data['equipments'][0]['id']
+
+        ipv6s = data['equipments'][0]['ipv6']
+
+        data['equipments'][0]['ipv6'] = [ipv6['id'] for ipv6 in ipv6s]
+
+        self.compare_json(name_file, data)
 
 class EquipmentPostErrorTestCase(NetworkApiTestCase):
 

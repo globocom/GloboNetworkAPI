@@ -63,15 +63,15 @@ class PoolMember(F5Base):
                     healthcheck = '0'
                     monitor = '0'
                 else:
-                    healthcheck = '0'
-                    monitor = '0'
+                    healthcheck = '1'
+                    monitor = '1'
 
                 if sessions[p][s] == 'SESSION_STATUS_ENABLED':
                     session = '1'
                 elif sessions[p][s] == 'SESSION_STATUS_DISABLED':
                     session = '0'
                 else:
-                    session = '0'
+                    session = '1'
 
                 status.append(int(healthcheck + session + monitor, 2))
 

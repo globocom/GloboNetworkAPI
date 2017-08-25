@@ -19,8 +19,10 @@ services:
         ports:
             - "5672:5672"
             - "15672:15672"
+        command: sh -c "rabbitmq-plugins enable rabbitmq_management; rabbitmq-server"
         volumes:
-            - ./docker-start-queue.sh:/docker-start-queue.sh:ro
+            - ./scripts/docker/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+            - ./scripts/docker/definitions.json:/etc/rabbitmq/definitions.json:ro
         networks:
             - netapi_net
 
@@ -32,27 +34,33 @@ services:
         networks:
             - netapi_net
 
-    odl:
-        container_name: netapi_odl
-        image: opendaylight/odl:5.2.0
+    celery:
+        container_name: netapi_celery
+        build:
+          context: .
+          dockerfile: scripts/docker/Dockerfile
+        command: sh scripts/docker/docker-start-celery.sh
         volumes:
-            - ./docker-start-opendaylight.sh:/opt/opendaylight/docker-start-opendaylight.sh:ro
-        command: bash /opt/opendaylight/docker-start-opendaylight.sh
-        ports:
-            - "6653:6653"
-            - "8181:8181"
-            - "8101:8101"
+          - .:/netapi
         networks:
             - netapi_net
+        links:
+            - db:netapi_db
+            - queue:netapi_queue
+            - cache:netapi_cache
+        depends_on:
+          - queue
 
     netapi:
         container_name: netapi_app
-        build: .
+        build:
+          context: .
+          dockerfile: scripts/docker/Dockerfile
         ports:
             - "127.0.0.1:8000:8000"
-        command: sh docker-start.sh
+        command: sh scripts/docker/docker-start-netapi.sh
         env_file:
-            - netapi.env
+            - scripts/docker/netapi.env
         volumes:
             - .:/netapi
         networks:
@@ -61,7 +69,6 @@ services:
             - db
             - queue
             - cache
-            - odl
         links:
             - db:netapi_db
         external_links:

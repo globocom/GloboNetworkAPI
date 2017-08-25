@@ -3,8 +3,13 @@
 from nose.tools import assert_raises_regexp
 from nose.tools import assert_raises
 from requests.exceptions import HTTPError
+from requests.models import Response
+
 import random
 from json import dumps
+
+#from django.test.utils import override_settings
+#
 
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -24,8 +29,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     json_odl_output_path = 'plugins/SDN/ODL/json/odl_output/%s'
 
     def setUp(self):
-        self.equipment = Equipamento.objects.filter(id=1)[0]
-        self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
+        self.equipment = Equipamento.objects.filter(id=10).uniqueResult()
+        self.equipment_access = EquipamentoAcesso.objects.filter(id=1).uniqueResult()
         self.utils.set_controller_endpoint(self.equipment_access)
 
         self.odl = ODLPlugin(
@@ -34,6 +39,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         )
 
         self.flow_key = "flow-node-inventory:flow"
+
 
     def test_add_flow_checking_if_persisted_in_all_ovss(self):
         """Test add flow checking if ACL was persisted at all OVS's."""
@@ -51,9 +57,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
             output = self.json_odl_output_path % 'odl_id_83000.json'
             self.compare_json_lists(output, flow[self.flow_key])
-
-    def test_add_two_flows(self):
-        pass
 
     def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
         """Test add flow with tcp protocol and dest eq in l4 options."""
@@ -287,7 +290,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         flow_id = data['rules'][0]['id']
         flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
-
     def test_remove_flow(self):
         """Test of success to remove flow."""
 
@@ -341,6 +343,34 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             output = self.json_odl_output_path % 'odl_id_141239_%s.json' % id_
             self.compare_json_lists(output, flow)
 
+    def test_flush_flows(self,):
+        """test delete all flows"""
+
+        self.odl.flush_flows()
+        flows=self.odl.get_flows()
+        for k in flows:
+            self.assertEqual(flows[k], [])
+
+    def test_get_nodes_ids(self):
+        """Test get nodes ids"""
+
+        self.assertEqual(type(self.odl._get_nodes_ids()), type([]))
+        self.assertEqual(len(self.odl._get_nodes_ids()), 3)
+
+    def test_get_nodes_ids_empty(self):
+        """Test get nodes with a empty result"""
+
+        def fake_method(**kwargs):
+            e = HTTPError('Fake 404')
+            e.response = Response()
+            setattr(e.response, 'status_code', 404)
+            raise e
+        original = self.odl._request
+        self.odl._request=fake_method
+
+        self.assertEqual(self.odl._get_nodes_ids(), [])
+        self.odl._request=original
+
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for error cases."""
@@ -352,7 +382,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     utils = OpenDaylightTestUtils()
 
     def setUp(self):
-        self.equipment = Equipamento.objects.filter(id=1)[0]
+        self.equipment = Equipamento.objects.filter(id=10)[0]
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
 

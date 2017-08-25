@@ -1,0 +1,22 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `racks`
+ADD COLUMN `dcroom` INT unsigned default NULL,
+ADD CONSTRAINT `fk_racks_datacenterrooms`
+    FOREIGN KEY (`dcroom`)
+    REFERENCES `datacenterrooms` (`id_dcroom`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION;
+
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `racks`
+DROP FOREIGN KEY `fk_racks_datacenterrooms`;
+ALTER TABLE `racks`
+DROP COLUMN `dcroom`;
+
+"""

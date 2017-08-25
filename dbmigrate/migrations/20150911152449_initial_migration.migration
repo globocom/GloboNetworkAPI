@@ -840,6 +840,7 @@ CREATE TABLE `port_channel` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+
 --
 -- Table structure for table `racks`
 --
@@ -864,6 +865,7 @@ CREATE TABLE `racks` (
   UNIQUE KEY `nome` (`nome`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `redeipv4`
@@ -1292,6 +1294,8 @@ drop table  ambientevip                    ;
 drop table  block_rules                    ;
 drop table  config                         ;
 drop table  config_do_ambiente             ;
+drop table  datacenter                     ;
+drop table  datacenterrooms                ;
 drop table  direitos_grupoequip            ;
 drop table  divisao_dc                     ;
 drop table  environment_environment_vip    ;

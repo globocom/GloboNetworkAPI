@@ -13,16 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import with_statement
-
-import logging
-
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
-from networkapi.ambiente.models import Ambiente
-from networkapi.ambiente.models import AmbienteError
-from networkapi.equipamento.models import Equipamento
+from django.core.exceptions import ObjectDoesNotExist
+import logging
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -91,6 +86,123 @@ class RackAplError(Exception):
         self.value = value
 
 
+class Datacenter(BaseModel):
+
+    log = logging.getLogger('Datacenter')
+
+    id = models.AutoField(primary_key=True, db_column='id_dc')
+    dcname = models.CharField(max_length=100, unique=True)
+    address = models.CharField(max_length=100, unique=True)
+
+    class Meta(BaseModel.Meta):
+        db_table = u'datacenter'
+        managed = True
+
+    def _get_initials(self):
+
+        if len(self.dcname.split()) <= 1:
+            return self.dcname[:3]
+
+        return "".join(i[0].upper() for i in self.dcname.split())
+
+    sigla = property(_get_initials)
+
+    def get_dc(self, idt=None, dcname=None, address=None):
+        """"Find Datacenter by id or name.
+        @return: Datacenter
+        @raise : .
+        """
+        try:
+            if idt:
+                return Datacenter.objects.get(id=idt)
+            if dcname:
+                return Datacenter.objects.get(dcname=dcname)
+            if address:
+                return Datacenter.objects.filter(address=address)
+            return Datacenter.objects.all()
+        except ObjectDoesNotExist, e:
+            raise Exception(u'Datacenter doesnt exist. %s'  % e)
+        except Exception, e:
+            self.log.error(u'Failure to get datacenter. %s' % e)
+            raise Exception(e, u'Failure to get datacenter. %s' % e)
+
+    def save_dc(self):
+        '''Insert a new Datacenter.
+        '''
+
+        try:
+            self.save()
+        except Exception, e:
+            self.log.error(u'Error trying to insert DatacenterRooms: %s.' %e)
+
+    def del_dc(self):
+
+        try:
+            self.delete()
+        except Exception, e:
+            self.log.error(u'Error trying to remove Datacenter: %s.' %e)
+            raise Exception(u'Error trying to remove Datacenter: %s.' %e)
+
+
+class DatacenterRooms(BaseModel):
+
+    log = logging.getLogger('DatacenterRooms')
+
+    id = models.AutoField(primary_key=True, db_column='id_dcroom')
+    name = models.CharField(max_length=100, unique=True)
+    dc = models.ForeignKey(Datacenter, unique=True, db_column='id_dc')
+    racks = models.IntegerField(blank=True, null=True)
+    spines = models.IntegerField(blank=True, null=True)
+    leafs = models.IntegerField(blank=True, null=True)
+    config = models.CharField(max_length=255)
+
+
+    class Meta(BaseModel.Meta):
+        db_table = u'datacenterrooms'
+        managed = True
+
+
+    def get_dcrooms(self, idt=None, id_dc=None, name=None):
+        """
+        Find DatacenterRooms by id, name or datacenter.
+
+        @return: DatacenterRooms.
+
+        @raise : .
+        """
+        try:
+            if idt:
+                return DatacenterRooms.objects.get(id=idt)
+            if name:
+                return DatacenterRooms.objects.filter(name=name)
+            if id_dc:
+                return DatacenterRooms.objects.filter(dc=id_dc)
+
+            return DatacenterRooms.objects.all()
+        except ObjectDoesNotExist, e:
+            raise Exception(u'Datacenter Rooms doesnt exist. %s'  % e)
+        except Exception, e:
+            self.log.error(u'Failure to get datacenter room. %s' % e)
+            raise Exception(u'Failure to get datacenter room. %s' % e)
+
+    def save_dcrooms(self):
+        '''Insert a new DatacenterRooms.
+        '''
+        try:
+            self.save()
+        except Exception, e:
+            self.log.error(u'Error trying to insert DatacenterRooms: %s.' %e)
+            raise Exception(u'Error trying to insert DatacenterRooms: %s.' %e)
+
+    def del_dcrooms(self):
+
+        try:
+            self.delete()
+        except Exception, e:
+            self.log.error(u'Error trying to remove DatacenterRooms: %s.' %e)
+            raise Exception(u'Error trying to remove DatacenterRooms: %s.' %e)
+
+
 class Rack(BaseModel):
 
     log = logging.getLogger('Rack')
@@ -98,24 +210,66 @@ class Rack(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_rack')
     numero = models.IntegerField(unique=True)
     nome = models.CharField(max_length=4, unique=True)
-    mac_sw1 = models.CharField(
-        max_length=17, blank=True, null=True, db_column='mac_sw1')
-    mac_sw2 = models.CharField(
-        max_length=17, blank=True, null=True, db_column='mac_sw2')
-    mac_ilo = models.CharField(
-        max_length=17, blank=True, null=True, db_column='mac_ilo')
-    id_sw1 = models.ForeignKey(Equipamento, blank=True, null=True,
-                               db_column='id_equip1', related_name='equipamento_sw1')
-    id_sw2 = models.ForeignKey(Equipamento, blank=True, null=True,
-                               db_column='id_equip2', related_name='equipamento_sw2')
-    id_ilo = models.ForeignKey(Equipamento, blank=True, null=True,
-                               db_column='id_equip3', related_name='equipamento_ilo')
+    mac_sw1 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw1')
+    mac_sw2 = models.CharField(max_length=17, blank=True, null=True, db_column='mac_sw2')
+    mac_ilo = models.CharField(max_length=17, blank=True, null=True, db_column='mac_ilo')
+    id_sw1 = models.ForeignKey('equipamento.Equipamento', blank=True, null=True, db_column='id_equip1', related_name='equipamento_sw1')
+    id_sw2 = models.ForeignKey('equipamento.Equipamento', blank=True, null=True, db_column='id_equip2', related_name='equipamento_sw2')
+    id_ilo = models.ForeignKey('equipamento.Equipamento', blank=True, null=True, db_column='id_equip3', related_name='equipamento_ilo')
+
     config = models.BooleanField(default=False)
     create_vlan_amb = models.BooleanField(default=False)
+    dcroom = models.ForeignKey(DatacenterRooms, db_column='dcroom', null=True)
 
     class Meta(BaseModel.Meta):
         db_table = u'racks'
         managed = True
+
+    def get_rack(cls, idt=None, number=None, name=None, dcroom_id=None, dc_id=None):
+        """"Get  Rack by id, number, name, equipment, room or datacenter.
+            @return: Rack.
+        """
+        try:
+            if idt:
+                return Rack.objects.get(id=idt)
+            if name:
+                return Rack.objects.filter(nome=name)
+            if number:
+                return Rack.objects.filter(numero=number)
+            if dcroom_id:
+                return Rack.objects.filter(dcroom=dcroom_id)
+            if dc_id:
+                return Rack.objects.filter(dcroom__dc__id=dc_id)
+            return Rack.objects.all()
+        except ObjectDoesNotExist, e:
+            raise Exception('Rack does not exist. %s.' % e)
+        except Exception, e:
+            raise Exception('Failure to search the Rack. %s' % e)
+
+
+    def save_rack(self):
+
+        if Rack.objects.filter(numero=self.numero, dcroom=self.dcroom):
+            raise Exception ('Numero de Rack %s ja existe na sala %s.' % (self.numero, self.dcroom.name))
+
+        if Rack.objects.filter(nome=self.nome, dcroom=self.dcroom):
+            raise Exception ('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
+
+        try:
+            self.id_sw1 = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 is int  else self.id_sw1
+            self.id_sw2 = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 is int else self.id_sw2
+            self.id_ilo = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw3)) if self.id_sw3 is int else self.id_sw3
+            self.dcroom = DatacenterRoom.get_dcrooms(int(dcroom)) if self.dcroom is int else self.dcroom
+            return self.save()
+        except Exception, e:
+            raise Exception('Falha ao inserir Rack. %s' % e)
+
+    def del_rack(self):
+
+        try:
+            self.delete()
+        except Exception, e:
+            raise Exception(u'Error trying to remove Rack: %s.' %e)
 
     def get_by_pk(cls, idt):
         """"Get  Rack id.
@@ -224,7 +378,7 @@ class EnvironmentRack(BaseModel):
     log = logging.getLogger('EnvironmentRack')
 
     id = models.AutoField(primary_key=True, db_column='id_ambienterack')
-    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
     rack = models.ForeignKey(Rack, db_column='id_rack')
 
     class Meta(BaseModel.Meta):
@@ -250,7 +404,7 @@ class EnvironmentRack(BaseModel):
             exist = EnvironmentRack().get_by_rack_environment(
                 self.rack.id, self.ambiente.id)
             raise EnvironmentRackDuplicatedError(
-                None, u'EnvironmentRack already registered for rack and environment.')
+                None, u'EnvironmentRack already registered.')
         except EnvironmentRackNotFoundError:
             pass
 
