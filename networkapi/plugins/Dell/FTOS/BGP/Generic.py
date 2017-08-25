@@ -125,7 +125,7 @@ class Generic(object):
         bgp_xml = Element('bgp')
 
         as_xml = SubElement(bgp_xml, 'as-name')
-        as_xml.text = self.asn['id']
+        as_xml.text = self.asn['name']
         neighbor_xml = SubElement(bgp_xml, 'neighbor')
 
         # Walk the OrderedDict neighbor in Reversed Order to generate XML with

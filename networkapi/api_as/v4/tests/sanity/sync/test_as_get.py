@@ -91,7 +91,7 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['asns'])
 
     def test_get_two_basic_as_by_search(self):
-        """Success Test of GET one basic AS with Equipments."""
+        """Success Test of GET two basic AS."""
 
         name_file = json_path % 'get/basic/pk_1;2.json'
 
@@ -106,7 +106,8 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         }
 
         get_url = prepare_url('/api/v4/as/',
-                              search=search, kind=['basic'])
+                              search=search, kind=['basic'],
+                              exclude=['equipments'])
 
         # Make a GET request
         response = self.client.get(

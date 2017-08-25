@@ -155,7 +155,8 @@ def deploy_neighbors(neighbors):
         plugin = PluginFactory.factory(equipment)
 
         asn = As.objects.filter(asequipment__equipment=equipment.id)
-        vrf = Vrf.objects.filter(virtualinterface__id=1)
+        vrf = Vrf.objects.filter(virtualinterface__id=
+                                 neighbor['virtual_interface'])
 
         asn = AsV4Serializer(asn[0]).data
         vrf = VrfV3Serializer(vrf[0]).data
@@ -187,8 +188,15 @@ def undeploy_neighbors(neighbors):
 
         plugin = PluginFactory.factory(equipment)
 
+        asn = As.objects.filter(asequipment__equipment=equipment.id)
+        vrf = Vrf.objects.filter(virtualinterface__id=
+                                 neighbor['virtual_interface'])
+
+        asn = AsV4Serializer(asn[0]).data
+        vrf = VrfV3Serializer(vrf[0]).data
+
         try:
-            plugin.bgp(neighbor).undeploy_neighbor()
+            plugin.bgp(neighbor, asn, vrf).undeploy_neighbor()
         except Exception as e:
             raise NetworkAPIException(e.message)
 
