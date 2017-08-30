@@ -101,19 +101,21 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
         assert call[1]['method'] == "delete"
         assert call[1]['flow_id'] == '1'
 
-    @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin._flow")
+    #TODO: test removing a environment. should remove all the flows
+
+    @patch("networkapi.plugins.SDN.ODL.Generic.ODLPlugin.flush_flows")
     def test_delete_all_acl_flow_of_a_environment(self, *args):
         """ Should delete all ACL flows from a environment """
+
         plugin = args[0]
 
         response = self.client.delete(
-            self.ENV_URL % self.ENV_ID,
+            (self.ENV_URL+'flows/') % self.ENV_ID,
             HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         assert plugin.called is True
-        call = plugin.call_args
-        assert call[1]['method'] == "delete"
+        assert plugin.call_count == 1
         assert response.status_code == 200
 
     def test_update_acl_flow_with_flow_id(self, *args):
