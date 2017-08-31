@@ -18,10 +18,10 @@ It is possible to specify in several ways fields desired to be retrieved in Equi
             * id
             * name
     * **ipsv4**
-        * :ref:`ipv4 <url-api-v4-ipv4-get>`
+        * :ref:`ip <url-api-v4-ipv4-get>`
         * :ref:`virtual-interface <url-api-v4-virtual-interface-get>`
     * **ipsv6**
-        * :ref:`ipv6 <url-api-v4-ipv6-get>`
+        * :ref:`ip <url-api-v4-ipv6-get>`
         * :ref:`virtual-interface <url-api-v4-virtual-interface-get>`
     * **environments**
         * :ref:`environment <url-api-v4-environment-get>`
@@ -148,10 +148,12 @@ Response body with *basic* kind:
 .. code-block:: json
 
     {
-        "equipments": [{
-            "id": <integer>,
-            "name": <string>
-        }]
+        "equipments": [
+            {
+                "id": <integer>,
+                "name": <string>
+            }, ...
+        ]
     }
 
 Example with details option::
@@ -163,75 +165,106 @@ Response body with *details* kind:
 .. code-block:: json
 
     {
-        "equipments": [{
-            "id": <integer>,
-            "name": <string>,
-            "maintenance": <boolean>,
-            "equipment_type": {
-                "id": <integer>,
-                "equipment_type": <string>
-            },
-            "model": {
-                "id": <integer>,
-                "name": <string>
-            },
-            "ipsv4": [
+        "equipments": [
             {
-                "ip": {
+                "id": <integer>,
+                "name": <string>,
+                "maintenance": <boolean>,
+                "equipment_type": {
                     "id": <integer>,
-                    "oct1": <integer>,
-                    "oct2": <integer>,
-                    "oct3": <integer>,
-                    "oct4": <integer>,
-                    "networkipv4": <integer>,
-                    "description": <string>
+                    "equipment_type": <string>
                 },
-                "virtual_interface": {
-
-                }
-            }
-            ],
-            "ipv6": [{
-                "id": <integer>,
-                "block1": <string>,
-                "block2": <string>,
-                "block3": <string>,
-                "block4": <string>,
-                "block5": <string>,
-                "block6": <string>,
-                "block7": <string>,
-                "block8": <string>,
-                "networkipv6": <integer>,
-                "description": <string>
-            },...],
-            "environments": [{
-                "is_router": <boolean>,
-                "environment": {
+                "model": {
                     "id": <integer>,
-                    "name": <name>
-                    "grupo_l3": <integer>,
-                    "ambiente_logico": <integer>,
-                    "divisao_dc": <integer>,
-                    "filter": <integer>,
-                    "acl_path": <string>,
-                    "ipv4_template": <string>,
-                    "ipv6_template": <string>,
-                    "link": <string>,
-                    "min_num_vlan_1": <integer>,
-                    "max_num_vlan_1": <integer>,
-                    "min_num_vlan_2": <integer>,
-                    "max_num_vlan_2": <integer>,
-                    "vrf": <string>,
-                    "default_vrf": <integer>
+                    "name": <string>
+                },
+                "ipsv4": [
+                    {
+                        "ip": {
+                            "id": <integer>,
+                            "oct4": <integer>,
+                            "oct3": <integer>,
+                            "oct2": <integer>,
+                            "oct1": <integer>,
+                            "networkipv4": <integer>,
+                            "description": <string>
+                        },
+                        "virtual_interface": {
+                            "id": <integer>,
+                            "name": <string>,
+                            "vrf": {
+                                "id": <integer>,
+                                "internal_name": <string>,
+                                "vrf": <string>
+                            }
+                        }
+                    }, ...
+                ],
+                "ipsv6": [
+                    {
+                        "ip": {
+                            "id": 1,
+                            "block1": <string>,
+                            "block2": <string>,
+                            "block3": <string>,
+                            "block4": <string>,
+                            "block5": <string>,
+                            "block6": <string>,
+                            "block7": <string>,
+                            "block8": <string>,
+                            "networkipv6": <integer>,
+                            "description": <string>
+                        },
+                        "virtual_interface": {
+                            "id": <integer>,
+                            "name": <string>,
+                            "vrf": {
+                                "id": <integer>,
+                                "internal_name": <string>,
+                                "vrf": <string>
+                            }
+                        }
+                    }, ...
+                ],
+                "environments": [
+                    {
+                        "is_router": <boolean>,
+                        "is_controller": <boolean>,
+                        "environment": {
+                            "id": <integer>,
+                            "name": <string>,
+                            "grupo_l3": <integer>,
+                            "ambiente_logico": <integer>,
+                            "divisao_dc": <integer>,
+                            "filter": <integer>,
+                            "acl_path": <string>,
+                            "ipv4_template": <string>,
+                            "ipv6_template": <string>,
+                            "link": <string>,
+                            "min_num_vlan_1": <integer>,
+                            "max_num_vlan_1": <integer>,
+                            "min_num_vlan_2": <integer>,
+                            "max_num_vlan_2": <integer>,
+                            "default_vrf": <integer>,
+                            "father_environment": <recurrence-to:environment>,
+                            "sdn_controllers": null
+                        }
+                    }, ...
+                ],
+                "groups": [
+                    {
+                        "id": <integer>,
+                        "name": <string>
+                    }, ...
+                ],
+                "id_as": {
+                    "id": <integer>,
+                    "name": <string>,
+                    "description": <string>
                 }
-            },...],
-            "groups": [{
-                "id": <integer>,
-                "name": <string>
-            },...]
-        },...]
+            }, ...
+        ]
     }
-
 
 Using **fields** and **kind** together
 **************************************
@@ -253,12 +286,13 @@ Response body:
 .. code-block:: json
 
     {
-        "equipments": [{
-            "id": <integer>,
-            "name": <string>,
-            "maintenance": <boolean>,
-            "equipment_type": <integer>,
-            "model": <integer>
-        },...]
+        "equipments": [
+            {
+                "id": <integer>,
+                "name": <string>,
+                "maintenance": <boolean>,
+                "equipment_type": <integer>,
+                "model": <integer>
+            }, ...
+        ]
     }
-

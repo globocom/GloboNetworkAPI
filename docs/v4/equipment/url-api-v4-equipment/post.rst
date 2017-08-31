@@ -13,33 +13,48 @@ Request body:
 .. code-block:: json
 
     {
-        "equipments": [{
-            "environments": [
-                {
-                    "id": <integer:environment_fk>,
-                    "is_router": <boolean>
-                },...
-            ],
-            "equipment_type": <integer:equip_type_fk>,
-            "groups": [
-                {
-                    "id": <integer:group_fk>
-                },...
-            ],
-            "ipv4": [
-                {
-                    "id": <integer:ipv4_fk>
-                }
-            ],
-            "ipv6" [
-                {
-                    "id": <integer:ipv6_fk>
-                }
-            ],
-            "maintenance": <boolean>,
-            "model": <integer:model_fk>,
-            "name": <string>
-        },...]
+        "equipments": [
+            {
+                "id": <integer>,
+                "environments": [
+                    {
+                        "id": <integer>,
+                        "is_router": <boolean>,
+                        "is_controller": <boolean>
+                    }, ...
+                ],
+                "equipment_type": <integer>,
+                "groups": [
+                    {
+                        "id": <integer>
+                    }, ...
+                ],
+                "ipsv4": [
+                    {
+                        "ipv4": {
+                            "id": <integer>
+                        },
+                        "virtual_interface": {
+                            "id": <integer>
+                        }
+                    }, ...
+                ],
+                "ipsv6": [
+                    {
+                        "ipv6": {
+                            "id": <integer>
+                        },
+                        "virtual_interface": {
+                            "id": <integer>
+                        }
+                    }, ...
+                ],
+                "maintenance": <boolean>,
+                "model": <integer>,
+                "name": <string>,
+                "id_as": <integer>
+            }, ...
+        ]
     }
 
 * **environments** - You can associate environments to new Equipment and specify if your equipment in each association will act as a router for specific environment.
@@ -54,5 +69,3 @@ Request body:
 URL Example::
 
     /api/v4/equipment/
-
-
