@@ -18,6 +18,7 @@ Contents:
    faq
    code_doc
    api-v3
+   api-v4
 
 E-mail lists (Forums)
 =====================
