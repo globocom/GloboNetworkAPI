@@ -1,18 +1,39 @@
 language: python
+
 notifications:
   email: false
+
 python:
   - "2.7"
-services: mysql
-env:
-  - DJANGO=1.5
-install:
-  - pip install -q -r requirements.txt
-  - pip install -q -r requirements_test.txt
-before_script:
-#   - "pep8 --exclude=migrations --ignore=E501,E225 src"
-#   - pyflakes -x W src
-  - mysql -e 'create database telecom;'
-  - python manage.py syncdb --noinput
+
+branches:
+  only:
+    - master
+    - develop
+
+sudo: required
+
+dist: trusty
+
+services:
+  - docker
+
+before_install:
+  # Disable services enabled by default
+  # http://docs.travis-ci.com/user/database-setup/#MySQL
+  - sudo /etc/init.d/mysql stop
+
 script:
-  - python manage.py test
+  - docker network create globonetworkapi_netapi_net
+  - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
+  - sudo docker-compose up -d
+  - sleep 5
+  - docker ps --all
+  - ./scripts/travis/wait_for_containers.sh
+  - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN/ODL/
+  
+after_failure:
+  - docker exec ovs1 ovs-vsctl show
+  - docker ps --all
+  - docker exec netapi_app tail /tmp/networkapi.log
+  - ping netapi_odl -c 1

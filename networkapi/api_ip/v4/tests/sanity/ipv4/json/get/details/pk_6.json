@@ -81,7 +81,7 @@
                   "max_num_vlan_2": null,
                   "default_vrf": 1,
                   "father_environment": null,
-                  "sdn_controlled": false
+                  "sdn_controllers": null
                 }
               }
             ],
@@ -137,7 +137,7 @@
                   "max_num_vlan_2": null,
                   "default_vrf": 1,
                   "father_environment": null,
-                  "sdn_controlled": false
+                  "sdn_controllers": null
                 }
               }
             ],

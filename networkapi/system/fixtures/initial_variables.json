@@ -329,7 +329,7 @@
     "fields": {
       "name": "fe_vlan_min", 
       "value": "365", 
-      "description": "numero m\u00ednimo das vlans de FE"
+      "description": "numero min das vlans de FE"
     }
   }, 
   {
@@ -455,7 +455,7 @@
     "fields": {
       "name": "divisaodc_mngt", 
       "value": "OOB-CM", 
-      "description": "Nome da divis\u00e3o dc"
+      "description": "Nome da divisao dc"
     }
   }, 
   {
@@ -464,7 +464,7 @@
     "fields": {
       "name": "amblog_mngt", 
       "value": "GERENCIA", 
-      "description": "Nome do ambiente l\u00f3gico"
+      "description": "Nome do ambiente logico"
     }
   }, 
   {
@@ -491,7 +491,7 @@
     "fields": {
       "name": "formato", 
       "value": ".cfg", 
-      "description": "extens\u00e3o do arquivo de configura\u00e7\u00e3o gera"
+      "description": "extensao do arquivo de configuracao gera"
     }
   }, 
   {

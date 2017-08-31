@@ -1,0 +1,32 @@
+[
+  {
+    "pk": 10,
+    "model": "rack.Rack",
+    "fields": {
+      "nome": "TE10",
+      "numero": 10,
+      "mac_sw1": "1F:FF:FF:FF:FF:10",
+      "mac_sw2": "2F:FF:FF:FF:FF:10",
+      "mac_ilo": "3F:FF:FF:FF:FF:10",
+      "id_sw1": 1,
+      "id_sw2": 2,
+      "id_ilo": 3,
+      "dcroom": 1
+    }
+  },
+  {
+    "pk": 11,
+    "model": "rack.Rack",
+    "fields": {
+      "nome": "TE11",
+      "numero": 11,
+      "mac_sw1": "1F:FF:FF:FF:FF:11",
+      "mac_sw2": "2F:FF:FF:FF:FF:11",
+      "mac_ilo": "3F:FF:FF:FF:FF:11",
+      "id_sw1": 1,
+      "id_sw2": 2,
+      "id_ilo": 3,
+      "dcroom": 2
+      }
+  }
+]

@@ -22,6 +22,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from networkapi.plugins import exceptions
 from networkapi.plugins.SDN.base import BaseSdnPlugin
 from networkapi.equipamento.models import EquipamentoAcesso
@@ -55,61 +57,83 @@ class ODLPlugin(BaseSdnPlugin):
             # If AttributeError raised, equipment_access do not exists
             self.equipment_access = self._get_equipment_access()
 
-    def get_flows(self):
-        """
-        :return: All flows for table 0
-        """
-        nodes_ids = self._get_nodes_ids()
-
-        flows_list_by_switch = []
-        for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/"\
-                   % (node_id)
-
-            flows_list_by_switch.append(
-                self._request(method="get", path=path, contentType='json')
-            )
-
-        return flows_list_by_switch
-
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
 
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data)
 
-        builder.build()
-        return_flows = []
+            flows_set = builder.build()
+        try:
+            for flows in flows_set:
+                for flow in flows['flow']:
 
-        for flow in builder.flows:
-            flow_id = flow['flow']['id']
-            data_to_send = json.dumps(flow)
+                    self._flow(flow_id=flow['id'],
+                               method='put',
+                               data=json.dumps({'flow': [flow]}))
+        except HTTPError as e:
+            raise exceptions.CommandErrorException(
+                                msg=self._parse_errors(e.response.json()))
 
-            return_flows.append(
-                self._flow(flow_id=flow_id, method='put', data=data_to_send)
-            )
-
-        return return_flows
 
     def del_flow(self, flow_id=0):
         return self._flow(flow_id=flow_id, method='delete')
 
+    def flush_flows(self):
+        nodes_ids = self._get_nodes_ids()
+        if len(nodes_ids) < 1:
+            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+
+        for node_id in nodes_ids:
+            try:
+                path = "/restconf/config/opendaylight-inventory:nodes/node/" \
+                       "%s/flow-node-inventory:table/0/" % node_id
+
+                self._request(
+                    method="delete", path=path, contentType='json'
+                )
+            except HTTPError as e:
+                if e.response.status_code == 404:
+                    pass
+                else:
+                    raise exceptions.CommandErrorException(
+                        msg=self._parse_errors(e.response.json()))
+            except Exception as e:
+                raise e
+
+    def _parse_errors(self, err_json):
+        """ Generic message creator to format errors """
+
+        sep = ""
+        msg = ""
+        for error in err_json["errors"]["error"]:
+            msg = msg + sep + error["error-message"]
+            sep = ". "
+        return msg
+
     def get_flow(self, flow_id=0):
+        """ HTTP GET method to request flows by id """
+
         return self._flow(flow_id=flow_id, method='get')
 
     def _flow(self, flow_id=0, method='', data=None):
+        """ Generic implementation of the plugin communication with the
+        remote controller through HTTP requests
+        """
 
-        allowed_methods=["get", "put", "delete"]
+        allowed_methods = ["get", "put", "delete"]
 
         if flow_id < 1 or method not in allowed_methods:
             log.error("Invalid parameters in OLDPlugin flow handler")
             raise exceptions.ValueInvalid()
 
         nodes_ids = self._get_nodes_ids()
+        if len(nodes_ids) < 1:
+            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         return_flows = []
         for node_id in nodes_ids:
-            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/flow-node-inventory:table/0/flow/%s" \
-                   % (node_id, flow_id)
+            path = "/restconf/config/opendaylight-inventory:nodes/node/%s/" \
+                   "flow-node-inventory:table/0/flow/%s" % (node_id, flow_id)
 
             return_flows.append(
                 self._request(
@@ -119,26 +143,70 @@ class ODLPlugin(BaseSdnPlugin):
 
         return return_flows
 
-    def _get_nodes_ids(self):
-        """
-        Returns a list of nodes ids controlled by ODL
-        """
-        nodes = self._get_nodes()
-        nodes_ids = []
-        for node in nodes:
-            nodes_ids.append(node["id"])
-        return nodes_ids
+    def get_flows(self):
+        """ Returns All flows for table 0 of all switches of a environment """
 
-    def _get_nodes(self):
-        path = "/restconf/operational/opendaylight-inventory:nodes/"
-        nodes = self._request(method='get', path=path, contentType='json')
-        retorno = []
-        for node in nodes['nodes']['node']:
-            if node["id"] not in ["controller-config"]:
-                retorno.append(node)
-        return retorno
+        nodes_ids = self._get_nodes_ids()
+        if len(nodes_ids) < 1:
+            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+
+        flows_list = {}
+        for node_id in nodes_ids:
+            try:
+                path = "/restconf/config/opendaylight-inventory:nodes/node/" \
+                       "%s/flow-node-inventory:table/0/" % (node_id)
+
+                inventory = self._request(
+                    method="get",
+                    path=path,
+                    contentType='json'
+                )
+
+                flows_list[node_id] = inventory["flow-node-inventory:table"]
+
+            except HTTPError as e:
+                if e.response.status_code == 404:
+                    flows_list[node_id] = []
+                else:
+                    raise exceptions.CommandErrorException(
+                        msg=self._parse_errors(e.response.json()))
+            except Exception as e:
+                raise e
+
+        return flows_list
+
+    def _get_nodes_ids(self):
+        #TODO: We need to check on newer versions (later to Berylliun) if the
+        # check on both config and operational is still necessary
+        path1 = "/restconf/config/network-topology:network-topology/topology/flow:1/"
+        path2 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
+        nodes_ids={}
+        try:
+            topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
+            if topo1.has_key('node'):
+                for node in topo1['node']:
+                    if node["node-id"] not in ["controller-config"]:
+                        nodes_ids[node["node-id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code!=404:
+                raise e
+        try:
+            topo2 = self._request(method='get', path=path2, contentType='json')['topology'][0]
+            if topo2.has_key('node'):
+                for node in topo2['node']:
+                    if node["node-id"] not in ["controller-config"]:
+                        nodes_ids[node["node-id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code!=404:
+                raise e
+        nodes_ids_list = nodes_ids.keys()
+        nodes_ids_list.sort()
+        return nodes_ids_list
+
 
     def _request(self, **kwargs):
+        """ Sends request to controller """
+
         # Params and default values
         params = {
             'method': 'get',
@@ -153,15 +221,13 @@ class ODLPlugin(BaseSdnPlugin):
             if param in kwargs:
                 params[param] = kwargs.get(param)
 
-        # if isinstance(params["data"], basestring):
-        #     params["data"] = params["data"].replace(" ","")
-
         headers = self._get_headers(contentType=params["contentType"])
         uri = self._get_uri(path=params["path"])
 
-        log.info("Starting %s request to controller %s at %s. Data to be sent: %s" %
+        log.debug(
+            "Starting %s request to controller %s at %s. Data to be sent: %s" %
             (params["method"], self.equipment.nome, uri, params["data"])
-         )
+        )
 
         try:
             # Raises AttributeError if method is not valid
@@ -178,26 +244,21 @@ class ODLPlugin(BaseSdnPlugin):
 
             try:
                 return json.loads(request.text)
-            except:
+            except Exception as exception:
+                log.error("Can't serialize as Json: %s" % exception)
                 return
 
         except AttributeError:
             log.error('Request method must be valid HTTP request. '
                       'ie: GET, POST, PUT, DELETE')
-        except HTTPError:
-            try:
-                response = json.loads(request.text)
-                for error in response["errors"]["error"]:
-                    log.error(error["error-message"])
-            except:
-                log.error("Unknown error during request to ODL Controller")
 
-            raise HTTPError(request.status_code)
 
     def _get_auth(self):
         return self._basic_auth()
 
     def _basic_auth(self):
+        """ Create a HTTP Basic Authentication object """
+
         return HTTPBasicAuth(
             self.equipment_access.user,
             self.equipment_access.password
@@ -207,6 +268,7 @@ class ODLPlugin(BaseSdnPlugin):
         pass
 
     def _get_headers(self, contentType):
+        """ Creates HTTP headers needed by the plugin """
         types = {
             'json': 'application/yang.data+json',
             'xml':  'application/xml',
@@ -217,11 +279,20 @@ class ODLPlugin(BaseSdnPlugin):
                 'Accept': types[contentType]}
 
     def _get_equipment_access(self):
+        """ Tries to get the equipment access """
+
         try:
-            return EquipamentoAcesso.search(
-                None, self.equipment, 'https').uniqueResult()
+            access = None
+            try:
+                access = EquipamentoAcesso.search(
+                    None, self.equipment, 'https').uniqueResult()
+            except ObjectDoesNotExist:
+                access = EquipamentoAcesso.search(
+                    None, self.equipment, 'http').uniqueResult()
+            return access
+
         except Exception:
+
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
-        # TODO: ver o metodo existente, bater com o host (http com http)

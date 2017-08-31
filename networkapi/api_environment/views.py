@@ -148,6 +148,7 @@ class EnvEnvVipRelatedView(CustomAPIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+
 class EnvFlowView(CustomAPIView):
 
     @logs_method_apiview
@@ -162,30 +163,51 @@ class EnvFlowView(CustomAPIView):
         else:
             flows = facade.list_flows_by_envid(environment_id)
 
-
         return Response(flows, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    def put(self, request, *args, **kwargs):
-        """"""
+    def post(self, request, *args, **kwargs):
+        """ Inserts new SDN flows on the remote Controller """
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
-        if flow_id:
-            log.error("not allowed yet")
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        #TODO: json validate specs
-        facade.insert_flow(environment_id, request.DATA)
+        task = facade.insert_flow(environment_id, request.DATA)
+
+        response = {
+            'id': flow_id or environment_id,
+            'task_id': task.id
+        }
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    def delete(self, request, *args, **kwargs):
+        """"""
+        environment_id = kwargs.get('environment_id')
+        flow_id = None if not kwargs.get('flow_id') else kwargs.get('flow_id')
+
+        if flow_id:
+            facade.delete_flow(environment_id, flow_id)
+        else:
+            # Flush all the flows
+            facade.flush_flows(environment_id)
 
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    def delete(self, request, *args, **kwargs):
-        if not 'flow_id' in kwargs:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request, *args, **kwargs):
+        """ Updates an Environment by flushing it and then inserting flows """
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
 
-        facade.delete_flow(environment_id, flow_id)
+        if flow_id:
+            task = facade.insert_flow(environment_id, request.DATA)
+        else:
+            task = facade.flush_environment(environment_id, request.DATA)
 
-        return Response({}, status=status.HTTP_200_OK)
+        response = {
+            'id': flow_id or environment_id,
+            'task_id': task.id
+        }
+
+        return Response(response, status=status.HTTP_200_OK)

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
 log = logging.getLogger(__name__)
 
 
@@ -87,7 +86,7 @@ class MockPluginNetwork(object):
             raise Exception('Error')
 
 
-class MockPluginBgp(object):
+class MockPluginBgpDell(object):
 
     _status = True
 
@@ -96,19 +95,25 @@ class MockPluginBgp(object):
         cls._status = status
 
     @classmethod
-    def create_neighbor(cls, kwargs):
+    def deploy_neighbor(cls):
         if cls._status:
             log.info('Mock Bgp Create Neighbor')
         else:
             raise Exception('Error')
 
     @classmethod
-    def delete_neighbor(cls, kwargs):
+    def undeploy_neighbor(cls):
         if cls._status:
             log.info('Mock Bgp Delete Neighbor')
         else:
             raise Exception('Error')
 
+class MockPluginBgpGeneric(object):
+
+    @classmethod
+    def bgp(cls, neighbor, virtual_interface, asn, vrf):
+
+        return MockPluginBgpDell()
 
 class MockPluginVip(object):
 

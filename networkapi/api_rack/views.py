@@ -13,29 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import commands
+
 import glob
 import logging
-
+import re
+import commands
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import commit_on_success
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from networkapi.api_rack import exceptions
-from networkapi.api_rack import facade
-from networkapi.api_rack.permissions import Read
-from networkapi.api_rack.permissions import Write
-from networkapi.api_rack.serializers import RackSerializer
+from networkapi.api_rack.permissions import Read, Write
+from networkapi.api_rack import facade, exceptions
+from networkapi.api_rack.serializers import RackSerializer, DCSerializer, DCRoomSerializer
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.equipamento.models import Equipamento
-from networkapi.equipamento.models import EquipamentoAmbiente
-from networkapi.system import exceptions as var_exceptions
+from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
+from networkapi.rest import RestResource
+from networkapi.rest import UserNotAuthorizedError
 from networkapi.system.facade import get_value as get_variable
+from networkapi.system.facade import save_variable as save_variable
+from networkapi.system import exceptions as var_exceptions
 
 
 log = logging.getLogger(__name__)
@@ -47,52 +52,92 @@ class RackView(APIView):
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
-            log.info('Add Rack')
+            log.info("New Rack")
 
-            data_ = request.DATA
-            if not data_:
+            if not request.DATA.get('rack'):
                 raise exceptions.InvalidInputException()
 
-            rack_dict = dict()
+            rack = facade.save_rack_dc(request.DATA.get('rack'))
 
-            try:
-                rack_dict['number'] = int(data_.get('number'))
-            except:
-                raise exceptions.InvalidInputException(
-                    'O número do Rack não foi informado.')
-            rack_dict['name'] = data_.get('name')
-            rack_dict['sw1_mac'] = data_.get('mac_address_sw1')
-            rack_dict['sw2_mac'] = data_.get('mac_address_sw2')
-            rack_dict['sw3_mac'] = data_.get('mac_address_ilo')
-
-            if not data_.get('id_sw1'):
-                rack_dict['sw1_id'] = None
-            else:
-                rack_dict['sw1_id'] = data_.get('id_sw1')
-            if not data_.get('id_sw2'):
-                rack_dict['sw2_id'] = None
-            else:
-                rack_dict['sw2_id'] = data_.get('id_sw2')
-            if not data_.get('id_ilo'):
-                rack_dict['sw3_id'] = None
-            else:
-                rack_dict['sw3_id'] = data_.get('id_ilo')
-
-            rack = facade.save_rack(self.request.user, rack_dict)
-
-            datas = dict()
+            data = dict()
             rack_serializer = RackSerializer(rack)
-            datas['rack'] = rack_serializer.data
+            data['rack'] = rack_serializer.data
 
-            return Response(datas, status=status.HTTP_201_CREATED)
+            return Response(data, status=status.HTTP_201_CREATED)
 
         except (exceptions.RackNumberDuplicatedValueError, exceptions.RackNameDuplicatedError,
                 exceptions.InvalidInputException) as exception:
             log.exception(exception)
             raise exception
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException()
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
+
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+
+        try:
+            log.info("PUT Rack")
+
+            rack_id = kwargs.get("rack_id") if kwargs.get("rack_id") else None
+
+            if not request.DATA.get('rack'):
+                raise exceptions.InvalidInputException()
+
+            rack = facade.update_rack(rack_id, request.DATA.get('rack'))
+
+            data = dict()
+            rack_serializer = RackSerializer(rack)
+            data['rack'] = rack_serializer.data
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
+
+    def get(self, user, *args, **kwargs):
+        """Handles GET requests to list all Racks"""
+
+        try:
+            log.info('List all Racks')
+
+            fabric_id = kwargs.get("fabric_id") if kwargs.get("fabric_id") else None
+            rack_id = kwargs.get("rack_id") if kwargs.get("rack_id") else None
+
+            if fabric_id:
+                racks = facade.get_rack(fabric_id=fabric_id)
+            elif rack_id:
+                racks = facade.get_rack(rack_id=rack_id)
+            else:
+                racks = facade.get_rack()
+            data = dict()
+            data['racks'] = racks
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
+
+    def delete(self, user, *args, **kwargs):
+        """Handles DELETE requests to list all Racks
+        URLs: /api/rack/<rack_id>
+        """
+
+        try:
+            log.info('Delete Rack')
+
+            rack_id = kwargs.get("rack_id")
+
+            facade.delete_rack(rack_id)
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
 
 
 class RackDeployView(APIView):
@@ -110,8 +155,8 @@ class RackDeployView(APIView):
                 PATH_TO_ADD_CONFIG = get_variable('path_to_add_config')
                 REL_PATH_TO_ADD_CONFIG = get_variable('rel_path_to_add_config')
             except ObjectDoesNotExist:
-                raise var_exceptions.VariableDoesNotExistException(
-                    'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.')
+                raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_ADD_CONFIG ou "
+                                                                   "REL_PATH_TO_ADD_CONFIG.")
 
             path_config = PATH_TO_ADD_CONFIG + '*' + rack.nome + '*'
             arquivos = glob.glob(path_config)
@@ -119,20 +164,21 @@ class RackDeployView(APIView):
             # Get all files and search for equipments of the rack
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
-                rel_filename = '../../' + REL_PATH_TO_ADD_CONFIG + filename_equipments
+                rel_filename = "../../" + REL_PATH_TO_ADD_CONFIG + filename_equipments
+                log.debug("rel_filename: %s" % rel_filename)
                 # Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
-                    # Apply config only in spines. Leaves already have all
-                    # necessary config in startup
-                    if 'ADD' in filename_equipments:
-                        # Check if equipment in under maintenance. If so, does
-                        # not aplly on it
+                    # Apply config only in spines. Leaves already have all necessary config in startup
+                    if "ADD" in filename_equipments:
+                        # Check if equipment in under maintenance. If so, does not aplly on it
                         equipment_name = filename_equipments.split('-ADD-')[0]
+                        log.debug("equipment_name: %s" % equipment_name)
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
                             if not equip.maintenance:
-                                (erro, result) = commands.getstatusoutput(
-                                    '/usr/bin/backuper -T acl -b %s -e -i %s -w 300' % (rel_filename, equipment_name))
+                                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w "
+                                                                          "300" % (rel_filename, equipment_name))
+                                log.debug("erro: %s, result: %s" % (str(erro), str(result)))
                                 if erro:
                                     raise exceptions.RackAplError()
                         except exceptions.RackAplError, e:
@@ -140,6 +186,9 @@ class RackDeployView(APIView):
                         except:
                             # Error equipment not found, do nothing
                             pass
+
+            # Create Foreman entries for rack switches
+            facade.api_foreman(rack)
 
             datas = dict()
             success_map = dict()
@@ -149,17 +198,146 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except exceptions.RackAplError, exception:
-            log.exception(exception)
-            raise exceptions.RackAplError(
-                'Falha ao aplicar as configuracoes: %s' % (result))
-        except exceptions.RackNumberNotFoundError, exception:
-            log.exception(exception)
-            raise exceptions.RackNumberNotFoundError()
-        except var_exceptions.VariableDoesNotExistException, exception:
-            log.error(exception)
-            raise var_exceptions.VariableDoesNotExistException(
-                'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG.')
-        except Exception, exception:
-            log.exception(exception)
-            raise api_exceptions.NetworkAPIException(exception)
+        except exceptions.RackNumberNotFoundError, e:
+            log.exception(e)
+            raise exceptions.NetworkAPIException(e)
+        except var_exceptions.VariableDoesNotExistException, e:
+            log.error(e)
+            raise api_exceptions.NetworkAPIException(
+                'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG. Erro: %s' % e)
+        except Exception, e:
+            log.exception(e)
+            raise api_exceptions.NetworkAPIException(e)
+
+
+class RackConfigView(APIView):
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log.info("Gerando o arquivo de configuracao dos equipamentos do rack")
+
+            rack_id = kwargs.get("rack_id")
+            facade.gerar_arquivo_config([rack_id])
+
+            data = dict()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+
+class RackEnvironmentView(APIView):
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log = logging.getLogger('Alocando ambientes e vlans do rack')
+
+            rack_id = kwargs.get("rack_id")
+            facade.rack_environments_vlans(rack_id, request.user)
+
+            data = dict()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+
+class DataCenterView(APIView):
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log.info("POST Datacenter")
+
+            if not request.DATA.get('dc'):
+                raise exceptions.InvalidInputException()
+
+            dc = facade.save_dc(request.DATA.get('dc'))
+            dc_serializer = DCSerializer(dc)
+
+            data = dict()
+            data['dc'] = dc_serializer.data
+
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+
+    @commit_on_success
+    def get(self, request, *args, **kwargs):
+        try:
+            log.info("GET Datacenter")
+
+            dc = facade.listdc()
+
+            data = dict()
+            data['dc'] = dc
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+
+class FabricView(APIView):
+
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        try:
+            log.info("Post - Fabric")
+
+            if not request.DATA.get('dcrooms'):
+                raise exceptions.InvalidInputException()
+
+            dcrooms = facade.save_dcrooms(request.DATA.get('dcrooms'))
+
+            data = dict()
+            dcroom_serializer = DCRoomSerializer(dcrooms)
+            data['dcroom'] = dcroom_serializer.data
+
+            return Response(data, status=status.HTTP_201_CREATED)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        try:
+            log.info("Put - Fabric")
+
+            if not request.DATA.get('fabric'):
+                raise exceptions.InvalidInputException()
+            #validar o json
+
+            fabric_id = kwargs.get('fabric_id')
+            fabric = request.DATA.get('fabric')
+
+            if fabric.get("flag"):
+                fabrics = facade.update_fabric_config(fabric_id, fabric)
+            else:
+                fabrics = facade.edit_dcrooms(fabric_id, fabric)
+
+            fabric_serializer = DCRoomSerializer(fabrics)
+            data = dict()
+            data['fabric'] = fabric_serializer.data
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+
+    @commit_on_success
+    def get(self, request, *args, **kwargs):
+        try:
+            log.info("GET Fabric")
+
+            fabric_id = kwargs.get('fabric_id') if kwargs.get('fabric_id') else None
+            fabric_name = kwargs.get('fabric_name') if kwargs.get('fabric_name') else None
+            fabric_dc = kwargs.get('dc_id') if kwargs.get('dc_id') else None
+
+            fabric = facade.get_fabric(idt=fabric_id, name=fabric_name, id_dc=fabric_dc)
+            data = dict()
+            data['fabric'] = fabric
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)

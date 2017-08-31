@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `datacenterrooms` (`name`, `id_dc`, `racks`, `spines`, `leafs`) VALUES ('Telecom01', 1, 128, 4, 2);
+
+"""
+
+SQL_DOWN = u"""
+DELETE FROM `datacenterrooms` WHERE `id_dc`=1;
+
+"""

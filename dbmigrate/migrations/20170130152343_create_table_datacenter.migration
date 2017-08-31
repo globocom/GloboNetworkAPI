@@ -1,0 +1,21 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+CREATE TABLE `datacenter` (
+  `id_dc` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dcname` varchar(200) NOT NULL,
+  `address` varchar(200),
+  PRIMARY KEY  (`id_dc`),
+  UNIQUE KEY `dcname` (`dcname`)
+)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARSET=utf8;
+
+
+"""
+
+SQL_DOWN = u"""
+DROP TABLE datacenter;
+
+"""

@@ -27,7 +27,6 @@ class VipRequestAsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
     @patch('networkapi.api_vip_request.tasks.deploy.undeploy.update_state')
     def test_task_id_create_in_delete_deploy_one_vip_request_success(self, *args):
         """Test success of id task generate for vip request delete deploy success."""
-
         mock_get_user = args[1]
         mock_get_vip = args[2]
         mock_delete_real_vip = args[3]
@@ -46,17 +45,3 @@ class VipRequestAsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
 
         mock_delete_real_vip.assert_called_with(
             [vip_serializer.data], user)
-
-
-class VipRequestAsyncDeleteDeployErrorTestCase(NetworkApiTestCase):
-
-    def setUp(self):
-        self.client = Client()
-
-    def tearDown(self):
-        pass
-
-    def test_task_id_create_in_delete_deploy_one_vip_request_error(self):
-        """Test success of id task generate for vip request delete deploy error."""
-
-        pass
