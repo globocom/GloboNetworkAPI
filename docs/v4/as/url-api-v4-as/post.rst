@@ -13,10 +13,12 @@ Request body:
 .. code-block:: json
 
     {
-        "asns": [{
-            "name": <string>,
-            "description": <string>
-        },...]
+        "asns": [
+            {
+                "name": <string>,
+                "description": <string>
+            },...
+        ]
     }
 
 * Both **name** and **description** fields are required.

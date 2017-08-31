@@ -146,14 +146,84 @@ Response body with *details* kind:
                                 "id": <integer>,
                                 "name": <string>
                             },
-                            "ipsv4": [...],
-                            "ipsv6": [...],
-                            "environments": [...],
+                            "ipsv4": [
+                                {
+                                    "ip": {
+                                        "id": <integer>,
+                                        "oct4": <integer>,
+                                        "oct3": <integer>,
+                                        "oct2": <integer>,
+                                        "oct1": <integer>,
+                                        "networkipv4": <integer>,
+                                        "description": <string>
+                                    },
+                                    "virtual_interface": {
+                                        "id": <integer>,
+                                        "name": <string>,
+                                        "vrf": {
+                                            "id": <integer>,
+                                            "internal_name": <string>,
+                                            "vrf": <string>
+                                        }
+                                    }
+                                },...
+                            ],
+                            "ipsv6": [
+                                {
+                                    "ip": {
+                                        "id": <integer>,
+                                        "block1": <string>,
+                                        "block2": <string>,
+                                        "block3": <string>,
+                                        "block4": <string>,
+                                        "block5": <string>,
+                                        "block6": <string>,
+                                        "block7": <string>,
+                                        "block8": <string>,
+                                        "networkipv6": <integer>,
+                                        "description": <string>
+                                    },
+                                    "virtual_interface": {
+                                        "id": <integer>,
+                                        "name": <string>,
+                                        "vrf": {
+                                            "id": <integer>,
+                                            "internal_name": <string>,
+                                            "vrf": <string>
+                                        }
+                                    }
+                                },...
+                            ],
+                            "environments": [
+                                {
+                                    "is_router": <boolean>,
+                                    "is_controller": <boolean>,
+                                    "environment": {
+                                        "id": <integer>,
+                                        "name": <string>,
+                                        "grupo_l3": <integer>,
+                                        "ambiente_logico": <integer>,
+                                        "divisao_dc": <integer>,
+                                        "filter": <integer>,
+                                        "acl_path": <string>,
+                                        "ipv4_template": <string>,
+                                        "ipv6_template": <string>,
+                                        "link": <string>,
+                                        "min_num_vlan_1": <integer>,
+                                        "max_num_vlan_1": <integer>,
+                                        "min_num_vlan_2": <integer>,
+                                        "max_num_vlan_2": <integer>,
+                                        "default_vrf": <integer>,
+                                        "father_environment": <reference-to:environment>,
+                                        "sdn_controllers": null
+                                    }
+                                },...
+                            ],
                             "groups": [
                                 {
                                     "id": <integer>,
                                     "name": <string>
-                                }
+                                },...
                             ],
                             "id_as": {
                                 "id": <integer>,
@@ -192,6 +262,6 @@ Response body:
                 "id": <integer>,
                 "name": <string>,
                 "description": <string>
-            }
+            },...
         ]
     }

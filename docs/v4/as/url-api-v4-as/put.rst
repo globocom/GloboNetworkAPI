@@ -25,13 +25,15 @@ Request body:
 .. code-block:: json
 
     {
-        "asns": [{
-            "id": <integer>,
-            "name": <string>,
-            "description": <string>
-        },...]
+        "asns": [
+            {
+                "id": <integer>,
+                "name": <string>,
+                "description": <string>
+            },...
+        ]
     }
-* **id** field is mandatory. The other fields are not mandatory, but if they don't provided, they will be replaced by Null.
+* **id** field is mandatory. The other fields are not mandatory, but if they don't provided, they will be replaced by null.
 
 URL Example::
 
