@@ -42,12 +42,13 @@ class ODLPlugin(BaseSdnPlugin):
     Plugin base para interação com controlador ODL
     """
 
+    versions = [ "BERYLLIUM", "BORON", "CARBON" ]
+
     def __init__(self, **kwargs):
 
         super(ODLPlugin, self).__init__(**kwargs)
 
         try:
-
             if not isinstance(self.equipment_access, EquipamentoAcesso):
                 msg = 'equipment_access is not of EquipamentoAcesso type'
                 log.info(msg)
@@ -56,6 +57,10 @@ class ODLPlugin(BaseSdnPlugin):
         except (AttributeError, TypeError):
             # If AttributeError raised, equipment_access do not exists
             self.equipment_access = self._get_equipment_access()
+
+        if self.version not in self.versions:
+            log.error("Invalid version at ODL Controller initialization")
+            raise exceptions.ValueInvalid(msg="Invalid version at ODL Controller initialization")
 
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
 
