@@ -44,10 +44,10 @@ class CliPluginTestCaseSuccess(TestCase):
         self.virtual_interface = {'name': 'VirtInt-Test'}
 
         self.fake_template_v4_path = 'networkapi/plugins/Cisco/NXOS/BGP/' \
-                                     'tests/templates/fake_template_v4_cisco'
+                                     'tests/configs/config_v4_cisco'
 
         self.fake_template_v6_path = 'networkapi/plugins/Cisco/NXOS/BGP/' \
-                                     'tests/templates/fake_template_v6_cisco'
+                                     'tests/configs/config_v6_cisco'
 
     def test_factory_bgp(self):
         equipment = self._mock_equipment()
