@@ -1,0 +1,13 @@
+# Fake template, only for test purpose
+{{ AS_NUMBER }}
+{{ VRF_NAME }}
+{{ REMOTE_IP }}
+{{ REMOTE_AS }}
+{{ PASSWORD }}
+{{ TIMER_KEEPALIVE }}
+{{ TIMER_TIMEOUT }}
+{{ DESCRIPTION }}
+{{ SOFT_RECONFIGURATION }}
+{{ NEXT_HOP_SELF }}
+{{ REMOVE_PRIVATE_AS }}
+{{ COMMUNITY }}
