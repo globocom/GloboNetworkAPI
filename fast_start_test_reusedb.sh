@@ -7,6 +7,7 @@ source test_venv/bin/activate
 
 echo "exporting NETWORKAPI_DEBUG"
 export NETWORKAPI_DEBUG='DEBUG'
+export NETWORKAPI_LOG_QUEUE=0
 
 echo "exporting DJANGO_SETTINGS_MODULE"
 export DJANGO_SETTINGS_MODULE='networkapi.settings_ci'
