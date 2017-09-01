@@ -15,7 +15,6 @@ Request body:
     {
         "equipments": [
             {
-                "id": <integer>,
                 "environments": [
                     {
                         "id": <integer>,
