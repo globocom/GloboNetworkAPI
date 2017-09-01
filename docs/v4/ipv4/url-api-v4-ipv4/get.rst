@@ -1,4 +1,4 @@
-.. _url-api-v3-ipv4-get:
+.. _url-api-v4-ipv4-get:
 
 GET
 ###
@@ -14,16 +14,18 @@ It is possible to specify in several ways fields desired to be retrieved in IPv4
     * oct2
     * oct3
     * oct4
-    * :ref:`networkipv4 <url-api-v3-networkv4-get>`
+    * :ref:`networkipv4 <url-api-v4-networkv4-get>`
     * description
-    * :ref:`equipments <url-api-v3-equipment-get>`
-    * :ref:`vips <url-api-v3-vip-request-get>`
+    * **equipments**
+        * :ref:`equipment <url-api-v4-equipment-get>`
+        * :ref:`virtual-interface <url-api-v4-virtual-interface-get>`
+    * :ref:`vips <url-api-v4-vip-request-get>`
     * **server_pool_members**
         * id
-        * :ref:`server_pool <url-api-v3-pool-get>`
+        * :ref:`server_pool <url-api-v4-pool-get>`
         * identifier
-        * :ref:`ip <url-api-v3-ipv4-get>`
-        * :ref:`ipv6 <url-api-v3-ipv6-get>`
+        * :ref:`ip <url-api-v4-ipv4-get>`
+        * :ref:`ipv6 <url-api-v4-ipv6-get>`
         * priority
         * weight
         * limit
@@ -31,8 +33,8 @@ It is possible to specify in several ways fields desired to be retrieved in IPv4
         * member_status
         * last_status_update
         * last_status_update_formated
-        * :ref:`equipments <url-api-v3-equipment-get>`
-        * :ref:`equipment <url-api-v3-equipment-get>`
+        * :ref:`equipments <url-api-v4-equipment-get>`
+        * :ref:`equipment <url-api-v4-equipment-get>`
 
 
 Obtaining list of IPv4 objects through id's
@@ -40,7 +42,7 @@ Obtaining list of IPv4 objects through id's
 
 URL::
 
-    /api/v3/ipv4/[ipv4_ids]/
+    /api/v4/ipv4/[ipv4_ids]/
 
 where **ipv4_ids** are the identifiers of IPv4 objects desired to be retrieved. It can use multiple id's separated by semicolons.
 
@@ -48,11 +50,11 @@ Example with Parameter IDs:
 
 One ID::
 
-    /api/v3/ipv4/1/
+    /api/v4/ipv4/1/
 
 Many IDs::
 
-    /api/v3/ipv4/1;3;8/
+    /api/v4/ipv4/1;3;8/
 
 
 Obtaining list of IPv4 objects through extended search
@@ -64,7 +66,7 @@ More information about Django QuerySet API, please see::
 
 URL::
 
-    /api/v3/ipv4/
+    /api/v4/ipv4/
 
 GET Parameter::
 
@@ -72,7 +74,7 @@ GET Parameter::
 
 Example::
 
-    /api/v3/ipv4/?search=[encoded dict]
+    /api/v4/ipv4/?search=[encoded dict]
 
 Request body example:
 
@@ -125,28 +127,28 @@ Response body with *basic* kind:
 
 .. code-block:: json
 
-{
-    "ips": [
-        {
-            "id": <integer>,
-            "ip_formated": <string>,
-            "networkipv4": {
+    {
+        "ips": [
+            {
                 "id": <integer>,
-                "networkv4": <string>,
-                "mask_formated": <string>,
-                "broadcast": <string>,
-                "vlan": {
+                "ip_formated": <string>,
+                "networkipv4": {
                     "id": <integer>,
-                    "name": <string>,
-                    "num_vlan": <integer>
+                    "networkv4": <string>,
+                    "mask_formated": <string>,
+                    "broadcast": <string>,
+                    "vlan": {
+                        "id": <integer>,
+                        "name": <string>,
+                        "num_vlan": <integer>
+                    },
+                    "network_type": <integer>,
+                    "environmentvip": <integer>
                 },
-                "network_type": <integer>,
-                "environmentvip": <integer>
-            },
-            "description": <string>
-        }
-    ]
-}
+                "description": <string>
+            }
+        ]
+    }
 
 Example with details option::
 
@@ -211,7 +213,69 @@ Response body with *details* kind:
                     ],
                     "cluster_unit": <string>
                 },
-                "description": <string>
+                "description": <string>,
+                "equipments": [
+                    {
+                        "equipment": {
+                            "id": <integer>,
+                            "name": <string>,
+                            "maintenance": <boolean>,
+                            "equipment_type": {
+                                "id": <integer>,
+                                "equipment_type": <string>
+                            },
+                            "model": {
+                                "id": <integer>,
+                                "name": <string>
+                            },
+                            "environments": [
+                                {
+                                    "is_router": <boolean>,
+                                    "is_controller": <boolean>,
+                                    "environment": {
+                                        "id": <integer>,
+                                        "name": <string>,
+                                        "grupo_l3": <integer>,
+                                        "ambiente_logico": <integer>,
+                                        "divisao_dc": <integer>,
+                                        "filter": <integer>,
+                                        "acl_path": <string>,
+                                        "ipv4_template": <string>,
+                                        "ipv6_template": <string>,
+                                        "link": <string>,
+                                        "min_num_vlan_1": <integer>,
+                                        "max_num_vlan_1": <integer>,
+                                        "min_num_vlan_2": <integer>,
+                                        "max_num_vlan_2": <integer>,
+                                        "default_vrf": <integer>,
+                                        "father_environment": <recurrence-to:environment>,
+                                        "sdn_controllers": null
+                                    }
+                                }
+                            ],
+                            "groups": [
+                                {
+                                    "id": <integer>,
+                                    "name": <string>
+                                }
+                            ],
+                            "id_as": {
+                                "id": <integer>,
+                                "name": <string>,
+                                "description": <string>
+                            }
+                        },
+                        "virtual_interface": {
+                            "id": <integer>,
+                            "name": <string>,
+                            "vrf": {
+                                "id": <integer>,
+                                "internal_name": <string>,
+                                "vrf": <string>
+                            }
+                        }
+                    }
+                ]
             }
         ]
     }
@@ -249,4 +313,3 @@ Response body:
             }
         ]
     }
-

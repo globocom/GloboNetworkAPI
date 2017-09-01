@@ -1,14 +1,14 @@
 POST
 ####
 
-.. _url-api-v3-ipv6-post-create-list-ipv6:
+.. _url-api-v4-ipv6-post-create-list-ipv6:
 
 Creating list of IPv6 objects
 *****************************
 
 URL::
 
-    /api/v3/ipv6/
+    /api/v4/ipv6/
 
 Request body:
 
@@ -28,8 +28,13 @@ Request body:
             "description": <string>,
             "equipments": [
                 {
-                    "id": <integer>
-                },...
+                    "equipment": {
+                        "id": <integer>
+                    },
+                    "virtual_interface": {
+                        "id": <integer>
+                    }
+                }, ...
             ]
         },..]
     }
@@ -61,10 +66,17 @@ Request Example with some more fields:
             "networkipv6": 2,
             "equipments": [
                 {
-                    "id": 3
+                    "equipment": {
+                        "id": 1
+                    },
+                    "virtual_interface": {
+                        "id": 1
+                    }
                 },
                 {
-                    "id": 4
+                    "equipment": {
+                        "id": 2
+                    }
                 }
             ]
         }]
@@ -75,7 +87,7 @@ Through IPv6 POST route you can create one or more IPv6 objects. Only "networkip
 * **block1**, **block2**, **block3**, **block4**, **block5**, **block6**, **block7** and **block8** - Are the octets of IPv6. Given a network, API can provide to you an IPv6 Address automatically, but you can assign a IPv6 Address in a manually way. If you specify some octet, you need to specify all the others.
 * **networkipv6** - This parameter is mandatory. It is the network to which new IP address will belong.
 * **description** - Description of new IPv6.
-* **equipments** - You can associate new IP address to one or more equipments.
+* **equipments** - You can associate new IPv6 address to one or more equipments and with Virtual Interfaces together. In the association to Equipment it's not mandatory to specify Virtual Interface.
 
 At the end of POST request, it will be returned the identifiers of new IPv6 objects created.
 
@@ -104,5 +116,4 @@ Response Example for two IPv6 objects created:
 
 URL Example::
 
-    /api/v3/ipv6/
-
+    /api/v4/ipv6/

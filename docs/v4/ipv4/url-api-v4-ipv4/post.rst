@@ -1,14 +1,14 @@
 POST
 ####
 
-.. _url-api-v3-ipv4-post-create-list-ipv4:
+.. _url-api-v4-ipv4-post-create-list-ipv4:
 
 Creating list of IPv4 objects
 *****************************
 
 URL::
 
-    /api/v3/ipv4/
+    /api/v4/ipv4/
 
 Request body:
 
@@ -24,8 +24,13 @@ Request body:
             "description": <string>,
             "equipments": [
                 {
-                    "id": <integer>
-                },...
+                    "equipment": {
+                        "id": <integer>
+                    },
+                    "virtual_interface": {
+                        "id": <integer>
+                    }
+                }, ...
             ]
         },..]
     }
@@ -53,10 +58,17 @@ Request Example with some more fields:
             "networkipv4": 2,
             "equipments": [
                 {
-                    "id": 3
+                    "equipment": {
+                        "id": 1
+                    },
+                    "virtual_interface": {
+                        "id": 1
+                    }
                 },
                 {
-                    "id": 4
+                    "equipment": {
+                        "id": 2
+                    }
                 }
             ]
         }]
@@ -67,7 +79,7 @@ Through IPv4 POST route you can create one or more IPv4 objects. Only "networkip
 * **oct1**, **oct2**, **oct3**, **oct4** - Are the octets of IPv4. Given a network, API can provide to you an IPv4 Address automatically, but you can assign a IPv4 Address in a manually way. If you specify some octet, you need to specify all the others.
 * **description** - Description of new IPv4.
 * **networkipv4** - This parameter is mandatory. It is the network to which new IP address will belong.
-* **equipments** - You can associate new IP address to one or more equipments.
+* **equipments** - You can associate new IPv4 address to one or more equipments and with Virtual Interfaces together. In the association to Equipment it's not mandatory to specify Virtual Interface.
 
 At the end of POST request, it will be returned the identifiers of new IPv4 objects created.
 
@@ -96,5 +108,4 @@ Response Example for two IPv4 objects created:
 
 URL Example::
 
-    /api/v3/ipv4/
-
+    /api/v4/ipv4/
