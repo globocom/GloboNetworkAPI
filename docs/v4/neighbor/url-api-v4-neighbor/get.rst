@@ -22,7 +22,7 @@ It is possible to specify in several ways fields desired to be retrieved in Neig
     * next_hop_self
     * kind
     * created
-    * :ref:`virtual-interface <url-api-v4-virtual-interface-get>`    * **model**
+    * :ref:`virtual-interface <url-api-v4-virtual-interface-get>`
 
 Obtaining list of Equipments through extended search
 ====================================================
@@ -189,15 +189,15 @@ Response body with *details* kind:
                                             "max_num_vlan_2": <integer>,
                                             "default_vrf": <integer>,
                                             "father_environment": <recursion-to:environment>,
-                                            "sdn_controlled": <boolean>
+                                            "sdn_controllers": null
                                         }
-                                    },...
+                                    }, ...
                                 ],
                                 "groups": [
                                     {
                                         "id": <integer>,
                                         "name": <string>
-                                    },...
+                                    }, ...
                                 ],
                                 "id_as": {
                                     "id": <integer>,
@@ -205,7 +205,7 @@ Response body with *details* kind:
                                     "description": <string>
                                 }
                             }
-                        },...
+                        }, ...
                     ],
                     "ipv6_equipment": [
                         {
@@ -255,15 +255,15 @@ Response body with *details* kind:
                                             "max_num_vlan_2": <integer>,
                                             "default_vrf": <integer>,
                                             "father_environment": <recursion-to:environment>,
-                                            "sdn_controlled": <boolean>
+                                            "sdn_controllers": null
                                         }
-                                    },...
+                                    }, ...
                                 ],
                                 "groups": [
                                     {
                                         "id": <integer>,
                                         "name": <string>
-                                    },...
+                                    }, ...
                                 ],
                                 "id_as": {
                                     "id": <integer>,
@@ -271,10 +271,10 @@ Response body with *details* kind:
                                     "description": <string>
                                 }
                             }
-                        },...
+                        }, ...
                     ]
                 }
-            },...
+            }, ...
         ]
     }
 
@@ -315,5 +315,5 @@ Response body:
             "kind": <string>,
             "created": <boolean>,
             "virtual_interface": 1
-        },...]
+        }, ...]
     }

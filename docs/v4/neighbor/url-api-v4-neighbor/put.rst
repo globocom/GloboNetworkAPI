@@ -41,7 +41,7 @@ Request body:
                 "next_hop_self": <boolean>,
                 "kind": <string>,
                 "virtual_interface": <integer:virtual_interface_fk>
-            },...
+            }, ...
         ]
     }
 
