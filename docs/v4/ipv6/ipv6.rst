@@ -2,6 +2,5 @@ IPv6 module
 ###########
 
 .. toctree::
-   url-api-v3-ipv6
-   url-api-v3-ipv6-async
-
+   url-api-v4-ipv6
+   url-api-v4-ipv6-async

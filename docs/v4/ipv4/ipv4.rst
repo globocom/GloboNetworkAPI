@@ -2,6 +2,5 @@ IPv4 module
 ###########
 
 .. toctree::
-   url-api-v3-ipv4
-   url-api-v3-ipv4-async
-
+   url-api-v4-ipv4
+   url-api-v4-ipv4-async

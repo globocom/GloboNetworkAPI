@@ -2,6 +2,6 @@
 ###################
 
 .. toctree::
-   url-api-v3-ipv4-async/post
-   url-api-v3-ipv4-async/put
-   url-api-v3-ipv4-async/delete
+   url-api-v4-ipv4-async/post
+   url-api-v4-ipv4-async/put
+   url-api-v4-ipv4-async/delete
