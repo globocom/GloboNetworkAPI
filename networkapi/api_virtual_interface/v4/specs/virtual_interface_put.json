@@ -22,7 +22,9 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "vrf",
+          "name"
         ]
       }
     }

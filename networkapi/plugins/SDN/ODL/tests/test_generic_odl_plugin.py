@@ -15,6 +15,7 @@ from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
 from networkapi.plugins.SDN.ODL.tests.utils import OpenDaylightTestUtils
+from networkapi.plugins.factory import PluginFactory
 from networkapi.test.test_case import NetworkApiTestCase
 
 
@@ -33,10 +34,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1).uniqueResult()
         self.utils.set_controller_endpoint(self.equipment_access)
 
-        self.odl = ODLPlugin(
-            equipment=self.equipment,
-            equipment_access=self.equipment_access
-        )
+        self.odl = PluginFactory.factory(self.equipment)
 
         self.flow_key = "flow-node-inventory:flow"
 
@@ -386,10 +384,7 @@ class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1)[0]
         self.utils.set_controller_endpoint(self.equipment_access)
 
-        self.odl = ODLPlugin(
-            equipment=self.equipment,
-            equipment_access=self.equipment_access
-        )
+        self.odl = PluginFactory.factory(self.equipment)
 
     def test_add_flow_without_icmp_options(self):
         """Test plugin deny add flow without ICMP options."""
