@@ -28,7 +28,7 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
         }
 
         #Beryllium
-        flows = AclFlowBuilder(acl)
+        flows = AclFlowBuilder(acl, version='BERYLLIUM')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
         assert tcp_flag == 16
@@ -67,7 +67,7 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
         }
 
         # Beryllium
-        flows = AclFlowBuilder(acl)
+        flows = AclFlowBuilder(acl, version='BERYLLIUM')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
         assert tcp_flag == 4
