@@ -74,11 +74,12 @@ class AclFlowBuilder(object):
     TABLE = 0
     ALLOWED_FLOWS_SIZE = 5
 
-    def __init__(self, data):
+    def __init__(self, data, version="BERYLLIUM"):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
+        self.version = version
         self.dumped_rule = None # Actual processing rule in json format
 
         self._reset_control_members()
@@ -330,9 +331,14 @@ class AclFlowBuilder(object):
             flags = l4_options[Tokens.flags]
             tcp_flags = TCPControlBits(flags).to_int()
 
-            self.flows["flow"][0]["match"]["tcp-flag-match"] = {
-                "tcp-flag": tcp_flags,
-            }
+            if self.version in [ "BERYLLIUM"]:
+                self.flows["flow"][0]["match"]["tcp-flag-match"] = {
+                    "tcp-flag": tcp_flags,
+                }
+            elif self.version in [ "BORON", "CARBON" ]:
+                self.flows["flow"][0]["match"]["tcp-flags-match"] = {
+                    "tcp-flags": tcp_flags,
+                }
 
     def _build_simple_range(self, rule, protocol, start, end):
         """ Builds a TCP|UDP flows when ACL has Src and Dst ranges."""

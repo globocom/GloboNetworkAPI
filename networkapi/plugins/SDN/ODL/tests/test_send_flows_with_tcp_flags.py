@@ -27,11 +27,24 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
             }]
         }
 
+        #Beryllium
         flows = AclFlowBuilder(acl)
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
-
         assert tcp_flag == 16
+
+        # Carbon
+        flows = AclFlowBuilder(acl, version='CARBON')
+        flow = flows.build().next()
+        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        assert tcp_flag == 16
+
+        # Boron
+        flows = AclFlowBuilder(acl, version='BORON')
+        flow = flows.build().next()
+        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        assert tcp_flag == 16
+
 
     def test_flow_with_RST_flag(self):
         """ Try to send a flow with RST flag """
@@ -53,8 +66,20 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
             }]
         }
 
+        # Beryllium
         flows = AclFlowBuilder(acl)
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
+        assert tcp_flag == 4
 
+        # Carbon
+        flows = AclFlowBuilder(acl, version='CARBON')
+        flow = flows.build().next()
+        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        assert tcp_flag == 4
+
+        # Boron
+        flows = AclFlowBuilder(acl, version='BORON')
+        flow = flows.build().next()
+        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 4
