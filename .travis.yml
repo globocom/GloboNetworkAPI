@@ -13,6 +13,14 @@ branches:
 
 sudo: required
 
+# When adding a new module, please check what of the builds bellow are running faster, and use it to add your new path
+env:
+  - TESTFOLDERS='networkapi/api_network'
+  - TESTFOLDERS='networkapi/api_pools'
+  - TESTFOLDERS='networkapi/ip networkapi/plugins'
+  - TESTFOLDERS='networkapi/api_environment_vip networkapi/api_equipment networkapi/api_ip'
+  - TESTFOLDERS='networkapi/api_environment networkapi/api_rack networkapi/api_vip_request networkapi/api_vlan networkapi/equipamento networkapi/requisicaovips networkapi/system networkapi/usuario'
+
 dist: trusty
 
 services:
@@ -27,10 +35,8 @@ script:
   - docker network create globonetworkapi_netapi_net
   - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
   - sudo docker-compose up -d
-  - sleep 5
-  - docker ps --all
   - ./scripts/travis/wait_for_containers.sh
-  - docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/
+  - docker exec -it netapi_app ./scripts/travis/test_runner.sh $TESTFOLDERS
   
 after_failure:
   - docker exec ovs1 ovs-vsctl show
