@@ -16,8 +16,11 @@
 
 import ast
 import logging
+
+from django.db.models import get_model
 from rest_framework import serializers
-from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
+from networkapi.util.serializers import DynamicFieldsModelSerializer
+from networkapi.rack.models import Rack
 
 log = logging.getLogger(__name__)
 
@@ -45,19 +48,35 @@ class RackSerializer(serializers.ModelSerializer):
                   'dcroom'
                   )
 
-class DCSerializer(serializers.ModelSerializer):
+
+class DCSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
+
+        Datacenter = get_model('rack', 'Datacenter')
         model = Datacenter
+
         fields = ('id',
                   'dcname',
                   'address'
                   )
 
-class DCRoomSerializer(serializers.ModelSerializer):
+        default_fields = fields
 
+        basic_fields = ('id',
+                        'dcname'
+                        )
+
+        details_fields = fields
+
+
+class DCRoomSerializer(DynamicFieldsModelSerializer):
+
+    dc = serializers.SerializerMethodField('get_dc')
     config = serializers.SerializerMethodField('get_config')
 
+    def get_dc(self, obj):
+        return self.extends_serializer(obj, 'dc')
 
     def get_config(self, obj):
         if obj.config:
@@ -69,12 +88,62 @@ class DCRoomSerializer(serializers.ModelSerializer):
         return []
 
     class Meta:
+
+        DatacenterRooms = get_model('rack', 'DatacenterRooms')
         model = DatacenterRooms
-        fields = ('id',
-                  'name',
-                  'dc',
-                  'racks',
-                  'spines',
-                  'leafs',
-                  'config'
-                  )
+
+        default_fields = ('id',
+                          'name',
+                          'dc',
+                          'racks',
+                          'spines',
+                          'leafs',
+                          )
+
+        basic_fields = ('id',
+                        'name',
+                        'dc'
+                        )
+
+        details_fields = ('id',
+                          'name',
+                          'dc',
+                          'racks',
+                          'spines',
+                          'leafs',
+                          'config'
+                          )
+
+    def get_serializers(self):
+        """Returns the mapping of serializers."""
+
+        if not self.mapping:
+            self.mapping = {
+                'dc': {
+                    'obj': 'dc_id'
+                },
+                'dc__basic': {
+                    'serializer': DCSerializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'dc',
+                    'eager_loading': self.setup_eager_loading_datacenter
+                },
+                'dc__details': {
+                    'serializer': DCSerializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'dc',
+                    'eager_loading': self.setup_eager_loading_datacenter
+                }
+            }
+
+    @staticmethod
+    def setup_eager_loading_datacenter(queryset):
+        log.info('Using setup_eager_loading_father')
+        queryset = queryset.select_related(
+            'dc'
+        )
+        return queryset

@@ -70,8 +70,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
     configs = IpConfigV3Serializer(source='configs', many=True)
 
-    father_environment = serializers.SerializerMethodField(
-        'get_father_environment')
+    father_environment = serializers.SerializerMethodField('get_father_environment')
     grupo_l3 = serializers.SerializerMethodField('get_grupo_l3')
     ambiente_logico = serializers.SerializerMethodField('get_ambiente_logico')
     divisao_dc = serializers.SerializerMethodField('get_divisao_dc')
@@ -82,6 +81,10 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     equipments = serializers.SerializerMethodField('get_equipments')
     name = serializers.SerializerMethodField('get_name')
     sdn_controllers = serializers.SerializerMethodField('get_sdn_controllers')
+    dcroom = serializers.SerializerMethodField('get_dcroom')
+
+    def get_dcroom(self, obj):
+        return self.extends_serializer(obj, 'dcroom')
 
     def get_sdn_controllers(self, obj):
         from django.forms.models import model_to_dict
@@ -161,6 +164,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'routers',
             'equipments',
             'sdn_controllers',
+            'dcroom',
         )
         default_fields = (
             'id',
@@ -180,6 +184,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'default_vrf',
             'father_environment',
             'sdn_controllers',
+            'dcroom',
         )
 
         basic_fields = (
@@ -195,6 +200,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         filter_slz = get_app('api_filter', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         vrf_slz = get_app('api_vrf', module_label='serializers')
+        datacenter_serializers = get_app('api_rack', module_label='serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -352,8 +358,27 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'equipments'
+                },
+                'dcroom': {
+                    'obj': 'dcroom_id'
+                },
+                'dcroom__details': {
+                    'serializer': datacenter_serializers.DCRoomSerializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'dcroom',
+                    'eager_loading': self.setup_eager_loading_datacenter
                 }
             }
+
+    @staticmethod
+    def setup_eager_loading_datacenter(queryset):
+        log.info('Using setup_eager_loading_father')
+        queryset = queryset.select_related(
+            'dcroom'
+        )
+        return queryset
 
     @staticmethod
     def setup_eager_loading_father(queryset):
