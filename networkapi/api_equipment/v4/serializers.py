@@ -101,50 +101,54 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'tipo_equipamento'
                 },
                 'ipsv4': {
-                    'serializer': v4_ip_slz.\
-                        Ipv4EquipmentVirtualInterfaceV4Serializer,
+                    'serializer': v4_ip_slz. \
+                        IPv4VirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip',
-                            'virtual_interface',
-                        )
                     },
                     'obj': 'ipv4_equipment_virtual_interface'
                 },
-                'ipsv4__details': {
-                    'serializer': v4_ip_slz.\
-                        Ipv4EquipmentVirtualInterfaceV4Serializer,
+                'ipsv4__basic': {
+                    'serializer': v4_ip_slz. \
+                        IPv4VirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip__details',
-                            'virtual_interface__details',
-                        )
+                        'kind': 'basic'
+                    },
+                    'obj': 'ipv4_equipment_virtual_interface',
+                },
+                'ipsv4__details': {
+                    'serializer': v4_ip_slz. \
+                        IPv4VirtualInterfaceV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'ipv4_equipment_virtual_interface',
                 },
                 'ipsv6': {
-                    'serializer': v4_ip_slz.\
-                        Ipv6EquipmentVirtualInterfaceV4Serializer,
+                    'serializer': v4_ip_slz. \
+                        IPv6VirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip',
-                            'virtual_interface',
-                        )
                     },
                     'obj': 'ipv6_equipment_virtual_interface'
                 },
-                'ipsv6__details': {
-                    'serializer': v4_ip_slz.\
-                        Ipv6EquipmentVirtualInterfaceV4Serializer,
+                'ipsv6__basic': {
+                    'serializer': v4_ip_slz. \
+                        IPv6VirtualInterfaceV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip__details',
-                            'virtual_interface__details',
-                        )
+                        'kind': 'basic'
+                    },
+                    'obj': 'ipv6_equipment_virtual_interface',
+                },
+                'ipsv6__details': {
+                    'serializer': v4_ip_slz. \
+                        IPv6VirtualInterfaceV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'ipv6_equipment_virtual_interface',
                 },
@@ -166,7 +170,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'groups'
                 },
                 'environments': {
-                    'serializer': eqptv3_slzs.EquipmentEnvironmentV3Serializer,
+                    'serializer': eqptv3_slzs.\
+                        EquipmentEnvironmentV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
@@ -178,7 +183,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'environments'
                 },
                 'environments__details': {
-                    'serializer': eqptv3_slzs.EquipmentEnvironmentV3Serializer,
+                    'serializer': eqptv3_slzs.\
+                        EquipmentEnvironmentV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
