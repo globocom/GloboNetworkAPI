@@ -6,8 +6,7 @@
       "dc": 1,
       "racks": 32,
       "spines": 2,
-      "leafs": 2,
-      "config": {}
+      "leafs": 2
     },
     {
       "id": 2,
@@ -15,8 +14,7 @@
       "dc": 2,
       "racks": 128,
       "spines": 4,
-      "leafs": 2,
-      "config": {}
+      "leafs": 2
     }
   ]
 }
