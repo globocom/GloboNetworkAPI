@@ -46,6 +46,7 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         get_url = '/api/v4/virtual-interface/1/?kind=basic'
+        name_file = json_path % 'get/basic/one_virtual_interface_put.json'
 
         response = self.client.get(
             get_url,
@@ -71,6 +72,7 @@ class VirtualInterfacePutSuccessTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         get_url = '/api/v4/virtual-interface/1;2/?kind=basic'
+        name_file = json_path % 'get/basic/two_virtual_interface_put.json'
 
         response = self.client.get(
             get_url,
