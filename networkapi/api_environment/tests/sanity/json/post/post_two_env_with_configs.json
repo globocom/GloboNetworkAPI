@@ -3,6 +3,7 @@
     {
       "acl_path": "",
       "ambiente_logico": 2,
+      "dcroom": 1,
       "configs": [
         {
           "network_type": 2,
@@ -27,6 +28,7 @@
     {
       "acl_path": "",
       "ambiente_logico": 2,
+      "dcroom": 1,
       "configs": [
         {
           "network_type": 2,

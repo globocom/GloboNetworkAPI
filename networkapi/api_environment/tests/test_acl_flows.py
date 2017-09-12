@@ -22,6 +22,8 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
         'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
         'networkapi/api_environment/fixtures/initial_base_environment.json',
         'networkapi/api_environment/fixtures/initial_environment.json',
