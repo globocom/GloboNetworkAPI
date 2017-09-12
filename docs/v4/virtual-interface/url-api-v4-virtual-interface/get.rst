@@ -102,7 +102,11 @@ Response body with *basic* kind:
             {
                 "id": <integer>,
                 "name": <string>,
-                "vrf": <integer>
+                "vrf": {
+                    "id": <integer>,
+                    "internal_name": <string>,
+                    "vrf": <string>
+                }
             }, ...
         ]
     }
@@ -133,7 +137,52 @@ Response body with *details* kind:
                             "oct3": <integer>,
                             "oct2": <integer>,
                             "oct1": <integer>,
-                            "networkipv4": <integer>,
+                            "networkipv4": {
+                                "id": <integer>,
+                                "oct1": <integer>,
+                                "oct2": <integer>,
+                                "oct3": <integer>,
+                                "oct4": <integer>,
+                                "prefix": <integer>,
+                                "networkv4": <string>,
+                                "mask_oct1": <integer>,
+                                "mask_oct2": <integer>,
+                                "mask_oct3": <integer>,
+                                "mask_oct4": <integer>,
+                                "mask_formated": <string>,
+                                "broadcast": <string>,
+                                "vlan": {
+                                    "id": <integer>,
+                                    "name": <string>,
+                                    "num_vlan": <integer>,
+                                    "environment": <integer>,
+                                    "description": <string>,
+                                    "acl_file_name": <string>,
+                                    "acl_valida": <boolean>,
+                                    "acl_file_name_v6": <string>,
+                                    "acl_valida_v6": <boolean>,
+                                    "active": <boolean>,
+                                    "vrf": <string>,
+                                    "acl_draft": <string>,
+                                    "acl_draft_v6": <string>
+                                },
+                                "network_type": {
+                                    "id": <integer>,
+                                    "tipo_rede": <string>
+                                },
+                                "environmentvip": {
+                                    "id": <integer>,
+                                    "finalidade_txt": <string>,
+                                    "cliente_txt": <string>,
+                                    "ambiente_p44_txt": <string>,
+                                    "description": <string>
+                                },
+                                "active": <boolean>,
+                                "dhcprelay": [
+                                    <string>, ...
+                                ],
+                                "cluster_unit": <string>
+                            },
                             "description": <string>
                         },
                         "equipment": {
@@ -199,7 +248,59 @@ Response body with *details* kind:
                             "block6": <string>,
                             "block7": <string>,
                             "block8": <string>,
-                            "networkipv6": <integer>,
+                            "networkipv6": {
+                                "id": <integer>,
+                                "block1": <string>,
+                                "block2": <string>,
+                                "block3": <string>,
+                                "block4": <string>,
+                                "block5": <string>,
+                                "block6": <string>,
+                                "block7": <string>,
+                                "block8": <string>,
+                                "prefix": <integer>,
+                                "networkv6": <string>,
+                                "mask1": <string>,
+                                "mask2": <string>,
+                                "mask3": <string>,
+                                "mask4": <string>,
+                                "mask5": <string>,
+                                "mask6": <string>,
+                                "mask7": <string>,
+                                "mask8": <string>,
+                                "mask_formated": <string>,
+                                "vlan": {
+                                    "id": <integer>,
+                                    "name": <string>,
+                                    "num_vlan": <integer>,
+                                    "environment": <integer>,
+                                    "description": <string>,
+                                    "acl_file_name": <string>,
+                                    "acl_valida": <boolean>,
+                                    "acl_file_name_v6": <string>,
+                                    "acl_valida_v6": <boolean>,
+                                    "active": <boolean>,
+                                    "vrf": <string>,
+                                    "acl_draft": <string>,
+                                    "acl_draft_v6": <string>
+                                },
+                                "network_type": {
+                                    "id": <integer>,
+                                    "tipo_rede": <string>
+                                },
+                                "environmentvip": {
+                                    "id": <integer>,
+                                    "finalidade_txt": <string>,
+                                    "cliente_txt": <string>,
+                                    "ambiente_p44_txt": <string>,
+                                    "description": <string>
+                                },
+                                "active": <boolean>,
+                                "dhcprelay": [
+                                    <string>, ...
+                                ],
+                                "cluster_unit": <string>
+                            },
                             "description": <string>
                         },
                         "equipment": {
