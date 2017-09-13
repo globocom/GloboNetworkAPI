@@ -1291,7 +1291,8 @@ class Ambiente(BaseModel):
                 fabric = env_map.get('dcroom')
             else:
                 fabric = None
-            self.dcroom = DatacenterRooms().get_dcrooms(idt=fabric)
+            if fabric:
+                self.dcroom = DatacenterRooms().get_dcrooms(idt=fabric)
             self.validate_v3()
             self.save()
 
