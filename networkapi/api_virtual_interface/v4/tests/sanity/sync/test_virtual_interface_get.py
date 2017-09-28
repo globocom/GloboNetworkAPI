@@ -39,7 +39,7 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
     def test_get_one_basic_virtual_interface(self):
         """Success Test of GET one Basic Virtual Interface."""
 
-        name_file = json_path % 'get/basic/pk_1.json'
+        name_file = json_path % 'get/default/pk_1.json'
 
         # Make a GET request
         response = self.client.get(
@@ -97,7 +97,7 @@ class VirtualInterfaceGetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(name_file, response.data['virtual_interfaces'])
 
     def test_get_one_virtual_interface_by_search(self):
-        """Success Test of GET basic Virtual Interface."""
+        """Success Test of GET basic Virtual Interface by search."""
 
         name_file = json_path % 'get/basic/pk_1.json'
 

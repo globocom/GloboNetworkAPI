@@ -1,0 +1,22 @@
+{
+  "virtual_interfaces": [
+    {
+      "id": 1,
+      "name": "VIRTUAL-INTERFACE-1-UPDATED",
+      "vrf": {
+        "id": 2,
+        "internal_name": "VRF-2",
+        "vrf": "VRF-2"
+      }
+    },
+    {
+      "id": 2,
+      "name": "VIRTUAL-INTERFACE-2-UPDATED",
+      "vrf": {
+        "id": 2,
+        "internal_name": "VRF-2",
+        "vrf": "VRF-2"
+      }
+    }
+  ]
+}

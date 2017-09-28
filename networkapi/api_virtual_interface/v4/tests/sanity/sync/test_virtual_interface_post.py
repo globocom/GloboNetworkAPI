@@ -46,7 +46,10 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(201, response.status_code)
 
-        get_url = '/api/v4/virtual-interface/%s/?kind=basic' % response.data[0]['id']
+        get_url = '/api/v4/virtual-interface/%s/?kind=basic' % \
+                  response.data[0]['id']
+
+        name_file = json_path % 'get/basic/one_virtual_interface_post.json'
 
         response = self.client.get(
             get_url,
@@ -75,6 +78,7 @@ class VirtualInterfacePostSuccessTestCase(NetworkApiTestCase):
         get_url = '/api/v4/virtual-interface/%s;%s/?kind=basic' \
                   % (response.data[0]['id'],
                      response.data[1]['id'])
+        name_file = json_path % 'get/basic/two_virtual_interface_post.json'
 
         response = self.client.get(
             get_url,
