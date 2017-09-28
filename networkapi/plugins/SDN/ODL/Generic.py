@@ -65,7 +65,7 @@ class ODLPlugin(BaseSdnPlugin):
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
 
         if flow_type == FlowTypes.ACL:
-            builder = AclFlowBuilder(data)
+            builder = AclFlowBuilder(data, self.environment)
 
             flows_set = builder.build()
         try:
