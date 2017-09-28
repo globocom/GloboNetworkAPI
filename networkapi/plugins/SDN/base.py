@@ -36,7 +36,8 @@ class BaseSdnPlugin(object):
             'equipment': None,
             'equipment_access': None,
             'protocol': 'http',
-            'version': None
+            'version': None,
+            'environment': None
         }
 
         # Set params via kwargs or use the defaults
