@@ -171,7 +171,7 @@ def get_controller_by_envid(env_id):
 
 def list_flows_by_envid(env_id, flow_id=0):
     eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt)
+    plugin = PluginFactory.factory(eqpt, env_id)
 
     try:
         if flow_id > 0:
@@ -187,7 +187,7 @@ def list_flows_by_envid(env_id, flow_id=0):
 
 def insert_flow(env_id, data):
     eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt)
+    plugin = PluginFactory.factory(eqpt, env_id)
 
     try:
         return async_add_flow.apply_async(
@@ -201,7 +201,7 @@ def insert_flow(env_id, data):
 
 def delete_flow(env_id, flow_id):
     eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt)
+    plugin = PluginFactory.factory(eqpt, env_id)
 
     try:
         return plugin.del_flow(flow_id=flow_id)
@@ -214,7 +214,7 @@ def delete_flow(env_id, flow_id):
 def flush_flows(env_id):
     """ Flushes flow from a environment without restore it """
     eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt)
+    plugin = PluginFactory.factory(eqpt, env_id)
 
     try:
         return plugin.flush_flows()
@@ -228,7 +228,7 @@ def flush_environment(env_id, data):
     """ Call equipment plugin to asynchronously flush the environment """
 
     eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt)
+    plugin = PluginFactory.factory(eqpt, env_id)
 
     try:
         return async_flush_environment.apply_async(
