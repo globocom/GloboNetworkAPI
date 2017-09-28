@@ -42,7 +42,7 @@ class ODLPlugin(BaseSdnPlugin):
     Plugin base para interação com controlador ODL
     """
 
-    versions = [ "BERYLLIUM", "BORON", "CARBON" ]
+    versions = ["BERYLLIUM", "BORON", "CARBON"]
 
     def __init__(self, **kwargs):
 
