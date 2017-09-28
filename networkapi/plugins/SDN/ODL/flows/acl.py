@@ -74,10 +74,11 @@ class AclFlowBuilder(object):
     TABLE = 0
     ALLOWED_FLOWS_SIZE = 5
 
-    def __init__(self, data, version="BERYLLIUM"):
+    def __init__(self, data, version="BERYLLIUM", environment):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
+        self.environment = environment
 
         self.version = version
         self.dumped_rule = None # Actual processing rule in json format
@@ -216,8 +217,8 @@ class AclFlowBuilder(object):
         """ Builds optional 64-bits field named cookie """
 
         id_rule = rule[Tokens.id_]
-        self.flows["flow"][0][Tokens.cookie] = \
-            CookieHandler.get_cookie(id_rule)
+        cookie_handler = CookieHandler(id_rule)
+        self.flows["flow"][0][Tokens.cookie] = cookie_handler.cookie
 
     def _build_sequence(self, rule):
         """ Build sequence field to set flow priority """
