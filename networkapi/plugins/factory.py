@@ -83,6 +83,11 @@ class PluginFactory(object):
         plugin_name = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
 
         if type(plugin_name)==type(ODLPlugin):
-            return plugin_name(equipment=equipment, version='BERYLLIUM')
+            env_id = kwargs.get("env_id")
+            return plugin_name(
+                equipment=equipment,
+                version='BERYLLIUM',
+                environment=env_id
+            )
 
         return plugin_name(equipment=equipment)
