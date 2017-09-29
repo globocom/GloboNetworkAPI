@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from networkapi import settings
 from networkapi import celery_app
 from networkapi.api_task.classes import BaseTask
 
@@ -15,5 +16,8 @@ def async_add_flow(self, plugin, data):
 def async_flush_environment(self, plugin, data):
     """ Asynchronous flush and restore of flows of an environment """
 
-    plugin.flush_flows()
-    return plugin.add_flow(data=data)
+    if settings.NETWORKAPI_ODL_NEW_FLUSH=="1":
+        plugin.update_all_flows(data=data)
+    else:
+        plugin.flush_flows()
+        return plugin.add_flow(data=data)
