@@ -86,8 +86,8 @@ class PluginFactory(object):
             env_id = kwargs.get("env_id")
             return plugin_name(
                 equipment=equipment,
-                version='BERYLLIUM',
-                environment=env_id
+                environment=env_id,
+                version='BERYLLIUM'
             )
 
         return plugin_name(equipment=equipment)
