@@ -227,10 +227,10 @@ class AclFlowBuilder(object):
     def _build_sequence(self, rule):
         """ Build sequence field to set flow priority """
 
-        if Tokens.sequence in rule:
-            self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
-        else:
-            self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
+        # if Tokens.sequence in rule:
+        #     self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
+        # else:
+        self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
 
     def _build_protocol(self, rule):
         """ Identifies the protocol of the ACL rule """
