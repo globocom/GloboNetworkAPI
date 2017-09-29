@@ -363,12 +363,14 @@ class ODLPlugin(BaseSdnPlugin):
                     id = id[0:id.find('_')]
                 if operations["delete"].count(id)<1:
                     operations["delete"].append(id)
+                    log.debug("flows: id %s will be deleted"%id)
             else:
                 if not id in current or self.assertDictsEqual(new[id], current[id])==False:
                     if id.find('_') > 0:
                         id = id[0:id.find('_')]
                     if operations["update"].count(id) < 1:
                         operations["update"].append(id)
+                        log.debug("flows: id %s will be updated" % id)
         return operations
 
     def assertDictsEqual(self, d1, d2, path=""):
