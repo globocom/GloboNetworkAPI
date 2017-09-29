@@ -27,20 +27,20 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
             }]
         }
 
-        #Beryllium
-        flows = AclFlowBuilder(acl, version='BERYLLIUM')
+        # Beryllium
+        flows = AclFlowBuilder(acl, environment=0, version='BERYLLIUM')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
         assert tcp_flag == 16
 
         # Carbon
-        flows = AclFlowBuilder(acl, version='CARBON')
+        flows = AclFlowBuilder(acl, environment=0, version='CARBON')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 16
 
         # Boron
-        flows = AclFlowBuilder(acl, version='BORON')
+        flows = AclFlowBuilder(acl, environment=0, version='BORON')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 16
@@ -67,19 +67,19 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
         }
 
         # Beryllium
-        flows = AclFlowBuilder(acl, version='BERYLLIUM')
+        flows = AclFlowBuilder(acl, environment=0, version='BERYLLIUM')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flag-match']['tcp-flag']
         assert tcp_flag == 4
 
         # Carbon
-        flows = AclFlowBuilder(acl, version='CARBON')
+        flows = AclFlowBuilder(acl, environment=0, version='CARBON')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 4
 
         # Boron
-        flows = AclFlowBuilder(acl, version='BORON')
+        flows = AclFlowBuilder(acl, environment=0, version='BORON')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 4
