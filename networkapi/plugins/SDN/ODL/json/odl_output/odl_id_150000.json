@@ -1,0 +1,293 @@
+[
+  {
+    "id": "150001_1024",
+    "priority": 42,
+    "table_id": 0,
+    "cookie": 644249389367296,
+    "flow-name": " - 1024:1027",
+    "match": {
+      "udp-destination-port": 1024,
+      "ip-match": {
+        "ip-protocol": 17
+      },
+      "ipv4-destination": "10.10.1.0/24",
+      "ipv4-source": "10.10.0.0/24",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150001_1025",
+    "priority": 42,
+    "table_id": 0,
+    "cookie": 644249389367296,
+    "flow-name": " - 1024:1027",
+    "match": {
+      "udp-destination-port": 1025,
+      "ip-match": {
+        "ip-protocol": 17
+      },
+      "ipv4-destination": "10.10.1.0/24",
+      "ipv4-source": "10.10.0.0/24",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150001_1026",
+    "priority": 42,
+    "table_id": 0,
+    "cookie": 644249389367296,
+    "flow-name": " - 1024:1027",
+    "match": {
+      "udp-destination-port": 1026,
+      "ip-match": {
+        "ip-protocol": 17
+      },
+      "ipv4-destination": "10.10.1.0/24",
+      "ipv4-source": "10.10.0.0/24",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150001_1027",
+    "priority": 42,
+    "table_id": 0,
+    "cookie": 644249389367296,
+    "flow-name": " - 1024:1027",
+    "match": {
+      "udp-destination-port": 1027,
+      "ip-match": {
+        "ip-protocol": 17
+      },
+      "ipv4-destination": "10.10.1.0/24",
+      "ipv4-source": "10.10.0.0/24",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150002",
+    "priority": 65000,
+    "table_id": 0,
+    "cookie": 644253684334592,
+    "flow-name": "generic",
+    "match": {
+      "ipv4-destination": "10.128.24.3/32",
+      "ip-match": {
+        "ip-protocol": 6
+      },
+      "tcp-destination-port": 123,
+      "ipv4-source": "0.0.0.0/0",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150003",
+    "priority": 65000,
+    "table_id": 0,
+    "cookie": 644257979301888,
+    "flow-name": "generic",
+    "match": {
+      "ipv4-destination": "10.128.24.4/32",
+      "ip-match": {
+        "ip-protocol": 6
+      },
+      "tcp-destination-port": 8081,
+      "ipv4-source": "0.0.0.0/0",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150005",
+    "priority": 2,
+    "table_id": 0,
+    "cookie": 644266569236480,
+    "flow-name": "",
+    "match": {
+      "ipv4-destination": "10.130.64.0/27",
+      "ipv4-source": "10.129.192.32/27",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "150006",
+    "priority": 65000,
+    "table_id": 0,
+    "cookie": 644270864203776,
+    "flow-name": "generic",
+    "match": {
+      "ipv4-destination": "0.0.0.0/0",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ipv4-source": "10.128.0.64/27",
+      "ip-match": {
+        "ip-protocol": 6
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]
