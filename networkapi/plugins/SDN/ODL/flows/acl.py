@@ -61,6 +61,7 @@ class Tokens(object):
     range = "range"
     eq = "eq"
 
+
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
     OpenDayLight controller
@@ -74,14 +75,14 @@ class AclFlowBuilder(object):
     TABLE = 0
     ALLOWED_FLOWS_SIZE = 5
 
-    def __init__(self, data, version="BERYLLIUM", environment):
+    def __init__(self, data, environment=0, version="BERYLLIUM"):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
         self.environment = environment
 
         self.version = version
-        self.dumped_rule = None # Actual processing rule in json format
+        self.dumped_rule = None  # Actual processing rule in json format
 
         self._reset_control_members()
 
@@ -332,11 +333,11 @@ class AclFlowBuilder(object):
             flags = l4_options[Tokens.flags]
             tcp_flags = TCPControlBits(flags).to_int()
 
-            if self.version in [ "BERYLLIUM"]:
+            if self.version in ["BERYLLIUM"]:
                 self.flows["flow"][0]["match"]["tcp-flag-match"] = {
                     "tcp-flag": tcp_flags,
                 }
-            elif self.version in [ "BORON", "CARBON" ]:
+            elif self.version in ["BORON", "CARBON"]:
                 self.flows["flow"][0]["match"]["tcp-flags-match"] = {
                     "tcp-flags": tcp_flags,
                 }
@@ -393,7 +394,8 @@ class AclFlowBuilder(object):
         src_port_end = int(l4_options[Tokens.src_port_end])
         dst_port_end = int(l4_options[Tokens.dst_port_end])
 
-        if self.current_src_port is not None and self.current_dst_port is not None:
+        if self.current_src_port is not None \
+           and self.current_dst_port is not None:
 
             # Assigns if the last iteration made flows array to reach
             # ALLOWED_FLOWS_SIZE before reach the last port in range
@@ -599,4 +601,3 @@ class AclFlowBuilder(object):
 
         self.flows["flow"][0]["match"][prefix] = \
             rule[Tokens.l4_options][start]
-
