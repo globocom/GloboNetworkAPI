@@ -355,6 +355,29 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         self.assertEqual(type(self.odl._get_nodes_ids()), type([]))
         self.assertEqual(len(self.odl._get_nodes_ids()), 3)
 
+    def test_update_all_flows(self):
+        """Test update_all_flows"""
+
+        #clean the table
+        #self.odl.flush_flows()
+
+        #add a fist json with 4 flows
+        input = self.json_aclapi_input_path % 'acl_id_150001.json'
+        data = self.load_json_file(input)
+        self.odl.add_flow(data)
+
+        #try to update with another json
+        input = self.json_aclapi_input_path % 'acl_id_150002.json'
+        data = self.load_json_file(input)
+        self.odl.update_all_flows(data=data)
+
+        #assert
+        output = self.json_odl_output_path % 'odl_id_150000.json'
+        all_flows=self.odl.get_flows()
+        for node in all_flows:
+            self.compare_json_lists(output, all_flows[node][0]['flow'])
+
+
     def test_get_nodes_ids_empty(self):
         """Test get nodes with a empty result"""
 

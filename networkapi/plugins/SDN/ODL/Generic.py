@@ -62,7 +62,7 @@ class ODLPlugin(BaseSdnPlugin):
             log.error("Invalid version at ODL Controller initialization")
             raise exceptions.ValueInvalid(msg="Invalid version at ODL Controller initialization")
 
-    def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
+    def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL, nodes_ids=[]):
 
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data, self.environment)
@@ -74,14 +74,43 @@ class ODLPlugin(BaseSdnPlugin):
 
                     self._flow(flow_id=flow['id'],
                                method='put',
-                               data=json.dumps({'flow': [flow]}))
+                               data=json.dumps({'flow': [flow]}),
+                               nodes_ids=nodes_ids)
         except HTTPError as e:
             raise exceptions.CommandErrorException(
                                 msg=self._parse_errors(e.response.json()))
 
 
-    def del_flow(self, flow_id=0):
-        return self._flow(flow_id=flow_id, method='delete')
+    def del_flow(self, flow_id=0, nodes_ids=[]):
+        return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
+
+
+    def update_all_flows(self, data):
+        current_flows = self.get_flows()
+
+        for node in current_flows.keys():
+            builder = AclFlowBuilder(data)
+            new_flows_set = builder.build()
+            #Makes a diff
+            operations = self._diff_flows(current_flows[node], new_flows_set)
+            try:
+                for id in operations["delete"]:
+                    self.del_flow(flow_id=id, nodes_ids=[node])
+
+                new_rules=[]
+                new_data=data.copy()
+                for rule in data['rules']:
+                    if operations["update"].count(rule['id'])>0:
+                        new_rules.append(rule)
+                new_data['rules']=new_rules
+
+                self.add_flow(data=new_data, nodes_ids=[node])
+
+            except Exception as e:
+                message = self._parse_errors(e.response.json())
+                log.error("ERROR while updating all flows: %s" % message)
+                raise exceptions.CommandErrorException(msg=message)
+
 
     def flush_flows(self):
         nodes_ids = self._get_nodes_ids()
@@ -120,7 +149,7 @@ class ODLPlugin(BaseSdnPlugin):
 
         return self._flow(flow_id=flow_id, method='get')
 
-    def _flow(self, flow_id=0, method='', data=None):
+    def _flow(self, flow_id=0, method='', data=None, nodes_ids=[]):
         """ Generic implementation of the plugin communication with the
         remote controller through HTTP requests
         """
@@ -131,9 +160,10 @@ class ODLPlugin(BaseSdnPlugin):
             log.error("Invalid parameters in OLDPlugin flow handler")
             raise exceptions.ValueInvalid()
 
-        nodes_ids = self._get_nodes_ids()
-        if len(nodes_ids) < 1:
-            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+        if nodes_ids==[]:
+            nodes_ids = self._get_nodes_ids()
+            if len(nodes_ids) < 1:
+                raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         return_flows = []
         for node_id in nodes_ids:
@@ -301,3 +331,69 @@ class ODLPlugin(BaseSdnPlugin):
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
+
+    def _diff_flows(self, current_data, new_data):
+        #This function compares the current applied data with the desired new data
+        #returning a tuple of tuples, containing:
+        # id: the id of the flow that show be modified
+        # operation: the action that should be taken (delete or update)
+        if current_data != []:
+            current_data=current_data[0]['flow']
+
+
+        #turn lists into dicts and merge ids
+        ids_merged = []
+        new = {}
+        current = {}
+
+        for new_flows in new_data:
+            for new_flow in new_flows['flow']:
+                new[new_flow['id']] = new_flow
+                ids_merged.append(new_flow['id'])
+        for current_flow in current_data:
+            current[current_flow['id']] = current_flow
+            if ids_merged.count(current_flow['id'])==0:
+                ids_merged.append(current_flow['id'])
+
+        operations={"delete":[], "update":[]}
+
+        for id in ids_merged:
+            if not id in new:
+                if id.find('_') > 0:
+                    id = id[0:id.find('_')]
+                if operations["delete"].count(id)<1:
+                    operations["delete"].append(id)
+            else:
+                if not id in current or self.assertDictsEqual(new[id], current[id])==False:
+                    if id.find('_') > 0:
+                        id = id[0:id.find('_')]
+                    if operations["update"].count(id) < 1:
+                        operations["update"].append(id)
+        return operations
+
+    def assertDictsEqual(self, d1, d2, path=""):
+        for k in d1.keys():
+            if not d2.has_key(k):
+                return False
+            else:
+                if type(d1[k]) is dict:
+                    if path == "":
+                        path = k
+                    else:
+                        path = path + "->" + k
+                    if self.assertDictsEqual(d1[k], d2[k], path) == False:
+                        return False
+                else:
+                    if type(d1[k])==int:
+                        d1[k]="%s"%d1[k] # convert int to str
+                    if type(d2[k])==int:
+                        d2[k]="%s"%d2[k] # convert int to str
+
+                    if d1[k] != d2[k]:
+                        return False
+        return True
+
+
+
+
+
