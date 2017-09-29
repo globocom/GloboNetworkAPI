@@ -376,6 +376,7 @@ class ODLPlugin(BaseSdnPlugin):
     def assertDictsEqual(self, d1, d2, path=""):
         for k in d1.keys():
             if not d2.has_key(k):
+                log.debug("%s missing" % k)
                 return False
             else:
                 if type(d1[k]) is dict:
@@ -386,13 +387,14 @@ class ODLPlugin(BaseSdnPlugin):
                     if self.assertDictsEqual(d1[k], d2[k], path) == False:
                         return False
                 else:
-                    if type(d1[k])==int:
-                        d1[k]="%s"%d1[k] # convert int to str
-                    if type(d2[k])==int:
-                        d2[k]="%s"%d2[k] # convert int to str
-
-                    if d1[k] != d2[k]:
-                        return False
+                    if type(d1[k]) == int or type(d2[k])==int:
+                        if "%s"%d1[k] != "%s"%d2[k]:
+                            log.debug("%s differs: %s - %s" % (k, d1[k], d2[k]))
+                            return False
+                    else:
+                        if d1[k] != d2[k]:
+                            log.debug ("%s differs: %s - %s"%(k, d1[k], d2[k]))
+                            return False
         return True
 
 
