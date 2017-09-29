@@ -10,22 +10,22 @@ class CookieHandler(object):
         environment.
     """
 
-    def __init__(self, id_acl, id_env):
+    def __init__(self, id_acl, id_env=0):
 
-        id_acl = format(int(id_acl), '032b')
-        id_environment = format(int(id_env), '032b')
+        self.id_acl = format(int(id_acl), '032b')
+        self.id_env = format(int(id_env), '032b')
 
-        self.cookie = id_acl + id_environment
+        self._cookie = self.id_acl + self.id_env
 
     @property
     def cookie(self):
-        return int(self.cookie, 2)
+        return int(self._cookie, 2)
 
     def raw(self):
-        return self.cookie
+        return self._cookie
 
     def get_id_acl(self):
-        return int(self.cookie[0:32], 2)
+        return int(self._cookie[0:32], 2)
 
     def get_id_environment(self):
-        return int(self.cookie[32:64], 2)
+        return int(self._cookie[32:64], 2)
