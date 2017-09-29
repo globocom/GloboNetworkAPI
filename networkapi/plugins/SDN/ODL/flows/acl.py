@@ -79,7 +79,10 @@ class AclFlowBuilder(object):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
-        self.environment = environment
+
+        if environment is None:
+            environment = 0
+        self.environment = int(environment)
 
         self.version = version
         self.dumped_rule = None  # Actual processing rule in json format
@@ -218,7 +221,7 @@ class AclFlowBuilder(object):
         """ Builds optional 64-bits field named cookie """
 
         id_rule = rule[Tokens.id_]
-        cookie_handler = CookieHandler(id_rule)
+        cookie_handler = CookieHandler(id_rule, self.environment)
         self.flows["flow"][0][Tokens.cookie] = cookie_handler.cookie
 
     def _build_sequence(self, rule):
