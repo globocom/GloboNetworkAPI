@@ -2,7 +2,7 @@
   {
     "id": "110886",
     "table_id": 0,
-    "priority": 6,
+    "priority": 65000,
     "flow-name": "",
     "cookie": 476251743584256,
     "instructions": {
