@@ -359,7 +359,7 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         """Test update_all_flows"""
 
         #clean the table
-        #self.odl.flush_flows()
+        self.odl.flush_flows()
 
         #add a fist json with 4 flows
         input = self.json_aclapi_input_path % 'acl_id_150001.json'
@@ -367,6 +367,13 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         self.odl.add_flow(data)
 
         #try to update with another json
+        # at the end:
+        # flow 150001 should be updated
+        # flow 150002 should remain untouched
+        # flow 150003 should be updated
+        # flow 150004 should be deleted
+        # flow 150005 should be inserted
+        # flow 150006 should remain untouched
         input = self.json_aclapi_input_path % 'acl_id_150002.json'
         data = self.load_json_file(input)
         self.odl.update_all_flows(data=data)
@@ -376,7 +383,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         all_flows=self.odl.get_flows()
         for node in all_flows:
             self.compare_json_lists(output, all_flows[node][0]['flow'])
-
 
     def test_get_nodes_ids_empty(self):
         """Test get nodes with a empty result"""
@@ -391,7 +397,6 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.assertEqual(self.odl._get_nodes_ids(), [])
         self.odl._request=original
-
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for error cases."""
