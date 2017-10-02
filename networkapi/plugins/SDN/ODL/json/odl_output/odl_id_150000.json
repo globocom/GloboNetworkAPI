@@ -1,7 +1,7 @@
 [
   {
     "id": "150001_1024",
-    "priority": 42,
+    "priority": 65000,
     "table_id": 0,
     "cookie": 644249389367296,
     "flow-name": " - 1024:1027",
@@ -38,7 +38,7 @@
   },
   {
     "id": "150001_1025",
-    "priority": 42,
+    "priority": 65000,
     "table_id": 0,
     "cookie": 644249389367296,
     "flow-name": " - 1024:1027",
@@ -75,7 +75,7 @@
   },
   {
     "id": "150001_1026",
-    "priority": 42,
+    "priority": 65000,
     "table_id": 0,
     "cookie": 644249389367296,
     "flow-name": " - 1024:1027",
@@ -112,7 +112,7 @@
   },
   {
     "id": "150001_1027",
-    "priority": 42,
+    "priority": 65000,
     "table_id": 0,
     "cookie": 644249389367296,
     "flow-name": " - 1024:1027",
@@ -223,7 +223,7 @@
   },
   {
     "id": "150005",
-    "priority": 2,
+    "priority": 65000,
     "table_id": 0,
     "cookie": 644266569236480,
     "flow-name": "",
