@@ -74,7 +74,7 @@ class AclFlowBuilder(object):
     PRIORITY_DEFAULT = 65000
     TABLE = 0
     ALLOWED_FLOWS_SIZE = 5
-    MAX_RANGE_LENGTH = 100
+    MAX_RANGE_LENGTH = 120
 
     def __init__(self, data, environment=0, version="BERYLLIUM"):
 
@@ -311,8 +311,7 @@ class AclFlowBuilder(object):
 
         #this if is an temporary solution
         if self._calc_length_of_range(rule)>self.MAX_RANGE_LENGTH:
-            #self._build_transport_source_ports(rule, protocol)
-            #self._build_transport_destination_ports(rule, protocol)
+            logging.warning("Max range lenght reached. A more permisse flow will be used.")
             self.generated_all_flows_from_rule = True
 
         elif l4_options.get(Tokens.src_port_op) == Tokens.range and \
