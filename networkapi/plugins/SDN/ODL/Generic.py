@@ -277,6 +277,9 @@ class ODLPlugin(BaseSdnPlugin):
 
             request.raise_for_status()
 
+            if request.status_code==200 and request.content=='':
+                return
+
             try:
                 return json.loads(request.text)
             except Exception as exception:
