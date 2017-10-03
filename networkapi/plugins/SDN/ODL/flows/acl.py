@@ -74,6 +74,7 @@ class AclFlowBuilder(object):
     PRIORITY_DEFAULT = 65000
     TABLE = 0
     ALLOWED_FLOWS_SIZE = 5
+    MAX_RANGE_LENGTH = 100
 
     def __init__(self, data, environment=0, version="BERYLLIUM"):
 
@@ -308,7 +309,13 @@ class AclFlowBuilder(object):
 
         l4_options = rule.get(Tokens.l4_options, {})
 
-        if l4_options.get(Tokens.src_port_op) == Tokens.range and \
+        #this if is an temporary solution
+        if self._calc_length_of_range(rule)>self.MAX_RANGE_LENGTH:
+            #self._build_transport_source_ports(rule, protocol)
+            #self._build_transport_destination_ports(rule, protocol)
+            self.generated_all_flows_from_rule = True
+
+        elif l4_options.get(Tokens.src_port_op) == Tokens.range and \
            l4_options.get(Tokens.dst_port_op) == Tokens.range:
             self._build_double_range(rule, protocol)
 
@@ -604,3 +611,21 @@ class AclFlowBuilder(object):
 
         self.flows["flow"][0]["match"][prefix] = \
             rule[Tokens.l4_options][start]
+
+    def _calc_length_of_range(self, rule):
+        l4_options = rule.get(Tokens.l4_options, {})
+        src_range=1
+        dst_range=1
+
+        if l4_options.get(Tokens.src_port_op) == Tokens.range:
+            src_port_start = int(l4_options[Tokens.src_port])
+            src_port_end = int(l4_options[Tokens.src_port_end])
+            src_range=src_port_end-src_port_start+1
+
+        if l4_options.get(Tokens.dst_port_op) == Tokens.range:
+            dst_port_start = int(l4_options[Tokens.dst_port])
+            dst_port_end = int(l4_options[Tokens.dst_port_end])
+            dst_range=dst_port_end-dst_port_start+1
+
+        return src_range * dst_range
+
