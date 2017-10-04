@@ -220,37 +220,35 @@ class ODLPlugin(BaseSdnPlugin):
         path3 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
 
         nodes_ids={}
-        if nodes_ids=={}:
-            try:
-                nodes = self._request(method='get', path=path2, contentType='json')['nodes']
-                if nodes.has_key('node'):
-                    for node in nodes['node']:
-                        if node["id"] not in ["controller-config"]:
-                            nodes_ids[node["id"]] = 1
-            except HTTPError as e:
-                if e.response.status_code != 404:
-                    raise e
+        try:
+            nodes = self._request(method='get', path=path2, contentType='json')['nodes']
+            if nodes.has_key('node'):
+                for node in nodes['node']:
+                    if node["id"] not in ["controller-config"]:
+                        nodes_ids[node["id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code != 404:
+                raise e
 
-        if nodes_ids == {}:
-            try:
-                topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
-                if topo1.has_key('node'):
-                    for node in topo1['node']:
-                        if node["node-id"] not in ["controller-config"]:
-                            nodes_ids[node["node-id"]] = 1
-            except HTTPError as e:
-                if e.response.status_code!=404:
-                    raise e
-        if nodes_ids == {}:
-            try:
-                topo2 = self._request(method='get', path=path3, contentType='json')['topology'][0]
-                if topo2.has_key('node'):
-                    for node in topo2['node']:
-                        if node["node-id"] not in ["controller-config"]:
-                            nodes_ids[node["node-id"]] = 1
-            except HTTPError as e:
-                if e.response.status_code!=404:
-                    raise e
+        try:
+            topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
+            if topo1.has_key('node'):
+                for node in topo1['node']:
+                    if node["node-id"] not in ["controller-config"]:
+                        nodes_ids[node["node-id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code!=404:
+                raise e
+
+        try:
+            topo2 = self._request(method='get', path=path3, contentType='json')['topology'][0]
+            if topo2.has_key('node'):
+                for node in topo2['node']:
+                    if node["node-id"] not in ["controller-config"]:
+                        nodes_ids[node["node-id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code!=404:
+                raise e
 
         nodes_ids_list = nodes_ids.keys()
         nodes_ids_list.sort()
@@ -406,7 +404,8 @@ class ODLPlugin(BaseSdnPlugin):
                     #TODO: ignore cookie is a workaround for a unknown problem when
                     # diffing cookies
                     if "%s"%k=="cookie":
-                        log.debug("ignoring cookie for now")
+                        # ignoring cookie for now"
+                        pass
                     elif type(d1[k]) == int or type(d2[k])==int:
                         if "%s"%d1[k] != "%s"%d2[k]:
                             log.debug("%s differs: %s - %s" % (k, d1[k], d2[k]))
