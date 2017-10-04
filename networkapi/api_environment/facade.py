@@ -185,13 +185,13 @@ def list_flows_by_envid(env_id, flow_id=0):
                                   'plugin. %s' % e)
 
 
-def insert_flow(env_id, data):
+def insert_flow(env_id, data, user_id):
     eqpt = get_controller_by_envid(env_id)
     plugin = PluginFactory.factory(eqpt, env_id=env_id)
 
     try:
         return async_add_flow.apply_async(
-            args=[plugin, data], queue='napi.odl_flow'
+            args=[plugin, user_id, data], queue='napi.odl_flow'
         )
     except Exception as e:
         log.error(e)
@@ -224,7 +224,7 @@ def flush_flows(env_id):
                                   'plugin. %s' % e)
 
 
-def flush_environment(env_id, data):
+def flush_environment(env_id, data, user_id):
     """ Call equipment plugin to asynchronously flush the environment """
 
     eqpt = get_controller_by_envid(env_id)
@@ -232,7 +232,7 @@ def flush_environment(env_id, data):
 
     try:
         return async_flush_environment.apply_async(
-            args=[plugin, data], queue='napi.odl_flow'
+            args=[plugin, user_id, data], queue='napi.odl_flow'
         )
     except Exception as e:
         log.error(e)
