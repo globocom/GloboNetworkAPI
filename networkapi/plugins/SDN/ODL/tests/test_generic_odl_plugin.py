@@ -374,6 +374,11 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         # flow 150004 should be deleted
         # flow 150005 should be inserted
         # flow 150006 should remain untouched
+        # flow 150007 should be deleted
+        # flow 150008 should be deleted
+        # flow 150009 should be updated
+        # flow 1500010 should be updated
+
         input = self.json_aclapi_input_path % 'acl_id_150002.json'
         data = self.load_json_file(input)
         self.odl.update_all_flows(data=data)

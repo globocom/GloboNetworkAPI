@@ -62,6 +62,62 @@
       "owner": "networkapi",
       "protocol": "tcp",
       "source": "10.128.0.64/27"
+    },
+    {
+      "action": "permit",
+      "destination": "10.130.171.224/27",
+      "id": "150007",
+      "l4-options": {
+        "dest-port-start": "1000",
+        "dest-port-op": "range",
+        "dest-port-end": "2000"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "sequence": 42,
+      "source": "10.129.193.32/27"
+    },
+    {
+      "action": "permit",
+      "destination": "10.130.172.224/27",
+      "id": "150008",
+      "l4-options": {
+        "dest-port-start": "1000",
+        "dest-port-op": "range",
+        "dest-port-end": "1010"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "sequence": 42,
+      "source": "10.129.193.32/27"
+    },
+    {
+      "action": "permit",
+      "destination": "10.171.171.224/27",
+      "id": "150009",
+      "l4-options": {
+        "dest-port-start": "10",
+        "dest-port-op": "range",
+        "dest-port-end": "12"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "sequence": 42,
+      "source": "10.129.193.32/27"
+    },
+    {
+      "action": "permit",
+      "destination": "10.172.172.224/27",
+      "id": "150010",
+      "l4-options": {
+        "dest-port-start": "10",
+        "dest-port-op": "range",
+        "dest-port-end": "1000"
+      },
+      "owner": "networkapi",
+      "protocol": "udp",
+      "sequence": 42,
+      "source": "10.129.193.32/27"
     }
   ]
 }

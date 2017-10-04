@@ -289,5 +289,152 @@
         }
       ]
     }
+  },
+  {
+    "flow-name": "",
+    "priority": 65000,
+    "cookie": 644283749105664,
+    "table_id": 0,
+    "id": "150009",
+    "match": {
+      "ipv4-destination": "10.171.171.224/27",
+      "ip-match": {
+        "ip-protocol": 17
+      },
+      "ipv4-source": "10.129.193.32/27",
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "flow-name": " - 10:12",
+    "priority": 65000,
+    "cookie": 644288044072960,
+    "table_id": 0,
+    "id": "150010_10",
+    "match": {
+      "udp-destination-port": 10,
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ipv4-destination": "10.172.172.224/27",
+      "ipv4-source": "10.129.193.32/27",
+      "ip-match": {
+        "ip-protocol": 17
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "flow-name": " - 10:12",
+    "priority": 65000,
+    "cookie": 644288044072960,
+    "table_id": 0,
+    "id": "150010_11",
+    "match": {
+      "udp-destination-port": 11,
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ipv4-destination": "10.172.172.224/27",
+      "ipv4-source": "10.129.193.32/27",
+      "ip-match": {
+        "ip-protocol": 17
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "flow-name": " - 10:12",
+    "priority": 65000,
+    "cookie": 644288044072960,
+    "table_id": 0,
+    "id": "150010_12",
+    "match": {
+      "udp-destination-port": 12,
+      "ethernet-match": {
+        "ethernet-type": {
+          "type": 2048
+        }
+      },
+      "ipv4-destination": "10.172.172.224/27",
+      "ipv4-source": "10.129.193.32/27",
+      "ip-match": {
+        "ip-protocol": 17
+      }
+    },
+    "instructions": {
+      "instruction": [
+        {
+          "order": 0,
+          "apply-actions": {
+            "action": [
+              {
+                "output-action": {
+                  "output-node-connector": "NORMAL"
+                },
+                "order": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
   }
 ]
