@@ -311,7 +311,7 @@ class AclFlowBuilder(object):
 
         #this if is an temporary solution
         if self._calc_length_of_range(rule)>self.MAX_RANGE_LENGTH:
-            logging.warning("Max range lenght reached. A more permisse flow will be used.")
+            logging.warning("Max range lenght reached. A more permissive flow will be used.")
             self.generated_all_flows_from_rule = True
 
         elif l4_options.get(Tokens.src_port_op) == Tokens.range and \
