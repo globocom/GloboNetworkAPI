@@ -214,26 +214,42 @@ class ODLPlugin(BaseSdnPlugin):
         #TODO: We need to check on newer versions (later to Berylliun) if the
         # check on both config and operational is still necessary
         path1 = "/restconf/config/network-topology:network-topology/topology/flow:1/"
-        path2 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
+        path2 = "/restconf/config/opendaylight-inventory:nodes/"
+        path3 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
+
         nodes_ids={}
-        try:
-            topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
-            if topo1.has_key('node'):
-                for node in topo1['node']:
-                    if node["node-id"] not in ["controller-config"]:
-                        nodes_ids[node["node-id"]] = 1
-        except HTTPError as e:
-            if e.response.status_code!=404:
-                raise e
-        try:
-            topo2 = self._request(method='get', path=path2, contentType='json')['topology'][0]
-            if topo2.has_key('node'):
-                for node in topo2['node']:
-                    if node["node-id"] not in ["controller-config"]:
-                        nodes_ids[node["node-id"]] = 1
-        except HTTPError as e:
-            if e.response.status_code!=404:
-                raise e
+        if nodes_ids=={}:
+            try:
+                nodes = self._request(method='get', path=path2, contentType='json')['nodes']
+                if nodes.has_key('node'):
+                    for node in nodes['node']:
+                        if node["id"] not in ["controller-config"]:
+                            nodes_ids[node["id"]] = 1
+            except HTTPError as e:
+                if e.response.status_code != 404:
+                    raise e
+
+        if nodes_ids == {}:
+            try:
+                topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
+                if topo1.has_key('node'):
+                    for node in topo1['node']:
+                        if node["node-id"] not in ["controller-config"]:
+                            nodes_ids[node["node-id"]] = 1
+            except HTTPError as e:
+                if e.response.status_code!=404:
+                    raise e
+        if nodes_ids == {}:
+            try:
+                topo2 = self._request(method='get', path=path3, contentType='json')['topology'][0]
+                if topo2.has_key('node'):
+                    for node in topo2['node']:
+                        if node["node-id"] not in ["controller-config"]:
+                            nodes_ids[node["node-id"]] = 1
+            except HTTPError as e:
+                if e.response.status_code!=404:
+                    raise e
+
         nodes_ids_list = nodes_ids.keys()
         nodes_ids_list.sort()
         return nodes_ids_list
