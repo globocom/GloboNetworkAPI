@@ -85,26 +85,28 @@ class ODLPlugin(BaseSdnPlugin):
         return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
 
 
-    def update_all_flows(self, data):
+    def update_all_flows(self, data, flow_type=FlowTypes.ACL):
         current_flows = self.get_flows()
 
         for node in current_flows.keys():
-            builder = AclFlowBuilder(data)
-            new_flows_set = builder.build()
+            log.info("Starting update all flows for node %s"%node)
+
+            if flow_type == FlowTypes.ACL:
+                builder = AclFlowBuilder(data, self.environment)
+                new_flows_set = builder.build()
+
             #Makes a diff
             operations = self._diff_flows(current_flows[node], new_flows_set)
+
             try:
-                for id in operations["delete"]:
-                    self.del_flow(flow_id=id, nodes_ids=[node])
+                for flow in operations["delete"]:
+                    self.del_flow(flow_id=flow['id'], nodes_ids=[node])
 
-                new_rules=[]
-                new_data=data.copy()
-                for rule in data['rules']:
-                    if operations["update"].count(rule['id'])>0:
-                        new_rules.append(rule)
-                new_data['rules']=new_rules
-
-                self.add_flow(data=new_data, nodes_ids=[node])
+                for flow in operations["insert"]:
+                    self._flow(flow_id=flow['id'],
+                               method='put',
+                               data=json.dumps({'flow': [flow]}),
+                               nodes_ids=[node])
 
             except Exception as e:
                 message = self._parse_errors(e.response.json())
@@ -353,12 +355,12 @@ class ODLPlugin(BaseSdnPlugin):
 
     def _diff_flows(self, current_data, new_data):
         #This function compares the current applied data with the desired new data
-        #returning a tuple of tuples, containing:
-        # id: the id of the flow that show be modified
-        # operation: the action that should be taken (delete or update)
+        #returning a dict containing
+        # operation: the action that should be taken (delete or insert)
+        # flow: the flow that should be manipulated
+
         if current_data != []:
             current_data=current_data[0]['flow']
-
 
         #turn lists into dicts and merge ids
         ids_merged = []
@@ -374,39 +376,38 @@ class ODLPlugin(BaseSdnPlugin):
             if ids_merged.count(current_flow['id'])==0:
                 ids_merged.append(current_flow['id'])
 
-        operations={"delete":[], "update":[]}
+        operations={"delete":[], "insert":[]} #update is also an insertion
 
+        ids_merged.sort()
         for id in ids_merged:
             if not id in new:
-                if id.find('_') > 0:
-                    id = id[0:id.find('_')]
-                if operations["delete"].count(id)<1:
-                    operations["delete"].append(id)
-                    log.debug("flow id %s will be deleted"%id)
+                operations["delete"].append(current[id])
+                log.debug("flow id %s will be deleted"%id)
             else:
-                if not id in current or self.assertDictsEqual(new[id], current[id])==False:
-                    if id.find('_') > 0:
-                        id = id[0:id.find('_')]
-                    if operations["update"].count(id) < 1:
-                        operations["update"].append(id)
-                        log.debug("flow id %s will be updated" % id)
+                if not id in current:
+                    operations["insert"].append(new[id])
+                    log.debug("flow id %s will be inserted" % id)
+                elif self.assertDictsEqual(new[id], current[id])==False:
+                    operations["insert"].append(new[id])
+                    log.debug("flow id %s will be updated" % id)
+
         return operations
 
-    def assertDictsEqual(self, d1, d2, path=""):
+    def assertDictsEqual(self, d1, d2):
         for k in d1.keys():
             if not d2.has_key(k):
-                log.debug("%s missing" % k)
+                log.debug("%s key missing" % k)
                 return False
             else:
                 if type(d1[k]) is dict:
-                    if path == "":
-                        path = k
-                    else:
-                        path = path + "->" + k
-                    if self.assertDictsEqual(d1[k], d2[k], path) == False:
+                    if self.assertDictsEqual(d1[k], d2[k]) == False:
                         return False
                 else:
-                    if type(d1[k]) == int or type(d2[k])==int:
+                    #TODO: ignore cookie is a workaround for a unknown problem when
+                    # diffing cookies
+                    if "%s"%k=="cookie":
+                        log.debug("ignoring cookie for now")
+                    elif type(d1[k]) == int or type(d2[k])==int:
                         if "%s"%d1[k] != "%s"%d2[k]:
                             log.debug("%s differs: %s - %s" % (k, d1[k], d2[k]))
                             return False
