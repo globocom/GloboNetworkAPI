@@ -25,13 +25,13 @@ class Generic(BaseSdnPlugin):
 
         for vip in vips['vips']:
             service = {
-                'name': vip['name'],
-                'host': vip['ipv4']['ip_formated'],
+                'address': vip['ipv4']['ip_formated'],
                 'persistent': int(vip['options']['timeout']['nome_opcao_txt']),
                 'mode': 'nat'
             }
 
             for port in vip['ports']:
+                service['name'] =  '{}_{}'.format(vip['id'], port['port'])
                 service['port'] = port['port']
                 service['protocol'] = vip['options']['l4_protocol']\
                                         ['nome_opcao_txt'].lower()
@@ -58,6 +58,15 @@ class Generic(BaseSdnPlugin):
     # POOL
     def create_pool(self, pools):
 
+        for vip in pools['vips']:
+
+            name_service = vip['name']
+
+            for port in vip['ports']:
+
+                for pool in port['pools']:
+
+
         for pool in pools['server_pools']:
 
             for member in pool['server_pool_members']:
@@ -67,8 +76,8 @@ class Generic(BaseSdnPlugin):
                     'host': member['ip']['ip_formated'],
                     'weight': member['weight']
                 }
-
-                self._create_destination(destination)
+                name_service = ''
+                self._create_destination(destination, name_service)
 
     def delete_pool(self, pools):
 
@@ -84,9 +93,9 @@ class Generic(BaseSdnPlugin):
         if scheduler == 'least-conn':
             return 'lc'
         elif scheduler == 'weighted':
-            return
+            return 'wrr' # check
         elif scheduler == 'uri hash':
-            return
+            return 'dh' # check
         elif scheduler == 'round-robin':
             return 'rr'
 
@@ -102,33 +111,33 @@ class Generic(BaseSdnPlugin):
                                                    name_destination)
         return self._request(url, 'GET')
 
-    def _create_service(self, service):
+    def _create_service(self, service_dict):
 
         url = 'services/'
 
-        self._request(url, 'POST', service)
+        self._request(url, 'POST', service_dict)
 
-    def _create_destination(self, destination, name_service):
+    def _create_destination(self, destination_dict, name_service):
 
         url = 'services/{}/destinations'.format(name_service)
 
-        self._request(url, 'POST', destination)
+        self._request(url, 'POST', destination_dict)
 
-    def _delete_service(self, service_name):
+    def _delete_service(self, name_service):
 
-        url = '/services/{}'.format(service_name)
+        url = 'services/{}'.format(name_service)
 
         self._request(url, 'DELETE')
 
     def _delete_destination(self, name_service, name_destination):
 
-        url = '/services/{}/destinations/{}'.format(name_service,
-                                                    name_destination)
+        url = 'services/{}/destinations/{}'.format(name_service,
+                                                   name_destination)
         self._request(url, 'DELETE')
 
     def _request(self, url, method, payload=None):
 
-        uri = 'http://10.224.142.239:8000/'
+        uri = 'http://192.168.244.244:8000/'
 
         method = method.lower()
 
