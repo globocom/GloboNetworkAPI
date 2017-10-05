@@ -15,7 +15,130 @@
    limitations under the License.
 """
 from networkapi.plugins.SDN.base import BaseSdnPlugin
-
+import requests
+import json
 
 class Generic(BaseSdnPlugin):
-    pass
+
+    # VIPS
+    def create_vip(self, vips):
+
+        for vip in vips['vips']:
+            service = {
+                'name': vip['name'],
+                'host': vip['ipv4']['ip_formated'],
+                'persistent': int(vip['options']['timeout']['nome_opcao_txt']),
+                'mode': 'nat'
+            }
+
+            for port in vip['ports']:
+                service['port'] = port['port']
+                service['protocol'] = vip['options']['l4_protocol']\
+                                        ['nome_opcao_txt'].lower()
+
+                for pool in port['pools']:
+
+                    service['scheduler'] = \
+                        self._get_scheduler(pool['server_pool']['lb_method'])
+                    self._create_service(service)
+
+
+    def delete_vip(self, vips):
+
+        for vip in vips['vips']:
+
+            pass
+
+
+    def update_vip(self, vips):
+
+        pass
+
+
+    # POOL
+    def create_pool(self, pools):
+
+        for pool in pools['server_pools']:
+
+            for member in pool['server_pool_members']:
+                destination = {
+                    'name': member['identifier'],
+                    'port': member['port_real'],
+                    'host': member['ip']['ip_formated'],
+                    'weight': member['weight']
+                }
+
+                self._create_destination(destination)
+
+    def delete_pool(self, pools):
+
+        for pool in pools['server_pools']:
+            pass
+
+    def update_pool(self, pools):
+
+        pass
+
+    def _get_scheduler(self, scheduler):
+
+        if scheduler == 'least-conn':
+            return 'lc'
+        elif scheduler == 'weighted':
+            return
+        elif scheduler == 'uri hash':
+            return
+        elif scheduler == 'round-robin':
+            return 'rr'
+
+    def _get_service(self, name_service):
+
+        url = 'services/{}'.format(name_service)
+
+        return self._request(url, 'GET')
+
+    def _get_destination(self, name_service, name_destination):
+
+        url = 'services/{}/destinations/{}'.format(name_service,
+                                                   name_destination)
+        return self._request(url, 'GET')
+
+    def _create_service(self, service):
+
+        url = 'services/'
+
+        self._request(url, 'POST', service)
+
+    def _create_destination(self, destination, name_service):
+
+        url = 'services/{}/destinations'.format(name_service)
+
+        self._request(url, 'POST', destination)
+
+    def _delete_service(self, service_name):
+
+        url = '/services/{}'.format(service_name)
+
+        self._request(url, 'DELETE')
+
+    def _delete_destination(self, name_service, name_destination):
+
+        url = '/services/{}/destinations/{}'.format(name_service,
+                                                    name_destination)
+        self._request(url, 'DELETE')
+
+    def _request(self, url, method, payload=None):
+
+        uri = 'http://10.224.142.239:8000/'
+
+        method = method.lower()
+
+        request_type_func = getattr(requests, method)
+
+        request = request_type_func(
+            uri + url,
+            json = payload
+        )
+        request.raise_for_status()
+
+        return json.loads(request.text)
+
