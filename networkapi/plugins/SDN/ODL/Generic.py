@@ -42,12 +42,13 @@ class ODLPlugin(BaseSdnPlugin):
     Plugin base para interação com controlador ODL
     """
 
+    versions = ["BERYLLIUM", "BORON", "CARBON"]
+
     def __init__(self, **kwargs):
 
         super(ODLPlugin, self).__init__(**kwargs)
 
         try:
-
             if not isinstance(self.equipment_access, EquipamentoAcesso):
                 msg = 'equipment_access is not of EquipamentoAcesso type'
                 log.info(msg)
@@ -57,10 +58,14 @@ class ODLPlugin(BaseSdnPlugin):
             # If AttributeError raised, equipment_access do not exists
             self.equipment_access = self._get_equipment_access()
 
-    def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL):
+        if self.version not in self.versions:
+            log.error("Invalid version at ODL Controller initialization")
+            raise exceptions.ValueInvalid(msg="Invalid version at ODL Controller initialization")
+
+    def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL, nodes_ids=[]):
 
         if flow_type == FlowTypes.ACL:
-            builder = AclFlowBuilder(data)
+            builder = AclFlowBuilder(data, self.environment)
 
             flows_set = builder.build()
         try:
@@ -69,14 +74,45 @@ class ODLPlugin(BaseSdnPlugin):
 
                     self._flow(flow_id=flow['id'],
                                method='put',
-                               data=json.dumps({'flow': [flow]}))
+                               data=json.dumps({'flow': [flow]}),
+                               nodes_ids=nodes_ids)
         except HTTPError as e:
             raise exceptions.CommandErrorException(
                                 msg=self._parse_errors(e.response.json()))
 
 
-    def del_flow(self, flow_id=0):
-        return self._flow(flow_id=flow_id, method='delete')
+    def del_flow(self, flow_id=0, nodes_ids=[]):
+        return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
+
+
+    def update_all_flows(self, data, flow_type=FlowTypes.ACL):
+        current_flows = self.get_flows()
+
+        for node in current_flows.keys():
+            log.info("Starting update all flows for node %s"%node)
+
+            if flow_type == FlowTypes.ACL:
+                builder = AclFlowBuilder(data, self.environment)
+                new_flows_set = builder.build()
+
+            #Makes a diff
+            operations = self._diff_flows(current_flows[node], new_flows_set)
+
+            try:
+                for flow in operations["delete"]:
+                    self.del_flow(flow_id=flow['id'], nodes_ids=[node])
+
+                for flow in operations["insert"]:
+                    self._flow(flow_id=flow['id'],
+                               method='put',
+                               data=json.dumps({'flow': [flow]}),
+                               nodes_ids=[node])
+
+            except Exception as e:
+                message = self._parse_errors(e.response.json())
+                log.error("ERROR while updating all flows: %s" % message)
+                raise exceptions.CommandErrorException(msg=message)
+
 
     def flush_flows(self):
         nodes_ids = self._get_nodes_ids()
@@ -115,7 +151,7 @@ class ODLPlugin(BaseSdnPlugin):
 
         return self._flow(flow_id=flow_id, method='get')
 
-    def _flow(self, flow_id=0, method='', data=None):
+    def _flow(self, flow_id=0, method='', data=None, nodes_ids=[]):
         """ Generic implementation of the plugin communication with the
         remote controller through HTTP requests
         """
@@ -126,9 +162,10 @@ class ODLPlugin(BaseSdnPlugin):
             log.error("Invalid parameters in OLDPlugin flow handler")
             raise exceptions.ValueInvalid()
 
-        nodes_ids = self._get_nodes_ids()
-        if len(nodes_ids) < 1:
-            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+        if nodes_ids==[]:
+            nodes_ids = self._get_nodes_ids()
+            if len(nodes_ids) < 1:
+                raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         return_flows = []
         for node_id in nodes_ids:
@@ -179,26 +216,40 @@ class ODLPlugin(BaseSdnPlugin):
         #TODO: We need to check on newer versions (later to Berylliun) if the
         # check on both config and operational is still necessary
         path1 = "/restconf/config/network-topology:network-topology/topology/flow:1/"
-        path2 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
+        path2 = "/restconf/config/opendaylight-inventory:nodes/"
+        path3 = "/restconf/operational/network-topology:network-topology/topology/flow:1/"
+
         nodes_ids={}
+        try:
+            nodes = self._request(method='get', path=path2, contentType='json')['nodes']
+            if nodes.has_key('node'):
+                for node in nodes['node']:
+                    if node["id"].find("openflow:")==0:
+                        nodes_ids[node["id"]] = 1
+        except HTTPError as e:
+            if e.response.status_code != 404:
+                raise e
+
         try:
             topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
             if topo1.has_key('node'):
                 for node in topo1['node']:
-                    if node["node-id"] not in ["controller-config"]:
+                    if node["node-id"].find("openflow:") == 0:
                         nodes_ids[node["node-id"]] = 1
         except HTTPError as e:
             if e.response.status_code!=404:
                 raise e
+
         try:
-            topo2 = self._request(method='get', path=path2, contentType='json')['topology'][0]
+            topo2 = self._request(method='get', path=path3, contentType='json')['topology'][0]
             if topo2.has_key('node'):
                 for node in topo2['node']:
-                    if node["node-id"] not in ["controller-config"]:
+                    if node["node-id"].find("openflow:") == 0:
                         nodes_ids[node["node-id"]] = 1
         except HTTPError as e:
             if e.response.status_code!=404:
                 raise e
+
         nodes_ids_list = nodes_ids.keys()
         nodes_ids_list.sort()
         return nodes_ids_list
@@ -241,6 +292,9 @@ class ODLPlugin(BaseSdnPlugin):
             )
 
             request.raise_for_status()
+
+            if request.status_code==200 and request.content=='':
+                return
 
             try:
                 return json.loads(request.text)
@@ -296,3 +350,73 @@ class ODLPlugin(BaseSdnPlugin):
             log.error('Access type %s not found for equipment %s.' %
                       ('https', self.equipment.nome))
             raise exceptions.InvalidEquipmentAccessException()
+
+    def _diff_flows(self, current_data, new_data):
+        #This function compares the current applied data with the desired new data
+        #returning a dict containing
+        # operation: the action that should be taken (delete or insert)
+        # flow: the flow that should be manipulated
+
+        if current_data != []:
+            current_data=current_data[0]['flow']
+
+        #turn lists into dicts and merge ids
+        ids_merged = []
+        new = {}
+        current = {}
+
+        for new_flows in new_data:
+            for new_flow in new_flows['flow']:
+                new[new_flow['id']] = new_flow
+                ids_merged.append(new_flow['id'])
+        for current_flow in current_data:
+            current[current_flow['id']] = current_flow
+            if ids_merged.count(current_flow['id'])==0:
+                ids_merged.append(current_flow['id'])
+
+        operations={"delete":[], "insert":[]} #update is also an insertion
+
+        ids_merged.sort()
+        for id in ids_merged:
+            if not id in new:
+                operations["delete"].append(current[id])
+                log.debug("flow id %s will be deleted"%id)
+            else:
+                if not id in current:
+                    operations["insert"].append(new[id])
+                    log.debug("flow id %s will be inserted" % id)
+                elif self.assertDictsEqual(new[id], current[id])==False:
+                    operations["insert"].append(new[id])
+                    log.debug("flow id %s will be updated" % id)
+
+        return operations
+
+    def assertDictsEqual(self, d1, d2):
+        for k in d1.keys():
+            if not d2.has_key(k):
+                log.debug("%s key missing" % k)
+                return False
+            else:
+                if type(d1[k]) is dict:
+                    if self.assertDictsEqual(d1[k], d2[k]) == False:
+                        return False
+                else:
+                    #TODO: ignore cookie is a workaround for a unknown problem when
+                    # diffing cookies
+                    if "%s"%k=="cookie":
+                        # ignoring cookie for now"
+                        pass
+                    elif type(d1[k]) == int or type(d2[k])==int:
+                        if "%s"%d1[k] != "%s"%d2[k]:
+                            log.debug("%s differs: %s - %s" % (k, d1[k], d2[k]))
+                            return False
+                    else:
+                        if d1[k] != d2[k]:
+                            log.debug ("%s differs: %s - %s"%(k, d1[k], d2[k]))
+                            return False
+        return True
+
+
+
+
+

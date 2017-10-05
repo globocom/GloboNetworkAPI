@@ -1,6 +1,7 @@
 {
   "environments": [
     {
+      "dcroom": null,
       "acl_path": null,
       "ambiente_logico": {
         "id": 1,
@@ -18,6 +19,7 @@
       "father_environment": {
         "acl_path": null,
         "ambiente_logico": 1,
+        "dcroom": 1,
         "default_vrf": 1,
         "divisao_dc": 1,
         "father_environment": null,

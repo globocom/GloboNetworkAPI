@@ -171,7 +171,9 @@ class EnvFlowView(CustomAPIView):
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
 
-        task = facade.insert_flow(environment_id, request.DATA)
+        user = request.user
+
+        task = facade.insert_flow(environment_id, request.DATA, user.id)
 
         response = {
             'id': flow_id or environment_id,
@@ -200,10 +202,12 @@ class EnvFlowView(CustomAPIView):
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id')
 
+        user = request.user
+
         if flow_id:
-            task = facade.insert_flow(environment_id, request.DATA)
+            task = facade.insert_flow(environment_id, request.DATA, user.id)
         else:
-            task = facade.flush_environment(environment_id, request.DATA)
+            task = facade.flush_environment(environment_id, request.DATA, user.id)
 
         response = {
             'id': flow_id or environment_id,

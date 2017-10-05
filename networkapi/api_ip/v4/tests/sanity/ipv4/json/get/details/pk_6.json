@@ -68,6 +68,7 @@
                   "id": 1,
                   "name": "BE - SANITY-TEST-1 - RACK-1",
                   "grupo_l3": 1,
+                  "dcroom": null,
                   "ambiente_logico": 1,
                   "divisao_dc": 1,
                   "filter": 1,
@@ -81,7 +82,7 @@
                   "max_num_vlan_2": null,
                   "default_vrf": 1,
                   "father_environment": null,
-                  "sdn_controlled": false
+                  "sdn_controllers": null
                 }
               }
             ],
@@ -125,6 +126,7 @@
                   "name": "BE - SANITY-TEST-1 - RACK-1",
                   "grupo_l3": 1,
                   "ambiente_logico": 1,
+                  "dcroom": null,
                   "divisao_dc": 1,
                   "filter": 1,
                   "acl_path": null,
@@ -137,7 +139,7 @@
                   "max_num_vlan_2": null,
                   "default_vrf": 1,
                   "father_environment": null,
-                  "sdn_controlled": false
+                  "sdn_controllers": null
                 }
               }
             ],

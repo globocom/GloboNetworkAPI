@@ -3,6 +3,7 @@
     {
       "acl_path": "",
       "ambiente_logico": 2,
+      "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
       "father_environment": 1,
@@ -19,6 +20,7 @@
     {
       "acl_path": "",
       "ambiente_logico": 2,
+      "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
       "father_environment": 1,

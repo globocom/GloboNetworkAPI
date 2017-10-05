@@ -1,27 +1,62 @@
 {
   "equipments": [
     {
-      "id": 3,
-      "name": "VM-SANITY-TEST-03",
-      "maintenance": false,
+      "environments": [],
       "equipment_type": {
-        "id": 1,
-        "equipment_type": "VM"
+        "equipment_type": "VM",
+        "id": 1
       },
-      "model": {
-        "id": 1,
-        "name": "Generic Model"
-      },
+      "groups": [],
+      "id": 3,
+      "id_as": null,
       "ipsv4": [
         {
           "ip": {
+            "description": "IP",
             "id": 1,
-            "oct4": 1,
-            "oct3": 0,
-            "oct2": 0,
+            "ip_formated": "10.0.0.1",
+            "networkipv4": {
+              "active": true,
+              "broadcast": "10.0.0.1",
+              "cluster_unit": "",
+              "dhcprelay": [],
+              "environmentvip": null,
+              "id": 1,
+              "mask_formated": "255.255.255.1",
+              "mask_oct1": 255,
+              "mask_oct2": 255,
+              "mask_oct3": 255,
+              "mask_oct4": 1,
+              "network_type": {
+                "id": 1,
+                "tipo_rede": "Network of Equipments"
+              },
+              "networkv4": "10.0.0.0/24",
+              "oct1": 10,
+              "oct2": 0,
+              "oct3": 0,
+              "oct4": 0,
+              "prefix": 24,
+              "vlan": {
+                "acl_draft": null,
+                "acl_draft_v6": null,
+                "acl_file_name": "",
+                "acl_file_name_v6": "",
+                "acl_valida": false,
+                "acl_valida_v6": false,
+                "active": false,
+                "description": "",
+                "environment": 1,
+                "id": 1,
+                "name": "VLAN 1",
+                "num_vlan": 1,
+                "vrf": null
+              }
+            },
             "oct1": 10,
-            "networkipv4": 1,
-            "description": "IP"
+            "oct2": 0,
+            "oct3": 0,
+            "oct4": 1
           },
           "virtual_interface": {
             "id": 1,
@@ -35,13 +70,51 @@
         },
         {
           "ip": {
+            "description": "IP",
             "id": 2,
-            "oct4": 2,
-            "oct3": 0,
-            "oct2": 0,
+            "ip_formated": "10.0.0.2",
+            "networkipv4": {
+              "active": true,
+              "broadcast": "10.0.0.1",
+              "cluster_unit": "",
+              "dhcprelay": [],
+              "environmentvip": null,
+              "id": 1,
+              "mask_formated": "255.255.255.1",
+              "mask_oct1": 255,
+              "mask_oct2": 255,
+              "mask_oct3": 255,
+              "mask_oct4": 1,
+              "network_type": {
+                "id": 1,
+                "tipo_rede": "Network of Equipments"
+              },
+              "networkv4": "10.0.0.0/24",
+              "oct1": 10,
+              "oct2": 0,
+              "oct3": 0,
+              "oct4": 0,
+              "prefix": 24,
+              "vlan": {
+                "acl_draft": null,
+                "acl_draft_v6": null,
+                "acl_file_name": "",
+                "acl_file_name_v6": "",
+                "acl_valida": false,
+                "acl_valida_v6": false,
+                "active": false,
+                "description": "",
+                "environment": 1,
+                "id": 1,
+                "name": "VLAN 1",
+                "num_vlan": 1,
+                "vrf": null
+              }
+            },
             "oct1": 10,
-            "networkipv4": 1,
-            "description": "IP"
+            "oct2": 0,
+            "oct3": 0,
+            "oct4": 2
           },
           "virtual_interface": null
         }
@@ -49,7 +122,6 @@
       "ipsv6": [
         {
           "ip": {
-            "id": 1,
             "block1": "fc00",
             "block2": "0000",
             "block3": "0000",
@@ -58,8 +130,54 @@
             "block6": "0000",
             "block7": "0000",
             "block8": "0001",
-            "networkipv6": 1,
-            "description": null
+            "description": null,
+            "id": 1,
+            "ip_formated": "fc00:0000:0000:0004:0000:0000:0000:0001",
+            "networkipv6": {
+              "active": true,
+              "block1": "fc00",
+              "block2": "0000",
+              "block3": "0000",
+              "block4": "0004",
+              "block5": "0000",
+              "block6": "0000",
+              "block7": "0000",
+              "block8": "0000",
+              "cluster_unit": null,
+              "dhcprelay": [],
+              "environmentvip": null,
+              "id": 1,
+              "mask1": "ffff",
+              "mask2": "ffff",
+              "mask3": "ffff",
+              "mask4": "ffff",
+              "mask5": "0000",
+              "mask6": "0000",
+              "mask7": "0000",
+              "mask8": "0000",
+              "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+              "network_type": {
+                "id": 1,
+                "tipo_rede": "Network of Equipments"
+              },
+              "networkv6": "fc00:0000:0000:0004:0000:0000:0000:0000/64",
+              "prefix": 64,
+              "vlan": {
+                "acl_draft": null,
+                "acl_draft_v6": null,
+                "acl_file_name": "",
+                "acl_file_name_v6": "",
+                "acl_valida": false,
+                "acl_valida_v6": false,
+                "active": false,
+                "description": "",
+                "environment": 1,
+                "id": 1,
+                "name": "VLAN 1",
+                "num_vlan": 1,
+                "vrf": null
+              }
+            }
           },
           "virtual_interface": {
             "id": 1,
@@ -73,7 +191,6 @@
         },
         {
           "ip": {
-            "id": 2,
             "block1": "fc00",
             "block2": "0000",
             "block3": "0000",
@@ -82,15 +199,64 @@
             "block6": "0000",
             "block7": "0000",
             "block8": "0002",
-            "networkipv6": 1,
-            "description": null
+            "description": null,
+            "id": 2,
+            "ip_formated": "fc00:0000:0000:0004:0000:0000:0000:0002",
+            "networkipv6": {
+              "active": true,
+              "block1": "fc00",
+              "block2": "0000",
+              "block3": "0000",
+              "block4": "0004",
+              "block5": "0000",
+              "block6": "0000",
+              "block7": "0000",
+              "block8": "0000",
+              "cluster_unit": null,
+              "dhcprelay": [],
+              "environmentvip": null,
+              "id": 1,
+              "mask1": "ffff",
+              "mask2": "ffff",
+              "mask3": "ffff",
+              "mask4": "ffff",
+              "mask5": "0000",
+              "mask6": "0000",
+              "mask7": "0000",
+              "mask8": "0000",
+              "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+              "network_type": {
+                "id": 1,
+                "tipo_rede": "Network of Equipments"
+              },
+              "networkv6": "fc00:0000:0000:0004:0000:0000:0000:0000/64",
+              "prefix": 64,
+              "vlan": {
+                "acl_draft": null,
+                "acl_draft_v6": null,
+                "acl_file_name": "",
+                "acl_file_name_v6": "",
+                "acl_valida": false,
+                "acl_valida_v6": false,
+                "active": false,
+                "description": "",
+                "environment": 1,
+                "id": 1,
+                "name": "VLAN 1",
+                "num_vlan": 1,
+                "vrf": null
+              }
+            }
           },
           "virtual_interface": null
         }
       ],
-      "environments": [],
-      "groups": [],
-      "id_as": null
+      "maintenance": false,
+      "model": {
+        "id": 1,
+        "name": "Generic Model"
+      },
+      "name": "VM-SANITY-TEST-03"
     }
   ]
 }

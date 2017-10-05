@@ -1,7 +1,7 @@
 [
   {
     "id": "141880_1026",
-    "priority": 42,
+    "priority": 65000,
     "table_id": 0,
     "match": {
       "ethernet-match": {

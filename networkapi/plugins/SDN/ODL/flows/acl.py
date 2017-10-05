@@ -61,6 +61,7 @@ class Tokens(object):
     range = "range"
     eq = "eq"
 
+
 class AclFlowBuilder(object):
     """ Class responsible for build json data for Access control list flow at
     OpenDayLight controller
@@ -73,13 +74,19 @@ class AclFlowBuilder(object):
     PRIORITY_DEFAULT = 65000
     TABLE = 0
     ALLOWED_FLOWS_SIZE = 5
+    MAX_RANGE_LENGTH = 120
 
-    def __init__(self, data):
+    def __init__(self, data, environment=0, version="BERYLLIUM"):
 
         self.raw_data = data  # Original data
         self.flows = {"flow": []}  # Processed data
 
-        self.dumped_rule = None # Actual processing rule in json format
+        if environment is None:
+            environment = 0
+        self.environment = int(environment)
+
+        self.version = version
+        self.dumped_rule = None  # Actual processing rule in json format
 
         self._reset_control_members()
 
@@ -215,16 +222,16 @@ class AclFlowBuilder(object):
         """ Builds optional 64-bits field named cookie """
 
         id_rule = rule[Tokens.id_]
-        self.flows["flow"][0][Tokens.cookie] = \
-            CookieHandler.get_cookie(id_rule)
+        cookie_handler = CookieHandler(id_rule, self.environment)
+        self.flows["flow"][0][Tokens.cookie] = cookie_handler.cookie
 
     def _build_sequence(self, rule):
         """ Build sequence field to set flow priority """
 
-        if Tokens.sequence in rule:
-            self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
-        else:
-            self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
+        # if Tokens.sequence in rule:
+        #     self.flows["flow"][0]["priority"] = rule[Tokens.sequence]
+        # else:
+        self.flows["flow"][0]["priority"] = self.PRIORITY_DEFAULT
 
     def _build_protocol(self, rule):
         """ Identifies the protocol of the ACL rule """
@@ -302,7 +309,12 @@ class AclFlowBuilder(object):
 
         l4_options = rule.get(Tokens.l4_options, {})
 
-        if l4_options.get(Tokens.src_port_op) == Tokens.range and \
+        #this if is an temporary solution
+        if self._calc_length_of_range(rule)>self.MAX_RANGE_LENGTH:
+            logging.warning("Max range lenght reached. A more permissive flow will be used.")
+            self.generated_all_flows_from_rule = True
+
+        elif l4_options.get(Tokens.src_port_op) == Tokens.range and \
            l4_options.get(Tokens.dst_port_op) == Tokens.range:
             self._build_double_range(rule, protocol)
 
@@ -330,9 +342,14 @@ class AclFlowBuilder(object):
             flags = l4_options[Tokens.flags]
             tcp_flags = TCPControlBits(flags).to_int()
 
-            self.flows["flow"][0]["match"]["tcp-flag-match"] = {
-                "tcp-flag": tcp_flags,
-            }
+            if self.version in ["BERYLLIUM"]:
+                self.flows["flow"][0]["match"]["tcp-flag-match"] = {
+                    "tcp-flag": tcp_flags,
+                }
+            elif self.version in ["BORON", "CARBON"]:
+                self.flows["flow"][0]["match"]["tcp-flags-match"] = {
+                    "tcp-flags": tcp_flags,
+                }
 
     def _build_simple_range(self, rule, protocol, start, end):
         """ Builds a TCP|UDP flows when ACL has Src and Dst ranges."""
@@ -386,7 +403,8 @@ class AclFlowBuilder(object):
         src_port_end = int(l4_options[Tokens.src_port_end])
         dst_port_end = int(l4_options[Tokens.dst_port_end])
 
-        if self.current_src_port is not None and self.current_dst_port is not None:
+        if self.current_src_port is not None \
+           and self.current_dst_port is not None:
 
             # Assigns if the last iteration made flows array to reach
             # ALLOWED_FLOWS_SIZE before reach the last port in range
@@ -592,4 +610,21 @@ class AclFlowBuilder(object):
 
         self.flows["flow"][0]["match"][prefix] = \
             rule[Tokens.l4_options][start]
+
+    def _calc_length_of_range(self, rule):
+        l4_options = rule.get(Tokens.l4_options, {})
+        src_range=1
+        dst_range=1
+
+        if l4_options.get(Tokens.src_port_op) == Tokens.range:
+            src_port_start = int(l4_options[Tokens.src_port])
+            src_port_end = int(l4_options[Tokens.src_port_end])
+            src_range=src_port_end-src_port_start+1
+
+        if l4_options.get(Tokens.dst_port_op) == Tokens.range:
+            dst_port_start = int(l4_options[Tokens.dst_port])
+            dst_port_end = int(l4_options[Tokens.dst_port_end])
+            dst_range=dst_port_end-dst_port_start+1
+
+        return src_range * dst_range
 

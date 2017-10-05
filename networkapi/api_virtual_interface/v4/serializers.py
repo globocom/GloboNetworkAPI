@@ -22,7 +22,8 @@ class VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         return self.extends_serializer(obj, 'ipv6_equipment')
 
     class Meta:
-        VirtualInterface = get_model('api_virtual_interface', 'VirtualInterface')
+        VirtualInterface = get_model('api_virtual_interface',
+                                     'VirtualInterface')
         model = VirtualInterface
 
         fields = (
@@ -54,56 +55,71 @@ class VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         if not self.mapping:
             self.mapping = {
                 'ipv4_equipment': {
-                    'serializer': v4_ip_slz.Ipv4EquipmentVirtualInterfaceV4Serializer,
+                    'serializer': v4_ip_slz. \
+                        IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip',
-                            'equipment',
-                        )
                     },
                     'obj': 'ipv4_equipment_virtual_interface'
                 },
-                'ipv4_equipment__details': {
-                    'serializer': v4_ip_slz.Ipv4EquipmentVirtualInterfaceV4Serializer,
+                'ipv4_equipment__basic': {
+                    'serializer': v4_ip_slz. \
+                        IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip__details',
-                            'equipment__details',
-                        )
+                        'kind': 'basic'
+                    },
+                    'obj': 'ipv4_equipment_virtual_interface',
+                },
+                'ipv4_equipment__details': {
+                    'serializer': v4_ip_slz. \
+                        IPv4EquipmentV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'ipv4_equipment_virtual_interface',
                 },
                 'ipv6_equipment': {
-                    'serializer': v4_ip_slz.Ipv6EquipmentVirtualInterfaceV4Serializer,
+                    'serializer': v4_ip_slz. \
+                        IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip',
-                            'equipment',
-                        )
                     },
                     'obj': 'ipv6_equipment_virtual_interface'
                 },
-                'ipv6_equipment__details': {
-                    'serializer': v4_ip_slz.Ipv6EquipmentVirtualInterfaceV4Serializer,
+                'ipv6_equipment__basic': {
+                    'serializer': v4_ip_slz. \
+                        IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'fields': (
-                            'ip__details',
-                            'equipment__details',
-                        )
+                        'kind': 'basic'
+                    },
+                    'obj': 'ipv6_equipment_virtual_interface',
+                },
+                'ipv6_equipment__details': {
+                    'serializer': v4_ip_slz. \
+                        IPv6EquipmentV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
                     },
                     'obj': 'ipv6_equipment_virtual_interface',
                 },
                 'vrf': {
                     'obj': 'vrf_id'
                 },
+                'vrf__basic': {
+                    'serializer': vrf_slz.VrfV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic',
+                    },
+                    'obj': 'vrf'
+                },
                 'vrf__details': {
                     'serializer': vrf_slz.VrfV3Serializer,
                     'kwargs': {
-
+                        'kind': 'details',
                     },
                     'obj': 'vrf'
                 },

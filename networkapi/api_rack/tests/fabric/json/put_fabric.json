@@ -5,7 +5,6 @@
     "name":"PUT Fabric",
     "racks": 4,
     "spines": 4,
-    "leafs": 2,
-    "config": {}
+    "leafs": 2
   }
 }

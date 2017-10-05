@@ -36,9 +36,11 @@ class BaseSdnPlugin(object):
             'equipment': None,
             'equipment_access': None,
             'protocol': 'http',
+            'version': None,
+            'environment': None
         }
 
-        # Setting params via kwargs or use the defaults
+        # Set params via kwargs or use the defaults
         for param in params:
             if param in kwargs:
                 setattr(self, param, kwargs.get(param))

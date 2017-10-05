@@ -5,7 +5,8 @@
             "divisao_dc": 1,
             "filter": 1,
             "grupo_l3": 1,
-            "father_environment": 4
+            "father_environment": 4,
+            "dcroom": 1
         },
         "model": "ambiente.ambiente",
         "pk": 1
@@ -17,7 +18,8 @@
             "divisao_dc": 1,
             "filter": 1,
             "grupo_l3": 2,
-            "father_environment": 4
+            "father_environment": 4,
+            "dcroom": 1
         },
         "model": "ambiente.ambiente",
         "pk": 2
@@ -28,7 +30,8 @@
             "default_vrf": 1,
             "divisao_dc": 1,
             "filter": 1,
-            "grupo_l3": 3
+            "grupo_l3": 3,
+            "dcroom": 1
         },
         "model": "ambiente.ambiente",
         "pk": 3
@@ -39,7 +42,8 @@
             "default_vrf": 1,
             "divisao_dc": 1,
             "filter": 1,
-            "grupo_l3": 4
+            "grupo_l3": 4,
+            "dcroom": 1
         },
         "model": "ambiente.ambiente",
         "pk": 4

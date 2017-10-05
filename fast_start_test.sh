@@ -10,7 +10,7 @@ pip install -r requirements_test.txt
 pip install -r requirements_debug.txt
 
 echo "exporting NETWORKAPI_DEBUG"
-export NETWORKAPI_DEBUG='DEBUG'
+export NETWORKAPI_DEBUG='1'
 export NETWORKAPI_LOG_QUEUE=0
 
 echo "exporting DJANGO_SETTINGS_MODULE"
