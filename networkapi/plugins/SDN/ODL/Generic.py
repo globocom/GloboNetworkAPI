@@ -224,7 +224,7 @@ class ODLPlugin(BaseSdnPlugin):
             nodes = self._request(method='get', path=path2, contentType='json')['nodes']
             if nodes.has_key('node'):
                 for node in nodes['node']:
-                    if node["id"] not in ["controller-config"]:
+                    if node["id"].find("openflow:")==0:
                         nodes_ids[node["id"]] = 1
         except HTTPError as e:
             if e.response.status_code != 404:
@@ -234,7 +234,7 @@ class ODLPlugin(BaseSdnPlugin):
             topo1=self._request(method='get', path=path1, contentType='json')['topology'][0]
             if topo1.has_key('node'):
                 for node in topo1['node']:
-                    if node["node-id"] not in ["controller-config"]:
+                    if node["node-id"].find("openflow:") == 0:
                         nodes_ids[node["node-id"]] = 1
         except HTTPError as e:
             if e.response.status_code!=404:
@@ -244,7 +244,7 @@ class ODLPlugin(BaseSdnPlugin):
             topo2 = self._request(method='get', path=path3, contentType='json')['topology'][0]
             if topo2.has_key('node'):
                 for node in topo2['node']:
-                    if node["node-id"] not in ["controller-config"]:
+                    if node["node-id"].find("openflow:") == 0:
                         nodes_ids[node["node-id"]] = 1
         except HTTPError as e:
             if e.response.status_code!=404:
