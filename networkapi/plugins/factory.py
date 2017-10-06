@@ -15,6 +15,7 @@
 # limitations under the License.
 import logging
 import re
+
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
 
 log = logging.getLogger(__name__)
@@ -70,8 +71,11 @@ class PluginFactory(object):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
             if re.search('OPENDAYLIGHT', marca.upper(), re.DOTALL):
-                #from .SDN.ODL.Generic import ODLPlugin
+                # from .SDN.ODL.Generic import ODLPlugin
                 return ODLPlugin
+            if re.search('FUSIS', marca.upper(), re.DOTALL):
+                from .SDN.FUSIS.Generic import Generic
+                return Generic
 
         raise NotImplementedError('plugin not implemented')
 
@@ -82,8 +86,8 @@ class PluginFactory(object):
         modelo = equipment.modelo.nome
         plugin_name = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
 
-        if type(plugin_name)==type(ODLPlugin):
-            env_id = kwargs.get("env_id")
+        if type(plugin_name) == type(ODLPlugin):
+            env_id = kwargs.get('env_id')
             return plugin_name(
                 equipment=equipment,
                 environment=env_id,
