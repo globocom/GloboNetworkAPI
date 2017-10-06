@@ -52,7 +52,6 @@ class Generic(BaseSdnPlugin):
                         destination = {
                             'name': name,
                             'port': member['port'],
-                            'host': member['ip'],
                             'address': member['ip'],
                             'weight': member['weight']
                         }
@@ -103,7 +102,6 @@ class Generic(BaseSdnPlugin):
                             destination = {
                                 'name': name,
                                 'port': member['port'],
-                                'host': member['ip'],
                                 'address': member['ip'],
                                 'weight': member['weight']
                             }
@@ -131,7 +129,6 @@ class Generic(BaseSdnPlugin):
                                 destination = {
                                     'name': name,
                                     'port': member['port'],
-                                    'host': member['ip'],
                                     'address': member['ip'],
                                     'weight': member['weight']
                                 }
@@ -174,7 +171,6 @@ class Generic(BaseSdnPlugin):
                                     destination = {
                                         'name': name,
                                         'port': member['port'],
-                                        'host': member['ip'],
                                         'address': member['ip'],
                                         'weight': member['weight']
                                     }
