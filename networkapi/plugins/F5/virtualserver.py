@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import ipaddress
 
 from networkapi.plugins.F5 import pool
 from networkapi.plugins.F5 import rule
@@ -100,7 +101,8 @@ class VirtualServer(F5Base):
             # VIP
             vip_definitions.append({
                 'name': vip_request['name'],
-                'address': vip_request['address'],
+                #IPv6 abbreviation - needed for traffic-group operations
+                'address': str( ipaddress.ip_address( unicode(vip_request['address']) ) ),
                 'port': vip_request['port'],
                 'protocol': types.procotol_type(
                     vip_request['optionsvip']['l4_protocol']['nome_opcao_txt'].lower())
