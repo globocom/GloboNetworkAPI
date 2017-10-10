@@ -30,7 +30,12 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     json_odl_output_path = 'plugins/SDN/ODL/json/odl_output/%s'
 
     def setUp(self):
-        self.equipment = Equipamento.objects.filter(id=10).uniqueResult()
+        # Must chose the equipment with the right version running on docker
+        # Beryllium
+        #self.equipment = Equipamento.objects.filter(id=10).uniqueResult()
+        # Nitrogen
+        self.equipment = Equipamento.objects.filter(id=11).uniqueResult()
+
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1).uniqueResult()
         self.utils.set_controller_endpoint(self.equipment_access)
 
@@ -89,7 +94,10 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         flow_id = data['rules'][0]['id']
         flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
-        output = self.json_odl_output_path % 'odl_id_101301.json'
+        if self.odl.version == "BERYLLIUM":
+            output = self.json_odl_output_path % 'odl_id_101301_beryllium.json'
+        elif self.odl.version in ["BORON", "CARBON", "NITROGEN"]:
+            output = self.json_odl_output_path % 'odl_id_101301_carbon_boron_nitrogen.json'
 
         self.compare_json_lists(output, flow)
 
@@ -108,7 +116,11 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         flow_id = data['rules'][0]['id']
         flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
-        output = self.json_odl_output_path % 'odl_id_101302.json'
+        if self.odl.version == "BERYLLIUM":
+            output = self.json_odl_output_path % 'odl_id_101302_beryllium.json'
+        elif self.odl.version in ["BORON", "CARBON", "NITROGEN"]:
+            output = self.json_odl_output_path % 'odl_id_101302_carbon_boron_nitrogen.json'
+
         self.compare_json_lists(output, flow)
 
     def test_add_flow_one_acl_rule_with_tcp_protocol(self):
