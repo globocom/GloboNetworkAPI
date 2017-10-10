@@ -17,7 +17,15 @@
     "pk": 1,
     "model": "equipamento.modelo",
     "fields": {
-      "nome": "SDN Controller",
+      "nome": "Beryllium",
+      "marca": "1"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.modelo",
+    "fields": {
+      "nome": "Nitrogen",
       "marca": "1"
     }
   },
@@ -27,7 +35,17 @@
     "fields": {
       "tipo_equipamento": "1",
       "modelo": 1,
-      "nome": "OVS Controller 0",
+      "nome": "OVS Controller 1",
+      "maintenance": false
+    }
+  },
+    {
+    "pk": 11,
+    "model": "equipamento.equipamento",
+    "fields": {
+      "tipo_equipamento": "1",
+      "modelo": 2,
+      "nome": "OVS Controller 2",
       "maintenance": false
     }
   },
@@ -64,6 +82,18 @@
     "model": "equipamento.equipamentoacesso",
     "fields": {
       "equipamento": 10,
+      "fqdn": "http://odl.controller:8181",
+      "user": "admin",
+      "password": "admin",
+      "tipo_acesso": 1,
+      "enable_pass": "---"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "equipamento.equipamentoacesso",
+    "fields": {
+      "equipamento": 11,
       "fqdn": "http://odl.controller:8181",
       "user": "admin",
       "password": "admin",
