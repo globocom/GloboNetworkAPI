@@ -477,6 +477,15 @@ class VipRequest(BaseModel):
                 if l7_rule_opt.nome_opcao_txt == 'default_vip':
                     count_l7_opt += 1
 
+                # Vips associates with same pool
+                pool_assoc_vip = reqvip_models.ServerPool()\
+                    .get_vips_related(pool['server_pool'])
+
+                # Exclude current VIP
+                if vip_request.get('id'):
+                    pool_assoc_vip = pool_assoc_vip.exclude(
+                        id=vip_request.get('id'))
+
                 # validate dsrl3: pool assoc only vip and no l7 rules
                 if dsrl3:
                     # Vip with dscp(dsrl3) cannot L7 rules
@@ -486,18 +495,15 @@ class VipRequest(BaseModel):
                             'default_vip' %
                             (pool['server_pool'], vip_request['name'])
                         )
+                else:
+                    pool_assoc_vip = pool_assoc_vip.exclude(
+                        viprequestdscp__isnull=True)
 
-                    pool_assoc_vip = reqvip_models.ServerPool()\
-                        .get_vips_related(pool['server_pool'])
-                    if vip_request.get('id'):
-                        pool_assoc_vip = pool_assoc_vip.exclude(
-                            id=vip_request.get('id'))
-
-                    if pool_assoc_vip:
-                        raise ValidationAPIException(
-                            u'Pool %s must be associated to a only 1 vip '
-                            'request, when vip request has dslr3 option' %
-                            (pool['server_pool']))
+                if pool_assoc_vip:
+                    raise ValidationAPIException(
+                        u'Pool %s must be associated to a only 1 vip '
+                        'request, when vip request has dslr3 option' %
+                        (pool['server_pool']))
 
                 try:
                     sp = reqvip_models.ServerPool.objects.get(

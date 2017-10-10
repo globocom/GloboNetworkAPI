@@ -13,25 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from .... import exceptions
-from ....base import BasePlugin
-from time import sleep
-from django.template import Template
-from django.template import Context
 import logging
-import re
 import os
-from networkapi.equipamento import models as eqpt_models
-from networkapi.settings import BGP_CONFIG_FILES_PATH
-from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
-from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
-from networkapi.infrastructure.ipaddr import IPAddress
+import re
+from time import sleep
+
+from django.template import Context
+from django.template import Template
+
+from .... import exceptions as plugin_exc
+from ....base import BasePlugin
 from networkapi.api_deploy import exceptions
 from networkapi.api_equipment.exceptions import \
     AllEquipmentsAreInMaintenanceException
+from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
+from networkapi.infrastructure.ipaddr import IPAddress
+from networkapi.settings import BGP_CONFIG_FILES_PATH
+from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
+from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
 from networkapi.settings import TFTPBOOT_FILES_PATH
 
 log = logging.getLogger(__name__)
@@ -143,7 +144,7 @@ class Generic(BasePlugin):
                 None, self.equipment.id, template_type).uniqueResult()
         except:
             log.error('Template type %s not found.' % template_type)
-            raise exceptions.BGPTemplateException()
+            raise plugin_exc.BGPTemplateException()
 
     def _load_template_file(self, template_type):
         """Load template file with specific type related to equipment.
@@ -156,7 +157,7 @@ class Generic(BasePlugin):
         equipment_template = self._get_equipment_template(template_type)
 
         filename_in = BGP_CONFIG_TEMPLATE_PATH + \
-                      '/' + equipment_template.roteiro.roteiro
+            '/' + equipment_template.roteiro.roteiro
 
         # Read contents from file
         try:
@@ -209,7 +210,7 @@ class Generic(BasePlugin):
         key_dict['TIMER_TIMEOUT'] = self.neighbor.get('timer_timeout')
         key_dict['DESCRIPTION'] = self.neighbor.get('description')
         key_dict['SOFT_RECONFIGURATION'] = \
-             self.neighbor.get('soft_reconfiguration')
+            self.neighbor.get('soft_reconfiguration')
         key_dict['NEXT_HOP_SELF'] = self.neighbor.get('next_hop_self')
         key_dict['REMOVE_PRIVATE_AS'] = self.neighbor.get('remove_private_as')
         key_dict['COMMUNITY'] = self.neighbor.get('community')
@@ -239,7 +240,7 @@ class Generic(BasePlugin):
                 self.channel.send('%s\n' % command)
                 recv = self._wait_string(self.VALID_TFTP_PUT_MESSAGE)
                 file_copied = 1
-            except exceptions.CurrentlyBusyErrorException:
+            except plugin_exc.CurrentlyBusyErrorException:
                 retries += 1
 
         # not capable of configuring after max retries

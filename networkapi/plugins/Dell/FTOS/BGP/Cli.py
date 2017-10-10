@@ -13,28 +13,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from .... import exceptions
-from ....base import BasePlugin
-from time import sleep
-from django.template import Template
-from django.template import Context
 import logging
-import re
 import os
-from networkapi.equipamento import models as eqpt_models
-from networkapi.settings import BGP_CONFIG_FILES_PATH
-from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
-from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
-from networkapi.infrastructure.ipaddr import IPAddress
+import re
+from time import sleep
+
+from django.template import Context
+from django.template import Template
+
+from .... import exceptions as plugin_exc
+from ....base import BasePlugin
 from networkapi.api_deploy import exceptions
 from networkapi.api_equipment.exceptions import \
     AllEquipmentsAreInMaintenanceException
+from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
+from networkapi.infrastructure.ipaddr import IPAddress
+from networkapi.settings import BGP_CONFIG_FILES_PATH
+from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
+from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
 from networkapi.settings import TFTPBOOT_FILES_PATH
 
 log = logging.getLogger(__name__)
+
 
 class Generic(BasePlugin):
 
@@ -65,7 +67,7 @@ class Generic(BasePlugin):
         self.virtual_interface = virtual_interface
         self.asn = asn
         self.vrf = vrf
-        
+
     def _operate_equipment(self, _get_template_name):
 
         self.connect()
@@ -74,7 +76,7 @@ class Generic(BasePlugin):
         file_to_deploy = self._generate_config_file(template_name)
         self._deploy_config_in_equipment(file_to_deploy)
         self.close()
-        
+
     def deploy_neighbor(self):
 
         self._operate_equipment(self._get_template_deploy_name)
@@ -143,7 +145,7 @@ class Generic(BasePlugin):
                 None, self.equipment.id, template_type).uniqueResult()
         except:
             log.error('Template type %s not found.' % template_type)
-            raise exceptions.BGPTemplateException()
+            raise plugin_exc.BGPTemplateException()
 
     def _load_template_file(self, template_type):
         """Load template file with specific type related to equipment.
@@ -156,7 +158,7 @@ class Generic(BasePlugin):
         equipment_template = self._get_equipment_template(template_type)
 
         filename_in = BGP_CONFIG_TEMPLATE_PATH + \
-                      '/' + equipment_template.roteiro.roteiro
+            '/' + equipment_template.roteiro.roteiro
 
         # Read contents from file
         try:
@@ -216,7 +218,7 @@ class Generic(BasePlugin):
         return key_dict
 
     def _copy_script_file_to_config(self, filename, use_vrf=None,
-                               destination='running-config'):
+                                    destination='running-config'):
         """
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
@@ -238,7 +240,8 @@ class Generic(BasePlugin):
                 self.channel.send('%s\n' % command)
                 recv = self._wait_string(self.VALID_TFTP_PUT_MESSAGE)
                 file_copied = 1
-            except exceptions.CurrentlyBusyErrorException:
+
+            except plugin_exc.CurrentlyBusyErrorException:
                 retries += 1
 
         # not capable of configuring after max retries
@@ -267,7 +270,7 @@ class Generic(BasePlugin):
             recv = self._wait_string('#')
 
     def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
-                   wait_str_failed_regex=None):
+                     wait_str_failed_regex=None):
 
         if wait_str_invalid_regex is None:
             wait_str_invalid_regex = self.INVALID_REGEX
