@@ -42,7 +42,7 @@ class ODLPlugin(BaseSdnPlugin):
     Plugin base para interação com controlador ODL
     """
 
-    versions = ["BERYLLIUM", "BORON", "CARBON"]
+    versions = ["BERYLLIUM", "BORON", "CARBON", "NITROGEN"]
 
     def __init__(self, **kwargs):
 
@@ -65,7 +65,7 @@ class ODLPlugin(BaseSdnPlugin):
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL, nodes_ids=[]):
 
         if flow_type == FlowTypes.ACL:
-            builder = AclFlowBuilder(data, self.environment)
+            builder = AclFlowBuilder(data, self.environment, version=self.version)
 
             flows_set = builder.build()
         try:
@@ -92,7 +92,7 @@ class ODLPlugin(BaseSdnPlugin):
             log.info("Starting update all flows for node %s"%node)
 
             if flow_type == FlowTypes.ACL:
-                builder = AclFlowBuilder(data, self.environment)
+                builder = AclFlowBuilder(data, self.environment, version=self.version)
                 new_flows_set = builder.build()
 
             #Makes a diff
